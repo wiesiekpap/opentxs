@@ -18,7 +18,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -92,10 +92,7 @@ public:
         return blockchain::DisplayString(chain_);
     }
     auto Type() const noexcept -> AccountType final { return type_; }
-    auto Unit() const noexcept -> contact::ContactItemType final
-    {
-        return unit_;
-    }
+    auto Unit() const noexcept -> core::UnitType final { return unit_; }
 
     BlockchainAccountListItem(
         const AccountListInternalInterface& parent,
@@ -108,7 +105,7 @@ public:
 
 private:
     const AccountType type_;
-    const contact::ContactItemType unit_;
+    const core::UnitType unit_;
     const blockchain::Type chain_;
     const std::string contract_;
     const std::string notary_;

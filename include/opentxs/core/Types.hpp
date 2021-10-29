@@ -11,9 +11,21 @@
 
 namespace opentxs
 {
+namespace contact
+{
+enum class ClaimType : std::uint32_t;
+}  // namespace contact
+}  // namespace opentxs
+
+namespace opentxs
+{
 namespace core
 {
 enum class AddressType : std::uint8_t;
+enum class UnitType : std::uint8_t;
+
+auto translate(const contact::ClaimType in) noexcept -> UnitType;
+auto translate(const UnitType in) noexcept -> contact::ClaimType;
 }  // namespace core
 
 }  // namespace opentxs

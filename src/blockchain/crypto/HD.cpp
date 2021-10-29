@@ -102,7 +102,7 @@ HD::HD(
           api,
           parent,
           SubaccountType::HD,
-          Identifier::Factory(Translate(parent.Chain()), path),
+          Identifier::Factory(translate(Translate(parent.Chain())), path),
           path,
           {api, internalType, false, externalType, true},
           id)
@@ -299,8 +299,8 @@ auto HD::save(const rLock& lock) const noexcept -> bool
         hd.set_standard(static_cast<std::uint16_t>(standard_));
     }
 
-    const bool saved =
-        api_.Storage().Store(parent_.NymID().str(), type, serialized);
+    const bool saved = api_.Storage().Store(
+        parent_.NymID().str(), translate(type), serialized);
 
     if (false == saved) {
         LogOutput(OT_METHOD)(__func__)(": Failed to save HD account.").Flush();

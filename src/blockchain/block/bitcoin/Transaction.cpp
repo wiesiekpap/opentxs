@@ -25,7 +25,7 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/node/Node.hpp"
-#include "internal/contact/Contact.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -37,7 +37,7 @@
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -274,7 +274,7 @@ auto BitcoinTransaction(
         std::end(in.chain()),
         std::back_inserter(chains),
         [](const auto& type) -> auto {
-            return Translate(static_cast<contact::ContactItemType>(type));
+            return Translate(static_cast<core::UnitType>(type));
         });
 
     if (0 == chains.size()) {
@@ -875,7 +875,7 @@ auto Transaction::Serialize(const api::client::Blockchain& blockchain)
     output.set_version(std::max(default_version_, serialize_version_));
 
     for (const auto chain : cache_.chains()) {
-        output.add_chain(contact::internal::translate(Translate(chain)));
+        output.add_chain(core::internal::translate(Translate(chain)));
     }
 
     output.set_txid(txid_->str());

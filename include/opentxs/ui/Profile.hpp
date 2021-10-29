@@ -33,19 +33,19 @@ namespace ui
 class OPENTXS_EXPORT Profile : virtual public List
 {
 public:
-    using ItemType = std::pair<contact::ContactItemType, std::string>;
+    using ItemType = std::pair<contact::ClaimType, std::string>;
     using ItemTypeList = std::vector<ItemType>;
-    using SectionType = std::pair<contact::ContactSectionName, std::string>;
+    using SectionType = std::pair<contact::SectionType, std::string>;
     using SectionTypeList = std::vector<SectionType>;
 
     virtual auto AddClaim(
-        const contact::ContactSectionName section,
-        const contact::ContactItemType type,
+        const contact::SectionType section,
+        const contact::ClaimType type,
         const std::string& value,
         const bool primary,
         const bool active) const noexcept -> bool = 0;
     virtual auto AllowedItems(
-        const contact::ContactSectionName section,
+        const contact::SectionType section,
         const std::string& lang) const noexcept -> ItemTypeList = 0;
     virtual auto AllowedSections(const std::string& lang) const noexcept
         -> SectionTypeList = 0;

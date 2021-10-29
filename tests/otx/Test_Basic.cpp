@@ -46,8 +46,8 @@
 #include "opentxs/blind/Token.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/client/OT_API.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
@@ -104,7 +104,7 @@ using namespace opentxs;
 #define UNIT_DEFINITION_TLA "USA"
 #define UNIT_DEFINITION_POWER 2
 #define UNIT_DEFINITION_FRACTIONAL_UNIT_NAME "cents"
-#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::contact::ContactItemType::USD
+#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
 #define UNIT_DEFINITION_CONTRACT_NAME_2 "Mt Gox BTC"
 #define UNIT_DEFINITION_TERMS_2 "YOLO"
 #define UNIT_DEFINITION_PRIMARY_UNIT_NAME_2 "bitcoins"
@@ -112,7 +112,7 @@ using namespace opentxs;
 #define UNIT_DEFINITION_TLA_2 "BTC"
 #define UNIT_DEFINITION_POWER_2 8
 #define UNIT_DEFINITION_FRACTIONAL_UNIT_NAME_2 "satoshis"
-#define UNIT_DEFINITION_UNIT_OF_ACCOUNT_2 ot::contact::ContactItemType::BTC
+#define UNIT_DEFINITION_UNIT_OF_ACCOUNT_2 ot::core::UnitType::BTC
 
 #define MESSAGE_TEXT "example message text"
 #define NEW_SERVER_NAME "Awesome McCoolName"
@@ -3225,8 +3225,8 @@ TEST_F(Test_Basic, addClaim)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.AddClaim(
-        contact::ContactSectionName::Scope,
-        contact::ContactItemType::Server,
+        contact::SectionType::Scope,
+        contact::ClaimType::Server,
         String::Factory(NEW_SERVER_NAME),
         true);
 
@@ -3329,8 +3329,8 @@ TEST_F(Test_Basic, addClaim_not_admin)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.AddClaim(
-        contact::ContactSectionName::Scope,
-        contact::ContactItemType::Server,
+        contact::SectionType::Scope,
+        contact::ClaimType::Server,
         String::Factory(NEW_SERVER_NAME),
         true);
 

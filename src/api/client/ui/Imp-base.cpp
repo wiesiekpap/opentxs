@@ -133,7 +133,7 @@ auto UI::Imp::AccountList(const identifier::Nym& nymID, const SimpleCallback cb)
 auto UI::Imp::account_summary(
     const Lock& lock,
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback& cb) const noexcept -> AccountSummaryMap::mapped_type&
 {
     auto key = AccountSummaryKey{nymID, currency};
@@ -157,7 +157,7 @@ auto UI::Imp::account_summary(
 
 auto UI::Imp::AccountSummary(
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback cb) const noexcept
     -> const opentxs::ui::AccountSummary&
 {
@@ -467,7 +467,7 @@ auto UI::Imp::MessagableList(
 auto UI::Imp::payable_list(
     const Lock& lock,
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback& cb) const noexcept -> PayableListMap::mapped_type&
 {
     auto key = PayableListKey{nymID, currency};
@@ -488,7 +488,7 @@ auto UI::Imp::payable_list(
 
 auto UI::Imp::PayableList(
     const identifier::Nym& nymID,
-    contact::ContactItemType currency,
+    core::UnitType currency,
     const SimpleCallback cb) const noexcept -> const opentxs::ui::PayableList&
 {
     auto lock = Lock{lock_};

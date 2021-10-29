@@ -18,7 +18,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "ui/base/List.hpp"
@@ -63,10 +63,7 @@ using AccountSummaryList = List<
 class AccountSummary final : public AccountSummaryList
 {
 public:
-    auto Currency() const noexcept -> contact::ContactItemType final
-    {
-        return currency_;
-    }
+    auto Currency() const noexcept -> core::UnitType final { return currency_; }
     auto NymID() const noexcept -> const identifier::Nym& final
     {
         return primary_id_;
@@ -75,14 +72,14 @@ public:
     AccountSummary(
         const api::client::Manager& api,
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback& cb) noexcept;
 
     ~AccountSummary() final;
 
 private:
     const ListenerDefinitions listeners_;
-    const contact::ContactItemType currency_;
+    const core::UnitType currency_;
     std::set<OTNymID> issuers_;
     std::map<OTServerID, OTNymID> server_issuer_map_;
     std::map<OTNymID, OTServerID> nym_server_map_;

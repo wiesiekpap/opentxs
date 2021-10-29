@@ -34,15 +34,15 @@ class OPENTXS_EXPORT ProfileSection : virtual public List,
                                       virtual public ListRow
 {
 public:
-    using ItemType = std::pair<contact::ContactItemType, std::string>;
+    using ItemType = std::pair<contact::ClaimType, std::string>;
     using ItemTypeList = std::vector<ItemType>;
 
     static auto AllowedItems(
-        const contact::ContactSectionName section,
+        const contact::SectionType section,
         const std::string& lang) noexcept -> ItemTypeList;
 
     virtual auto AddClaim(
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const std::string& value,
         const bool primary,
         const bool active) const noexcept -> bool = 0;
@@ -68,7 +68,7 @@ public:
         const int type,
         const std::string& claimID,
         const std::string& value) const noexcept -> bool = 0;
-    virtual auto Type() const noexcept -> contact::ContactSectionName = 0;
+    virtual auto Type() const noexcept -> contact::SectionType = 0;
 
     ~ProfileSection() override = default;
 

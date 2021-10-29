@@ -593,7 +593,7 @@ auto CustodialAccountActivity::startup() noexcept -> void
     }
 }
 
-auto CustodialAccountActivity::Unit() const noexcept -> contact::ContactItemType
+auto CustodialAccountActivity::Unit() const noexcept -> core::UnitType
 {
     sLock lock(shared_lock_);
 

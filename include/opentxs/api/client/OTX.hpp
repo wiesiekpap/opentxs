@@ -16,7 +16,7 @@
 #include <tuple>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/otx/Types.hpp"
@@ -200,8 +200,7 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::UnitDefinition& unitID,
-        const contact::ContactItemType advertise =
-            contact::ContactItemType::Error,
+        const core::UnitType advertise = core::UnitType::Error,
         const std::string& label = "") const -> BackgroundTask = 0;
     virtual auto MessageContact(
         const identifier::Nym& senderNymID,

@@ -14,7 +14,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
@@ -61,10 +61,7 @@ class UnitListItem final : public UnitListItemRow
 {
 public:
     auto Name() const noexcept -> std::string final { return name_; }
-    auto Unit() const noexcept -> contact::ContactItemType final
-    {
-        return row_id_;
-    }
+    auto Unit() const noexcept -> core::UnitType final { return row_id_; }
 
     UnitListItem(
         const UnitListInternalInterface& parent,

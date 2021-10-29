@@ -45,7 +45,7 @@
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"  // IWYU pragma: keep
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -1494,7 +1494,7 @@ auto OTX::IssueUnitDefinition(
     const identifier::Nym& localNymID,
     const identifier::Server& serverID,
     const identifier::UnitDefinition& unitID,
-    const contact::ContactItemType advertise,
+    const core::UnitType advertise,
     const std::string& label) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, unitID)
@@ -1947,8 +1947,8 @@ auto OTX::refresh_contacts() const -> bool
                 if (false == bool(data)) { continue; }
 
                 const auto serverGroup = data->Group(
-                    contact::ContactSectionName::Communication,
-                    contact::ContactItemType::Opentxs);
+                    contact::SectionType::Communication,
+                    contact::ClaimType::Opentxs);
 
                 if (false == bool(serverGroup)) {
 

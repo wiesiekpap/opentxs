@@ -27,7 +27,7 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "internal/contact/Contact.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -926,8 +926,7 @@ auto Input::Serialize(
         const auto& [accountID, subchain, index] = key;
         auto& serializedKey = *out.add_key();
         serializedKey.set_version(key_version_);
-        serializedKey.set_chain(
-            contact::internal::translate(Translate(chain_)));
+        serializedKey.set_chain(core::internal::translate(Translate(chain_)));
         serializedKey.set_nym(blockchain.Owner(key).str());
         serializedKey.set_subaccount(accountID);
         serializedKey.set_subchain(static_cast<std::uint32_t>(subchain));

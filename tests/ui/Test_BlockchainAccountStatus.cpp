@@ -23,7 +23,7 @@
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -114,7 +114,7 @@ public:
                 chris_s_.emplace(pkt_words_, "Chris", pkt_passphrase_);
                 chris_s_->init(
                     ot::Context().StartClient(1),
-                    ot::contact::ContactItemType::Individual,
+                    ot::contact::ClaimType::Individual,
                     0,
                     ot::crypto::SeedStyle::PKT);
             }

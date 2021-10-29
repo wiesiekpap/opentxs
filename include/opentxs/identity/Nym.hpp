@@ -15,9 +15,9 @@
 #include <tuple>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
@@ -96,8 +96,8 @@ public:
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto BestEmail() const -> std::string = 0;
     virtual auto BestPhoneNumber() const -> std::string = 0;
-    virtual auto BestSocialMediaProfile(
-        const contact::ContactItemType type) const -> std::string = 0;
+    virtual auto BestSocialMediaProfile(const contact::ClaimType type) const
+        -> std::string = 0;
     virtual auto cbegin() const noexcept -> const_iterator = 0;
     virtual auto cend() const noexcept -> const_iterator = 0;
     virtual auto Claims() const -> const opentxs::ContactData& = 0;
@@ -105,9 +105,8 @@ public:
     virtual auto CompareID(const identifier::Nym& rhs) const -> bool = 0;
     virtual auto ContactCredentialVersion() const -> VersionNumber = 0;
     virtual auto ContactDataVersion() const -> VersionNumber = 0;
-    virtual auto Contracts(
-        const contact::ContactItemType currency,
-        const bool onlyActive) const -> std::set<OTIdentifier> = 0;
+    virtual auto Contracts(const core::UnitType currency, const bool onlyActive)
+        const -> std::set<OTIdentifier> = 0;
     virtual auto EmailAddresses(bool active = true) const -> std::string = 0;
     virtual auto EncryptionTargets() const noexcept -> NymKeys = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
@@ -177,10 +176,10 @@ public:
         -> bool = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
     virtual auto SocialMediaProfiles(
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         bool active = true) const -> std::string = 0;
     virtual auto SocialMediaProfileTypes() const
-        -> const std::set<contact::ContactItemType> = 0;
+        -> const std::set<contact::ClaimType> = 0;
     virtual auto Source() const -> const identity::Source& = 0;
     virtual auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
         -> OTSecret = 0;
@@ -204,7 +203,7 @@ public:
         -> bool = 0;
     virtual auto AddContract(
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active = true) -> bool = 0;
@@ -215,7 +214,7 @@ public:
         const bool active) -> bool = 0;
     virtual auto AddPaymentCode(
         const opentxs::PaymentCode& code,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active = true) -> bool = 0;
@@ -230,7 +229,7 @@ public:
         const bool primary) -> bool = 0;
     virtual auto AddSocialMediaProfile(
         const std::string& value,
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool = 0;
@@ -246,7 +245,7 @@ public:
         const proto::ContactData& data,
         const PasswordPrompt& reason) -> bool = 0;
     virtual auto SetScope(
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const std::string& name,
         const PasswordPrompt& reason,
         const bool primary) -> bool = 0;

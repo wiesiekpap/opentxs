@@ -29,7 +29,7 @@
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/server/Manager.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/Message.hpp"
@@ -433,7 +433,7 @@ auto RPC_fixture::IssueUnit(
     const std::string& tla,
     const std::string& fraction,
     std::uint32_t power,
-    ot::contact::ContactItemType unitOfAccount) const noexcept -> std::string
+    ot::core::UnitType unitOfAccount) const noexcept -> std::string
 {
     const auto nymID = api.Factory().NymID(issuer);
     const auto& serverID = server.ID();

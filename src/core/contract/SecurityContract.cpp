@@ -32,7 +32,7 @@ auto Factory::SecurityContract(
     const std::string& name,
     const std::string& symbol,
     const std::string& terms,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::unit::Security>
@@ -91,7 +91,7 @@ Security::Security(
     const std::string& name,
     const std::string& symbol,
     const std::string& terms,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version)
     : Unit(api, nym, shortname, name, symbol, terms, unitOfAccount, version)
 {

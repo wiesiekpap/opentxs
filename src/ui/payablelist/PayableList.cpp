@@ -35,7 +35,7 @@ namespace opentxs::factory
 auto PayableListModel(
     const api::client::Manager& api,
     const identifier::Nym& nymID,
-    const contact::ContactItemType& currency,
+    const core::UnitType& currency,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::PayableList>
 {
@@ -50,7 +50,7 @@ namespace opentxs::ui::implementation
 PayableList::PayableList(
     const api::client::Manager& api,
     const identifier::Nym& nymID,
-    const contact::ContactItemType& currency,
+    const core::UnitType& currency,
     const SimpleCallback& cb) noexcept
     : PayableListList(api, nymID, cb, false)
     , Worker(api, {})

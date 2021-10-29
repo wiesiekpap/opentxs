@@ -17,7 +17,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 
@@ -68,9 +68,8 @@ public:
     auto ContactID(const identifier::Nym& nymID) const -> OTIdentifier final;
     auto ContactList() const -> ObjectList final;
     auto ContactName(const Identifier& contactID) const -> std::string final;
-    auto ContactName(
-        const Identifier& contactID,
-        contact::ContactItemType currencyHint) const -> std::string final;
+    auto ContactName(const Identifier& contactID, core::UnitType currencyHint)
+        const -> std::string final;
     auto Merge(const Identifier& parent, const Identifier& child) const
         -> std::shared_ptr<const opentxs::Contact> final;
     auto mutable_Contact(const Identifier& id) const
@@ -104,7 +103,7 @@ public:
 private:
     using ContactLock =
         std::pair<std::mutex, std::shared_ptr<opentxs::Contact>>;
-    using Address = std::pair<contact::ContactItemType, std::string>;
+    using Address = std::pair<contact::ClaimType, std::string>;
     using ContactMap = std::map<OTIdentifier, ContactLock>;
     using ContactNameMap = std::map<OTIdentifier, std::string>;
 

@@ -20,7 +20,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
@@ -84,10 +84,7 @@ public:
         return proto::TranslateSectionName(
             contact::internal::translate(row_id_), lang);
     }
-    auto Type() const noexcept -> contact::ContactSectionName final
-    {
-        return row_id_;
-    }
+    auto Type() const noexcept -> contact::SectionType final { return row_id_; }
 
     ContactSection(
         const ContactInternalInterface& parent,
@@ -99,10 +96,10 @@ public:
 
 private:
     static const std::
-        map<contact::ContactSectionName, std::set<proto::ContactItemType>>
+        map<contact::SectionType, std::set<proto::ContactItemType>>
             allowed_types_;
     static const std::
-        map<contact::ContactSectionName, std::map<proto::ContactItemType, int>>
+        map<contact::SectionType, std::map<proto::ContactItemType, int>>
             sort_keys_;
 
     static auto sort_key(const ContactSectionRowID type) noexcept -> int;

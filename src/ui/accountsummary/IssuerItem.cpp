@@ -48,7 +48,7 @@ auto IssuerItem(
     const ui::implementation::AccountSummaryRowID& rowID,
     const ui::implementation::AccountSummarySortKey& sortKey,
     ui::implementation::CustomData& custom,
-    const contact::ContactItemType currency) noexcept
+    const core::UnitType currency) noexcept
     -> std::shared_ptr<ui::implementation::AccountSummaryRowInternal>
 {
     using ReturnType = ui::implementation::IssuerItem;
@@ -66,7 +66,7 @@ IssuerItem::IssuerItem(
     const AccountSummaryRowID& rowID,
     const AccountSummarySortKey& key,
     [[maybe_unused]] CustomData& custom,
-    const contact::ContactItemType currency) noexcept
+    const core::UnitType currency) noexcept
     : Combined(
           api,
           parent.NymID(),

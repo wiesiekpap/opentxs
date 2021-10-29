@@ -5,7 +5,7 @@
 
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
-// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
 
 #pragma once
 
@@ -28,9 +28,9 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/ui/AccountActivity.hpp"
@@ -295,7 +295,7 @@ using AccountListRowInterface = ui::AccountListItem;
 using AccountListRowInternal = ui::internal::AccountListItem;
 using AccountListRowBlank = ui::internal::blank::AccountListItem;
 // type, notary ID
-using AccountListSortKey = std::pair<contact::ContactItemType, std::string>;
+using AccountListSortKey = std::pair<core::UnitType, std::string>;
 
 // Account summary
 using AccountSummaryPrimaryID = OTNymID;
@@ -310,7 +310,7 @@ using AccountSummarySortKey = std::pair<bool, std::string>;
 using IssuerItemPrimaryID = OTNymID;
 using IssuerItemExternalInterface = AccountSummaryRowInterface;
 using IssuerItemInternalInterface = ui::internal::IssuerItem;
-using IssuerItemRowID = std::pair<OTIdentifier, contact::ContactItemType>;
+using IssuerItemRowID = std::pair<OTIdentifier, core::UnitType>;
 using IssuerItemRowInterface = ui::AccountSummaryItem;
 using IssuerItemRowInternal = ui::internal::AccountSummaryItem;
 using IssuerItemRowBlank = ui::internal::blank::AccountSummaryItem;
@@ -410,7 +410,7 @@ using BlockchainStatisticsSortKey = std::string;
 using ContactPrimaryID = OTIdentifier;
 using ContactExternalInterface = ui::Contact;
 using ContactInternalInterface = ui::internal::Contact;
-using ContactRowID = contact::ContactSectionName;
+using ContactRowID = contact::SectionType;
 using ContactRowInterface = ui::ContactSection;
 using ContactRowInternal = ui::internal::ContactSection;
 using ContactRowBlank = ui::internal::blank::ContactSection;
@@ -419,8 +419,7 @@ using ContactSortKey = int;
 using ContactSectionPrimaryID = ContactPrimaryID;
 using ContactSectionExternalInterface = ContactRowInterface;
 using ContactSectionInternalInterface = ui::internal::ContactSection;
-using ContactSectionRowID =
-    std::pair<contact::ContactSectionName, contact::ContactItemType>;
+using ContactSectionRowID = std::pair<contact::SectionType, contact::ClaimType>;
 using ContactSectionRowInterface = ui::ContactSubsection;
 using ContactSectionRowInternal = ui::internal::ContactSubsection;
 using ContactSectionRowBlank = ui::internal::blank::ContactSubsection;
@@ -470,7 +469,7 @@ using PayableListSortKey = ContactListSortKey;
 using ProfilePrimaryID = OTNymID;
 using ProfileExternalInterface = ui::Profile;
 using ProfileInternalInterface = ui::internal::Profile;
-using ProfileRowID = contact::ContactSectionName;
+using ProfileRowID = contact::SectionType;
 using ProfileRowInterface = ui::ProfileSection;
 using ProfileRowInternal = ui::internal::ProfileSection;
 using ProfileRowBlank = ui::internal::blank::ProfileSection;
@@ -479,8 +478,7 @@ using ProfileSortKey = int;
 using ProfileSectionPrimaryID = ProfilePrimaryID;
 using ProfileSectionExternalInterface = ProfileRowInterface;
 using ProfileSectionInternalInterface = ui::internal::ProfileSection;
-using ProfileSectionRowID =
-    std::pair<contact::ContactSectionName, contact::ContactItemType>;
+using ProfileSectionRowID = std::pair<contact::SectionType, contact::ClaimType>;
 using ProfileSectionRowInterface = ui::ProfileSubsection;
 using ProfileSectionRowInternal = ui::internal::ProfileSubsection;
 using ProfileSectionRowBlank = ui::internal::blank::ProfileSubsection;
@@ -499,7 +497,7 @@ using ProfileSubsectionSortKey = int;
 using UnitListPrimaryID = OTNymID;
 using UnitListExternalInterface = ui::UnitList;
 using UnitListInternalInterface = ui::internal::UnitList;
-using UnitListRowID = contact::ContactItemType;
+using UnitListRowID = core::UnitType;
 using UnitListRowInterface = ui::UnitListItem;
 using UnitListRowInternal = ui::internal::UnitListItem;
 using UnitListRowBlank = ui::internal::blank::UnitListItem;
@@ -596,7 +594,7 @@ struct AccountListItem : virtual public Row,
     ~AccountListItem() override = default;
 };
 struct AccountSummary : virtual public List, virtual public ui::AccountSummary {
-    virtual auto Currency() const -> contact::ContactItemType = 0;
+    virtual auto Currency() const -> core::UnitType = 0;
     virtual auto last(const implementation::AccountSummaryRowID& id)
         const noexcept -> bool = 0;
     virtual auto NymID() const -> const identifier::Nym& = 0;
@@ -871,7 +869,7 @@ struct ProfileSubsection : virtual public List,
         const noexcept -> bool = 0;
     // custom
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
-    virtual auto Section() const noexcept -> contact::ContactSectionName = 0;
+    virtual auto Section() const noexcept -> contact::SectionType = 0;
 
     ~ProfileSubsection() override = default;
 };
@@ -946,7 +944,7 @@ struct AccountListItem final : virtual public Row,
     auto NotaryID() const noexcept -> std::string final { return {}; }
     auto NotaryName() const noexcept -> std::string final { return {}; }
     auto Type() const noexcept -> AccountType final { return {}; }
-    auto Unit() const noexcept -> contact::ContactItemType final { return {}; }
+    auto Unit() const noexcept -> core::UnitType final { return {}; }
 
     auto reindex(
         const implementation::AccountListSortKey&,
@@ -1157,10 +1155,7 @@ struct ContactSection final : public List<
     {
         return {};
     }
-    auto Type() const noexcept -> contact::ContactSectionName final
-    {
-        return {};
-    }
+    auto Type() const noexcept -> contact::SectionType final { return {}; }
 
     auto reindex(
         const implementation::ContactSortKey&,
@@ -1177,7 +1172,7 @@ struct ContactSubsection final : public List<
     {
         return {};
     }
-    auto Type() const noexcept -> contact::ContactItemType final { return {}; }
+    auto Type() const noexcept -> contact::ClaimType final { return {}; }
 
     auto reindex(
         const implementation::ContactSectionSortKey&,
@@ -1244,7 +1239,7 @@ struct ProfileSection : public List<
                             OTUIProfileSubsection,
                             implementation::ProfileSectionRowID> {
     auto AddClaim(
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const std::string& value,
         const bool primary,
         const bool active) const noexcept -> bool final
@@ -1282,10 +1277,7 @@ struct ProfileSection : public List<
     {
         return false;
     }
-    auto Type() const noexcept -> contact::ContactSectionName final
-    {
-        return {};
-    }
+    auto Type() const noexcept -> contact::SectionType final { return {}; }
 
     auto reindex(
         const implementation::ProfileSortKey& key,
@@ -1318,11 +1310,8 @@ struct ProfileSubsection : public List<
     {
         return nym_id_;
     }
-    auto Type() const noexcept -> contact::ContactItemType final { return {}; }
-    auto Section() const noexcept -> contact::ContactSectionName final
-    {
-        return {};
-    }
+    auto Type() const noexcept -> contact::ClaimType final { return {}; }
+    auto Section() const noexcept -> contact::SectionType final { return {}; }
     auto SetActive(const std::string&, const bool) const noexcept -> bool final
     {
         return false;
@@ -1350,7 +1339,7 @@ private:
 struct UnitListItem final : virtual public Row,
                             virtual public internal::UnitListItem {
     auto Name() const noexcept -> std::string final { return {}; }
-    auto Unit() const noexcept -> contact::ContactItemType final { return {}; }
+    auto Unit() const noexcept -> core::UnitType final { return {}; }
 
     auto reindex(
         const implementation::UnitListSortKey&,
@@ -1465,7 +1454,7 @@ auto AccountSummaryItem(
 auto AccountSummaryModel(
     const api::client::Manager& api,
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::AccountSummary>;
 auto AccountSummaryQtModel(ui::internal::AccountSummary& parent) noexcept
@@ -1640,7 +1629,7 @@ auto IssuerItem(
     const ui::implementation::AccountSummaryRowID& rowID,
     const ui::implementation::AccountSummarySortKey& sortKey,
     ui::implementation::CustomData& custom,
-    const contact::ContactItemType currency) noexcept
+    const core::UnitType currency) noexcept
     -> std::shared_ptr<ui::implementation::AccountSummaryRowInternal>;
 auto MailItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
@@ -1669,7 +1658,7 @@ auto PayableListItem(
     const ui::implementation::PayableListRowID& rowID,
     const ui::implementation::PayableListSortKey& key,
     const std::string& paymentcode,
-    const contact::ContactItemType& currency) noexcept
+    const core::UnitType& currency) noexcept
     -> std::shared_ptr<ui::implementation::PayableListRowInternal>;
 auto PaymentItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
@@ -1682,7 +1671,7 @@ auto PaymentItem(
 auto PayableListModel(
     const api::client::Manager& api,
     const identifier::Nym& nymID,
-    const contact::ContactItemType& currency,
+    const core::UnitType& currency,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::PayableList>;
 auto PayableListQtModel(ui::internal::PayableList& parent) noexcept

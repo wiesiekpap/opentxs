@@ -49,7 +49,7 @@ public:
         const noexcept -> bool = 0;
     virtual auto SetValue(const std::string& claimID, const std::string& value)
         const noexcept -> bool = 0;
-    virtual auto Type() const noexcept -> contact::ContactItemType = 0;
+    virtual auto Type() const noexcept -> contact::ClaimType = 0;
 
     ~ProfileSubsection() override = default;
 

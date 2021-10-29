@@ -6,8 +6,8 @@
 #ifndef OPENTXS_CONTACT_CONTACTGROUP_HPP
 #define OPENTXS_CONTACT_CONTACTGROUP_HPP
 
-// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
-// IWYU pragma: no_include "opentxs/contact/ContactSectionName.hpp"
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/contact/SectionType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -39,12 +39,12 @@ public:
 
     ContactGroup(
         const std::string& nym,
-        const contact::ContactSectionName section,
-        const contact::ContactItemType type,
+        const contact::SectionType section,
+        const contact::ClaimType type,
         const ItemMap& items);
     ContactGroup(
         const std::string& nym,
-        const contact::ContactSectionName section,
+        const contact::SectionType section,
         const std::shared_ptr<ContactItem>& item);
     ContactGroup(const ContactGroup&) noexcept;
     ContactGroup(ContactGroup&&) noexcept;
@@ -66,7 +66,7 @@ public:
     auto SerializeTo(proto::ContactSection& section, const bool withIDs = false)
         const -> bool;
     auto Size() const -> std::size_t;
-    auto Type() const -> const contact::ContactItemType&;
+    auto Type() const -> const contact::ClaimType&;
 
     ~ContactGroup();
 

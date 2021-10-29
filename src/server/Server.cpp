@@ -32,7 +32,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/client/NymData.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -221,7 +221,7 @@ void Server::CreateMainFile(bool& mainFileExists)
     nymParameters.SetDefault(false);
 #endif
     m_nymServer = manager_.Wallet().Nym(
-        reason_, name, nymParameters, contact::ContactItemType::Server);
+        reason_, name, nymParameters, contact::ClaimType::Server);
 
     if (false == bool(m_nymServer)) {
         LogOutput(OT_METHOD)(__func__)(": Error: Failed to create server nym.")

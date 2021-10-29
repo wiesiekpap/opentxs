@@ -36,7 +36,7 @@
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -638,7 +638,7 @@ TEST_F(Test_Rpc, Create_Nym)
 
     createnym->set_version(CREATENYM_VERSION);
     createnym->set_type(
-        contact::internal::translate(contact::ContactItemType::Individual));
+        contact::internal::translate(contact::ClaimType::Individual));
     createnym->set_name("testNym1");
     createnym->set_index(-1);
 
@@ -666,7 +666,7 @@ TEST_F(Test_Rpc, Create_Nym)
 
     createnym->set_version(CREATENYM_VERSION);
     createnym->set_type(
-        contact::internal::translate(contact::ContactItemType::Individual));
+        contact::internal::translate(contact::ClaimType::Individual));
     createnym->set_name("testNym2");
     createnym->set_index(-1);
 
@@ -690,7 +690,7 @@ TEST_F(Test_Rpc, Create_Nym)
 
     createnym->set_version(CREATENYM_VERSION);
     createnym->set_type(
-        contact::internal::translate(contact::ContactItemType::Individual));
+        contact::internal::translate(contact::ClaimType::Individual));
     createnym->set_name("testNym3");
     createnym->set_index(-1);
 
@@ -822,7 +822,7 @@ TEST_F(Test_Rpc, Create_Unit_Definition)
     def->set_power(2);
     def->set_terms("Google Test Dollars");
     def->set_unitofaccount(
-        contact::internal::translate(contact::ContactItemType::USD));
+        contact::internal::translate(contact::ClaimType::USD));
     auto response = ot_.RPC(command);
 
     EXPECT_TRUE(proto::Validate(response, VERBOSE));
@@ -930,8 +930,8 @@ TEST_F(Test_Rpc, Delete_Claim_No_Nym)
     auto nym = client.Wallet().Nym(ot::identifier::Nym::Factory(nym1_id_));
     auto& claims = nym->Claims();
     auto group = claims.Group(
-        opentxs::contact::ContactSectionName::Relationship,
-        opentxs::contact::ContactItemType::Alias);
+        opentxs::contact::SectionType::Relationship,
+        opentxs::contact::ClaimType::Alias);
     const auto claim = group->Best();
     claim_id_ = claim->ID().str();
     command.add_identifier(claim_id_);

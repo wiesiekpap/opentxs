@@ -46,8 +46,8 @@ public:
     static auto ClaimID(
         const api::Core& api,
         const std::string& nymid,
-        const contact::ContactSectionName section,
-        const contact::ContactItemType type,
+        const contact::SectionType section,
+        const contact::ClaimType type,
         const std::int64_t start,
         const std::int64_t end,
         const std::string& value,

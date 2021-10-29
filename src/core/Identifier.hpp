@@ -95,7 +95,7 @@ public:
     explicit Identifier(const identity::Nym& nym);
     explicit Identifier(const Contract& contract);
     explicit Identifier(const Vector& data, const ID type);
-    Identifier(const contact::ContactItemType type, const proto::HDPath& path);
+    Identifier(const contact::ClaimType type, const proto::HDPath& path);
     Identifier();
 
     ~Identifier() final = default;
@@ -118,7 +118,7 @@ private:
         -> Identifier*;
     static auto IDToHashType(const ID type) -> crypto::HashType;
     static auto path_to_data(
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const proto::HDPath& path) -> OTData;
 
     Identifier(const Identifier& rhs) = delete;

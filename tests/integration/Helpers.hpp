@@ -24,7 +24,7 @@
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/server/Manager.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -134,16 +134,14 @@ struct User {
 
     auto init(
         const ot::api::client::Manager& api,
-        const ot::contact::ContactItemType type =
-            ot::contact::ContactItemType::Individual,
+        const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> bool;
     auto init(
         const ot::api::client::Manager& api,
         const Server& server,
-        const ot::contact::ContactItemType type =
-            ot::contact::ContactItemType::Individual,
+        const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> bool;
@@ -151,16 +149,14 @@ struct User {
         const ot::api::client::Manager& api,
         const Server& server,
         const std::function<void(User&)> custom,
-        const ot::contact::ContactItemType type =
-            ot::contact::ContactItemType::Individual,
+        const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> void;
     auto init_custom(
         const ot::api::client::Manager& api,
         const std::function<void(User&)> custom,
-        const ot::contact::ContactItemType type =
-            ot::contact::ContactItemType::Individual,
+        const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> void;
@@ -177,7 +173,7 @@ private:
 
     auto init_basic(
         const ot::api::client::Manager& api,
-        const ot::contact::ContactItemType type,
+        const ot::contact::ClaimType type,
         const std::uint32_t index,
         const ot::crypto::SeedStyle seed) noexcept -> bool;
 

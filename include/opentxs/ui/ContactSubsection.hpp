@@ -38,7 +38,7 @@ public:
         -> opentxs::SharedPimpl<opentxs::ui::ContactItem> = 0;
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactItem> = 0;
-    virtual auto Type() const noexcept -> contact::ContactItemType = 0;
+    virtual auto Type() const noexcept -> contact::ClaimType = 0;
 
     ~ContactSubsection() override = default;
 

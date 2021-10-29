@@ -255,7 +255,7 @@ auto User::Contact(const std::string& contact) const noexcept
 
 auto User::init_basic(
     const ot::api::client::Manager& api,
-    const ot::contact::ContactItemType type,
+    const ot::contact::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
 {
@@ -293,7 +293,7 @@ auto User::init_basic(
 auto User::init(
     const ot::api::client::Manager& api,
     const Server& server,
-    const ot::contact::ContactItemType type,
+    const ot::contact::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
 {
@@ -309,7 +309,7 @@ auto User::init(
 
 auto User::init(
     const ot::api::client::Manager& api,
-    const ot::contact::ContactItemType type,
+    const ot::contact::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
 {
@@ -326,7 +326,7 @@ auto User::init_custom(
     const ot::api::client::Manager& api,
     const Server& server,
     const std::function<void(User&)> custom,
-    const ot::contact::ContactItemType type,
+    const ot::contact::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> void
 {
@@ -336,7 +336,7 @@ auto User::init_custom(
 auto User::init_custom(
     const ot::api::client::Manager& api,
     const std::function<void(User&)> custom,
-    const ot::contact::ContactItemType type,
+    const ot::contact::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> void
 {

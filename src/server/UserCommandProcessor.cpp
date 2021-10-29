@@ -31,7 +31,7 @@
 #include "opentxs/blind/Mint.hpp"  // IWYU pragma: keep
 #endif                             // OT_CASH
 #include "opentxs/client/NymData.hpp"
-#include "opentxs/contact/ContactItemAttribute.hpp"
+#include "opentxs/contact/Attribute.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -509,12 +509,11 @@ auto UserCommandProcessor::cmd_add_claim(ReplyMessage& reply) const -> bool
     std::set<std::uint32_t> attributes;
 
     if (primary) {
-        attributes.insert(contact::internal::translate(
-            contact::ContactItemAttribute::Primary));
+        attributes.insert(
+            contact::internal::translate(contact::Attribute::Primary));
     }
 
-    attributes.insert(
-        contact::internal::translate(contact::ContactItemAttribute::Active));
+    attributes.insert(contact::internal::translate(contact::Attribute::Active));
 
     Claim claim{"", section, type, value, 0, 0, attributes};
 

@@ -4,7 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/ui/Blockchains.hpp"
@@ -24,10 +24,10 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/contact/Types.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/ui/Types.hpp"
 
 namespace opentxs
@@ -70,7 +70,7 @@ struct AccountActivityData {
     ot::AccountType type_;
     std::string id_{};
     std::string name_{};
-    ot::contact::ContactItemType unit_;
+    ot::core::UnitType unit_;
     std::string contract_id_{};
     std::string contract_name_{};
     std::string notary_id_{};
@@ -96,7 +96,7 @@ struct AccountListRow {
     std::string notary_id_{};
     std::string notary_name_{};
     ot::AccountType type_{};
-    ot::contact::ContactItemType unit_{};
+    ot::core::UnitType unit_{};
     int polarity_{};
     ot::Amount balance_{};
     std::string display_balance_{};
@@ -126,7 +126,7 @@ struct ActivityThreadData {
     std::string display_name_{};
     std::string draft_{};
     std::string participants_{};
-    std::map<ot::contact::ContactItemType, std::string> payment_codes_{};
+    std::map<ot::core::UnitType, std::string> payment_codes_{};
     std::vector<ActivityThreadRow> rows_{};
 };
 

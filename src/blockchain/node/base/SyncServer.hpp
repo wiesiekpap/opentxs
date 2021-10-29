@@ -297,10 +297,11 @@ private:
 
             return output;
         }();
-        namespace sync = network::blockchain::sync;
-        const auto base = sync::Factory(api_, incoming);
+        namespace bcsync = network::blockchain::sync;
+        const auto base = bcsync::Factory(api_, incoming);
 
-        if (auto type = base->Type(); type != sync::MessageType::sync_request) {
+        if (auto type = base->Type();
+            type != bcsync::MessageType::sync_request) {
             LogOutput(SYNC_SERVER)(__func__)(
                 ": Invalid or unsupported message type ")(opentxs::print(type))
                 .Flush();
@@ -310,7 +311,7 @@ private:
 
         try {
             const auto& request = base->asRequest();
-            const auto& state = [&]() -> const sync::State& {
+            const auto& state = [&]() -> const bcsync::State& {
                 for (const auto& state : request.State()) {
                     if (state.Chain() == chain_) { return state; }
                 }
@@ -321,7 +322,7 @@ private:
             auto [needSync, parent, data] = hello(lock, position);
             const auto& [height, hash] = parent;
             auto reply =
-                sync::Data{WorkType::SyncReply, std::move(data), {}, {}};
+                bcsync::Data{WorkType::SyncReply, std::move(data), {}, {}};
             auto send{true};
 
             if (needSync) { send = db_.LoadSync(height, reply); }

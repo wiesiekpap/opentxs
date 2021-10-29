@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+// IWYU pragma: no_include "ClaimType"
 // IWYU pragma: no_include "opentxs/crypto/Language.hpp"
 // IWYU pragma: no_include "opentxs/crypto/SeedStyle.hpp"
 
@@ -19,8 +19,8 @@
 #include <string>
 #include <vector>
 
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/Types.hpp"
 
 namespace opentxs
 {
@@ -149,8 +149,7 @@ protected:
         const std::string& tla,
         const std::string& fraction,
         std::uint32_t power,
-        ot::contact::ContactItemType unitOfAccount) const noexcept
-        -> std::string;
+        ot::core::UnitType unitOfAccount) const noexcept -> std::string;
     auto RefreshAccount(
         const ot::api::client::Manager& api,
         const ot::identifier::Nym& nym,

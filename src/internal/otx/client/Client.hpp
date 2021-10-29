@@ -65,7 +65,7 @@ using DownloadUnitDefinitionTask = OTUnitID;
 using GetTransactionNumbersTask = OT_GetTransactionNumbersType;
 /** IssueUnitDefinitionTask: unit definition id, account label, claim */
 using IssueUnitDefinitionTask =
-    std::tuple<OTUnitID, std::string, contact::ContactItemType>;
+    std::tuple<OTUnitID, std::string, core::UnitType>;
 /** MessageTask: recipientID, message */
 using MessageTask = std::tuple<OTNymID, std::string, std::shared_ptr<SetID>>;
 #if OT_CASH
@@ -124,10 +124,7 @@ struct make_blank<otx::client::IssueUnitDefinitionTask> {
     static auto value(const api::Core& api)
         -> otx::client::IssueUnitDefinitionTask
     {
-        return {
-            make_blank<OTUnitID>::value(api),
-            "",
-            contact::ContactItemType::Error};
+        return {make_blank<OTUnitID>::value(api), "", core::UnitType::Error};
     }
 };
 template <>
@@ -232,8 +229,8 @@ struct Operation {
     virtual auto ServerID() const -> const identifier::Server& = 0;
 
     virtual auto AddClaim(
-        const contact::ContactSectionName section,
-        const contact::ContactItemType type,
+        const contact::SectionType section,
+        const contact::ClaimType type,
         const String& value,
         const bool primary) -> bool = 0;
     virtual auto ConveyPayment(

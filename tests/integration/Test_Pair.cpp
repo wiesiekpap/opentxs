@@ -31,9 +31,9 @@
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/Message.hpp"
@@ -80,7 +80,7 @@ class Manager;
 #define UNIT_DEFINITION_TLA "USD"
 #define UNIT_DEFINITION_POWER 2
 #define UNIT_DEFINITION_FRACTIONAL_UNIT_NAME "cents"
-#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::contact::ContactItemType::USD
+#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
 
 namespace ottest
 {
@@ -217,7 +217,7 @@ TEST_F(Test_Pair, init_ui)
     account_summary_.expected_ = 0;
     api_chris_.UI().AccountSummary(
         chris_.nym_id_,
-        ot::contact::ContactItemType::USD,
+        ot::core::UnitType::USD,
         make_cb(account_summary_, "account summary USD"));
 }
 
@@ -226,7 +226,7 @@ TEST_F(Test_Pair, initial_state)
     ASSERT_TRUE(wait_for_counter(account_summary_));
 
     const auto& widget = chris_.api_->UI().AccountSummary(
-        chris_.nym_id_, ot::contact::ContactItemType::USD);
+        chris_.nym_id_, ot::core::UnitType::USD);
     auto row = widget.First();
 
     EXPECT_FALSE(row->Valid());
@@ -263,10 +263,7 @@ TEST_F(Test_Pair, issue_dollars)
     }
 
     auto task = api_issuer_.OTX().IssueUnitDefinition(
-        issuer_.nym_id_,
-        server_1_.id_,
-        unit_id_,
-        ot::contact::ContactItemType::USD);
+        issuer_.nym_id_, server_1_.id_, unit_id_, ot::core::UnitType::USD);
     auto& [taskID, future] = task;
     const auto result = future.get();
 
@@ -288,12 +285,12 @@ TEST_F(Test_Pair, issue_dollars)
         const auto& nym = *pNym;
         const auto& claims = nym.Claims();
         const auto pSection =
-            claims.Section(ot::contact::ContactSectionName::Contract);
+            claims.Section(ot::contact::SectionType::Contract);
 
         ASSERT_TRUE(pSection);
 
         const auto& section = *pSection;
-        const auto pGroup = section.Group(ot::contact::ContactItemType::USD);
+        const auto pGroup = section.Group(ot::contact::ClaimType::USD);
 
         ASSERT_TRUE(pGroup);
 
@@ -328,9 +325,7 @@ TEST_F(Test_Pair, pair_untrusted)
         const auto& issuer = *pIssuer;
 
         EXPECT_EQ(
-            1,
-            issuer.AccountList(ot::contact::ContactItemType::USD, unit_id_)
-                .size());
+            1, issuer.AccountList(ot::core::UnitType::USD, unit_id_).size());
         EXPECT_FALSE(issuer.BailmentInitiated(unit_id_));
         EXPECT_EQ(3, issuer.BailmentInstructions(api_chris_, unit_id_).size());
         EXPECT_EQ(
@@ -400,7 +395,7 @@ TEST_F(Test_Pair, pair_untrusted_state)
     ASSERT_TRUE(wait_for_counter(account_summary_));
 
     const auto& widget = chris_.api_->UI().AccountSummary(
-        chris_.nym_id_, ot::contact::ContactItemType::USD);
+        chris_.nym_id_, ot::core::UnitType::USD);
     auto row = widget.First();
 
     ASSERT_TRUE(row->Valid());
@@ -442,9 +437,7 @@ TEST_F(Test_Pair, pair_trusted)
         const auto& issuer = *pIssuer;
 
         EXPECT_EQ(
-            1,
-            issuer.AccountList(ot::contact::ContactItemType::USD, unit_id_)
-                .size());
+            1, issuer.AccountList(ot::core::UnitType::USD, unit_id_).size());
         EXPECT_FALSE(issuer.BailmentInitiated(unit_id_));
         EXPECT_EQ(3, issuer.BailmentInstructions(api_chris_, unit_id_).size());
         EXPECT_EQ(
@@ -518,7 +511,7 @@ TEST_F(Test_Pair, pair_trusted_state)
     ASSERT_TRUE(wait_for_counter(account_summary_));
 
     const auto& widget = chris_.api_->UI().AccountSummary(
-        chris_.nym_id_, ot::contact::ContactItemType::USD);
+        chris_.nym_id_, ot::core::UnitType::USD);
     auto row = widget.First();
 
     ASSERT_TRUE(row->Valid());

@@ -15,7 +15,7 @@
 #include <type_traits>
 
 #include "internal/api/client/Factory.hpp"
-#include "internal/contact/Contact.hpp"
+#include "internal/core/Core.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -26,12 +26,13 @@
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactSection.hpp"  // IWYU pragma: keep
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -106,7 +107,7 @@ Issuer::Issuer(
         const auto& type = it.type();
         const auto& unitID = it.unitdefinitionid();
         const auto& accountID = it.accountid();
-        account_map_[contact::internal::translate(type)].emplace(
+        account_map_[core::internal::translate(type)].emplace(
             identifier::UnitDefinition::Factory(unitID),
             Identifier::Factory(accountID));
     }
@@ -147,7 +148,7 @@ auto Issuer::toString() const -> std::string
     const auto& issuerClaims = nym->Claims();
     const auto serverID = issuerClaims.PreferredOTServer();
     const auto contractSection =
-        issuerClaims.Section(contact::ContactSectionName::Contract);
+        issuerClaims.Section(contact::SectionType::Contract);
     const auto haveAccounts = bool(contractSection);
 
     if (serverID->empty()) {
@@ -182,7 +183,7 @@ auto Issuer::toString() const -> std::string
                    << proto::TranslateItemType(
                           static_cast<std::uint32_t>(claim.Type()))
                    << ": " << claim.Value() << "\n";
-            const auto accountSet = account_map_.find(type);
+            const auto accountSet = account_map_.find(core::translate(type));
 
             if (account_map_.end() == accountSet) { continue; }
 
@@ -247,7 +248,7 @@ auto Issuer::toString() const -> std::string
 }
 
 auto Issuer::AccountList(
-    const contact::ContactItemType type,
+    const core::UnitType type,
     const identifier::UnitDefinition& unitID) const -> std::set<OTIdentifier>
 {
     Lock lock(lock_);
@@ -265,7 +266,7 @@ auto Issuer::AccountList(
 }
 
 void Issuer::AddAccount(
-    const contact::ContactItemType type,
+    const core::UnitType type,
     const identifier::UnitDefinition& unitID,
     const Identifier& accountID)
 {
@@ -671,7 +672,7 @@ auto Issuer::PrimaryServer() const -> OTServerID
 }
 
 auto Issuer::RemoveAccount(
-    const contact::ContactItemType type,
+    const core::UnitType type,
     const identifier::UnitDefinition& unitID,
     const Identifier& accountID) -> bool
 {
@@ -714,7 +715,7 @@ auto Issuer::Serialize(proto::Issuer& output) const -> bool
         for (const auto& [unitID, accountID] : accountSet) {
             auto& map = *output.add_accounts();
             map.set_version(version_);
-            map.set_type(contact::internal::translate(type));
+            map.set_type(core::internal::translate(type));
             map.set_unitdefinitionid(unitID->str());
             map.set_accountid(accountID->str());
         }

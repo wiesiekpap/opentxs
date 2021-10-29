@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
 // IWYU pragma: no_include <boost/intrusive/detail/iterator.hpp>
 
 #pragma once
@@ -32,8 +32,8 @@
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
 
@@ -64,7 +64,7 @@ struct Data {
     bool supported_{};
     bool testnet_{};
     bool segwit_{};
-    contact::ContactItemType itemtype_{};
+    core::UnitType itemtype_{};
     Bip44Type bip44_{};
     std::string display_string_{};
     std::string display_ticker_{};

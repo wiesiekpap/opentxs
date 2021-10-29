@@ -7,7 +7,7 @@
 // IWYU pragma: no_include "opentxs/api/client/PaymentWorkflowType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
-// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
 
 #pragma once
 
@@ -38,9 +38,9 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/UniqueQueue.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -128,10 +128,8 @@ class UniqueQueue;
 
 namespace opentxs
 {
-auto Translate(const blockchain::Type type) noexcept
-    -> contact::ContactItemType;
-auto Translate(const contact::ContactItemType type) noexcept
-    -> blockchain::Type;
+auto Translate(const blockchain::Type type) noexcept -> core::UnitType;
+auto Translate(const core::UnitType type) noexcept -> blockchain::Type;
 }  // namespace opentxs
 
 namespace opentxs::api::client::internal

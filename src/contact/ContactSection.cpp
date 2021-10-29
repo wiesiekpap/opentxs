@@ -15,7 +15,7 @@
 #include "internal/contact/Contact.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/ContactData.pb.h"
@@ -39,7 +39,7 @@ static auto check_version(
 
 static auto create_group(
     const std::string& nym,
-    const contact::ContactSectionName section,
+    const contact::SectionType section,
     const std::shared_ptr<ContactItem>& item) -> ContactSection::GroupMap
 {
     OT_ASSERT(item);
@@ -59,7 +59,7 @@ static auto extract_groups(
     const proto::ContactSection& serialized) -> ContactSection::GroupMap
 {
     ContactSection::GroupMap groupMap{};
-    std::map<contact::ContactItemType, ContactGroup::ItemMap> itemMaps{};
+    std::map<contact::ClaimType, ContactGroup::ItemMap> itemMaps{};
     const auto& section = serialized.name();
 
     for (const auto& item : serialized.item()) {
@@ -93,7 +93,7 @@ struct ContactSection::Imp {
     const api::Core& api_;
     const VersionNumber version_;
     const std::string nym_;
-    const contact::ContactSectionName section_;
+    const contact::SectionType section_;
     const GroupMap groups_;
 
     auto add_scope(const std::shared_ptr<ContactItem>& item) const
@@ -133,7 +133,7 @@ struct ContactSection::Imp {
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
-        const contact::ContactSectionName section,
+        const contact::SectionType section,
         const GroupMap& groups)
         : api_(api)
         , version_(check_version(version, parentVersion))
@@ -167,7 +167,7 @@ ContactSection::ContactSection(
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
-    const contact::ContactSectionName section,
+    const contact::SectionType section,
     const GroupMap& groups)
     : imp_(std::make_unique<
            Imp>(api, nym, version, parentVersion, section, groups))
@@ -191,7 +191,7 @@ ContactSection::ContactSection(
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
-    const contact::ContactSectionName section,
+    const contact::SectionType section,
     const std::shared_ptr<ContactItem>& item)
     : ContactSection(
           api,
@@ -278,7 +278,7 @@ auto ContactSection::AddItem(const std::shared_ptr<ContactItem>& item) const
     OT_ASSERT(item);
 
     const bool specialCaseScope =
-        (contact::ContactSectionName::Scope == imp_->section_);
+        (contact::SectionType::Scope == imp_->section_);
 
     if (specialCaseScope) { return imp_->add_scope(item); }
 
@@ -360,7 +360,7 @@ auto ContactSection::end() const -> ContactSection::GroupMap::const_iterator
     return imp_->groups_.cend();
 }
 
-auto ContactSection::Group(const contact::ContactItemType& type) const
+auto ContactSection::Group(const contact::ClaimType& type) const
     -> std::shared_ptr<ContactGroup>
 {
     const auto it = imp_->groups_.find(type);
@@ -424,7 +424,7 @@ auto ContactSection::Size() const -> std::size_t
     return imp_->groups_.size();
 }
 
-auto ContactSection::Type() const -> const contact::ContactSectionName&
+auto ContactSection::Type() const -> const contact::SectionType&
 {
     return imp_->section_;
 }

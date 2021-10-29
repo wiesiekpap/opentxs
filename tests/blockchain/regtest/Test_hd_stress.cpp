@@ -41,8 +41,8 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -85,7 +85,7 @@ protected:
     const std::string expected_notary_name_;
     const std::string memo_outgoing_;
     const ot::AccountType expected_account_type_;
-    const ot::contact::ContactItemType expected_unit_type_;
+    const ot::core::UnitType expected_unit_type_;
     const Generator mine_to_alice_;
     ScanListener& listener_alice_;
     ScanListener& listener_bob_;
@@ -212,7 +212,7 @@ protected:
         , expected_notary_name_(u8"Unit Test Simulation")
         , memo_outgoing_("memo for outgoing transaction")
         , expected_account_type_(ot::AccountType::Blockchain)
-        , expected_unit_type_(ot::contact::ContactItemType::Regtest)
+        , expected_unit_type_(ot::core::UnitType::Regtest)
         , mine_to_alice_([&](Height height) -> Transaction {
             using OutputBuilder = ot::api::Factory::OutputBuilder;
 

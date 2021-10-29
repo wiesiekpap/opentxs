@@ -26,7 +26,7 @@
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/contact/Contact.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -55,7 +55,7 @@ using namespace opentxs;
 #define UNIT_DEFINITION_TLA "USD"
 #define UNIT_DEFINITION_POWER 2
 #define UNIT_DEFINITION_FRACTIONAL_UNIT_NAME "cents"
-#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::contact::ContactItemType::USD
+#define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
 #define CHEQUE_AMOUNT_1 2000
 #define CHEQUE_MEMO_1 "memo"
 
@@ -192,16 +192,16 @@ TEST_F(Test_DepositCheques, payment_codes)
     auto bob = bob_client_.Wallet().mutable_Nym(bob_nym_id_, reasonB);
     auto issuer = issuer_client_.Wallet().mutable_Nym(issuer_nym_id_, reasonI);
 
-    EXPECT_EQ(ot::contact::ContactItemType::Individual, alice.Type());
-    EXPECT_EQ(ot::contact::ContactItemType::Individual, bob.Type());
-    EXPECT_EQ(ot::contact::ContactItemType::Individual, issuer.Type());
+    EXPECT_EQ(ot::contact::ClaimType::Individual, alice.Type());
+    EXPECT_EQ(ot::contact::ClaimType::Individual, bob.Type());
+    EXPECT_EQ(ot::contact::ClaimType::Individual, issuer.Type());
 
-    auto aliceScopeSet = alice.SetScope(
-        ot::contact::ContactItemType::Individual, ALEX, true, reasonA);
+    auto aliceScopeSet =
+        alice.SetScope(ot::contact::ClaimType::Individual, ALEX, true, reasonA);
     auto bobScopeSet =
-        bob.SetScope(contact::ContactItemType::Individual, BOB, true, reasonB);
-    auto issuerScopeSet = issuer.SetScope(
-        contact::ContactItemType::Individual, ISSUER, true, reasonI);
+        bob.SetScope(contact::ClaimType::Individual, BOB, true, reasonB);
+    auto issuerScopeSet =
+        issuer.SetScope(contact::ClaimType::Individual, ISSUER, true, reasonI);
 
     EXPECT_TRUE(aliceScopeSet);
     EXPECT_TRUE(bobScopeSet);
@@ -220,48 +220,24 @@ TEST_F(Test_DepositCheques, payment_codes)
     EXPECT_FALSE(issuer_payment_code_.empty());
 
     alice.AddPaymentCode(
-        alice_payment_code_,
-        ot::contact::ContactItemType::BTC,
-        true,
-        true,
-        reasonA);
+        alice_payment_code_, ot::core::UnitType::BTC, true, true, reasonA);
     bob.AddPaymentCode(
-        bob_payment_code_,
-        ot::contact::ContactItemType::BTC,
-        true,
-        true,
-        reasonB);
+        bob_payment_code_, ot::core::UnitType::BTC, true, true, reasonB);
     issuer.AddPaymentCode(
-        issuer_payment_code_,
-        ot::contact::ContactItemType::BTC,
-        true,
-        true,
-        reasonI);
+        issuer_payment_code_, ot::core::UnitType::BTC, true, true, reasonI);
     alice.AddPaymentCode(
-        alice_payment_code_,
-        ot::contact::ContactItemType::BCH,
-        true,
-        true,
-        reasonA);
+        alice_payment_code_, ot::core::UnitType::BCH, true, true, reasonA);
     bob.AddPaymentCode(
-        bob_payment_code_,
-        ot::contact::ContactItemType::BCH,
-        true,
-        true,
-        reasonB);
+        bob_payment_code_, ot::core::UnitType::BCH, true, true, reasonB);
     issuer.AddPaymentCode(
-        issuer_payment_code_,
-        ot::contact::ContactItemType::BCH,
-        true,
-        true,
-        reasonI);
+        issuer_payment_code_, ot::core::UnitType::BCH, true, true, reasonI);
 
-    EXPECT_FALSE(alice.PaymentCode(contact::ContactItemType::BTC).empty());
-    EXPECT_FALSE(bob.PaymentCode(contact::ContactItemType::BTC).empty());
-    EXPECT_FALSE(issuer.PaymentCode(contact::ContactItemType::BTC).empty());
-    EXPECT_FALSE(alice.PaymentCode(contact::ContactItemType::BCH).empty());
-    EXPECT_FALSE(bob.PaymentCode(contact::ContactItemType::BCH).empty());
-    EXPECT_FALSE(issuer.PaymentCode(contact::ContactItemType::BCH).empty());
+    EXPECT_FALSE(alice.PaymentCode(core::UnitType::BTC).empty());
+    EXPECT_FALSE(bob.PaymentCode(core::UnitType::BTC).empty());
+    EXPECT_FALSE(issuer.PaymentCode(core::UnitType::BTC).empty());
+    EXPECT_FALSE(alice.PaymentCode(core::UnitType::BCH).empty());
+    EXPECT_FALSE(bob.PaymentCode(core::UnitType::BCH).empty());
+    EXPECT_FALSE(issuer.PaymentCode(core::UnitType::BCH).empty());
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
     alice.Release();
@@ -371,11 +347,7 @@ TEST_F(Test_DepositCheques, issue_dollars)
             issuer_client_.Wallet().mutable_Nym(issuer_nym_id_, reasonI);
         issuer.AddPreferredOTServer(server_1_.ID().str(), true, reasonI);
         issuer.AddContract(
-            unit_id_->str(),
-            contact::ContactItemType::USD,
-            true,
-            true,
-            reasonI);
+            unit_id_->str(), core::UnitType::USD, true, true, reasonI);
     }
 
     auto task = issuer_client_.OTX().IssueUnitDefinition(

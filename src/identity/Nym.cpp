@@ -26,7 +26,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -69,7 +69,7 @@ namespace opentxs
 auto Factory::Nym(
     const api::Core& api,
     const NymParameters& params,
-    const contact::ContactItemType type,
+    const contact::ClaimType type,
     const std::string name,
     const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*
 {
@@ -96,7 +96,7 @@ auto Factory::Nym(
             return nullptr;
         }
 
-        if (contact::ContactItemType::Error != type && !name.empty()) {
+        if (contact::ClaimType::Error != type && !name.empty()) {
             const auto version =
                 ReturnType::contact_credential_to_contact_data_version_.at(
                     identity::internal::Authority::NymToContactCredential(
@@ -320,7 +320,7 @@ auto Nym::AddClaim(const Claim& claim, const opentxs::PasswordPrompt& reason)
 
 auto Nym::AddContract(
     const identifier::UnitDefinition& instrumentDefinitionID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -379,7 +379,7 @@ auto Nym::AddEmail(
 
 auto Nym::AddPaymentCode(
     const opentxs::PaymentCode& code,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -465,7 +465,7 @@ auto Nym::AddPreferredOTServer(
 
 auto Nym::AddSocialMediaProfile(
     const std::string& value,
-    const contact::ContactItemType type,
+    const contact::ClaimType type,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -548,7 +548,7 @@ auto Nym::BestPhoneNumber() const -> std::string
     return contact_data_->BestPhoneNumber();
 }
 
-auto Nym::BestSocialMediaProfile(const contact::ContactItemType type) const
+auto Nym::BestSocialMediaProfile(const contact::ClaimType type) const
     -> std::string
 {
     eLock lock(shared_lock_);
@@ -593,9 +593,8 @@ auto Nym::ContactCredentialVersion() const -> VersionNumber
     return active_.cbegin()->second->ContactCredentialVersion();
 }
 
-auto Nym::Contracts(
-    const contact::ContactItemType currency,
-    const bool onlyActive) const -> std::set<OTIdentifier>
+auto Nym::Contracts(const core::UnitType currency, const bool onlyActive) const
+    -> std::set<OTIdentifier>
 {
     eLock lock(shared_lock_);
 
@@ -1436,7 +1435,7 @@ auto Nym::SetContactData(
 }
 
 auto Nym::SetScope(
-    const contact::ContactItemType type,
+    const contact::ClaimType type,
     const std::string& name,
     const opentxs::PasswordPrompt& reason,
     const bool primary) -> bool
@@ -1445,7 +1444,7 @@ auto Nym::SetScope(
 
     if (false == bool(contact_data_)) { init_claims(lock); }
 
-    if (contact::ContactItemType::Unknown != contact_data_->Type()) {
+    if (contact::ClaimType::Unknown != contact_data_->Type()) {
         // NOLINTNEXTLINE(modernize-make-unique)
         contact_data_.reset(
             new ContactData(contact_data_->SetName(name, primary)));
@@ -1510,8 +1509,8 @@ auto Nym::Sign(
     return haveSig;
 }
 
-auto Nym::SocialMediaProfiles(const contact::ContactItemType type, bool active)
-    const -> std::string
+auto Nym::SocialMediaProfiles(const contact::ClaimType type, bool active) const
+    -> std::string
 {
     eLock lock(shared_lock_);
 
@@ -1522,8 +1521,7 @@ auto Nym::SocialMediaProfiles(const contact::ContactItemType type, bool active)
     return contact_data_->SocialMediaProfiles(type, active);
 }
 
-auto Nym::SocialMediaProfileTypes() const
-    -> const std::set<contact::ContactItemType>
+auto Nym::SocialMediaProfileTypes() const -> const std::set<contact::ClaimType>
 {
     eLock lock(shared_lock_);
 

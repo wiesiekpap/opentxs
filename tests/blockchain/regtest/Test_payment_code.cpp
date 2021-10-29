@@ -43,7 +43,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -601,7 +601,7 @@ TEST_F(Regtest_payment_code, alice_activity_thread_first_spend_unconfirmed)
         bob_.payment_code_,
         "",
         contact.str(),
-        {{ot::contact::ContactItemType::Regtest, bob_.payment_code_}},
+        {{ot::core::UnitType::Regtest, bob_.payment_code_}},
         {
             {
                 false,
@@ -724,7 +724,7 @@ TEST_F(Regtest_payment_code, bob_activity_thread_first_unconfirmed_incoming)
         alice_.payment_code_,
         "",
         contact.str(),
-        {{ot::contact::ContactItemType::Regtest, alice_.payment_code_}},
+        {{ot::core::UnitType::Regtest, alice_.payment_code_}},
         {
             {
                 false,
@@ -1411,7 +1411,7 @@ TEST_F(Regtest_payment_code, alice_activity_thread_second_spend_unconfirmed)
         bob_.payment_code_,
         "",
         contact.str(),
-        {{ot::contact::ContactItemType::Regtest, bob_.payment_code_}},
+        {{ot::core::UnitType::Regtest, bob_.payment_code_}},
         {
             {
                 false,
@@ -1656,7 +1656,7 @@ TEST_F(Regtest_payment_code, bob_activity_thread_second_unconfirmed_incoming)
         alice_.payment_code_,
         "",
         contact.str(),
-        {{ot::contact::ContactItemType::Regtest, alice_.payment_code_}},
+        {{ot::core::UnitType::Regtest, alice_.payment_code_}},
         {
             {
                 false,
@@ -1840,7 +1840,7 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_otx)
         bob_.name_,
         "",
         contact.str(),
-        {{ot::contact::ContactItemType::Regtest, bob_.payment_code_}},
+        {{ot::core::UnitType::Regtest, bob_.payment_code_}},
         {
             {
                 false,
@@ -2021,7 +2021,7 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_otx)
         alice_.name_,
         "",
         contact.str(),
-        {{ot::contact::ContactItemType::Regtest, alice_.payment_code_}},
+        {{ot::core::UnitType::Regtest, alice_.payment_code_}},
         {
             {
                 false,
@@ -2075,7 +2075,7 @@ TEST_F(Regtest_payment_code, alice_activity_thread_after_message)
         bob_.name_,
         "",
         contact.str(),
-        {{ot::contact::ContactItemType::Regtest, bob_.payment_code_}},
+        {{ot::core::UnitType::Regtest, bob_.payment_code_}},
         {
             {
                 false,
@@ -2133,7 +2133,7 @@ TEST_F(Regtest_payment_code, bob_activity_thread_after_message)
         alice_.name_,
         "",
         contact.str(),
-        {{ot::contact::ContactItemType::Regtest, alice_.payment_code_}},
+        {{ot::core::UnitType::Regtest, alice_.payment_code_}},
         {
             {
                 false,

@@ -3,8 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CONTACT_CONTACT_ITEM_ATTRIBUTE_HPP
-#define OPENTXS_CONTACT_CONTACT_ITEM_ATTRIBUTE_HPP
+#ifndef OPENTXS_CONTACT_ATTRIBUTE_HPP
+#define OPENTXS_CONTACT_ATTRIBUTE_HPP
 
 #include "opentxs/contact/Types.hpp"  // IWYU pragma: associated
 
@@ -14,7 +14,7 @@ namespace opentxs
 {
 namespace contact
 {
-enum class ContactItemAttribute : std::uint8_t {
+enum class Attribute : std::uint8_t {
     Error = 0,
     Active = 1,
     Primary = 2,

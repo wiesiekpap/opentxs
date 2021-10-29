@@ -39,7 +39,7 @@ public:
     virtual auto NotaryID() const noexcept -> std::string = 0;
     virtual auto NotaryName() const noexcept -> std::string = 0;
     virtual auto Type() const noexcept -> AccountType = 0;
-    virtual auto Unit() const noexcept -> contact::ContactItemType = 0;
+    virtual auto Unit() const noexcept -> core::UnitType = 0;
 
     ~AccountListItem() override = default;
 

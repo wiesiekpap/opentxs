@@ -12,6 +12,7 @@
 
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/ui/List.hpp"
 
 namespace opentxs
@@ -73,7 +74,7 @@ public:
     virtual auto SyncPercentage() const noexcept -> double = 0;
     virtual auto SyncProgress() const noexcept -> std::pair<int, int> = 0;
     virtual auto Type() const noexcept -> AccountType = 0;
-    virtual auto Unit() const noexcept -> contact::ContactItemType = 0;
+    virtual auto Unit() const noexcept -> core::UnitType = 0;
     virtual auto ValidateAddress(const std::string& text) const noexcept
         -> bool = 0;
     virtual auto ValidateAmount(const std::string& text) const noexcept

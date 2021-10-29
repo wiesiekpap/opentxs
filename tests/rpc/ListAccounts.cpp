@@ -16,7 +16,7 @@
 #include "opentxs/api/Storage.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/server/Manager.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
@@ -85,7 +85,7 @@ TEST_F(RPC_fixture, preconditions)
             "USD",
             "cents",
             2,
-            ot::contact::ContactItemType::USD);
+            ot::core::UnitType::USD);
         const auto unit2 = IssueUnit(
             session,
             server2,
@@ -97,7 +97,7 @@ TEST_F(RPC_fixture, preconditions)
             "BTC",
             "satoshis",
             8,
-            ot::contact::ContactItemType::BTC);
+            ot::core::UnitType::BTC);
 
         EXPECT_FALSE(unit1.empty());
         EXPECT_FALSE(unit2.empty());

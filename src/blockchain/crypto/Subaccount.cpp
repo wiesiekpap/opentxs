@@ -16,7 +16,7 @@
 #include <utility>
 
 #include "internal/api/client/Client.hpp"
-#include "internal/contact/Contact.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
@@ -92,7 +92,7 @@ Subaccount::Subaccount(
           convert(serialized.spent()),
           out)
 {
-    if (Translate(contact::internal::translate(serialized.chain())) != chain_) {
+    if (Translate(core::internal::translate(serialized.chain())) != chain_) {
         throw std::runtime_error("Wrong account type");
     }
 }
@@ -285,7 +285,7 @@ auto Subaccount::serialize_common(
     out.set_version(BlockchainAccountDataVersion);
     out.set_id(id_->str());
     out.set_revision(revision_.load());
-    out.set_chain(contact::internal::translate(Translate(chain_)));
+    out.set_chain(core::internal::translate(Translate(chain_)));
 
     for (const auto& [coin, data] : unspent_) {
         auto converted = Activity{coin, data.first, data.second};

@@ -20,8 +20,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/Profile.hpp"
 #include "ui/base/List.hpp"
@@ -74,13 +74,13 @@ class Profile final : public ProfileList
 {
 public:
     auto AddClaim(
-        const contact::ContactSectionName section,
-        const contact::ContactItemType type,
+        const contact::SectionType section,
+        const contact::ClaimType type,
         const std::string& value,
         const bool primary,
         const bool active) const noexcept -> bool final;
     auto AllowedItems(
-        const contact::ContactSectionName section,
+        const contact::SectionType section,
         const std::string& lang) const noexcept -> ItemTypeList final;
     auto AllowedSections(const std::string& lang) const noexcept
         -> SectionTypeList final;
@@ -129,13 +129,11 @@ private:
     std::string name_;
     std::string payment_code_;
 
-    static const std::set<contact::ContactSectionName> allowed_types_;
-    static const std::map<contact::ContactSectionName, int> sort_keys_;
+    static const std::set<contact::SectionType> allowed_types_;
+    static const std::map<contact::SectionType, int> sort_keys_;
 
-    static auto sort_key(const contact::ContactSectionName type) noexcept
-        -> int;
-    static auto check_type(const contact::ContactSectionName type) noexcept
-        -> bool;
+    static auto sort_key(const contact::SectionType type) noexcept -> int;
+    static auto check_type(const contact::SectionType type) noexcept -> bool;
     static auto nym_name(
         const api::Wallet& wallet,
         const identifier::Nym& nymID) noexcept -> std::string;

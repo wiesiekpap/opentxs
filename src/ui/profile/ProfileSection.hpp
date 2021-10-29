@@ -18,8 +18,8 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "ui/base/Combined.hpp"
@@ -74,7 +74,7 @@ class ProfileSection final
 {
 public:
     auto AddClaim(
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const std::string& value,
         const bool primary,
         const bool active) const noexcept -> bool final;
@@ -98,10 +98,7 @@ public:
         const int type,
         const std::string& claimID,
         const std::string& value) const noexcept -> bool final;
-    auto Type() const noexcept -> contact::ContactSectionName final
-    {
-        return row_id_;
-    }
+    auto Type() const noexcept -> contact::SectionType final { return row_id_; }
 
     ProfileSection(
         const ProfileInternalInterface& parent,

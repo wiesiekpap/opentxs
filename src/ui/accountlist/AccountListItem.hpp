@@ -14,7 +14,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -91,10 +91,7 @@ public:
         return notary_->EffectiveName();
     }
     auto Type() const noexcept -> AccountType final { return type_; }
-    auto Unit() const noexcept -> contact::ContactItemType final
-    {
-        return unit_;
-    }
+    auto Unit() const noexcept -> core::UnitType final { return unit_; }
 
     AccountListItem(
         const AccountListInternalInterface& parent,
@@ -107,7 +104,7 @@ public:
 
 private:
     const AccountType type_;
-    const contact::ContactItemType unit_;
+    const core::UnitType unit_;
     const OTUnitDefinition contract_;
     const OTServerContract notary_;
     Amount balance_;

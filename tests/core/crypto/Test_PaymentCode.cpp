@@ -21,8 +21,8 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -41,8 +41,8 @@ public:
     std::string seed, fingerprint, nymID_0, paycode_0, nymID_1, paycode_1,
         nymID_2, paycode_2, nymID_3, paycode_3;
     ot::NymData nymData_0, nymData_1, nymData_2, nymData_3;
-    contact::ContactItemType currency = ot::contact::ContactItemType::BCH;
-    contact::ContactItemType currency_2 = ot::contact::ContactItemType::BTC;
+    core::UnitType currency = ot::core::UnitType::BCH;
+    core::UnitType currency_2 = ot::core::UnitType::BTC;
 
     /* Is evaluated every test, therefore indexes are fixed to 0,1,2,3 */
     Test_PaymentCode()

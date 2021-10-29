@@ -4,7 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
-// IWYU pragma: no_include "opentxs/blockchain/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/ClaimType.hpp"
 
 #ifndef OPENTXS_API_CLIENT_CONTACTS_HPP
 #define OPENTXS_API_CLIENT_CONTACTS_HPP
@@ -16,7 +16,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Types.hpp"
 
 namespace opentxs
 {
@@ -49,7 +49,7 @@ public:
         -> std::string = 0;
     virtual auto ContactName(
         const Identifier& contactID,
-        contact::ContactItemType currencyHint) const -> std::string = 0;
+        core::UnitType currencyHint) const -> std::string = 0;
     virtual auto Merge(const Identifier& parent, const Identifier& child) const
         -> std::shared_ptr<const opentxs::Contact> = 0;
     virtual auto mutable_Contact(const Identifier& id) const

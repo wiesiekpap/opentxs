@@ -24,7 +24,7 @@
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -49,13 +49,13 @@ auto ContactModel(
 
 namespace opentxs::ui::implementation
 {
-const std::set<contact::ContactSectionName> Contact::allowed_types_{
-    contact::ContactSectionName::Communication,
-    contact::ContactSectionName::Profile};
+const std::set<contact::SectionType> Contact::allowed_types_{
+    contact::SectionType::Communication,
+    contact::SectionType::Profile};
 
-const std::map<contact::ContactSectionName, int> Contact::sort_keys_{
-    {contact::ContactSectionName::Communication, 0},
-    {contact::ContactSectionName::Profile, 1}};
+const std::map<contact::SectionType, int> Contact::sort_keys_{
+    {contact::SectionType::Communication, 0},
+    {contact::SectionType::Profile, 1}};
 
 Contact::Contact(
     const api::client::Manager& api,
@@ -77,8 +77,7 @@ Contact::Contact(
     OT_ASSERT(startup_)
 }
 
-auto Contact::check_type(const contact::ContactSectionName type) noexcept
-    -> bool
+auto Contact::check_type(const contact::SectionType type) noexcept -> bool
 {
     return 1 == allowed_types_.count(type);
 }
@@ -200,7 +199,7 @@ auto Contact::SetCallbacks(Callbacks&& cb) noexcept -> void
     callbacks_.cb_ = std::move(cb);
 }
 
-auto Contact::sort_key(const contact::ContactSectionName type) noexcept -> int
+auto Contact::sort_key(const contact::SectionType type) noexcept -> int
 {
     return sort_keys_.at(type);
 }

@@ -19,8 +19,8 @@
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Flag.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/protobuf/StorageNym.pb.h"
@@ -63,10 +63,10 @@ namespace opentxs::storage
 class Nym final : public Node
 {
 public:
-    auto BlockchainAccountList(const contact::ContactItemType type) const
+    auto BlockchainAccountList(const core::UnitType type) const
         -> std::set<std::string>;
     auto BlockchainAccountType(const std::string& accountID) const
-        -> contact::ContactItemType;
+        -> core::UnitType;
 
     auto Bip47Channels() const -> const storage::Bip47Channels&;
     auto Contexts() const -> const storage::Contexts&;
@@ -121,9 +121,7 @@ public:
     auto Migrate(const Driver& to) const -> bool final;
 
     auto SetAlias(const std::string& alias) -> bool;
-    auto Store(
-        const contact::ContactItemType type,
-        const proto::HDAccount& data) -> bool;
+    auto Store(const core::UnitType type, const proto::HDAccount& data) -> bool;
     auto Store(
         const proto::Nym& data,
         const std::string& alias,
@@ -185,9 +183,8 @@ private:
     mutable std::unique_ptr<storage::Contexts> contexts_;
     std::string contexts_root_;
     mutable std::mutex blockchain_lock_;
-    std::map<contact::ContactItemType, std::set<std::string>>
-        blockchain_account_types_{};
-    std::map<std::string, contact::ContactItemType> blockchain_account_index_;
+    std::map<core::UnitType, std::set<std::string>> blockchain_account_types_{};
+    std::map<std::string, core::UnitType> blockchain_account_index_;
     std::map<std::string, std::shared_ptr<proto::HDAccount>>
         blockchain_accounts_{};
     std::string issuers_root_;

@@ -76,7 +76,7 @@ public:
     static auto Factory(const Contract& contract)
         -> opentxs::Pimpl<opentxs::Identifier>;
     OPENTXS_NO_EXPORT static auto Factory(
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const proto::HDPath& path) -> opentxs::Pimpl<opentxs::Identifier>;
     static auto Validate(const std::string& id) -> bool;
 

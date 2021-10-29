@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
@@ -61,7 +62,7 @@ public:
     virtual auto toString() const -> std::string = 0;
 
     virtual auto AccountList(
-        const contact::ContactItemType type,
+        const core::UnitType type,
         const identifier::UnitDefinition& unitID) const
         -> std::set<OTIdentifier> = 0;
     virtual auto BailmentInitiated(
@@ -92,7 +93,7 @@ public:
     virtual auto StoreSecretInitiated() const -> bool = 0;
 
     virtual void AddAccount(
-        const contact::ContactItemType type,
+        const core::UnitType type,
         const identifier::UnitDefinition& unitID,
         const Identifier& accountID) = 0;
     virtual auto AddReply(
@@ -103,7 +104,7 @@ public:
         const contract::peer::PeerRequestType type,
         const Identifier& requestID) -> bool = 0;
     virtual auto RemoveAccount(
-        const contact::ContactItemType type,
+        const core::UnitType type,
         const identifier::UnitDefinition& unitID,
         const Identifier& accountID) -> bool = 0;
     virtual void SetPaired(const bool paired) = 0;

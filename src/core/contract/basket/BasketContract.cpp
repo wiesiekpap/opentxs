@@ -45,7 +45,7 @@ auto Factory::BasketContract(
     const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version) noexcept
     -> std::shared_ptr<contract::unit::Basket>
 {
@@ -154,7 +154,7 @@ Basket::Basket(
     const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version)
     : Unit(api, nym, shortname, name, symbol, terms, unitOfAccount, version)
     , subcontracts_()

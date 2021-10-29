@@ -14,7 +14,7 @@
 #include "core/contract/Signable.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
@@ -97,7 +97,7 @@ public:
         const std::string& str_decimal) const -> bool override;
     auto TLA() const -> std::string override { return short_name_; }
     auto Type() const -> contract::UnitType override = 0;
-    auto UnitOfAccount() const -> contact::ContactItemType override
+    auto UnitOfAccount() const -> core::UnitType override
     {
         return unit_of_account_;
     }
@@ -116,7 +116,7 @@ public:
 
 protected:
     const std::string primary_unit_symbol_;
-    const contact::ContactItemType unit_of_account_;
+    const core::UnitType unit_of_account_;
 
     virtual auto IDVersion(const Lock& lock) const -> SerializedType;
     virtual auto SigVersion(const Lock& lock) const -> SerializedType;
@@ -132,7 +132,7 @@ protected:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version);
     Unit(
         const api::Core& api,

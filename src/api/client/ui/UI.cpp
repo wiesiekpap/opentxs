@@ -53,7 +53,7 @@ auto UI::AccountListQt(const identifier::Nym& nym, const SimpleCallback cb)
 
 auto UI::AccountSummary(
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback cb) const noexcept
     -> const opentxs::ui::AccountSummary&
 {
@@ -62,7 +62,7 @@ auto UI::AccountSummary(
 
 auto UI::AccountSummaryQt(
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback cb) const noexcept -> opentxs::ui::AccountSummaryQt*
 {
     return imp_->AccountSummaryQt(nymID, currency, cb);
@@ -206,7 +206,7 @@ auto UI::MessagableListQt(const identifier::Nym& nymID, const SimpleCallback cb)
 
 auto UI::PayableList(
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback cb) const noexcept -> const opentxs::ui::PayableList&
 {
     return imp_->PayableList(nymID, currency, cb);
@@ -214,7 +214,7 @@ auto UI::PayableList(
 
 auto UI::PayableListQt(
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback cb) const noexcept -> opentxs::ui::PayableListQt*
 {
     return imp_->PayableListQt(nymID, currency, cb);

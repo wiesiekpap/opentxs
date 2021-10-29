@@ -19,7 +19,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -84,18 +84,16 @@ private:
         Callbacks cb_{};
     };
 
-    static const std::set<contact::ContactSectionName> allowed_types_;
-    static const std::map<contact::ContactSectionName, int> sort_keys_;
+    static const std::set<contact::SectionType> allowed_types_;
+    static const std::map<contact::SectionType, int> sort_keys_;
 
     const ListenerDefinitions listeners_;
     mutable CallbackHolder callbacks_;
     std::string name_;
     std::string payment_code_;
 
-    static auto sort_key(const contact::ContactSectionName type) noexcept
-        -> int;
-    static auto check_type(const contact::ContactSectionName type) noexcept
-        -> bool;
+    static auto sort_key(const contact::SectionType type) noexcept -> int;
+    static auto check_type(const contact::SectionType type) noexcept -> bool;
 
     auto construct_row(
         const ContactRowID& id,

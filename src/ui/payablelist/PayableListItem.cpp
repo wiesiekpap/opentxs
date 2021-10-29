@@ -24,7 +24,7 @@ auto PayableListItem(
     const ui::implementation::PayableListRowID& rowID,
     const ui::implementation::PayableListSortKey& key,
     const std::string& paymentcode,
-    const contact::ContactItemType& currency) noexcept
+    const core::UnitType& currency) noexcept
     -> std::shared_ptr<ui::implementation::PayableListRowInternal>
 {
     using ReturnType = ui::implementation::PayableListItem;
@@ -42,7 +42,7 @@ PayableListItem::PayableListItem(
     const PayableListRowID& rowID,
     const PayableListSortKey& key,
     const std::string& paymentcode,
-    const contact::ContactItemType& currency) noexcept
+    const core::UnitType& currency) noexcept
     : ot_super(parent, api, rowID, key)
     , payment_code_(paymentcode)
     , currency_(currency)

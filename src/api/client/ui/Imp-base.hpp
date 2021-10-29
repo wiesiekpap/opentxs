@@ -24,7 +24,7 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -158,12 +158,12 @@ public:
     }
     auto AccountSummary(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback cb) const noexcept
         -> const opentxs::ui::AccountSummary&;
     virtual auto AccountSummaryQt(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::AccountSummaryQt*
     {
@@ -261,12 +261,12 @@ public:
     }
     auto PayableList(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback cb) const noexcept
         -> const opentxs::ui::PayableList&;
     virtual auto PayableListQt(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback cb) const noexcept -> opentxs::ui::PayableListQt*
     {
         return nullptr;
@@ -310,7 +310,7 @@ protected:
     using AccountActivityKey = std::pair<OTNymID, OTIdentifier>;
     using AccountListKey = OTNymID;
     /** NymID, currency*/
-    using AccountSummaryKey = std::pair<OTNymID, contact::ContactItemType>;
+    using AccountSummaryKey = std::pair<OTNymID, core::UnitType>;
     using ActivitySummaryKey = OTNymID;
     using ActivityThreadKey = std::pair<OTNymID, OTIdentifier>;
     using BlockchainAccountStatusKey = std::pair<OTNymID, blockchain::Type>;
@@ -318,7 +318,7 @@ protected:
     using ContactListKey = OTNymID;
     using MessagableListKey = OTNymID;
     /** NymID, currency*/
-    using PayableListKey = std::pair<OTNymID, contact::ContactItemType>;
+    using PayableListKey = std::pair<OTNymID, core::UnitType>;
     using ProfileKey = OTNymID;
     using UnitListKey = OTNymID;
 
@@ -402,7 +402,7 @@ protected:
     auto account_summary(
         const Lock& lock,
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback& cb) const noexcept
         -> AccountSummaryMap::mapped_type&;
     auto activity_summary(
@@ -448,7 +448,7 @@ protected:
     auto payable_list(
         const Lock& lock,
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback& cb) const noexcept
         -> PayableListMap::mapped_type&;
     auto profile(

@@ -19,7 +19,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Editor.hpp"
 #include "opentxs/blind/CashType.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
@@ -265,8 +265,8 @@ public:
         const PasswordPrompt& reason,
         const std::string name = "",
         const NymParameters& parameters = {},
-        const contact::ContactItemType type =
-            contact::ContactItemType::Individual) const -> Nym_p = 0;
+        const contact::ClaimType type = contact::ClaimType::Individual) const
+        -> Nym_p = 0;
 
     virtual auto mutable_Nym(
         const identifier::Nym& id,
@@ -721,7 +721,7 @@ public:
         const std::string& tla,
         const std::uint32_t power,
         const std::string& fraction,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         noexcept(false) -> OTUnitDefinition = 0;
@@ -742,14 +742,14 @@ public:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         noexcept(false) -> OTUnitDefinition = 0;
 
     virtual auto CurrencyTypeBasedOnUnitType(
         const identifier::UnitDefinition& contractID) const
-        -> contact::ContactItemType = 0;
+        -> core::UnitType = 0;
 
     OPENTXS_NO_EXPORT virtual auto LoadCredential(
         const std::string& id,

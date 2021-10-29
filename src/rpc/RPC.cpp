@@ -24,6 +24,7 @@
 #include "2_Factory.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/Exclusive.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
@@ -50,7 +51,7 @@
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OT_API.hpp"
 #include "opentxs/contact/Contact.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
@@ -603,7 +604,7 @@ auto RPC::create_issuer_account(const proto::RPCCommand& command) const
         ownerID,
         notaryID,
         unitID,
-        contact::ContactItemType::Error,
+        core::UnitType::Error,
         label);
 
     if (false == ready) {
@@ -691,7 +692,7 @@ auto RPC::create_unit_definition(const proto::RPCCommand& command) const
             createunit.tla(),
             createunit.power(),
             createunit.fractionalunitname(),
-            contact::internal::translate(createunit.unitofaccount()),
+            core::internal::translate(createunit.unitofaccount()),
             reason);
 
         output.add_identifier(unitdefinition->ID()->str());

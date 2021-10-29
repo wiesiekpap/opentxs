@@ -17,7 +17,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -79,7 +79,7 @@ public:
     auto Name() const noexcept -> std::string final;
     auto NotaryID() const noexcept -> std::string final;
     auto NotaryName() const noexcept -> std::string final;
-    auto Unit() const noexcept -> contact::ContactItemType final;
+    auto Unit() const noexcept -> core::UnitType final;
 
     CustodialAccountActivity(
         const api::client::Manager& api,

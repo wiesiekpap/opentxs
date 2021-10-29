@@ -31,7 +31,7 @@ class OPENTXS_EXPORT UnitListItem : virtual public ListRow
 {
 public:
     virtual auto Name() const noexcept -> std::string = 0;
-    virtual auto Unit() const noexcept -> contact::ContactItemType = 0;
+    virtual auto Unit() const noexcept -> core::UnitType = 0;
 
     ~UnitListItem() override = default;
 

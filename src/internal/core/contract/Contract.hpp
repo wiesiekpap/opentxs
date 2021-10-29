@@ -201,7 +201,7 @@ struct Unit final : virtual public opentxs::contract::Unit, public Signable {
     }
     auto TLA() const -> std::string final { return {}; }
     auto Type() const -> contract::UnitType final { return {}; }
-    auto UnitOfAccount() const -> contact::ContactItemType final { return {}; }
+    auto UnitOfAccount() const -> core::UnitType final { return {}; }
     auto VisitAccountRecords(
         const std::string&,
         AccountVisitor&,

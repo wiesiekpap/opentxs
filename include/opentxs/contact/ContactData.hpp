@@ -6,8 +6,8 @@
 #ifndef OPENTXS_CONTACT_CONTACTDATA_HPP
 #define OPENTXS_CONTACT_CONTACTDATA_HPP
 
-// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
-// IWYU pragma: no_include "opentxs/contact/ContactSectionName.hpp"
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/contact/SectionType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -22,6 +22,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 
 namespace opentxs
@@ -47,7 +48,7 @@ class OPENTXS_EXPORT ContactData
 {
 public:
     using SectionMap =
-        std::map<contact::ContactSectionName, std::shared_ptr<ContactSection>>;
+        std::map<contact::SectionType, std::shared_ptr<ContactSection>>;
 
     OPENTXS_NO_EXPORT static auto PrintContactData(
         const proto::ContactData& data) -> std::string;
@@ -76,7 +77,7 @@ public:
 
     auto AddContract(
         const std::string& instrumentDefinitionID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const bool primary,
         const bool active) const -> ContactData;
     auto AddEmail(
@@ -87,7 +88,7 @@ public:
     auto AddItem(const std::shared_ptr<ContactItem>& item) const -> ContactData;
     auto AddPaymentCode(
         const std::string& code,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const bool primary,
         const bool active) const -> ContactData;
     auto AddPhoneNumber(
@@ -98,34 +99,32 @@ public:
         -> ContactData;
     auto AddSocialMediaProfile(
         const std::string& value,
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const bool primary,
         const bool active) const -> ContactData;
     auto begin() const -> SectionMap::const_iterator;
     auto BestEmail() const -> std::string;
     auto BestPhoneNumber() const -> std::string;
-    auto BestSocialMediaProfile(const contact::ContactItemType type) const
+    auto BestSocialMediaProfile(const contact::ClaimType type) const
         -> std::string;
     auto Claim(const Identifier& item) const -> std::shared_ptr<ContactItem>;
-    auto Contracts(
-        const contact::ContactItemType currency,
-        const bool onlyActive) const -> std::set<OTIdentifier>;
+    auto Contracts(const core::UnitType currency, const bool onlyActive) const
+        -> std::set<OTIdentifier>;
     auto Delete(const Identifier& id) const -> ContactData;
     auto EmailAddresses(bool active = true) const -> std::string;
     auto end() const -> SectionMap::const_iterator;
     auto Group(
-        const contact::ContactSectionName& section,
-        const contact::ContactItemType& type) const
-        -> std::shared_ptr<ContactGroup>;
+        const contact::SectionType& section,
+        const contact::ClaimType& type) const -> std::shared_ptr<ContactGroup>;
     auto HaveClaim(const Identifier& item) const -> bool;
     auto HaveClaim(
-        const contact::ContactSectionName& section,
-        const contact::ContactItemType& type,
+        const contact::SectionType& section,
+        const contact::ClaimType& type,
         const std::string& value) const -> bool;
     auto Name() const -> std::string;
     auto PhoneNumbers(bool active = true) const -> std::string;
     auto PreferredOTServer() const -> OTServerID;
-    auto Section(const contact::ContactSectionName& section) const
+    auto Section(const contact::SectionType& section) const
         -> std::shared_ptr<ContactSection>;
     auto Serialize(AllocateOutput destination, const bool withID = false) const
         -> bool;
@@ -135,14 +134,12 @@ public:
     auto SetCommonName(const std::string& name) const -> ContactData;
     auto SetName(const std::string& name, const bool primary = true) const
         -> ContactData;
-    auto SetScope(const contact::ContactItemType type, const std::string& name)
-        const -> ContactData;
-    auto SocialMediaProfiles(
-        const contact::ContactItemType type,
-        bool active = true) const -> std::string;
-    auto SocialMediaProfileTypes() const
-        -> const std::set<contact::ContactItemType>;
-    auto Type() const -> contact::ContactItemType;
+    auto SetScope(const contact::ClaimType type, const std::string& name) const
+        -> ContactData;
+    auto SocialMediaProfiles(const contact::ClaimType type, bool active = true)
+        const -> std::string;
+    auto SocialMediaProfileTypes() const -> const std::set<contact::ClaimType>;
+    auto Type() const -> contact::ClaimType;
     auto Version() const -> VersionNumber;
 
     ~ContactData();

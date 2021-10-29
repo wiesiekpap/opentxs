@@ -8,6 +8,7 @@
 #include "opentxs/blind/Token.hpp"
 #include "opentxs/blind/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
@@ -410,7 +411,7 @@ public:
         const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version) noexcept
         -> std::shared_ptr<contract::unit::Basket>;
     static auto BasketContract(
@@ -497,7 +498,7 @@ public:
         const std::string& tla,
         const std::uint32_t power,
         const std::string& fraction,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::unit::Currency>;
@@ -549,7 +550,7 @@ public:
     static auto Nym(
         const api::Core& api,
         const NymParameters& nymParameters,
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const std::string name,
         const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*;
     static auto Nym(
@@ -691,7 +692,7 @@ public:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::unit::Security>;

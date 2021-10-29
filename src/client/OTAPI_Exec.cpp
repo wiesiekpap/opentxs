@@ -23,12 +23,12 @@
 #include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/client/OT_API.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/basket/Basket.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
@@ -2661,7 +2661,7 @@ auto OTAPI_Exec::GenerateBasketCreation(
             symbol,
             terms,
             weight,
-            contact::ContactItemType::Unknown,
+            core::UnitType::Unknown,
             version);
 
         auto serialized = proto::UnitDefinition{};
