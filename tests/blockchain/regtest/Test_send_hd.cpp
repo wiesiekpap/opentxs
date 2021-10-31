@@ -710,11 +710,20 @@ TEST_F(Regtest_fixture_hd, outgoing_transaction)
 
     const auto& chain = client_1_.Network().Blockchain().GetChain(test_chain_);
     const auto& wallet = chain.Wallet();
-    const auto tags = wallet.GetTags({transactions_.at(1)->Bytes(), 0});
     using Tag = ot::blockchain::node::TxoTag;
 
-    EXPECT_EQ(tags.size(), 1);
-    EXPECT_EQ(tags.count(Tag::Normal), 1);
+    {
+        const auto tags = wallet.GetTags({transactions_.at(1)->Bytes(), 0});
+
+        EXPECT_EQ(tags.size(), 2);
+        EXPECT_EQ(tags.count(Tag::Normal), 1);
+        EXPECT_EQ(tags.count(Tag::Change), 1);
+    }
+    {
+        const auto tags = wallet.GetTags({transactions_.at(1)->Bytes(), 1});
+
+        EXPECT_EQ(tags.size(), 0);
+    }
 }
 
 TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)

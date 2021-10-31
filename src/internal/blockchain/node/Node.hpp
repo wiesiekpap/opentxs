@@ -581,6 +581,11 @@ struct Wallet : virtual public node::Wallet {
     ~Wallet() override = default;
 };
 
+struct SpendPolicy {
+    bool unconfirmed_incoming_{false};
+    bool unconfirmed_change_{true};
+};
+
 struct WalletDatabase {
     using NodeID = Identifier;
     using pNodeID = OTIdentifier;
@@ -597,11 +602,6 @@ struct WalletDatabase {
         blockchain::block::Outpoint,
         std::unique_ptr<block::bitcoin::Output>>;
     using KeyID = blockchain::crypto::Key;
-
-    enum class Spend : bool {
-        ConfirmedOnly = false,
-        UnconfirmedToo = true,
-    };
 
     virtual auto AddConfirmedTransaction(
         const NodeID& balanceNode,
@@ -689,7 +689,7 @@ struct WalletDatabase {
     virtual auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& proposal,
-        const Spend policy) const noexcept -> std::optional<UTXO> = 0;
+        SpendPolicy& policy) const noexcept -> std::optional<UTXO> = 0;
     virtual auto StartReorg() const noexcept
         -> storage::lmdb::LMDB::Transaction = 0;
     virtual auto SubchainAddElements(

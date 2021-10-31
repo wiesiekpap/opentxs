@@ -203,6 +203,9 @@ struct BitcoinTransactionBuilder::Imp {
 
                 output.SetPayee(self_contact_);
                 output.SetPayer(self_contact_);
+                output.AddTag(TxoTag::Change);
+
+                if (isNotification) { output.AddTag(TxoTag::Notification); }
             }
 
             change_.emplace_back(std::move(pOutput));

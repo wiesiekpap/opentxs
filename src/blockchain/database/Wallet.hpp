@@ -129,7 +129,6 @@ public:
     using Patterns = Parent::Patterns;
     using MatchingIndices = Parent::MatchingIndices;
     using UTXO = Parent::UTXO;
-    using Spend = Parent::Spend;
 
     auto AddConfirmedTransaction(
         const NodeID& balanceNode,
@@ -202,7 +201,8 @@ public:
     auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& proposal,
-        const Spend policy) const noexcept -> std::optional<UTXO>;
+        node::internal::SpendPolicy& policy) const noexcept
+        -> std::optional<UTXO>;
     auto SubchainAddElements(
         const SubchainIndex& index,
         const ElementMap& elements) const noexcept -> bool;
