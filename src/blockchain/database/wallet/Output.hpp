@@ -100,7 +100,6 @@ public:
     using NodeID = Parent::NodeID;
     using Subchain = Parent::Subchain;
     using UTXO = Parent::UTXO;
-    using Spend = Parent::Spend;
 
     auto CancelProposal(const Identifier& id) noexcept -> bool;
     auto GetBalance() const noexcept -> Balance;
@@ -149,7 +148,7 @@ public:
     auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& proposal,
-        const Spend policy) noexcept -> std::optional<UTXO>;
+        node::internal::SpendPolicy& policy) noexcept -> std::optional<UTXO>;
     auto StartReorg(
         MDB_txn* tx,
         const SubchainID& subchain,

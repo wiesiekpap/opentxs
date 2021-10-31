@@ -486,9 +486,10 @@ TEST_F(Regtest_payment_code, first_outgoing_transaction)
         const auto tags = chain.Wallet().GetTags({tx.ID().Bytes(), 1});
         using Tag = ot::blockchain::node::TxoTag;
 
-        EXPECT_EQ(tags.size(), 2);
+        EXPECT_EQ(tags.size(), 3);
         EXPECT_EQ(tags.count(Tag::Normal), 1);
         EXPECT_EQ(tags.count(Tag::Notification), 1);
+        EXPECT_EQ(tags.count(Tag::Change), 1);
     }
 }
 

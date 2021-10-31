@@ -252,9 +252,8 @@ private:
         }
 
         while (false == builder.IsFunded()) {
-            using Spend = node::internal::WalletDatabase::Spend;
-            auto utxo =
-                db_.ReserveUTXO(builder.Spender(), id, Spend::ConfirmedOnly);
+            auto policy = node::internal::SpendPolicy{};
+            auto utxo = db_.ReserveUTXO(builder.Spender(), id, policy);
 
             if (false == utxo.has_value()) {
                 LogOutput(OT_METHOD)(__func__)(": Insufficient funds").Flush();

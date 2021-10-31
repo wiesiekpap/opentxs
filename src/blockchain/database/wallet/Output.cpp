@@ -967,13 +967,13 @@ struct Output::Imp {
     auto ReserveUTXO(
         const identifier::Nym& spender,
         const Identifier& id,
-        const Spend policy) noexcept -> std::optional<UTXO>
+        node::internal::SpendPolicy& policy) noexcept -> std::optional<UTXO>
     {
         auto output = std::optional<UTXO>{std::nullopt};
         auto lock = eLock{lock_};
 
         try {
-            // TODO implement smarter selection algorithms
+            // TODO implement smarter selection algorithm using policy
             auto tx = lmdb_.TransactionRW();
             const auto choose =
                 [&](const auto outpoint) -> std::optional<UTXO> {
@@ -1025,8 +1025,18 @@ struct Output::Imp {
 
                 return output;
             };
-            const auto select = [&](const auto& group) -> std::optional<UTXO> {
+            const auto select = [&](const auto& group,
+                                    const bool changeOnly =
+                                        false) -> std::optional<UTXO> {
                 for (const auto& outpoint : fifo(lock, group)) {
+                    if (changeOnly) {
+                        const auto& output = find_output(lock, outpoint);
+
+                        if (0u == output.Tags().count(node::TxoTag::Change)) {
+                            continue;
+                        }
+                    }
+
                     auto utxo = choose(outpoint);
 
                     if (utxo.has_value()) { return utxo; }
@@ -1040,10 +1050,14 @@ struct Output::Imp {
             };
 
             output = select(find_state(lock, node::TxoState::ConfirmedNew));
+            const auto spendUnconfirmed =
+                policy.unconfirmed_incoming_ || policy.unconfirmed_change_;
 
-            if ((!output.has_value()) && (Spend::UnconfirmedToo == policy)) {
-                output =
-                    select(find_state(lock, node::TxoState::UnconfirmedNew));
+            if ((!output.has_value()) && spendUnconfirmed) {
+                const auto changeOnly = !policy.unconfirmed_incoming_;
+                output = select(
+                    find_state(lock, node::TxoState::UnconfirmedNew),
+                    changeOnly);
             }
 
             if (false == output.has_value()) {
@@ -2549,7 +2563,7 @@ auto Output::GetWalletHeight() const noexcept -> block::Height
 auto Output::ReserveUTXO(
     const identifier::Nym& spender,
     const Identifier& proposal,
-    const Spend policy) noexcept -> std::optional<UTXO>
+    node::internal::SpendPolicy& policy) noexcept -> std::optional<UTXO>
 {
     return imp_->ReserveUTXO(spender, proposal, policy);
 }

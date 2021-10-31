@@ -263,7 +263,7 @@ auto Wallet::ReorgTo(
 auto Wallet::ReserveUTXO(
     const identifier::Nym& spender,
     const Identifier& id,
-    const Spend policy) const noexcept -> std::optional<UTXO>
+    node::internal::SpendPolicy& policy) const noexcept -> std::optional<UTXO>
 {
     if (false == proposals_.Exists(id)) {
         LogOutput(OT_METHOD)(__func__)(": Proposal ")(id)(" does not exist")
