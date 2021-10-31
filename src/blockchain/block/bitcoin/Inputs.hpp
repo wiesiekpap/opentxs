@@ -12,6 +12,7 @@
 #include <optional>
 #include <vector>
 
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
@@ -19,6 +20,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -83,7 +85,11 @@ public:
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
-    auto Keys() const noexcept -> std::vector<KeyID> final;
+    auto Internal() const noexcept -> const internal::Inputs& final
+    {
+        return *this;
+    }
+    auto Keys() const noexcept -> std::vector<crypto::Key> final;
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
@@ -101,16 +107,14 @@ public:
         const api::client::Blockchain& blockchain,
         const std::size_t inputIndex,
         const internal::Output& output) noexcept -> bool final;
+    auto Internal() noexcept -> internal::Inputs& final { return *this; }
     auto at(const std::size_t position) noexcept(false) -> value_type& final
     {
         return *inputs_.at(position);
     }
     auto MergeMetadata(
-        const api::client::Blockchain& blockchain,
-        const Input::SerializeType& rhs) noexcept(false) -> void final
-    {
-        inputs_.at(rhs.index())->MergeMetadata(blockchain, rhs);
-    }
+        const api::client::Blockchain& api,
+        const internal::Inputs& rhs) noexcept -> bool final;
     auto ReplaceScript(const std::size_t index) noexcept -> bool final;
     auto SetKeyData(const KeyData& data) noexcept -> void final;
 

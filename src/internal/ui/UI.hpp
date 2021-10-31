@@ -1016,6 +1016,7 @@ struct ActivityThreadItem final : public Row,
 };
 struct BalanceItem final : public Row, public internal::BalanceItem {
     auto Amount() const noexcept -> opentxs::Amount final { return {}; }
+    auto Confirmations() const noexcept -> int override { return -1; }
     auto Contacts() const noexcept -> std::vector<std::string> final
     {
         return {};

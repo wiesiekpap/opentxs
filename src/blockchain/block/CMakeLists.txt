@@ -11,6 +11,7 @@ add_library(
   "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/Block.hpp"
   "Block.cpp"
   "Block.hpp"
+  "Common.cpp"
   "Header.cpp"
   "Header.hpp"
   "Outpoint.cpp"

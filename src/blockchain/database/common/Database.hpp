@@ -56,6 +56,7 @@ namespace block
 namespace bitcoin
 {
 class Block;
+class Transaction;
 }  // namespace bitcoin
 
 class Header;
@@ -75,11 +76,6 @@ class Data;
 }  // namespace sync
 }  // namespace blockchain
 }  // namespace network
-
-namespace proto
-{
-class BlockchainTransaction;
-}  // namespace proto
 
 class Contact;
 class Data;
@@ -157,7 +153,7 @@ public:
         opentxs::network::blockchain::sync::Data& output) const noexcept
         -> bool;
     auto LoadTransaction(const ReadView txid) const noexcept
-        -> std::optional<proto::BlockchainTransaction>;
+        -> std::unique_ptr<block::bitcoin::Transaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
         -> std::set<OTIdentifier>;
     auto LookupTransactions(const PatternID pattern) const noexcept
@@ -178,7 +174,7 @@ public:
         const std::vector<FilterData>& filters) const noexcept -> bool;
     auto StoreSync(const Chain chain, const SyncItems& items) const noexcept
         -> bool;
-    auto StoreTransaction(const proto::BlockchainTransaction& tx) const noexcept
+    auto StoreTransaction(const block::bitcoin::Transaction& tx) const noexcept
         -> bool;
     auto SyncTip(const Chain chain) const noexcept -> Height;
     auto UpdateContact(const Contact& contact) const noexcept

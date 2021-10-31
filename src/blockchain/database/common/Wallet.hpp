@@ -6,6 +6,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <set>
@@ -17,7 +18,6 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/BlockchainTransaction.pb.h"
 
 namespace opentxs
 {
@@ -33,6 +33,14 @@ class Core;
 
 namespace blockchain
 {
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+
 namespace database
 {
 namespace common
@@ -41,11 +49,6 @@ class Bulk;
 }  // namespace common
 }  // namespace database
 }  // namespace blockchain
-
-namespace proto
-{
-class BlockchainTransaction;
-}  // namespace proto
 
 namespace storage
 {
@@ -64,7 +67,6 @@ class Wallet
 {
 public:
     using PatternID = opentxs::blockchain::PatternID;
-    using Transaction = proto::BlockchainTransaction;
     using Txid = opentxs::blockchain::block::Txid;
     using pTxid = opentxs::blockchain::block::pTxid;
 
@@ -72,18 +74,20 @@ public:
         const Txid& txid,
         const std::vector<PatternID>& patterns) const noexcept -> bool;
     auto LoadTransaction(const ReadView txid) const noexcept
-        -> std::optional<Transaction>;
+        -> std::unique_ptr<block::bitcoin::Transaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
         -> std::set<OTIdentifier>;
     auto LookupTransactions(const PatternID pattern) const noexcept
         -> std::vector<pTxid>;
-    auto StoreTransaction(const Transaction& tx) const noexcept -> bool;
+    auto StoreTransaction(const block::bitcoin::Transaction& tx) const noexcept
+        -> bool;
     auto UpdateContact(const Contact& contact) const noexcept
         -> std::vector<pTxid>;
     auto UpdateMergedContact(const Contact& parent, const Contact& child)
         const noexcept -> std::vector<pTxid>;
 
     Wallet(
+        const api::Core& api,
         const api::client::Blockchain& blockchain,
         storage::lmdb::LMDB& lmdb,
         Bulk& bulk) noexcept(false);
@@ -96,6 +100,7 @@ private:
     using TransactionToPattern = std::map<pTxid, std::set<PatternID>>;
     using PatternToTransaction = std::map<PatternID, std::set<pTxid>>;
 
+    const api::Core& api_;
     const api::client::Blockchain& blockchain_;
     storage::lmdb::LMDB& lmdb_;
     Bulk& bulk_;

@@ -114,7 +114,8 @@ auto Blockchain::ActivityDescription(
 auto Blockchain::ActivityDescription(
     const identifier::Nym& nym,
     const Chain chain,
-    const Tx& transaction) const noexcept -> std::string
+    const opentxs::blockchain::block::bitcoin::Transaction& transaction)
+    const noexcept -> std::string
 {
     return imp_->ActivityDescription(nym, chain, transaction);
 }
@@ -212,13 +213,13 @@ auto Blockchain::KeyGenerated(const Chain chain) const noexcept -> void
 }
 
 auto Blockchain::LoadTransactionBitcoin(const TxidHex& txid) const noexcept
-    -> std::unique_ptr<const Tx>
+    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
 {
     return imp_->LoadTransactionBitcoin(txid);
 }
 
 auto Blockchain::LoadTransactionBitcoin(const Txid& txid) const noexcept
-    -> std::unique_ptr<const Tx>
+    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
 {
     return imp_->LoadTransactionBitcoin(txid);
 }
@@ -340,7 +341,7 @@ auto Blockchain::ProcessMergedContact(
 
 auto Blockchain::ProcessTransaction(
     const Chain chain,
-    const Tx& in,
+    const opentxs::blockchain::block::bitcoin::Transaction& in,
     const PasswordPrompt& reason) const noexcept -> bool
 {
     return imp_->ProcessTransaction(chain, in, reason);

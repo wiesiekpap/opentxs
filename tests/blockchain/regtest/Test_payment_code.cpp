@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "integration/Helpers.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
@@ -254,7 +255,7 @@ TEST_F(Regtest_payment_code, mature_initial_balance)
     const auto start = height_ - orphan;
     const auto end{start + count};
     auto future = listener_alice_.get_future(SendHD(), Subchain::External, end);
-    account_activity_alice_.expected_ += (count + 1);
+    account_activity_alice_.expected_ += ((2 * count) + 1);
     account_activity_bob_.expected_ += count;
     account_list_alice_.expected_ += 1;
     account_list_bob_.expected_ += 0;
@@ -329,6 +330,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_initial_receive)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                11,
             },
         },
     };
@@ -542,6 +544,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                0,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -554,6 +557,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                11,
             },
         },
     };
@@ -676,6 +680,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_unconfirmed_incoming)
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                0,
             },
         },
     };
@@ -770,7 +775,7 @@ TEST_F(Regtest_payment_code, confirm_send)
         listener_alice_.get_future(SendHD(), Subchain::External, end);
     auto future2 =
         listener_alice_.get_future(SendHD(), Subchain::Internal, end);
-    account_activity_alice_.expected_ += (count + 4);
+    account_activity_alice_.expected_ += ((2 * count) + 4);
     account_activity_bob_.expected_ += (count + 2);
     account_list_alice_.expected_ += 2;
     account_list_bob_.expected_ += 0;
@@ -875,7 +880,7 @@ TEST_F(Regtest_payment_code, second_block)
     }
 
     {
-        auto elements = block.ExtractElements(FilterType::ES);
+        auto elements = block.Internal().ExtractElements(FilterType::ES);
         std::sort(elements.begin(), elements.end());
         std::sort(expected.begin(), expected.end());
 
@@ -932,6 +937,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                1,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -944,6 +950,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                12,
             },
         },
     };
@@ -1060,6 +1067,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_spend_confirmed)
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                1,
             },
         },
     };
@@ -1291,6 +1299,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
                 ot::blockchain::HashToNumber(transactions_.at(2)),
                 std::nullopt,
+                0,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1304,6 +1313,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
                 "PD1jFsimY3DQUe7qGtx3z8BohTaT6r4kwJMCYXwp7uY8z6BSaFrpM",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                1,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1316,6 +1326,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                12,
             },
         },
     };
@@ -1546,6 +1557,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
                 ot::blockchain::HashToNumber(transactions_.at(2)),
                 std::nullopt,
+                0,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1559,6 +1571,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
                 "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                1,
             },
         },
     };
@@ -1759,6 +1772,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
                 "Outgoing Unit Test Simulation transaction to Bob",
                 ot::blockchain::HashToNumber(transactions_.at(2)),
                 std::nullopt,
+                0,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1771,6 +1785,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
                 "Outgoing Unit Test Simulation transaction to Bob",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                1,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1783,6 +1798,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                12,
             },
         },
     };
@@ -1907,6 +1923,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
                 "Incoming Unit Test Simulation transaction from Alice",
                 ot::blockchain::HashToNumber(transactions_.at(2)),
                 std::nullopt,
+                0,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1919,6 +1936,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
                 "Incoming Unit Test Simulation transaction from Alice",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                1,
             },
         },
     };

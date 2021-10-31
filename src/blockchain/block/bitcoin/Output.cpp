@@ -30,7 +30,6 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/Subchain.hpp"
@@ -64,7 +63,7 @@ auto BitcoinTransactionOutput(
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
 {
     try {
-        auto keySet = boost::container::flat_set<ReturnType::KeyID>{};
+        auto keySet = boost::container::flat_set<blockchain::crypto::Key>{};
         std::for_each(std::begin(keys), std::end(keys), [&](const auto& key) {
             keySet.emplace(key);
         });
@@ -120,7 +119,7 @@ auto BitcoinTransactionOutput(
     try {
         auto value = Amount{in.value()};
         auto cs = blockchain::bitcoin::CompactSize(in.script().size());
-        auto keys = boost::container::flat_set<ReturnType::KeyID>{};
+        auto keys = boost::container::flat_set<blockchain::crypto::Key>{};
         auto pkh = boost::container::flat_set<blockchain::PatternID>{};
         using Payer = OTIdentifier;
         using Payee = OTIdentifier;
@@ -130,8 +129,8 @@ auto BitcoinTransactionOutput(
         for (const auto& key : in.key()) {
             const auto subchain = static_cast<blockchain::crypto::Subchain>(
                 static_cast<std::uint8_t>(key.subchain()));
-            auto keyid =
-                ReturnType::KeyID{key.subaccount(), subchain, key.index()};
+            auto keyid = blockchain::crypto::Key{
+                key.subaccount(), subchain, key.index()};
 
             if (blockchain::crypto::Subchain::Outgoing == subchain) {
                 LogOutput("opentxs::factory::")(__func__)(
@@ -238,7 +237,7 @@ Output::Output(
     const blockchain::Amount& value,
     std::unique_ptr<const internal::Script> script,
     std::optional<std::size_t> size,
-    boost::container::flat_set<KeyID>&& keys,
+    boost::container::flat_set<crypto::Key>&& keys,
     boost::container::flat_set<PatternID>&& pubkeyHashes,
     std::optional<PatternID>&& scriptHash,
     bool indexed,
@@ -254,10 +253,13 @@ Output::Output(
     , script_(std::move(script))
     , pubkey_hashes_(std::move(pubkeyHashes))
     , script_hash_(std::move(scriptHash))
-    , cache_(api, std::move(size), std::move(keys))
-    , mined_position_(std::move(minedPosition))
-    , state_(state)
-    , tags_(std::move(tags))
+    , cache_(
+          api,
+          std::move(size),
+          std::move(keys),
+          std::move(minedPosition),
+          state,
+          std::move(tags))
 {
     if (false == bool(script_)) {
         throw std::runtime_error("Invalid output script");
@@ -301,7 +303,7 @@ Output::Output(
     const std::uint32_t index,
     const blockchain::Amount& value,
     std::unique_ptr<const internal::Script> script,
-    boost::container::flat_set<KeyID>&& keys,
+    boost::container::flat_set<crypto::Key>&& keys,
     const VersionNumber version) noexcept(false)
     : Output(
           api,
@@ -333,9 +335,6 @@ Output::Output(const Output& rhs) noexcept
     , pubkey_hashes_(rhs.pubkey_hashes_)
     , script_hash_(rhs.script_hash_)
     , cache_(rhs.cache_)
-    , mined_position_(rhs.mined_position_)
-    , state_(rhs.state_)
-    , tags_(rhs.tags_)
 {
 }
 
@@ -391,8 +390,8 @@ auto Output::FindMatches(
     const filter::Type type,
     const ParsedPatterns& patterns) const noexcept -> Matches
 {
-    const auto output =
-        SetIntersection(api_, txid, patterns, ExtractElements(type));
+    const auto output = block::internal::SetIntersection(
+        api_, txid, patterns, ExtractElements(type));
     LogTrace(OT_METHOD)(__func__)(": Verified ")(output.second.size())(
         " pattern matches")
         .Flush();
@@ -403,7 +402,7 @@ auto Output::FindMatches(
             const auto& [txid, element] = match;
             const auto& [index, subchainID] = element;
             const auto& [subchain, account] = subchainID;
-            auto keyid = KeyID{account->str(), subchain, index};
+            auto keyid = crypto::Key{account->str(), subchain, index};
 
             if (crypto::Subchain::Outgoing == subchain) {
                 auto sender = crypto_.SenderContact(keyid);
@@ -448,40 +447,9 @@ auto Output::index_elements() noexcept -> void
     }
 }
 
-auto Output::MergeMetadata(const SerializeType& rhs) noexcept -> void
+auto Output::MergeMetadata(const internal::Output& rhs) noexcept -> bool
 {
-    std::for_each(
-        std::begin(rhs.key()), std::end(rhs.key()), [this](const auto& key) {
-            const auto subchain = static_cast<crypto::Subchain>(
-                static_cast<std::uint8_t>(key.subchain()));
-
-            if (crypto::Subchain::Outgoing == subchain) {
-                LogOutput(OT_METHOD)(__func__)(": discarding invalid key")
-                    .Flush();
-            } else {
-                cache_.add({key.subaccount(), subchain, key.index()});
-            }
-        });
-
-    if (cache_.payer()->empty() && false == rhs.payer().empty()) {
-        SetPayer([&] {
-            auto id = api_.Factory().Identifier();
-            auto& value = rhs.payer(0);
-            id->Assign(value.data(), value.size());
-
-            return id;
-        }());
-    }
-
-    if (cache_.payee()->empty() && false == rhs.payee().empty()) {
-        SetPayee([&] {
-            auto id = api_.Factory().Identifier();
-            auto& value = rhs.payee(0);
-            id->Assign(value.data(), value.size());
-
-            return id;
-        }());
-    }
+    return cache_.merge(rhs);
 }
 
 auto Output::NetBalanceChange(
@@ -611,16 +579,16 @@ auto Output::Serialize(
         out.add_payee(std::string{payee->Bytes()});
     }
 
-    if (const auto& [height, hash] = mined_position_; - 1 < height) {
+    if (const auto& [height, hash] = cache_.position(); 0 <= height) {
         out.set_mined_height(height);
         out.set_mined_block(hash->data(), hash->size());
     }
 
-    if (node::TxoState::Error != state_) {
-        out.set_state(static_cast<std::uint32_t>(state_));
+    if (auto state = cache_.state(); node::TxoState::Error != state) {
+        out.set_state(static_cast<std::uint32_t>(state));
     }
 
-    for (const auto tag : tags_) {
+    for (const auto tag : cache_.tags()) {
         out.add_tag(static_cast<std::uint32_t>(tag));
     }
 

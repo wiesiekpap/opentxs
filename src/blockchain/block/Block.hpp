@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "internal/blockchain/block/Block.hpp"
+
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
@@ -19,7 +21,7 @@ class Core;
 
 namespace opentxs::blockchain::block::implementation
 {
-class Block : virtual public block::Block
+class Block : virtual public internal::Block
 {
 public:
     auto Header() const noexcept -> const block::Header& override
@@ -30,6 +32,12 @@ public:
     {
         return base_header_.Hash();
     }
+    auto Internal() const noexcept -> const internal::Block& final
+    {
+        return *this;
+    }
+
+    auto Internal() noexcept -> internal::Block& final { return *this; }
 
 protected:
     const api::Core& api_;

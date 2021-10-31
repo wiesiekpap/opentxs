@@ -14,23 +14,33 @@
 #include <string>
 #include <utility>
 
+#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
+
+#define OT_METHOD                                                              \
+    "opentxs::blockchain::block::bitcoin::implementation::Output::Cache::"
 
 namespace opentxs::blockchain::block::bitcoin::implementation
 {
 Output::Cache::Cache(
     const api::Core& api,
     std::optional<std::size_t>&& size,
-    boost::container::flat_set<KeyID>&& keys) noexcept
+    boost::container::flat_set<crypto::Key>&& keys,
+    block::Position&& minedPosition,
+    node::TxoState state,
+    std::set<node::TxoTag>&& tags) noexcept
     : lock_()
     , size_(std::move(size))
     , payee_(api.Factory().Identifier())
     , payer_(api.Factory().Identifier())
     , keys_(std::move(keys))
+    , mined_position_(std::move(minedPosition))
+    , state_(state)
+    , tags_(std::move(tags))
 {
 }
 
@@ -48,13 +58,22 @@ Output::Cache::Cache(const Cache& rhs) noexcept
         return rhs.payer_;
     }())
     , keys_()
+    , mined_position_([&] {
+        auto lock = Lock{rhs.lock_};
+
+        return rhs.mined_position_;
+    }())
+    , state_()
+    , tags_()
 {
     auto lock = Lock{rhs.lock_};
     size_ = rhs.size_;
     keys_ = rhs.keys_;
+    state_ = rhs.state_;
+    tags_ = rhs.tags_;
 }
 
-auto Output::Cache::add(KeyID&& key) noexcept -> void
+auto Output::Cache::add(crypto::Key&& key) noexcept -> void
 {
     const auto& [account, subchain, index] = key;
 
@@ -64,10 +83,16 @@ auto Output::Cache::add(KeyID&& key) noexcept -> void
     keys_.emplace(std::move(key));
 }
 
-auto Output::Cache::keys() const noexcept -> std::vector<KeyID>
+auto Output::Cache::add(node::TxoTag tag) noexcept -> void
 {
     auto lock = Lock{lock_};
-    auto output = std::vector<KeyID>{};
+    tags_.emplace(tag);
+}
+
+auto Output::Cache::keys() const noexcept -> std::vector<crypto::Key>
+{
+    auto lock = Lock{lock_};
+    auto output = std::vector<crypto::Key>{};
     std::transform(
         std::begin(keys_), std::end(keys_), std::back_inserter(output), [
         ](const auto& key) -> auto { return key; });
@@ -82,11 +107,46 @@ auto Output::Cache::payee() const noexcept -> OTIdentifier
     return payee_;
 }
 
+auto Output::Cache::merge(const internal::Output& rhs) noexcept -> bool
+{
+    for (auto& key : rhs.Keys()) {
+        const auto& [account, subchain, index] = key;
+
+        if (crypto::Subchain::Outgoing == subchain) {
+            LogOutput(OT_METHOD)(__func__)(": discarding invalid key").Flush();
+        } else {
+            add(std::move(key));
+        }
+    }
+
+    if (auto p = rhs.Payer(); payer_->empty() || false == p->empty()) {
+        set_payer(std::move(p));
+    }
+
+    if (auto p = rhs.Payee(); payee_->empty() || false == p->empty()) {
+        set_payee(std::move(p));
+    }
+
+    mined_position_ = rhs.MinedPosition();
+    state_ = rhs.State();
+    const auto tags = rhs.Tags();
+    std::copy(tags.begin(), tags.end(), std::inserter(tags_, tags_.end()));
+
+    return true;
+}
+
 auto Output::Cache::payer() const noexcept -> OTIdentifier
 {
     auto lock = Lock{lock_};
 
     return payer_;
+}
+
+auto Output::Cache::position() const noexcept -> const block::Position&
+{
+    auto lock = Lock{lock_};
+
+    return mined_position_;
 }
 
 auto Output::Cache::reset_size() noexcept -> void
@@ -121,15 +181,49 @@ auto Output::Cache::set(const KeyData& data) noexcept -> void
 
 auto Output::Cache::set_payee(const Identifier& contact) noexcept -> void
 {
-    auto lock = Lock{lock_};
+    set_payee(OTIdentifier{contact});
+}
 
-    payee_ = contact;
+auto Output::Cache::set_payee(OTIdentifier&& contact) noexcept -> void
+{
+    auto lock = Lock{lock_};
+    payee_->swap(contact);
 }
 
 auto Output::Cache::set_payer(const Identifier& contact) noexcept -> void
 {
+    set_payer(OTIdentifier{contact});
+}
+
+auto Output::Cache::set_payer(OTIdentifier&& contact) noexcept -> void
+{
+    auto lock = Lock{lock_};
+    payer_->swap(contact);
+}
+
+auto Output::Cache::set_position(const block::Position& pos) noexcept -> void
+{
+    auto lock = Lock{lock_};
+    mined_position_ = pos;
+}
+
+auto Output::Cache::set_state(node::TxoState state) noexcept -> void
+{
+    auto lock = Lock{lock_};
+    state_ = state;
+}
+
+auto Output::Cache::state() const noexcept -> node::TxoState
+{
     auto lock = Lock{lock_};
 
-    payer_ = contact;
+    return state_;
+}
+
+auto Output::Cache::tags() const noexcept -> std::set<node::TxoTag>
+{
+    auto lock = Lock{lock_};
+
+    return tags_;
 }
 }  // namespace opentxs::blockchain::block::bitcoin::implementation

@@ -18,6 +18,7 @@
 
 #include "blockchain/node/wallet/Batch.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -86,7 +87,8 @@ auto Work::Do(SubchainStateData& parent) noexcept -> bool
         potential.emplace_back(std::move(id), std::move(element));
     }
 
-    const auto confirmed = block.FindMatches(type, outpoints, potential);
+    const auto confirmed =
+        block.Internal().FindMatches(type, outpoints, potential);
     const auto& [utxo, general] = confirmed;
     match_count_ = general.size();
     const auto& oracle = node.HeaderOracleInternal();

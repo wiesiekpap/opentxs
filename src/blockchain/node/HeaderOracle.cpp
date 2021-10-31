@@ -17,7 +17,6 @@
 
 #include "blockchain/node/UpdateTransaction.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/core/Core.hpp"

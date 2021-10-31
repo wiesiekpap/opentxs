@@ -22,6 +22,7 @@
 
 #include "Proto.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -29,6 +30,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
+#include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -117,8 +119,14 @@ namespace opentxs::blockchain::block::bitcoin::internal
 {
 auto DecodeBip34(const ReadView coinbase) noexcept -> block::Height;
 auto EncodeBip34(block::Height height) noexcept -> Space;
+auto Opcode(const OP opcode) noexcept(false) -> ScriptElement;
+auto PushData(const ReadView data) noexcept(false) -> ScriptElement;
+
+struct Header : virtual public bitcoin::Header {
+};
 
 struct Input : virtual public bitcoin::Input {
+    using SerializeType = proto::BlockchainTransactionInput;
     using Signature = std::pair<ReadView, ReadView>;
     using Signatures = std::vector<Signature>;
 
@@ -128,10 +136,28 @@ struct Input : virtual public bitcoin::Input {
     virtual auto AssociatedRemoteContacts(
         const api::client::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void = 0;
+    virtual auto CalculateSize(const bool normalized = false) const noexcept
+        -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Input> = 0;
+    virtual auto ExtractElements(const filter::Type style) const noexcept
+        -> std::vector<Space> = 0;
+    virtual auto FindMatches(
+        const ReadView txid,
+        const filter::Type type,
+        const Patterns& txos,
+        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
     virtual auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount = 0;
+    virtual auto Serialize(const AllocateOutput destination) const noexcept
+        -> std::optional<std::size_t> = 0;
+    virtual auto Serialize(
+        const api::client::Blockchain& blockchain,
+        const std::uint32_t index,
+        SerializeType& destination) const noexcept -> bool = 0;
+    virtual auto SerializeNormalized(const AllocateOutput destination)
+        const noexcept -> std::optional<std::size_t> = 0;
     virtual auto SignatureVersion() const noexcept
         -> std::unique_ptr<Input> = 0;
     virtual auto SignatureVersion(std::unique_ptr<internal::Script> subscript)
@@ -147,8 +173,9 @@ struct Input : virtual public bitcoin::Input {
         const Output& output) noexcept -> bool = 0;
     virtual auto MergeMetadata(
         const api::client::Blockchain& api,
-        const SerializeType& rhs) noexcept -> void = 0;
+        const Input& rhs) noexcept -> bool = 0;
     virtual auto ReplaceScript() noexcept -> bool = 0;
+    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
     ~Input() override = default;
 };
@@ -159,47 +186,82 @@ struct Inputs : virtual public bitcoin::Inputs {
     virtual auto AssociatedRemoteContacts(
         const api::client::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void = 0;
+    virtual auto CalculateSize(const bool normalized = false) const noexcept
+        -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Inputs> = 0;
+    virtual auto ExtractElements(const filter::Type style) const noexcept
+        -> std::vector<Space> = 0;
+    virtual auto FindMatches(
+        const ReadView txid,
+        const filter::Type type,
+        const Patterns& txos,
+        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
     virtual auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount = 0;
+    virtual auto Serialize(
+        const api::client::Blockchain& blockchain,
+        proto::BlockchainTransaction& destination) const noexcept -> bool = 0;
+    virtual auto Serialize(const AllocateOutput destination) const noexcept
+        -> std::optional<std::size_t> = 0;
+    virtual auto SerializeNormalized(const AllocateOutput destination)
+        const noexcept -> std::optional<std::size_t> = 0;
 
     virtual auto AnyoneCanPay(const std::size_t index) noexcept -> bool = 0;
     virtual auto AssociatePreviousOutput(
         const api::client::Blockchain& api,
         const std::size_t inputIndex,
         const Output& output) noexcept -> bool = 0;
+    using bitcoin::Inputs::at;
+    virtual auto at(const std::size_t position) noexcept(false)
+        -> value_type& = 0;
     virtual auto MergeMetadata(
         const api::client::Blockchain& api,
-        const Input::SerializeType& rhs) noexcept(false) -> void = 0;
+        const Inputs& rhs) noexcept -> bool = 0;
     virtual auto ReplaceScript(const std::size_t index) noexcept -> bool = 0;
+    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
     ~Inputs() override = default;
 };
 struct Output : virtual public bitcoin::Output {
+    using SerializeType = proto::BlockchainTransactionOutput;
+
     virtual auto AssociatedLocalNyms(
         const api::client::Blockchain& blockchain,
         std::vector<OTNymID>& output) const noexcept -> void = 0;
     virtual auto AssociatedRemoteContacts(
         const api::client::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void = 0;
+    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Output> = 0;
+    virtual auto ExtractElements(const filter::Type style) const noexcept
+        -> std::vector<Space> = 0;
+    virtual auto FindMatches(
+        const ReadView txid,
+        const filter::Type type,
+        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
+    // WARNING do not call this function if another thread has a non-const
+    // reference to this object
     virtual auto MinedPosition() const noexcept -> const block::Position& = 0;
     virtual auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount = 0;
-    using bitcoin::Output::Serialize;
+    virtual auto Serialize(const AllocateOutput destination) const noexcept
+        -> std::optional<std::size_t> = 0;
     virtual auto Serialize(
         const api::client::Blockchain& blockchain,
         SerializeType& destination) const noexcept -> bool = 0;
     virtual auto SigningSubscript() const noexcept
         -> std::unique_ptr<internal::Script> = 0;
     virtual auto State() const noexcept -> node::TxoState = 0;
-    virtual auto Tags() const noexcept -> const std::set<node::TxoTag>& = 0;
+    virtual auto Tags() const noexcept -> const std::set<node::TxoTag> = 0;
 
     virtual auto AddTag(node::TxoTag tag) noexcept -> void = 0;
-    virtual auto ForTestingOnlyAddKey(const KeyID& key) noexcept -> void = 0;
-    virtual auto MergeMetadata(const SerializeType& rhs) noexcept -> void = 0;
+    virtual auto ForTestingOnlyAddKey(const crypto::Key& key) noexcept
+        -> void = 0;
+    virtual auto MergeMetadata(const Output& rhs) noexcept -> bool = 0;
     virtual auto SetIndex(const std::uint32_t index) noexcept -> void = 0;
     virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
     virtual auto SetMinedPosition(const block::Position& pos) noexcept
@@ -218,16 +280,32 @@ struct Outputs : virtual public bitcoin::Outputs {
     virtual auto AssociatedRemoteContacts(
         const api::client::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void = 0;
+    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto clone() const noexcept -> std::unique_ptr<Outputs> = 0;
+    virtual auto ExtractElements(const filter::Type style) const noexcept
+        -> std::vector<Space> = 0;
+    virtual auto FindMatches(
+        const ReadView txid,
+        const filter::Type type,
+        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
     virtual auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount = 0;
+    virtual auto Serialize(const AllocateOutput destination) const noexcept
+        -> std::optional<std::size_t> = 0;
+    virtual auto Serialize(
+        const api::client::Blockchain& blockchain,
+        proto::BlockchainTransaction& destination) const noexcept -> bool = 0;
 
+    using bitcoin::Outputs::at;
+    virtual auto at(const std::size_t position) noexcept(false)
+        -> value_type& = 0;
     virtual auto ForTestingOnlyAddKey(
         const std::size_t index,
         const blockchain::crypto::Key& key) noexcept -> bool = 0;
-    virtual auto MergeMetadata(const Output::SerializeType& rhs) noexcept(false)
-        -> void = 0;
+    virtual auto MergeMetadata(const Outputs& rhs) noexcept -> bool = 0;
+    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
 
     ~Outputs() override = default;
 };
@@ -247,25 +325,47 @@ struct Script : virtual public bitcoin::Script {
     ~Script() override = default;
 };
 struct Transaction : virtual public bitcoin::Transaction {
+    using SerializeType = proto::BlockchainTransaction;
     using SigHash = blockchain::bitcoin::SigOption;
 
+    virtual auto ConfirmationHeight() const noexcept -> block::Height = 0;
     virtual auto GetPreimageBTC(
         const std::size_t index,
         const blockchain::bitcoin::SigHash& hashType) const noexcept
         -> Space = 0;
+    // WARNING do not call this function if another thread has a non-const
+    // reference to this object
+    virtual auto MinedPosition() const noexcept -> const block::Position& = 0;
 
     virtual auto AssociatePreviousOutput(
         const api::client::Blockchain& api,
         const std::size_t inputIndex,
         const Output& output) noexcept -> bool = 0;
+    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
+    virtual auto ExtractElements(const filter::Type style) const noexcept
+        -> std::vector<Space> = 0;
+    virtual auto FindMatches(
+        const filter::Type type,
+        const Patterns& txos,
+        const ParsedPatterns& elements) const noexcept -> Matches = 0;
+    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
     virtual auto ForTestingOnlyAddKey(
         const std::size_t index,
         const blockchain::crypto::Key& key) noexcept -> bool = 0;
+    virtual auto IDNormalized() const noexcept -> const Identifier& = 0;
     virtual auto MergeMetadata(
         const api::client::Blockchain& api,
         const blockchain::Type chain,
-        const SerializeType& rhs) noexcept -> void = 0;
+        const Transaction& rhs) noexcept -> void = 0;
+    virtual auto Serialize(const AllocateOutput destination) const noexcept
+        -> std::optional<std::size_t> = 0;
+    virtual auto Serialize(const api::client::Blockchain& blockchain)
+        const noexcept -> std::optional<SerializeType> = 0;
+    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
     virtual auto SetMemo(const std::string& memo) noexcept -> void = 0;
+    virtual auto SetMinedPosition(const block::Position& pos) noexcept
+        -> void = 0;
+    virtual auto SetPosition(std::size_t position) noexcept -> void = 0;
 
     ~Transaction() override = default;
 };

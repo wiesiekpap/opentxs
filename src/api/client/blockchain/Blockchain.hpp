@@ -68,6 +68,14 @@ class Legacy;
 
 namespace blockchain
 {
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+
 namespace node
 {
 class Manager;
@@ -130,7 +138,8 @@ public:
     auto ActivityDescription(
         const identifier::Nym& nym,
         const Chain chain,
-        const Tx& transaction) const noexcept -> std::string final;
+        const opentxs::blockchain::block::bitcoin::Transaction& transaction)
+        const noexcept -> std::string final;
     auto AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
@@ -168,9 +177,11 @@ public:
     auto KeyEndpoint() const noexcept -> const std::string& final;
     auto KeyGenerated(const Chain chain) const noexcept -> void final;
     auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
-        -> std::unique_ptr<const Tx> final;
+        -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Transaction> final;
     auto LoadTransactionBitcoin(const Txid& id) const noexcept
-        -> std::unique_ptr<const Tx> final;
+        -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Transaction> final;
     auto LookupAccount(const Identifier& id) const noexcept
         -> AccountData final;
     auto LookupContacts(const std::string& address) const noexcept
@@ -225,7 +236,7 @@ public:
         const noexcept -> bool final;
     auto ProcessTransaction(
         const Chain chain,
-        const Tx& transaction,
+        const opentxs::blockchain::block::bitcoin::Transaction& transaction,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto RecipientContact(const Key& key) const noexcept -> OTIdentifier final;
     auto Release(const Key key) const noexcept -> bool final;

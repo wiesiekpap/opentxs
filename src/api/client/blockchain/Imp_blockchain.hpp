@@ -79,6 +79,8 @@ namespace internal
 {
 struct Transaction;
 }  // namespace internal
+
+class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
@@ -119,7 +121,6 @@ namespace opentxs::api::client::implementation
 struct BlockchainImp final : public Blockchain::Imp {
     using Txid = opentxs::blockchain::block::Txid;
     using pTxid = opentxs::blockchain::block::pTxid;
-    using Tx = Blockchain::Tx;
     using TxidHex = Blockchain::TxidHex;
     using PatternID = Blockchain::PatternID;
     using ContactList = Blockchain::ContactList;
@@ -131,7 +132,8 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto ActivityDescription(
         const identifier::Nym& nym,
         const opentxs::blockchain::Type chain,
-        const Tx& transaction) const noexcept -> std::string final;
+        const opentxs::blockchain::block::bitcoin::Transaction& transaction)
+        const noexcept -> std::string final;
     auto AssignTransactionMemo(const TxidHex& id, const std::string& label)
         const noexcept -> bool final;
     auto IndexItem(const ReadView bytes) const noexcept -> PatternID final;
@@ -139,9 +141,11 @@ struct BlockchainImp final : public Blockchain::Imp {
     auto KeyGenerated(const opentxs::blockchain::Type chain) const noexcept
         -> void final;
     auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept
-        -> std::unique_ptr<const Tx> final;
+        -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Transaction> final;
     auto LoadTransactionBitcoin(const Txid& txid) const noexcept
-        -> std::unique_ptr<const Tx> final;
+        -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Transaction> final;
     auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList final;
     auto ProcessContact(const Contact& contact) const noexcept -> bool final;
@@ -149,7 +153,7 @@ struct BlockchainImp final : public Blockchain::Imp {
         const noexcept -> bool final;
     auto ProcessTransaction(
         const opentxs::blockchain::Type chain,
-        const Tx& in,
+        const opentxs::blockchain::block::bitcoin::Transaction& in,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto ReportScan(
         const opentxs::blockchain::Type chain,
@@ -159,6 +163,10 @@ struct BlockchainImp final : public Blockchain::Imp {
         const Blockchain::Subchain subchain,
         const opentxs::blockchain::block::Position& progress) const noexcept
         -> void final;
+    auto Unconfirm(
+        const Blockchain::Key key,
+        const opentxs::blockchain::block::Txid& tx,
+        const Time time) const noexcept -> bool final;
     auto UpdateBalance(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::Balance balance) const noexcept
@@ -199,14 +207,12 @@ private:
     auto broadcast_update_signal(
         const std::vector<pTxid>& transactions) const noexcept -> void;
     auto broadcast_update_signal(
-        const opentxs::blockchain::block::bitcoin::internal::Transaction& tx)
+        const opentxs::blockchain::block::bitcoin::Transaction& tx)
         const noexcept -> void;
     auto load_transaction(const Lock& lock, const Txid& id) const noexcept
-        -> std::unique_ptr<
-            opentxs::blockchain::block::bitcoin::internal::Transaction>;
+        -> std::unique_ptr<opentxs::blockchain::block::bitcoin::Transaction>;
     auto load_transaction(const Lock& lock, const TxidHex& id) const noexcept
-        -> std::unique_ptr<
-            opentxs::blockchain::block::bitcoin::internal::Transaction>;
+        -> std::unique_ptr<opentxs::blockchain::block::bitcoin::Transaction>;
     auto notify_new_account(
         const Identifier& id,
         const identifier::Nym& owner,
@@ -217,7 +223,7 @@ private:
         const noexcept -> bool;
     auto reconcile_activity_threads(
         const Lock& lock,
-        const opentxs::blockchain::block::bitcoin::internal::Transaction& tx)
+        const opentxs::blockchain::block::bitcoin::Transaction& tx)
         const noexcept -> bool;
 };
 }  // namespace opentxs::api::client::implementation

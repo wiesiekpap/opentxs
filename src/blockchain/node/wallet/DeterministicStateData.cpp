@@ -82,7 +82,7 @@ DeterministicStateData::DeterministicStateData(
 auto DeterministicStateData::handle_confirmed_matches(
     const block::bitcoin::Block& block,
     const block::Position& position,
-    const block::Block::Matches& confirmed) noexcept -> void
+    const block::Matches& confirmed) noexcept -> void
 {
     const auto& [utxo, general] = confirmed;
     auto transactions = std::map<
@@ -129,7 +129,7 @@ auto DeterministicStateData::handle_confirmed_matches(
 }
 
 auto DeterministicStateData::handle_mempool_matches(
-    const block::Block::Matches& matches,
+    const block::Matches& matches,
     std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
 {
     const auto& [utxo, general] = matches;
@@ -149,7 +149,7 @@ auto DeterministicStateData::handle_mempool_matches(
 }
 
 auto DeterministicStateData::process(
-    const block::Block::Match match,
+    const block::Match match,
     const block::bitcoin::Transaction& transaction,
     MatchedTransaction& output) noexcept -> void
 {

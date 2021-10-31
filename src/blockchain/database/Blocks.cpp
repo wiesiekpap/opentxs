@@ -14,6 +14,7 @@
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
@@ -100,7 +101,7 @@ auto Blocks::SetTip(const block::Position& position) const noexcept -> bool
 
 auto Blocks::Store(const block::Block& block) const noexcept -> bool
 {
-    const auto size = block.CalculateSize();
+    const auto size = block.Internal().CalculateSize();
     auto writer = common_.BlockStore(block.ID(), size);
 
     if (false == writer.get().valid(size)) {

@@ -33,4 +33,6 @@ message BlockchainTransaction {
     optional uint32 segwit_flag = 16;
     optional string wtxid = 17;
     optional bool is_generation = 18;
+    optional int64 mined_height = 19;
+    optional bytes mined_block = 20;
 }

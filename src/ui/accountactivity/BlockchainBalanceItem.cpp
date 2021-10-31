@@ -46,6 +46,7 @@ BlockchainBalanceItem::BlockchainBalanceItem(
     , txid_(txid)
     , amount_(amount)
     , memo_(memo)
+    , confirmations_(extract_custom<int>(custom, 6))
 {
     // NOTE Avoids memory leaks
     extract_custom<proto::PaymentWorkflow>(custom, 0);
@@ -97,12 +98,12 @@ auto BlockchainBalanceItem::reindex(
     const auto amount = tx.NetBalanceChange(Widget::api_.Blockchain(), nym_id_);
     const auto memo = tx.Memo(Widget::api_.Blockchain());
     const auto text = extract_custom<std::string>(custom, 4);
+    const auto conf = extract_custom<int>(custom, 6);
 
     OT_ASSERT(chain_ == chain);
     OT_ASSERT(txid_ == txid);
 
     eLock lock{shared_lock_};
-
     const auto oldAmount = amount_;
     amount_ = amount;
 
@@ -115,6 +116,10 @@ auto BlockchainBalanceItem::reindex(
 
     if (text_ != text) {
         text_ = text;
+        output |= true;
+    }
+
+    if (auto previous = confirmations_.exchange(conf); previous != conf) {
         output |= true;
     }
 

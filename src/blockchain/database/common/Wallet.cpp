@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cstring>
 #include <iterator>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
@@ -18,10 +19,12 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "blockchain/database/common/Bulk.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -41,10 +44,12 @@ auto tsv(const Input& in) noexcept -> opentxs::ReadView
 namespace opentxs::blockchain::database::common
 {
 Wallet::Wallet(
+    const api::Core& api,
     const api::client::Blockchain& blockchain,
     storage::lmdb::LMDB& lmdb,
     Bulk& bulk) noexcept(false)
-    : blockchain_(blockchain)
+    : api_(api)
+    , blockchain_(blockchain)
     , lmdb_(lmdb)
     , bulk_(bulk)
     , transaction_table_(Table::TransactionIndex)
@@ -116,31 +121,35 @@ auto Wallet::AssociateTransaction(
 }
 
 auto Wallet::LoadTransaction(const ReadView txid) const noexcept
-    -> std::optional<proto::BlockchainTransaction>
+    -> std::unique_ptr<block::bitcoin::Transaction>
 {
     try {
-        const auto index = [&] {
-            auto out = util::IndexData{};
-            auto cb = [&out](const ReadView in) {
-                if (sizeof(out) != in.size()) { return; }
+        const auto proto = [&] {
+            const auto index = [&] {
+                auto out = util::IndexData{};
+                auto cb = [&out](const ReadView in) {
+                    if (sizeof(out) != in.size()) { return; }
 
-                std::memcpy(static_cast<void*>(&out), in.data(), in.size());
-            };
-            lmdb_.Load(transaction_table_, txid, cb);
+                    std::memcpy(static_cast<void*>(&out), in.data(), in.size());
+                };
+                lmdb_.Load(transaction_table_, txid, cb);
 
-            if (0 == out.size_) {
-                throw std::out_of_range("Transaction not found");
-            }
+                if (0 == out.size_) {
+                    throw std::out_of_range("Transaction not found");
+                }
 
-            return out;
+                return out;
+            }();
+
+            return proto::Factory<proto::BlockchainTransaction>(
+                bulk_.ReadView(index));
         }();
 
-        return proto::Factory<proto::BlockchainTransaction>(
-            bulk_.ReadView(index));
+        return factory::BitcoinTransaction(api_, blockchain_, proto);
     } catch (const std::exception& e) {
         LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
-        return std::nullopt;
+        return {};
     }
 }
 
@@ -170,11 +179,19 @@ auto Wallet::LookupTransactions(const PatternID pattern) const noexcept
 }
 
 auto Wallet::StoreTransaction(
-    const proto::BlockchainTransaction& proto) const noexcept -> bool
+    const block::bitcoin::Transaction& in) const noexcept -> bool
 {
-    const auto& hash = proto.txid();
-
     try {
+        const auto proto = [&] {
+            auto out = in.Internal().Serialize(blockchain_);
+
+            if (false == out.has_value()) {
+                throw std::runtime_error{"Failed to serialize transaction"};
+            }
+
+            return out.value();
+        }();
+        const auto& hash = proto.txid();
         const auto bytes = proto.ByteSizeLong();
         auto index = [&] {
             auto output = util::IndexData{};
@@ -193,7 +210,8 @@ auto Wallet::StoreTransaction(
 
             if (false == result.first) {
                 LogOutput(OT_METHOD)(__func__)(
-                    ": Failed to update index for transaction ")(hash)
+                    ": Failed to update index for transaction ")(
+                    in.ID().asHex())
                     .Flush();
 
                 return false;

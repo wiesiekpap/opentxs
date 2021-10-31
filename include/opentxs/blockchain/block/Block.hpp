@@ -27,6 +27,11 @@ namespace blockchain
 {
 namespace block
 {
+namespace internal
+{
+struct Block;
+}  // namespace internal
+
 class Header;
 }  // namespace block
 }  // namespace blockchain
@@ -41,33 +46,14 @@ namespace block
 class OPENTXS_EXPORT Block
 {
 public:
-    using Subchain = blockchain::crypto::Subchain;
-    using SubchainID = std::pair<Subchain, OTIdentifier>;
-    using ElementID = std::pair<Bip32Index, SubchainID>;
-    using Pattern = std::pair<ElementID, Space>;
-    using Patterns = std::vector<Pattern>;
-    using Match = std::pair<pTxid, ElementID>;
-    using InputMatch = std::tuple<pTxid, Outpoint, ElementID>;
-    using InputMatches = std::vector<InputMatch>;
-    using OutputMatches = std::vector<Match>;
-    using Matches = std::pair<InputMatches, OutputMatches>;
-    using KeyID = blockchain::crypto::Key;
-    using ContactID = OTIdentifier;
-    using KeyData = std::map<KeyID, std::pair<ContactID, ContactID>>;
-
-    struct ParsedPatterns;
-
-    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> = 0;
-    virtual auto FindMatches(
-        const filter::Type type,
-        const Patterns& txos,
-        const Patterns& elements) const noexcept -> Matches = 0;
     virtual auto Header() const noexcept -> const block::Header& = 0;
     virtual auto ID() const noexcept -> const block::Hash& = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Block& = 0;
     virtual auto Print() const noexcept -> std::string = 0;
     virtual auto Serialize(AllocateOutput bytes) const noexcept -> bool = 0;
+
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Block& = 0;
 
     virtual ~Block() = default;
 

@@ -27,6 +27,7 @@
 #include "blockchain/node/wallet/Rescan.hpp"
 #include "blockchain/node/wallet/Scan.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
@@ -195,7 +196,7 @@ protected:
     virtual auto handle_confirmed_matches(
         const block::bitcoin::Block& block,
         const block::Position& position,
-        const block::Block::Matches& confirmed) noexcept -> void = 0;
+        const block::Matches& confirmed) noexcept -> void = 0;
     // NOTE call from all and only final constructor bodies
     auto init() noexcept -> void;
 
@@ -240,7 +241,7 @@ private:
         std::atomic_int& errors,
         const block::Position ancestor) noexcept -> void;
     virtual auto handle_mempool_matches(
-        const block::Block::Matches& matches,
+        const block::Matches& matches,
         std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept
         -> void = 0;
 

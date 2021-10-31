@@ -198,7 +198,10 @@ private:
         shutdown = value(WorkType::Shutdown),
         contact = value(WorkType::ContactUpdated),
         balance = value(WorkType::BlockchainBalance),
+        new_block = value(WorkType::BlockchainNewHeader),
         txid = value(WorkType::BlockchainNewTransaction),
+        reorg = value(WorkType::BlockchainReorg),
+        statechange = value(WorkType::BlockchainStateChange),
         sync = value(WorkType::BlockchainSyncProgress),
         init = OT_ZMQ_INIT_SIGNAL,
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
@@ -209,14 +212,20 @@ private:
     OTZMQListenCallback balance_cb_;
     OTZMQDealerSocket balance_socket_;
     Progress progress_;
+    blockchain::block::Height height_;
 
     auto display_balance(opentxs::Amount value) const noexcept
         -> std::string final;
 
     auto load_thread() noexcept -> void;
     auto pipeline(const Message& in) noexcept -> void final;
-    auto process_balance(const Message& message) noexcept -> void;
-    auto process_contact(const Message& message) noexcept -> void;
+    auto process_balance(const Message& in) noexcept -> void;
+    auto process_block(const Message& in) noexcept -> void;
+    auto process_contact(const Message& in) noexcept -> void;
+    auto process_height(const blockchain::block::Height height) noexcept
+        -> void;
+    auto process_reorg(const Message& in) noexcept -> void;
+    auto process_state(const Message& in) noexcept -> void;
     auto process_sync(const Message& in) noexcept -> void;
     auto process_txid(const Message& in) noexcept -> void;
     auto process_txid(const Data& txid) noexcept

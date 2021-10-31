@@ -72,6 +72,7 @@ public:
     static auto recover_workflow(CustomData& custom) noexcept
         -> const proto::PaymentWorkflow&;
 
+    auto Confirmations() const noexcept -> int override { return 1; }
     auto Contacts() const noexcept -> std::vector<std::string> override
     {
         return contacts_;

@@ -132,7 +132,7 @@ auto Inputs::CalculateSize(const bool normalized) const noexcept -> std::size_t
             cend(),
             cs.Size(),
             [=](const std::size_t& lhs, const auto& rhs) -> std::size_t {
-                return lhs + rhs.CalculateSize(normalized);
+                return lhs + rhs.Internal().CalculateSize(normalized);
             });
     });
 }
@@ -156,7 +156,7 @@ auto Inputs::ExtractElements(const filter::Type style) const noexcept
     LogTrace(OT_METHOD)(__func__)(": processing ")(size())(" inputs").Flush();
 
     for (const auto& txin : *this) {
-        auto temp = txin.ExtractElements(style);
+        auto temp = txin.Internal().ExtractElements(style);
         output.insert(
             output.end(),
             std::make_move_iterator(temp.begin()),
@@ -181,7 +181,7 @@ auto Inputs::FindMatches(
     auto index{-1};
 
     for (const auto& txin : *this) {
-        auto temp = txin.FindMatches(txid, type, txos, patterns);
+        auto temp = txin.Internal().FindMatches(txid, type, txos, patterns);
         LogTrace(OT_METHOD)(__func__)(": Verified ")(
             temp.second.size() +
             temp.first.size())(" matches in input ")(++index)
@@ -213,9 +213,9 @@ auto Inputs::GetPatterns() const noexcept -> std::vector<PatternID>
     return output;
 }
 
-auto Inputs::Keys() const noexcept -> std::vector<KeyID>
+auto Inputs::Keys() const noexcept -> std::vector<crypto::Key>
 {
-    auto out = std::vector<KeyID>{};
+    auto out = std::vector<crypto::Key>{};
 
     for (const auto& input : *this) {
         auto keys = input.Keys();
@@ -224,6 +224,33 @@ auto Inputs::Keys() const noexcept -> std::vector<KeyID>
     }
 
     return out;
+}
+
+auto Inputs::MergeMetadata(
+    const api::client::Blockchain& api,
+    const internal::Inputs& rhs) noexcept -> bool
+{
+    const auto count = size();
+
+    if (count != rhs.size()) {
+        LogOutput(OT_METHOD)(__func__)(": Wrong number of inputs").Flush();
+
+        return false;
+    }
+
+    for (auto i = std::size_t{0}; i < count; ++i) {
+        auto& l = *inputs_.at(i);
+        auto& r = rhs.at(i).Internal();
+
+        if (false == l.MergeMetadata(api, r)) {
+            LogOutput(OT_METHOD)(__func__)(": Failed to merge input ")(i)
+                .Flush();
+
+            return false;
+        }
+    }
+
+    return true;
 }
 
 auto Inputs::NetBalanceChange(

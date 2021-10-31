@@ -89,7 +89,6 @@ public:
     using Subchain = opentxs::blockchain::crypto::Subchain;
     using DecodedAddress = std::tuple<OTData, Style, std::set<Chain>, bool>;
     using ContactList = std::set<OTIdentifier>;
-    using Tx = opentxs::blockchain::block::bitcoin::Transaction;
     using Txid = opentxs::blockchain::block::Txid;
     using TxidHex = std::string;
     using PatternID = opentxs::blockchain::PatternID;
@@ -117,7 +116,8 @@ public:
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
         const Chain chain,
-        const Tx& transaction) const noexcept -> std::string = 0;
+        const opentxs::blockchain::block::bitcoin::Transaction& transaction)
+        const noexcept -> std::string = 0;
     virtual auto AssignContact(
         const identifier::Nym& nymID,
         const Identifier& accountID,
@@ -159,9 +159,11 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Blockchain& = 0;
     virtual auto LoadTransactionBitcoin(const Txid& id) const noexcept
-        -> std::unique_ptr<const Tx> = 0;
+        -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Transaction> = 0;
     virtual auto LoadTransactionBitcoin(const TxidHex& id) const noexcept
-        -> std::unique_ptr<const Tx> = 0;
+        -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Transaction> = 0;
     virtual auto LookupAccount(const Identifier& id) const noexcept
         -> AccountData = 0;
     virtual auto LookupContacts(const std::string& address) const noexcept
@@ -210,10 +212,6 @@ public:
         const Chain chain,
         const PasswordPrompt& reason) const noexcept(false)
         -> const opentxs::blockchain::crypto::PaymentCode& = 0;
-    virtual auto ProcessTransaction(
-        const Chain chain,
-        const Tx& transaction,
-        const PasswordPrompt& reason) const noexcept -> bool = 0;
     virtual auto RecipientContact(const Key& key) const noexcept
         -> OTIdentifier = 0;
     virtual auto Release(const Key key) const noexcept -> bool = 0;

@@ -20,7 +20,6 @@
 #include "internal/api/client/Factory.hpp"
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "internal/core/contract/peer/Factory.hpp"

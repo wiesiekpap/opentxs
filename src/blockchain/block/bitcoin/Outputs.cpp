@@ -103,7 +103,7 @@ auto Outputs::CalculateSize() const noexcept -> std::size_t
             cend(),
             cs.Size(),
             [](const std::size_t& lhs, const auto& rhs) -> std::size_t {
-                return lhs + rhs.CalculateSize();
+                return lhs + rhs.Internal().CalculateSize();
             });
     });
 }
@@ -127,7 +127,7 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
     LogTrace(OT_METHOD)(__func__)(": processing ")(size())(" outputs").Flush();
 
     for (const auto& txout : *this) {
-        auto temp = txout.ExtractElements(style);
+        auto temp = txout.Internal().ExtractElements(style);
         output.insert(
             output.end(),
             std::make_move_iterator(temp.begin()),
@@ -150,7 +150,7 @@ auto Outputs::FindMatches(
     auto index{-1};
 
     for (const auto& txout : *this) {
-        auto temp = txout.FindMatches(txid, type, patterns);
+        auto temp = txout.Internal().FindMatches(txid, type, patterns);
         LogTrace(OT_METHOD)(__func__)(": Verified ")(temp.second.size())(
             " matches in output ")(++index)
             .Flush();
@@ -191,9 +191,9 @@ auto Outputs::GetPatterns() const noexcept -> std::vector<PatternID>
     return output;
 }
 
-auto Outputs::Keys() const noexcept -> std::vector<KeyID>
+auto Outputs::Keys() const noexcept -> std::vector<crypto::Key>
 {
-    auto out = std::vector<KeyID>{};
+    auto out = std::vector<crypto::Key>{};
 
     for (const auto& output : *this) {
         auto keys = output.Keys();
@@ -202,6 +202,31 @@ auto Outputs::Keys() const noexcept -> std::vector<KeyID>
     }
 
     return out;
+}
+
+auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
+{
+    const auto count = size();
+
+    if (count != rhs.size()) {
+        LogOutput(OT_METHOD)(__func__)(": Wrong number of outputs").Flush();
+
+        return false;
+    }
+
+    for (auto i = std::size_t{0}; i < count; ++i) {
+        auto& l = *outputs_.at(i);
+        auto& r = rhs.at(i).Internal();
+
+        if (false == l.MergeMetadata(r)) {
+            LogOutput(OT_METHOD)(__func__)(": Failed to merge output ")(i)
+                .Flush();
+
+            return false;
+        }
+    }
+
+    return true;
 }
 
 auto Outputs::NetBalanceChange(

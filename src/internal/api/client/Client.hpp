@@ -72,6 +72,17 @@ class Settings;
 class Wallet;
 }  // namespace api
 
+namespace blockchain
+{
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+}  // namespace blockchain
+
 namespace identifier
 {
 class Nym;
@@ -110,6 +121,7 @@ class Flag;
 class Identifier;
 class OTClient;
 class OTPayment;
+class PasswordPrompt;
 template <class T>
 class UniqueQueue;
 }  // namespace opentxs
@@ -149,10 +161,15 @@ struct Blockchain : virtual public api::client::Blockchain {
     virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
     virtual auto KeyGenerated(const Chain chain) const noexcept -> void = 0;
     virtual auto NewNym(const identifier::Nym& id) const noexcept -> void = 0;
-    virtual bool ProcessContact(const Contact& contact) const noexcept = 0;
-    virtual bool ProcessMergedContact(
+    virtual auto ProcessContact(const Contact& contact) const noexcept
+        -> bool = 0;
+    virtual auto ProcessMergedContact(
         const Contact& parent,
-        const Contact& child) const noexcept = 0;
+        const Contact& child) const noexcept -> bool = 0;
+    virtual auto ProcessTransaction(
+        const Chain chain,
+        const opentxs::blockchain::block::bitcoin::Transaction& transaction,
+        const PasswordPrompt& reason) const noexcept -> bool = 0;
     /// Throws std::runtime_error if type is invalid
     virtual auto PubkeyHash(
         const opentxs::blockchain::Type chain,

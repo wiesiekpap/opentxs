@@ -25,6 +25,7 @@
 #include <utility>
 #include <vector>
 
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
@@ -35,6 +36,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -82,13 +84,13 @@ public:
     {
         return *this;
     }
-    auto Keys() const noexcept -> std::vector<KeyID> final
+    auto Keys() const noexcept -> std::vector<crypto::Key> final
     {
         return cache_.keys();
     }
     auto MinedPosition() const noexcept -> const block::Position& final
     {
-        return mined_position_;
+        return cache_.position();
     }
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
@@ -112,20 +114,23 @@ public:
     {
         return *script_;
     }
-    auto State() const noexcept -> node::TxoState final { return state_; }
-    auto Tags() const noexcept -> const std::set<node::TxoTag>& final
+    auto State() const noexcept -> node::TxoState final
     {
-        return tags_;
+        return cache_.state();
+    }
+    auto Tags() const noexcept -> const std::set<node::TxoTag> final
+    {
+        return cache_.tags();
     }
     auto Value() const noexcept -> blockchain::Amount final { return value_; }
 
-    auto AddTag(node::TxoTag tag) noexcept -> void final { tags_.emplace(tag); }
-    auto ForTestingOnlyAddKey(const KeyID& key) noexcept -> void final
+    auto AddTag(node::TxoTag tag) noexcept -> void final { cache_.add(tag); }
+    auto ForTestingOnlyAddKey(const crypto::Key& key) noexcept -> void final
     {
-        cache_.add(KeyID{key});
+        cache_.add(crypto::Key{key});
     }
     auto Internal() noexcept -> internal::Output& final { return *this; }
-    auto MergeMetadata(const SerializeType& rhs) noexcept -> void final;
+    auto MergeMetadata(const internal::Output& rhs) noexcept -> bool final;
     auto SetIndex(const std::uint32_t index) noexcept -> void final
     {
         const_cast<std::uint32_t&>(index_) = index;
@@ -136,7 +141,7 @@ public:
     }
     auto SetMinedPosition(const block::Position& pos) noexcept -> void final
     {
-        mined_position_ = pos;
+        cache_.set_position(pos);
     }
     auto SetPayee(const Identifier& contact) noexcept -> void final
     {
@@ -148,7 +153,7 @@ public:
     }
     auto SetState(node::TxoState state) noexcept -> void final
     {
-        state_ = state;
+        cache_.set_state(state);
     }
     auto SetValue(const blockchain::Amount& value) noexcept -> void final
     {
@@ -171,7 +176,7 @@ public:
         const std::uint32_t index,
         const blockchain::Amount& value,
         std::unique_ptr<const internal::Script> script,
-        boost::container::flat_set<KeyID>&& keys,
+        boost::container::flat_set<crypto::Key>&& keys,
         const VersionNumber version = default_version_) noexcept(false);
     Output(
         const api::Core& api,
@@ -182,7 +187,7 @@ public:
         const blockchain::Amount& value,
         std::unique_ptr<const internal::Script> script,
         std::optional<std::size_t> size,
-        boost::container::flat_set<KeyID>&& keys,
+        boost::container::flat_set<crypto::Key>&& keys,
         boost::container::flat_set<PatternID>&& pubkeyHashes,
         std::optional<PatternID>&& scriptHash,
         bool indexed,
@@ -201,15 +206,22 @@ private:
             auto lock = Lock{lock_};
             std::for_each(std::begin(keys_), std::end(keys_), cb);
         }
-        auto keys() const noexcept -> std::vector<KeyID>;
+        auto keys() const noexcept -> std::vector<crypto::Key>;
         auto payee() const noexcept -> OTIdentifier;
         auto payer() const noexcept -> OTIdentifier;
+        auto position() const noexcept -> const block::Position&;
+        auto state() const noexcept -> node::TxoState;
+        auto tags() const noexcept -> std::set<node::TxoTag>;
 
-        auto add(KeyID&& key) noexcept -> void;
+        auto add(crypto::Key&& key) noexcept -> void;
+        auto add(node::TxoTag tag) noexcept -> void;
+        auto merge(const internal::Output& rhs) noexcept -> bool;
         auto reset_size() noexcept -> void;
         auto set(const KeyData& data) noexcept -> void;
         auto set_payee(const Identifier& contact) noexcept -> void;
         auto set_payer(const Identifier& contact) noexcept -> void;
+        auto set_position(const block::Position& pos) noexcept -> void;
+        auto set_state(node::TxoState state) noexcept -> void;
         template <typename F>
         auto size(F cb) noexcept -> std::size_t
         {
@@ -225,7 +237,10 @@ private:
         Cache(
             const api::Core& api,
             std::optional<std::size_t>&& size,
-            boost::container::flat_set<KeyID>&& keys) noexcept;
+            boost::container::flat_set<crypto::Key>&& keys,
+            block::Position&& minedPosition,
+            node::TxoState state,
+            std::set<node::TxoTag>&& tags) noexcept;
         Cache(const Cache& rhs) noexcept;
 
     private:
@@ -233,7 +248,13 @@ private:
         std::optional<std::size_t> size_{};
         OTIdentifier payee_;
         OTIdentifier payer_;
-        boost::container::flat_set<KeyID> keys_;
+        boost::container::flat_set<crypto::Key> keys_;
+        block::Position mined_position_;
+        node::TxoState state_;
+        std::set<node::TxoTag> tags_;
+
+        auto set_payee(OTIdentifier&& contact) noexcept -> void;
+        auto set_payer(OTIdentifier&& contact) noexcept -> void;
 
         Cache() noexcept = delete;
     };
@@ -251,9 +272,6 @@ private:
     const boost::container::flat_set<PatternID> pubkey_hashes_;
     const std::optional<PatternID> script_hash_;
     mutable Cache cache_;
-    block::Position mined_position_;
-    node::TxoState state_;
-    std::set<node::TxoTag> tags_;
 
     auto index_elements() noexcept -> void;
 

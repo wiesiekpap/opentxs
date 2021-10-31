@@ -77,15 +77,16 @@ public:
 
 public:
     enum Roles {
-        AmountRole = Qt::UserRole + 0,    // QString
-        TextRole = Qt::UserRole + 1,      // QString
-        MemoRole = Qt::UserRole + 2,      // QString
-        TimeRole = Qt::UserRole + 3,      // QDateTime
-        UUIDRole = Qt::UserRole + 4,      // QString
-        PolarityRole = Qt::UserRole + 5,  // int, -1, 0, or 1
-        ContactsRole = Qt::UserRole + 6,  // QStringList
-        WorkflowRole = Qt::UserRole + 7,  // QString
-        TypeRole = Qt::UserRole + 8,      // int, opentxs::StorageBox)
+        AmountRole = Qt::UserRole + 0,         // QString
+        TextRole = Qt::UserRole + 1,           // QString
+        MemoRole = Qt::UserRole + 2,           // QString
+        TimeRole = Qt::UserRole + 3,           // QDateTime
+        UUIDRole = Qt::UserRole + 4,           // QString
+        PolarityRole = Qt::UserRole + 5,       // int, -1, 0, or 1
+        ContactsRole = Qt::UserRole + 6,       // QStringList
+        WorkflowRole = Qt::UserRole + 7,       // QString
+        TypeRole = Qt::UserRole + 8,           // int, opentxs::StorageBox)
+        ConfirmationsRole = Qt::UserRole + 9,  // int
     };
     enum Columns {
         TimeColumn = 0,
@@ -93,6 +94,7 @@ public:
         AmountColumn = 2,
         UUIDColumn = 3,
         MemoColumn = 4,
+        ConfirmationsColumn = 5,
     };
 
     QString accountID() const noexcept;

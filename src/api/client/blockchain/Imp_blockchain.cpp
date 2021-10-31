@@ -13,7 +13,6 @@
 #include <iterator>
 #include <map>
 #include <mutex>
-#include <optional>
 #include <set>
 #include <sstream>
 #include <string_view>
@@ -23,6 +22,7 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/node/Node.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -36,6 +36,7 @@
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -151,7 +152,8 @@ auto BlockchainImp::ActivityDescription(
 auto BlockchainImp::ActivityDescription(
     const identifier::Nym& nym,
     const opentxs::blockchain::Type chain,
-    const Tx& tx) const noexcept -> std::string
+    const opentxs::blockchain::block::bitcoin::Transaction& tx) const noexcept
+    -> std::string
 {
     auto output = std::stringstream{};
     const auto amount = tx.NetBalanceChange(parent_, nym);
@@ -214,17 +216,23 @@ auto BlockchainImp::AssignTransactionMemo(
     auto lock = Lock{lock_};
     auto pTransaction = load_transaction(lock, id);
 
-    if (false == bool(pTransaction)) { return false; }
+    if (false == bool(pTransaction)) {
+        LogOutput(OT_METHOD)(__func__)(": transaction ")(
+            label)(" does not exist")
+            .Flush();
 
-    auto& transaction = *pTransaction;
+        return false;
+    }
+
+    auto& transaction = pTransaction->Internal();
     transaction.SetMemo(label);
-    const auto serialized = transaction.Serialize(parent_);
+    const auto& db = api_.Network().Blockchain().Internal().Database();
 
-    OT_ASSERT(serialized.has_value());
+    if (false == db.StoreTransaction(transaction)) {
+        LogOutput(OT_METHOD)(__func__)(": failed to save updated transaction ")(
+            id)
+            .Flush();
 
-    if (false ==
-        api_.Network().Blockchain().Internal().Database().StoreTransaction(
-            serialized.value())) {
         return false;
     }
 
@@ -236,20 +244,12 @@ auto BlockchainImp::AssignTransactionMemo(
 auto BlockchainImp::broadcast_update_signal(
     const std::vector<pTxid>& transactions) const noexcept -> void
 {
+    const auto& db = api_.Network().Blockchain().Internal().Database();
     std::for_each(
         std::begin(transactions),
         std::end(transactions),
-        [this](const auto& txid) {
-            const auto data = api_.Network()
-                                  .Blockchain()
-                                  .Internal()
-                                  .Database()
-                                  .LoadTransaction(txid->Bytes());
-
-            OT_ASSERT(data.has_value());
-
-            const auto tx =
-                factory::BitcoinTransaction(api_, parent_, data.value());
+        [this, &db](const auto& txid) {
+            const auto tx = db.LoadTransaction(txid->Bytes());
 
             OT_ASSERT(tx);
 
@@ -258,8 +258,8 @@ auto BlockchainImp::broadcast_update_signal(
 }
 
 auto BlockchainImp::broadcast_update_signal(
-    const opentxs::blockchain::block::bitcoin::internal::Transaction& tx)
-    const noexcept -> void
+    const opentxs::blockchain::block::bitcoin::Transaction& tx) const noexcept
+    -> void
 {
     const auto chains = tx.Chains();
     std::for_each(std::begin(chains), std::end(chains), [&](const auto& chain) {
@@ -299,7 +299,7 @@ auto BlockchainImp::KeyGenerated(
 }
 
 auto BlockchainImp::LoadTransactionBitcoin(const TxidHex& txid) const noexcept
-    -> std::unique_ptr<const Tx>
+    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
 {
     auto lock = Lock{lock_};
 
@@ -307,7 +307,7 @@ auto BlockchainImp::LoadTransactionBitcoin(const TxidHex& txid) const noexcept
 }
 
 auto BlockchainImp::LoadTransactionBitcoin(const Txid& txid) const noexcept
-    -> std::unique_ptr<const Tx>
+    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
 {
     auto lock = Lock{lock_};
 
@@ -315,29 +315,18 @@ auto BlockchainImp::LoadTransactionBitcoin(const Txid& txid) const noexcept
 }
 
 auto BlockchainImp::load_transaction(const Lock& lock, const TxidHex& txid)
-    const noexcept -> std::unique_ptr<
-        opentxs::blockchain::block::bitcoin::internal::Transaction>
+    const noexcept
+    -> std::unique_ptr<opentxs::blockchain::block::bitcoin::Transaction>
 {
     return load_transaction(lock, api_.Factory().Data(txid, StringStyle::Hex));
 }
 
 auto BlockchainImp::load_transaction(const Lock& lock, const Txid& txid)
-    const noexcept -> std::unique_ptr<
-        opentxs::blockchain::block::bitcoin::internal::Transaction>
+    const noexcept
+    -> std::unique_ptr<opentxs::blockchain::block::bitcoin::Transaction>
 {
-    const auto serialized =
-        api_.Network().Blockchain().Internal().Database().LoadTransaction(
-            txid.Bytes());
-
-    if (false == serialized.has_value()) {
-        LogOutput(OT_METHOD)(__func__)(": Transaction ")(txid.asHex())(
-            " not found")
-            .Flush();
-
-        return {};
-    }
-
-    return factory::BitcoinTransaction(api_, parent_, serialized.value());
+    return api_.Network().Blockchain().Internal().Database().LoadTransaction(
+        txid.Bytes());
 }
 
 auto BlockchainImp::LookupContacts(const Data& pubkeyHash) const noexcept
@@ -389,51 +378,49 @@ auto BlockchainImp::ProcessMergedContact(
 
 auto BlockchainImp::ProcessTransaction(
     const opentxs::blockchain::Type chain,
-    const Tx& in,
+    const opentxs::blockchain::block::bitcoin::Transaction& in,
     const PasswordPrompt& reason) const noexcept -> bool
 {
+    const auto& db = api_.Network().Blockchain().Internal().Database();
+    auto copy = in.clone();
+
+    OT_ASSERT(copy);
+
     auto lock = Lock{lock_};
-    auto pTransaction = in.clone();
-
-    OT_ASSERT(pTransaction);
-
-    auto& transaction = *pTransaction;
-    const auto& id = transaction.ID();
+    const auto& id = in.ID();
     const auto txid = id.Bytes();
 
-    if (const auto tx =
-            api_.Network().Blockchain().Internal().Database().LoadTransaction(
-                txid);
-        tx.has_value()) {
-        transaction.MergeMetadata(parent_, chain, tx.value());
-        auto updated = transaction.Serialize(parent_);
+    if (auto tx = db.LoadTransaction(txid); tx) {
+        tx->Internal().MergeMetadata(parent_, chain, in.Internal());
 
-        OT_ASSERT(updated.has_value());
+        if (false == db.StoreTransaction(*tx)) {
+            LogOutput(OT_METHOD)(__func__)(
+                ": failed to save updated transaction ")(id.asHex())
+                .Flush();
 
-        if (false ==
-            api_.Network().Blockchain().Internal().Database().StoreTransaction(
-                updated.value())) {
             return false;
         }
+
+        copy.swap(tx);
     } else {
-        auto serialized = transaction.Serialize(parent_);
+        if (false == db.StoreTransaction(in)) {
+            LogOutput(OT_METHOD)(__func__)(": failed to save new transaction ")(
+                id.asHex())
+                .Flush();
 
-        OT_ASSERT(serialized.has_value());
-
-        if (false ==
-            api_.Network().Blockchain().Internal().Database().StoreTransaction(
-                serialized.value())) {
             return false;
         }
     }
 
-    if (false ==
-        api_.Network().Blockchain().Internal().Database().AssociateTransaction(
-            id, transaction.GetPatterns())) {
+    if (false == db.AssociateTransaction(id, copy->Internal().GetPatterns())) {
+        LogOutput(OT_METHOD)(__func__)(": associate patterns for transaction ")(
+            id.asHex())
+            .Flush();
+
         return false;
     }
 
-    return reconcile_activity_threads(lock, transaction);
+    return reconcile_activity_threads(lock, *copy);
 }
 
 auto BlockchainImp::reconcile_activity_threads(
@@ -449,8 +436,8 @@ auto BlockchainImp::reconcile_activity_threads(
 
 auto BlockchainImp::reconcile_activity_threads(
     const Lock& lock,
-    const opentxs::blockchain::block::bitcoin::internal::Transaction& tx)
-    const noexcept -> bool
+    const opentxs::blockchain::block::bitcoin::Transaction& tx) const noexcept
+    -> bool
 {
     if (!activity_.AddBlockchainTransaction(parent_, tx)) { return false; }
 
@@ -482,6 +469,32 @@ auto BlockchainImp::ReportScan(
     work->AddFrame(progress.first);
     work->AddFrame(hash.data(), hash.size());
     scan_updates_->Send(work);
+}
+
+auto BlockchainImp::Unconfirm(
+    const Blockchain::Key key,
+    const opentxs::blockchain::block::Txid& txid,
+    const Time time) const noexcept -> bool
+{
+    auto out = Imp::Unconfirm(key, txid, time);
+    auto lock = Lock{lock_};
+
+    if (auto tx = load_transaction(lock, txid); tx) {
+        static const auto null =
+            make_blank<opentxs::blockchain::block::Position>::value(api_);
+        tx->Internal().SetMinedPosition(null);
+        const auto& db = api_.Network().Blockchain().Internal().Database();
+
+        if (false == db.StoreTransaction(*tx)) {
+            LogOutput(OT_METHOD)(__func__)(
+                ": failed to save updated transaction ")(txid.asHex())
+                .Flush();
+
+            return false;
+        }
+    }
+
+    return out;
 }
 
 auto BlockchainImp::UpdateBalance(

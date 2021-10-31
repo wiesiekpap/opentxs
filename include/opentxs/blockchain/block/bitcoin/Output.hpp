@@ -14,10 +14,17 @@
 #include <vector>
 
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 
 namespace opentxs
 {
+namespace api
+{
+namespace client
+{
+class Blockchain;
+}  // namespace client
+}  // namespace api
+
 namespace blockchain
 {
 namespace block
@@ -51,32 +58,16 @@ namespace bitcoin
 class OPENTXS_EXPORT Output
 {
 public:
-    using ContactID = Transaction::ContactID;
-    using ParsedPatterns = Transaction::ParsedPatterns;
-    using Match = Transaction::Match;
-    using Matches = Transaction::Matches;
-    using KeyID = Transaction::KeyID;
-    using KeyData = Transaction::KeyData;
-    using SerializeType = proto::BlockchainTransactionOutput;
+    using ContactID = OTIdentifier;
 
-    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> = 0;
-    virtual auto FindMatches(
-        const ReadView txid,
-        const filter::Type type,
-        const ParsedPatterns& elements) const noexcept -> Matches = 0;
-    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Output& = 0;
     virtual auto Note(const api::client::Blockchain& blockchain) const noexcept
         -> std::string = 0;
-    virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
+    virtual auto Keys() const noexcept -> std::vector<crypto::Key> = 0;
     virtual auto Payee() const noexcept -> ContactID = 0;
     virtual auto Payer() const noexcept -> ContactID = 0;
     virtual auto Print() const noexcept -> std::string = 0;
-    virtual auto Serialize(const AllocateOutput destination) const noexcept
-        -> std::optional<std::size_t> = 0;
     virtual auto Script() const noexcept -> const bitcoin::Script& = 0;
     virtual auto Value() const noexcept -> blockchain::Amount = 0;
 

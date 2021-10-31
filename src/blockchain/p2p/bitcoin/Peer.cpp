@@ -28,6 +28,7 @@
 #include "blockchain/p2p/peer/Peer.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -1082,7 +1083,7 @@ auto Peer::process_getdata(
                     known_transactions_.emplace(inv.hash_->Bytes());
                     const auto bytes = [&] {
                         auto out = Space{};
-                        tx->Serialize(writer(out));
+                        tx->Internal().Serialize(writer(out));
 
                         return out;
                     }();

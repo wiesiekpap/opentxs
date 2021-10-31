@@ -213,6 +213,7 @@ TEST_F(Regtest_fixture_hd, account_activity_immature)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                1,
             },
         },
     };
@@ -256,7 +257,7 @@ TEST_F(Regtest_fixture_hd, advance_chain_one_block_before_maturation)
     auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 0;
-    account_activity_.expected_ += count;
+    account_activity_.expected_ += (2u * count);
 
     EXPECT_EQ(start, 1);
     EXPECT_EQ(end, 10);
@@ -300,6 +301,7 @@ TEST_F(Regtest_fixture_hd, account_activity_one_block_before_maturation)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                10,
             },
         },
     };
@@ -346,7 +348,7 @@ TEST_F(Regtest_fixture_hd, mature)
     auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 1;
-    account_activity_.expected_ += (count + 1);
+    account_activity_.expected_ += ((2 * count) + 1);
 
     EXPECT_EQ(start, 10);
     EXPECT_EQ(end, 11);
@@ -424,6 +426,7 @@ TEST_F(Regtest_fixture_hd, account_activity_mature)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                11,
             },
         },
     };
@@ -509,6 +512,7 @@ TEST_F(Regtest_fixture_hd, account_activity_failed_spend)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                11,
             },
         },
     };
@@ -617,6 +621,7 @@ TEST_F(Regtest_fixture_hd, account_activity_unconfirmed_spend)
                 "Outgoing Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                0,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -629,6 +634,7 @@ TEST_F(Regtest_fixture_hd, account_activity_unconfirmed_spend)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                11,
             },
         },
     };
@@ -675,7 +681,7 @@ TEST_F(Regtest_fixture_hd, confirm)
     auto future1 = listener_.get_future(SendHD(), Subchain::External, end);
     auto future2 = listener_.get_future(SendHD(), Subchain::Internal, end);
     account_list_.expected_ += 2;
-    account_activity_.expected_ += (count + 2);
+    account_activity_.expected_ += ((3 * count) + 2);
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {
         auto output = std::vector<Transaction>{};
@@ -760,6 +766,7 @@ TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)
                 "Outgoing Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(1)),
                 std::nullopt,
+                1,
             },
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -772,6 +779,7 @@ TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)
                 "Incoming Unit Test Simulation transaction",
                 ot::blockchain::HashToNumber(transactions_.at(0)),
                 std::nullopt,
+                12,
             },
         },
     };

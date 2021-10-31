@@ -19,6 +19,7 @@ extern "C" {
 #include <iosfwd>
 #include <iterator>
 #include <map>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 
@@ -38,11 +39,11 @@ extern "C" {
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/api/Options.hpp"
 #include "opentxs/blockchain/GCS.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
-#include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "util/LMDB.hpp"
 
 // #define OT_METHOD
@@ -342,7 +343,7 @@ struct Database::Imp {
         , blocks_(lmdb_, bulk_)
         , sync_(api_, lmdb_, blocks_path_->Get())
 #endif  // OPENTXS_BLOCK_STORAGE_ENABLED
-        , wallet_(blockchain, lmdb_, bulk_)
+        , wallet_(api_, blockchain, lmdb_, bulk_)
         , config_(api_, lmdb_)
     {
         OT_ASSERT(crypto_shorthash_KEYBYTES == siphash_key_.size());
@@ -557,7 +558,7 @@ auto Database::LoadFilterHeader(
 }
 
 auto Database::LoadTransaction(const ReadView txid) const noexcept
-    -> std::optional<proto::BlockchainTransaction>
+    -> std::unique_ptr<block::bitcoin::Transaction>
 {
     return imp_.wallet_.LoadTransaction(txid);
 }
@@ -673,7 +674,7 @@ auto Database::StoreSync(const Chain chain, const SyncItems& items)
 }
 
 auto Database::StoreTransaction(
-    const proto::BlockchainTransaction& tx) const noexcept -> bool
+    const block::bitcoin::Transaction& tx) const noexcept -> bool
 {
     return imp_.wallet_.StoreTransaction(tx);
 }
