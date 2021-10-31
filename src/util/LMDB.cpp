@@ -154,7 +154,8 @@ struct LMDB::Imp {
             return false;
         }
     }
-    auto Exists(const Table table, const ReadView index) const noexcept -> bool
+    auto Exists(const Table table, const ReadView index, const ReadView item)
+        const noexcept -> bool
     {
         try {
             auto tx = TransactionRO();
@@ -172,7 +173,15 @@ struct LMDB::Imp {
             }
 
             auto key = MDB_val{index.size(), const_cast<char*>(index.data())};
-            auto value = MDB_val{};
+            auto value = [&] {
+                if (valid(item)) {
+
+                    return MDB_val{item.size(), const_cast<char*>(item.data())};
+                } else {
+
+                    return MDB_val{};
+                }
+            }();
 
             return 0 == ::mdb_cursor_get(cursor, &key, &value, MDB_SET);
         } catch (const std::exception& e) {
@@ -697,7 +706,13 @@ auto LMDB::Delete(
 auto LMDB::Exists(const Table table, const ReadView index) const noexcept
     -> bool
 {
-    return imp_->Exists(table, index);
+    return imp_->Exists(table, index, {});
+}
+
+auto LMDB::Exists(const Table table, const ReadView index, const ReadView value)
+    const noexcept -> bool
+{
+    return imp_->Exists(table, index, value);
 }
 
 auto LMDB::Load(

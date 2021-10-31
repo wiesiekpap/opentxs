@@ -16,6 +16,7 @@
 #include <map>
 #include <mutex>
 #include <numeric>
+#include <ostream>
 #include <set>
 #include <shared_mutex>
 #include <stdexcept>
@@ -49,6 +50,7 @@
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
+#include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -342,7 +344,7 @@ struct Output::Imp {
                 }
 
                 try {
-                    auto& existing = find_output(lock, outpoint);
+                    auto& existing = find_output_mutable(lock, outpoint);
 
                     if (!copy.AssociatePreviousOutput(
                             blockchain_, inputIndex, existing)) {
@@ -392,7 +394,7 @@ struct Output::Imp {
                 OT_ASSERT(outpoint.Index() == index);
 
                 try {
-                    auto& existing = find_output(lock, outpoint);
+                    auto& existing = find_output_mutable(lock, outpoint);
 
                     if (false ==
                         change_state(
@@ -574,7 +576,7 @@ struct Output::Imp {
                     static_cast<std::uint32_t>(index));
 
                 try {
-                    auto& existing = find_output(lock, outpoint);
+                    auto& existing = find_output_mutable(lock, outpoint);
 
                     if (false == change_state(
                                      lock,
@@ -834,16 +836,29 @@ struct Output::Imp {
                 }
             }
 
-            rc = lmdb_.Delete(proposal_spent_, id.Bytes(), tx);
+            if (lmdb_.Exists(proposal_spent_, id.Bytes())) {
+                rc = lmdb_.Delete(proposal_spent_, id.Bytes(), tx);
 
-            if (false == rc) {
-                throw std::runtime_error{"failed to erase spent outpoints"};
+                if (false == rc) {
+                    throw std::runtime_error{"failed to erase spent outpoints"};
+                }
+            } else {
+                LogOutput(OT_METHOD)(__func__)(": Warning: spent index for ")(
+                    id.str())(" already removed")
+                    .Flush();
             }
 
-            rc = lmdb_.Delete(proposal_created_, id.Bytes(), tx);
+            if (lmdb_.Exists(proposal_created_, id.Bytes())) {
+                rc = lmdb_.Delete(proposal_created_, id.Bytes(), tx);
 
-            if (false == rc) {
-                throw std::runtime_error{"failed to erase created outpoints"};
+                if (false == rc) {
+                    throw std::runtime_error{
+                        "failed to erase created outpoints"};
+                }
+            } else {
+                LogOutput(OT_METHOD)(__func__)(": Warning: created index for ")(
+                    id.str())(" already removed")
+                    .Flush();
             }
 
             rc = proposals_.CancelProposal(tx, id);
@@ -962,7 +977,7 @@ struct Output::Imp {
             auto tx = lmdb_.TransactionRW();
             const auto choose =
                 [&](const auto outpoint) -> std::optional<UTXO> {
-                auto& existing = find_output(lock, outpoint);
+                auto& existing = find_output_mutable(lock, outpoint);
 
                 if (const auto& s = find_nym(lock, spender);
                     0u == s.count(outpoint)) {
@@ -1077,7 +1092,7 @@ struct Output::Imp {
             }();
 
             for (const auto& id : outpoints) {
-                auto& output = find_output(lock, id);
+                auto& output = find_output_mutable(lock, id);
                 using State = node::TxoState;
                 const auto state = [&]() -> std::optional<State> {
                     switch (output.State()) {
@@ -1200,10 +1215,10 @@ private:
     mutable std::shared_mutex lock_;
     mutable Cache cache_;
 
-    static auto states(node::TxoState in) noexcept -> States
+    static auto all_states() noexcept -> const States&
     {
         using State = node::TxoState;
-        static const auto all = States{
+        static const auto data = States{
             State::UnconfirmedNew,
             State::UnconfirmedSpend,
             State::ConfirmedNew,
@@ -1213,7 +1228,13 @@ private:
             State::Immature,
         };
 
-        if (State::All == in) { return all; }
+        return data;
+    }
+    static auto states(node::TxoState in) noexcept -> States
+    {
+        using State = node::TxoState;
+
+        if (State::All == in) { return all_states(); }
 
         return States{in};
     }
@@ -1644,9 +1665,8 @@ private:
 
         return output;
     }
-    /*  TODO read from database instead of cache
-    template <typename LockType>
-    auto print(const LockType&) const noexcept -> void
+    // TODO read from database instead of cache
+    auto print(const eLock&) const noexcept -> void
     {
         struct Output {
             std::stringstream text_{};
@@ -1654,7 +1674,7 @@ private:
         };
         auto output = std::map<node::TxoState, Output>{};
 
-        for (const auto& data : outputs_) {
+        for (const auto& data : cache_.outputs_) {
             const auto& outpoint = data.first;
             const auto& item = *data.second;
             auto& out = output[item.State()];
@@ -1682,6 +1702,8 @@ private:
                     out.text_ << "unknown";
                 }
             }
+
+            out.text_ << ", state: " << opentxs::print(item.State());
         }
 
         const auto& unconfirmed = output[node::TxoState::UnconfirmedNew];
@@ -1718,7 +1740,7 @@ private:
 
         LogOutput(OT_METHOD)(__func__)(": Outputs by block:\n");
 
-        for (const auto& [position, outputs] : positions_) {
+        for (const auto& [position, outputs] : cache_.positions_) {
             const auto& [height, hash] = position;
             LogOutput("  * block ")(hash->asHex())(" at height ")(height)("\n");
 
@@ -1730,7 +1752,7 @@ private:
         LogOutput.Flush();
         LogOutput(OT_METHOD)(__func__)(": Outputs by nym:\n");
 
-        for (const auto& [id, outputs] : nyms_) {
+        for (const auto& [id, outputs] : cache_.nyms_) {
             LogOutput("  * ")(id->str())("\n");
 
             for (const auto& outpoint : outputs) {
@@ -1741,7 +1763,7 @@ private:
         LogOutput.Flush();
         LogOutput(OT_METHOD)(__func__)(": Outputs by subaccount:\n");
 
-        for (const auto& [id, outputs] : accounts_) {
+        for (const auto& [id, outputs] : cache_.accounts_) {
             LogOutput("  * ")(id->str())("\n");
 
             for (const auto& outpoint : outputs) {
@@ -1752,7 +1774,7 @@ private:
         LogOutput.Flush();
         LogOutput(OT_METHOD)(__func__)(": Outputs by subchain:\n");
 
-        for (const auto& [id, outputs] : subchains_) {
+        for (const auto& [id, outputs] : cache_.subchains_) {
             LogOutput("  * ")(id->str())("\n");
 
             for (const auto& outpoint : outputs) {
@@ -1763,7 +1785,7 @@ private:
         LogOutput.Flush();
         LogOutput(OT_METHOD)(__func__)(": Outputs by key:\n");
 
-        for (const auto& [key, outputs] : keys_) {
+        for (const auto& [key, outputs] : cache_.keys_) {
             LogOutput("  * ")(opentxs::print(key))("\n");
 
             for (const auto& outpoint : outputs) {
@@ -1774,7 +1796,7 @@ private:
         LogOutput.Flush();
         LogOutput(OT_METHOD)(__func__)(": Outputs by state:\n");
 
-        for (const auto& [state, outputs] : states_) {
+        for (const auto& [state, outputs] : cache_.states_) {
             LogOutput("  * ")(opentxs::print(state))("\n");
 
             for (const auto& outpoint : outputs) {
@@ -1784,18 +1806,27 @@ private:
 
         LogOutput.Flush();
         LogOutput(OT_METHOD)(__func__)(": Generation outputs:\n");
+        lmdb_.Read(
+            generation_,
+            [](const auto key, const auto value) -> bool {
+                const auto height = [&] {
+                    auto out = block::Height{};
 
-        for (const auto& [height, outputs] : generation_) {
-            LogOutput("  * height ")(height)("\n");
+                    OT_ASSERT(sizeof(out) == key.size());
 
-            for (const auto& outpoint : outputs) {
-                LogOutput("    * ")(outpoint.str())("\n");
-            }
-        }
+                    std::memcpy(&out, key.data(), key.size());
+
+                    return out;
+                }();
+                const auto outpoint = block::Outpoint{value};
+                LogOutput("  * height ")(height)(", ")(outpoint.str())("\n");
+
+                return true;
+            },
+            Dir::Forward);
 
         LogOutput.Flush();
     }
-    */
     auto publish_balance(const eLock& lock) const noexcept -> void
     {
         blockchain_.UpdateBalance(chain_, get_balance(lock));
@@ -1906,17 +1937,27 @@ private:
         const node::TxoState newState) noexcept -> bool
     {
         try {
-            auto& existing = find_output(lock, id);
+            auto& existing = find_output_mutable(lock, id);
 
-            if (existing.State() != oldState) {
+            if (const auto state = existing.State(); state == oldState) {
+
+                return change_state(lock, tx, id, existing, newState, blank_);
+            } else if (state == newState) {
+                LogVerbose(OT_METHOD)(__func__)(": Warning: outpoint ")(
+                    id.str())(" already in desired state: ")(
+                    opentxs::print(newState))
+                    .Flush();
+
+                return true;
+            } else {
                 LogOutput(OT_METHOD)(__func__)(
-                    ": incorrect state for outpoint ")(id.str())
+                    ": incorrect state for outpoint ")(id.str())(
+                    ". Expected: ")(opentxs::print(oldState))(", actual: ")(
+                    opentxs::print(state))
                     .Flush();
 
                 return false;
             }
-
-            return change_state(lock, tx, id, existing, newState, blank_);
         } catch (...) {
             LogOutput(OT_METHOD)(__func__)(": outpoint ")(id.str())(
                 " does not exist")
@@ -1933,7 +1974,7 @@ private:
         const block::Position newPosition) noexcept -> bool
     {
         try {
-            auto& output = find_output(lock, id);
+            auto& output = find_output_mutable(lock, id);
 
             return change_state(lock, tx, id, output, newState, newPosition);
         } catch (...) {
@@ -1962,15 +2003,23 @@ private:
 
         try {
             if (updateState) {
-                rc = lmdb_.Delete(
-                    states_,
-                    static_cast<std::size_t>(oldState),
-                    id.Bytes(),
-                    tx);
+                auto deleted = std::vector<node::TxoState>{};
 
-                if (false == rc) {
-                    throw std::runtime_error{
-                        "Failed to remove old state index"};
+                for (const auto state : all_states()) {
+                    if (lmdb_.Delete(
+                            states_,
+                            static_cast<std::size_t>(state),
+                            id.Bytes(),
+                            tx)) {
+                        deleted.emplace_back(state);
+                    }
+                }
+
+                if ((0u == deleted.size()) || (oldState != deleted.front())) {
+                    LogOutput(OT_METHOD)(__func__)(
+                        ": Warning: state index for ")(id.str())(
+                        " did not match expected value")
+                        .Flush();
                 }
 
                 rc = lmdb_
@@ -1990,12 +2039,19 @@ private:
                 const auto oldP = db::Position{oldPosition};
                 const auto newP = db::Position{newPosition};
 
-                rc = lmdb_.Delete(
-                    positions_, reader(oldP.data_), id.Bytes(), tx);
+                if (lmdb_.Exists(positions_, reader(oldP.data_), id.Bytes())) {
+                    rc = lmdb_.Delete(
+                        positions_, reader(oldP.data_), id.Bytes(), tx);
 
-                if (false == rc) {
-                    throw std::runtime_error{
-                        "Failed to remove old position index"};
+                    if (false == rc) {
+                        throw std::runtime_error{
+                            "Failed to remove old position index"};
+                    }
+                } else {
+                    LogOutput(OT_METHOD)(__func__)(
+                        ": Warning: position index for ")(id.str())(
+                        " already removed")
+                        .Flush();
                 }
 
                 rc = lmdb_.Store(positions_, reader(newP.data_), id.Bytes(), tx)
@@ -2006,29 +2062,35 @@ private:
                         "Failed to add position state index"};
                 }
             }
+
+            if (updateState) {
+                auto& from = cache_.states_[oldState];
+                auto& to = cache_.states_[newState];
+                from.erase(id);
+                to.emplace(id);
+                output.SetState(newState);
+            }
+
+            if (updatePosition) {
+                auto& from = cache_.positions_[oldPosition];
+                auto& to = cache_.positions_[effective];
+                from.erase(id);
+                to.emplace(id);
+                output.SetMinedPosition(effective);
+            }
+
+            auto rc = write_output(lock, tx, id, output);
+
+            if (false == rc) {
+                throw std::runtime_error{"Failed to update output"};
+            }
+
+            return true;
         } catch (const std::exception& e) {
             LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
-
-        if (updateState) {
-            auto& from = cache_.states_[oldState];
-            auto& to = cache_.states_[newState];
-            from.erase(id);
-            to.emplace(id);
-            output.SetState(newState);
-        }
-
-        if (updatePosition) {
-            auto& from = cache_.positions_[oldPosition];
-            auto& to = cache_.positions_[effective];
-            from.erase(id);
-            to.emplace(id);
-            output.SetMinedPosition(effective);
-        }
-
-        return true;
     }
     auto check_proposals(
         const eLock& lock,
@@ -2242,29 +2304,8 @@ private:
                 created.AddTag(node::TxoTag::Normal);
             }
 
-            const auto serialized = [&] {
-                auto out = Space{};
-                const auto data = [&] {
-                    auto proto = block::bitcoin::Output::SerializeType{};
-                    const auto rc = created.Serialize(blockchain_, proto);
-
-                    if (false == rc) {
-                        throw std::runtime_error{
-                            "failed to serialize as protobuf"};
-                    }
-
-                    return proto;
-                }();
-
-                if (false == proto::write(data, writer(out))) {
-                    throw std::runtime_error{"failed to serialize as bytes"};
-                }
-
-                return out;
-            }();
             const auto sPos = db::Position{pos};
-            auto rc =
-                lmdb_.Store(outputs_, id.Bytes(), reader(serialized), tx).first;
+            auto rc = write_output(lock, tx, id, created);
 
             if (false == rc) {
                 throw std::runtime_error{"failed to write output"};
@@ -2325,10 +2366,40 @@ private:
 
         return true;
     }
-    auto find_output(const eLock& lock, const block::Outpoint& id) noexcept(
-        false) -> block::bitcoin::internal::Output&
+    auto find_output_mutable(
+        const eLock& lock,
+        const block::Outpoint& id) noexcept(false)
+        -> block::bitcoin::internal::Output&
     {
         return load_output(lock, id);
+    }
+    auto write_output(
+        const eLock& lock,
+        MDB_txn* tx,
+        const block::Outpoint& id,
+        const block::bitcoin::internal::Output& output) noexcept -> bool
+    {
+        const auto serialized = [&] {
+            auto out = Space{};
+            const auto data = [&] {
+                auto proto = block::bitcoin::Output::SerializeType{};
+                const auto rc = output.Serialize(blockchain_, proto);
+
+                if (false == rc) {
+                    throw std::runtime_error{"failed to serialize as protobuf"};
+                }
+
+                return proto;
+            }();
+
+            if (false == proto::write(data, writer(out))) {
+                throw std::runtime_error{"failed to serialize as bytes"};
+            }
+
+            return out;
+        }();
+
+        return lmdb_.Store(outputs_, id.Bytes(), reader(serialized), tx).first;
     }
 
     Imp() = delete;

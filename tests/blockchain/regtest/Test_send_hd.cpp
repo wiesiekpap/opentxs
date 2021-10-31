@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <chrono>
 #include <string>
 #include <utility>
 
@@ -456,6 +457,91 @@ TEST_F(Regtest_fixture_hd, account_list_mature)
 }
 
 TEST_F(Regtest_fixture_hd, txodb_inital_mature) { EXPECT_TRUE(CheckTXODB()); }
+
+TEST_F(Regtest_fixture_hd, failed_spend)
+{
+    account_list_.expected_ += 0;
+    account_activity_.expected_ += 0;
+    const auto& network =
+        client_1_.Network().Blockchain().GetChain(test_chain_);
+    constexpr auto address{"mipcBbFg9gMiCh81Kj8tqqdgoZub1ZJRfn"};
+    auto future = network.SendToAddress(
+        alice_.nym_id_, address, 140000000000, memo_outgoing_);
+    const auto txid = future.get().second;
+
+    EXPECT_TRUE(txid->empty());
+
+    // TODO ensure CancelProposal is finished processing with appropriate signal
+    ot::Sleep(std::chrono::seconds{5});
+}
+
+TEST_F(Regtest_fixture_hd, account_activity_failed_spend)
+{
+    const auto& id = SendHD().Parent().AccountID();
+    const auto expected = AccountActivityData{
+        expected_account_type_,
+        id.str(),
+        expected_account_name_,
+        expected_unit_type_,
+        expected_unit_.str(),
+        expected_display_unit_,
+        expected_notary_.str(),
+        expected_notary_name_,
+        1,
+        10000004950,
+        u8"100.000\u202F049\u202F5 units",
+        "",
+        {},
+        {test_chain_},
+        100,
+        {height_, height_},
+        {},
+        {},
+        {
+            {
+                ot::StorageBox::BLOCKCHAIN,
+                1,
+                10000004950,
+                u8"100.000\u202F049\u202F5 units",
+                {},
+                "",
+                "",
+                "Incoming Unit Test Simulation transaction",
+                ot::blockchain::HashToNumber(transactions_.at(0)),
+                std::nullopt,
+            },
+        },
+    };
+
+    ASSERT_TRUE(wait_for_counter(account_activity_));
+    EXPECT_TRUE(check_account_activity(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_qt(alice_, id, expected));
+    EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
+}
+
+TEST_F(Regtest_fixture_hd, account_list_failed_spend)
+{
+    const auto expected = AccountListData{{
+        {SendHD().Parent().AccountID().str(),
+         expected_unit_.str(),
+         expected_display_unit_,
+         expected_account_name_,
+         expected_notary_.str(),
+         expected_notary_name_,
+         expected_account_type_,
+         expected_unit_type_,
+         1,
+         10000004950,
+         u8"100.000\u202F049\u202F5 units"},
+    }};
+
+    ASSERT_TRUE(wait_for_counter(account_list_));
+    EXPECT_TRUE(check_account_list(alice_, expected));
+    EXPECT_TRUE(check_account_list_qt(alice_, expected));
+    EXPECT_TRUE(check_account_list_rpc(alice_, expected));
+}
+
+TEST_F(Regtest_fixture_hd, txodb_failed_spend) { EXPECT_TRUE(CheckTXODB()); }
 
 TEST_F(Regtest_fixture_hd, spend)
 {
