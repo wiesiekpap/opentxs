@@ -26,6 +26,7 @@
 #include "blockchain/node/filteroracle/HeaderDownloader.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"
@@ -747,7 +748,7 @@ auto FilterOracle::process_block(
     const auto& id = block.ID();
     const auto params = blockchain::internal::GetFilterParams(filterType);
     const auto elements = [&] {
-        const auto input = block.ExtractElements(filterType);
+        const auto input = block.Internal().ExtractElements(filterType);
         auto output = std::vector<OTData>{};
         std::transform(
             input.begin(),

@@ -20,7 +20,6 @@
 #include "internal/api/Api.hpp"
 #include "internal/api/crypto/Factory.hpp"
 #if OT_BLOCKCHAIN
-#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #endif  // OT_BLOCKCHAIN

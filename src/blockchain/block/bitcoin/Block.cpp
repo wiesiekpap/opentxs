@@ -16,7 +16,6 @@
 #include <functional>
 #include <iosfwd>
 #include <iterator>
-#include <limits>
 #include <map>
 #include <numeric>
 #include <optional>
@@ -73,7 +72,7 @@ auto BitcoinBlock(
 
         {
             auto& mGen = const_cast<Tx&>(gen);
-            mGen.SetPosition(0);
+            mGen.Internal().SetPosition(0);
         }
 
         auto index = Block::TxidIndex{};
@@ -94,7 +93,7 @@ auto BitcoinBlock(
 
             {
                 auto& mTx = const_cast<Tx&>(*tx);
-                mTx.SetPosition(++position);
+                mTx.Internal().SetPosition(++position);
             }
 
             const auto& id = tx->ID();
@@ -226,103 +225,6 @@ auto parse_normal_block(
         std::move(sizeData));
 }
 }  // namespace opentxs::factory
-
-namespace opentxs::blockchain::block
-{
-Block::ParsedPatterns::ParsedPatterns(const Block::Patterns& in) noexcept
-    : data_()
-    , map_()
-{
-    data_.reserve(in.size());
-
-    for (auto i{in.cbegin()}; i != in.cend(); std::advance(i, 1)) {
-        const auto& [elementID, data] = *i;
-        map_.emplace(reader(data), i);
-        data_.emplace_back(data);
-    }
-
-    std::sort(data_.begin(), data_.end());
-}
-
-auto SetIntersection(
-    const api::Core& api,
-    const ReadView txid,
-    const Block::ParsedPatterns& parsed,
-    const std::vector<Space>& compare) noexcept -> Block::Matches
-{
-    auto matches = std::vector<Space>{};
-    auto output = Block::Matches{};
-    std::set_intersection(
-        std::begin(parsed.data_),
-        std::end(parsed.data_),
-        std::begin(compare),
-        std::end(compare),
-        std::back_inserter(matches));
-    output.second.reserve(matches.size());
-    std::transform(
-        std::begin(matches),
-        std::end(matches),
-        std::back_inserter(output.second),
-        [&](const auto& match) -> Block::Match {
-            return {
-                api.Factory().Data(txid), parsed.map_.at(reader(match))->first};
-        });
-
-    return output;
-}
-}  // namespace opentxs::blockchain::block
-
-namespace opentxs::blockchain::block::bitcoin::internal
-{
-auto Opcode(const OP opcode) noexcept(false) -> ScriptElement
-{
-    return {opcode, {}, {}, {}};
-}
-
-auto PushData(const ReadView in) noexcept(false) -> ScriptElement
-{
-    const auto size = in.size();
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wtautological-type-limit-compare"
-    // std::size_t might be 32 bit
-    if (size > std::numeric_limits<std::uint32_t>::max()) {
-        throw std::out_of_range("Too many bytes");
-    }
-#pragma GCC diagnostic pop
-
-    if ((nullptr == in.data()) || (0 == size)) {
-        return {OP::PUSHDATA1, {}, Space{std::byte{0x0}}, Space{}};
-    }
-
-    auto output = ScriptElement{};
-    auto& [opcode, invalid, bytes, data] = output;
-
-    if (75 >= size) {
-        opcode = static_cast<OP>(static_cast<std::uint8_t>(size));
-    } else if (std::numeric_limits<std::uint8_t>::max() >= size) {
-        opcode = OP::PUSHDATA1;
-        bytes = Space{std::byte{static_cast<std::uint8_t>(size)}};
-    } else if (std::numeric_limits<std::uint16_t>::max() >= size) {
-        opcode = OP::PUSHDATA2;
-        const auto buf =
-            be::little_uint16_buf_t{static_cast<std::uint16_t>(size)};
-        bytes = space(sizeof(buf));
-        std::memcpy(bytes.value().data(), &buf, sizeof(buf));
-    } else {
-        opcode = OP::PUSHDATA4;
-        const auto buf =
-            be::little_uint32_buf_t{static_cast<std::uint32_t>(size)};
-        bytes = space(sizeof(buf));
-        std::memcpy(bytes.value().data(), &buf, sizeof(buf));
-    }
-
-    data = space(size);
-    std::memcpy(data.value().data(), in.data(), in.size());
-
-    return output;
-}
-}  // namespace opentxs::blockchain::block::bitcoin::internal
 
 namespace opentxs::blockchain::block::bitcoin::implementation
 {
@@ -484,7 +386,7 @@ auto Block::calculate_size() const noexcept -> CalculatedSize
         0, network::blockchain::bitcoin::CompactSize(transactions_.size())};
     auto& [bytes, cs] = output;
     auto cb = [](const auto& previous, const auto& in) -> std::size_t {
-        return previous + in.second->CalculateSize();
+        return previous + in.second->Internal().CalculateSize();
     };
     bytes = std::accumulate(
         std::begin(transactions_),
@@ -504,7 +406,7 @@ auto Block::ExtractElements(const filter::Type style) const noexcept
         .Flush();
 
     for (const auto& [txid, tx] : transactions_) {
-        auto temp = tx->ExtractElements(style);
+        auto temp = tx->Internal().ExtractElements(style);
         output.insert(
             output.end(),
             std::make_move_iterator(temp.begin()),
@@ -531,10 +433,10 @@ auto Block::FindMatches(
         .Flush();
     auto output = Matches{};
     auto& [inputs, outputs] = output;
-    const auto parsed = ParsedPatterns{patterns};
+    const auto parsed = block::ParsedPatterns{patterns};
 
     for (const auto& [txid, tx] : transactions_) {
-        auto temp = tx->FindMatches(style, outpoints, parsed);
+        auto temp = tx->Internal().FindMatches(style, outpoints, parsed);
         inputs.insert(
             inputs.end(),
             std::make_move_iterator(temp.first.begin()),
@@ -633,7 +535,8 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
             OT_ASSERT(pTX);
 
             const auto& tx = *pTX;
-            const auto encoded = tx.Serialize(preallocated(remaining, it));
+            const auto encoded =
+                tx.Internal().Serialize(preallocated(remaining, it));
 
             if (false == encoded.has_value()) {
                 LogOutput(OT_METHOD)(__func__)(

@@ -153,6 +153,7 @@ auto check_account_activity(
 
     for (auto it{v.begin()}; it < v.end(); ++it, row = widget.Next()) {
         output &= (row->Amount() == it->amount_);
+        output &= (row->Confirmations() == it->confirmations_);
         output &= (row->Contacts() == it->contacts_);
         output &= (row->DisplayAmount() == it->display_amount_);
         output &= (row->Memo() == it->memo_);
@@ -172,6 +173,7 @@ auto check_account_activity(
         output &= (lastVector == lastRow);
 
         EXPECT_EQ(row->Amount(), it->amount_);
+        EXPECT_EQ(row->Confirmations(), it->confirmations_);
         EXPECT_EQ(row->Contacts(), it->contacts_);
         EXPECT_EQ(row->DisplayAmount(), it->display_amount_);
         EXPECT_EQ(row->Memo(), it->memo_);

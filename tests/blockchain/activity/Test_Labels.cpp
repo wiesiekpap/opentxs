@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Helpers.hpp"
+#include "internal/api/client/Client.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
@@ -101,7 +102,7 @@ TEST_F(Test_BlockchainActivity, unlabled)
 
     txid_ = incoming->ID().asHex();
 
-    ASSERT_TRUE(api_.Blockchain().ProcessTransaction(
+    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *incoming, reason_));
 
     auto transaction = api_.Blockchain().LoadTransactionBitcoin(txid_);

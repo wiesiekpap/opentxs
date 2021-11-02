@@ -35,7 +35,7 @@
 
 namespace ottest
 {
-constexpr auto account_activity_columns_{5};
+constexpr auto account_activity_columns_{6};
 constexpr auto account_list_columns_{4};
 constexpr auto activity_thread_columns_{7};
 constexpr auto blockchain_account_status_columns_{1};
@@ -445,6 +445,7 @@ auto check_row(
         const auto contacts = model.data(index, Model::ContactsRole);
         const auto workflow = model.data(index, Model::WorkflowRole);
         const auto type = model.data(index, Model::TypeRole);
+        const auto confirmations = model.data(index, Model::ConfirmationsRole);
         const auto display = model.data(index, Qt::DisplayRole);
 
         if (const auto& required = expected.timestamp_; required.has_value()) {
@@ -482,6 +483,11 @@ auto check_row(
 
                 EXPECT_EQ(display, memo);
             } break;
+            case Model::ConfirmationsColumn: {
+                output &= (display == confirmations);
+
+                EXPECT_EQ(display, confirmations);
+            } break;
             default: {
                 output &= false;
 
@@ -494,6 +500,7 @@ auto check_row(
         output &= (memo.toString().toStdString() == expected.memo_);
         output &= (uuid.toString().toStdString() == expected.uuid_);
         output &= (polarity.toInt() == expected.polarity_);
+        output &= (confirmations.toInt() == expected.confirmations_);
         output &= (contacts.toStringList() == rContacts);
         output &= (workflow.toString().toStdString() == expected.workflow_);
         output &= (static_cast<ot::StorageBox>(type.toInt()) == expected.type_);
@@ -505,6 +512,7 @@ auto check_row(
         EXPECT_EQ(memo.toString().toStdString(), expected.memo_);
         EXPECT_EQ(uuid.toString().toStdString(), expected.uuid_);
         EXPECT_EQ(polarity.toInt(), expected.polarity_);
+        EXPECT_EQ(confirmations.toInt(), expected.confirmations_);
         EXPECT_EQ(contacts.toStringList(), rContacts);
         EXPECT_EQ(workflow.toString().toStdString(), expected.workflow_);
         EXPECT_EQ(static_cast<ot::StorageBox>(type.toInt()), expected.type_);

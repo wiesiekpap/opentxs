@@ -23,6 +23,7 @@
 #include "bip158/bch_filter_1307723.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -115,7 +116,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
     {
         auto output = std::vector<ot::OTData>{};
 
-        for (const auto& bytes : block.ExtractElements(
+        for (const auto& bytes : block.Internal().ExtractElements(
                  ot::blockchain::filter::Type::Basic_BIP158)) {
             output.emplace_back(api_.Factory().Data(ot::reader(bytes)));
         }

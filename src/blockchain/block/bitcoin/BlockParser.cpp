@@ -16,7 +16,6 @@
 #include <vector>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"

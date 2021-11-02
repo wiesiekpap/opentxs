@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
@@ -79,7 +80,7 @@ TEST_F(Regtest_fixture_single, generate_block)
     {
         const auto serialized = [&] {
             auto output = miner_.Factory().Data();
-            tx->Serialize(output->WriteInto());
+            tx->Internal().Serialize(output->WriteInto());
 
             return output;
         }();
@@ -93,7 +94,7 @@ TEST_F(Regtest_fixture_single, generate_block)
 
         const auto serialized2 = [&] {
             auto output = miner_.Factory().Data();
-            recovered->Serialize(output->WriteInto());
+            recovered->Internal().Serialize(output->WriteInto());
 
             return output;
         }();

@@ -15,7 +15,6 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Log.hpp"
 
@@ -58,7 +57,7 @@ auto Mempool::Run() noexcept -> bool
     auto lock = Lock{lock_};
     const auto targets = parent_.get_account_targets();
     const auto& [elements, utxos, patterns] = targets;
-    const auto parsed = block::Block::ParsedPatterns{elements};
+    const auto parsed = block::ParsedPatterns{elements};
     const auto outpoints = [&] {
         auto out = SubchainStateData::Patterns{};
         parent_.translate(std::get<1>(targets), out);
@@ -75,8 +74,8 @@ auto Mempool::Run() noexcept -> bool
 
         OT_ASSERT(copy);
 
-        const auto matches =
-            copy->FindMatches(parent_.filter_type_, outpoints, parsed);
+        const auto matches = copy->Internal().FindMatches(
+            parent_.filter_type_, outpoints, parsed);
         parent_.handle_mempool_matches(matches, std::move(copy));
         queue_.pop();
     }

@@ -34,7 +34,6 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -126,7 +125,7 @@ auto BitcoinTransactionInput(
         }
     }
 
-    auto keys = boost::container::flat_set<ReturnType::KeyID>{};
+    auto keys = boost::container::flat_set<blockchain::crypto::Key>{};
     std::for_each(
         std::begin(outputKeys), std::end(outputKeys), [&](const auto& key) {
             keys.emplace(key);
@@ -236,7 +235,7 @@ auto BitcoinTransactionInput(
                 in.version(),
                 std::move(spends));
         } else {
-            auto keys = boost::container::flat_set<ReturnType::KeyID>{};
+            auto keys = boost::container::flat_set<blockchain::crypto::Key>{};
             auto pkh = boost::container::flat_set<blockchain::PatternID>{};
 
             for (const auto& key : in.key()) {
@@ -301,7 +300,7 @@ Input::Input(
     Space&& coinbase,
     const VersionNumber version,
     std::optional<std::size_t> size,
-    boost::container::flat_set<KeyID>&& keys,
+    boost::container::flat_set<crypto::Key>&& keys,
     boost::container::flat_set<PatternID>&& pubkeyHashes,
     std::optional<PatternID>&& scriptHash,
     const bool indexed,
@@ -368,7 +367,7 @@ Input::Input(
     std::unique_ptr<const internal::Script> script,
     const VersionNumber version,
     std::unique_ptr<const internal::Output> output,
-    boost::container::flat_set<KeyID>&& keys) noexcept(false)
+    boost::container::flat_set<crypto::Key>&& keys) noexcept(false)
     : Input(
           api,
           blockchain,
@@ -790,13 +789,10 @@ auto Input::index_elements(const api::client::Blockchain& blockchain) noexcept
 }
 
 auto Input::MergeMetadata(
-    const api::client::Blockchain& blockchain,
-    const SerializeType& rhs) noexcept -> void
+    const api::client::Blockchain& api,
+    const internal::Input& rhs) noexcept -> bool
 {
-    cache_.merge(blockchain, rhs, [&] {
-        return factory::BitcoinTransactionOutput(
-            api_, blockchain, chain_, rhs.spends());
-    });
+    return cache_.merge(api, rhs);
 }
 
 auto Input::Print() const noexcept -> std::string

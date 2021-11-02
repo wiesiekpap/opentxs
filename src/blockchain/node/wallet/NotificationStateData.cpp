@@ -107,7 +107,7 @@ auto NotificationStateData::calculate_id(
 auto NotificationStateData::handle_confirmed_matches(
     const block::bitcoin::Block& block,
     const block::Position& position,
-    const block::Block::Matches& confirmed) noexcept -> void
+    const block::Matches& confirmed) noexcept -> void
 {
     const auto& [utxo, general] = confirmed;
     LogVerbose(OT_METHOD)(__func__)(": ")(general.size())(
@@ -135,7 +135,7 @@ auto NotificationStateData::handle_confirmed_matches(
 }
 
 auto NotificationStateData::handle_mempool_matches(
-    const block::Block::Matches& matches,
+    const block::Matches& matches,
     std::unique_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
 {
     const auto& [utxo, general] = matches;
@@ -176,7 +176,7 @@ auto NotificationStateData::init_keys() noexcept -> OTPasswordPrompt
 }
 
 auto NotificationStateData::process(
-    const block::Block::Match match,
+    const block::Match match,
     const block::bitcoin::Transaction& tx,
     const PasswordPrompt& reason) noexcept -> void
 {

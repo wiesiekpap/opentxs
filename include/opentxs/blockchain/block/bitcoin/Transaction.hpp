@@ -17,7 +17,6 @@
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -68,15 +67,6 @@ namespace bitcoin
 class OPENTXS_EXPORT Transaction
 {
 public:
-    using Patterns = block::Block::Patterns;
-    using ParsedPatterns = block::Block::ParsedPatterns;
-    using Match = block::Block::Match;
-    using Matches = block::Block::Matches;
-    using KeyID = block::Block::KeyID;
-    using ContactID = block::Block::ContactID;
-    using KeyData = block::Block::KeyData;
-    using SerializeType = proto::BlockchainTransaction;
-
     virtual auto AssociatedLocalNyms(const api::client::Blockchain& blockchain)
         const noexcept -> std::vector<OTNymID> = 0;
     virtual auto AssociatedRemoteContacts(
@@ -86,20 +76,14 @@ public:
         -> std::vector<OTIdentifier> = 0;
     virtual auto BlockPosition() const noexcept
         -> std::optional<std::size_t> = 0;
-    virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto Chains() const noexcept -> std::vector<blockchain::Type> = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> = 0;
-    virtual auto FindMatches(
-        const filter::Type type,
-        const Patterns& txos,
-        const ParsedPatterns& elements) const noexcept -> Matches = 0;
-    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
+    virtual auto clone() const noexcept -> std::unique_ptr<Transaction> = 0;
     virtual auto ID() const noexcept -> const Txid& = 0;
-    virtual auto IDNormalized() const noexcept -> const Identifier& = 0;
     virtual auto Inputs() const noexcept -> const bitcoin::Inputs& = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Transaction& = 0;
     virtual auto IsGeneration() const noexcept -> bool = 0;
-    virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
+    virtual auto Keys() const noexcept -> std::vector<crypto::Key> = 0;
     virtual auto Locktime() const noexcept -> std::uint32_t = 0;
     virtual auto Memo(const api::client::Blockchain& blockchain) const noexcept
         -> std::string = 0;
@@ -109,18 +93,12 @@ public:
     virtual auto Outputs() const noexcept -> const bitcoin::Outputs& = 0;
     virtual auto Print() const noexcept -> std::string = 0;
     virtual auto SegwitFlag() const noexcept -> std::byte = 0;
-    virtual auto Serialize(const AllocateOutput destination) const noexcept
-        -> std::optional<std::size_t> = 0;
-    virtual auto Serialize(const api::client::Blockchain& blockchain)
-        const noexcept -> std::optional<SerializeType> = 0;
     virtual auto Timestamp() const noexcept -> Time = 0;
     virtual auto Version() const noexcept -> std::int32_t = 0;
     virtual auto WTXID() const noexcept -> const Txid& = 0;
-    virtual auto clone() const noexcept
-        -> std::unique_ptr<internal::Transaction> = 0;
 
-    virtual auto SetPosition(std::size_t position) noexcept -> void = 0;
-    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept
+        -> internal::Transaction& = 0;
 
     virtual ~Transaction() = default;
 

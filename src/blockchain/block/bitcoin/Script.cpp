@@ -20,7 +20,6 @@
 #include <utility>
 #include <vector>
 
-#include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"

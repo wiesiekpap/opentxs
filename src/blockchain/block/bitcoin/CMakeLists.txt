@@ -15,6 +15,7 @@ add_library(
   "Header.hpp"
   "Input.cpp"
   "Input.hpp"
+  "InputCache.cpp"
   "Inputs.cpp"
   "Inputs.hpp"
   "Output.cpp"
@@ -26,6 +27,7 @@ add_library(
   "Script.hpp"
   "Transaction.cpp"
   "Transaction.hpp"
+  "TransactionCache.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/bitcoin/Block.hpp"

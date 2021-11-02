@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 
 namespace opentxs
 {
@@ -25,6 +24,11 @@ namespace block
 {
 namespace bitcoin
 {
+namespace internal
+{
+struct Input;
+}  // namespace internal
+
 class Script;
 }  // namespace bitcoin
 
@@ -49,41 +53,17 @@ namespace bitcoin
 class OPENTXS_EXPORT Input
 {
 public:
-    using KeyID = Transaction::KeyID;
-    using KeyData = Transaction::KeyData;
-    using Match = Transaction::Match;
-    using Matches = Transaction::Matches;
-    using Patterns = Transaction::Patterns;
-    using ParsedPatterns = Transaction::ParsedPatterns;
-    using SerializeType = proto::BlockchainTransactionInput;
-
-    virtual auto CalculateSize(const bool normalized = false) const noexcept
-        -> std::size_t = 0;
     virtual auto Coinbase() const noexcept -> Space = 0;
-    virtual auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> = 0;
-    virtual auto FindMatches(
-        const ReadView txid,
-        const filter::Type type,
-        const Patterns& txos,
-        const ParsedPatterns& elements) const noexcept -> Matches = 0;
-    virtual auto GetPatterns() const noexcept -> std::vector<PatternID> = 0;
-    virtual auto Keys() const noexcept -> std::vector<KeyID> = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Input& = 0;
+    virtual auto Keys() const noexcept -> std::vector<crypto::Key> = 0;
     virtual auto PreviousOutput() const noexcept -> const Outpoint& = 0;
     virtual auto Print() const noexcept -> std::string = 0;
-    virtual auto Serialize(const AllocateOutput destination) const noexcept
-        -> std::optional<std::size_t> = 0;
-    virtual auto Serialize(
-        const api::client::Blockchain& blockchain,
-        const std::uint32_t index,
-        SerializeType& destination) const noexcept -> bool = 0;
-    virtual auto SerializeNormalized(const AllocateOutput destination)
-        const noexcept -> std::optional<std::size_t> = 0;
     virtual auto Script() const noexcept -> const bitcoin::Script& = 0;
     virtual auto Sequence() const noexcept -> std::uint32_t = 0;
     virtual auto Witness() const noexcept -> const std::vector<Space>& = 0;
 
-    virtual auto SetKeyData(const KeyData& data) noexcept -> void = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Input& = 0;
 
     virtual ~Input() = default;
 

@@ -27,6 +27,7 @@
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/block/Block.hpp"           // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"   // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep

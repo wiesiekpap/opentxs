@@ -13,6 +13,7 @@
 #include <cstring>
 #include <iterator>
 #include <limits>
+#include <stdexcept>
 
 #include "opentxs/core/Log.hpp"
 
@@ -76,5 +77,54 @@ auto EncodeBip34(block::Height height) noexcept -> Space
 
         return out;
     }
+}
+
+auto Opcode(const OP opcode) noexcept(false) -> ScriptElement
+{
+    return {opcode, {}, {}, {}};
+}
+
+auto PushData(const ReadView in) noexcept(false) -> ScriptElement
+{
+    const auto size = in.size();
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtautological-type-limit-compare"
+    // std::size_t might be 32 bit
+    if (size > std::numeric_limits<std::uint32_t>::max()) {
+        throw std::out_of_range("Too many bytes");
+    }
+#pragma GCC diagnostic pop
+
+    if ((nullptr == in.data()) || (0 == size)) {
+        return {OP::PUSHDATA1, {}, Space{std::byte{0x0}}, Space{}};
+    }
+
+    auto output = ScriptElement{};
+    auto& [opcode, invalid, bytes, data] = output;
+
+    if (75 >= size) {
+        opcode = static_cast<OP>(static_cast<std::uint8_t>(size));
+    } else if (std::numeric_limits<std::uint8_t>::max() >= size) {
+        opcode = OP::PUSHDATA1;
+        bytes = Space{std::byte{static_cast<std::uint8_t>(size)}};
+    } else if (std::numeric_limits<std::uint16_t>::max() >= size) {
+        opcode = OP::PUSHDATA2;
+        const auto buf =
+            be::little_uint16_buf_t{static_cast<std::uint16_t>(size)};
+        bytes = space(sizeof(buf));
+        std::memcpy(bytes.value().data(), &buf, sizeof(buf));
+    } else {
+        opcode = OP::PUSHDATA4;
+        const auto buf =
+            be::little_uint32_buf_t{static_cast<std::uint32_t>(size)};
+        bytes = space(sizeof(buf));
+        std::memcpy(bytes.value().data(), &buf, sizeof(buf));
+    }
+
+    data = space(size);
+    std::memcpy(data.value().data(), in.data(), in.size());
+
+    return output;
 }
 }  // namespace opentxs::blockchain::block::bitcoin::internal

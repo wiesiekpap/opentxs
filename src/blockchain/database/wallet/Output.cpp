@@ -328,7 +328,8 @@ struct Output::Imp {
 
             OT_ASSERT(pCopy);
 
-            auto& copy = *pCopy;
+            auto& copy = pCopy->Internal();
+            copy.SetMinedPosition(block);
             auto inputIndex = std::ptrdiff_t{-1};
             auto tx = lmdb_.TransactionRW();
             auto proposals = std::set<OTIdentifier>{};
@@ -2396,7 +2397,7 @@ private:
         const auto serialized = [&] {
             auto out = Space{};
             const auto data = [&] {
-                auto proto = block::bitcoin::Output::SerializeType{};
+                auto proto = block::bitcoin::internal::Output::SerializeType{};
                 const auto rc = output.Serialize(blockchain_, proto);
 
                 if (false == rc) {

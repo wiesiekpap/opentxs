@@ -24,6 +24,7 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
+#include "internal/blockchain/node/Node.hpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -36,7 +37,6 @@
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -137,7 +137,8 @@ auto BitcoinTransaction(
             std::string{},
             std::move(inputs),
             std::move(outputs),
-            std::vector<blockchain::Type>{chain});
+            std::vector<blockchain::Type>{chain},
+            make_blank<blockchain::block::Position>::value(api));
     } catch (const std::exception& e) {
         LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
@@ -244,6 +245,7 @@ auto BitcoinTransaction(
             factory::BitcoinTransactionOutputs(
                 std::move(instantiatedOutputs), outputBytes),
             std::vector<blockchain::Type>{chain},
+            make_blank<blockchain::block::Position>::value(api),
             [&]() -> std::optional<std::size_t> {
                 if (std::numeric_limits<std::size_t>::max() == position) {
 
@@ -344,7 +346,24 @@ auto BitcoinTransaction(
             in.memo(),
             factory::BitcoinTransactionInputs(std::move(inputs)),
             factory::BitcoinTransactionOutputs(std::move(outputs)),
-            std::move(chains));
+            std::move(chains),
+            blockchain::block::Position{
+                [&]() -> blockchain::block::Height {
+                    if (in.has_mined_block()) {
+
+                        return in.mined_height();
+                    } else {
+
+                        return -1;
+                    }
+                }(),
+                [&] {
+                    auto out = api.Factory().Data();
+
+                    if (in.has_mined_block()) { out->Assign(in.mined_block()); }
+
+                    return out;
+                }()});
     } catch (const std::exception& e) {
         LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
@@ -371,6 +390,7 @@ Transaction::Transaction(
     std::unique_ptr<internal::Inputs> inputs,
     std::unique_ptr<internal::Outputs> outputs,
     std::vector<blockchain::Type>&& chains,
+    block::Position&& minedPosition,
     std::optional<std::size_t>&& position) noexcept(false)
     : api_(api)
     , position_(std::move(position))
@@ -384,19 +404,13 @@ Transaction::Transaction(
     , time_(time)
     , inputs_(std::move(inputs))
     , outputs_(std::move(outputs))
-    , memo_(memo)
-    , chains_(std::move(chains))
-    , cache_()
+    , cache_(memo, std::move(chains), std::move(minedPosition))
 {
-    if (0 == chains_.size()) { throw std::runtime_error("missing chains"); }
-
     if (false == bool(inputs_)) { throw std::runtime_error("invalid inputs"); }
 
     if (false == bool(outputs_)) {
         throw std::runtime_error("invalid outputs");
     }
-
-    dedup(chains_);
 }
 
 Transaction::Transaction(const Transaction& rhs) noexcept
@@ -412,8 +426,6 @@ Transaction::Transaction(const Transaction& rhs) noexcept
     , time_(rhs.time_)
     , inputs_(rhs.inputs_->clone())
     , outputs_(rhs.outputs_->clone())
-    , memo_(rhs.memo_)
-    , chains_(rhs.chains_)
     , cache_(rhs.cache_)
 {
 }
@@ -606,7 +618,7 @@ auto Transaction::GetPreimageBTC(
     return output;
 }
 
-auto Transaction::Keys() const noexcept -> std::vector<KeyID>
+auto Transaction::Keys() const noexcept -> std::vector<crypto::Key>
 {
     auto out = inputs_->Keys();
     auto keys = outputs_->Keys();
@@ -619,7 +631,7 @@ auto Transaction::Keys() const noexcept -> std::vector<KeyID>
 auto Transaction::Memo(const api::client::Blockchain& blockchain) const noexcept
     -> std::string
 {
-    if (false == memo_.empty()) { return memo_; }
+    if (auto memo = cache_.memo(); false == memo.empty()) { return memo; }
 
     for (const auto& output : *outputs_) {
         auto note = output.Note(blockchain);
@@ -631,51 +643,29 @@ auto Transaction::Memo(const api::client::Blockchain& blockchain) const noexcept
 }
 
 auto Transaction::MergeMetadata(
-    const api::client::Blockchain& blockchain,
+    const api::client::Blockchain& api,
     const blockchain::Type chain,
-    const SerializeType& rhs) noexcept -> void
+    const internal::Transaction& rhs) noexcept -> void
 {
-    if (txid_->str() != rhs.txid()) {
+    if (txid_ != rhs.ID()) {
         LogOutput(OT_METHOD)(__func__)(": Wrong transaction").Flush();
 
         return;
     }
 
-    if (static_cast<std::size_t>(rhs.input().size()) != inputs_->size()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong number of inputs").Flush();
+    if (false == inputs_->MergeMetadata(api, rhs.Inputs().Internal())) {
+        LogOutput(OT_METHOD)(__func__)(": Failed to merge inputs").Flush();
 
         return;
     }
 
-    if (static_cast<std::size_t>(rhs.output().size()) != outputs_->size()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong number of outputs").Flush();
+    if (false == outputs_->MergeMetadata(rhs.Outputs().Internal())) {
+        LogOutput(OT_METHOD)(__func__)(": Failed to merge outputs").Flush();
 
         return;
     }
 
-    memo_ = rhs.memo();
-    chains_.emplace_back(chain);
-    dedup(chains_);
-
-    for (const auto& input : rhs.input()) {
-        try {
-            inputs_->MergeMetadata(blockchain, input);
-        } catch (...) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid input").Flush();
-
-            return;
-        }
-    }
-
-    for (const auto& output : rhs.output()) {
-        try {
-            outputs_->MergeMetadata(output);
-        } catch (...) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid output").Flush();
-
-            return;
-        }
-    }
+    cache_.merge(api, rhs);
 }
 
 auto Transaction::NetBalanceChange(
@@ -883,10 +873,11 @@ auto Transaction::Serialize(const api::client::Blockchain& blockchain)
 {
     auto output = SerializeType{};
     output.set_version(std::max(default_version_, serialize_version_));
-    std::for_each(
-        std::begin(chains_), std::end(chains_), [&](const auto& chain) {
-            output.add_chain(contact::internal::translate(Translate(chain)));
-        });
+
+    for (const auto chain : cache_.chains()) {
+        output.add_chain(contact::internal::translate(Translate(chain)));
+    }
+
     output.set_txid(txid_->str());
     output.set_txversion(version_);
     output.set_locktime(lock_time_);
@@ -905,10 +896,16 @@ auto Transaction::Serialize(const api::client::Blockchain& blockchain)
     // TODO optional uint64 fee = 12;
     output.set_time(Clock::to_time_t(time_));
     // TODO repeated string conflicts = 14;
-    output.set_memo(memo_);
+    output.set_memo(cache_.memo());
     output.set_segwit_flag(std::to_integer<std::uint32_t>(segwit_flag_));
     output.set_wtxid(wtxid_->str());
     output.set_is_generation(is_generation_);
+    const auto& [height, hash] = cache_.position();
+
+    if ((0 <= height) && (false == hash->empty())) {
+        output.set_mined_height(height);
+        output.set_mined_block(hash->str());
+    }
 
     return std::move(output);
 }

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "Helpers.hpp"
+#include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Blockchain.hpp"
@@ -144,9 +145,9 @@ TEST_F(Test_BlockchainActivity, setup)
     txid_1_ = tx1->ID().asHex();
     txid_2_ = tx2->ID().asHex();
 
-    ASSERT_TRUE(api_.Blockchain().ProcessTransaction(
+    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx1, reason_));
-    ASSERT_TRUE(api_.Blockchain().ProcessTransaction(
+    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx2, reason_));
 
     auto bytes = ot::Space{};

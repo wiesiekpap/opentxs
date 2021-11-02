@@ -35,14 +35,15 @@ class OPENTXS_EXPORT BalanceItem : virtual public ListRow
 {
 public:
     virtual auto Amount() const noexcept -> opentxs::Amount = 0;
+    virtual auto Confirmations() const noexcept -> int = 0;
     virtual auto Contacts() const noexcept -> std::vector<std::string> = 0;
     virtual auto DisplayAmount() const noexcept -> std::string = 0;
     virtual auto Memo() const noexcept -> std::string = 0;
-    virtual auto Workflow() const noexcept -> std::string = 0;
     virtual auto Text() const noexcept -> std::string = 0;
     virtual auto Timestamp() const noexcept -> Time = 0;
     virtual auto Type() const noexcept -> StorageBox = 0;
     virtual auto UUID() const noexcept -> std::string = 0;
+    virtual auto Workflow() const noexcept -> std::string = 0;
 
     ~BalanceItem() override = default;
 

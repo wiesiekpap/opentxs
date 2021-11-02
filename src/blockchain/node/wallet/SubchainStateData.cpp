@@ -17,6 +17,7 @@
 #include "blockchain/node/wallet/ScriptForm.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/network/Network.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
@@ -354,14 +355,14 @@ auto SubchainStateData::set_key_data(
     block::bitcoin::Transaction& tx) const noexcept -> void
 {
     const auto keys = tx.Keys();
-    auto data = block::bitcoin::Transaction::KeyData{};
+    auto data = block::KeyData{};
 
     for (const auto& key : keys) {
         data.try_emplace(
             key, crypto_.SenderContact(key), crypto_.RecipientContact(key));
     }
 
-    tx.SetKeyData(data);
+    tx.Internal().SetKeyData(data);
 }
 
 auto SubchainStateData::Shutdown() noexcept -> void

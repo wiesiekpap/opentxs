@@ -28,6 +28,7 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/block/Block.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -181,7 +182,7 @@ auto GCS(
 
     try {
         const auto params = blockchain::internal::GetFilterParams(type);
-        const auto input = block.ExtractElements(type);
+        const auto input = block.Internal().ExtractElements(type);
         auto elements = std::vector<ReadView>{};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(elements), [

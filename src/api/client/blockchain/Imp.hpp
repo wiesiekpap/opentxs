@@ -59,6 +59,14 @@ class Core;
 
 namespace blockchain
 {
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+
 namespace crypto
 {
 namespace internal
@@ -138,7 +146,8 @@ struct Blockchain::Imp {
     virtual auto ActivityDescription(
         const identifier::Nym& nym,
         const opentxs::blockchain::Type chain,
-        const Tx& transaction) const noexcept -> std::string;
+        const opentxs::blockchain::block::bitcoin::Transaction& transaction)
+        const noexcept -> std::string;
     auto address_prefix(
         const Style style,
         const opentxs::blockchain::Type chain) const noexcept(false) -> OTData;
@@ -186,9 +195,11 @@ struct Blockchain::Imp {
     virtual auto KeyGenerated(
         const opentxs::blockchain::Type chain) const noexcept -> void;
     virtual auto LoadTransactionBitcoin(const TxidHex& txid) const noexcept
-        -> std::unique_ptr<const Tx>;
+        -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Transaction>;
     virtual auto LoadTransactionBitcoin(const Txid& txid) const noexcept
-        -> std::unique_ptr<const Tx>;
+        -> std::unique_ptr<
+            const opentxs::blockchain::block::bitcoin::Transaction>;
     auto LookupAccount(const Identifier& id) const noexcept -> AccountData;
     virtual auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList;
@@ -230,7 +241,7 @@ struct Blockchain::Imp {
         const Contact& child) const noexcept -> bool;
     virtual auto ProcessTransaction(
         const opentxs::blockchain::Type chain,
-        const Tx& in,
+        const opentxs::blockchain::block::bitcoin::Transaction& in,
         const PasswordPrompt& reason) const noexcept -> bool;
     auto PubkeyHash(const opentxs::blockchain::Type chain, const Data& pubkey)
         const noexcept(false) -> OTData;
@@ -252,7 +263,7 @@ struct Blockchain::Imp {
     {
         return accounts_.List(nymID, chain);
     }
-    auto Unconfirm(
+    virtual auto Unconfirm(
         const Key key,
         const opentxs::blockchain::block::Txid& tx,
         const Time time) const noexcept -> bool;

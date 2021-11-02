@@ -12,6 +12,7 @@
 #include <optional>
 #include <vector>
 
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
@@ -81,7 +82,11 @@ public:
         const filter::Type type,
         const ParsedPatterns& elements) const noexcept -> Matches final;
     auto GetPatterns() const noexcept -> std::vector<PatternID> final;
-    auto Keys() const noexcept -> std::vector<KeyID> final;
+    auto Keys() const noexcept -> std::vector<crypto::Key> final;
+    auto Internal() const noexcept -> const internal::Outputs& final
+    {
+        return *this;
+    }
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
@@ -100,11 +105,8 @@ public:
     auto ForTestingOnlyAddKey(
         const std::size_t index,
         const blockchain::crypto::Key& key) noexcept -> bool final;
-    auto MergeMetadata(const Output::SerializeType& rhs) noexcept(false)
-        -> void final
-    {
-        outputs_.at(rhs.index())->MergeMetadata(rhs);
-    }
+    auto Internal() noexcept -> internal::Outputs& final { return *this; }
+    auto MergeMetadata(const internal::Outputs& rhs) noexcept -> bool final;
 
     Outputs(
         OutputList&& outputs,

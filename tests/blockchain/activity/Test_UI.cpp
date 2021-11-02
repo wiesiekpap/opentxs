@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "Helpers.hpp"
+#include "internal/api/client/Client.hpp"
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -681,9 +682,9 @@ TEST_F(Test_BlockchainActivity, receive_assigned)
     txid_1_ = tx1->ID().asHex();
     txid_2_ = tx2->ID().asHex();
 
-    ASSERT_TRUE(api_.Blockchain().ProcessTransaction(
+    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx1, reason_));
-    ASSERT_TRUE(api_.Blockchain().ProcessTransaction(
+    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx2, reason_));
 }
 
@@ -1346,7 +1347,7 @@ TEST_F(Test_BlockchainActivity, receive_unassigned)
 
     txid_4_ = tx->ID().asHex();
 
-    ASSERT_TRUE(api_.Blockchain().ProcessTransaction(
+    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx, reason_));
 }
 

@@ -14,6 +14,7 @@
 
 #include "core/Worker.hpp"
 #include "internal/api/network/Network.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"  // IWYU pragma: keep
@@ -175,7 +176,9 @@ auto PeerManager::BroadcastTransaction(
 
     auto bytes = Space{};
 
-    if (false == tx.Serialize(writer(bytes)).has_value()) { return false; }
+    if (false == tx.Internal().Serialize(writer(bytes)).has_value()) {
+        return false;
+    }
 
     const auto view = reader(bytes);
     auto work = jobs_.Work(Task::BroadcastTransaction);

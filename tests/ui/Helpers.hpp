@@ -63,6 +63,7 @@ struct AccountActivityRow {
     std::string text_{};
     std::string uuid_{};
     std::optional<ot::Time> timestamp_{};
+    int confirmations_{};
 };
 
 struct AccountActivityData {

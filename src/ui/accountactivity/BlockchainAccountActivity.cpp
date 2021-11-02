@@ -19,6 +19,7 @@
 #include "display/Definition.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -31,6 +32,7 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -96,17 +98,21 @@ BlockchainAccountActivity::BlockchainAccountActivity(
           balance_cb_,
           zmq::socket::Socket::Direction::Connect))
     , progress_()
+    , height_(0)
 {
     const auto connected =
         balance_socket_->Start(Widget::api_.Endpoints().BlockchainBalance());
 
     OT_ASSERT(connected);
 
-    init(
-        {api.Endpoints().BlockchainTransactions(),
-         api.Endpoints().BlockchainTransactions(nymID),
-         api.Endpoints().BlockchainSyncProgress(),
-         api.Endpoints().ContactUpdate()});
+    init({
+        api.Endpoints().BlockchainReorg(),
+        api.Endpoints().BlockchainStateChange(),
+        api.Endpoints().BlockchainSyncProgress(),
+        api.Endpoints().BlockchainTransactions(),
+        api.Endpoints().BlockchainTransactions(nymID),
+        api.Endpoints().ContactUpdate(),
+    });
 
     {
         const auto& socket = balance_socket_.get();
@@ -146,6 +152,7 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
         try {
             const auto& chain =
                 Widget::api_.Network().Blockchain().GetChain(chain_);
+            height_ = chain.HeaderOracle().BestChain().first;
 
             return chain.Internal().GetTransactions(primary_id_);
         } catch (...) {
@@ -197,8 +204,17 @@ auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
         case Work::balance: {
             process_balance(in);
         } break;
+        case Work::new_block: {
+            process_block(in);
+        } break;
         case Work::txid: {
             process_txid(in);
+        } break;
+        case Work::reorg: {
+            process_reorg(in);
+        } break;
+        case Work::statechange: {
+            process_state(in);
         } break;
         case Work::sync: {
             process_sync(in);
@@ -263,6 +279,20 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
     load_thread();
 }
 
+auto BlockchainAccountActivity::process_block(const Message& in) noexcept
+    -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(3 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    if (chain != chain_) { return; }
+
+    process_height(body.at(3).as<blockchain::block::Height>());
+}
+
 auto BlockchainAccountActivity::process_contact(const Message& in) noexcept
     -> void
 {
@@ -294,6 +324,54 @@ auto BlockchainAccountActivity::process_contact(const Message& in) noexcept
     }();
 
     for (const auto& txid : txids) { process_txid(txid); }
+}
+
+auto BlockchainAccountActivity::process_height(
+    const blockchain::block::Height height) noexcept -> void
+{
+    if (height == height_) { return; }
+
+    height_ = height;
+    load_thread();
+}
+
+auto BlockchainAccountActivity::process_reorg(const Message& in) noexcept
+    -> void
+{
+    const auto body = in.Body();
+
+    OT_ASSERT(5 < body.size());
+
+    const auto chain = body.at(1).as<blockchain::Type>();
+
+    if (chain != chain_) { return; }
+
+    process_height(body.at(5).as<blockchain::block::Height>());
+}
+
+auto BlockchainAccountActivity::process_state(const Message& in) noexcept
+    -> void
+{
+    {
+        const auto body = in.Body();
+
+        OT_ASSERT(2 < body.size());
+
+        const auto chain = body.at(1).as<blockchain::Type>();
+
+        if (chain_ != chain) { return; }
+
+        const auto enabled = body.at(2).as<bool>();
+
+        if (false == enabled) { return; }
+    }
+
+    try {
+        const auto& chain =
+            Widget::api_.Network().Blockchain().GetChain(chain_);
+        process_height(chain.HeaderOracle().BestChain().first);
+    } catch (...) {
+    }
 }
 
 auto BlockchainAccountActivity::process_sync(const Message& in) noexcept -> void
@@ -352,11 +430,18 @@ auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
 
     if (false == bool(pTX)) { return std::nullopt; }
 
-    const auto& tx = *pTX;
+    const auto& tx = pTX->Internal();
 
     if (false == contains(tx.Chains(), chain_)) { return std::nullopt; }
 
     const auto sortKey{tx.Timestamp()};
+    const auto conf = [&]() -> int {
+        const auto height = tx.ConfirmationHeight();
+
+        if ((0 > height) || (height > height_)) { return 0; }
+
+        return static_cast<int>(height_ - height) + 1;
+    }();
     auto custom = CustomData{
         new proto::PaymentWorkflow(),
         new proto::PaymentEvent(),
@@ -364,7 +449,9 @@ auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
         new blockchain::Type{chain_},
         new std::string{Widget::api_.Blockchain().ActivityDescription(
             primary_id_, chain_, tx)},
-        new OTData{tx.ID()}};
+        new OTData{tx.ID()},
+        new int{conf},
+    };
     add_item(rowID, sortKey, custom);
 
     return std::move(rowID);

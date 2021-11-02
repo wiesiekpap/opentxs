@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Helpers.hpp"
+#include "internal/api/client/Client.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Storage.hpp"
@@ -120,7 +121,7 @@ TEST_F(Test_BlockchainActivity, inputs)
     auto list = api_.Storage().BlockchainThreadMap(nym_1_id(), incoming->ID());
 
     EXPECT_EQ(list.size(), 0);
-    ASSERT_TRUE(api_.Blockchain().ProcessTransaction(
+    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *incoming, reason_));
 
     auto bytes = ot::Space{};

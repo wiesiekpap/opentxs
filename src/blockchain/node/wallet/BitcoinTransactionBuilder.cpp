@@ -30,7 +30,6 @@
 #include "core/Amount.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
-#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Bytes.hpp"

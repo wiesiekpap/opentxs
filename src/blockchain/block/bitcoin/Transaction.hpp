@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/Bytes.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -44,6 +45,14 @@ class Core;
 
 namespace blockchain
 {
+namespace block
+{
+namespace bitcoin
+{
+class Transaction;
+}  // namespace bitcoin
+}  // namespace block
+
 namespace bitcoin
 {
 struct SigHash;
@@ -80,11 +89,15 @@ public:
     }
     auto Chains() const noexcept -> std::vector<blockchain::Type> final
     {
-        return chains_;
+        return cache_.chains();
     }
-    auto clone() const noexcept -> std::unique_ptr<internal::Transaction> final
+    auto clone() const noexcept -> std::unique_ptr<bitcoin::Transaction> final
     {
         return std::make_unique<Transaction>(*this);
+    }
+    auto ConfirmationHeight() const noexcept -> block::Height final
+    {
+        return cache_.height();
     }
     auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> final;
@@ -103,11 +116,19 @@ public:
     {
         return *inputs_;
     }
+    auto Internal() const noexcept -> const internal::Transaction& final
+    {
+        return *this;
+    }
     auto IsGeneration() const noexcept -> bool final { return is_generation_; }
-    auto Keys() const noexcept -> std::vector<KeyID> final;
+    auto Keys() const noexcept -> std::vector<crypto::Key> final;
     auto Locktime() const noexcept -> std::uint32_t final { return lock_time_; }
     auto Memo(const api::client::Blockchain& blockchain) const noexcept
         -> std::string final;
+    auto MinedPosition() const noexcept -> const block::Position& final
+    {
+        return cache_.position();
+    }
     auto NetBalanceChange(
         const api::client::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
@@ -137,15 +158,20 @@ public:
     {
         return outputs_->ForTestingOnlyAddKey(index, key);
     }
+    auto Internal() noexcept -> internal::Transaction& final { return *this; }
     auto MergeMetadata(
         const api::client::Blockchain& blockchain,
         const blockchain::Type chain,
-        const SerializeType& rhs) noexcept -> void final;
+        const internal::Transaction& rhs) noexcept -> void final;
     auto Print() const noexcept -> std::string final;
     auto SetKeyData(const KeyData& data) noexcept -> void final;
     auto SetMemo(const std::string& memo) noexcept -> void final
     {
-        memo_ = memo;
+        cache_.set_memo(memo);
+    }
+    auto SetMinedPosition(const block::Position& pos) noexcept -> void final
+    {
+        return cache_.set_position(pos);
     }
     auto SetPosition(std::size_t position) noexcept -> void final
     {
@@ -166,6 +192,7 @@ public:
         std::unique_ptr<internal::Inputs> inputs,
         std::unique_ptr<internal::Outputs> outputs,
         std::vector<blockchain::Type>&& chains,
+        block::Position&& minedPosition,
         std::optional<std::size_t>&& position = std::nullopt) noexcept(false);
     Transaction(const Transaction&) noexcept;
 
@@ -173,6 +200,15 @@ public:
 
 private:
     struct Cache {
+        auto chains() const noexcept -> std::vector<blockchain::Type>;
+        auto height() const noexcept -> block::Height;
+        auto memo() const noexcept -> std::string;
+        auto position() const noexcept -> const block::Position&;
+
+        auto add(blockchain::Type chain) noexcept -> void;
+        auto merge(
+            const api::client::Blockchain& api,
+            const internal::Transaction& rhs) noexcept -> void;
         template <typename F>
         auto normalized(F cb) noexcept -> const Identifier&
         {
@@ -183,12 +219,10 @@ private:
 
             return output.value();
         }
-        auto reset_size() noexcept -> void
-        {
-            auto lock = rLock{lock_};
-            size_ = std::nullopt;
-            normalized_size_ = std::nullopt;
-        }
+        auto reset_size() noexcept -> void;
+        auto set_memo(const std::string& memo) noexcept -> void;
+        auto set_memo(std::string&& memo) noexcept -> void;
+        auto set_position(const block::Position& pos) noexcept -> void;
         template <typename F>
         auto size(const bool normalize, F cb) noexcept -> std::size_t
         {
@@ -201,24 +235,23 @@ private:
             return output.value();
         }
 
-        Cache() noexcept = default;
-        Cache(const Cache& rhs) noexcept
-            : lock_()
-            , normalized_id_()
-            , size_()
-            , normalized_size_()
-        {
-            auto lock = rLock{rhs.lock_};
-            normalized_id_ = rhs.normalized_id_;
-            size_ = rhs.size_;
-            normalized_size_ = rhs.normalized_size_;
-        }
+        Cache(
+            const std::string& memo,
+            std::vector<blockchain::Type>&& chains,
+            block::Position&& minedPosition) noexcept(false);
+        Cache(const Cache& rhs) noexcept;
 
     private:
         mutable std::recursive_mutex lock_{};
         std::optional<OTIdentifier> normalized_id_{};
         std::optional<std::size_t> size_{};
         std::optional<std::size_t> normalized_size_{};
+        std::string memo_;
+        std::vector<blockchain::Type> chains_;
+        block::Position mined_position_;
+
+        Cache() = delete;
+        Cache(Cache&&) = delete;
     };
 
     const api::Core& api_;
@@ -233,8 +266,6 @@ private:
     const Time time_;
     const std::unique_ptr<internal::Inputs> inputs_;
     const std::unique_ptr<internal::Outputs> outputs_;
-    std::string memo_;
-    std::vector<blockchain::Type> chains_;
     mutable Cache cache_;
 
     static auto calculate_witness_size(const Space& witness) noexcept

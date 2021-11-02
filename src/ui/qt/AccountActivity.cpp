@@ -62,7 +62,7 @@ AccountActivityQt::AccountActivityQt(internal::AccountActivity& parent) noexcept
     , imp_(std::make_unique<Imp>(parent).release())
 {
     if (nullptr != internal_) {
-        internal_->SetColumnCount(nullptr, 5);
+        internal_->SetColumnCount(nullptr, 6);
         internal_->SetRoleData({
             {AccountActivityQt::AmountRole, "amount"},
             {AccountActivityQt::TextRole, "description"},
@@ -73,6 +73,7 @@ AccountActivityQt::AccountActivityQt(internal::AccountActivity& parent) noexcept
             {AccountActivityQt::ContactsRole, "contacts"},
             {AccountActivityQt::WorkflowRole, "workflow"},
             {AccountActivityQt::TypeRole, "type"},
+            {AccountActivityQt::ConfirmationsRole, "confirmations"},
         });
     }
 
@@ -154,6 +155,9 @@ auto AccountActivityQt::headerData(int section, Qt::Orientation, int role)
         }
         case MemoColumn: {
             return "Memo";
+        }
+        case ConfirmationsColumn: {
+            return "Confirmations";
         }
         default: {
 
@@ -325,20 +329,23 @@ auto BalanceItem::qt_data(const int column, const int role, QVariant& out)
         } break;
         case Qt::DisplayRole: {
             switch (column) {
-                case Parent::AmountColumn: {
-                    qt_data(column, Parent::AmountRole, out);
+                case Parent::TimeColumn: {
+                    qt_data(column, Parent::TimeRole, out);
                 } break;
                 case Parent::TextColumn: {
                     qt_data(column, Parent::TextRole, out);
                 } break;
-                case Parent::MemoColumn: {
-                    qt_data(column, Parent::MemoRole, out);
-                } break;
-                case Parent::TimeColumn: {
-                    qt_data(column, Parent::TimeRole, out);
+                case Parent::AmountColumn: {
+                    qt_data(column, Parent::AmountRole, out);
                 } break;
                 case Parent::UUIDColumn: {
                     qt_data(column, Parent::UUIDRole, out);
+                } break;
+                case Parent::MemoColumn: {
+                    qt_data(column, Parent::MemoRole, out);
+                } break;
+                case Parent::ConfirmationsColumn: {
+                    qt_data(column, Parent::ConfirmationsRole, out);
                 } break;
                 default: {
                 }
@@ -379,6 +386,9 @@ auto BalanceItem::qt_data(const int column, const int role, QVariant& out)
         } break;
         case Parent::TypeRole: {
             out = static_cast<int>(Type());
+        } break;
+        case Parent::ConfirmationsRole: {
+            out = Confirmations();
         } break;
         default: {
         }

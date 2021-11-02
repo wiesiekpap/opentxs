@@ -66,6 +66,7 @@ public:
     {
         return effective_amount();
     }
+    auto Confirmations() const noexcept -> int final { return confirmations_; }
     auto Contacts() const noexcept -> std::vector<std::string> final;
     auto DisplayAmount() const noexcept -> std::string final;
     auto Memo() const noexcept -> std::string final;
@@ -96,6 +97,7 @@ private:
     const OTData txid_;
     opentxs::Amount amount_;
     std::string memo_;
+    std::atomic_int confirmations_;
 
     auto effective_amount() const noexcept -> opentxs::Amount final
     {

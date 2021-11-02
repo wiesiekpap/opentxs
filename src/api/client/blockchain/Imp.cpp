@@ -219,7 +219,8 @@ auto Blockchain::Imp::ActivityDescription(
 auto Blockchain::Imp::ActivityDescription(
     const identifier::Nym&,
     const opentxs::blockchain::Type,
-    const Tx&) const noexcept -> std::string
+    const opentxs::blockchain::block::bitcoin::Transaction&) const noexcept
+    -> std::string
 {
     return {};
 }
@@ -759,13 +760,13 @@ auto Blockchain::Imp::KeyGenerated(
 }
 
 auto Blockchain::Imp::LoadTransactionBitcoin(const TxidHex&) const noexcept
-    -> std::unique_ptr<const Tx>
+    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
 {
     return {};
 }
 
 auto Blockchain::Imp::LoadTransactionBitcoin(const Txid&) const noexcept
-    -> std::unique_ptr<const Tx>
+    -> std::unique_ptr<const opentxs::blockchain::block::bitcoin::Transaction>
 {
     return {};
 }
@@ -1123,7 +1124,7 @@ auto Blockchain::Imp::ProcessMergedContact(const Contact&, const Contact&)
 
 auto Blockchain::Imp::ProcessTransaction(
     const opentxs::blockchain::Type,
-    const Tx&,
+    const opentxs::blockchain::block::bitcoin::Transaction&,
     const PasswordPrompt&) const noexcept -> bool
 {
     return false;
