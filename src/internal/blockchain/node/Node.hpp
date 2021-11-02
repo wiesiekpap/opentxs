@@ -665,6 +665,8 @@ struct WalletDatabase {
         -> std::vector<block::pTxid> = 0;
     virtual auto GetTransactions(const identifier::Nym& account) const noexcept
         -> std::vector<block::pTxid> = 0;
+    virtual auto GetUnconfirmedTransactions() const noexcept
+        -> std::set<block::pTxid> = 0;
     virtual auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> = 0;
     virtual auto GetUnspentOutputs(
         const NodeID& balanceNode,

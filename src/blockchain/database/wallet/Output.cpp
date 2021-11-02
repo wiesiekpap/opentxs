@@ -292,6 +292,17 @@ struct Output::Imp {
     {
         return translate(GetOutputs(account, node::TxoState::All));
     }
+    auto GetUnconfirmedTransactions() const noexcept -> std::set<block::pTxid>
+    {
+        auto out = std::set<block::pTxid>{};
+        const auto unconfirmed = GetOutputs(node::TxoState::UnconfirmedNew);
+
+        for (const auto& [outpoint, output] : unconfirmed) {
+            out.emplace(api_.Factory().Data(outpoint.Txid()));
+        }
+
+        return out;
+    }
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>
     {
         static const auto blank = api_.Factory().Identifier();
@@ -2543,6 +2554,12 @@ auto Output::GetTransactions(const identifier::Nym& account) const noexcept
     -> std::vector<block::pTxid>
 {
     return imp_->GetTransactions(account);
+}
+
+auto Output::GetUnconfirmedTransactions() const noexcept
+    -> std::set<block::pTxid>
+{
+    return imp_->GetUnconfirmedTransactions();
 }
 
 auto Output::GetUnspentOutputs() const noexcept -> std::vector<UTXO>

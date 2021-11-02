@@ -179,6 +179,7 @@ public:
     auto GetTransactions() const noexcept -> std::vector<block::pTxid>;
     auto GetTransactions(const identifier::Nym& account) const noexcept
         -> std::vector<block::pTxid>;
+    auto GetUnconfirmedTransactions() const noexcept -> std::set<block::pTxid>;
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO>;
     auto GetUnspentOutputs(const NodeID& balanceNode, const Subchain subchain)
         const noexcept -> std::vector<UTXO>;

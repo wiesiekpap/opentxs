@@ -20,6 +20,11 @@ namespace opentxs
 {
 namespace api
 {
+namespace client
+{
+class Blockchain;
+}  // namespace client
+
 class Core;
 }  // namespace api
 
@@ -37,6 +42,14 @@ struct Transaction;
 class Transaction;
 }  // namespace bitcoin
 }  // namespace block
+
+namespace node
+{
+namespace internal
+{
+struct WalletDatabase;
+}  // namespace internal
+}  // namespace node
 }  // namespace blockchain
 
 namespace network
@@ -69,6 +82,8 @@ public:
 
     Mempool(
         const api::Core& api,
+        const api::client::Blockchain& crypto,
+        const internal::WalletDatabase& wallet,
         const network::zeromq::socket::Publish& socket,
         const Type chain) noexcept;
 

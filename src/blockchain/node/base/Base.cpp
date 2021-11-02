@@ -194,7 +194,7 @@ Base::Base(
           chain_,
           filter_type_))
     , config_(config)
-    , mempool_(api, network.Mempool(), chain_)
+    , mempool_(api, crypto_, *database_p_, network.Mempool(), chain_)
     , header_p_(factory::HeaderOracle(api, *database_p_, chain_))
     , block_p_(factory::BlockOracle(
           api,
