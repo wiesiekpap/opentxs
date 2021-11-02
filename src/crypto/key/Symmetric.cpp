@@ -36,6 +36,7 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/verify/SymmetricKey.hpp"
+#include "util/ScopeGuard.hpp"
 
 template class opentxs::Pimpl<opentxs::crypto::key::Symmetric>;
 
@@ -752,20 +753,25 @@ auto Symmetric::Serialize(proto::SymmetricKey& output) const -> bool
 auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
     const -> bool
 {
+    auto output{false};
     auto& encrypted = get_encrypted(lock);
     auto& plain = get_plaintext(lock);
+    auto post = ScopeGuard{[&] {
+        if (false == output) { plain = std::nullopt; }
+    }};
 
     if (false == bool(encrypted)) {
         LogOutput(OT_METHOD)(__func__)(": Master key not loaded.").Flush();
 
-        return false;
+        return output;
     }
 
     if (plain.has_value()) {
         if (0 < plain.value()->Bytes().size()) {
             LogDetail(OT_METHOD)(__func__)(": Already unlocked").Flush();
+            output = true;
 
-            return true;
+            return output;
         }
     } else {
         plain = api_.Factory().Secret(0);
@@ -778,7 +784,7 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
                 ": Unable to allocate space for plaintext master key.")
                 .Flush();
 
-            return false;
+            return output;
         }
     }
 
@@ -790,7 +796,7 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
         LogOutput(OT_METHOD)(__func__)(": Unable to obtain master password.")
             .Flush();
 
-        return false;
+        return output;
     }
 
     auto secondaryKey = Symmetric{
@@ -806,7 +812,7 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
 
     OT_ASSERT(secondaryKey.plaintext_key_.has_value());
 
-    const auto output = engine_.Decrypt(
+    output = engine_.Decrypt(
         *encrypted,
         reinterpret_cast<const std::uint8_t*>(
             secondaryKey.plaintext_key_.value()->data()),

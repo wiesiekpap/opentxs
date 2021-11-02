@@ -171,14 +171,6 @@ protected:
         const api::Endpoints& endpoints,
         api::implementation::Scheduler& config)>;
 
-    mutable std::mutex master_key_lock_;
-    mutable std::optional<OTSecret> master_secret_;
-    mutable OTSymmetricKey master_key_;
-    mutable std::thread password_timeout_;
-    mutable std::chrono::seconds password_duration_;
-    mutable Time last_activity_;
-    mutable std::atomic<bool> timeout_thread_running_;
-
     static auto make_master_key(
         const api::internal::Context& parent,
         const api::Factory& factory,
@@ -202,8 +194,14 @@ protected:
         std::unique_ptr<api::internal::Factory> factory);
 
 private:
+    mutable std::mutex master_key_lock_;
+    mutable std::optional<OTSecret> master_secret_;
+    mutable OTSymmetricKey master_key_;
+    mutable std::chrono::seconds password_duration_;
+    mutable Time last_activity_;
+
     void bump_password_timer(const opentxs::Lock& lock) const;
-    void password_timeout() const;
+    // TODO void password_timeout() const;
 
     void storage_gc_hook() final;
 
