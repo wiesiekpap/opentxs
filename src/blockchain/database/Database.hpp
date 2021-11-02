@@ -326,6 +326,11 @@ public:
     {
         return wallet_.GetTransactions(account);
     }
+    auto GetUnconfirmedTransactions() const noexcept
+        -> std::set<block::pTxid> final
+    {
+        return wallet_.GetUnconfirmedTransactions();
+    }
     auto GetUnspentOutputs() const noexcept -> std::vector<UTXO> final
     {
         return wallet_.GetUnspentOutputs();

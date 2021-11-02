@@ -13,6 +13,7 @@
 #include "blockchain/database/common/Database.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -180,6 +181,12 @@ auto Wallet::GetTransactions(const identifier::Nym& account) const noexcept
     -> std::vector<block::pTxid>
 {
     return outputs_.GetTransactions(account);
+}
+
+auto Wallet::GetUnconfirmedTransactions() const noexcept
+    -> std::set<block::pTxid>
+{
+    return outputs_.GetUnconfirmedTransactions();
 }
 
 auto Wallet::GetUnspentOutputs() const noexcept -> std::vector<UTXO>

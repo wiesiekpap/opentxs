@@ -19,18 +19,26 @@
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Core.hpp"
+#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Log.hpp"
+#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/WorkType.hpp"
 
+#define OT_METHOD "opentxs::blockchain::node::Mempool::Imp::"
+
 namespace opentxs::blockchain::node
 {
 struct Mempool::Imp {
+    using Transactions =
+        std::vector<std::unique_ptr<const block::bitcoin::Transaction>>;
+
     auto Dump() const noexcept -> std::set<std::string>
     {
         auto lock = sLock{lock_};
@@ -83,21 +91,37 @@ struct Mempool::Imp {
     auto Submit(std::unique_ptr<const block::bitcoin::Transaction> tx)
         const noexcept -> void
     {
-        if (!tx) { return; }
+        Submit([&] {
+            auto out = Transactions{};
+            out.emplace_back(std::move(tx));
 
-        auto txid = Hash{tx->ID().Bytes()};
+            return out;
+        }());
+    }
+    auto Submit(Transactions&& txns) const noexcept -> void
+    {
         auto lock = eLock{lock_};
-        const auto [it, added] = transactions_.try_emplace(txid, nullptr);
 
-        if (added) { unexpired_txid_.emplace(Clock::now(), txid); }
+        for (auto& tx : txns) {
+            if (!tx) {
+                LogOutput(OT_METHOD)(__func__)(": invalid transaction").Flush();
 
-        auto& existing = it->second;
+                continue;
+            }
 
-        if (!existing) {
-            existing = std::move(tx);
-            notify(txid);
-            active_.emplace(txid);
-            unexpired_tx_.emplace(Clock::now(), std::move(txid));
+            auto txid = Hash{tx->ID().Bytes()};
+            const auto [it, added] = transactions_.try_emplace(txid, nullptr);
+
+            if (added) { unexpired_txid_.emplace(Clock::now(), txid); }
+
+            auto& existing = it->second;
+
+            if (!existing) {
+                existing = std::move(tx);
+                notify(txid);
+                active_.emplace(txid);
+                unexpired_tx_.emplace(Clock::now(), std::move(txid));
+            }
         }
     }
 
@@ -132,9 +156,13 @@ struct Mempool::Imp {
     }
 
     Imp(const api::Core& api,
+        const api::client::Blockchain& crypto,
+        const internal::WalletDatabase& wallet,
         const network::zeromq::socket::Publish& socket,
         const Type chain) noexcept
         : api_(api)
+        , crypto_(crypto)
+        , wallet_(wallet)
         , chain_(chain)
         , lock_()
         , transactions_()
@@ -143,6 +171,7 @@ struct Mempool::Imp {
         , unexpired_tx_()
         , socket_(socket)
     {
+        init();
     }
 
 private:
@@ -157,6 +186,8 @@ private:
     static constexpr auto txid_limit_ = std::chrono::hours{24};
 
     const api::Core& api_;
+    const api::client::Blockchain& crypto_;
+    const internal::WalletDatabase& wallet_;
     const Type chain_;
     mutable std::shared_mutex lock_;
     mutable TransactionMap transactions_;
@@ -173,13 +204,36 @@ private:
         work->AddFrame(txid.data(), txid.size());
         socket_.Send(work);
     }
+
+    auto init() noexcept -> void
+    {
+        auto transactions = Transactions{};
+
+        for (const auto& txid : wallet_.GetUnconfirmedTransactions()) {
+            if (auto tx = crypto_.LoadTransactionBitcoin(txid); tx) {
+                LogVerbose(OT_METHOD)(__func__)(
+                    ": adding unconfirmed transaction ")(txid->asHex())(
+                    " to mempool")
+                    .Flush();
+                transactions.emplace_back(std::move(tx));
+            } else {
+                LogOutput(OT_METHOD)(__func__)(": failed to load transaction ")(
+                    txid->asHex())
+                    .Flush();
+            }
+        }
+
+        Submit(std::move(transactions));
+    }
 };
 
 Mempool::Mempool(
     const api::Core& api,
+    const api::client::Blockchain& crypto,
+    const internal::WalletDatabase& wallet,
     const network::zeromq::socket::Publish& socket,
     const Type chain) noexcept
-    : imp_(std::make_unique<Imp>(api, socket, chain))
+    : imp_(std::make_unique<Imp>(api, crypto, wallet, socket, chain))
 {
 }
 
