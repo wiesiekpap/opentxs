@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_LOCKABLE_HPP
-#define OPENTXS_CORE_LOCKABLE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -12,7 +11,7 @@
 #include <shared_mutex>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
@@ -20,13 +19,13 @@ template <typename L, typename M>
 auto CheckLock(const L& lock, const M& mutex) noexcept -> bool
 {
     if (lock.mutex() != &mutex) {
-        LogOutput(": Lock is on incorrect mutex.").Flush();
+        LogError()(": Lock is on incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogOutput(": Lock is unlocked.").Flush();
+        LogError()(": Lock is unlocked.").Flush();
 
         return false;
     }
@@ -71,5 +70,3 @@ private:
     auto operator=(Lockable&&) -> Lockable& = delete;
 };
 }  // namespace opentxs
-
-#endif

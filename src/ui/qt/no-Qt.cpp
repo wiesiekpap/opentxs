@@ -24,7 +24,7 @@
 #include "ui/payablelist/PayableListItem.hpp"  // IWYU pragma: associated
 #include "ui/unitlist/UnitListItem.hpp"        // IWYU pragma: associated
 
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 #include "ui/qt/SendMonitor.hpp"
 
 namespace opentxs::ui::implementation
@@ -147,7 +147,7 @@ auto UnitListItem::qt_data(const int, const int, QVariant&) const noexcept
 
 namespace opentxs::ui::internal
 {
-auto List::MakeQT(const api::Core&) noexcept -> ui::qt::internal::Model*
+auto List::MakeQT(const api::Session&) noexcept -> ui::qt::internal::Model*
 {
     return nullptr;
 }

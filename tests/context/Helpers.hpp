@@ -12,8 +12,8 @@
 #include <set>
 #include <string>
 
-#include "opentxs/api/Options.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Options.hpp"
 
 namespace opentxs
 {

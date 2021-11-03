@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CONTACT_CONTACTDATA_HPP
-#define OPENTXS_CONTACT_CONTACTDATA_HPP
+#pragma once
 
 // IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/contact/SectionType.hpp"
@@ -18,18 +17,19 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -54,18 +54,18 @@ public:
         const proto::ContactData& data) -> std::string;
 
     ContactData(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber targetVersion,
         const SectionMap& sections);
     OPENTXS_NO_EXPORT ContactData(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber targetVersion,
         const proto::ContactData& serialized);
     ContactData(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber targetVersion,
         const ReadView& serialized);
@@ -114,17 +114,17 @@ public:
     auto EmailAddresses(bool active = true) const -> std::string;
     auto end() const -> SectionMap::const_iterator;
     auto Group(
-        const contact::SectionType& section,
-        const contact::ClaimType& type) const -> std::shared_ptr<ContactGroup>;
+        const contact::SectionType section,
+        const contact::ClaimType type) const -> std::shared_ptr<ContactGroup>;
     auto HaveClaim(const Identifier& item) const -> bool;
     auto HaveClaim(
-        const contact::SectionType& section,
-        const contact::ClaimType& type,
+        const contact::SectionType section,
+        const contact::ClaimType type,
         const std::string& value) const -> bool;
     auto Name() const -> std::string;
     auto PhoneNumbers(bool active = true) const -> std::string;
     auto PreferredOTServer() const -> OTServerID;
-    auto Section(const contact::SectionType& section) const
+    auto Section(const contact::SectionType section) const
         -> std::shared_ptr<ContactSection>;
     auto Serialize(AllocateOutput destination, const bool withID = false) const
         -> bool;
@@ -155,4 +155,3 @@ private:
     auto operator=(ContactData&&) -> ContactData& = delete;
 };
 }  // namespace opentxs
-#endif

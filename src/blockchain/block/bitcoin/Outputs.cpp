@@ -19,13 +19,13 @@
 #include <vector>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
+#include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD                                                              \
@@ -45,7 +45,7 @@ auto BitcoinTransactionOutputs(
 
         return std::make_unique<ReturnType>(std::move(outputs), size);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -74,7 +74,7 @@ Outputs::Outputs(const Outputs& rhs) noexcept
 }
 
 auto Outputs::AssociatedLocalNyms(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     std::vector<OTNymID>& output) const noexcept -> void
 {
     std::for_each(
@@ -84,7 +84,7 @@ auto Outputs::AssociatedLocalNyms(
 }
 
 auto Outputs::AssociatedRemoteContacts(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     std::vector<OTIdentifier>& output) const noexcept -> void
 {
     std::for_each(
@@ -124,7 +124,8 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
-    LogTrace(OT_METHOD)(__func__)(": processing ")(size())(" outputs").Flush();
+    LogTrace()(OT_METHOD)(__func__)(": processing ")(size())(" outputs")
+        .Flush();
 
     for (const auto& txout : *this) {
         auto temp = txout.Internal().ExtractElements(style);
@@ -134,7 +135,7 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
             std::make_move_iterator(temp.end()));
     }
 
-    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
+    LogTrace()(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -151,7 +152,7 @@ auto Outputs::FindMatches(
 
     for (const auto& txout : *this) {
         auto temp = txout.Internal().FindMatches(txid, type, patterns);
-        LogTrace(OT_METHOD)(__func__)(": Verified ")(temp.second.size())(
+        LogTrace()(OT_METHOD)(__func__)(": Verified ")(temp.second.size())(
             " matches in output ")(++index)
             .Flush();
         output.second.insert(
@@ -209,7 +210,7 @@ auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
     const auto count = size();
 
     if (count != rhs.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong number of outputs").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong number of outputs").Flush();
 
         return false;
     }
@@ -219,7 +220,7 @@ auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
         auto& r = rhs.at(i).Internal();
 
         if (false == l.MergeMetadata(r)) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to merge output ")(i)
+            LogError()(OT_METHOD)(__func__)(": Failed to merge output ")(i)
                 .Flush();
 
             return false;
@@ -230,7 +231,7 @@ auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
 }
 
 auto Outputs::NetBalanceChange(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     const identifier::Nym& nym) const noexcept -> opentxs::Amount
 {
     return std::accumulate(
@@ -246,7 +247,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
     -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return std::nullopt;
     }
@@ -255,7 +256,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
+        LogError()(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -274,7 +275,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
         const auto bytes = row->Serialize(preallocated(remaining, it));
 
         if (false == bytes.has_value()) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to serialize script")
+            LogError()(OT_METHOD)(__func__)(": Failed to serialize script")
                 .Flush();
 
             return std::nullopt;
@@ -288,7 +289,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
 }
 
 auto Outputs::Serialize(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     proto::BlockchainTransaction& destination) const noexcept -> bool
 {
     for (const auto& output : outputs_) {

@@ -13,7 +13,7 @@
 #include <string>
 
 #include "internal/ui/UI.hpp"
-#include "opentxs/Types.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/activitysummary/ActivitySummaryItem.hpp"
 
 namespace opentxs::factory

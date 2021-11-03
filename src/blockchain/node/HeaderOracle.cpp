@@ -20,24 +20,24 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/core/Core.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::implementation::HeaderOracle::"
 
 namespace opentxs::factory
 {
 auto HeaderOracle(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::node::internal::HeaderDatabase& database,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::node::internal::HeaderOracle>
@@ -70,7 +70,7 @@ auto HeaderOracle::GenesisBlockHash(const blockchain::Type type)
 
         return it->second;
     } catch (...) {
-        LogOutput("opentxs::factory::")(__func__)(": Genesis hash not found")
+        LogError()("opentxs::factory::")(__func__)(": Genesis hash not found")
             .Flush();
 
         throw;
@@ -81,7 +81,7 @@ auto HeaderOracle::GenesisBlockHash(const blockchain::Type type)
 namespace opentxs::blockchain::node::implementation
 {
 HeaderOracle::HeaderOracle(
-    const api::Core& api,
+    const api::Session& api,
     const internal::HeaderDatabase& database,
     const blockchain::Type type) noexcept
     : internal::HeaderOracle()
@@ -178,13 +178,13 @@ auto HeaderOracle::AddCheckpoint(
     auto update = UpdateTransaction{api_, database_};
 
     if (update.EffectiveCheckpoint()) {
-        LogOutput(OT_METHOD)(__func__)(": Checkpoint already exists").Flush();
+        LogError()(OT_METHOD)(__func__)(": Checkpoint already exists").Flush();
 
         return false;
     }
 
     if (2 > position) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid position").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid position").Flush();
 
         return false;
     }
@@ -219,7 +219,7 @@ auto HeaderOracle::AddHeaders(
 
     for (auto& header : headers) {
         if (false == bool(header)) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid header").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid header").Flush();
 
             return false;
         }
@@ -239,7 +239,7 @@ auto HeaderOracle::add_header(
     std::unique_ptr<block::Header> pHeader) noexcept -> bool
 {
     if (update.EffectiveHeaderExists(pHeader->Hash())) {
-        LogVerbose(OT_METHOD)(__func__)(": Header already processed").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Header already processed").Flush();
 
         return true;
     }
@@ -250,7 +250,8 @@ auto HeaderOracle::add_header(
     const auto* pParent = is_disconnected(header.ParentHash(), update);
 
     if (nullptr == pParent) {
-        LogVerbose(OT_METHOD)(__func__)(": Adding disconnected header").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Adding disconnected header")
+            .Flush();
         header.SetDisconnectedState();
         update.DisconnectBlock(header);
 
@@ -272,7 +273,7 @@ auto HeaderOracle::add_header(
             lock, current, parent, update, candidates, header);
         connect_children(lock, header, candidates, candidate, update);
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to connect children").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to connect children").Flush();
 
         return false;
     }
@@ -292,19 +293,19 @@ auto HeaderOracle::apply_checkpoint(
     try {
         const auto& siblings = update.EffectiveSiblingHashes();
         auto count = std::atomic<std::size_t>{siblings.size()};
-        LogNormal("* Comparing current chain and ")(count)(
-            " sibling chains to checkpoint")
+        LogConsole()("* Comparing current chain and ")(
+            count)(" sibling chains to checkpoint")
             .Flush();
         const auto& ancestor = update.Stage(position - 1);
         auto candidates = Candidates{};
         candidates.reserve(count + 1u);
         stage_candidate(lock, ancestor, candidates, update, best);
-        LogNormal("  * ")(count)(" remaining").Flush();
+        LogConsole()("  * ")(count)(" remaining").Flush();
 
         for (const auto& hash : siblings) {
             stage_candidate(
                 lock, ancestor, candidates, update, update.Stage(hash));
-            LogNormal("  * ")(--count)(" remaining").Flush();
+            LogConsole()("  * ")(--count)(" remaining").Flush();
         }
 
         for (auto& [invalid, chain] : candidates) {
@@ -330,7 +331,7 @@ auto HeaderOracle::apply_checkpoint(
 
         return true;
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to process sibling chains")
+        LogError()(OT_METHOD)(__func__)(": Failed to process sibling chains")
             .Flush();
 
         return false;
@@ -585,14 +586,14 @@ auto HeaderOracle::choose_candidate(
                             update.SetReorgParent(parent);
                             update.AddToBestChain(segment);
                             update.AddSibling(current.Position());
-                            LogVerbose(OT_METHOD)(__func__)(": Block ")(
+                            LogVerbose()(OT_METHOD)(__func__)(": Block ")(
                                 hash->asHex())(" at position ")(
                                 height)(" causes a chain reorg.")
                                 .Flush();
                         }
                     } else {
                         update.AddToBestChain(segment);
-                        LogVerbose(OT_METHOD)(__func__)(": Adding block ")(
+                        LogVerbose()(OT_METHOD)(__func__)(": Adding block ")(
                             hash->asHex())(" to best chain at position ")(
                             height)
                             .Flush();
@@ -602,13 +603,14 @@ auto HeaderOracle::choose_candidate(
                 const auto orphan = tip.Position();
                 update.AddSibling(orphan);
                 const auto& [height, hash] = orphan;
-                LogVerbose(OT_METHOD)(__func__)(": Adding block ")(
+                LogVerbose()(OT_METHOD)(__func__)(": Adding block ")(
                     hash->asHex())(" as an orphan at position ")(height)
                     .Flush();
             }
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Error evaluating candidates").Flush();
+        LogError()(OT_METHOD)(__func__)(": Error evaluating candidates")
+            .Flush();
 
         return output;
     }
@@ -716,7 +718,7 @@ auto HeaderOracle::DeleteCheckpoint() noexcept -> bool
     auto update = UpdateTransaction{api_, database_};
 
     if (false == update.EffectiveCheckpoint()) {
-        LogOutput(OT_METHOD)(__func__)(": No checkpoint").Flush();
+        LogError()(OT_METHOD)(__func__)(": No checkpoint").Flush();
 
         return false;
     }
@@ -792,7 +794,7 @@ auto HeaderOracle::Init() noexcept -> void
 
     // Remove existing checkpoint if it is set
     if (existingHeight != null.first) {
-        LogNormal(DisplayString(chain_))(
+        LogConsole()(DisplayString(chain_))(
             ": Removing obsolete checkpoint at height ")(existingHeight)
             .Flush();
         const auto deleted = DeleteCheckpoint();
@@ -801,7 +803,7 @@ auto HeaderOracle::Init() noexcept -> void
     }
 
     if (1 < defaultHeight) {
-        LogNormal(DisplayString(chain_))(": Updating checkpoint to hash ")(
+        LogConsole()(DisplayString(chain_))(": Updating checkpoint to hash ")(
             defaultBlockhash->asHex())(" at height ")(defaultHeight)
             .Flush();
 
@@ -987,7 +989,7 @@ auto HeaderOracle::ProcessSyncData(
             previous = std::move(hash);
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     if ((0u < output) && database_.ApplyUpdate(update)) {

@@ -19,12 +19,13 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/protobuf/Token.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blind
@@ -77,9 +78,12 @@ public:
         const Mint& mint,
         const PasswordPrompt& reason) -> bool final;
 
-    Lucre(const api::Core& api, Purse& purse, const proto::Token& serialized);
     Lucre(
-        const api::Core& api,
+        const api::Session& api,
+        Purse& purse,
+        const proto::Token& serialized);
+    Lucre(
+        const api::Session& api,
         const identity::Nym& owner,
         const Mint& mint,
         const Denomination value,
@@ -106,7 +110,7 @@ private:
     auto clone() const noexcept -> Lucre* final { return new Lucre(*this); }
 
     Lucre(
-        const api::Core& api,
+        const api::Session& api,
         Purse& purse,
         const VersionNumber version,
         const blind::TokenState state,

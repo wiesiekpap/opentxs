@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CONTRACT_BASKET_BASKET_HPP
-#define OPENTXS_CORE_CONTRACT_BASKET_BASKET_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -16,17 +15,21 @@
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/basket/BasketItem.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -204,11 +207,11 @@ protected:
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t final;
 
 private:
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
-    Basket(const api::Core& api);
+    Basket(const api::Session& api);
     Basket(
-        const api::Core& api,
+        const api::Session& api,
         std::int32_t nCount,
         const Amount& lMinimumTransferAmount);
 
@@ -217,4 +220,3 @@ private:
     Basket() = delete;
 };
 }  // namespace opentxs
-#endif

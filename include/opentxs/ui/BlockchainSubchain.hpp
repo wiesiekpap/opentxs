@@ -5,16 +5,15 @@
 
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 
-#ifndef OPENTXS_UI_BLOCKCHAINSUBCHAIN_HPP
-#define OPENTXS_UI_BLOCKCHAINSUBCHAIN_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/ui/ListRow.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
 {
@@ -40,4 +39,3 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif

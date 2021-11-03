@@ -8,8 +8,8 @@
 #include <list>
 #include <mutex>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
 
 namespace opentxs
 {

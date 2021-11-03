@@ -16,14 +16,13 @@
 #include <vector>
 
 #include "Proto.tpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
@@ -40,11 +39,13 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"
 #include "opentxs/protobuf/verify/BlockchainP2PSync.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace opentxs::network::blockchain::sync
 {
-auto Factory(const api::Core& api, const zeromq::Message& in) noexcept
+auto Factory(const api::Session& api, const zeromq::Message& in) noexcept
     -> std::unique_ptr<Base>
 {
     const auto b = in.Body();
@@ -179,8 +180,8 @@ auto Factory(const api::Core& api, const zeromq::Message& in) noexcept
             }
         }
     } catch (const std::exception& e) {
-        LogOutput("opentxs::network::blockchain::sync::Base::")(__func__)(": ")(
-            e.what())
+        LogError()("opentxs::network::blockchain::sync::Base::")(__func__)(
+            ": ")(e.what())
             .Flush();
 
         return std::make_unique<Base>();

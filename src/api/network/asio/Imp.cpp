@@ -26,7 +26,6 @@
 #include <exception>
 #include <functional>
 #include <future>
-#include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -38,15 +37,12 @@
 #include "api/network/asio/Acceptors.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/network/Network.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/asio/Endpoint.hpp"
 #include "network/asio/Socket.hpp"  // IWYU pragma: keep
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -56,6 +52,9 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Thread.hpp"
 
@@ -169,7 +168,7 @@ auto Asio::Imp::Connect(
         internal,
         [this, connection{space(id)}, address{endpoint.str()}](const auto& e) {
             if (e) {
-                LogVerbose(OT_METHOD)(__func__)(": asio connect error: ")(
+                LogVerbose()(OT_METHOD)(__func__)(": asio connect error: ")(
                     e.message())
                     .Flush();
             }
@@ -226,7 +225,7 @@ auto Asio::Imp::data_callback(zmq::Message& in) noexcept -> void
             }
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 }
 
@@ -365,7 +364,7 @@ auto Asio::Imp::Receive(
                 reader(connection), e ? value(WorkType::AsioDisconnect) : type);
 
             if (e) {
-                LogVerbose(OT_METHOD)(__func__)(": asio receive error: ")(
+                LogVerbose()(OT_METHOD)(__func__)(": asio receive error: ")(
                     e.message())
                     .Flush();
                 work->AddFrame(address);
@@ -418,7 +417,7 @@ auto Asio::Imp::Resolve(std::string_view server, std::uint16_t port)
             }
         }
     } catch (const std::exception& e) {
-        LogVerbose(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -573,7 +572,7 @@ auto Asio::Imp::retrieve_address_async(
         const auto address = ip::make_address(address_string, address_ec);
 
         if (!address_ec) {
-            LogVerbose(OT_METHOD)(__func__)(" GET response: IP address: ")(
+            LogVerbose()(OT_METHOD)(__func__)(" GET response: IP address: ")(
                 address_string)
                 .Flush();
             if (address.is_v4()) {
@@ -797,7 +796,7 @@ auto Asio::Imp::retrieve_address_async_ssl(
         const auto address = ip::make_address(address_string, address_ec);
 
         if (!address_ec) {
-            LogVerbose(OT_METHOD)(__func__)(" GET response: IP address: ")(
+            LogVerbose()(OT_METHOD)(__func__)(" GET response: IP address: ")(
                 address_string)
                 .Flush();
             if (address.is_v4()) {
@@ -840,7 +839,7 @@ auto Asio::Imp::retrieve_address_async_ssl(
     } catch (const std::exception& e) {
         // The value of promise is already set, so log the shutdown error
         // and continue.
-        LogVerbose(OT_METHOD)(__func__)(" ")(e.what()).Flush();
+        LogVerbose()(OT_METHOD)(__func__)(" ")(e.what()).Flush();
     }
 }
 
@@ -916,7 +915,7 @@ auto Asio::Imp::state_machine() noexcept -> bool
 
                 if (eptr) { std::rethrow_exception(eptr); }
             } catch (const std::exception& e) {
-                LogVerbose(OT_METHOD)(__func__)(" ")(e.what()).Flush();
+                LogVerbose()(OT_METHOD)(__func__)(" ")(e.what()).Flush();
             }
         }
     }
@@ -935,7 +934,7 @@ auto Asio::Imp::state_machine() noexcept -> bool
 
                 if (eptr) { std::rethrow_exception(eptr); }
             } catch (const std::exception& e) {
-                LogVerbose(OT_METHOD)(__func__)(" ")(e.what()).Flush();
+                LogVerbose()(OT_METHOD)(__func__)(" ")(e.what()).Flush();
             }
         }
     }

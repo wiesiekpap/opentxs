@@ -37,7 +37,7 @@ auto check_blockchain_account_status_qt(
 }
 
 auto check_blockchain_selection_qt(
-    const ot::api::client::Manager&,
+    const ot::api::session::Client&,
     const ot::ui::Blockchains,
     const BlockchainSelectionData&) noexcept -> bool
 {

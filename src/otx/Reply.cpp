@@ -14,13 +14,10 @@
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "internal/otx/OTX.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -33,6 +30,9 @@
 #include "opentxs/protobuf/ServerReply.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/verify/ServerReply.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::otx::Reply>;
 
@@ -49,14 +49,14 @@ static auto construct_push(OTXPushType pushtype, const std::string& payload)
     auto pPush = std::make_shared<proto::OTXPush>();
     auto& push = *pPush;
     push.set_version(1);
-    push.set_type(internal::translate(pushtype));
+    push.set_type(translate(pushtype));
     push.set_item(payload);
 
     return pPush;
 }
 
 auto Reply::Factory(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p signer,
     const identifier::Nym& recipient,
     const identifier::Server& server,
@@ -89,7 +89,7 @@ auto Reply::Factory(
 }
 
 auto Reply::Factory(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p signer,
     const identifier::Nym& recipient,
     const identifier::Server& server,
@@ -112,13 +112,14 @@ auto Reply::Factory(
         construct_push(pushtype, payload));
 }
 
-auto Reply::Factory(const api::Core& api, const proto::ServerReply serialized)
-    -> OTXReply
+auto Reply::Factory(
+    const api::Session& api,
+    const proto::ServerReply serialized) -> OTXReply
 {
     return OTXReply{new implementation::Reply(api, serialized)};
 }
 
-auto Reply::Factory(const api::Core& api, const ReadView& view) -> OTXReply
+auto Reply::Factory(const api::Session& api, const ReadView& view) -> OTXReply
 {
     return OTXReply{new implementation::Reply(
         api, proto::Factory<proto::ServerReply>(view))};
@@ -128,7 +129,7 @@ auto Reply::Factory(const api::Core& api, const ReadView& view) -> OTXReply
 namespace opentxs::otx::implementation
 {
 Reply::Reply(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p signer,
     const identifier::Nym& recipient,
     const identifier::Server& server,
@@ -148,7 +149,7 @@ Reply::Reply(
     first_time_init(lock);
 }
 
-Reply::Reply(const api::Core& api, const proto::ServerReply serialized)
+Reply::Reply(const api::Session& api, const proto::ServerReply serialized)
     : Signable(
           api,
           extract_nym(api, serialized),
@@ -162,7 +163,7 @@ Reply::Reply(const api::Core& api, const proto::ServerReply serialized)
               : Signatures{})
     , recipient_(identifier::Nym::Factory(serialized.nym()))
     , server_(identifier::Server::Factory(serialized.server()))
-    , type_(otx::internal::translate(serialized.type()))
+    , type_(translate(serialized.type()))
     , success_(serialized.success())
     , number_(serialized.request())
     , payload_(
@@ -186,7 +187,7 @@ Reply::Reply(const Reply& rhs)
 }
 
 auto Reply::extract_nym(
-    const api::Core& api,
+    const api::Session& api,
     const proto::ServerReply serialized) -> Nym_p
 {
     const auto serverID = identifier::Server::Factory(serialized.server());
@@ -194,7 +195,7 @@ auto Reply::extract_nym(
     try {
         return api.Wallet().Server(serverID)->Nym();
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid server id.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid server id.").Flush();
 
         return nullptr;
     }
@@ -221,7 +222,7 @@ auto Reply::id_version(const Lock& lock) const -> proto::ServerReply
     proto::ServerReply output{};
     output.set_version(version_);
     output.clear_id();  // Must be blank
-    output.set_type(otx::internal::translate(type_));
+    output.set_type(translate(type_));
     output.set_nym(recipient_->str());
     output.set_server(server_->str());
     output.set_request(number_);
@@ -289,7 +290,8 @@ auto Reply::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to create signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to create signature.")
+            .Flush();
     }
 
     return success;
@@ -302,7 +304,7 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (nym_) { validNym = nym_->VerifyPseudonym(); }
 
     if (false == validNym) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid nym.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid nym.").Flush();
 
         return false;
     }
@@ -310,13 +312,13 @@ auto Reply::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(full_version(lock), VERBOSE);
 
     if (false == validSyntax) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 != signatures_.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong number signatures.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong number signatures.").Flush();
 
         return false;
     }
@@ -327,7 +329,7 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (false == validSig) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid signature.").Flush();
 
         return false;
     }

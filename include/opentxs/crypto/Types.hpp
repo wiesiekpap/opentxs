@@ -3,13 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CRYPTO_TYPES_HPP
-#define OPENTXS_CRYPTO_TYPES_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 namespace opentxs
 {
@@ -34,4 +34,3 @@ enum class Bip32Child : Bip32Index;
 
 auto print(crypto::SeedStyle) noexcept -> std::string;
 }  // namespace opentxs
-#endif

@@ -16,19 +16,20 @@
 #include <string_view>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::Mempool::Imp::"
@@ -104,7 +105,8 @@ struct Mempool::Imp {
 
         for (auto& tx : txns) {
             if (!tx) {
-                LogOutput(OT_METHOD)(__func__)(": invalid transaction").Flush();
+                LogError()(OT_METHOD)(__func__)(": invalid transaction")
+                    .Flush();
 
                 continue;
             }
@@ -155,8 +157,8 @@ struct Mempool::Imp {
         }
     }
 
-    Imp(const api::Core& api,
-        const api::client::Blockchain& crypto,
+    Imp(const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const internal::WalletDatabase& wallet,
         const network::zeromq::socket::Publish& socket,
         const Type chain) noexcept
@@ -185,8 +187,8 @@ private:
     static constexpr auto tx_limit_ = std::chrono::hours{1};
     static constexpr auto txid_limit_ = std::chrono::hours{24};
 
-    const api::Core& api_;
-    const api::client::Blockchain& crypto_;
+    const api::Session& api_;
+    const api::crypto::Blockchain& crypto_;
     const internal::WalletDatabase& wallet_;
     const Type chain_;
     mutable std::shared_mutex lock_;
@@ -211,14 +213,14 @@ private:
 
         for (const auto& txid : wallet_.GetUnconfirmedTransactions()) {
             if (auto tx = crypto_.LoadTransactionBitcoin(txid); tx) {
-                LogVerbose(OT_METHOD)(__func__)(
+                LogVerbose()(OT_METHOD)(__func__)(
                     ": adding unconfirmed transaction ")(txid->asHex())(
                     " to mempool")
                     .Flush();
                 transactions.emplace_back(std::move(tx));
             } else {
-                LogOutput(OT_METHOD)(__func__)(": failed to load transaction ")(
-                    txid->asHex())
+                LogError()(OT_METHOD)(__func__)(
+                    ": failed to load transaction ")(txid->asHex())
                     .Flush();
             }
         }
@@ -228,8 +230,8 @@ private:
 };
 
 Mempool::Mempool(
-    const api::Core& api,
-    const api::client::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const internal::WalletDatabase& wallet,
     const network::zeromq::socket::Publish& socket,
     const Type chain) noexcept

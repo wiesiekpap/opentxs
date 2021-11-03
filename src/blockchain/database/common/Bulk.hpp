@@ -11,8 +11,8 @@
 #include <mutex>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs

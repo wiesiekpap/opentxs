@@ -9,23 +9,22 @@
 
 #include <cstring>
 #include <iterator>
-#include <memory>
 #include <stdexcept>
 #include <string>
 #include <tuple>
 #include <vector>
 
 #include "crypto/HDNode.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::crypto::Bip32::Imp::"
 
@@ -67,7 +66,7 @@ auto Bip32::Imp::DeriveKey(
 
         node.Assign(curve, output);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -137,7 +136,7 @@ auto Bip32::Imp::DerivePrivateKey(
 
         node.Assign(curve, output);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -201,7 +200,7 @@ auto Bip32::Imp::DerivePublicKey(
 
         node.Assign(curve, output);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 
     return output;
@@ -215,7 +214,7 @@ auto Bip32::Imp::root_node(
     const AllocateOutput pub) const noexcept -> bool
 {
     if ((16 > entropy.size()) || (64 < entropy.size())) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid entropy size (")(
+        LogError()(OT_METHOD)(__func__)(": Invalid entropy size (")(
             entropy.size())(")")
             .Flush();
 
@@ -223,7 +222,7 @@ auto Bip32::Imp::root_node(
     }
 
     if (false == bool(key) || false == bool(code)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -232,7 +231,7 @@ auto Bip32::Imp::root_node(
     auto codeOut = code(32);
 
     if (false == keyOut.valid(32) || false == codeOut.valid(32)) {
-        LogOutput(OT_METHOD)(__func__)(": failed to allocate output space")
+        LogError()(OT_METHOD)(__func__)(": failed to allocate output space")
             .Flush();
 
         return false;
@@ -244,7 +243,7 @@ auto Bip32::Imp::root_node(
     if (false ==
         crypto_.Hash().HMAC(
             crypto::HashType::Sha512, rootKey, entropy, writer(node))) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to instantiate root node")
+        LogError()(OT_METHOD)(__func__)(": Failed to instantiate root node")
             .Flush();
 
         return false;
@@ -261,7 +260,7 @@ auto Bip32::Imp::root_node(
 
     try {
         if (false == havePub) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed to calculate root public key")
                 .Flush();
 
@@ -270,7 +269,7 @@ auto Bip32::Imp::root_node(
 
         return true;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }

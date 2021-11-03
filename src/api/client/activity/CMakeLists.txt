@@ -16,12 +16,21 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Activity.hpp"
 )
 
-target_link_libraries(opentxs-api-client-activity PRIVATE opentxs::messages)
+target_link_libraries(opentxs-api-client-activity PRIVATE opentxs-common)
 target_include_directories(
   opentxs-api-client-activity SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
 
 target_sources(opentxs-api-client-activity PRIVATE ${cxx-install-headers})
+
+if(NOT OT_IWYU)
+  target_precompile_headers(
+    opentxs-api-client-activity
+    REUSE_FROM
+    opentxs-common
+  )
+endif()
+
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-client-activity>)
 add_dependencies(opentxs-api-client-activity generated_code)
 

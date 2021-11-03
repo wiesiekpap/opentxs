@@ -3,18 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_IDENTIFIER_HPP
-#define OPENTXS_CORE_IDENTIFIER_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -131,4 +130,3 @@ struct OPENTXS_EXPORT less<opentxs::OTIdentifier> {
         const opentxs::OTIdentifier& rhs) const -> bool;
 };
 }  // namespace std
-#endif

@@ -5,8 +5,7 @@
 
 // IWYU pragma: no_include "opentxs/blockchain/block/bitcoin/Block.hpp"
 
-#ifndef OPENTXS_BLOCKCHAIN_CLIENT_BLOCKORACLE_HPP
-#define OPENTXS_BLOCKCHAIN_CLIENT_BLOCKORACLE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -14,8 +13,8 @@
 #include <memory>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -77,4 +76,3 @@ private:
 }  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

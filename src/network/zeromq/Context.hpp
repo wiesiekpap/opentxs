@@ -12,7 +12,6 @@
 
 #include "Proto.hpp"
 #include "internal/network/Factory.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
@@ -28,12 +27,13 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -94,7 +94,7 @@ public:
         const opentxs::network::zeromq::ListenCallback& callback,
         const std::string& endpoint) const noexcept -> OTZMQPairSocket final;
     auto Pipeline(
-        const api::Core& api,
+        const api::Session& api,
         std::function<void(zeromq::Message&)> callback) const noexcept
         -> OTZMQPipeline final;
     auto Proxy(

@@ -50,5 +50,8 @@ add_library(
   "Units.hpp"
 )
 target_link_libraries(opentxs-storage-tree PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-storage-tree SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-storage-tree>)
 add_dependencies(opentxs-storage-tree generated_code)

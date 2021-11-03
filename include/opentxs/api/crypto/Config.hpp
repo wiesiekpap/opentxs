@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_CRYPTO_CONFIG_HPP
-#define OPENTXS_API_CRYPTO_CONFIG_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -16,9 +15,25 @@ namespace api
 {
 namespace crypto
 {
+namespace internal
+{
+class Config;
+}  // namespace internal
+}  // namespace crypto
+}  // namespace api
+}  // namespace opentxs
+
+namespace opentxs
+{
+namespace api
+{
+namespace crypto
+{
 class OPENTXS_EXPORT Config
 {
 public:
+    OPENTXS_NO_EXPORT virtual auto InternalConfig() const noexcept
+        -> const internal::Config& = 0;
     virtual auto IterationCount() const -> std::uint32_t = 0;
     virtual auto SymmetricSaltSize() const -> std::uint32_t = 0;
     virtual auto SymmetricKeySize() const -> std::uint32_t = 0;
@@ -28,7 +43,10 @@ public:
     virtual auto PublicKeysize() const -> std::uint32_t = 0;
     virtual auto PublicKeysizeMax() const -> std::uint32_t = 0;
 
-    virtual ~Config() = default;
+    OPENTXS_NO_EXPORT virtual auto InternalConfig() noexcept
+        -> internal::Config& = 0;
+
+    OPENTXS_NO_EXPORT virtual ~Config() = default;
 
 protected:
     Config() = default;
@@ -42,4 +60,3 @@ private:
 }  // namespace crypto
 }  // namespace api
 }  // namespace opentxs
-#endif

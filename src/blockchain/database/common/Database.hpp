@@ -22,7 +22,6 @@
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -34,19 +33,20 @@
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
+#include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
 class Legacy;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -183,8 +183,8 @@ public:
         const noexcept -> std::vector<pTxid>;
 
     Database(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const api::Legacy& legacy,
         const std::string& dataFolder,
         const Options& args) noexcept(false);

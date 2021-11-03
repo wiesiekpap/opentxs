@@ -14,16 +14,17 @@
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/ui/AccountActivity.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "ui/accountactivity/AccountActivity.hpp"
 #include "ui/base/List.hpp"
@@ -34,12 +35,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -82,7 +83,7 @@ public:
     auto Unit() const noexcept -> core::UnitType final;
 
     CustodialAccountActivity(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const SimpleCallback& cb) noexcept;

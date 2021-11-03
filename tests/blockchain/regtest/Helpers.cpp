@@ -28,20 +28,19 @@
 
 #include "integration/Helpers.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Options.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
@@ -63,7 +62,6 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -83,6 +81,10 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
@@ -96,14 +98,14 @@ constexpr auto sync_server_sync_public_{
 constexpr auto sync_server_update_{"inproc://sync_server_endpoint/update"};
 
 struct BlockListener::Imp {
-    const ot::api::Core& api_;
+    const ot::api::Session& api_;
     mutable std::mutex lock_;
     std::promise<Position> promise_;
     Height target_;
     ot::OTZMQListenCallback cb_;
     ot::OTZMQSubscribeSocket socket_;
 
-    Imp(const ot::api::Core& api)
+    Imp(const ot::api::Session& api)
         : api_(api)
         , lock_()
         , promise_()
@@ -157,7 +159,7 @@ struct BlockListener::Imp {
     }
 };
 
-BlockListener::BlockListener(const ot::api::Core& api) noexcept
+BlockListener::BlockListener(const ot::api::Session& api) noexcept
     : imp_(std::make_unique<Imp>(api))
 {
 }
@@ -248,9 +250,9 @@ struct PeerListener::Imp {
 
     Imp(PeerListener& parent,
         const int clientCount,
-        const ot::api::client::Manager& miner,
-        const ot::api::client::Manager& client1,
-        const ot::api::client::Manager& client2)
+        const ot::api::session::Client& miner,
+        const ot::api::session::Client& client1,
+        const ot::api::session::Client& client2)
         : parent_(parent)
         , client_count_(clientCount)
         , lock_()
@@ -290,9 +292,9 @@ struct PeerListener::Imp {
 
 PeerListener::PeerListener(
     const int clientCount,
-    const ot::api::client::Manager& miner,
-    const ot::api::client::Manager& client1,
-    const ot::api::client::Manager& client2)
+    const ot::api::session::Client& miner,
+    const ot::api::session::Client& client1,
+    const ot::api::session::Client& client2)
     : promise_()
     , done_(promise_.get_future())
     , miner_peers_(0)
@@ -311,17 +313,17 @@ Regtest_fixture_base::Regtest_fixture_base(
     : ot_(ot::Context())
     , client_args_(clientArgs)
     , client_count_(clientCount)
-    , miner_(ot_.StartClient(
+    , miner_(ot_.StartClientSession(
           ot::Options{minerArgs}
               .SetBlockchainStorageLevel(2)
               .SetBlockchainWalletEnabled(false),
           0))
-    , client_1_(ot_.StartClient(client_args_, 1))
-    , client_2_(ot_.StartClient(client_args_, 2))
+    , client_1_(ot_.StartClientSession(client_args_, 1))
+    , client_2_(ot_.StartClientSession(client_args_, 2))
     , address_(init_address(miner_))
     , connection_(init_peer(client_count_, miner_, client_1_, client_2_))
     , default_([&](Height height) -> Transaction {
-        using OutputBuilder = ot::api::Factory::OutputBuilder;
+        using OutputBuilder = ot::api::session::Factory::OutputBuilder;
 
         return miner_.Factory().BitcoinGenerationTransaction(
             test_chain_,
@@ -522,7 +524,7 @@ auto Regtest_fixture_base::get_bytes(const Script& script) noexcept
     }
 }
 
-auto Regtest_fixture_base::init_address(const ot::api::Core& api) noexcept
+auto Regtest_fixture_base::init_address(const ot::api::Session& api) noexcept
     -> const b::p2p::Address&
 {
     constexpr auto test_endpoint{"inproc://test_endpoint"};
@@ -548,7 +550,7 @@ auto Regtest_fixture_base::init_address(const ot::api::Core& api) noexcept
 
 auto Regtest_fixture_base::init_block(
     const int index,
-    const ot::api::Core& api) noexcept -> BlockListener&
+    const ot::api::Session& api) noexcept -> BlockListener&
 {
     auto& p = block_listener_[index];
 
@@ -572,9 +574,9 @@ auto Regtest_fixture_base::init_mined() noexcept -> MinedBlocks&
 
 auto Regtest_fixture_base::init_peer(
     const int clientCount,
-    const ot::api::client::Manager& miner,
-    const ot::api::client::Manager& client1,
-    const ot::api::client::Manager& client2) noexcept -> const PeerListener&
+    const ot::api::session::Client& miner,
+    const ot::api::session::Client& client1,
+    const ot::api::session::Client& client2) noexcept -> const PeerListener&
 {
     if (false == bool(peer_listener_)) {
         peer_listener_ = std::make_unique<PeerListener>(
@@ -588,7 +590,7 @@ auto Regtest_fixture_base::init_peer(
 
 auto Regtest_fixture_base::init_wallet(
     const int index,
-    const ot::api::Core& api) noexcept -> WalletListener&
+    const ot::api::Session& api) noexcept -> WalletListener&
 {
     auto& p = wallet_listener_[index];
 
@@ -816,7 +818,7 @@ auto Regtest_fixture_base::TestUTXOs(
 }
 
 auto Regtest_fixture_base::TestWallet(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const TXOState& state) const noexcept -> bool
 {
     auto output{true};
@@ -900,7 +902,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
     , expected_account_type_(ot::AccountType::Blockchain)
     , expected_unit_type_(ot::core::UnitType::Regtest)
     , hd_generator_([&](Height height) -> Transaction {
-        using OutputBuilder = ot::api::Factory::OutputBuilder;
+        using OutputBuilder = ot::api::session::Factory::OutputBuilder;
         using Index = ot::Bip32Index;
         static constexpr auto count = 100u;
         static const auto baseAmount = ot::blockchain::Amount{100000000};
@@ -990,7 +992,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
             const auto& api = *user.api_;
             const auto& nymID = user.nym_id_.get();
             const auto reason = api.Factory().PasswordPrompt(__func__);
-            api.Blockchain().NewHDSubaccount(
+            api.Crypto().Blockchain().NewHDSubaccount(
                 nymID,
                 ot::blockchain::crypto::HDProtocol::BIP_44,
                 test_chain_,
@@ -1019,7 +1021,8 @@ auto Regtest_fixture_hd::CheckTXODB() const noexcept -> bool
 
 auto Regtest_fixture_hd::SendHD() const noexcept -> const bca::HD&
 {
-    return client_1_.Blockchain()
+    return client_1_.Crypto()
+        .Blockchain()
         .Account(alice_.nym_id_, test_chain_)
         .GetHD()
         .at(0);
@@ -1116,7 +1119,7 @@ auto Regtest_fixture_tcp::Connect() noexcept -> bool
 
 Regtest_payment_code::Regtest_payment_code()
     : Regtest_fixture_normal(2)
-    , api_server_1_(ot::Context().StartServer(0))
+    , api_server_1_(ot::Context().StartNotarySession(0))
     , expected_notary_(client_1_.UI().BlockchainNotaryID(test_chain_))
     , expected_unit_(client_1_.UI().BlockchainUnitID(test_chain_))
     , expected_display_unit_(u8"UNITTEST")
@@ -1126,7 +1129,7 @@ Regtest_payment_code::Regtest_payment_code()
     , expected_account_type_(ot::AccountType::Blockchain)
     , expected_unit_type_(ot::core::UnitType::Regtest)
     , mine_to_alice_([&](Height height) -> Transaction {
-        using OutputBuilder = ot::api::Factory::OutputBuilder;
+        using OutputBuilder = ot::api::session::Factory::OutputBuilder;
         static const auto baseAmmount = ot::blockchain::Amount{10000000000};
         auto meta = std::vector<OutpointMetadata>{};
         const auto& account = SendHD();
@@ -1200,7 +1203,7 @@ Regtest_payment_code::Regtest_payment_code()
             const auto& api = *user.api_;
             const auto& nymID = user.nym_id_.get();
             const auto reason = api.Factory().PasswordPrompt(__func__);
-            api.Blockchain().NewHDSubaccount(
+            api.Crypto().Blockchain().NewHDSubaccount(
                 nymID,
                 ot::blockchain::crypto::HDProtocol::BIP_44,
                 test_chain_,
@@ -1264,7 +1267,8 @@ auto Regtest_payment_code::CheckTXODBBob() const noexcept -> bool
 
 auto Regtest_payment_code::ReceiveHD() const noexcept -> const bca::HD&
 {
-    return client_2_.Blockchain()
+    return client_2_.Crypto()
+        .Blockchain()
         .Account(bob_.nym_id_, test_chain_)
         .GetHD()
         .at(0);
@@ -1272,7 +1276,8 @@ auto Regtest_payment_code::ReceiveHD() const noexcept -> const bca::HD&
 
 auto Regtest_payment_code::ReceivePC() const noexcept -> const bca::PaymentCode&
 {
-    return client_2_.Blockchain()
+    return client_2_.Crypto()
+        .Blockchain()
         .Account(bob_.nym_id_, test_chain_)
         .GetPaymentCode()
         .at(0);
@@ -1280,7 +1285,8 @@ auto Regtest_payment_code::ReceivePC() const noexcept -> const bca::PaymentCode&
 
 auto Regtest_payment_code::SendHD() const noexcept -> const bca::HD&
 {
-    return client_1_.Blockchain()
+    return client_1_.Crypto()
+        .Blockchain()
         .Account(alice_.nym_id_, test_chain_)
         .GetHD()
         .at(0);
@@ -1288,7 +1294,8 @@ auto Regtest_payment_code::SendHD() const noexcept -> const bca::HD&
 
 auto Regtest_payment_code::SendPC() const noexcept -> const bca::PaymentCode&
 {
-    return client_1_.Blockchain()
+    return client_1_.Crypto()
+        .Blockchain()
         .Account(alice_.nym_id_, test_chain_)
         .GetPaymentCode()
         .at(0);
@@ -1349,7 +1356,7 @@ struct ScanListener::Imp {
     using ChainMap = std::map<Chain, AccountMap>;
     using Map = std::map<ot::OTNymID, ChainMap>;
 
-    const ot::api::Core& api_;
+    const ot::api::Session& api_;
     const ot::OTZMQListenCallback cb_;
     const ot::OTZMQSubscribeSocket socket_;
     mutable std::mutex lock_;
@@ -1405,7 +1412,7 @@ struct ScanListener::Imp {
         it->second.test();
     }
 
-    Imp(const ot::api::Core& api) noexcept
+    Imp(const ot::api::Session& api) noexcept
         : api_(api)
         , cb_(Callback::Factory([&](auto& msg) { cb(msg); }))
         , socket_([&] {
@@ -1423,7 +1430,7 @@ struct ScanListener::Imp {
     }
 };
 
-ScanListener::ScanListener(const ot::api::Core& api) noexcept
+ScanListener::ScanListener(const ot::api::Session& api) noexcept
     : imp_(std::make_unique<Imp>(api))
 {
 }
@@ -1471,7 +1478,7 @@ struct SyncRequestor::Imp {
     using Buffer = std::deque<ot::OTZMQMessage>;
 
     SyncRequestor& parent_;
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const MinedBlocks& cache_;
     mutable std::mutex lock_;
     std::atomic_int updated_;
@@ -1487,7 +1494,7 @@ struct SyncRequestor::Imp {
     }
 
     Imp(SyncRequestor& parent,
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const MinedBlocks& cache) noexcept
         : parent_(parent)
         , api_(api)
@@ -1503,7 +1510,7 @@ struct SyncRequestor::Imp {
 };
 
 SyncRequestor::SyncRequestor(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const MinedBlocks& cache) noexcept
     : checked_(-1)
     , expected_(0)
@@ -1617,7 +1624,7 @@ SyncRequestor::~SyncRequestor() = default;
 
 struct SyncSubscriber::Imp {
     SyncSubscriber& parent_;
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const MinedBlocks& cache_;
     std::atomic_int updated_;
     std::atomic_int errors_;
@@ -1682,7 +1689,7 @@ struct SyncSubscriber::Imp {
     }
 
     Imp(SyncSubscriber& parent,
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const MinedBlocks& cache)
         : parent_(parent)
         , api_(api)
@@ -1700,7 +1707,7 @@ struct SyncSubscriber::Imp {
 };
 
 SyncSubscriber::SyncSubscriber(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const MinedBlocks& cache)
     : expected_(0)
     , imp_(std::make_unique<Imp>(*this, api, cache))
@@ -2177,14 +2184,14 @@ auto TXOs::Extract(TXOState& output) const noexcept -> void
 TXOs::~TXOs() = default;
 
 struct WalletListener::Imp {
-    const ot::api::Core& api_;
+    const ot::api::Session& api_;
     mutable std::mutex lock_;
     std::promise<Height> promise_;
     Height target_;
     ot::OTZMQListenCallback cb_;
     ot::OTZMQSubscribeSocket socket_;
 
-    Imp(const ot::api::Core& api) noexcept
+    Imp(const ot::api::Session& api) noexcept
         : api_(api)
         , lock_()
         , promise_()
@@ -2210,7 +2217,7 @@ struct WalletListener::Imp {
     }
 };
 
-WalletListener::WalletListener(const ot::api::Core& api) noexcept
+WalletListener::WalletListener(const ot::api::Session& api) noexcept
     : imp_(std::make_unique<Imp>(api))
 {
 }

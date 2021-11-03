@@ -14,8 +14,8 @@
 #include "crypto/library/EcdsaProvider.hpp"
 #include "crypto/library/Pbkdf2.hpp"
 #include "crypto/library/Ripemd160.hpp"
+#include "internal/api/crypto/Util.hpp"
 #include "internal/crypto/library/Sodium.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -25,13 +25,14 @@
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/identity/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
 class Crypto;
+class Session;
 }  // namespace api
 
 namespace crypto
@@ -57,12 +58,11 @@ class Secret;
 namespace opentxs::crypto::implementation
 {
 class Sodium final : virtual public crypto::Sodium,
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
                      public AsymmetricProvider,
                      public EcdsaProvider,
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
                      public Ripemd160,
-                     public Pbkdf2
+                     public Pbkdf2,
+                     public api::crypto::internal::Util
 {
 public:
     auto Digest(
@@ -85,7 +85,6 @@ public:
         const std::uint8_t* key,
         const size_t keySize,
         std::uint8_t* output) const -> bool final;
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
     auto PubkeyAdd(
         const ReadView pubkey,
         const ReadView scalar,
@@ -96,10 +95,8 @@ public:
         const opentxs::crypto::key::asymmetric::Role role,
         const NymParameters& options,
         const AllocateOutput params) const noexcept -> bool final;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
     auto RandomizeMemory(void* destination, const std::size_t size) const
         -> bool final;
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
     auto ScalarAdd(
         const ReadView lhs,
         const ReadView rhs,
@@ -121,7 +118,6 @@ public:
         const ReadView theKey,
         const ReadView signature,
         const crypto::HashType hashType) const -> bool final;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 
     Sodium(const api::Crypto& crypto) noexcept;
 

@@ -22,18 +22,16 @@
 #include "api/network/blockchain/SyncClient.hpp"
 #include "core/Worker.hpp"
 #include "internal/api/network/Network.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
@@ -43,6 +41,9 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/Backoff.hpp"
 #include "util/ByteLiterals.hpp"
 
@@ -58,7 +59,7 @@ struct SyncClient::Imp {
     const std::string endpoint_;
     std::atomic<State> state_;
 
-    Imp(const api::Core& api,
+    Imp(const api::Session& api,
         const api::network::internal::Blockchain& network,
         const Type chain) noexcept
         : endpoint_(OTSocket::random_inproc_endpoint())
@@ -82,7 +83,7 @@ struct SyncClient::Imp {
 
             OT_ASSERT(0 == rc);
 
-            LogTrace(OT_METHOD)(__func__)(": internal dealer connected to ")(
+            LogTrace()(OT_METHOD)(__func__)(": internal dealer connected to ")(
                 endpoint)
                 .Flush();
 
@@ -147,7 +148,7 @@ private:
     static constexpr std::size_t limit_{32_MiB};
     static constexpr std::chrono::seconds retry_interval_{4};
 
-    const api::Core& api_;
+    const api::Session& api_;
     const Type chain_;
     mutable std::mutex lock_;
     Time begin_sync_;
@@ -165,7 +166,8 @@ private:
     std::atomic_bool running_;
     std::thread thread_;
 
-    static auto blank(const api::Core& api) noexcept -> const block::Position&
+    static auto blank(const api::Session& api) noexcept
+        -> const block::Position&
     {
         static const auto output = block::Position{-1, api.Factory().Data()};
 
@@ -192,8 +194,8 @@ private:
     {
         auto msg = MakeWork(api_, Task::Register);
         msg->AddFrame(chain_);
-        LogDebug(OT_METHOD)(__func__)(": registering ")(DisplayString(chain_))(
-            " with high level api")
+        LogDebug()(OT_METHOD)(__func__)(": registering ")(
+            DisplayString(chain_))(" with high level api")
             .Flush();
         auto lock = Lock{lock_};
         OTSocket::send_message(lock, dealer_.get(), msg);
@@ -211,7 +213,7 @@ private:
 
             return proto;
         }());
-        LogVerbose(OT_METHOD)(__func__)(": requesting sync data for ")(
+        LogVerbose()(OT_METHOD)(__func__)(": requesting sync data for ")(
             DisplayString(chain_))(" starting from block ")(position.first)
             .Flush();
         auto lock = Lock{lock_};
@@ -228,7 +230,7 @@ private:
         if (0u == blocks.size()) { return; }
 
         const auto bytes = msg->Total();
-        LogDebug(OT_METHOD)(__func__)(": buffering ")(
+        LogDebug()(OT_METHOD)(__func__)(": buffering ")(
             bytes)(" bytes of sync data for ")(DisplayString(chain_))(
             " blocks ")(blocks.front().Height())(" to ")(blocks.back().Height())
             .Flush();
@@ -277,7 +279,7 @@ private:
         if (duration < limit) { return false; }
 
         if (timer_.test(retry_interval_)) {
-            LogVerbose(OT_METHOD)(__func__)(": more than ")(limit.count())(
+            LogVerbose()(OT_METHOD)(__func__)(": more than ")(limit.count())(
                 " minutes since data received for ")(DisplayString(chain_))
                 .Flush();
 
@@ -290,7 +292,7 @@ private:
     auto need_sync() noexcept -> bool
     {
         if (local_position_ == remote_position_) {
-            LogTrace(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+            LogTrace()(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                 " is up to date")
                 .Flush();
 
@@ -298,7 +300,7 @@ private:
         }
 
         if (queue_position_ == remote_position_) {
-            LogTrace(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+            LogTrace()(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                 " data already queued")
                 .Flush();
 
@@ -306,7 +308,7 @@ private:
         }
 
         if (queued_bytes_ >= limit_) {
-            LogTrace(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+            LogTrace()(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                 " buffer is full with ")(queued_bytes_)(" bytes ")
                 .Flush();
 
@@ -326,7 +328,7 @@ private:
         }();
 
         if (0 == msg->size()) {
-            LogTrace(OT_METHOD)(__func__)(": Dropping empty message").Flush();
+            LogTrace()(OT_METHOD)(__func__)(": Dropping empty message").Flush();
 
             return;
         }
@@ -349,7 +351,7 @@ private:
                     const auto& ack = base->asAcknowledgement();
                     update_remote_position(ack.State(chain_));
                     activity_ = Clock::now();
-                    LogVerbose(OT_METHOD)(__func__)(": best chain tip for ")(
+                    LogVerbose()(OT_METHOD)(__func__)(": best chain tip for ")(
                         DisplayString(chain_))(" according to sync peer is ")(
                         remote_position_.second->asHex())(" at height ")(
                         remote_position_.first)
@@ -376,7 +378,7 @@ private:
                         case State::Init:
                         case State::Sync:
                         default: {
-                            LogDebug(OT_METHOD)(__func__)(": ignoring ")(
+                            LogDebug()(OT_METHOD)(__func__)(": ignoring ")(
                                 DisplayString(chain_))(
                                 " push notification until sync is complete")
                                 .Flush();
@@ -399,7 +401,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return;
         }
@@ -417,7 +419,7 @@ private:
                     const auto time =
                         std::chrono::duration_cast<std::chrono::seconds>(
                             Clock::now() - begin_sync_);
-                    LogOutput(DisplayString(chain_))(" sync completed in ")(
+                    LogError()(DisplayString(chain_))(" sync completed in ")(
                         time.count())(" seconds.")
                         .Flush();
                     state_.store(State::Run);
@@ -461,7 +463,7 @@ private:
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogOutput(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
+                LogError()(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
                     .Flush();
 
                 continue;
@@ -511,7 +513,7 @@ private:
 };
 
 SyncClient::SyncClient(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::internal::Blockchain& network,
     const Type chain) noexcept
     : imp_(std::make_unique<Imp>(api, network, chain))

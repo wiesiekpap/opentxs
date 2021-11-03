@@ -17,9 +17,9 @@
 #include <stdexcept>
 #include <string>
 
+#include "internal/util/LogMacros.hpp"
 #include "network/blockchain/bitcoin/CompactSize.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::network::blockchain::bitcoin::CompactSize::"
 
@@ -71,7 +71,7 @@ auto DecodeSize(
 #pragma GCC diagnostic ignored "-Wtautological-type-limit-compare"
         // std::size_t might be 32 bit
         if (sizeof(std::size_t) < csExtraBytes) {
-            LogOutput("opentxs::network::blockchain::bitcoin::")(__func__)(
+            LogError()("opentxs::network::blockchain::bitcoin::")(__func__)(
                 ": Size too big")
                 .Flush();
 
@@ -181,7 +181,7 @@ auto CompactSize::Imp::convert_to_raw(AllocateOutput output) const noexcept
     OT_ASSERT(std::numeric_limits<SizeType>::max() >= data_);
 
     if (false == bool(output)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -189,7 +189,7 @@ auto CompactSize::Imp::convert_to_raw(AllocateOutput output) const noexcept
     const auto out = output(sizeof(SizeType));
 
     if (false == out.valid(sizeof(SizeType))) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
 
         return false;
     }
@@ -214,7 +214,7 @@ auto CompactSize::Decode(const std::vector<std::byte>& bytes) noexcept -> bool
     } else if (sizeof(std::uint64_t) == bytes.size()) {
         imp_->convert_from_raw<std::uint64_t>(bytes);
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Wrong number of bytes: ")(
+        LogError()(OT_METHOD)(__func__)(": Wrong number of bytes: ")(
             bytes.size())
             .Flush();
         output = false;
@@ -234,7 +234,7 @@ auto CompactSize::Encode() const noexcept -> std::vector<std::byte>
 auto CompactSize::Encode(AllocateOutput destination) const noexcept -> bool
 {
     if (false == bool(destination)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -243,7 +243,7 @@ auto CompactSize::Encode(AllocateOutput destination) const noexcept -> bool
     const auto out = destination(size);
 
     if (false == out.valid(size)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
 
         return false;
     }

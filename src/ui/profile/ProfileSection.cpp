@@ -18,12 +18,12 @@
 
 #include "internal/contact/Contact.hpp"
 #include "internal/ui/UI.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
@@ -38,7 +38,7 @@ namespace opentxs::factory
 {
 auto ProfileSectionWidget(
     const ui::implementation::ProfileInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ProfileRowID& rowID,
     const ui::implementation::ProfileSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -139,8 +139,7 @@ auto ProfileSection::AllowedItems(
     try {
         for (const auto& type : allowed_types_.at(section)) {
             output.emplace_back(
-                contact::internal::translate(type),
-                proto::TranslateItemType(type, lang));
+                translate(type), proto::TranslateItemType(type, lang));
         }
     } catch (const std::out_of_range&) {
     }
@@ -153,7 +152,7 @@ namespace opentxs::ui::implementation
 {
 ProfileSection::ProfileSection(
     const ProfileInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ProfileRowID& rowID,
     const ProfileSortKey& key,
     CustomData& custom) noexcept
@@ -179,8 +178,7 @@ auto ProfileSection::AddClaim(
 auto ProfileSection::check_type(const ProfileSectionRowID type) noexcept -> bool
 {
     try {
-        return 1 == allowed_types_.at(type.first)
-                        .count(contact::internal::translate(type.second));
+        return 1 == allowed_types_.at(type.first).count(translate(type.second));
     } catch (const std::out_of_range&) {
     }
 
@@ -216,8 +214,7 @@ auto ProfileSection::Items(const std::string& lang) const noexcept
 
 auto ProfileSection::Name(const std::string& lang) const noexcept -> std::string
 {
-    return proto::TranslateSectionName(
-        contact::internal::translate(row_id_), lang);
+    return proto::TranslateSectionName(translate(row_id_), lang);
 }
 
 auto ProfileSection::process_section(
@@ -299,8 +296,7 @@ auto ProfileSection::SetValue(
 
 auto ProfileSection::sort_key(const ProfileSectionRowID type) noexcept -> int
 {
-    return sort_keys_.at(type.first)
-        .at(contact::internal::translate(type.second));
+    return sort_keys_.at(type.first).at(translate(type.second));
 }
 
 void ProfileSection::startup(const opentxs::ContactSection section) noexcept

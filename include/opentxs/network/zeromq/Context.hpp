@@ -3,16 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_NETWORK_ZEROMQ_CONTEXT_HPP
-#define OPENTXS_NETWORK_ZEROMQ_CONTEXT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
@@ -25,6 +22,8 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace google
 {
@@ -38,7 +37,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -160,7 +159,7 @@ public:
         const std::string& endpoint) const noexcept
         -> Pimpl<network::zeromq::socket::Pair> = 0;
     virtual auto Pipeline(
-        const api::Core& api,
+        const api::Session& api,
         std::function<void(zeromq::Message&)> callback) const noexcept
         -> Pimpl<network::zeromq::Pipeline> = 0;
     virtual auto Proxy(socket::Socket& frontend, socket::Socket& backend)
@@ -246,4 +245,3 @@ private:
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
-#endif

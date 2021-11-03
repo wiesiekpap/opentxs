@@ -15,7 +15,7 @@
 #include "opentxs/protobuf/ContactData.pb.h"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/ContactSection.pb.h"
-#include "opentxs/protobuf/verify/ContactSection.hpp"
+#include "opentxs/protobuf/verify/ContactSection.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
 

@@ -81,7 +81,7 @@ auto Transaction::Cache::memo() const noexcept -> std::string
 }
 
 auto Transaction::Cache::merge(
-    const api::client::Blockchain& api,
+    const api::crypto::Blockchain& api,
     const internal::Transaction& rhs) noexcept -> void
 {
     auto lock = rLock{lock_};

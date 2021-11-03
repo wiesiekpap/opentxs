@@ -7,13 +7,14 @@
 #include <memory>
 #include <string>
 
+#include "internal/api/session/Client.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -32,7 +33,7 @@ namespace ottest
 class Test_CreateNymHD : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& client_;
+    const ot::api::session::Client& client_;
     ot::OTPasswordPrompt reason_;
     std::string SeedA_;
     std::string SeedB_;
@@ -42,19 +43,23 @@ public:
     std::string Alice, Bob;
 
     Test_CreateNymHD()
-        : client_(ot::Context().StartClient(0))
+        : client_(ot::Context().StartClientSession(0))
         , reason_(client_.Factory().PasswordPrompt(__func__))
         // these fingerprints are deterministic so we can share them among tests
-        , SeedA_(client_.Exec().Wallet_ImportSeed(
+        , SeedA_(client_.InternalClient().Exec().Wallet_ImportSeed(
               "spike nominee miss inquiry fee nothing belt list other daughter "
               "leave valley twelve gossip paper",
               ""))
-        , SeedB_(client_.Exec().Wallet_ImportSeed(
+        , SeedB_(client_.InternalClient().Exec().Wallet_ImportSeed(
               "glimpse destroy nation advice seven useless candy move number "
               "toast insane anxiety proof enjoy lumber",
               ""))
-        , SeedC_(client_.Exec().Wallet_ImportSeed("park cabbage quit", ""))
-        , SeedD_(client_.Exec().Wallet_ImportSeed("federal dilemma rare", ""))
+        , SeedC_(client_.InternalClient().Exec().Wallet_ImportSeed(
+              "park cabbage quit",
+              ""))
+        , SeedD_(client_.InternalClient().Exec().Wallet_ImportSeed(
+              "federal dilemma rare",
+              ""))
         , AliceID("ot24XFA1wKynjaAB59dx7PwEzGg37U8Q2yXG")
         , BobID("ot274uRuN1VezD47R7SqAH27s2WKP1U5jKWk")
         , EveID("otwz4jCuiVg7UF2i1NgCSvTWeDS29EAHeL6")

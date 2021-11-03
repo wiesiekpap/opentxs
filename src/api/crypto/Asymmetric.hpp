@@ -5,18 +5,17 @@
 
 #pragma once
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
 
 #include "Proto.hpp"
-#include "internal/api/Api.hpp"
-#include "internal/api/crypto/Crypto.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/api/crypto/Asymmetric.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -24,13 +23,31 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+namespace crypto
+{
+class Asymmetric;
+}  // namespace crypto
+
+class Session;
 }  // namespace api
+
+namespace crypto
+{
+namespace key
+{
+class Asymmetric;
+class EllipticCurve;
+class HD;
+class Secp256k1;
+}  // namespace key
+}  // namespace crypto
 
 namespace proto
 {
@@ -48,55 +65,161 @@ namespace opentxs::api::crypto::implementation
 class Asymmetric final : virtual public api::crypto::internal::Asymmetric
 {
 public:
-    auto API() const noexcept -> const api::Core& final { return api_; }
-    auto InstantiateECKey(const proto::AsymmetricKey& serialized) const
-        -> ECKey final;
-    auto InstantiateHDKey(const proto::AsymmetricKey& serialized) const
-        -> HDKey final;
+    auto API() const noexcept -> const api::Session& final { return api_; }
+    auto InstantiateECKey(const proto::AsymmetricKey& serialized) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::EllipticCurve> final;
+    auto InstantiateHDKey(const proto::AsymmetricKey& serialized) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::HD> final;
     auto InstantiateKey(
         const opentxs::crypto::key::asymmetric::Algorithm type,
         const std::string& seedID,
         const opentxs::crypto::Bip32::Key& serialized,
-        const PasswordPrompt& reason,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::HD> final;
+    auto InstantiateKey(
+        const opentxs::crypto::key::asymmetric::Algorithm type,
+        const std::string& seedID,
+        const opentxs::crypto::Bip32::Key& serialized,
         const opentxs::crypto::key::asymmetric::Role role,
-        const VersionNumber version) const -> HDKey final;
-    auto InstantiateKey(const proto::AsymmetricKey& serialized) const
-        -> Key final;
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::HD> final;
+    auto InstantiateKey(
+        const opentxs::crypto::key::asymmetric::Algorithm type,
+        const std::string& seedID,
+        const opentxs::crypto::Bip32::Key& serialized,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::HD> final;
+    auto InstantiateKey(
+        const opentxs::crypto::key::asymmetric::Algorithm type,
+        const std::string& seedID,
+        const opentxs::crypto::Bip32::Key& serialized,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::HD> final;
+    auto InstantiateKey(const proto::AsymmetricKey& serialized) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::Asymmetric> final;
+    auto InstantiateSecp256k1Key(
+        const ReadView publicKey,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto InstantiateSecp256k1Key(
+        const ReadView publicKey,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto InstantiateSecp256k1Key(
+        const ReadView publicKey,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto InstantiateSecp256k1Key(
+        const ReadView publicKey,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto InstantiateSecp256k1Key(
+        const Secret& privateKey,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto InstantiateSecp256k1Key(
+        const Secret& privateKey,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto InstantiateSecp256k1Key(
+        const Secret& privateKey,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto InstantiateSecp256k1Key(
+        const Secret& privateKey,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
     auto NewHDKey(
         const std::string& seedID,
         const Secret& seed,
         const EcdsaCurve& curve,
         const opentxs::crypto::Bip32::Path& path,
-        const PasswordPrompt& reason,
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::HD> final;
+    auto NewHDKey(
+        const std::string& seedID,
+        const Secret& seed,
+        const EcdsaCurve& curve,
+        const opentxs::crypto::Bip32::Path& path,
         const opentxs::crypto::key::asymmetric::Role role,
-        const VersionNumber version) const -> HDKey final;
-    auto InstantiateSecp256k1Key(
-        const ReadView publicKey,
-        const PasswordPrompt& reason,
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::HD> final;
+    auto NewHDKey(
+        const std::string& seedID,
+        const Secret& seed,
+        const EcdsaCurve& curve,
+        const opentxs::crypto::Bip32::Path& path,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::HD> final;
+    auto NewHDKey(
+        const std::string& seedID,
+        const Secret& seed,
+        const EcdsaCurve& curve,
+        const opentxs::crypto::Bip32::Path& path,
         const opentxs::crypto::key::asymmetric::Role role,
-        const VersionNumber version) const noexcept -> Secp256k1Key final;
-    auto InstantiateSecp256k1Key(
-        const Secret& privateKey,
-        const PasswordPrompt& reason,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::HD> final;
+    auto NewKey(const NymParameters& params, const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::Asymmetric> final;
+    auto NewKey(
+        const NymParameters& params,
         const opentxs::crypto::key::asymmetric::Role role,
-        const VersionNumber version) const noexcept -> Secp256k1Key final;
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::Asymmetric> final;
+    auto NewKey(
+        const NymParameters& params,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::Asymmetric> final;
+    auto NewKey(
+        const NymParameters& params,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::Asymmetric> final;
     auto NewSecp256k1Key(
         const std::string& seedID,
         const Secret& seed,
         const opentxs::crypto::Bip32::Path& path,
-        const PasswordPrompt& reason,
-        const opentxs::crypto::key::asymmetric::Role role =
-            opentxs::crypto::key::asymmetric::Role::Sign,
-        const VersionNumber version =
-            opentxs::crypto::key::Secp256k1::DefaultVersion) const
-        -> Secp256k1Key final;
-    auto NewKey(
-        const NymParameters& params,
-        const PasswordPrompt& reason,
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto NewSecp256k1Key(
+        const std::string& seedID,
+        const Secret& seed,
+        const opentxs::crypto::Bip32::Path& path,
         const opentxs::crypto::key::asymmetric::Role role,
-        const VersionNumber version) const -> Key final;
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto NewSecp256k1Key(
+        const std::string& seedID,
+        const Secret& seed,
+        const opentxs::crypto::Bip32::Path& path,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
+    auto NewSecp256k1Key(
+        const std::string& seedID,
+        const Secret& seed,
+        const opentxs::crypto::Bip32::Path& path,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const
+        -> std::unique_ptr<opentxs::crypto::key::Secp256k1> final;
 
-    Asymmetric(const api::Core& api) noexcept;
+    Asymmetric(const api::Session& api) noexcept;
 
     ~Asymmetric() final = default;
 
@@ -107,25 +230,21 @@ private:
     static const VersionNumber serialized_path_version_;
     static const TypeMap curve_to_key_type_;
 
-    const api::Core& api_;
+    const api::Session& api_;
 
-#if OT_CRYPTO_WITH_BIP32
     static auto serialize_path(
         const std::string& seedID,
         const opentxs::crypto::Bip32::Path& children) -> proto::HDPath;
-#endif  // OT_CRYPTO_WITH_BIP32
 
-#if OT_CRYPTO_WITH_BIP32
     template <typename ReturnType, typename NullType>
     auto instantiate_hd_key(
         const opentxs::crypto::key::asymmetric::Algorithm type,
         const std::string& seedID,
         const opentxs::crypto::Bip32::Key& serialized,
-        const PasswordPrompt& reason,
         const opentxs::crypto::key::asymmetric::Role role,
-        const VersionNumber version) const noexcept
+        const VersionNumber version,
+        const PasswordPrompt& reason) const noexcept
         -> std::unique_ptr<ReturnType>;
-#endif  // OT_CRYPTO_WITH_BIP32
     template <typename ReturnType, typename NullType>
     auto instantiate_serialized_key(const proto::AsymmetricKey& serialized)
         const noexcept -> std::unique_ptr<ReturnType>;

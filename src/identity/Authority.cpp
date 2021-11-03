@@ -20,16 +20,16 @@
 #include <vector>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
+#include "internal/api/session/Wallet.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
@@ -52,6 +52,8 @@
 #include "opentxs/protobuf/Verification.pb.h"
 #include "opentxs/protobuf/verify/Credential.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::identity::implementation::Authority::"
 
@@ -66,7 +68,7 @@ auto for_each(Range& range, Function f) -> Function
 using ReturnType = identity::implementation::Authority;
 
 auto Factory::Authority(
-    const api::Core& api,
+    const api::Session& api,
     const identity::Nym& parent,
     const identity::Source& source,
     const proto::KeyMode mode,
@@ -76,7 +78,7 @@ auto Factory::Authority(
 
         return new ReturnType(api, parent, source, mode, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Failed to create authority: ")(e.what())
             .Flush();
 
@@ -85,7 +87,7 @@ auto Factory::Authority(
 }
 
 auto Factory::Authority(
-    const api::Core& api,
+    const api::Session& api,
     const identity::Nym& parent,
     const identity::Source& source,
     const NymParameters& parameters,
@@ -97,7 +99,7 @@ auto Factory::Authority(
         return new ReturnType(
             api, parent, source, parameters, nymVersion, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Failed to create authority: ")(e.what())
             .Flush();
 
@@ -160,7 +162,7 @@ const VersionConversionMap Authority::nym_to_authority_{
 };
 
 Authority::Authority(
-    const api::Core& api,
+    const api::Session& api,
     const identity::Nym& parent,
     const identity::Source& source,
     const proto::KeyMode mode,
@@ -207,7 +209,7 @@ Authority::Authority(
 }
 
 Authority::Authority(
-    const api::Core& api,
+    const api::Session& api,
     const identity::Nym& parent,
     const identity::Source& source,
     const NymParameters& parameters,
@@ -272,7 +274,7 @@ auto Authority::AddChildKeyCredential(
             reason)};
 
     if (!child) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to instantiate child key credential.")
             .Flush();
 
@@ -289,7 +291,7 @@ auto Authority::AddContactCredential(
     const proto::ContactData& contactData,
     const opentxs::PasswordPrompt& reason) -> bool
 {
-    LogDetail(OT_METHOD)(__func__)(": Adding a contact credential.").Flush();
+    LogDetail()(OT_METHOD)(__func__)(": Adding a contact credential.").Flush();
 
     if (!master_) { return false; }
 
@@ -307,7 +309,7 @@ auto Authority::AddContactCredential(
             reason)};
 
     if (false == bool(credential)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to construct credential")
+        LogError()(OT_METHOD)(__func__)(": Failed to construct credential")
             .Flush();
 
         return false;
@@ -327,7 +329,7 @@ auto Authority::AddVerificationCredential(
     const proto::VerificationSet& verificationSet,
     const opentxs::PasswordPrompt& reason) -> bool
 {
-    LogDetail(OT_METHOD)(__func__)(": Adding a verification credential.")
+    LogDetail()(OT_METHOD)(__func__)(": Adding a verification credential.")
         .Flush();
 
     if (!master_) { return false; }
@@ -346,7 +348,7 @@ auto Authority::AddVerificationCredential(
             reason)};
 
     if (false == bool(credential)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to construct credential")
+        LogError()(OT_METHOD)(__func__)(": Failed to construct credential")
             .Flush();
 
         return false;
@@ -359,7 +361,7 @@ auto Authority::AddVerificationCredential(
 }
 
 auto Authority::create_child_credential(
-    const api::Core& api,
+    const api::Session& api,
     const NymParameters& parameters,
     const identity::Source& source,
     const credential::internal::Primary& master,
@@ -374,7 +376,7 @@ auto Authority::create_child_credential(
 
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
     if (output.empty()) {
-        LogDetail(OT_METHOD)(__func__)(
+        LogDetail()(OT_METHOD)(__func__)(
             ": Creating an ed25519 child key credential.")
             .Flush();
         auto revised = parameters.ChangeType(NymParameterType::ed25519);
@@ -392,7 +394,7 @@ auto Authority::create_child_credential(
 
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     if (output.empty()) {
-        LogDetail(OT_METHOD)(__func__)(
+        LogDetail()(OT_METHOD)(__func__)(
             ": Creating an secp256k1 child key credential.")
             .Flush();
         auto revised = parameters.ChangeType(NymParameterType::secp256k1);
@@ -410,7 +412,7 @@ auto Authority::create_child_credential(
 
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
     if (output.empty()) {
-        LogDetail(OT_METHOD)(__func__)(
+        LogDetail()(OT_METHOD)(__func__)(
             ": Creating an RSA child key credential.")
             .Flush();
         auto revised = parameters.ChangeType(NymParameterType::rsa);
@@ -434,7 +436,7 @@ auto Authority::create_child_credential(
 }
 
 auto Authority::create_contact_credental(
-    const api::Core& api,
+    const api::Session& api,
     const NymParameters& parameters,
     const identity::Source& source,
     const credential::internal::Primary& master,
@@ -471,7 +473,7 @@ auto Authority::create_contact_credental(
 }
 
 auto Authority::create_key_credential(
-    const api::Core& api,
+    const api::Session& api,
     const NymParameters& parameters,
     const identity::Source& source,
     const credential::internal::Primary& master,
@@ -510,7 +512,7 @@ auto Authority::create_key_credential(
 }
 
 auto Authority::create_master(
-    const api::Core& api,
+    const api::Session& api,
     identity::internal::Authority& owner,
     const identity::Source& source,
     const VersionNumber version,
@@ -571,7 +573,7 @@ auto Authority::EncryptionTargets() const noexcept -> AuthorityKeys
 
 template <typename Type>
 void Authority::extract_child(
-    const api::Core& api,
+    const api::Session& api,
     const identity::Source& source,
     internal::Authority& authority,
     const credential::internal::Primary& master,
@@ -613,8 +615,7 @@ auto Authority::get_keypair(
         if (is_revoked(id->str(), plistRevokedIDs)) { continue; }
 
         try {
-            return credential.GetKeypair(
-                type, opentxs::crypto::key::internal::translate(role));
+            return credential.GetKeypair(type, translate(role));
         } catch (...) {
             continue;
         }
@@ -798,7 +799,7 @@ auto Authority::is_revoked(
 
 template <typename Type>
 auto Authority::load_child(
-    const api::Core& api,
+    const api::Session& api,
     const identity::Source& source,
     internal::Authority& authority,
     const credential::internal::Primary& master,
@@ -812,7 +813,8 @@ auto Authority::load_child(
     if (proto::AUTHORITYMODE_INDEX == serialized.mode()) {
         for (auto& it : serialized.activechildids()) {
             auto child = std::shared_ptr<proto::Credential>{};
-            const auto loaded = api.Wallet().LoadCredential(it, child);
+            const auto loaded =
+                api.Wallet().Internal().LoadCredential(it, child);
 
             if (false == loaded) {
                 throw std::runtime_error("Failed to load credential");
@@ -837,10 +839,11 @@ auto Authority::LoadChildKeyCredential(const String& strSubID) -> bool
     OT_ASSERT(false == parent_.Source().NymID()->empty());
 
     std::shared_ptr<proto::Credential> child;
-    bool loaded = api_.Wallet().LoadCredential(strSubID.Get(), child);
+    bool loaded =
+        api_.Wallet().Internal().LoadCredential(strSubID.Get(), child);
 
     if (!loaded) {
-        LogOutput(OT_METHOD)(__func__)(": Failure: Key Credential ")(
+        LogError()(OT_METHOD)(__func__)(": Failure: Key Credential ")(
             strSubID)(" doesn't exist for Nym ")(parent_.Source().NymID())
             .Flush();
         return false;
@@ -856,14 +859,14 @@ auto Authority::LoadChildKeyCredential(const proto::Credential& serializedCred)
         serializedCred, VERBOSE, mode_, proto::CREDROLE_ERROR, true);
 
     if (!validProto) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Invalid serialized child key credential.")
             .Flush();
         return false;
     }
 
     if (proto::CREDROLE_MASTERKEY == serializedCred.role()) {
-        LogOutput(OT_METHOD)(__func__)(": Unexpected master credential.")
+        LogError()(OT_METHOD)(__func__)(": Unexpected master credential.")
             .Flush();
 
         return false;
@@ -922,7 +925,8 @@ auto Authority::LoadChildKeyCredential(const proto::Credential& serializedCred)
             verification_credentials_.emplace(std::move(id), child.release());
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Invalid credential type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid credential type")
+                .Flush();
 
             return false;
         }
@@ -932,7 +936,7 @@ auto Authority::LoadChildKeyCredential(const proto::Credential& serializedCred)
 }
 
 auto Authority::load_master(
-    const api::Core& api,
+    const api::Session& api,
     identity::internal::Authority& owner,
     const identity::Source& source,
     const proto::KeyMode mode,
@@ -944,7 +948,8 @@ auto Authority::load_master(
     if (proto::AUTHORITYMODE_INDEX == serialized.mode()) {
         auto credential = std::shared_ptr<proto::Credential>{};
 
-        if (!api.Wallet().LoadCredential(serialized.masterid(), credential)) {
+        if (!api.Wallet().Internal().LoadCredential(
+                serialized.masterid(), credential)) {
             throw std::runtime_error("Master credential does not exist");
         }
 
@@ -973,7 +978,7 @@ auto Authority::Params(
             .GetPublicKey()
             .Params();
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid credential").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid credential").Flush();
 
         return {};
     }
@@ -989,7 +994,7 @@ auto Authority::Path(proto::HDPath& output) const -> bool
         return found;
     }
 
-    LogOutput(OT_METHOD)(__func__)(": Master credential not instantiated.")
+    LogError()(OT_METHOD)(__func__)(": Master credential not instantiated.")
         .Flush();
 
     return false;
@@ -1076,14 +1081,14 @@ auto Authority::Sign(
             break;
         }
         case (crypto::SignatureRole::NymIDSource): {
-            LogOutput(": Credentials to be signed with a nym source can not "
-                      "use this method.")
+            LogError()(": Credentials to be signed with a nym source can not "
+                       "use this method.")
                 .Flush();
 
             return false;
         }
         case (crypto::SignatureRole::PrivateCredential): {
-            LogOutput(": Private credential can not use this method.").Flush();
+            LogError()(": Private credential can not use this method.").Flush();
 
             return false;
         }
@@ -1130,8 +1135,8 @@ auto Authority::TransportKey(
         }
     }
 
-    LogOutput(OT_METHOD)(__func__)(": No child credentials are capable of "
-                                   "generating transport keys.")
+    LogError()(OT_METHOD)(__func__)(": No child credentials are capable of "
+                                    "generating transport keys.")
         .Flush();
 
     return false;
@@ -1163,14 +1168,14 @@ auto Authority::Unlock(
                 dhKey, GetMasterCredID(), reason, testTag);
 
             if (false == calculated) {
-                LogTrace(OT_METHOD)(__func__)(": Unable to calculate tag")
+                LogTrace()(OT_METHOD)(__func__)(": Unable to calculate tag")
                     .Flush();
 
                 continue;
             }
 
             if (tag != testTag) {
-                LogTrace(OT_METHOD)(__func__)(
+                LogTrace()(OT_METHOD)(__func__)(
                     ": Session key not applicable to this nym")
                     .Flush();
 
@@ -1182,7 +1187,7 @@ auto Authority::Unlock(
                 encryptKey.CalculateSessionPassword(dhKey, reason, password);
 
             if (false == calculated) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Unable to calculate session password")
                     .Flush();
 
@@ -1205,7 +1210,7 @@ auto Authority::validate_credential(const Item& item) const -> bool
     const auto& [id, pCredential] = item;
 
     if (nullptr == pCredential) {
-        LogOutput(OT_METHOD)(__func__)(": Null credential ")(id)(" in map")
+        LogError()(OT_METHOD)(__func__)(": Null credential ")(id)(" in map")
             .Flush();
 
         return false;
@@ -1215,7 +1220,7 @@ auto Authority::validate_credential(const Item& item) const -> bool
 
     if (credential.Validate()) { return true; }
 
-    LogOutput(OT_METHOD)(__func__)(": Invalid credential ")(id).Flush();
+    LogError()(OT_METHOD)(__func__)(": Invalid credential ")(id).Flush();
 
     return false;
 }
@@ -1228,7 +1233,7 @@ auto Authority::Verify(
     std::string signerID(sig.credentialid());
 
     if (signerID == GetMasterCredID()->str()) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Master credentials are only allowed to sign other credentials.")
             .Flush();
 
@@ -1238,7 +1243,7 @@ auto Authority::Verify(
     const auto* credential = get_secondary_credential(signerID);
 
     if (nullptr == credential) {
-        LogDebug(OT_METHOD)(__func__)(
+        LogDebug()(OT_METHOD)(__func__)(
             ": This Authority does not contain the credential which produced "
             "the signature.")
             .Flush();
@@ -1266,12 +1271,13 @@ auto Authority::Verify(const proto::Verification& item) const -> bool
 auto Authority::VerifyInternally() const -> bool
 {
     if (false == bool(master_)) {
-        LogNormal(OT_METHOD)(__func__)(": Missing master credential.").Flush();
+        LogConsole()(OT_METHOD)(__func__)(": Missing master credential.")
+            .Flush();
         return false;
     }
 
     if (false == master_->Validate()) {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": Master Credential failed to verify: ")(GetMasterCredID())(
             " NymID: ")(parent_.Source().NymID())
             .Flush();
@@ -1294,7 +1300,7 @@ auto Authority::VerifyInternally() const -> bool
 auto Authority::WriteCredentials() const -> bool
 {
     if (!master_->Save()) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to save master credential.")
+        LogError()(OT_METHOD)(__func__)(": Failed to save master credential.")
             .Flush();
 
         return false;
@@ -1310,7 +1316,7 @@ auto Authority::WriteCredentials() const -> bool
     for_each(verification_credentials_, save);
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to save child credential.")
+        LogError()(OT_METHOD)(__func__)(": Failed to save child credential.")
             .Flush();
     }
 

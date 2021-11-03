@@ -8,19 +8,21 @@
 #include <type_traits>
 
 #include "internal/api/client/Client.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {
@@ -2601,7 +2603,7 @@ const std::vector<std::string> Test_HeaderOracle_base::bitcoin_{
 // clang-format on
 
 Test_HeaderOracle_base::Test_HeaderOracle_base(const b::Type type)
-    : api_(ot::Context().StartClient(0))
+    : api_(ot::Context().StartClientSession(0))
     , type_(type)
     , network_(init_network(api_, type_))
     , header_oracle_(const_cast<bc::HeaderOracle&>(network_->HeaderOracle()))
@@ -2689,7 +2691,7 @@ auto Test_HeaderOracle_base::get_test_block(const std::string& hash)
 }
 
 auto Test_HeaderOracle_base::init_network(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const b::Type type) noexcept -> std::unique_ptr<bc::Manager>
 {
     static const auto config = [] {
@@ -2700,13 +2702,7 @@ auto Test_HeaderOracle_base::init_network(
     }();
 
     return ot::factory::BlockchainNetworkBitcoin(
-        api,
-        dynamic_cast<const ot::api::client::internal::Blockchain&>(
-            api.Blockchain()),
-        type,
-        config,
-        "do not init peers",
-        "");
+        api, api.Crypto().Blockchain(), type, config, "do not init peers", "");
 }
 
 auto Test_HeaderOracle_base::make_position(

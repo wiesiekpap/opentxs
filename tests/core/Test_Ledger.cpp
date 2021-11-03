@@ -6,16 +6,13 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -23,6 +20,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -32,14 +31,14 @@ ot::OTNymID nym_id_{ot::identifier::Nym::Factory()};
 ot::OTServerID server_id_{ot::identifier::Server::Factory()};
 
 struct Ledger : public ::testing::Test {
-    const ot::api::client::Manager& client_;
-    const ot::api::server::Manager& server_;
+    const ot::api::session::Client& client_;
+    const ot::api::session::Notary& server_;
     ot::OTPasswordPrompt reason_c_;
     ot::OTPasswordPrompt reason_s_;
 
     Ledger()
-        : client_(ot::Context().StartClient(0))
-        , server_(ot::Context().StartServer(0))
+        : client_(ot::Context().StartClientSession(0))
+        , server_(ot::Context().StartNotarySession(0))
         , reason_c_(client_.Factory().PasswordPrompt(__func__))
         , reason_s_(server_.Factory().PasswordPrompt(__func__))
     {

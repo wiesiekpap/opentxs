@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CRYPTO_OTSIGNEDFILE_HPP
-#define OPENTXS_CORE_CRYPTO_OTSIGNEDFILE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -18,12 +17,15 @@ namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 class PasswordPrompt;
@@ -84,28 +86,27 @@ protected:
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
 private:  // Private prevents erroneous use by other classes.
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
     using ot_super = Contract;
 
     // These assume SetFilename() was already called,
     // or at least one of the constructors that uses it.
     //
-    explicit OTSignedFile(const api::Core& core);
+    explicit OTSignedFile(const api::Session& core);
     explicit OTSignedFile(
-        const api::Core& core,
+        const api::Session& core,
         const String& LOCAL_SUBDIR,
         const String& FILE_NAME);
     explicit OTSignedFile(
-        const api::Core& core,
+        const api::Session& core,
         const char* LOCAL_SUBDIR,
         const String& FILE_NAME);
     explicit OTSignedFile(
-        const api::Core& core,
+        const api::Session& core,
         const char* LOCAL_SUBDIR,
         const char* FILE_NAME);
 
     OTSignedFile() = delete;
 };
 }  // namespace opentxs
-#endif

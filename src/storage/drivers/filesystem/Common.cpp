@@ -19,11 +19,10 @@ extern "C" {
 #include <boost/system/error_code.hpp>
 #include <fstream>
 #include <ios>
-#include <memory>
 #include <vector>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define PATH_SEPERATOR "/"
 
@@ -34,7 +33,7 @@ namespace opentxs::storage::driver::filesystem
 Common::Common(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& storage,
+    const api::session::Storage& storage,
     const storage::Config& config,
     const std::string& folder,
     const Flag& bucket)
@@ -183,7 +182,7 @@ auto Common::sync(const std::string& path) const -> bool
     FileDescriptor fd(path);
 
     if (!fd) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to open ")(path)(".").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to open ")(path)(".").Flush();
 
         return false;
     }
@@ -218,13 +217,13 @@ auto Common::write_file(
             file.write(data.c_str(), data.size());
 
             if (false == sync(file)) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to sync file ")(
+                LogError()(OT_METHOD)(__func__)(": Failed to sync file ")(
                     filename)(".")
                     .Flush();
             }
 
             if (false == sync(directory)) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to sync directory ")(
+                LogError()(OT_METHOD)(__func__)(": Failed to sync directory ")(
                     directory)(".")
                     .Flush();
             }
@@ -233,10 +232,10 @@ auto Common::write_file(
 
             return true;
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Failed to write file.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Failed to write file.").Flush();
         }
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to write empty filename.")
+        LogError()(OT_METHOD)(__func__)(": Failed to write empty filename.")
             .Flush();
     }
 

@@ -11,7 +11,7 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
@@ -20,7 +20,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain

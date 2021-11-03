@@ -15,6 +15,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/BlockchainStatisticsItem.hpp"
 )
 target_link_libraries(opentxs-ui-blockchainstatistics PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-ui-blockchainstatistics SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-ui-blockchainstatistics PRIVATE ${cxx-install-headers})
 target_sources(
   opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-blockchainstatistics>

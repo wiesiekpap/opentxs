@@ -9,10 +9,10 @@
 
 #include <chrono>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace zmq = opentxs::network::zeromq;

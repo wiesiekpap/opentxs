@@ -9,10 +9,10 @@
 
 #include <string_view>
 
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD
 // "opentxs::blockchain::node::implementation::BlockOracle::Cache::Mem::"

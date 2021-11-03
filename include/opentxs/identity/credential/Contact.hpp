@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_IDENTITY_CREDENTIAL_CONTACT_HPP
-#define OPENTXS_IDENTITY_CREDENTIAL_CONTACT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -19,7 +18,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -39,12 +38,12 @@ class OPENTXS_EXPORT Contact : virtual public Base
 {
 public:
     OPENTXS_NO_EXPORT static auto ClaimID(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nymid,
         const std::uint32_t section,
         const proto::ContactItem& item) -> std::string;
     static auto ClaimID(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nymid,
         const contact::SectionType section,
         const contact::ClaimType type,
@@ -53,10 +52,10 @@ public:
         const std::string& value,
         const std::string& subtype) -> std::string;
     OPENTXS_NO_EXPORT static auto ClaimID(
-        const api::Core& api,
+        const api::Session& api,
         const proto::Claim& preimage) -> OTIdentifier;
     OPENTXS_NO_EXPORT static auto asClaim(
-        const api::Core& api,
+        const api::Session& api,
         const String& nymid,
         const std::uint32_t section,
         const proto::ContactItem& item) -> Claim;
@@ -75,4 +74,3 @@ private:
 }  // namespace credential
 }  // namespace identity
 }  // namespace opentxs
-#endif

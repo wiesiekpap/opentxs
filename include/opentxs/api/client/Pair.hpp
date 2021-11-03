@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_CLIENT_PAIR_HPP
-#define OPENTXS_API_CLIENT_PAIR_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -40,7 +39,7 @@ public:
     /** For unit tests */
     virtual auto Wait() const noexcept -> std::shared_future<void> = 0;
 
-    virtual ~Pair() = default;
+    OPENTXS_NO_EXPORT virtual ~Pair() = default;
 
 protected:
     Pair() noexcept = default;
@@ -54,4 +53,3 @@ private:
 }  // namespace client
 }  // namespace api
 }  // namespace opentxs
-#endif

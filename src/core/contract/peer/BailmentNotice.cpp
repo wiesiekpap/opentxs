@@ -13,12 +13,10 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -27,6 +25,8 @@
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/PendingBailment.pb.h"
 #include "opentxs/protobuf/verify/PeerRequest.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define CURRENT_VERSION 6
 
@@ -36,7 +36,7 @@ using ParentType = contract::peer::implementation::Request;
 using ReturnType = contract::peer::request::implementation::BailmentNotice;
 
 auto Factory::BailmentNotice(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
@@ -60,20 +60,20 @@ auto Factory::BailmentNotice(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::BailmentNotice(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::PeerRequest& serialized) noexcept
     -> std::shared_ptr<contract::peer::request::BailmentNotice>
 {
     if (false == proto::Validate(serialized, VERBOSE)) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
             .Flush();
 
@@ -86,7 +86,7 @@ auto Factory::BailmentNotice(
         Lock lock(contract.lock_);
 
         if (false == contract.validate(lock)) {
-            LogOutput("opentxs::Factory::")(__func__)(": Invalid request.")
+            LogError()("opentxs::Factory::")(__func__)(": Invalid request.")
                 .Flush();
 
             return {};
@@ -94,7 +94,7 @@ auto Factory::BailmentNotice(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -104,7 +104,7 @@ auto Factory::BailmentNotice(
 namespace opentxs::contract::peer::request::implementation
 {
 BailmentNotice::BailmentNotice(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
@@ -130,7 +130,7 @@ BailmentNotice::BailmentNotice(
 }
 
 BailmentNotice::BailmentNotice(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const SerializedType& serialized)
     : Request(api, nym, serialized)

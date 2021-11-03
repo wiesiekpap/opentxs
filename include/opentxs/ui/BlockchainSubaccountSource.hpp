@@ -5,16 +5,15 @@
 
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 
-#ifndef OPENTXS_UI_BLOCKCHAINSUBACCOUNTSOURCE_HPP
-#define OPENTXS_UI_BLOCKCHAINSUBACCOUNTSOURCE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/ui/List.hpp"
 #include "opentxs/ui/ListRow.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
 {
@@ -55,4 +54,3 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif

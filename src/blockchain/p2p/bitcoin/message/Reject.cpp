@@ -15,11 +15,10 @@
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Reject::"
 
@@ -28,7 +27,7 @@ namespace be = boost::endian;
 namespace opentxs::factory
 {
 auto BitcoinP2PReject(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -38,7 +37,7 @@ auto BitcoinP2PReject(
     using ReturnType = bitcoin::message::Reject;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -46,7 +45,7 @@ auto BitcoinP2PReject(
     auto expectedSize = sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for Reject 1")
             .Flush();
 
@@ -60,7 +59,7 @@ auto BitcoinP2PReject(
         it, expectedSize, size, messageSize);
 
     if (!decodedSize) {
-        LogOutput(__func__)(": CompactSize incomplete for message field")
+        LogError()(__func__)(": CompactSize incomplete for message field")
             .Flush();
 
         return nullptr;
@@ -69,7 +68,7 @@ auto BitcoinP2PReject(
     expectedSize += messageSize;
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for message field")
             .Flush();
 
@@ -81,7 +80,7 @@ auto BitcoinP2PReject(
     expectedSize += sizeof(std::uint8_t);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for code field")
             .Flush();
 
@@ -95,7 +94,7 @@ auto BitcoinP2PReject(
     expectedSize += sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for Reject 1")
             .Flush();
 
@@ -107,7 +106,7 @@ auto BitcoinP2PReject(
         it, expectedSize, size, reasonSize);
 
     if (!decodedReasonSize) {
-        LogOutput(__func__)(": CompactSize incomplete for reason field")
+        LogError()(__func__)(": CompactSize incomplete for reason field")
             .Flush();
 
         return nullptr;
@@ -116,7 +115,7 @@ auto BitcoinP2PReject(
     expectedSize += reasonSize;
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for reason field")
             .Flush();
 
@@ -149,14 +148,15 @@ auto BitcoinP2PReject(
             reason,
             extra);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Checksum failure")
+            .Flush();
 
         return nullptr;
     }
 }
 
 auto BitcoinP2PReject(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const std::string& message,
     const std::uint8_t code,
@@ -180,7 +180,7 @@ namespace opentxs::blockchain::p2p::bitcoin::message
 {
 
 Reject::Reject(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const std::string& message,
     const bitcoin::RejectCode code,
@@ -196,7 +196,7 @@ Reject::Reject(
 }
 
 Reject::Reject(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const std::string& message,
     const bitcoin::RejectCode code,

@@ -17,7 +17,6 @@
 #include "1_Internal.hpp"
 #include "blockchain/block/Block.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -25,17 +24,18 @@
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -69,19 +69,19 @@ public:
 
     template <typename HashType>
     static auto calculate_merkle_hash(
-        const api::Core& api,
+        const api::Session& api,
         const Type chain,
         const HashType& lhs,
         const HashType& rhs,
         AllocateOutput out) -> bool;
     template <typename InputContainer, typename OutputContainer>
     static auto calculate_merkle_row(
-        const api::Core& api,
+        const api::Session& api,
         const Type chain,
         const InputContainer& in,
         OutputContainer& out) -> bool;
     static auto calculate_merkle_value(
-        const api::Core& api,
+        const api::Session& api,
         const Type chain,
         const TxidIndex& txids) -> block::pHash;
 
@@ -112,7 +112,7 @@ public:
     auto size() const noexcept -> std::size_t final { return index_.size(); }
 
     Block(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         std::unique_ptr<const internal::Header> header,
         TxidIndex&& index,

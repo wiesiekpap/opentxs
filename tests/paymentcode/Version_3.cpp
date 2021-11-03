@@ -12,19 +12,19 @@
 
 #include "Helpers.hpp"
 #include "VectorsV3.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {

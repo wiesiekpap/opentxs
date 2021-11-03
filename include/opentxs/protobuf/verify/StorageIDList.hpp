@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_PROTOBUF_STORAGEIDLIST_HPP
-#define OPENTXS_PROTOBUF_STORAGEIDLIST_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -42,5 +41,3 @@ auto CheckProto_19(const StorageIDList&, const bool) -> bool;
 auto CheckProto_20(const StorageIDList&, const bool) -> bool;
 }  // namespace proto
 }  // namespace opentxs
-
-#endif  // OPENTXS_PROTOBUF_STORAGEIDLIST_HPP

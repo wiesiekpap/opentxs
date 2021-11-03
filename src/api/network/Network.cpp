@@ -9,8 +9,8 @@
 
 #include <memory>
 
-#include "api/Scheduler.hpp"
 #include "api/network/Network.hpp"
+#include "api/session/base/Scheduler.hpp"
 #include "internal/api/network/Factory.hpp"
 
 namespace opentxs::factory
@@ -18,12 +18,12 @@ namespace opentxs::factory
 using ReturnType = api::network::Network;
 
 auto NetworkAPI(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::Asio& asio,
     const network::zeromq::Context& zmq,
-    const api::Endpoints& endpoints,
+    const api::session::Endpoints& endpoints,
     api::network::Blockchain::Imp* blockchain,
-    api::implementation::Scheduler& config,
+    api::session::Scheduler& config,
     bool dhtDefault) noexcept -> api::network::Network::Imp*
 {
     return std::make_unique<ReturnType::Imp>(

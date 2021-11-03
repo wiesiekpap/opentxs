@@ -12,8 +12,9 @@
 #include <mutex>
 #include <optional>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::display::Definition::"
 

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_TRADE_OTMARKET_HPP
-#define OPENTXS_CORE_TRADE_OTMARKET_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -14,26 +13,31 @@
 #include <string>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/cron/OTCron.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/trade/OTOffer.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
+{
+namespace session
 {
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
 
-class Core;
 class Wallet;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -107,13 +111,13 @@ public:
     // --Returns True if Trade should stay on the Cron list for more processing.
     // --Returns False if it should be removed and deleted.
     void ProcessTrade(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         OTTrade& theTrade,
         OTOffer& theOffer,
         OTOffer& theOtherOffer,
         const PasswordPrompt& reason);
     auto ProcessTrade(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         OTTrade& theTrade,
         OTOffer& theOffer,
         const PasswordPrompt& reason) -> bool;
@@ -195,7 +199,7 @@ public:
     ~OTMarket() override;
 
 private:
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
     using ot_super = Contract;
 
@@ -241,10 +245,10 @@ private:
     // which instrument definition (currency type) it is being priced in. Other
     // than that, the two are technically interchangeable.
 
-    OTMarket(const api::Core& api);
-    OTMarket(const api::Core& api, const char* szFilename);
+    OTMarket(const api::Session& api);
+    OTMarket(const api::Session& api, const char* szFilename);
     OTMarket(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_TYPE_ID,
@@ -271,4 +275,3 @@ private:
     auto operator=(OTMarket&&) -> OTMarket& = delete;
 };
 }  // namespace opentxs
-#endif

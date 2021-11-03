@@ -14,13 +14,14 @@
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/UniqueQueue.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/ActivitySummaryItem.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/base/Row.hpp"
 
 class QVariant;
@@ -29,10 +30,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -71,7 +72,7 @@ class ActivitySummaryItem final : public ActivitySummaryItemRow
 {
 public:
     static auto LoadItemText(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nym,
         const CustomData& custom) noexcept -> std::string;
 
@@ -84,7 +85,7 @@ public:
 
     ActivitySummaryItem(
         const ActivitySummaryInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const ActivitySummaryRowID& rowID,
         const ActivitySummarySortKey& sortKey,

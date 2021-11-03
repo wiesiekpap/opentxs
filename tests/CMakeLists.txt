@@ -17,7 +17,6 @@ function(
   add_executable(
     ${target_name} ${cxx-sources} $<TARGET_OBJECTS:opentxs-test-helpers>
   )
-
   target_sources(
     ${target_name} PRIVATE "${opentxs_SOURCE_DIR}/tests/OTTestEnvironment.cpp"
   )
@@ -32,21 +31,20 @@ function(
   endif()
 
   target_link_libraries(
-    ${target_name} PRIVATE opentxs::libopentxs Boost::program_options
+    ${target_name}
+    PRIVATE
+      opentxs::libopentxs
+      Boost::program_options
+      opentxs-test-helpers
   )
-
-  if(OT_USE_VCPKG_TARGETS)
-    target_link_libraries(${target_name} PRIVATE GTest::gtest)
-  else()
-    target_link_libraries(${target_name} PRIVATE GTest::GTest)
-  endif()
 
   target_include_directories(
     ${target_name} SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
   )
   set_target_properties(
-    ${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-                              ${PROJECT_BINARY_DIR}/tests
+    ${target_name}
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+               POSITION_INDEPENDENT_CODE 1
   )
 
   if(${CMAKE_CXX_COMPILER_ID}
@@ -95,13 +93,39 @@ add_library(
   "Basic.hpp"
   "Cli.hpp"
 )
+
+if(NOT OT_IWYU)
+  target_precompile_headers(
+    opentxs-test-helpers
+    PRIVATE
+    <opentxs/opentxs.hpp>
+    <gtest/gtest.h>
+  )
+endif()
+
 target_include_directories(
   opentxs-test-helpers PUBLIC "${opentxs_SOURCE_DIR}/tests/"
 )
 target_include_directories(
   opentxs-test-helpers SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
-target_link_libraries(opentxs-test-helpers PRIVATE Boost::filesystem)
+target_link_libraries(
+  opentxs-test-helpers PUBLIC opentxs::libopentxs Boost::filesystem Boost::program_options
+)
+
+if(OT_QT_EXPORT)
+  target_link_libraries(opentxs-test-helpers PRIVATE Qt5::Core)
+endif()
+
+if(OT_USE_VCPKG_TARGETS)
+  target_link_libraries(opentxs-test-helpers PUBLIC GTest::gtest)
+else()
+  target_link_libraries(opentxs-test-helpers PUBLIC GTest::GTest)
+endif()
+
+set_target_properties(
+  opentxs-test-helpers PROPERTIES POSITION_INDEPENDENT_CODE 1
+)
 
 add_subdirectory(blockchain)
 

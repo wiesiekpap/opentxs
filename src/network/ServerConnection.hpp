@@ -29,6 +29,7 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
@@ -39,7 +40,7 @@ namespace network
 class ZMQ;
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -101,7 +102,7 @@ private:
     friend opentxs::network::ServerConnection;
 
     const api::network::ZMQ& zmq_;
-    const api::Core& api_;
+    const api::Session& api_;
     const zeromq::socket::Publish& updates_;
     const OTServerID server_id_;
     core::AddressType address_type_{core::AddressType::Error};
@@ -148,7 +149,7 @@ private:
     void reset_timer();
 
     ServerConnection(
-        const api::Core& api,
+        const api::Session& api,
         const api::network::ZMQ& zmq,
         const zeromq::socket::Publish& updates,
         const OTServerContract& contract);

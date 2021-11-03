@@ -8,15 +8,14 @@
 #include "storage/Config.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <memory>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Legacy.hpp"
-#include "opentxs/api/Options.hpp"
+#include "internal/api/Legacy.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace C = std::chrono;
 
@@ -53,7 +52,7 @@ Config::Config(
         const auto& configFile = previous_primary_plugin_;
 
         if (false == cli.empty()) {
-            LogDetail(OT_METHOD)(__func__)(": Using ")(
+            LogDetail()(OT_METHOD)(__func__)(": Using ")(
                 cli)(" as primary storage plugin based on initialization "
                      "arguments")
                 .Flush();
@@ -62,14 +61,14 @@ Config::Config(
         }
 
         if (false == configFile.empty()) {
-            LogDetail(OT_METHOD)(__func__)(": Using ")(
+            LogDetail()(OT_METHOD)(__func__)(": Using ")(
                 cli)(" as primary storage plugin based saved configuration")
                 .Flush();
 
             return configFile;
         }
 
-        LogDetail(OT_METHOD)(__func__)(": Using ")(
+        LogDetail()(OT_METHOD)(__func__)(": Using ")(
             cli)(" as primary storage plugin")
             .Flush();
 
@@ -89,7 +88,7 @@ Config::Config(
             const auto migrate = false == previous.empty();
 
             if (migrate) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Migrating primary storage plugin from ")(
                     previous)(" to ")(current)
                     .Flush();
@@ -156,14 +155,14 @@ Config::Config(
         if (false ==
             legacy.AppendFolder(
                 output, dataFolder, String::Factory(legacy.Common()))) {
-            LogOutput(OT_METHOD)(__func__)("Failed to calculate storage path")
+            LogError()(OT_METHOD)(__func__)("Failed to calculate storage path")
                 .Flush();
 
             return {};
         }
 
         if (false == legacy.BuildFolderPath(output)) {
-            LogOutput(OT_METHOD)(__func__)("Failed to construct storage path")
+            LogError()(OT_METHOD)(__func__)("Failed to construct storage path")
                 .Flush();
 
             return {};
@@ -175,7 +174,7 @@ Config::Config(
 
             if (false ==
                 legacy.AppendFolder(newPath, output, String::Factory(subdir))) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     "Failed to calculate lmdb storage path")
                     .Flush();
 
@@ -183,7 +182,7 @@ Config::Config(
             }
 
             if (false == legacy.BuildFolderPath(newPath)) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     "Failed to construct lmdb storage path")
                     .Flush();
 

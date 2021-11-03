@@ -12,8 +12,8 @@
 #include <shared_mutex>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
 
@@ -78,7 +78,7 @@ struct AccountIndex::Imp {
         all_.emplace(account);
     }
 
-    Imp(const api::Core& api) noexcept
+    Imp(const api::Session& api) noexcept
         : blank_(Chain::Unknown, api.Factory().NymID())
         , lock_()
         , map_()
@@ -107,7 +107,7 @@ private:
     auto operator=(Imp&&) -> Imp& = delete;
 };
 
-AccountIndex::AccountIndex(const api::Core& api) noexcept
+AccountIndex::AccountIndex(const api::Session& api) noexcept
     : imp_(std::make_unique<Imp>(api).release())
 {
 }

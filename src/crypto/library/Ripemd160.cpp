@@ -16,8 +16,7 @@ extern "C" {
 #include <limits>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Ripemd160::"
 
@@ -36,7 +35,7 @@ auto Ripemd160::RIPEMD160(
     using SizeType = std::uint32_t;
 
     if (size > std::numeric_limits<SizeType>::max()) {
-        LogOutput(OT_METHOD)(__func__)(": Input too large").Flush();
+        LogError()(OT_METHOD)(__func__)(": Input too large").Flush();
 
         return false;
     }

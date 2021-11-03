@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CONTACT_CONTACTITEM_HPP
-#define OPENTXS_CONTACT_CONTACTITEM_HPP
+#pragma once
 
 #define NULL_START 0
 #define NULL_END 0
@@ -20,16 +19,17 @@
 #include <set>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 class Identifier;
@@ -46,7 +46,7 @@ class OPENTXS_EXPORT ContactItem
 {
 public:
     ContactItem(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
@@ -58,19 +58,19 @@ public:
         const std::time_t end,
         const std::string subtype);
     ContactItem(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const Claim& claim);
     OPENTXS_NO_EXPORT ContactItem(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const contact::SectionType section,
         const proto::ContactItem& serialized);
     ContactItem(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const contact::SectionType section,
@@ -115,5 +115,3 @@ private:
     auto operator=(ContactItem&&) -> ContactItem& = delete;
 };
 }  // namespace opentxs
-
-#endif

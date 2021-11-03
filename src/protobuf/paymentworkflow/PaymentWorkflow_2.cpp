@@ -5,22 +5,21 @@
 
 #include "opentxs/protobuf/verify/PaymentWorkflow.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <cstdint>
-#include <iosfwd>
 #include <map>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-#include "Proto.hpp"
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/protobuf/verify/InstrumentRevision.hpp"  // IWYU pragma: keep
-#include "opentxs/protobuf/verify/PaymentEvent.hpp"
+#include "opentxs/protobuf/verify/PaymentEvent.hpp"        // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyWorkflows.hpp"
 #include "protobuf/Check.hpp"
 

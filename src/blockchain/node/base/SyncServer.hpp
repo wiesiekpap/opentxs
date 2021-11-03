@@ -25,7 +25,6 @@
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
@@ -38,6 +37,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 #define SYNC_SERVER "opentxs::blockchain::node::base::SyncServer::"
@@ -46,7 +46,7 @@ namespace opentxs::blockchain::node::base
 {
 using SyncDM = download::
     Manager<SyncServer, std::unique_ptr<const GCS>, int, filter::Type>;
-using SyncWorker = Worker<SyncServer, api::Core>;
+using SyncWorker = Worker<SyncServer, api::Session>;
 
 class SyncServer : public SyncDM, public SyncWorker
 {
@@ -67,7 +67,7 @@ public:
     }
 
     SyncServer(
-        const api::Core& api,
+        const api::Session& api,
         const node::internal::SyncDatabase& db,
         const node::internal::HeaderOracle& header,
         const node::internal::FilterOracle& filter,
@@ -169,7 +169,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogDetail(DisplayString(chain_))(" sync data updated to height ")(
+        LogDetail()(DisplayString(chain_))(" sync data updated to height ")(
             position.first)
             .Flush();
     }
@@ -239,14 +239,14 @@ private:
     }
     auto process_position(const Position& pos) noexcept -> void
     {
-        LogTrace(SYNC_SERVER)(__func__)(": processing block ")(
+        LogTrace()(SYNC_SERVER)(__func__)(": processing block ")(
             pos.second->asHex())(" at height ")(pos.first)
             .Flush();
 
         try {
             auto current = known();
             auto hashes = header_.Ancestors(current, pos, 2000);
-            LogTrace(SYNC_SERVER)(__func__)(
+            LogTrace()(SYNC_SERVER)(__func__)(
                 ": current position best known position is block ")(
                 current.second->asHex())(" at height ")(current.first)
                 .Flush();
@@ -254,7 +254,7 @@ private:
             OT_ASSERT(0 < hashes.size());
 
             if (1 == hashes.size()) {
-                LogTrace(SYNC_SERVER)(__func__)(
+                LogTrace()(SYNC_SERVER)(__func__)(
                     ": current position matches incoming block ")(
                     pos.second->asHex())(" at height ")(pos.first)
                     .Flush();
@@ -275,10 +275,11 @@ private:
                 const auto& last = hashes.back();
 
                 if (first.first <= current.first) {
-                    LogTrace(SYNC_SERVER)(__func__)(": reorg detected").Flush();
+                    LogTrace()(SYNC_SERVER)(__func__)(": reorg detected")
+                        .Flush();
                 }
 
-                LogTrace(SYNC_SERVER)(__func__)(
+                LogTrace()(SYNC_SERVER)(__func__)(
                     ": scheduling download starting from block ")(
                     first.second->asHex())(" at height ")(first.first)(
                     " until block ")(last.second->asHex())(" at height ")(
@@ -302,7 +303,7 @@ private:
 
         if (auto type = base->Type();
             type != bcsync::MessageType::sync_request) {
-            LogOutput(SYNC_SERVER)(__func__)(
+            LogError()(SYNC_SERVER)(__func__)(
                 ": Invalid or unsupported message type ")(opentxs::print(type))
                 .Flush();
 
@@ -333,7 +334,7 @@ private:
                 OTSocket::send_message(lock, socket_.get(), out);
             }
         } catch (const std::exception& e) {
-            LogOutput(SYNC_SERVER)(__func__)(": ")(e.what()).Flush();
+            LogError()(SYNC_SERVER)(__func__)(": ")(e.what()).Flush();
         }
     }
     auto queue_processing(DownloadedData&& data) noexcept -> void
@@ -389,14 +390,14 @@ private:
                     reader(filterBytes));
                 task->process(1);
             } catch (const std::exception& e) {
-                LogOutput(SYNC_SERVER)(__func__)(": ")(e.what()).Flush();
+                LogError()(SYNC_SERVER)(__func__)(": ")(e.what()).Flush();
                 task->redownload();
                 break;
             }
         }
 
         if (previousFilterHeader->empty() || (0 == items.size())) {
-            LogOutput(SYNC_SERVER)(__func__)(": missing data").Flush();
+            LogError()(SYNC_SERVER)(__func__)(": missing data").Flush();
 
             return;
         }
@@ -454,7 +455,7 @@ private:
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogOutput(SYNC_SERVER)(__func__)(": ")(::zmq_strerror(error))
+                LogError()(SYNC_SERVER)(__func__)(": ")(::zmq_strerror(error))
                     .Flush();
 
                 continue;

@@ -3,16 +3,20 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CONTRACT_BASKET_BASKETCONTRACT_HPP
-#define OPENTXS_CORE_CONTRACT_BASKET_BASKETCONTRACT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
 {
+namespace api
+{
+class Session;
+}  // namespace api
+
 namespace contract
 {
 namespace unit
@@ -39,10 +43,10 @@ public:
     using Subcontracts = std::map<std::string, Subcontract>;
 
     static auto CalculateBasketID(
-        const api::Core& api,
+        const api::Session& api,
         const proto::UnitDefinition& serialized) -> OTIdentifier;
     static auto FinalizeTemplate(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         proto::UnitDefinition& serialized,
         const PasswordPrompt& reason) -> bool;
@@ -71,4 +75,3 @@ private:
 }  // namespace unit
 }  // namespace contract
 }  // namespace opentxs
-#endif

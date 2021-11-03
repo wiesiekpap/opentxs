@@ -10,9 +10,8 @@
 #include <memory>
 
 #include "internal/storage/drivers/Factory.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/storage/Plugin.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::storage::driver::Multiplex::"
 
@@ -20,7 +19,7 @@ namespace opentxs::storage::driver
 {
 auto Multiplex::init_lmdb(std::unique_ptr<storage::Plugin>& plugin) -> void
 {
-    LogVerbose(OT_METHOD)(__func__)(": Initializing primary LMDB plugin.")
+    LogVerbose()(OT_METHOD)(__func__)(": Initializing primary LMDB plugin.")
         .Flush();
     plugin = factory::StorageLMDB(
         crypto_, asio_, storage_, config_, primary_bucket_);

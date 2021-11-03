@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_OTTRANSACTION_HPP
-#define OPENTXS_CORE_OTTRANSACTION_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -19,17 +18,22 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -731,18 +735,18 @@ protected:
                    // transaction saves its contents
 
 private:
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
-    OTTransaction(const api::Core& api);
-    OTTransaction(const api::Core& api, const Ledger& theOwner);
+    OTTransaction(const api::Session& api);
+    OTTransaction(const api::Session& api, const Ledger& theOwner);
     OTTransaction(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         const originType theOriginType = originType::not_applicable);
     OTTransaction(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
@@ -753,7 +757,7 @@ private:
     // The full receipt is loaded only after the abbreviated ones are loaded,
     // and verified against them.
     OTTransaction(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
@@ -779,4 +783,3 @@ private:
     auto operator=(OTTransaction&&) -> OTTransaction& = delete;
 };
 }  // namespace opentxs
-#endif

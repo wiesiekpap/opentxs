@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::blockchain::database::wallet::db
 {

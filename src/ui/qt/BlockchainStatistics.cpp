@@ -9,6 +9,7 @@
 
 #include <QObject>
 #include <QVariant>
+#include <cstdint>
 #include <memory>
 #include <string>
 

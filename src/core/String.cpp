@@ -17,7 +17,6 @@ extern "C" {
 #include <cstdio>
 #include <cstring>
 #include <map>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -27,14 +26,14 @@ extern "C" {
 #include <wordexp.h>
 #endif
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/NymFile.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define MAX_STRING_LENGTH 0x800000  // this is about 8 megs.
 
@@ -569,7 +568,7 @@ auto String::DecodeIfArmored(bool bEscapedIsAllowed) -> bool
         bArmoredAndALSOescaped = true;
 
         if (!bEscapedIsAllowed) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Armored and escaped value passed in, "
                 "but escaped are forbidden here. "
                 "(Returning).")
@@ -601,7 +600,7 @@ auto String::DecodeIfArmored(bool bEscapedIsAllowed) -> bool
         // We're doing this: "-----BEGIN OT ARMORED" (Should worked for
         // escaped as well, here.)
         {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error loading string contents from "
                 "ascii-armored encoding. "
                 "Contents: ")(Get())(".")
@@ -939,7 +938,7 @@ auto String::TokenizeIntoKeyValuePairs(
 
     if (wordexp(Get(), &exp_result, 0))  // non-zero == failure.
     {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Error calling wordexp() "
             "(to expand user-defined script args). Data: ")(
             static_cast<const opentxs::String&>(*this))(".")
@@ -964,7 +963,7 @@ auto String::TokenizeIntoKeyValuePairs(
             const std::string str_key = exp_result.we_wordv[i];
             const std::string str_val = exp_result.we_wordv[i + 1];
 
-            LogVerbose(OT_METHOD)(__func__)(": Parsed: ")(str_key)(" = ")(
+            LogVerbose()(OT_METHOD)(__func__)(": Parsed: ")(str_key)(" = ")(
                 str_val)
                 .Flush();
             mapOutput.insert(
@@ -992,7 +991,7 @@ auto String::TokenizeIntoKeyValuePairs(
             k = i;
             while (txt[i] != quote && txt[i] != 0) i++;
             if (txt[i] != quote) {
-                LogOutput(OT_METHOD)(__func__)(": Unmatched quotes in: ")(
+                LogError()(OT_METHOD)(__func__)(": Unmatched quotes in: ")(
                     txt)(".")
                     .Flush();
                 return false;
@@ -1014,7 +1013,7 @@ auto String::TokenizeIntoKeyValuePairs(
             v = i;
             while (txt[i] != quote && txt[i] != 0) i++;
             if (txt[i] != quote) {
-                LogOutput(OT_METHOD)(__func__)(": Unmatched quotes in: ")(
+                LogError()(OT_METHOD)(__func__)(": Unmatched quotes in: ")(
                     txt)(".")
                     .Flush();
                 return false;
@@ -1028,7 +1027,7 @@ auto String::TokenizeIntoKeyValuePairs(
         const std::string value = buf.substr(v, v2 - v);
 
         if (key.length() != 0 && value.length() != 0) {
-            LogVerbose(OT_METHOD)(__func__)(": Parsed: ")(key)(" = ")(value)
+            LogVerbose()(OT_METHOD)(__func__)(": Parsed: ")(key)(" = ")(value)
                 .Flush();
             mapOutput.insert(std::pair<std::string, std::string>(key, value));
         }

@@ -15,6 +15,7 @@ extern "C" {
 #include <boost/endian/buffers.hpp>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <iterator>
 #include <limits>
@@ -25,8 +26,6 @@ extern "C" {
 
 #include "blockchain/block/pkt/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
@@ -35,9 +34,10 @@ extern "C" {
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::PacketCrypt::"
 
@@ -88,7 +88,7 @@ struct PacketCrypt::Imp {
             static constexpr auto threshold = decltype(height){122622};
 
             if (threshold > height) {
-                LogDetail(OT_METHOD)(__func__)(
+                LogDetail()(OT_METHOD)(__func__)(
                     ": Validation protocol for this block height not "
                     "supported. Assuming block is valid.")
                     .Flush();
@@ -195,19 +195,19 @@ struct PacketCrypt::Imp {
                 context_.get());
 
             if (0 == rc) {
-                LogDetail("PacketCrypt validation successful for block ")(
+                LogDetail()("PacketCrypt validation successful for block ")(
                     height)
                     .Flush();
 
                 return true;
             } else {
-                LogOutput("PacketCrypt validation failed for block ")(height)
+                LogError()("PacketCrypt validation failed for block ")(height)
                     .Flush();
 
                 return false;
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -233,7 +233,7 @@ auto PacketCrypt::Validate(const BitcoinBlock& block) const noexcept -> bool
     const auto* p = dynamic_cast<const Imp::PktBlock*>(&block);
 
     if (nullptr == p) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid block type").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid block type").Flush();
 
         return false;
     }

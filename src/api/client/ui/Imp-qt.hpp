@@ -19,6 +19,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/ui/qt/AccountActivity.hpp"
@@ -44,15 +45,15 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
+}  // namespace crypto
 
-class Manager;
-}  // namespace client
+namespace session
+{
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -125,8 +126,8 @@ public:
     auto ShutdownModels() noexcept -> void final;
 
     ImpQt(
-        const api::client::Manager& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::session::Client& api,
+        const api::crypto::Blockchain& blockchain,
         const Flag& running) noexcept;
 
     ~ImpQt() final;

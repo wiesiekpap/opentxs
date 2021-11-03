@@ -11,11 +11,11 @@
 #include <utility>
 
 #include "internal/api/network/Network.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/StorageRoot.pb.h"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/tree/Node.hpp"
 #include "storage/tree/Tree.hpp"
 #include "util/ScopeGuard.hpp"
@@ -47,14 +47,14 @@ auto Root::GC::Cleanup() noexcept -> void { future_.get(); }
 auto Root::GC::Check(const std::string root) noexcept -> CheckState
 {
     if (0 == interval_) {
-        LogVerbose(OT_METHOD)(__func__)(": Garbage collection disabled")
+        LogVerbose()(OT_METHOD)(__func__)(": Garbage collection disabled")
             .Flush();
 
         return CheckState::Skip;
     }
 
     if (running_.get()) {
-        LogVerbose(OT_METHOD)(__func__)(": Garbage collection in progress")
+        LogVerbose()(OT_METHOD)(__func__)(": Garbage collection in progress")
             .Flush();
 
         return CheckState::Skip;
@@ -93,7 +93,8 @@ auto Root::GC::collect_garbage(
     const Driver* to,
     const SimpleCallback done) noexcept -> void
 {
-    LogVerbose(OT_METHOD)(__func__)(": Beginning garbage collection.").Flush();
+    LogVerbose()(OT_METHOD)(__func__)(": Beginning garbage collection.")
+        .Flush();
     auto success{false};
     auto postcondition = ScopeGuard{[&] { promise_.set_value(success); }};
     auto temp = storage::Tree{driver_, root_};
@@ -102,7 +103,8 @@ auto Root::GC::collect_garbage(
     if (success) {
         driver_.EmptyBucket(from);
     } else {
-        LogVerbose(OT_METHOD)(__func__)(": Garbage collection failed").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Garbage collection failed")
+            .Flush();
     }
 
     {
@@ -116,7 +118,7 @@ auto Root::GC::collect_garbage(
     OT_ASSERT(done);
 
     done();
-    LogVerbose(OT_METHOD)(__func__)(": Finished garbage collection.").Flush();
+    LogVerbose()(OT_METHOD)(__func__)(": Finished garbage collection.").Flush();
 }
 
 auto Root::GC::Init(

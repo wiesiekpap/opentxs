@@ -15,8 +15,7 @@
 #include <utility>
 
 #include "Proto.hpp"
-#include "internal/api/server/Server.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/otx/client/OTPayment.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Message.hpp"
@@ -26,10 +25,10 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/cron/OTCron.hpp"
 #include "opentxs/core/identifier/Server.hpp"
-#include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "server/MainFile.hpp"
 #include "server/Notary.hpp"
 #include "server/Transactor.hpp"
@@ -39,15 +38,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace server
+namespace session
 {
-namespace implementation
-{
-class Manager;
-}  // namespace implementation
-
-class Manager;
-}  // namespace server
+class Notary;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -70,7 +64,7 @@ namespace opentxs::server
 class Server
 {
 public:
-    auto API() const -> const api::server::Manager& { return manager_; }
+    auto API() const -> const api::session::Notary& { return manager_; }
     auto GetConnectInfo(
         core::AddressType& type,
         std::string& hostname,
@@ -110,10 +104,13 @@ public:
         const char* command) -> bool;
     auto WalletFilename() -> String& { return m_strWalletFilename; }
 
+    Server(
+        const opentxs::api::session::Notary& manager,
+        const PasswordPrompt& reason);
+
     ~Server();
 
 private:
-    friend api::server::implementation::Manager;
     friend MainFile;
 
     const std::string DEFAULT_EXTERNAL_IP = "127.0.0.1";
@@ -123,7 +120,7 @@ private:
     const std::uint32_t MIN_TCP_PORT = 1024;
     const std::uint32_t MAX_TCP_PORT = 63356;
 
-    const api::server::Manager& manager_;
+    const api::session::Notary& manager_;
     const PasswordPrompt& reason_;
     MainFile mainFile_;
     Notary notary_;
@@ -175,9 +172,6 @@ private:
         const identifier::Nym& recipientNymID,
         const Message& msg) -> bool;
 
-    Server(
-        const opentxs::api::server::Manager& manager,
-        const PasswordPrompt& reason);
     Server() = delete;
     Server(const Server&) = delete;
     Server(Server&&) = delete;

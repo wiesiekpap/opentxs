@@ -40,24 +40,24 @@ class Base;
 }  // namespace rpc
 }  // namespace opentxs
 
-namespace opentxs::rpc
+namespace opentxs
 {
-auto translate(AccountEventType type) noexcept -> proto::AccountEventType;
-auto translate(AccountType type) noexcept -> proto::AccountType;
-auto translate(CommandType type) noexcept -> proto::RPCCommandType;
-auto translate(ContactEventType type) noexcept -> proto::ContactEventType;
-auto translate(PaymentType type) noexcept -> proto::RPCPaymentType;
-auto translate(PushType type) noexcept -> proto::RPCPushType;
-auto translate(ResponseCode type) noexcept -> proto::RPCResponseCode;
+auto translate(rpc::AccountEventType type) noexcept -> proto::AccountEventType;
+auto translate(rpc::AccountType type) noexcept -> proto::AccountType;
+auto translate(rpc::CommandType type) noexcept -> proto::RPCCommandType;
+auto translate(rpc::ContactEventType type) noexcept -> proto::ContactEventType;
+auto translate(rpc::PaymentType type) noexcept -> proto::RPCPaymentType;
+auto translate(rpc::PushType type) noexcept -> proto::RPCPushType;
+auto translate(rpc::ResponseCode type) noexcept -> proto::RPCResponseCode;
 
-auto translate(proto::AccountEventType type) noexcept -> AccountEventType;
-auto translate(proto::AccountType type) noexcept -> AccountType;
-auto translate(proto::ContactEventType type) noexcept -> ContactEventType;
-auto translate(proto::RPCCommandType type) noexcept -> CommandType;
-auto translate(proto::RPCPaymentType type) noexcept -> PaymentType;
-auto translate(proto::RPCPushType type) noexcept -> PushType;
-auto translate(proto::RPCResponseCode type) noexcept -> ResponseCode;
-}  // namespace opentxs::rpc
+auto translate(proto::AccountEventType type) noexcept -> rpc::AccountEventType;
+auto translate(proto::AccountType type) noexcept -> rpc::AccountType;
+auto translate(proto::ContactEventType type) noexcept -> rpc::ContactEventType;
+auto translate(proto::RPCCommandType type) noexcept -> rpc::CommandType;
+auto translate(proto::RPCPaymentType type) noexcept -> rpc::PaymentType;
+auto translate(proto::RPCPushType type) noexcept -> rpc::PushType;
+auto translate(proto::RPCResponseCode type) noexcept -> rpc::ResponseCode;
+}  // namespace opentxs
 
 namespace opentxs::rpc::internal
 {

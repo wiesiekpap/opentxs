@@ -11,10 +11,10 @@
 #include <iterator>
 
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -39,7 +39,7 @@ constexpr auto chris_{"ot2C1sgqWjrt6sMJcY2SJLLcB3qMCgJQRmxU"};
 TEST_F(RPC_fixture, preconditions)
 {
     {
-        const auto& session = StartServer(0);
+        const auto& session = StartNotarySession(0);
         const auto instance = session.Instance();
         const auto& seeds = seed_map_.at(instance);
         const auto& nyms = local_nym_map_.at(instance);
@@ -48,7 +48,7 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_EQ(nyms.size(), 1);
     }
     {
-        const auto& server = ot_.Server(0);
+        const auto& server = ot_.NotarySession(0);
         const auto& session = StartClient(0);
         const auto instance = session.Instance();
         const auto& nyms = local_nym_map_.at(instance);

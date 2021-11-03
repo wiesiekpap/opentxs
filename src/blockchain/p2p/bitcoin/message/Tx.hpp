@@ -12,17 +12,17 @@
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -53,10 +53,10 @@ public:
     auto Transaction() const noexcept
         -> std::unique_ptr<const block::bitcoin::Transaction> final;
 
-    Tx(const api::Core& api,
+    Tx(const api::Session& api,
        const blockchain::Type network,
        const ReadView transaction) noexcept;
-    Tx(const api::Core& api,
+    Tx(const api::Session& api,
        std::unique_ptr<Header> header,
        const ReadView transaction) noexcept(false);
 

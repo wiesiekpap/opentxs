@@ -6,8 +6,7 @@
 // Base class for OTTrade and OTAgreement.
 // OTCron contains lists of these for regular processing.
 
-#ifndef OPENTXS_CORE_CRON_OTCRONITEM_HPP
-#define OPENTXS_CORE_CRON_OTCRONITEM_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -25,13 +24,19 @@
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+namespace session
+{
 class Wallet;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -107,7 +112,7 @@ public:
     // Called in OTCron::RemoveCronItem as well as OTCron::ProcessCron.
     // This calls onFinalReceipt, then onRemovalFromCron. Both are virtual.
     void HookRemovalFromCron(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         Nym_p pRemover,
         std::int64_t newTransactionNo,
         const PasswordPrompt& reason);
@@ -117,22 +122,22 @@ public:
     inline void SetCronPointer(OTCron& theCron) { m_pCron = &theCron; }
 
     static auto LoadCronReceipt(
-        const api::Core& api,
+        const api::Session& api,
         const TransactionNumber& lTransactionNum)
         -> std::unique_ptr<OTCronItem>;  // Server-side only.
     static auto LoadActiveCronReceipt(
-        const api::Core& api,
+        const api::Session& api,
         const TransactionNumber& lTransactionNum,
         const identifier::Server& notaryID)
         -> std::unique_ptr<OTCronItem>;  // Client-side only.
     static auto EraseActiveCronReceipt(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& dataFolder,
         const TransactionNumber& lTransactionNum,
         const identifier::Nym& nymID,
         const identifier::Server& notaryID) -> bool;  // Client-side only.
     static auto GetActiveCronTransNums(
-        const api::Core& api,
+        const api::Session& api,
         NumList& output,  // Client-side
                           // only.
         const std::string& dataFolder,
@@ -261,16 +266,16 @@ protected:
     void ClearClosingNumbers();
 
     OTCronItem(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTCronItem(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& ACCT_ID,
         const identifier::Nym& NYM_ID);
-    OTCronItem(const api::Core& api);
+    OTCronItem(const api::Session& api);
 
 private:
     using ot_super = OTTrackable;
@@ -291,4 +296,3 @@ private:
     auto operator=(OTCronItem&&) -> OTCronItem& = delete;
 };
 }  // namespace opentxs
-#endif

@@ -29,22 +29,23 @@
 #include "Proto.tpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/GCS.pb.h"
 #include "opentxs/protobuf/verify/GCS.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 //#define OT_METHOD "opentxs::blockchain::implementation::GCS::"
@@ -70,7 +71,7 @@ namespace opentxs::factory
 using ReturnType = blockchain::implementation::GCS;
 
 auto GCS(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
@@ -90,26 +91,26 @@ auto GCS(
 
         return std::make_unique<ReturnType>(api, bits, fpRate, key, effective);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
-auto GCS(const api::Core& api, const proto::GCS& in) noexcept
+auto GCS(const api::Session& api, const proto::GCS& in) noexcept
     -> std::unique_ptr<blockchain::GCS>
 {
     try {
         return std::make_unique<ReturnType>(
             api, in.bits(), in.fprate(), in.count(), in.key(), in.filter());
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
-auto GCS(const api::Core& api, const ReadView in) noexcept
+auto GCS(const api::Session& api, const ReadView in) noexcept
     -> std::unique_ptr<blockchain::GCS>
 {
     try {
@@ -121,14 +122,14 @@ auto GCS(const api::Core& api, const ReadView in) noexcept
 
         return GCS(api, proto);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
 auto GCS(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
@@ -139,14 +140,14 @@ auto GCS(
         return std::make_unique<ReturnType>(
             api, bits, fpRate, filterElementCount, key, filter);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
 auto GCS(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::filter::Type type,
     const ReadView key,
     const ReadView encoded) noexcept -> std::unique_ptr<blockchain::GCS>
@@ -160,20 +161,20 @@ auto GCS(
         return std::make_unique<ReturnType>(
             api, params.first, params.second, elements, key, bytes);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
 auto GCS(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::filter::Type type,
     const blockchain::block::Block& block) noexcept
     -> std::unique_ptr<blockchain::GCS>
 {
     if (blockchain::filter::Type::Basic_BIP158 == type) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Filter can not be constructed without previous outputs")
             .Flush();
 
@@ -195,7 +196,7 @@ auto GCS(
             blockchain::internal::BlockHashToFilterKey(block.ID().Bytes()),
             elements);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -214,7 +215,7 @@ auto golomb_encode(
     const std::uint64_t value,
     BitWriter& stream) noexcept -> void;
 auto siphash(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView key,
     const ReadView item) noexcept(false) -> std::uint64_t;
 
@@ -289,7 +290,7 @@ auto GolombEncode(
 }
 
 auto siphash(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView key,
     const ReadView item) noexcept(false) -> std::uint64_t
 {
@@ -307,7 +308,7 @@ auto siphash(
 }
 
 auto HashToRange(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView key,
     const std::uint64_t range,
     const ReadView item) noexcept(false) -> std::uint64_t
@@ -318,7 +319,7 @@ auto HashToRange(
 }
 
 auto HashedSetConstruct(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView key,
     const std::uint32_t N,
     const std::uint32_t M,
@@ -342,7 +343,7 @@ auto HashedSetConstruct(
 namespace opentxs::blockchain::implementation
 {
 GCS::GCS(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const std::uint32_t filterElementCount,
@@ -364,7 +365,7 @@ GCS::GCS(
 }
 
 GCS::GCS(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,

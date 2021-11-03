@@ -8,13 +8,13 @@
 #include "storage/Plugin.hpp"  // IWYU pragma: associated
 
 #include "internal/api/network/Network.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::Plugin"
 
@@ -23,7 +23,7 @@ namespace opentxs::storage::implementation
 Plugin::Plugin(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& storage,
+    const api::session::Storage& storage,
     const storage::Config& config,
     const Flag& bucket)
     : crypto_(crypto)
@@ -41,7 +41,7 @@ auto Plugin::Load(
 {
     if (key.empty()) {
         if (!checking) {
-            LogOutput(OT_METHOD)(__func__)(": Error: Tried to load empty key.")
+            LogError()(OT_METHOD)(__func__)(": Error: Tried to load empty key.")
                 .Flush();
         }
 
@@ -66,7 +66,7 @@ auto Plugin::Load(
     }
 
     if (!valid && !checking) {
-        LogDetail(OT_METHOD)(__func__)(": Specified object is not found.")(
+        LogDetail()(OT_METHOD)(__func__)(": Specified object is not found.")(
             " Hash: ")(key)(".")(" Size: ")(value.size())(".")
             .Flush();
     }
@@ -92,7 +92,7 @@ auto Plugin::Migrate(const std::string& key, const storage::Driver& to) const
         if (to.Store(false, key, value, targetBucket)) {
             return true;
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Save failure.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Save failure.").Flush();
 
             return false;
         }
@@ -103,7 +103,7 @@ auto Plugin::Migrate(const std::string& key, const storage::Driver& to) const
     const bool exists = to.LoadFromBucket(key, value, targetBucket);
 
     if (!exists) {
-        LogVerbose(OT_METHOD)(__func__)(": Missing key.").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Missing key.").Flush();
 
         return false;
     }

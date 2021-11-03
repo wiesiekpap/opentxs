@@ -10,17 +10,23 @@
 #include <iosfwd>
 
 #include "Proto.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/api/crypto/Symmetric.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+namespace crypto
+{
+class Symmetric;
+}  // namespace crypto
+
+class Session;
 }  // namespace api
 
 namespace crypto
@@ -40,11 +46,11 @@ class Secret;
 
 namespace opentxs::api::crypto::implementation
 {
-class Symmetric final : virtual public api::crypto::Symmetric
+class Symmetric final : public internal::Symmetric
 {
 public:
-    virtual auto IvSize(const opentxs::crypto::key::symmetric::Algorithm mode)
-        const -> std::size_t final;
+    auto IvSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
+        -> std::size_t final;
     auto Key(
         const PasswordPrompt& password,
         const opentxs::crypto::key::symmetric::Algorithm mode =
@@ -77,17 +83,12 @@ public:
         const opentxs::crypto::key::symmetric::Source type) const
         -> OTSymmetricKey final;
 
-    Symmetric(const api::Core& api) noexcept;
+    Symmetric(const api::Session& api) noexcept;
 
     ~Symmetric() final = default;
 
 private:
-    const api::Core& api_;
-
-    auto GetEngine(const opentxs::crypto::key::symmetric::Algorithm mode) const
-        -> const opentxs::crypto::SymmetricProvider*;
-    auto GetEngine(const opentxs::crypto::key::symmetric::Source type) const
-        -> const opentxs::crypto::SymmetricProvider*;
+    const api::Session& api_;
 
     Symmetric() = delete;
     Symmetric(const Symmetric&) = delete;

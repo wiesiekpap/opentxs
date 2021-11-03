@@ -12,18 +12,16 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
@@ -35,6 +33,8 @@
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::Item::"
 
@@ -44,7 +44,7 @@ namespace opentxs
 // probvably not actually. If I end up back here, it's because
 // sometimes I dont' WANT to assign the stuff, but leave it blank
 // because I'm about to load it.
-Item::Item(const api::Core& core)
+Item::Item(const api::Session& core)
     : OTTransactionType(core)
     , m_ascNote(Armored::Factory())
     , m_ascAttachment(Armored::Factory())
@@ -61,7 +61,7 @@ Item::Item(const api::Core& core)
 
 // From owner we can get acct ID, server ID, and transaction Num
 Item::Item(
-    const api::Core& core,
+    const api::Session& core,
     const identifier::Nym& theNymID,
     const OTTransaction& theOwner)
     : OTTransactionType(
@@ -86,7 +86,7 @@ Item::Item(
 
 // From owner we can get acct ID, server ID, and transaction Num
 Item::Item(
-    const api::Core& core,
+    const api::Session& core,
     const identifier::Nym& theNymID,
     const Item& theOwner)
     : OTTransactionType(
@@ -110,7 +110,7 @@ Item::Item(
 }
 
 Item::Item(
-    const api::Core& core,
+    const api::Session& core,
     const identifier::Nym& theNymID,
     const OTTransaction& theOwner,
     itemType theType,
@@ -184,7 +184,7 @@ auto Item::VerifyTransactionStatement(
     const bool bIsRealTransaction) const -> bool
 {
     if (GetType() != itemType::transactionStatement) {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": Wrong item type. Expected Item::transactionStatement.")
             .Flush();
         return false;
@@ -209,7 +209,7 @@ auto Item::VerifyTransactionStatement(
         const bool found = (foundExisting || foundNew);
 
         if (!found) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction# (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction# (")(
                 itemNumber)(") doesn't appear on Nym's issued list.")
                 .Flush();
 
@@ -241,8 +241,8 @@ auto Item::VerifyTransactionStatement(
                 break;
             }
             default: {
-                LogOutput(OT_METHOD)(__func__)(": Unexpected "
-                                               "transaction type.")
+                LogError()(OT_METHOD)(__func__)(": Unexpected "
+                                                "transaction type.")
                     .Flush();
             } break;
         }
@@ -297,7 +297,7 @@ auto Item::VerifyBalanceStatement(
     std::set<TransactionNumber> removed(excluded);
 
     if (GetType() != itemType::balanceStatement) {
-        LogNormal(OT_METHOD)(__func__)(": Wrong item type.").Flush();
+        LogConsole()(OT_METHOD)(__func__)(": Wrong item type.").Flush();
 
         return false;
     }
@@ -311,7 +311,7 @@ auto Item::VerifyBalanceStatement(
     // transaction.
     const auto balance = THE_ACCOUNT.GetBalance() + lActualAdjustment;
     if (balance != GetAmount()) {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": This balance statement has a value of ")(GetAmount().str())(
             ", but expected ")(balance.str())(". (Acct balance of ")(
             THE_ACCOUNT.GetBalance().str())(" plus actualAdjustment of ")(
@@ -356,7 +356,7 @@ auto Item::VerifyBalanceStatement(
             default: {
                 auto strItemType = String::Factory();
                 GetTypeString(strItemType);
-                LogDetail(OT_METHOD)(__func__)(": Ignoring ")(
+                LogDetail()(OT_METHOD)(__func__)(": Ignoring ")(
                     strItemType)(" item in balance statement while "
                                  "verifying it against inbox.")
                     .Flush();
@@ -399,8 +399,8 @@ auto Item::VerifyBalanceStatement(
                 lReceiptAmountMultiplier = 1;
             } break;
             default: {
-                LogOutput(OT_METHOD)(__func__)(": Bad Subitem type "
-                                               "(SHOULD NEVER HAPPEN)....")
+                LogError()(OT_METHOD)(__func__)(": Bad Subitem type "
+                                                "(SHOULD NEVER HAPPEN)....")
                     .Flush();
             }
                 continue;  // This will never happen, due to the first continue
@@ -433,14 +433,14 @@ auto Item::VerifyBalanceStatement(
             (pSubItem->GetTransactionNum() == 1))  // TODO use a constant for
                                                    // this 1.
         {
-            LogDebug(OT_METHOD)(__func__)(
+            LogDebug()(OT_METHOD)(__func__)(
                 " : Subitem is new Outbox Transaction... "
                 " retrieving by special ID: ")(outboxNum)
                 .Flush();
 
             pTransaction = pLedger->GetTransaction(outboxNum);
         } else {
-            LogTrace(OT_METHOD)(__func__)(
+            LogTrace()(OT_METHOD)(__func__)(
                 ": Subitem is normal Transaction... retrieving by ID: ")(
                 pSubItem->GetTransactionNum())
                 .Flush();
@@ -451,7 +451,7 @@ auto Item::VerifyBalanceStatement(
         // Make sure that the transaction number of each sub-item is found on
         // the appropriate ledger (inbox or outbox).
         if (false == bool(pTransaction)) {
-            LogNormal(OT_METHOD)(__func__)(": Expected ")(
+            LogConsole()(OT_METHOD)(__func__)(": Expected ")(
                 pszLedgerType)(" transaction (server ")(outboxNum)(", client ")(
                 pSubItem->GetTransactionNum())(") not found. (Amount ")(
                 pSubItem->GetAmount().str())(").")
@@ -464,7 +464,7 @@ auto Item::VerifyBalanceStatement(
 
         if (pSubItem->GetReferenceToNum() !=
             pTransaction->GetReferenceToNum()) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(") mismatch Reference Num: ")(
                 pSubItem->GetReferenceToNum())(", expected ")(
                 pTransaction->GetReferenceToNum())(".")
@@ -475,7 +475,7 @@ auto Item::VerifyBalanceStatement(
 
         if (pSubItem->GetRawNumberOfOrigin() !=
             pTransaction->GetRawNumberOfOrigin()) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(") mismatch Origin Num: ")(
                 pSubItem->GetRawNumberOfOrigin())(", expected ")(
                 pTransaction->GetRawNumberOfOrigin())(".")
@@ -488,7 +488,7 @@ auto Item::VerifyBalanceStatement(
         lTransactionAmount *= lReceiptAmountMultiplier;
 
         if (pSubItem->GetAmount() != lTransactionAmount) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") amounts don't match: report amount is ")(
                 pSubItem->GetAmount().str())(", but expected ")(
@@ -502,7 +502,7 @@ auto Item::VerifyBalanceStatement(
 
         if ((pSubItem->GetType() == itemType::transfer) &&
             (pTransaction->GetType() != transactionType::pending)) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") wrong type. (transfer block).")
                 .Flush();
@@ -512,7 +512,7 @@ auto Item::VerifyBalanceStatement(
 
         if ((pSubItem->GetType() == itemType::chequeReceipt) &&
             (pTransaction->GetType() != transactionType::chequeReceipt)) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") wrong type. (chequeReceipt block).")
                 .Flush();
@@ -523,7 +523,7 @@ auto Item::VerifyBalanceStatement(
         if ((pSubItem->GetType() == itemType::voucherReceipt) &&
             ((pTransaction->GetType() != transactionType::voucherReceipt) ||
              (pSubItem->GetOriginType() != pTransaction->GetOriginType()))) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") wrong type or origin type. (voucherReceipt block).")
                 .Flush();
@@ -533,7 +533,7 @@ auto Item::VerifyBalanceStatement(
 
         if ((pSubItem->GetType() == itemType::marketReceipt) &&
             (pTransaction->GetType() != transactionType::marketReceipt)) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") wrong type. (marketReceipt block).")
                 .Flush();
@@ -544,7 +544,7 @@ auto Item::VerifyBalanceStatement(
         if ((pSubItem->GetType() == itemType::paymentReceipt) &&
             ((pTransaction->GetType() != transactionType::paymentReceipt) ||
              (pSubItem->GetOriginType() != pTransaction->GetOriginType()))) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") wrong type or origin type. (paymentReceipt block).")
                 .Flush();
@@ -554,7 +554,7 @@ auto Item::VerifyBalanceStatement(
 
         if ((pSubItem->GetType() == itemType::transferReceipt) &&
             (pTransaction->GetType() != transactionType::transferReceipt)) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") wrong type. (transferReceipt block).")
                 .Flush();
@@ -565,7 +565,7 @@ auto Item::VerifyBalanceStatement(
         if ((pSubItem->GetType() == itemType::basketReceipt) &&
             ((pTransaction->GetType() != transactionType::basketReceipt) ||
              (pSubItem->GetClosingNum() != pTransaction->GetClosingNum()))) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(") wrong type or closing num (")(
                 pSubItem->GetClosingNum())("). (basketReceipt block).")
                 .Flush();
@@ -577,7 +577,7 @@ auto Item::VerifyBalanceStatement(
             ((pTransaction->GetType() != transactionType::finalReceipt) ||
              (pSubItem->GetClosingNum() != pTransaction->GetClosingNum()) ||
              (pSubItem->GetOriginType() != pTransaction->GetOriginType()))) {
-            LogNormal(OT_METHOD)(__func__)(": Transaction (")(
+            LogConsole()(OT_METHOD)(__func__)(": Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") wrong type or origin type or closing num (")(
                 pSubItem->GetClosingNum())("). (finalReceipt block).")
@@ -592,7 +592,7 @@ auto Item::VerifyBalanceStatement(
     // inbox and outbox on my side:
     if ((nInboxItemCount != THE_INBOX.GetTransactionCount()) ||
         (nOutboxItemCount != THE_OUTBOX.GetTransactionCount())) {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": Inbox or Outbox mismatch in expected transaction count."
             " --- THE_INBOX count: ")(THE_INBOX.GetTransactionCount())(
             " --- THE_OUTBOX count: ")(THE_OUTBOX.GetTransactionCount())(
@@ -632,12 +632,12 @@ auto Item::VerifyBalanceStatement(
     const bool bIWasFound = context.VerifyIssuedNumber(targetNumber, removed);
 
     if (!bIWasFound) {
-        LogNormal(OT_METHOD)(__func__)(": Transaction number ")(
+        LogConsole()(OT_METHOD)(__func__)(": Transaction number ")(
             targetNumber)(" doesn't appear on Nym's issued list:")
             .Flush();
 
         for (const auto& number : context.IssuedNumbers()) {
-            LogNormal("    ")(number).Flush();
+            LogConsole()("    ")(number).Flush();
         }
 
         return false;
@@ -674,7 +674,7 @@ auto Item::VerifyBalanceStatement(
         case transactionType::cancelCronItem:
         case transactionType::exchangeBasket: {
             removed.insert(targetNumber);
-            LogDetail(OT_METHOD)(__func__)(": Transaction number: ")(
+            LogDetail()(OT_METHOD)(__func__)(": Transaction number: ")(
                 targetNumber)(" from TARGET_TRANSACTION "
                               "is being closed.")
                 .Flush();
@@ -685,13 +685,14 @@ auto Item::VerifyBalanceStatement(
         case transactionType::smartContract: {
             // These, assuming success, do NOT remove an issued number. So no
             // need to anticipate setting up the list that way, to get a match.
-            LogDetail(OT_METHOD)(__func__)(": Transaction number: ")(
+            LogDetail()(OT_METHOD)(__func__)(": Transaction number: ")(
                 targetNumber)(" from TARGET_TRANSACTION "
                               "will remain open.")
                 .Flush();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Wrong target transaction type: ")(
+            LogError()(OT_METHOD)(__func__)(
+                ": Wrong target transaction type: ")(
                 TARGET_TRANSACTION.GetTypeString())(".")
                 .Flush();
         } break;
@@ -701,7 +702,7 @@ auto Item::VerifyBalanceStatement(
     GetAttachment(serialized);
 
     if (3 > serialized->GetLength()) {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": Unable to decode transaction statement...")
             .Flush();
 
@@ -853,7 +854,7 @@ auto Item::GetNumberOfOrigin() -> std::int64_t
                                                   // rejection of a basket
                                                   // receipt in his inbox.
 
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": In this case, you can't calculate the "
                     "origin number, you must set it "
                     "explicitly.")
@@ -939,7 +940,7 @@ void Item::CalculateNumberOfOrigin()
                                               // rejection of a basket receipt
                                               // in his inbox.
 
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": In this case, you can't calculate the "
                 "origin number, you must set it explicitly.")
                 .Flush();
@@ -975,7 +976,7 @@ void Item::CalculateNumberOfOrigin()
             GetAttachment(strAttachment);
 
             if (!theCheque->LoadContractFromString(strAttachment))
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": ERROR loading cheque from string: ")(strAttachment)(".")
                     .Flush();
             else
@@ -1039,7 +1040,7 @@ void Item::CalculateNumberOfOrigin()
                   pOriginalItem->GetType()))) {
                 auto strType = String::Factory();
                 pOriginalItem->GetTypeString(strType);
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": ERROR: Wrong item type as 'in "
                     "reference to' string on ")(strType)(" item.")
                     .Flush();
@@ -1454,7 +1455,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         m_lAmount = Amount(xml->getAttributeValue("amount"));
 
-        LogDebug(OT_METHOD)(__func__)(
+        LogDebug()(OT_METHOD)(__func__)(
             ": Loaded transaction Item, transaction num ")(GetTransactionNum())(
             ", In Reference To: ")(GetReferenceToNum())(", type: ")(
             strType)(", status: ")(strStatus)
@@ -1467,7 +1468,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         return 1;
     } else if (!strcmp("note", xml->getNodeName())) {
         if (!Contract::LoadEncodedTextField(xml, m_ascNote)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error in Item::ProcessXMLNode: note field without "
                 "value.")
                 .Flush();
@@ -1477,7 +1478,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         return 1;
     } else if (!strcmp("inReferenceTo", xml->getNodeName())) {
         if (false == Contract::LoadEncodedTextField(xml, m_ascInReferenceTo)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error in Item::ProcessXMLNode: inReferenceTo field "
                 "without value.")
                 .Flush();
@@ -1487,7 +1488,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         return 1;
     } else if (!strcmp("attachment", xml->getNodeName())) {
         if (!Contract::LoadEncodedTextField(xml, m_ascAttachment)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error in Item::ProcessXMLNode: attachment field "
                 "without value.")
                 .Flush();
@@ -1579,7 +1580,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
             AddItem(pItem);  // <======= adding to list.
 
-            LogDebug(OT_METHOD)(__func__)(
+            LogDebug()(OT_METHOD)(__func__)(
                 ": Loaded transactionReport Item, transaction num ")(
                 pItem->GetTransactionNum())(", In Reference To: ")(
                 pItem->GetReferenceToNum())(", type: ")(strType)
@@ -1589,7 +1590,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             //                         strAcctFromID.Get(), strNymID.Get(),
             // strAcctToID.Get(), strNotaryID.Get()
         } else {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Outbox hash in item wrong type (expected "
                 "balanceStatement or atBalanceStatement.")
                 .Flush();

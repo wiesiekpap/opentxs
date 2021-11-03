@@ -5,13 +5,15 @@
 
 // IWYU pragma: no_include "opentxs/rpc/PaymentType.hpp"
 
-#ifndef OPENTXS_RPC_SEND_PAYMENT_HPP
-#define OPENTXS_RPC_SEND_PAYMENT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <string>
+
 #include "opentxs/Types.hpp"
 #include "opentxs/rpc/request/Base.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -85,4 +87,3 @@ private:
 }  // namespace request
 }  // namespace rpc
 }  // namespace opentxs
-#endif

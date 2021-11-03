@@ -3,8 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_TYPES_HPP
-#define OPENTXS_BLOCKCHAIN_TYPES_HPP
+// IWYU pragma: no_include "opentxs/core/Amount.hpp"
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
+
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -13,7 +15,12 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/core/Amount.hpp"
+#include "opentxs/core/Types.hpp"
+
+namespace opentxs
+{
+class Amount;
+}  // namespace opentxs
 
 namespace opentxs
 {
@@ -43,7 +50,10 @@ using UnconfirmedBalance = Amount;
 using Balance = std::pair<ConfirmedBalance, UnconfirmedBalance>;
 }  // namespace blockchain
 
+OPENTXS_EXPORT auto BlockchainToUnit(const blockchain::Type type) noexcept
+    -> core::UnitType;
+OPENTXS_EXPORT auto UnitToBlockchain(const core::UnitType type) noexcept
+    -> blockchain::Type;
 OPENTXS_EXPORT auto print(blockchain::SendResult) noexcept -> std::string;
 OPENTXS_EXPORT auto print(blockchain::Type) noexcept -> std::string;
 }  // namespace opentxs
-#endif

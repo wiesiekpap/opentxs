@@ -24,19 +24,17 @@
 #include "Proto.tpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/crypto/key/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/crypto/Util.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -60,6 +58,8 @@
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/verify/Credential.hpp"
 #include "opentxs/protobuf/verify/PaymentCode.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::PaymentCode>;
 
@@ -74,7 +74,7 @@ const VersionNumber PaymentCode::DefaultVersion{3};
 using ReturnType = implementation::PaymentCode;
 
 auto Factory::PaymentCode(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint8_t version,
     const bool hasBitmessage,
     const ReadView pubkey,
@@ -109,7 +109,7 @@ const std::size_t PaymentCode::pubkey_size_{sizeof(XpubPreimage::key_)};
 const std::size_t PaymentCode::chain_code_size_{sizeof(XpubPreimage::code_)};
 
 PaymentCode::PaymentCode(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint8_t version,
     const bool hasBitmessage,
     const ReadView pubkey,
@@ -180,10 +180,10 @@ auto PaymentCode::AddPrivateKeys(
 {
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     auto pCandidate =
-        api_.Seeds().GetPaymentCode(seed, index, version_, reason);
+        api_.Crypto().Seed().GetPaymentCode(seed, index, version_, reason);
 
     if (false == bool(pCandidate)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to derive private key")
+        LogError()(OT_METHOD)(__func__)(": Failed to derive private key")
             .Flush();
 
         return false;
@@ -192,7 +192,7 @@ auto PaymentCode::AddPrivateKeys(
     const auto& candidate = *pCandidate;
 
     if (0 != pubkey_->Bytes().compare(candidate.PublicKey())) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Derived public key does not match this payment code")
             .Flush();
 
@@ -200,7 +200,7 @@ auto PaymentCode::AddPrivateKeys(
     }
 
     if (0 != chain_code_->Bytes().compare(candidate.Chaincode(reason))) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Derived chain code does not match this payment code")
             .Flush();
 
@@ -336,7 +336,7 @@ auto PaymentCode::Blind(
 
         std::memcpy(out.data(), view.data(), size);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -402,7 +402,7 @@ auto PaymentCode::BlindV3(
             }
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -411,7 +411,7 @@ auto PaymentCode::BlindV3(
 }
 
 auto PaymentCode::calculate_id(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView key,
     const ReadView code) noexcept -> OTNymID
 {
@@ -544,8 +544,8 @@ auto PaymentCode::DecodeNotificationElements(
         }();
 
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-        const auto pKey =
-            api_.Asymmetric().InstantiateSecp256k1Key(reader(A), reason);
+        const auto pKey = api_.Crypto().Asymmetric().InstantiateSecp256k1Key(
+            reader(A), reason);
 
         if (!pKey) {
             throw std::runtime_error{"Failed to instantiate public key"};
@@ -558,7 +558,7 @@ auto PaymentCode::DecodeNotificationElements(
         throw std::runtime_error{"Missing sepc256k1 support"};
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     } catch (const std::exception& e) {
-        LogVerbose(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -668,7 +668,7 @@ auto PaymentCode::GenerateNotificationElements(
 
         return output;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -766,7 +766,7 @@ auto PaymentCode::Incoming(
             }
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -847,7 +847,7 @@ auto PaymentCode::Locator(const AllocateOutput dest, const std::uint8_t version)
             }
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -918,7 +918,7 @@ auto PaymentCode::Outgoing(
             }
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -1119,7 +1119,7 @@ auto PaymentCode::Unblind(
         throw std::runtime_error{"Missing secp256k1 support"};
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -1164,7 +1164,7 @@ auto PaymentCode::UnblindV3(
         throw std::runtime_error{"Missing secp256k1 support"};
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -1291,7 +1291,7 @@ auto PaymentCode::Verify(
                      proto::KEYMODE_PUBLIC,
                      proto::CREDROLE_MASTERKEY,
                      false)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid master credential syntax.")
+        LogError()(OT_METHOD)(__func__)(": Invalid master credential syntax.")
             .Flush();
 
         return false;
@@ -1301,7 +1301,7 @@ auto PaymentCode::Verify(
         (*this == master.masterdata().source().paymentcode());
 
     if (false == sameSource) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Master credential was not derived from this source.")
             .Flush();
 

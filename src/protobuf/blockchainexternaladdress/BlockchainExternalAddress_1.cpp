@@ -5,7 +5,7 @@
 
 #include "opentxs/protobuf/verify/BlockchainExternalAddress.hpp"  // IWYU pragma: associated
 
-#include <iosfwd>
+#include <cstddef>
 #include <string>
 
 #include "opentxs/protobuf/BlockchainEnums.pb.h"

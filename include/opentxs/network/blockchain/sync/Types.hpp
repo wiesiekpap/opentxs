@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_NETWORK_BLOCKCHAIN_SYNC_TYPES_HPP
-#define OPENTXS_NETWORK_BLOCKCHAIN_SYNC_TYPES_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -34,4 +33,3 @@ constexpr auto value(network::blockchain::sync::MessageType type) noexcept
     return static_cast<network::blockchain::sync::TypeEnum>(type);
 }
 }  // namespace opentxs
-#endif

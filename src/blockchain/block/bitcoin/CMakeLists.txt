@@ -43,6 +43,9 @@ set(cxx-install-headers
 target_link_libraries(
   opentxs-blockchain-block-bitcoin PRIVATE Boost::headers opentxs::messages
 )
+target_include_directories(
+  opentxs-blockchain-block-bitcoin SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-blockchain-block-bitcoin PRIVATE ${cxx-install-headers})
 target_sources(
   opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-block-bitcoin>

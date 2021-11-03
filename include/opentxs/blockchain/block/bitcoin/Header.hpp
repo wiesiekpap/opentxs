@@ -3,13 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_HEADER_HPP
-#define OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_HEADER_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
@@ -44,4 +44,3 @@ private:
 }  // namespace block
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

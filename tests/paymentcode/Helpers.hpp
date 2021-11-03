@@ -14,16 +14,15 @@
 #include <string_view>
 
 #include "Basic.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -35,17 +34,18 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -57,24 +57,24 @@ struct PaymentCodeFixture {
 
     auto blinding_key_public() -> const ot::crypto::key::EllipticCurve&;
     auto blinding_key_secret(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const ot::blockchain::Type chain,
         const ot::PasswordPrompt& reason)
         -> const ot::crypto::key::EllipticCurve&;
     auto blinding_key_secret(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const std::string& privateKey,
         const ot::PasswordPrompt& reason)
         -> const ot::crypto::key::EllipticCurve&;
     auto payment_code_public(
-        const ot::api::Core& api,
+        const ot::api::Session& api,
         const std::string& base58) -> const ot::PaymentCode&;
     auto payment_code_secret(
-        const ot::api::Core& api,
+        const ot::api::Session& api,
         const std::uint8_t version,
         const ot::PasswordPrompt& reason) -> const ot::PaymentCode&;
     auto seed(
-        const ot::api::Core& api,
+        const ot::api::Session& api,
         const std::string_view wordList,
         const ot::PasswordPrompt& reason) -> const std::string&;
 
@@ -90,7 +90,7 @@ private:
     std::unique_ptr<const ot::crypto::key::EllipticCurve> blind_key_public_{};
 
     auto bip44_path(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const ot::blockchain::Type chain,
         ot::AllocateOutput destination) const -> bool;
 };
@@ -101,7 +101,7 @@ public:
     static PaymentCodeFixture user_1_;
     static PaymentCodeFixture user_2_;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;
     const std::string& alice_seed_;
     const std::string& bob_seed_;

@@ -14,11 +14,11 @@
 #include <vector>
 
 #include "internal/network/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/DhtConfig.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::OpenDHT::"
 
@@ -120,7 +120,7 @@ auto OpenDHT::Insert(
         if (false == bool(pValue)) { return; }
 
         if (value.size() > dht::MAX_VALUE_SIZE) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error: data size exceeds DHT limits.")
                 .Flush();
             return;

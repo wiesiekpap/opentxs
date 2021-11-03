@@ -9,12 +9,12 @@
 #include <string>
 
 #include "Helpers.hpp"
-#include "internal/api/client/Client.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
 #include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
@@ -25,6 +25,7 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
 
@@ -99,7 +100,7 @@ TEST_F(Test_BlockchainActivity, init)
 TEST_F(Test_BlockchainActivity, setup)
 {
     const auto& account =
-        api_.Blockchain().HDSubaccount(nym_1_id(), account_1_id());
+        api_.Crypto().Blockchain().HDSubaccount(nym_1_id(), account_1_id());
     const auto indexOne = account.Reserve(Subchain::External, reason_);
     const auto indexTwo = account.Reserve(Subchain::External, reason_);
     const auto indexThree = account.Reserve(Subchain::External, reason_);
@@ -123,13 +124,13 @@ TEST_F(Test_BlockchainActivity, setup)
     const auto& keyFour =
         account.BalanceElement(Subchain::External, fourth_index_);
 
-    EXPECT_TRUE(api_.Blockchain().AssignContact(
+    EXPECT_TRUE(api_.Crypto().Blockchain().AssignContact(
         nym_1_id(),
         account_1_id(),
         Subchain::External,
         first_index_,
         contact_5_id()));
-    EXPECT_TRUE(api_.Blockchain().AssignContact(
+    EXPECT_TRUE(api_.Crypto().Blockchain().AssignContact(
         nym_1_id(),
         account_1_id(),
         Subchain::External,
@@ -145,9 +146,9 @@ TEST_F(Test_BlockchainActivity, setup)
     txid_1_ = tx1->ID().asHex();
     txid_2_ = tx2->ID().asHex();
 
-    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
+    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx1, reason_));
-    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
+    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx2, reason_));
 
     auto bytes = ot::Space{};

@@ -14,12 +14,24 @@
 #include "internal/api/client/Client.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/ui/UI.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "ui/base/Items.hpp"
 #include "ui/base/Widget.hpp"
 
 #define LIST_METHOD "opentxs::ui::implementation::List::"
+
+namespace opentxs
+{
+namespace api
+{
+namespace session
+{
+class Client;
+}  // namespace session
+}  // namespace api
+}  // namespace opentxs
 
 namespace opentxs::ui::implementation
 {
@@ -47,7 +59,7 @@ public:
             add_items(extract_custom<ChildDefinitions>(data, 0));
         }
     }
-    auto API() const noexcept -> const api::Core& final { return api_; }
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto First() const noexcept -> SharedPimpl<RowInterface> override
     {
         auto lock = rLock{recursive_lock_};
@@ -264,7 +276,7 @@ protected:
 
     // NOTE lists that are also rows call this constructor
     List(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const typename PrimaryID::interface_type& primaryID,
         const Identifier& widgetID,
         const bool reverseSort,
@@ -293,7 +305,7 @@ protected:
     }
     // NOTE basic lists (not subnodes) call this constructor
     List(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const typename PrimaryID::interface_type& primaryID,
         const SimpleCallback& cb,
         const bool reverseSort) noexcept

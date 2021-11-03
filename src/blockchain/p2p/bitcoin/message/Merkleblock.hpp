@@ -21,7 +21,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -64,14 +64,14 @@ public:
     }
 
     Merkleblock(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const Data& block_header,
         const TxnCount txn_count,
         const std::vector<OTData>& hashes,
         const std::vector<std::byte>& flags) noexcept;
     Merkleblock(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const Data& block_header,
         const TxnCount txn_count,

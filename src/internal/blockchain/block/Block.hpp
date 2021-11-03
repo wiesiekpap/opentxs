@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
@@ -21,12 +20,13 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -78,7 +78,7 @@ struct Block : virtual public block::Block {
 };
 
 auto SetIntersection(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView txid,
     const ParsedPatterns& patterns,
     const std::vector<Space>& compare) noexcept -> Matches;
@@ -87,7 +87,7 @@ auto SetIntersection(
 namespace opentxs::factory
 {
 auto GenesisBlockHeader(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::block::Header>;
 }  // namespace opentxs::factory

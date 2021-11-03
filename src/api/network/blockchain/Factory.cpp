@@ -15,8 +15,8 @@ namespace opentxs::factory
 using ReturnType = api::network::BlockchainImp;
 
 auto BlockchainNetworkAPI(
-    const api::Core& api,
-    const api::Endpoints& endpoints,
+    const api::Session& api,
+    const api::session::Endpoints& endpoints,
     const opentxs::network::zeromq::Context& zmq) noexcept
     -> api::network::Blockchain::Imp*
 {

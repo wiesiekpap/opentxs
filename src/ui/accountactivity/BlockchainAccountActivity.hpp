@@ -20,16 +20,16 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -38,6 +38,7 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/ui/AccountActivity.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "ui/accountactivity/AccountActivity.hpp"
 #include "ui/base/List.hpp"
@@ -49,10 +50,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -145,14 +146,14 @@ public:
     }
     auto Unit() const noexcept -> core::UnitType final
     {
-        return Translate(chain_);
+        return BlockchainToUnit(chain_);
     }
     auto ValidateAddress(const std::string& text) const noexcept -> bool final;
     auto ValidateAmount(const std::string& text) const noexcept
         -> std::string final;
 
     BlockchainAccountActivity(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const blockchain::Type chain,
         const identifier::Nym& nymID,
         const Identifier& accountID,

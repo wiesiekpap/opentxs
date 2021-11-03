@@ -7,8 +7,8 @@
 #include <string>
 
 #include "Helpers.hpp"
-#include "opentxs/api/Options.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/util/Options.hpp"
 
 constexpr auto bind_ipv4_1_{"127.0.0.1"};
 constexpr auto bind_ipv4_2_{"0.0.0.0"};

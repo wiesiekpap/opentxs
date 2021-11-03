@@ -20,16 +20,16 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace be = boost::endian;
 
@@ -60,7 +60,7 @@ auto BitcoinScript(
     auto it = reinterpret_cast<const std::byte*>(bytes.data());
     auto read = std::size_t{0};
     const auto target = bytes.size();
-    const auto& logger = mute ? LogTrace : LogVerbose;
+    const auto& logger = mute ? LogTrace() : LogVerbose();
 
     try {
         while (read < target) {
@@ -184,7 +184,7 @@ auto BitcoinScript(
         return std::make_unique<ReturnType>(
             chain, role, std::move(elements), bytes.size());
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogVerbose()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -197,14 +197,14 @@ auto BitcoinScript(
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>
 {
     if (false == ReturnType::validate(elements)) {
-        LogVerbose("opentxs::factory::")(__func__)(": Invalid elements")
+        LogVerbose()("opentxs::factory::")(__func__)(": Invalid elements")
             .Flush();
 
         return {};
     }
 
     if ((0 == elements.size()) && (ReturnType::Position::Output == role)) {
-        LogVerbose("opentxs::factory::")(__func__)(": Empty input").Flush();
+        LogVerbose()("opentxs::factory::")(__func__)(": Empty input").Flush();
 
         return {};
     }
@@ -280,13 +280,14 @@ auto Script::bytes(const ScriptElements& script) noexcept -> std::size_t
         });
 }
 
-auto Script::CalculateHash160(const api::Core& api, const AllocateOutput output)
-    const noexcept -> bool
+auto Script::CalculateHash160(
+    const api::Session& api,
+    const AllocateOutput output) const noexcept -> bool
 {
     auto preimage = Space{};
 
     if (false == Serialize(writer(preimage))) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize script").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize script").Flush();
 
         return false;
     }
@@ -628,7 +629,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     if (0 == elements_.size()) {
-        LogTrace(OT_METHOD)(__func__)(": skipping empty script").Flush();
+        LogTrace()(OT_METHOD)(__func__)(": skipping empty script").Flush();
 
         return {};
     }
@@ -637,7 +638,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
 
     switch (style) {
         case filter::Type::ES: {
-            LogTrace(OT_METHOD)(__func__)(": processing data pushes").Flush();
+            LogTrace()(OT_METHOD)(__func__)(": processing data pushes").Flush();
 
             for (const auto& element : *this) {
                 if (is_data_push(element)) {
@@ -678,20 +679,20 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
         case filter::Type::Basic_BCHVariant:
         default: {
             if (OP::RETURN == elements_.at(0).opcode_) {
-                LogTrace(OT_METHOD)(__func__)(": skipping null data script")
+                LogTrace()(OT_METHOD)(__func__)(": skipping null data script")
                     .Flush();
 
                 return {};
             }
 
-            LogTrace(OT_METHOD)(__func__)(": processing serialized script")
+            LogTrace()(OT_METHOD)(__func__)(": processing serialized script")
                 .Flush();
             auto& script = output.emplace_back();
             Serialize(writer(script));
         }
     }
 
-    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
+    LogTrace()(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -699,8 +700,8 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
 }
 
 auto Script::ExtractPatterns(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain) const noexcept
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain) const noexcept
     -> std::vector<PatternID>
 {
     auto output = std::vector<PatternID>{};
@@ -858,7 +859,7 @@ auto Script::last_opcode(const ScriptElements& script) noexcept -> OP
     return script.crbegin()->opcode_;
 }
 
-auto Script::LikelyPubkeyHashes(const api::Core& api) const noexcept
+auto Script::LikelyPubkeyHashes(const api::Session& api) const noexcept
     -> std::vector<OTData>
 {
     auto output = std::vector<OTData>{};
@@ -1111,7 +1112,7 @@ auto Script::ScriptHash() const noexcept -> std::optional<ReadView>
 auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -1123,7 +1124,7 @@ auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
+        LogError()(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return false;

@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "storage/drivers/multiplex/Multiplex.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::storage::driver::Multiplex::"
 
@@ -15,6 +15,7 @@ namespace opentxs::storage::driver
 {
 auto Multiplex::init_lmdb(std::unique_ptr<storage::Plugin>& plugin) -> void
 {
-    LogOutput(OT_METHOD)(__func__)(": Sqlite3 driver not compiled in.").Flush();
+    LogError()(OT_METHOD)(__func__)(": Sqlite3 driver not compiled in.")
+        .Flush();
 }
 }  // namespace opentxs::storage::driver

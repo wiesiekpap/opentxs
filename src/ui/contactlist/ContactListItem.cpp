@@ -12,9 +12,9 @@
 #include <utility>
 
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 //#define OT_METHOD "opentxs::ui::implementation::ContactListItem::"
 
@@ -22,7 +22,7 @@ namespace opentxs::factory
 {
 auto ContactListItem(
     const ui::implementation::ContactListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactListRowID& rowID,
     const ui::implementation::ContactListSortKey& key) noexcept
     -> std::shared_ptr<ui::implementation::ContactListRowInternal>
@@ -37,7 +37,7 @@ namespace opentxs::ui::implementation
 {
 ContactListItem::ContactListItem(
     const ContactListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ContactListRowID& rowID,
     const ContactListSortKey& key) noexcept
     : ContactListItemRow(parent, api, rowID, true)

@@ -21,13 +21,14 @@
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
 #include "opentxs/protobuf/ConsensusEnums.pb.h"
 #include "opentxs/protobuf/Context.pb.h"
+#include "opentxs/util/Numbers.hpp"
 #include "otx/consensus/Base.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -82,12 +83,12 @@ public:
     }
 
     ClientContext(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& local,
         const Nym_p& remote,
         const identifier::Server& server);
     ClientContext(
-        const api::Core& api,
+        const api::Session& api,
         const proto::Context& serialized,
         const Nym_p& local,
         const Nym_p& remote,

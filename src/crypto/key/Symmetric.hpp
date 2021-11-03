@@ -14,20 +14,25 @@
 #include <string>
 
 #include "Proto.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/crypto/key/Factory.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
+namespace api
+{
+class Session;
+}  // namespace api
+
 namespace crypto
 {
 class SymmetricProvider;
@@ -46,7 +51,7 @@ class Symmetric final : virtual public key::Symmetric
 public:
     operator bool() const final { return true; }
 
-    auto api() const -> const api::Core& final { return api_; }
+    auto api() const -> const api::Session& final { return api_; }
 
     auto Decrypt(
         const proto::Ciphertext& ciphertext,
@@ -81,13 +86,13 @@ public:
     auto ChangePassword(const PasswordPrompt& reason, const Secret& newPassword)
         -> bool final;
 
-    Symmetric(const api::Core& api, const crypto::SymmetricProvider& engine);
+    Symmetric(const api::Session& api, const crypto::SymmetricProvider& engine);
     Symmetric(
-        const api::Core& api,
+        const api::Session& api,
         const crypto::SymmetricProvider& engine,
         const proto::SymmetricKey serialized);
     Symmetric(
-        const api::Core& api,
+        const api::Session& api,
         const crypto::SymmetricProvider& engine,
         const Secret& seed,
         const ReadView salt,
@@ -103,13 +108,13 @@ public:
 private:
     friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
         SymmetricKey(
-            const api::Core&,
+            const api::Session&,
             const crypto::SymmetricProvider&,
             const opentxs::PasswordPrompt&,
             const crypto::key::symmetric::Algorithm) noexcept;
     friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
         SymmetricKey(
-            const api::Core&,
+            const api::Session&,
             const crypto::SymmetricProvider&,
             const Secret&,
             const std::uint64_t,
@@ -118,7 +123,7 @@ private:
             const crypto::key::symmetric::Source) noexcept;
     friend std::unique_ptr<crypto::key::Symmetric> opentxs::factory::
         SymmetricKey(
-            const api::Core&,
+            const api::Session&,
             const crypto::SymmetricProvider&,
             const Secret&,
             const opentxs::PasswordPrompt&) noexcept;
@@ -126,7 +131,7 @@ private:
 
     static constexpr auto default_version_ = VersionNumber{1u};
 
-    const api::Core& api_;
+    const api::Session& api_;
     /// The library providing the underlying crypto algorithms
     const crypto::SymmetricProvider& engine_;
     const VersionNumber version_;
@@ -150,7 +155,7 @@ private:
     static auto Allocate(const std::size_t size, String& container) -> bool;
     static auto Allocate(const std::size_t size, Data& container) -> bool;
     static auto Allocate(
-        const api::Core& api,
+        const api::Session& api,
         const std::size_t size,
         Space& container,
         const bool random) -> bool;
@@ -189,7 +194,7 @@ private:
     auto unlock(const Lock& lock, const PasswordPrompt& reason) const -> bool;
 
     Symmetric(
-        const api::Core& api,
+        const api::Session& api,
         const crypto::SymmetricProvider& engine,
         const VersionNumber version,
         const crypto::key::symmetric::Source type,

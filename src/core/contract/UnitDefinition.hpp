@@ -12,7 +12,6 @@
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Account.hpp"
@@ -20,14 +19,17 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -50,7 +52,7 @@ public:
     static const std::map<VersionNumber, VersionNumber>
         unit_of_account_version_map_;
 
-    static auto GetID(const api::Core& api, const SerializedType& contract)
+    static auto GetID(const api::Session& api, const SerializedType& contract)
         -> OTIdentifier;
 
     auto AddAccountRecord(
@@ -126,7 +128,7 @@ protected:
         -> bool override;
 
     Unit(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -135,7 +137,7 @@ protected:
         const core::UnitType unitOfAccount,
         const VersionNumber version);
     Unit(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const SerializedType serialized);
     Unit(const Unit&);

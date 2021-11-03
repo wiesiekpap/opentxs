@@ -17,18 +17,20 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -82,11 +84,11 @@ public:
     void SetChecksum(const std::size_t payload, OTData&& checksum) noexcept;
 
     Header(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const bitcoin::Command command) noexcept;
     Header(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const bitcoin::Command command,
         const std::size_t payload,

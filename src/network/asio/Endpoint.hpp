@@ -8,8 +8,8 @@
 #include <boost/asio.hpp>
 #include <cstring>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace asio = boost::asio;
 namespace ip = asio::ip;

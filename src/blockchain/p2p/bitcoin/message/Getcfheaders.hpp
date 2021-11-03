@@ -20,7 +20,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -48,13 +48,13 @@ public:
     auto Type() const noexcept -> filter::Type final { return type_; }
 
     Getcfheaders(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const filter::Type type,
         const block::Height start,
         const filter::Hash& stop) noexcept;
     Getcfheaders(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const filter::Type type,
         const block::Height start,

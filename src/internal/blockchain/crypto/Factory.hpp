@@ -18,11 +18,15 @@ namespace api
 {
 namespace client
 {
-class Blockchain;
 class Contacts;
 }  // namespace client
 
-class Core;
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -58,7 +62,7 @@ class PaymentCode;
 namespace opentxs::factory
 {
 auto BlockchainAccountKeys(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contacts,
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
@@ -68,19 +72,19 @@ auto BlockchainAccountKeys(
     const std::set<OTIdentifier>& paymentCodeAccounts) noexcept
     -> std::unique_ptr<blockchain::crypto::Account>;
 auto BlockchainHDSubaccount(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::crypto::Account& parent,
     const proto::HDPath& path,
     const blockchain::crypto::HDProtocol standard,
     const PasswordPrompt& reason,
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>;
 auto BlockchainHDSubaccount(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::crypto::Account& parent,
     const proto::HDAccount& serialized,
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>;
 auto BlockchainPCSubaccount(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const opentxs::PaymentCode& local,
@@ -91,16 +95,16 @@ auto BlockchainPCSubaccount(
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainPCSubaccount(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const proto::Bip47Channel& serialized,
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainWalletKeys(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contacts,
-    const api::client::Blockchain& parent,
+    const api::crypto::Blockchain& parent,
     const blockchain::crypto::AccountIndex& index,
     const blockchain::Type chain) noexcept
     -> std::unique_ptr<blockchain::crypto::Wallet>;

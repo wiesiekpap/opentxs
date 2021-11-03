@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_ACCOUNT_HPP
-#define OPENTXS_CORE_ACCOUNT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -13,8 +12,6 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Exclusive.hpp"
-#include "opentxs/Shared.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
@@ -23,10 +20,13 @@
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
+{
+namespace session
 {
 namespace implementation
 {
@@ -35,13 +35,11 @@ class Wallet;
 
 namespace server
 {
-namespace implementation
-{
 class Wallet;
-}  // namespace implementation
 }  // namespace server
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -72,9 +70,6 @@ class Tag;
 
 namespace opentxs
 {
-using ExclusiveAccount = Exclusive<Account>;
-using SharedAccount = Shared<Account>;
-
 class OPENTXS_EXPORT Account : public OTTransactionType
 {
 public:
@@ -95,7 +90,7 @@ public:
         err_acct
     };
 
-    static auto _GetTypeString(AccountType accountType) -> char const*;
+    static auto GetTypeString(AccountType accountType) -> char const*;
 
     auto Alias() const -> std::string;
     auto ConsensusHash(
@@ -111,7 +106,7 @@ public:
     }
     auto GetTypeString() const -> char const*
     {
-        return _GetTypeString(acctType_);
+        return GetTypeString(acctType_);
     }
     auto IsAllowedToGoNegative() const -> bool;
     auto IsInternalServerAcct() const -> bool;
@@ -155,8 +150,8 @@ public:
 
 private:
     friend OTWallet;
-    friend opentxs::api::implementation::Wallet;
-    friend opentxs::api::server::implementation::Wallet;
+    friend opentxs::api::session::implementation::Wallet;
+    friend opentxs::api::session::server::Wallet;
 
     AccountType acctType_{err_acct};
     // These are all the variables from the account file itself.
@@ -178,7 +173,7 @@ private:
     std::string alias_;
 
     static auto GenerateNewAccount(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& nymID,
         const identifier::Server& notaryID,
         const identity::Nym& serverNym,
@@ -190,7 +185,7 @@ private:
     // Let's say you don't have or know the NymID, and you just want to load
     // the damn thing up. Then call this function. It will set nymID for you.
     static auto LoadExistingAccount(
-        const api::Core& api,
+        const api::Session& api,
         const Identifier& accountId,
         const identifier::Server& notaryID) -> Account*;
 
@@ -230,22 +225,21 @@ private:
     void UpdateContents(const PasswordPrompt& reason) override;
 
     Account(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& nymID,
         const Identifier& accountId,
         const identifier::Server& notaryID,
         const String& name);
     Account(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& nymID,
         const Identifier& accountId,
         const identifier::Server& notaryID);
     Account(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& nymID,
         const identifier::Server& notaryID);
-    Account(const api::Core& api);
+    Account(const api::Session& api);
     Account() = delete;
 };
 }  // namespace opentxs
-#endif

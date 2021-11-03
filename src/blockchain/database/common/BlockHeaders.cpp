@@ -16,12 +16,11 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "blockchain/database/common/Bulk.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
@@ -80,7 +79,7 @@ auto BlockHeader::Store(
 
     if (tx.Finalize(true)) { return true; }
 
-    LogOutput(OT_METHOD)(__func__)(": Database update error").Flush();
+    LogError()(OT_METHOD)(__func__)(": Database update error").Flush();
 
     return false;
 }
@@ -101,7 +100,7 @@ auto BlockHeader::Store(const UpdatedHeader& headers) const noexcept -> bool
 
     if (tx.Finalize(true)) { return true; }
 
-    LogOutput(OT_METHOD)(__func__)(": Database update error").Flush();
+    LogError()(OT_METHOD)(__func__)(": Database update error").Flush();
 
     return false;
 }
@@ -143,7 +142,7 @@ auto BlockHeader::store(
                 lmdb_.Store(table_, hash.Bytes(), tsv(index), tx);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Failed to update index for block header ")(hash.asHex())
                     .Flush();
 
@@ -161,7 +160,7 @@ auto BlockHeader::store(
 
         return proto::write(proto, preallocated(bytes, view.data()));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }

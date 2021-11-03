@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CRON_OTCRON_HPP
-#define OPENTXS_CORE_CRON_OTCRON_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -18,24 +17,23 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace server
 {
-namespace implementation
-{
 class Factory;
-}  // namespace implementation
-
-class Manager;
 }  // namespace server
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -164,11 +162,7 @@ public:
         return m_NOTARY_ID;
     }
 
-    inline void SetServerNym(Nym_p pServerNym)
-    {
-        OT_ASSERT(nullptr != pServerNym);
-        m_pServerNym = pServerNym;
-    }
+    void SetServerNym(Nym_p pServerNym);
     inline auto GetServerNym() const -> Nym_p { return m_pServerNym; }
 
     auto LoadCron() -> bool;
@@ -189,7 +183,7 @@ public:
 private:
     using ot_super = Contract;
 
-    friend api::server::implementation::Factory;
+    friend api::session::server::Factory;
 
     // Number of transaction numbers Cron  will grab for itself, when it gets
     // low, before each round.
@@ -216,9 +210,8 @@ private:
     // I'll need this for later.
     Nym_p m_pServerNym{nullptr};
 
-    explicit OTCron(const api::Core& server);
+    explicit OTCron(const api::Session& server);
 
     OTCron() = delete;
 };
 }  // namespace opentxs
-#endif

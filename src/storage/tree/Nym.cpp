@@ -10,9 +10,10 @@
 #include <functional>
 #include <type_traits>
 
-#include "internal/core/Core.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "Proto.hpp"
+#include "internal/contact/Contact.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -32,6 +33,7 @@
 #include "opentxs/protobuf/verify/Purse.hpp"
 #include "opentxs/protobuf/verify/StorageNym.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Bip47Channels.hpp"
 #include "storage/tree/Contexts.hpp"
@@ -66,7 +68,7 @@ void Nym::_save(
     _save(mail_outbox_.get(), lock, mail_outbox_lock_, mail_outbox_root_);
 
     if (nullptr == input) {
-        LogOutput(OT_METHOD)(__func__)(": Null target.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Null target.").Flush();
         OT_FAIL;
     }
 
@@ -75,7 +77,7 @@ void Nym::_save(
     rootLock.unlock();
 
     if (false == save(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Save error.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Save error.").Flush();
         OT_FAIL;
     }
 }
@@ -201,7 +203,7 @@ auto Nym::construct(
         pointer.reset(new T(driver_, root, params...));
 
         if (!pointer) {
-            LogOutput(OT_METHOD)(__func__)(": Unable to instantiate.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unable to instantiate.").Flush();
             OT_FAIL;
         }
     }
@@ -284,7 +286,7 @@ void Nym::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to load nym index file.")
+        LogError()(OT_METHOD)(__func__)(": Failed to load nym index file.")
             .Flush();
         OT_FAIL;
     }
@@ -337,13 +339,12 @@ void Nym::init(const std::string& hash)
     // Fields added in version 4
     for (const auto& it : serialized->blockchainaccountindex()) {
         const auto& id = it.id();
-        auto& accountSet =
-            blockchain_account_types_[core::internal::translate(id)];
+        const auto type = ClaimToUnit(translate(id));
+        auto& accountSet = blockchain_account_types_[type];
 
         for (const auto& accountID : it.list()) {
             accountSet.emplace(accountID);
-            blockchain_account_index_.emplace(
-                accountID, core::internal::translate(id));
+            blockchain_account_index_.emplace(accountID, type);
         }
     }
 
@@ -393,7 +394,8 @@ auto Nym::Load(
 
     if (blockchain_accounts_.end() == it) {
         if (false == checking) {
-            LogOutput(OT_METHOD)(__func__)(": Account does not exist.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Account does not exist.")
+                .Flush();
         }
 
         return false;
@@ -413,7 +415,7 @@ auto Nym::Load(
 
     if (!check_hash(credentials_)) {
         if (false == checking) {
-            LogOutput(OT_METHOD)(__func__)(": Error: nym with id ")(
+            LogError()(OT_METHOD)(__func__)(": Error: nym with id ")(
                 nymid_)(" has no credentials.")
                 .Flush();
         }
@@ -444,7 +446,7 @@ auto Nym::Load(
 
     if (purse_id_.end() == it) {
         if (false == checking) {
-            LogOutput(OT_METHOD)(__func__)(": Purse not found ").Flush();
+            LogError()(OT_METHOD)(__func__)(": Purse not found ").Flush();
         }
 
         return false;
@@ -651,7 +653,7 @@ auto Nym::ProcessedReplyBox() const -> const PeerReplies&
 auto Nym::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL;
     }
 
@@ -670,12 +672,12 @@ void Nym::_save(
     std::string& root)
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL;
     }
 
     if (nullptr == input) {
-        LogOutput(OT_METHOD)(__func__)(": Null target.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Null target.").Flush();
         OT_FAIL;
     }
 
@@ -684,7 +686,7 @@ void Nym::_save(
     rootLock.unlock();
 
     if (false == save(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Save error.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Save error.").Flush();
         OT_FAIL;
     }
 }
@@ -770,7 +772,7 @@ auto Nym::serialize() const -> proto::StorageNym
         const auto& accountSet = it.second;
         auto& index = *serialized.add_blockchainaccountindex();
         index.set_version(BLOCKCHAIN_INDEX_VERSION);
-        index.set_id(core::internal::translate(chainType));
+        index.set_id(translate(UnitToClaim(chainType)));
 
         for (const auto& accountID : accountSet) { index.add_list(accountID); }
     }
@@ -812,13 +814,13 @@ auto Nym::Store(const core::UnitType type, const proto::HDAccount& data) -> bool
     const auto& accountID = data.deterministic().common().id();
 
     if (accountID.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid account ID.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid account ID.").Flush();
 
         return false;
     }
 
     if (false == proto::Validate(data, VERBOSE)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid account.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid account.").Flush();
 
         return false;
     }
@@ -836,7 +838,7 @@ auto Nym::Store(const core::UnitType type, const proto::HDAccount& data) -> bool
 
         if (existing->deterministic().common().revision() >
             data.deterministic().common().revision()) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Not saving object with older revision.")
                 .Flush();
         } else {

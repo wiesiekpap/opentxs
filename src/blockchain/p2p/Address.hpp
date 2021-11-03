@@ -11,19 +11,21 @@
 #include <string>
 
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -81,7 +83,7 @@ public:
     }
 
     Address(
-        const api::Core& api,
+        const api::Session& api,
         const VersionNumber version,
         const Protocol protocol,
         const Network network,
@@ -96,7 +98,7 @@ public:
     ~Address() final = default;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     const VersionNumber version_;
     const OTIdentifier id_;
     const Protocol protocol_;
@@ -111,7 +113,7 @@ private:
     std::set<Service> services_;
 
     static auto calculate_id(
-        const api::Core& api,
+        const api::Session& api,
         const VersionNumber version,
         const Protocol protocol,
         const Network network,

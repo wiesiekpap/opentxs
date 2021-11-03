@@ -14,26 +14,28 @@
 
 #include "1_Internal.hpp"
 #include "internal/contact/Contact.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
+#include "opentxs/contact/Attribute.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/protobuf/Contact.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -42,7 +44,7 @@ namespace ottest
 class Test_NymData : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& client_;
+    const ot::api::session::Client& client_;
     ot::OTPasswordPrompt reason_;
     ot::NymData nymData_;
 
@@ -60,7 +62,7 @@ public:
     }
 
     Test_NymData()
-        : client_(ot::Context().StartClient(0))
+        : client_(ot::Context().StartClientSession(0))
         , reason_(client_.Factory().PasswordPrompt(__func__))
         , nymData_(client_.Wallet().mutable_Nym(
               client_.Wallet().Nym(reason_, "testNym")->ID(),
@@ -77,8 +79,8 @@ TEST_F(Test_NymData, AddClaim)
 {
     ot::Claim claim = std::make_tuple(
         std::string(""),
-        ot::contact::internal::translate(ot::contact::SectionType::Contract),
-        ot::contact::internal::translate(ot::contact::ClaimType::USD),
+        ot::translate(ot::contact::SectionType::Contract),
+        ot::translate(ot::contact::ClaimType::USD),
         std::string("claimValue"),
         NULL_START,
         NULL_END,
@@ -97,7 +99,7 @@ TEST_F(Test_NymData, AddContract)
 
     const auto identifier1(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::Manager&>(client_),
+            dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
             ot::contact::SectionType::Contract,
             ot::contact::ClaimType::USD,
@@ -144,7 +146,7 @@ TEST_F(Test_NymData, AddPreferredOTServer)
 {
     const auto identifier(ot::identifier::Server::Factory(
         ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::Manager&>(client_),
+            dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
             ot::contact::SectionType::Communication,
             ot::contact::ClaimType::Opentxs,
@@ -229,8 +231,8 @@ TEST_F(Test_NymData, DeleteClaim)
 {
     ot::Claim claim = std::make_tuple(
         std::string(""),
-        ot::contact::internal::translate(ot::contact::SectionType::Contract),
-        ot::contact::internal::translate(ot::contact::ClaimType::USD),
+        ot::translate(ot::contact::SectionType::Contract),
+        ot::translate(ot::contact::ClaimType::USD),
         std::string("claimValue"),
         NULL_START,
         NULL_END,
@@ -242,7 +244,7 @@ TEST_F(Test_NymData, DeleteClaim)
 
     const auto identifier(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::Manager&>(client_),
+            dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
             ot::contact::SectionType::Contract,
             ot::contact::ClaimType::USD,
@@ -283,7 +285,7 @@ TEST_F(Test_NymData, HaveContract)
 {
     const auto identifier1(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::Manager&>(client_),
+            dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
             ot::contact::SectionType::Contract,
             ot::contact::ClaimType::USD,
@@ -314,7 +316,7 @@ TEST_F(Test_NymData, HaveContract)
 
     const auto identifier2(ot::identifier::UnitDefinition::Factory(
         ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::Manager&>(client_),
+            dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
             ot::contact::SectionType::Contract,
             ot::contact::ClaimType::USD,
@@ -397,7 +399,7 @@ TEST_F(Test_NymData, PreferredOTServer)
 
     const auto identifier(ot::identifier::Server::Factory(
         ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::Manager&>(client_),
+            dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
             ot::contact::SectionType::Communication,
             ot::contact::ClaimType::Opentxs,
@@ -426,7 +428,7 @@ TEST_F(Test_NymData, PrintContactData)
 TEST_F(Test_NymData, SetContactData)
 {
     const ot::ContactData contactData(
-        dynamic_cast<const ot::api::client::Manager&>(client_),
+        dynamic_cast<const ot::api::session::Client&>(client_),
         std::string("contactData"),
         nymData_.Nym().ContactDataVersion(),
         nymData_.Nym().ContactDataVersion(),
@@ -486,8 +488,7 @@ TEST_F(Test_NymData, SocialMediaProfileTypes)
     std::set<ot::proto::ContactItemType> profileTypes =
         ot::proto::AllowedItemTypes().at(ot::proto::ContactSectionVersion(
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::internal::translate(
-                ot::contact::SectionType::Profile)));
+            ot::translate(ot::contact::SectionType::Profile)));
 
     std::set<ot::contact::ClaimType> output;
     std::transform(
@@ -495,7 +496,7 @@ TEST_F(Test_NymData, SocialMediaProfileTypes)
         profileTypes.end(),
         std::inserter(output, output.end()),
         [](ot::proto::ContactItemType itemtype) -> ot::contact::ClaimType {
-            return ot::contact::internal::translate(itemtype);
+            return ot::translate(itemtype);
         });
 
     EXPECT_EQ(output, nymData_.SocialMediaProfileTypes());

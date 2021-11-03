@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_P2P_BITCOIN_HPP
-#define OPENTXS_BLOCKCHAIN_P2P_BITCOIN_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -60,4 +59,3 @@ OPENTXS_EXPORT auto DisplayService(const Service service) noexcept
 }  // namespace p2p
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

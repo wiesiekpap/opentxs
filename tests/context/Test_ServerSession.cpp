@@ -9,7 +9,7 @@
 #include "Basic.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Notary.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 
 namespace ottest
@@ -19,7 +19,7 @@ std::string server_id_{};
 TEST(ServerSession, create)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& server = otx.StartServer(0);
+    const auto& server = otx.StartNotarySession(0);
     server_id_ = server.ID().str();
 
     EXPECT_FALSE(server_id_.empty());
@@ -30,7 +30,7 @@ TEST(ServerSession, create)
 TEST(ServerSession, restart)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& server = otx.StartServer(0);
+    const auto& server = otx.StartNotarySession(0);
 
     EXPECT_EQ(server_id_, server.ID().str());
 

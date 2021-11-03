@@ -14,8 +14,7 @@
 
 #include "opentxs/OT.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::Signals::"
 
@@ -51,7 +50,7 @@ Signals::Signals(const Flag& running)
 void Signals::Block()
 {
 #ifdef _WIN32
-    LogOutput("Signal handling is not supported on Windows").Flush();
+    LogError()("Signal handling is not supported on Windows").Flush();
 #else
     sigset_t allSignals;
     sigfillset(&allSignals);
@@ -62,7 +61,7 @@ void Signals::Block()
 void Signals::handle()
 {
 #ifdef _WIN32
-    LogOutput("Signal handling is not supported on Windows").Flush();
+    LogError()("Signal handling is not supported on Windows").Flush();
 #else
     sigset_t allSignals;
     sigfillset(&allSignals);
@@ -75,7 +74,7 @@ void Signals::handle()
 
             if (shouldBreak) { break; }
         } else {
-            LogOutput(OT_METHOD)(__func__)(": ERROR: Invalid signal received.")
+            LogError()(OT_METHOD)(__func__)(": ERROR: Invalid signal received.")
                 .Flush();
         }
     }
@@ -87,7 +86,7 @@ auto Signals::process(const int signal) -> bool
     auto handler = handler_.find(signal);
 
     if (handler_.end() == handler) {
-        LogOutput(OT_METHOD)(__func__)(": Unhandled signal ")(
+        LogError()(OT_METHOD)(__func__)(": Unhandled signal ")(
             std::to_string(signal))(" received.")
             .Flush();
 

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_OTTRANSACTIONTYPE_HPP
-#define OPENTXS_CORE_OTTRANSACTIONTYPE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -17,12 +16,13 @@
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -719,19 +719,19 @@ protected:
     // OTTransactionType will require
     // both the Account ID and the NotaryID.
     explicit OTTransactionType(
-        const api::Core& core,
+        const api::Session& core,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         originType theOriginType = originType::not_applicable);
     explicit OTTransactionType(
-        const api::Core& core,
+        const api::Session& core,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         std::int64_t lTransactionNum,
         originType theOriginType = originType::not_applicable);
-    explicit OTTransactionType(const api::Core& core);
+    explicit OTTransactionType(const api::Session& core);
 
 private:
     using ot_super = Contract;
@@ -739,4 +739,3 @@ private:
     OTTransactionType() = delete;
 };
 }  // namespace opentxs
-#endif

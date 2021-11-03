@@ -9,8 +9,8 @@
 
 #include <atomic>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Flag.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::Flag>;
 

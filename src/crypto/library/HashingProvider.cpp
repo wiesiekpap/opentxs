@@ -7,9 +7,9 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "opentxs/crypto/library/HashingProvider.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::crypto
 {

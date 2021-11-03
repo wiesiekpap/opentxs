@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CONTACT_CONTACTSECTION_HPP
-#define OPENTXS_CONTACT_CONTACTSECTION_HPP
+#pragma once
 
 // IWYU pragma: no_include "opentxs/contact/SectionType.hpp"
 
@@ -16,15 +15,16 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -47,26 +47,26 @@ public:
         std::map<contact::ClaimType, std::shared_ptr<ContactGroup>>;
 
     ContactSection(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const contact::SectionType section,
         const GroupMap& groups);
     ContactSection(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const contact::SectionType section,
         const std::shared_ptr<ContactItem>& item);
     OPENTXS_NO_EXPORT ContactSection(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const proto::ContactSection& serialized);
     ContactSection(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& nym,
         const VersionNumber parentVersion,
         const ReadView& serialized);
@@ -105,4 +105,3 @@ private:
     auto operator=(ContactSection&&) -> ContactSection& = delete;
 };
 }  // namespace opentxs
-#endif

@@ -15,15 +15,15 @@
 
 #include "2_Factory.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Verification.pb.h"
 #include "opentxs/protobuf/VerificationIdentity.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::identity::wot::verification::implementation::Nym::"
 
@@ -41,7 +41,7 @@ auto Factory::VerificationNym(
 
         return new ReturnType(parent, nym, version);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -61,7 +61,7 @@ auto Factory::VerificationNym(
 
         return new ReturnType(parent, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -132,7 +132,7 @@ auto Nym::AddItem(
         version)};
 
     if (false == bool(pCandidate)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to construct item").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to construct item").Flush();
 
         return false;
     }
@@ -145,7 +145,7 @@ auto Nym::AddItem(const Item::SerializedType item) noexcept -> bool
     auto pCandidate = Child{Factory::VerificationItem(*this, item)};
 
     if (false == bool(pCandidate)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to construct item").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to construct item").Flush();
 
         return false;
     }
@@ -277,7 +277,7 @@ auto Nym::UpgradeItemVersion(
                 proto::VerificationIdentityAllowedVerification().at(nymVersion);
 
             if (itemVersion < min) {
-                LogOutput(OT_METHOD)(__func__)(": Version ")(
+                LogError()(OT_METHOD)(__func__)(": Version ")(
                     itemVersion)(" too old")
                     .Flush();
 
@@ -292,7 +292,7 @@ auto Nym::UpgradeItemVersion(
             }
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": No support for version ")(
+        LogError()(OT_METHOD)(__func__)(": No support for version ")(
             itemVersion)(" items")
             .Flush();
 

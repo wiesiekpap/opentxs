@@ -31,30 +31,30 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -90,27 +90,27 @@ using ParsedTransactions =
     std::pair<ReturnType::TxidIndex, ReturnType::TransactionMap>;
 
 auto parse_header(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const ReadView in,
     ByteIterator& it,
     std::size_t& expectedSize)
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>;
 auto parse_normal_block(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept(false)
     -> std::shared_ptr<blockchain::block::bitcoin::Block>;
 auto parse_pkt_block(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept(false)
     -> std::shared_ptr<blockchain::block::bitcoin::Block>;
 auto parse_transactions(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in,
     const blockchain::block::bitcoin::Header& header,

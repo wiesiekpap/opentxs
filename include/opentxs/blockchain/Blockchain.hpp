@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_BLOCKCHAIN_HPP
-#define OPENTXS_BLOCKCHAIN_BLOCKCHAIN_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -14,17 +13,17 @@
 #include <tuple>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -37,58 +36,58 @@ using Hash = Data;
 using pHash = OTData;
 
 OPENTXS_EXPORT auto BlockHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
 OPENTXS_EXPORT auto DefinedChains() noexcept -> const std::set<Type>&;
 OPENTXS_EXPORT auto DisplayString(const Type type) noexcept -> std::string;
 OPENTXS_EXPORT auto FilterHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
-OPENTXS_EXPORT auto HashToNumber(const api::Core& api, ReadView hex) noexcept
+OPENTXS_EXPORT auto HashToNumber(const api::Session& api, ReadView hex) noexcept
     -> std::string;
 OPENTXS_EXPORT auto HashToNumber(const Hash& hash) noexcept -> std::string;
 OPENTXS_EXPORT auto HasSegwit(const Type type) noexcept -> bool;
 OPENTXS_EXPORT auto IsTestnet(const Type type) noexcept -> bool;
 OPENTXS_EXPORT auto MerkleHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
-OPENTXS_EXPORT auto NumberToHash(const api::Core& api, ReadView hex) noexcept
+OPENTXS_EXPORT auto NumberToHash(const api::Session& api, ReadView hex) noexcept
     -> pHash;
 OPENTXS_EXPORT auto P2PMessageHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
 OPENTXS_EXPORT auto ProofOfWorkHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
 OPENTXS_EXPORT auto PubkeyHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
 OPENTXS_EXPORT auto ScriptHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
 OPENTXS_EXPORT auto ScriptHashSegwit(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
 OPENTXS_EXPORT auto SupportedChains() noexcept -> const std::set<Type>&;
 OPENTXS_EXPORT auto TickerSymbol(const Type type) noexcept -> std::string;
 OPENTXS_EXPORT auto TransactionHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool;
@@ -331,4 +330,3 @@ using pHeader = pHash;
 using SendOutcome = std::pair<SendResult, block::pTxid>;
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

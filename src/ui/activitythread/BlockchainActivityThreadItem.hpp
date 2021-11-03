@@ -21,10 +21,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -50,7 +50,7 @@ class BlockchainActivityThreadItem final : public ActivityThreadItem
 {
 public:
     static auto extract(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         CustomData& custom) noexcept
         -> std::tuple<OTData, opentxs::Amount, std::string, std::string>;
@@ -61,7 +61,7 @@ public:
 
     BlockchainActivityThreadItem(
         const ActivityThreadInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const ActivityThreadRowID& rowID,
         const ActivityThreadSortKey& sortKey,

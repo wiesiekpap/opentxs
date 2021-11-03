@@ -11,7 +11,7 @@
 #include <stdexcept>
 
 #include "display/Definition_imp.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 
 namespace opentxs::display
 {

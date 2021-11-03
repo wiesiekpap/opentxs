@@ -9,21 +9,21 @@
 #include <string>
 #include <utility>
 
-#include "opentxs/protobuf/BailmentReply.pb.h"
+#include "opentxs/protobuf/BailmentReply.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ConnectionInfoReply.pb.h"
+#include "opentxs/protobuf/ConnectionInfoReply.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/NoticeAcknowledgement.pb.h"
-#include "opentxs/protobuf/OutBailmentReply.pb.h"
+#include "opentxs/protobuf/NoticeAcknowledgement.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/OutBailmentReply.pb.h"       // IWYU pragma: keep
 #include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/verify/BailmentReply.hpp"
-#include "opentxs/protobuf/verify/ConnectionInfoReply.hpp"
-#include "opentxs/protobuf/verify/NoticeAcknowledgement.hpp"
-#include "opentxs/protobuf/verify/OutBailmentReply.hpp"
-#include "opentxs/protobuf/verify/Signature.hpp"
+#include "opentxs/protobuf/Signature.pb.h"                  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BailmentReply.hpp"        // IWYU pragma: keep
+#include "opentxs/protobuf/verify/ConnectionInfoReply.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/NoticeAcknowledgement.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/OutBailmentReply.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/Signature.hpp"         // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyPeer.hpp"
 #include "protobuf/Check.hpp"
 

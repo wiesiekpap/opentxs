@@ -10,14 +10,14 @@
 #include <set>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/ListNyms.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "rpc/RPC.hpp"
 
 namespace opentxs::rpc::implementation

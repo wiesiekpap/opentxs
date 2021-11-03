@@ -12,9 +12,9 @@
 #include <tuple>
 #include <utility>
 
+#include "Proto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
@@ -22,6 +22,7 @@
 #include "opentxs/protobuf/verify/Nym.hpp"
 #include "opentxs/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 #include "storage/tree/Nym.hpp"
@@ -61,7 +62,7 @@ void Nyms::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to load nym list index file.")
+        LogError()(OT_METHOD)(__func__)(": Failed to load nym list index file.")
             .Flush();
         abort();
     }
@@ -145,7 +146,7 @@ auto Nyms::nym(const Lock& lock, const std::string& id) const -> storage::Nym*
         node.reset(new storage::Nym(driver_, id, hash, alias));
 
         if (!node) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to instantiate nym.")
+            LogError()(OT_METHOD)(__func__)(": Failed to instantiate nym.")
                 .Flush();
             abort();
         }
@@ -197,7 +198,7 @@ auto Nyms::RelabelThread(const std::string& threadID, const std::string label)
 auto Nyms::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
         abort();
     }
 
@@ -213,12 +214,12 @@ auto Nyms::save(const Lock& lock) const -> bool
 void Nyms::save(storage::Nym* nym, const Lock& lock, const std::string& id)
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
         abort();
     }
 
     if (nullptr == nym) {
-        LogOutput(OT_METHOD)(__func__)(": Null target.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Null target.").Flush();
         abort();
     }
 
@@ -231,7 +232,7 @@ void Nyms::save(storage::Nym* nym, const Lock& lock, const std::string& id)
     if (nym->private_.get()) { local_nyms_.emplace(nym->nymid_); }
 
     if (!save(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Save error.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Save error.").Flush();
         abort();
     }
 }
@@ -273,12 +274,12 @@ void Nyms::UpgradeLocalnym()
         OT_ASSERT(node.checked_.get())
 
         if (node.private_.get()) {
-            LogOutput(OT_METHOD)(__func__)(": Adding nym ")(
+            LogError()(OT_METHOD)(__func__)(": Adding nym ")(
                 id)(" to local nym list.")
                 .Flush();
             local_nyms_.emplace(id);
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Nym ")(id)(" is not local.")
+            LogError()(OT_METHOD)(__func__)(": Nym ")(id)(" is not local.")
                 .Flush();
         }
     }

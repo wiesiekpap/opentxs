@@ -17,14 +17,13 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
@@ -37,12 +36,13 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::DeterministicStateData::"
@@ -50,8 +50,8 @@
 namespace opentxs::blockchain::node::wallet
 {
 DeterministicStateData::DeterministicStateData(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     Accounts& parent,
     const WalletDatabase& db,
@@ -177,7 +177,7 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.Pubkey().value()) {
-                    LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+                    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
                         index)(": P2PK match found for ")(
                         DisplayString(node_.Chain()))(" transaction ")(
                         txid->asHex())(" output ")(i)(" via ")(
@@ -195,7 +195,7 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+                    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
                         index)(": P2PKH match found for ")(
                         DisplayString(node_.Chain()))(" transaction ")(
                         txid->asHex())(" output ")(i)(" via ")(hash->asHex())
@@ -212,7 +212,7 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+                    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
                         index)(": P2WPKH match found for ")(
                         DisplayString(node_.Chain()))(" transaction ")(
                         txid->asHex())(" output ")(i)(" via ")(hash->asHex())
@@ -243,7 +243,7 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.MultisigPubkey(0).value()) {
-                    LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+                    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
                         index)(": ")(m.value())(" of ")(n.value())(
                         " P2MS match found for ")(DisplayString(node_.Chain()))(
                         " transaction ")(txid->asHex())(" output ")(i)(" via ")(

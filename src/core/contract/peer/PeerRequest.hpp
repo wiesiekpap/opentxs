@@ -21,12 +21,13 @@
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace contract
@@ -97,7 +98,7 @@ protected:
         const -> bool final;
 
     Request(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         VersionNumber version,
         const identifier::Nym& recipient,
@@ -105,7 +106,7 @@ protected:
         const PeerRequestType& type,
         const std::string& conditions = {});
     Request(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const SerializedType& serialized,
         const std::string& conditions = {});
@@ -120,7 +121,7 @@ private:
     const OTIdentifier cookie_;
     const PeerRequestType type_;
 
-    static auto GetID(const api::Core& api, const SerializedType& contract)
+    static auto GetID(const api::Session& api, const SerializedType& contract)
         -> OTIdentifier;
     static auto FinalizeContract(
         Request& contract,

@@ -14,14 +14,14 @@
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/RowType.hpp"
@@ -30,10 +30,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -102,7 +102,7 @@ public:
 
     ProfileSection(
         const ProfileInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const ProfileRowID& rowID,
         const ProfileSortKey& key,
         CustomData& custom) noexcept;

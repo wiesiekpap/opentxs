@@ -7,23 +7,17 @@
 
 #include "internal/crypto/library/Pbkdf2.hpp"
 #include "internal/crypto/library/Ripemd160.hpp"
+#include "internal/crypto/library/Scrypt.hpp"
 #include "opentxs/api/crypto/Util.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
-#include "internal/crypto/library/Scrypt.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
 
 namespace opentxs::crypto
 {
-class Sodium : virtual public api::crypto::Util
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-    ,
-               virtual public EcdsaProvider
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
-    ,
+class Sodium : virtual public api::crypto::Util,
+               virtual public EcdsaProvider,
                virtual public HashingProvider,
                virtual public SymmetricProvider,
                virtual public Scrypt,

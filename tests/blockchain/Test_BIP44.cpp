@@ -10,16 +10,16 @@
 #include <string_view>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
@@ -27,7 +27,6 @@
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
@@ -36,7 +35,12 @@
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
 namespace ottest
@@ -54,25 +58,26 @@ protected:
     static constexpr auto count_{1000u};
     static constexpr auto account_id_{"ot26eGtmvBSTQ8Bty9efH2TM2EWdHDw4JLkr"};
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;
     const ot::identifier::Nym& nym_id_;
     const ot::blockchain::crypto::HD& account_;
 
     Test_BIP44()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
         , reason_(api_.Factory().PasswordPrompt(__func__))
         , nym_id_([&]() -> const ot::identifier::Nym& {
             if (seed_id_.empty()) {
                 const auto words =
                     api_.Factory().SecretFromText(GetVectors3().alice_.words_);
                 const auto phrase = api_.Factory().Secret(0);
-                const_cast<std::string&>(seed_id_) = api_.Seeds().ImportSeed(
-                    words,
-                    phrase,
-                    ot::crypto::SeedStyle::BIP39,
-                    ot::crypto::Language::en,
-                    reason_);
+                const_cast<std::string&>(seed_id_) =
+                    api_.Crypto().Seed().ImportSeed(
+                        words,
+                        phrase,
+                        ot::crypto::SeedStyle::BIP39,
+                        ot::crypto::Language::en,
+                        reason_);
             }
 
             OT_ASSERT(0 < seed_id_.size());
@@ -83,7 +88,7 @@ protected:
 
                 OT_ASSERT(nym_);
 
-                api_.Blockchain().NewHDSubaccount(
+                api_.Crypto().Blockchain().NewHDSubaccount(
                     nym_->ID(),
                     ot::blockchain::crypto::HDProtocol::BIP_44,
                     ot::blockchain::Type::UnitTest,
@@ -94,7 +99,8 @@ protected:
 
             return nym_->ID();
         }())
-        , account_(api_.Blockchain()
+        , account_(api_.Crypto()
+                       .Blockchain()
                        .Account(nym_id_, ot::blockchain::Type::UnitTest)
                        .GetHD()
                        .at(0))
@@ -117,7 +123,7 @@ TEST_F(Test_BIP44, generate_expected_keys)
     internal.reserve(count_);
     external.reserve(count_);
     using EcdsaCurve = ot::EcdsaCurve;
-    using Path = ot::api::HDSeed::Path;
+    using Path = std::vector<ot::Bip32Index>;
     const auto MakePath = [&](auto change, auto index) -> Path {
         constexpr auto hard =
             static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED);
@@ -133,7 +139,7 @@ TEST_F(Test_BIP44, generate_expected_keys)
     const auto DeriveKeys =
         [&](auto subchain, auto index, auto& vector) -> bool {
         auto output{true};
-        const auto pKey = api_.Seeds().GetHDKey(
+        const auto pKey = api_.Crypto().Seed().GetHDKey(
             id, EcdsaCurve::secp256k1, MakePath(subchain, index), reason_);
 
         EXPECT_TRUE(pKey);

@@ -35,7 +35,6 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -51,6 +50,7 @@
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/JobCounter.hpp"
 #include "util/Work.hpp"
@@ -59,12 +59,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -93,8 +93,8 @@ public:
     auto Run() noexcept -> bool;
 
     Proposals(
-        const api::Core& api,
-        const api::client::Blockchain& crypto,
+        const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const Type chain) noexcept;

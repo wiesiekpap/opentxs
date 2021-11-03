@@ -14,20 +14,21 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #if OT_BLOCKCHAIN
 #include "ui/accountactivity/BlockchainBalanceItem.hpp"
 #endif  // OT_BLOCKCHAIN
@@ -41,7 +42,7 @@ namespace opentxs::factory
 {
 auto BalanceItem(
     const ui::implementation::AccountActivityInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::AccountActivityRowID& rowID,
     const ui::implementation::AccountActivitySortKey& sortKey,
     ui::implementation::CustomData& custom,
@@ -70,8 +71,8 @@ auto BalanceItem(
             accountID,
             ui::implementation::extract_custom<blockchain::Type>(custom, 3),
             ui::implementation::extract_custom<OTData>(custom, 5),
-            tx.NetBalanceChange(api.Blockchain(), nymID),
-            tx.Memo(api.Blockchain()),
+            tx.NetBalanceChange(api.Crypto().Blockchain(), nymID),
+            tx.Memo(api.Crypto().Blockchain()),
             ui::implementation::extract_custom<std::string>(custom, 4));
     }
 #endif  // OT_BLOCKCHAIN
@@ -79,7 +80,7 @@ auto BalanceItem(
     const auto type =
         ui::implementation::BalanceItem::recover_workflow(custom).type();
 
-    switch (opentxs::api::client::internal::translate(type)) {
+    switch (translate(type)) {
         case api::client::PaymentWorkflowType::OutgoingCheque:
         case api::client::PaymentWorkflowType::IncomingCheque:
         case api::client::PaymentWorkflowType::OutgoingInvoice:
@@ -95,7 +96,7 @@ auto BalanceItem(
         }
         case api::client::PaymentWorkflowType::Error:
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled workflow type (")(
+            LogError()(OT_METHOD)(__func__)(": Unhandled workflow type (")(
                 type)(")")
                 .Flush();
         }
@@ -109,7 +110,7 @@ namespace opentxs::ui::implementation
 {
 BalanceItem::BalanceItem(
     const AccountActivityInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const AccountActivityRowID& rowID,
     const AccountActivitySortKey& sortKey,
     CustomData& custom,
@@ -141,7 +142,7 @@ auto BalanceItem::DisplayAmount() const noexcept -> std::string
 }
 
 auto BalanceItem::extract_contacts(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const proto::PaymentWorkflow& workflow) noexcept -> std::vector<std::string>
 {
     std::vector<std::string> output{};
@@ -158,7 +159,7 @@ auto BalanceItem::extract_contacts(
 auto BalanceItem::extract_type(const proto::PaymentWorkflow& workflow) noexcept
     -> StorageBox
 {
-    switch (opentxs::api::client::internal::translate(workflow.type())) {
+    switch (translate(workflow.type())) {
         case api::client::PaymentWorkflowType::OutgoingCheque: {
 
             return StorageBox::OUTGOINGCHEQUE;

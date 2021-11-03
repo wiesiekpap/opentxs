@@ -12,7 +12,7 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/StorageServers.pb.h"
-#include "opentxs/protobuf/verify/StorageItemHash.hpp"
+#include "opentxs/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyStorage.hpp"
 #include "protobuf/Check.hpp"
 

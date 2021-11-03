@@ -12,12 +12,13 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/Signable.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -47,7 +48,7 @@ public:
 protected:
     using Signatures = std::list<Signature>;
 
-    const api::Core& api_;
+    const api::Session& api_;
     mutable std::mutex lock_;
     const Nym_p nym_;
     const VersionNumber version_;
@@ -76,13 +77,13 @@ protected:
     virtual auto GetID(const Lock& lock) const -> OTIdentifier = 0;
 
     Signable(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const VersionNumber version,
         const std::string& conditions,
         const std::string& alias) noexcept;
     Signable(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const VersionNumber version,
         const std::string& conditions,

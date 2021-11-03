@@ -10,17 +10,18 @@
 
 #include "1_Internal.hpp"
 #include "internal/contact/Contact.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/contact/ContactItem.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace ot = opentxs;
 
@@ -30,9 +31,9 @@ class Test_ContactItem : public ::testing::Test
 {
 public:
     Test_ContactItem()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
         , contactItem_(
-              dynamic_cast<const ot::api::client::Manager&>(api_),
+              dynamic_cast<const ot::api::session::Client&>(api_),
               std::string("testNym"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
@@ -46,14 +47,14 @@ public:
     {
     }
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const ot::ContactItem contactItem_;
 };
 
 TEST_F(Test_ContactItem, first_constructor)
 {
     const ot::ContactItem contactItem1(
-        dynamic_cast<const ot::api::client::Manager&>(api_),
+        dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -67,7 +68,7 @@ TEST_F(Test_ContactItem, first_constructor)
 
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::Manager&>(api_),
+            dynamic_cast<const ot::api::session::Client&>(api_),
             "testContactItemNym",
             ot::contact::SectionType::Identifier,
             ot::contact::ClaimType::Employee,
@@ -91,7 +92,7 @@ TEST_F(Test_ContactItem, first_constructor)
 TEST_F(Test_ContactItem, first_constructor_different_versions)
 {
     const ot::ContactItem contactItem1(
-        dynamic_cast<const ot::api::client::Manager&>(api_),
+        dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
         CONTACT_CONTACT_DATA_VERSION,
@@ -108,15 +109,14 @@ TEST_F(Test_ContactItem, first_constructor_different_versions)
 TEST_F(Test_ContactItem, second_constructor)
 {
     const ot::ContactItem contactItem1(
-        dynamic_cast<const ot::api::client::Manager&>(api_),
+        dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::Claim(
             "",
-            ot::contact::internal::translate(
-                ot::contact::SectionType::Identifier),
-            ot::contact::internal::translate(ot::contact::ClaimType::Employee),
+            ot::translate(ot::contact::SectionType::Identifier),
+            ot::translate(ot::contact::ClaimType::Employee),
             "testValue",
             NULL_START,
             NULL_END,
@@ -124,7 +124,7 @@ TEST_F(Test_ContactItem, second_constructor)
 
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::Manager&>(api_),
+            dynamic_cast<const ot::api::session::Client&>(api_),
             "testContactItemNym",
             ot::contact::SectionType::Identifier,
             ot::contact::ClaimType::Employee,
@@ -170,7 +170,7 @@ TEST_F(Test_ContactItem, operator_equal_true)
 TEST_F(Test_ContactItem, operator_equal_false)
 {
     ot::ContactItem contactItem2(
-        dynamic_cast<const ot::api::client::Manager&>(api_),
+        dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
@@ -191,7 +191,7 @@ TEST_F(Test_ContactItem, public_accessors)
 {
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
-            dynamic_cast<const ot::api::client::Manager&>(api_),
+            dynamic_cast<const ot::api::session::Client&>(api_),
             "testNym",
             ot::contact::SectionType::Identifier,
             ot::contact::ClaimType::Employee,
@@ -265,7 +265,7 @@ TEST_F(Test_ContactItem, Serialize)
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), false));
 
     auto restored1 = ot::ContactItem{
-        dynamic_cast<const ot::api::client::Manager&>(api_),
+        dynamic_cast<const ot::api::session::Client&>(api_),
         "testNym",
         contactItem_.Version(),
         contactItem_.Section(),
@@ -281,7 +281,7 @@ TEST_F(Test_ContactItem, Serialize)
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), true));
 
     auto restored2 = ot::ContactItem{
-        dynamic_cast<const ot::api::client::Manager&>(api_),
+        dynamic_cast<const ot::api::session::Client&>(api_),
         "testNym",
         contactItem_.Version(),
         contactItem_.Section(),

@@ -14,28 +14,30 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
-#include "internal/core/Core.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/contact/Contact.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/core/Amount.hpp"
+#include "opentxs/blockchain/Types.hpp"
+#include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::UnitList::"
@@ -45,7 +47,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto UnitListModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::UnitList>
@@ -59,7 +61,7 @@ auto UnitListModel(
 namespace opentxs::ui::implementation
 {
 UnitList::UnitList(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : UnitListList(api, nymID, cb, false)
@@ -120,9 +122,9 @@ auto UnitList::process_blockchain_balance(const Message& message) noexcept
     const auto& chainFrame = message.Body_at(1);
 
     try {
-        process_unit(Translate(chainFrame.as<blockchain::Type>()));
+        process_unit(BlockchainToUnit(chainFrame.as<blockchain::Type>()));
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid chain").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid chain").Flush();
 
         return;
     }
@@ -132,8 +134,7 @@ auto UnitList::process_blockchain_balance(const Message& message) noexcept
 auto UnitList::process_unit(const UnitListRowID& id) noexcept -> void
 {
     auto custom = CustomData{};
-    add_item(
-        id, proto::TranslateItemType(core::internal::translate(id)), custom);
+    add_item(id, proto::TranslateItemType(translate(UnitToClaim(id))), custom);
 }
 
 #if OT_BLOCKCHAIN
@@ -151,14 +152,18 @@ auto UnitList::setup_listeners(const ListenerDefinitions& definitions) noexcept
 auto UnitList::startup() noexcept -> void
 {
     const auto accounts = api_.Storage().AccountsByOwner(primary_id_);
-    LogDetail(OT_METHOD)(__func__)(": Loading ")(accounts.size())(" accounts.")
+    LogDetail()(OT_METHOD)(__func__)(": Loading ")(accounts.size())(
+        " accounts.")
         .Flush();
 
     for (const auto& id : accounts) { process_account(id); }
 
 #if OT_BLOCKCHAIN
     for (const auto& chain : blockchain::SupportedChains()) {
-        if (0 < api_.Blockchain().SubaccountList(primary_id_, chain).size()) {
+        if (0 < api_.Crypto()
+                    .Blockchain()
+                    .SubaccountList(primary_id_, chain)
+                    .size()) {
             auto out = api_.Network().ZeroMQ().TaggedMessage(
                 WorkType::BlockchainBalance);
             out->AddFrame(chain);

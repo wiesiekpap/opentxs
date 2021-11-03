@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "Helpers.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 
 namespace ottest

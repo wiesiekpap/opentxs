@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CLIENT_OTCLIENT_HPP
-#define OPENTXS_CLIENT_OTCLIENT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -22,7 +21,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace contract
@@ -60,10 +59,9 @@ public:
         const Account* pAccount = nullptr,
         const contract::Unit* pMyUnitDefinition = nullptr) -> std::int32_t;
 
-    explicit OTClient(const api::Core& api);
+    explicit OTClient(const api::Session& api);
 
 protected:
-    const api::Core& api_;
+    const api::Session& api_;
 };
 }  // namespace opentxs
-#endif

@@ -15,24 +15,23 @@
 #include <vector>
 
 #include "internal/api/network/Network.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/ui/Blockchains.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::BlockchainSelection::"
@@ -42,7 +41,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto BlockchainSelectionModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
@@ -57,7 +56,7 @@ auto BlockchainSelectionModel(
 namespace opentxs::ui::implementation
 {
 BlockchainSelection::BlockchainSelection(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
@@ -184,7 +183,7 @@ auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -220,7 +219,7 @@ auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type: ")(
+            LogError()(OT_METHOD)(__func__)(": Unhandled type: ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 

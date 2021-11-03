@@ -17,9 +17,9 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 extern "C" {
 typedef struct MDB_env MDB_env;

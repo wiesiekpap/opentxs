@@ -6,8 +6,8 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "opentxs/Version.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace ot = opentxs;
 

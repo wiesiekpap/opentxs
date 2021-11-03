@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_CRYPTO_HD_HPP
-#define OPENTXS_BLOCKCHAIN_CRYPTO_HD_HPP
+#pragma once
 
 // IWYU pragma: no_include "opentxs/blockchain/crypto/HDProtocol.hpp"
 
@@ -55,4 +54,3 @@ private:
 }  // namespace crypto
 }  // namespace blockchain
 }  // namespace opentxs
-#endif  // OPENTXS_BLOCKCHAIN_CRYPTO_HDCHAIN_HPP

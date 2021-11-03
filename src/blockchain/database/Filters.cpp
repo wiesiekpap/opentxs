@@ -20,16 +20,16 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/database/Database.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Filters::"
@@ -37,7 +37,7 @@
 namespace opentxs::blockchain::database
 {
 Filters::Filters(
-    const api::Core& api,
+    const api::Session& api,
     const common::Database& common,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::Type chain) noexcept
@@ -211,7 +211,7 @@ auto Filters::StoreFilters(
     auto output = common_.StoreFilters(type, headers, filters);
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to save filters").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to save filters").Flush();
 
         return false;
     }
@@ -228,7 +228,7 @@ auto Filters::StoreFilters(
                  .first;
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to set header tip").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to set header tip").Flush();
 
         return false;
     }
@@ -242,7 +242,7 @@ auto Filters::StoreFilters(
                  .first;
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to set filter tip").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to set filter tip").Flush();
 
         return false;
     }

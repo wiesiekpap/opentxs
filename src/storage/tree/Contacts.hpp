@@ -16,11 +16,12 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/protobuf/StorageContacts.pb.h"
+#include "opentxs/util/Numbers.hpp"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs

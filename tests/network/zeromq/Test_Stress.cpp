@@ -11,14 +11,14 @@
 #include <vector>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;

@@ -15,13 +15,13 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Sync::"
@@ -35,7 +35,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 }
 
 Sync::Sync(
-    const api::Core& api,
+    const api::Session& api,
     const common::Database& common,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
@@ -60,12 +60,12 @@ Sync::Sync(
         OT_ASSERT(saved);
     }
 
-    LogVerbose(OT_METHOD)(__func__)(": Sync tip: ")(tip.first).Flush();
+    LogVerbose()(OT_METHOD)(__func__)(": Sync tip: ")(tip.first).Flush();
 
     if (const auto ctip = common_.SyncTip(chain_); tip.first == ctip) {
-        LogVerbose(OT_METHOD)(__func__)(": Database is consistent").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Database is consistent").Flush();
     } else {
-        LogVerbose(OT_METHOD)(__func__)(
+        LogVerbose()(OT_METHOD)(__func__)(
             ": Database inconsistency detected. Storage tip height: ")(ctip)
             .Flush();
     }
@@ -96,7 +96,7 @@ auto Sync::Store(const block::Position& tip, const Items& items) const noexcept
     -> bool
 {
     if (false == common_.StoreSync(chain_, items)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to store sync data").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to store sync data").Flush();
 
         return false;
     }

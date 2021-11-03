@@ -21,23 +21,21 @@
 
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/UnitType.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
-
-namespace server
-{
-class Manager;
-}  // namespace server
+class Client;
+class Notary;
+}  // namespace session
 
 class Context;
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -117,30 +115,30 @@ protected:
     RPCPushCounter& push_;
 
     auto CreateNym(
-        const ot::api::Core& api,
+        const ot::api::Session& api,
         const std::string& name,
         const std::string& seed,
         int index) const noexcept -> std::string;
     auto DepositCheques(
-        const ot::api::client::Manager& api,
-        const ot::api::server::Manager& server,
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
         const std::string& nym) const noexcept -> std::size_t;
-    auto ImportBip39(const ot::api::Core& api, const std::string& words)
+    auto ImportBip39(const ot::api::Session& api, const std::string& words)
         const noexcept -> std::string;
     auto ImportServerContract(
-        const ot::api::server::Manager& from,
-        const ot::api::client::Manager& to) const noexcept -> bool;
+        const ot::api::session::Notary& from,
+        const ot::api::session::Client& to) const noexcept -> bool;
     // TODO modify UIHelpers and put the Counter struct in a non-anonymous
     // namespace so that we can forward declare the type without "declared but
     // not defined" errors
     auto InitAccountActivityCounter(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const std::string& nym,
         const std::string& account,
         void* counter) const noexcept -> void;
     auto IssueUnit(
-        const ot::api::client::Manager& api,
-        const ot::api::server::Manager& server,
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
         const std::string& issuer,
         const std::string& shortname,
         const std::string& name,
@@ -151,46 +149,46 @@ protected:
         std::uint32_t power,
         ot::core::UnitType unitOfAccount) const noexcept -> std::string;
     auto RefreshAccount(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const ot::identifier::Nym& nym,
         const ot::identifier::Server& server) const noexcept -> void;
     auto RefreshAccount(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const std::vector<std::string> nyms,
         const ot::identifier::Server& server) const noexcept -> void;
     auto RegisterAccount(
-        const ot::api::client::Manager& api,
-        const ot::api::server::Manager& server,
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
         const std::string& nym,
         const std::string& unit,
         const std::string& label) const noexcept -> std::string;
     auto RegisterNym(
-        const ot::api::client::Manager& api,
-        const ot::api::server::Manager& server,
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
         const std::string& nym) const noexcept -> bool;
     auto SendCheque(
-        const ot::api::client::Manager& api,
-        const ot::api::server::Manager& server,
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
         const std::string& nym,
         const std::string& account,
         const std::string& contact,
         const std::string& memo,
         Amount amount) const noexcept -> bool;
     auto SendTransfer(
-        const ot::api::client::Manager& api,
-        const ot::api::server::Manager& server,
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
         const std::string& sender,
         const std::string& fromAccount,
         const std::string& toAccount,
         const std::string& memo,
         Amount amount) const noexcept -> bool;
     auto SetIntroductionServer(
-        const ot::api::client::Manager& on,
-        const ot::api::server::Manager& to) const noexcept -> bool;
+        const ot::api::session::Client& on,
+        const ot::api::session::Notary& to) const noexcept -> bool;
     auto StartClient(int index) const noexcept
-        -> const ot::api::client::Manager&;
-    auto StartServer(int index) const noexcept
-        -> const ot::api::server::Manager&;
+        -> const ot::api::session::Client&;
+    auto StartNotarySession(int index) const noexcept
+        -> const ot::api::session::Notary&;
 
     virtual auto Cleanup() noexcept -> void;
 

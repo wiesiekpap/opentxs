@@ -15,13 +15,14 @@
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Base.hpp"
+#include "internal/api/session/Wallet.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/identity/credential/Credential.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -37,13 +38,14 @@
 #include "opentxs/protobuf/Credential.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::identity::credential::implementation::Base::"
 
 namespace opentxs::identity::credential::implementation
 {
 Base::Base(
-    const api::Core& api,
+    const api::Session& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const NymParameters& nymParameters,
@@ -63,7 +65,7 @@ Base::Base(
 }
 
 Base::Base(
-    const api::Core& api,
+    const api::Session& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const proto::Credential& serialized,
@@ -80,11 +82,9 @@ Base::Base(
     , source_(source)
     , nym_id_(source.NymID()->str())
     , master_id_(masterID)
-    , type_(
-          opentxs::identity::credential::internal::translate(serialized.type()))
-    , role_(
-          opentxs::identity::credential::internal::translate(serialized.role()))
-    , mode_(opentxs::crypto::key::internal::translate(serialized.mode()))
+    , type_(translate(serialized.type()))
+    , role_(translate(serialized.role()))
+    , mode_(translate(serialized.mode()))
 {
     if (serialized.nymid() != nym_id_) {
         throw std::runtime_error(
@@ -209,8 +209,8 @@ auto Base::isValid(
     return proto::Validate<proto::Credential>(
         *credential,
         VERBOSE,
-        opentxs::crypto::key::internal::translate(mode_),
-        opentxs::identity::credential::internal::translate(role_),
+        translate(mode_),
+        translate(role_),
         true);  // with signatures
 }
 
@@ -249,7 +249,7 @@ auto Base::Save() const -> bool
     std::shared_ptr<SerializedType> serializedProto;
 
     if (!isValid(lock, serializedProto)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Unable to save serialized credential. Type (")(value(role_))(
             "), version ")(version_)
             .Flush();
@@ -257,10 +257,11 @@ auto Base::Save() const -> bool
         return false;
     }
 
-    const bool bSaved = api_.Wallet().SaveCredential(*serializedProto);
+    const bool bSaved =
+        api_.Wallet().Internal().SaveCredential(*serializedProto);
 
     if (!bSaved) {
-        LogOutput(OT_METHOD)(__func__)(": Error saving credential.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Error saving credential.").Flush();
 
         return false;
     }
@@ -293,10 +294,8 @@ auto Base::serialize(
 {
     auto serializedCredential = std::make_shared<proto::Credential>();
     serializedCredential->set_version(version_);
-    serializedCredential->set_type(
-        opentxs::identity::credential::internal::translate((type_)));
-    serializedCredential->set_role(
-        opentxs::identity::credential::internal::translate(role_));
+    serializedCredential->set_type(translate((type_)));
+    serializedCredential->set_role(translate(role_));
 
     if (identity::CredentialRole::MasterKey != role_) {
         std::unique_ptr<proto::ChildCredentialParameters> parameters;
@@ -309,18 +308,16 @@ auto Base::serialize(
 
     if (asPrivate) {
         if (crypto::key::asymmetric::Mode::Private == mode_) {
-            serializedCredential->set_mode(
-                opentxs::crypto::key::internal::translate(mode_));
+            serializedCredential->set_mode(translate(mode_));
         } else {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Can't serialize a public credential as a private "
                 "credential.")
                 .Flush();
         }
     } else {
         serializedCredential->set_mode(
-            opentxs::crypto::key::internal::translate(
-                crypto::key::asymmetric::Mode::Public));
+            translate(crypto::key::asymmetric::Mode::Public));
     }
 
     if (asSigned) {
@@ -429,7 +426,7 @@ auto Base::Verify(
     const Identifier& masterID,
     const proto::Signature& masterSig) const -> bool
 {
-    LogOutput(OT_METHOD)(__func__)(
+    LogError()(OT_METHOD)(__func__)(
         ": Non-key credentials are not able to verify signatures")
         .Flush();
 
@@ -441,7 +438,7 @@ auto Base::Verify(
 auto Base::verify_internally(const Lock& lock) const -> bool
 {
     if (!CheckID(lock)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Purported ID for this credential does not match its actual "
             "contents.")
             .Flush();
@@ -458,7 +455,7 @@ auto Base::verify_internally(const Lock& lock) const -> bool
     }
 
     if (!GoodMasterSignature) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": This credential hasn't been signed by its master credential.")
             .Flush();
 
@@ -474,7 +471,7 @@ auto Base::verify_master_signature(const Lock& lock) const -> bool
     auto masterSig = MasterSignature();
 
     if (!masterSig) {
-        LogOutput(OT_METHOD)(__func__)(": Missing master signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing master signature.").Flush();
 
         return false;
     }

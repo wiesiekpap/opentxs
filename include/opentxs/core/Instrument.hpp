@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_INSTRUMENT_HPP
-#define OPENTXS_CORE_INSTRUMENT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -16,12 +15,13 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/script/OTScriptable.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 class OPENTXS_EXPORT Instrument : public OTScriptable
@@ -74,9 +74,9 @@ protected:
         m_NotaryID = NOTARY_ID;
     }
 
-    Instrument(const api::Core& core);
+    Instrument(const api::Session& core);
     Instrument(
-        const api::Core& core,
+        const api::Session& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
 
@@ -84,4 +84,3 @@ private:
     Instrument() = delete;
 };
 }  // namespace opentxs
-#endif

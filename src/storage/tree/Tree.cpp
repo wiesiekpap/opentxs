@@ -10,13 +10,13 @@
 #include <functional>
 #include <stdexcept>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/StorageItems.pb.h"
 #include "opentxs/protobuf/verify/StorageItems.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Accounts.hpp"
 #include "storage/tree/Contacts.hpp"
@@ -151,7 +151,7 @@ auto Tree::get_child(
         pointer.reset(new T(driver_, hash, params...));
 
         if (false == bool(pointer)) {
-            LogOutput(OT_METHOD)(__func__)(": Unable to instantiate.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unable to instantiate.").Flush();
 
             OT_FAIL;
         }
@@ -205,7 +205,7 @@ void Tree::init(const std::string& hash)
             OT_ASSERT(master_key_);
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         OT_FAIL
     }
@@ -224,7 +224,7 @@ auto Tree::Load(std::shared_ptr<proto::Ciphertext>& output, const bool checking)
         return true;
     } else {
         if (false == checking) {
-            LogOutput(OT_METHOD)(__func__)(": Master key does not exist.")
+            LogError()(OT_METHOD)(__func__)(": Master key does not exist.")
                 .Flush();
         }
     }
@@ -311,7 +311,7 @@ auto Tree::nyms() const -> storage::Nyms*
 auto Tree::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL
     }
 
@@ -330,12 +330,12 @@ void Tree::save_child(
     std::string& hash) const
 {
     if (false == verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL
     }
 
     if (nullptr == input) {
-        LogOutput(OT_METHOD)(__func__)(": Null target.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Null target.").Flush();
         OT_FAIL
     }
 
@@ -344,7 +344,7 @@ void Tree::save_child(
     rootLock.unlock();
 
     if (false == save(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Save error.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Save error.").Flush();
         OT_FAIL
     }
 }

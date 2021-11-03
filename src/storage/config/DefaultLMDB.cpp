@@ -7,8 +7,6 @@
 #include "1_Internal.hpp"      // IWYU pragma: associated
 #include "storage/Config.hpp"  // IWYU pragma: associated
 
-#include <memory>
-
 namespace opentxs::storage
 {
 const std::string Config::default_plugin_{OT_STORAGE_PRIMARY_PLUGIN_LMDB};

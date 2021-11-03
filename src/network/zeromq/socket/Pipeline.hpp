@@ -18,7 +18,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -48,7 +48,7 @@ public:
     }
 
     Pipeline(
-        const api::Core& api,
+        const api::Session& api,
         const zeromq::Context& context,
         std::function<void(zeromq::Message&)> callback) noexcept;
 

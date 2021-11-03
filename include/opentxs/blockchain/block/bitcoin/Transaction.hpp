@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_TRANSACTION_HPP
-#define OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_TRANSACTION_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -27,9 +26,13 @@ namespace api
 {
 namespace client
 {
-class Blockchain;
 class Contacts;
 }  // namespace client
+
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
 }  // namespace api
 
 namespace blockchain
@@ -67,10 +70,10 @@ namespace bitcoin
 class OPENTXS_EXPORT Transaction
 {
 public:
-    virtual auto AssociatedLocalNyms(const api::client::Blockchain& blockchain)
+    virtual auto AssociatedLocalNyms(const api::crypto::Blockchain& blockchain)
         const noexcept -> std::vector<OTNymID> = 0;
     virtual auto AssociatedRemoteContacts(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         const api::client::Contacts& contacts,
         const identifier::Nym& nym) const noexcept
         -> std::vector<OTIdentifier> = 0;
@@ -85,10 +88,10 @@ public:
     virtual auto IsGeneration() const noexcept -> bool = 0;
     virtual auto Keys() const noexcept -> std::vector<crypto::Key> = 0;
     virtual auto Locktime() const noexcept -> std::uint32_t = 0;
-    virtual auto Memo(const api::client::Blockchain& blockchain) const noexcept
+    virtual auto Memo(const api::crypto::Blockchain& blockchain) const noexcept
         -> std::string = 0;
     virtual auto NetBalanceChange(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount = 0;
     virtual auto Outputs() const noexcept -> const bitcoin::Outputs& = 0;
     virtual auto Print() const noexcept -> std::string = 0;
@@ -115,4 +118,3 @@ private:
 }  // namespace block
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

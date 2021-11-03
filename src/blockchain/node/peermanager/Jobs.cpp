@@ -12,12 +12,10 @@
 #include <utility>
 
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -26,13 +24,15 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD
 // "opentxs::blockchain::node::implementation::PeerManager::Jobs::"
 
 namespace opentxs::blockchain::node::implementation
 {
-PeerManager::Jobs::Jobs(const api::Core& api) noexcept
+PeerManager::Jobs::Jobs(const api::Session& api) noexcept
     : zmq_(api.Network().ZeroMQ())
     , getheaders_(zmq_.PushSocket(zmq::socket::Socket::Direction::Bind))
     , getcfheaders_(zmq_.PublishSocket())

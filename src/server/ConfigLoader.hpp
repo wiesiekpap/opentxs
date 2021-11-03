@@ -9,7 +9,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 class Settings;
 }  // namespace api
 
@@ -20,7 +20,7 @@ namespace opentxs::server
 {
 struct ConfigLoader {
     static auto load(
-        const api::Core& api,
+        const api::Session& api,
         const api::Settings& config,
         String& walletFilename) -> bool;
 };

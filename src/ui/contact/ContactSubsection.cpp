@@ -13,12 +13,12 @@
 #include <type_traits>
 
 #include "internal/contact/Contact.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -28,7 +28,7 @@ namespace opentxs::factory
 {
 auto ContactSubsectionWidget(
     const ui::implementation::ContactSectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactSectionRowID& rowID,
     const ui::implementation::ContactSectionSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -44,7 +44,7 @@ namespace opentxs::ui::implementation
 {
 ContactSubsection::ContactSubsection(
     const ContactSectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ContactSectionRowID& rowID,
     const ContactSectionSortKey& key,
     CustomData& custom) noexcept
@@ -76,8 +76,7 @@ auto ContactSubsection::construct_row(
 auto ContactSubsection::Name(const std::string& lang) const noexcept
     -> std::string
 {
-    return proto::TranslateItemType(
-        contact::internal::translate(row_id_.second), lang);
+    return proto::TranslateItemType(translate(row_id_.second), lang);
 }
 
 auto ContactSubsection::process_group(

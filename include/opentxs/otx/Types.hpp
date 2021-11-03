@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_OTX_TYPES_HPP
-#define OPENTXS_OTX_TYPES_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -48,4 +47,3 @@ constexpr auto value(const otx::ServerRequestType in) noexcept
     return static_cast<std::uint8_t>(in);
 }
 }  // namespace opentxs
-#endif

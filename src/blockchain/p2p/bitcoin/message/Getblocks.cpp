@@ -14,9 +14,8 @@
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Log.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Getblocks::"
 
@@ -24,7 +23,7 @@ namespace opentxs::factory
 {
 // We have a header and a raw payload. Parse it.
 auto BitcoinP2PGetblocks(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion,
     const void* payload,
@@ -34,7 +33,7 @@ auto BitcoinP2PGetblocks(
     using ReturnType = bitcoin::message::Getblocks;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -44,7 +43,7 @@ auto BitcoinP2PGetblocks(
     auto expectedSize = sizeof(raw_item.version_);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for Getblocks 1")
             .Flush();
 
@@ -58,7 +57,7 @@ auto BitcoinP2PGetblocks(
     expectedSize += sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for Getblocks 1")
             .Flush();
 
@@ -72,7 +71,7 @@ auto BitcoinP2PGetblocks(
         it, expectedSize, size, hashCount);
 
     if (!decodedSize) {
-        LogOutput(__func__)(": CompactSize incomplete").Flush();
+        LogError()(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
@@ -82,7 +81,7 @@ auto BitcoinP2PGetblocks(
             expectedSize += sizeof(bitcoin::BlockHeaderHashField);
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__func__)(
+                LogError()("opentxs::factory::")(__func__)(
                     ": Header hash entries incomplete at entry index ")(ii)
                     .Flush();
 
@@ -98,7 +97,7 @@ auto BitcoinP2PGetblocks(
     expectedSize += sizeof(bitcoin::BlockHeaderHashField);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Stop hash entry missing or incomplete")
             .Flush();
 
@@ -116,7 +115,8 @@ auto BitcoinP2PGetblocks(
             header_hashes,
             std::move(stop_hash));
     } catch (...) {
-        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Checksum failure")
+            .Flush();
 
         return nullptr;
     }
@@ -124,7 +124,7 @@ auto BitcoinP2PGetblocks(
 
 // We have all the data members to create the message from scratch (for sending)
 auto BitcoinP2PGetblocks(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const std::uint32_t version,
     const std::vector<OTData>& header_hashes,
@@ -141,7 +141,7 @@ namespace opentxs::blockchain::p2p::bitcoin::message
 {
 // We have all the data members to create the message from scratch (for sending)
 Getblocks::Getblocks(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const bitcoin::ProtocolVersionUnsigned version,
     const std::vector<OTData>& header_hashes,
@@ -157,7 +157,7 @@ Getblocks::Getblocks(
 // We have a header and the data members. They've been parsed, so now we are
 // instantiating the message from them.
 Getblocks::Getblocks(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const bitcoin::ProtocolVersionUnsigned version,
     const std::vector<OTData>& header_hashes,

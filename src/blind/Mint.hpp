@@ -20,13 +20,18 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+namespace session
+{
 class Wallet;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace identity
@@ -67,7 +72,7 @@ public:
     }
 
     void GenerateNewMint(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const std::int32_t nSeries,
         const Time VALID_FROM,
         const Time VALID_TO,
@@ -128,13 +133,13 @@ protected:
     Time m_EXPIRATION;
     OTIdentifier m_CashAccountID;
 
-    Mint(const api::Core& core);
+    Mint(const api::Session& core);
     Mint(
-        const api::Core& core,
+        const api::Session& core,
         const String& strNotaryID,
         const String& strInstrumentDefinitionID);
     Mint(
-        const api::Core& core,
+        const api::Session& core,
         const String& strNotaryID,
         const String& strServerNymID,
         const String& strInstrumentDefinitionID);

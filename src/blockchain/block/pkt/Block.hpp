@@ -14,19 +14,19 @@
 
 #include "1_Internal.hpp"
 #include "blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -57,7 +57,7 @@ public:
     auto GetProofs() const noexcept -> const Proofs& { return proofs_; }
 
     Block(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         std::unique_ptr<const bitcoin::internal::Header> header,
         Proofs&& proofs,

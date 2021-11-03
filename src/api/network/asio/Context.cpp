@@ -14,8 +14,8 @@
 #include <mutex>
 #include <type_traits>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
 
 // #define OT_METHOD "opentxs::api::network::asio::Context::Imp::"
 

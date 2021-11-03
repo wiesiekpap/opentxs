@@ -15,7 +15,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -40,9 +40,9 @@ public:
     auto Internal() noexcept -> internal::Block& final { return *this; }
 
 protected:
-    const api::Core& api_;
+    const api::Session& api_;
 
-    Block(const api::Core& api, const block::Header& header) noexcept;
+    Block(const api::Session& api, const block::Header& header) noexcept;
 
 private:
     const block::Header& base_header_;

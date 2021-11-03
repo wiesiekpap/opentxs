@@ -10,9 +10,11 @@
 #include <memory>
 #include <string>
 
+#include "internal/api/session/Wallet.hpp"
+#include "internal/otx/AccountList.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Account.hpp"
-#include "opentxs/core/AccountList.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -106,7 +108,7 @@ private:
     // Need a way to look up a Basket Account ID using its Contract ID
     BasketsMap contractIdToBasketAccountId_;
     // The list of voucher accounts (see GetVoucherAccount below for details)
-    AccountList voucherAccounts_;
+    otx::internal::AccountList voucherAccounts_;
 
     Transactor() = delete;
 };

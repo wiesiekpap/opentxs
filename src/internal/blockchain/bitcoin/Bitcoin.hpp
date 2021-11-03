@@ -15,17 +15,17 @@
 #include <tuple>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -112,14 +112,14 @@ struct EncodedTransaction {
         -> std::uint32_t;
 
     auto CalculateIDs(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain) noexcept -> bool;
     auto CalculateIDs(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         ReadView bytes) noexcept -> bool;
     static auto Deserialize(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         const ReadView bytes) noexcept(false) -> EncodedTransaction;
 

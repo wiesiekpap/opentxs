@@ -15,6 +15,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/BlockchainSelectionItem.hpp"
 )
 target_link_libraries(opentxs-ui-blockchainselection PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-ui-blockchainselection SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-ui-blockchainselection PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-blockchainselection>)
 add_dependencies(opentxs-ui-blockchainselection generated_code)

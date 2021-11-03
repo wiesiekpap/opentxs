@@ -5,7 +5,9 @@
 
 #include "opentxs/protobuf/verify/ServerContext.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <map>
+#include <set>
 
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/ConsensusEnums.pb.h"

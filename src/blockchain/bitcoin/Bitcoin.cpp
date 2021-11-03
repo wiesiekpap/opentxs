@@ -17,12 +17,12 @@
 
 #include "core/Amount.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace bb = opentxs::blockchain::bitcoin;
 
@@ -52,7 +52,7 @@ auto HasSegwit(
     static const auto blank = std::byte{0x00};
 
     if (blank != *input) {
-        LogInsane(__func__)(": No marker byte").Flush();
+        LogInsane()(__func__)(": No marker byte").Flush();
 
         return output;
     }
@@ -60,7 +60,7 @@ auto HasSegwit(
     auto flag = *(input + 1);
 
     if (blank == flag) {
-        LogInsane(__func__)(": No flag byte").Flush();
+        LogInsane()(__func__)(": No flag byte").Flush();
 
         return output;
     }
@@ -216,14 +216,14 @@ auto EncodedOutput::size() const noexcept -> std::size_t
 }
 
 auto EncodedTransaction::CalculateIDs(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     ReadView bytes) noexcept -> bool
 {
     auto output = TransactionHash(api, chain, bytes, writer(wtxid_));
 
     if (false == output) {
-        LogOutput("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+        LogError()("opentxs::blockchain::bitcoin::EncodedTransaction::")(
             __func__)(": Failed to calculate wtxid")
             .Flush();
 
@@ -238,7 +238,7 @@ auto EncodedTransaction::CalculateIDs(
     }
 
     if (false == output) {
-        LogOutput("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+        LogError()("opentxs::blockchain::bitcoin::EncodedTransaction::")(
             __func__)(": Failed to calculate txid")
             .Flush();
 
@@ -249,7 +249,7 @@ auto EncodedTransaction::CalculateIDs(
 }
 
 auto EncodedTransaction::CalculateIDs(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain) noexcept -> bool
 {
     const auto preimage = wtxid_preimage();
@@ -264,7 +264,7 @@ auto EncodedTransaction::DefaultVersion(const blockchain::Type) noexcept
 }
 
 auto EncodedTransaction::Deserialize(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const ReadView in) noexcept(false) -> EncodedTransaction
 {
@@ -285,18 +285,18 @@ auto EncodedTransaction::Deserialize(
 
     std::memcpy(static_cast<void*>(&version), it, sizeof(version));
     std::advance(it, sizeof(version));
-    LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(__func__)(
+    LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(__func__)(
         ": Tx version: ")(version.value())
         .Flush();
     segwit = HasSegwit(it, expectedSize, in.size());
 
     if (segwit.has_value()) {
-        LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+        LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(
             __func__)(": Found segwit transaction flag: ")(
             std::to_integer<std::uint8_t>(segwit.value()))
             .Flush();
     } else {
-        LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+        LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(
             __func__)(": Found non-segwit transaction")
             .Flush();
     }
@@ -312,7 +312,7 @@ auto EncodedTransaction::Deserialize(
         throw std::runtime_error("Failed to decode txin count");
     }
 
-    LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(__func__)(
+    LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(__func__)(
         ": Tx input count: ")(inCount.Value())
         .Flush();
 
@@ -338,7 +338,7 @@ auto EncodedTransaction::Deserialize(
             throw std::runtime_error("Failed to decode input script bytes");
         }
 
-        LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+        LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(
             __func__)(": input script bytes: ")(scriptBytes.Value())
             .Flush();
         expectedSize += scriptBytes.Value();
@@ -357,7 +357,7 @@ auto EncodedTransaction::Deserialize(
 
         std::memcpy(static_cast<void*>(&sequence), it, sizeof(sequence));
         std::advance(it, sizeof(sequence));
-        LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+        LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(
             __func__)(": sequence: ")(sequence.value())
             .Flush();
     }
@@ -373,7 +373,7 @@ auto EncodedTransaction::Deserialize(
         throw std::runtime_error("Failed to decode txout count");
     }
 
-    LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(__func__)(
+    LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(__func__)(
         ": Tx output count: ")(outCount.Value())
         .Flush();
 
@@ -388,7 +388,7 @@ auto EncodedTransaction::Deserialize(
 
         std::memcpy(static_cast<void*>(&value), it, sizeof(value));
         std::advance(it, sizeof(value));
-        LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+        LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(
             __func__)(": value: ")(value.value())
             .Flush();
         expectedSize += 1;
@@ -402,7 +402,7 @@ auto EncodedTransaction::Deserialize(
             throw std::runtime_error("Failed to decode output script bytes");
         }
 
-        LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+        LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(
             __func__)(": output script bytes: ")(scriptBytes.Value())
             .Flush();
         expectedSize += scriptBytes.Value();
@@ -424,7 +424,7 @@ auto EncodedTransaction::Deserialize(
                 throw std::runtime_error("Failed to witness item count");
             }
 
-            LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+            LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(
                 __func__)(": witness ")(i)(" contains ")(witnessCount.Value())(
                 " pushes")
                 .Flush();
@@ -437,7 +437,8 @@ auto EncodedTransaction::Deserialize(
                     throw std::runtime_error("Failed to witness item bytes");
                 }
 
-                LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(
+                LogTrace()(
+                    "opentxs::blockchain::bitcoin::EncodedTransaction::")(
                     __func__)(": push ")(w)(" bytes: ")(witnessBytes.Value())
                     .Flush();
                 expectedSize += witnessBytes.Value();
@@ -466,7 +467,7 @@ auto EncodedTransaction::Deserialize(
     std::advance(it, sizeof(locktime));
     const auto txBytes = static_cast<std::size_t>(std::distance(start, it));
     const auto view = ReadView{in.data(), txBytes};
-    LogTrace("opentxs::blockchain::bitcoin::EncodedTransaction::")(__func__)(
+    LogTrace()("opentxs::blockchain::bitcoin::EncodedTransaction::")(__func__)(
         ": lock time: ")(locktime.value())
         .Flush();
 

@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "Helpers.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 std::vector<std::unique_ptr<bb::Header>> headers_{};
 

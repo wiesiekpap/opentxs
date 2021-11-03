@@ -12,10 +12,10 @@
 #include <ios>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Flag.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "storage/Plugin.hpp"
 
 namespace boost
@@ -35,10 +35,10 @@ namespace network
 class Asio;
 }  // namespace network
 
-namespace storage
+namespace session
 {
 class Storage;
-}  // namespace storage
+}  // namespace session
 
 class Crypto;
 }  // namespace api
@@ -80,7 +80,7 @@ protected:
     Common(
         const api::Crypto& crypto,
         const api::network::Asio& asio,
-        const api::storage::Storage& storage,
+        const api::session::Storage& storage,
         const storage::Config& config,
         const std::string& folder,
         const Flag& bucket);

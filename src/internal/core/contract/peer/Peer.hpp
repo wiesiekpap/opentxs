@@ -11,15 +11,14 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/protobuf/ContractEnums.pb.h"
 #include "opentxs/protobuf/PairEvent.pb.h"
 #include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/ZMQEnums.pb.h"
+#include "opentxs/util/Bytes.hpp"
 #include "util/Blank.hpp"
 
 namespace opentxs
@@ -55,37 +54,28 @@ private:
     auto operator=(const PairEvent&) -> PairEvent& = delete;
     auto operator=(PairEvent&&) -> PairEvent& = delete;
 };
-
-using ConnectionInfoTypeMap =
-    std::map<ConnectionInfoType, proto::ConnectionInfoType>;
-using ConnectionInfoTypeReverseMap =
-    std::map<proto::ConnectionInfoType, ConnectionInfoType>;
-using PairEventTypeMap = std::map<PairEventType, proto::PairEventType>;
-using PairEventTypeReverseMap = std::map<proto::PairEventType, PairEventType>;
-using PeerObjectTypeMap = std::map<PeerObjectType, proto::PeerObjectType>;
-using PeerObjectTypeReverseMap =
-    std::map<proto::PeerObjectType, PeerObjectType>;
-using PeerRequestTypeMap = std::map<PeerRequestType, proto::PeerRequestType>;
-using PeerRequestTypeReverseMap =
-    std::map<proto::PeerRequestType, PeerRequestType>;
-using SecretTypeMap = std::map<SecretType, proto::SecretType>;
-using SecretTypeReverseMap = std::map<proto::SecretType, SecretType>;
-
-auto connectioninfotype_map() noexcept -> const ConnectionInfoTypeMap&;
-auto paireventtype_map() noexcept -> const PairEventTypeMap&;
-auto peerobjecttype_map() noexcept -> const PeerObjectTypeMap&;
-auto peerrequesttype_map() noexcept -> const PeerRequestTypeMap&;
-auto secrettype_map() noexcept -> const SecretTypeMap&;
-auto translate(const ConnectionInfoType in) noexcept
-    -> proto::ConnectionInfoType;
-auto translate(const PairEventType in) noexcept -> proto::PairEventType;
-auto translate(const PeerObjectType in) noexcept -> proto::PeerObjectType;
-auto translate(const PeerRequestType in) noexcept -> proto::PeerRequestType;
-auto translate(const SecretType in) noexcept -> proto::SecretType;
-auto translate(const proto::ConnectionInfoType in) noexcept
-    -> ConnectionInfoType;
-auto translate(const proto::PairEventType in) noexcept -> PairEventType;
-auto translate(const proto::PeerObjectType in) noexcept -> PeerObjectType;
-auto translate(const proto::PeerRequestType in) noexcept -> PeerRequestType;
-auto translate(const proto::SecretType in) noexcept -> SecretType;
 }  // namespace opentxs::contract::peer::internal
+
+namespace opentxs
+{
+auto translate(const contract::peer::ConnectionInfoType in) noexcept
+    -> proto::ConnectionInfoType;
+auto translate(const contract::peer::internal::PairEventType in) noexcept
+    -> proto::PairEventType;
+auto translate(const contract::peer::PeerObjectType in) noexcept
+    -> proto::PeerObjectType;
+auto translate(const contract::peer::PeerRequestType in) noexcept
+    -> proto::PeerRequestType;
+auto translate(const contract::peer::SecretType in) noexcept
+    -> proto::SecretType;
+auto translate(const proto::ConnectionInfoType in) noexcept
+    -> contract::peer::ConnectionInfoType;
+auto translate(const proto::PairEventType in) noexcept
+    -> contract::peer::internal::PairEventType;
+auto translate(const proto::PeerObjectType in) noexcept
+    -> contract::peer::PeerObjectType;
+auto translate(const proto::PeerRequestType in) noexcept
+    -> contract::peer::PeerRequestType;
+auto translate(const proto::SecretType in) noexcept
+    -> contract::peer::SecretType;
+}  // namespace opentxs

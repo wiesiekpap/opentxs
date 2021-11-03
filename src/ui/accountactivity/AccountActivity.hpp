@@ -19,11 +19,10 @@
 #include "core/Worker.hpp"
 #include "display/Definition.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -32,6 +31,7 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/ui/AccountActivity.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
@@ -43,10 +43,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -88,7 +88,7 @@ struct make_blank;
 
 template <>
 struct make_blank<ui::implementation::AccountActivityRowID> {
-    static auto value(const api::Core& api)
+    static auto value(const api::Session& api)
         -> ui::implementation::AccountActivityRowID
     {
         return {api.Factory().Identifier(), proto::PAYMENTEVENTTYPE_ERROR};
@@ -267,7 +267,7 @@ protected:
     auto init(Endpoints endpoints) noexcept -> void;
 
     AccountActivity(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const AccountType type,

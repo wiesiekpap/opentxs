@@ -13,15 +13,16 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/ServerAction.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -161,13 +162,13 @@ public:
         const std::string& memo) const -> Action final;
 
     ServerAction(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const ContextLockCallback& lockCallback);
 
     ~ServerAction() final = default;
 
 private:
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
     ContextLockCallback lock_callback_;
 
     ServerAction() = delete;

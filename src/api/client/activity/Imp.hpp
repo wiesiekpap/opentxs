@@ -7,16 +7,17 @@
 
 #include <chrono>
 #include <cstddef>
+#include <functional>
 #include <future>
 #include <iosfwd>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <string>
+#include <type_traits>
 
 #include "api/client/activity/MailCache.hpp"
 #include "internal/api/client/Client.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/Activity.hpp"
@@ -26,6 +27,8 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
@@ -33,11 +36,15 @@ namespace api
 {
 namespace client
 {
-class Blockchain;
 class Contacts;
 }  // namespace client
 
-class Core;
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -58,7 +65,7 @@ namespace opentxs::api::client
 struct Activity::Imp final : Lockable {
 public:
     auto AddBlockchainTransaction(
-        const Blockchain& api,
+        const crypto::Blockchain& api,
         const BlockchainTransaction& transaction) const noexcept -> bool;
     auto AddPaymentEvent(
         const identifier::Nym& nymID,
@@ -139,12 +146,12 @@ public:
     auto ThreadPublisher(const identifier::Nym& nym) const noexcept
         -> std::string;
 
-    Imp(const api::Core& api, const client::Contacts& contact) noexcept;
+    Imp(const api::Session& api, const client::Contacts& contact) noexcept;
 
     ~Imp() final;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     const client::Contacts& contact_;
     const OTZMQPublishSocket message_loaded_;
     mutable activity::MailCache mail_;
@@ -166,7 +173,7 @@ private:
 #if OT_BLOCKCHAIN
     auto add_blockchain_transaction(
         const eLock& lock,
-        const Blockchain& blockchain,
+        const crypto::Blockchain& blockchain,
         const identifier::Nym& nym,
         const BlockchainTransaction& transaction) const noexcept -> bool;
 #endif  // OT_BLOCKCHAIN

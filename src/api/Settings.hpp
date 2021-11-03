@@ -9,11 +9,12 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <tuple>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {

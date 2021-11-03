@@ -16,9 +16,8 @@
 
 #include "api/network/asio/Acceptor.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::api::network::asio::Acceptors::Imp::"
 
@@ -36,7 +35,7 @@ struct Acceptors::Imp {
 
             if (added) {
                 it->second.Start();
-                LogNormal("TCP socket opened for incoming connections on ")(
+                LogConsole()("TCP socket opened for incoming connections on ")(
                     endpoint.str())
                     .Flush();
             } else {
@@ -47,7 +46,7 @@ struct Acceptors::Imp {
 
             return added;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }

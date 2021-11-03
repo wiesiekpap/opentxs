@@ -8,6 +8,7 @@
 #include "opentxs/contact/Contact.hpp"  // IWYU pragma: associated
 
 #include <atomic>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -15,29 +16,28 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/contact/Contact.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ContactSection.hpp"  // IWYU pragma: keep
 #include "opentxs/contact/SectionType.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -47,15 +47,10 @@
 #include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/verify/ContactItem.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
-
-namespace opentxs
-{
-namespace proto
-{
-class Nym;
-}  // namespace proto
-}  // namespace opentxs
 
 #define ID_BYTES 32
 
@@ -100,7 +95,7 @@ auto translate_style(const AddressStyle& in) noexcept -> std::string
 namespace opentxs
 {
 struct Contact::Imp {
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
     VersionNumber version_{0};
     std::string label_{""};
     mutable std::mutex lock_{};
@@ -123,7 +118,7 @@ struct Contact::Imp {
         return in;
     }
 
-    static auto generate_id(const api::Core& api) -> OTIdentifier
+    static auto generate_id(const api::Session& api) -> OTIdentifier
     {
         auto& encode = api.Crypto().Encode();
         auto random = Data::Factory();
@@ -133,7 +128,7 @@ struct Contact::Imp {
     }
 
     static auto translate(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const core::UnitType chain,
         const std::string& value,
         const std::string& subtype) noexcept(false)
@@ -142,7 +137,7 @@ struct Contact::Imp {
         auto output = BlockchainAddress{
             api.Factory().Data(value, StringStyle::Hex),
             translate_style(subtype),
-            Translate(chain)};
+            UnitToBlockchain(chain)};
         auto& [outBytes, outStyle, outChain] = output;
         const auto bad = outBytes->empty() ||
                          (AddressStyle::Unknown == outStyle) ||
@@ -153,7 +148,7 @@ struct Contact::Imp {
         return output;
     }
 
-    Imp(const api::client::Manager& api, const proto::Contact& serialized)
+    Imp(const api::session::Client& api, const proto::Contact& serialized)
         : api_(api)
         , version_(check_version(serialized.version(), OT_CONTACT_VERSION))
         , label_(serialized.label())
@@ -189,7 +184,7 @@ struct Contact::Imp {
         init_nyms();
     }
 
-    Imp(const api::client::Manager& api, const std::string& label)
+    Imp(const api::session::Client& api, const std::string& label)
         : api_(api)
         , version_(OT_CONTACT_VERSION)
         , label_(label)
@@ -226,13 +221,13 @@ struct Contact::Imp {
         OT_ASSERT(verify_write_lock(lock));
 
         if (false == bool(item)) {
-            LogOutput(OT_METHOD)(__func__)(": Null claim.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Null claim.").Flush();
 
             return false;
         }
 
         const auto version = std::make_pair(
-            item->Version(), contact::internal::translate(item->Section()));
+            item->Version(), opentxs::translate(item->Section()));
         const auto proto = [&] {
             auto out = proto::ContactItem{};
             item->Serialize(out, true);
@@ -241,7 +236,7 @@ struct Contact::Imp {
 
         if (false == proto::Validate<proto::ContactItem>(
                          proto, VERBOSE, proto::ClaimType::Indexed, version)) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid claim.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid claim.").Flush();
 
             return false;
         }
@@ -264,7 +259,7 @@ struct Contact::Imp {
         const bool typeMismatch = (contactType != nymType);
 
         if (haveType && typeMismatch) {
-            LogOutput(OT_METHOD)(__func__)(": Wrong nym type.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Wrong nym type.").Flush();
 
             return false;
         }
@@ -348,7 +343,7 @@ struct Contact::Imp {
             nym = api_.Wallet().Nym(nymID);
 
             if (false == bool(nym)) {
-                LogVerbose(OT_METHOD)(__func__)(": Failed to load nym ")(
+                LogVerbose()(OT_METHOD)(__func__)(": Failed to load nym ")(
                     nymID)(".")
                     .Flush();
             }
@@ -400,7 +395,7 @@ struct Contact::Imp {
         if (false == bool(data)) { return {}; }
 
         return data->Group(
-            contact::SectionType::Procedure, core::translate(currency));
+            contact::SectionType::Procedure, UnitToClaim(currency));
     }
 
     auto type(const Lock& lock) const -> contact::ClaimType
@@ -426,13 +421,13 @@ struct Contact::Imp {
     auto verify_write_lock(const Lock& lock) const -> bool
     {
         if (lock.mutex() != &lock_) {
-            LogOutput(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
 
             return false;
         }
 
         if (false == lock.owns_lock()) {
-            LogOutput(OT_METHOD)(__func__)(": Lock not owned.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Lock not owned.").Flush();
 
             return false;
         }
@@ -442,14 +437,14 @@ struct Contact::Imp {
 };
 
 Contact::Contact(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const proto::Contact& serialized)
     : imp_(std::make_unique<Imp>(api, serialized))
 {
     OT_ASSERT(imp_);
 }
 
-Contact::Contact(const api::client::Manager& api, const std::string& label)
+Contact::Contact(const api::session::Client& api, const std::string& label)
     : imp_(std::make_unique<Imp>(api, label))
 {
     OT_ASSERT(imp_);
@@ -511,18 +506,18 @@ auto Contact::AddBlockchainAddress(
 {
     const auto& api = imp_->api_;
     auto [bytes, style, chains, supported] =
-        api.Blockchain().DecodeAddress(address);
+        api.Crypto().Blockchain().DecodeAddress(address);
     const auto bad =
         bytes->empty() || (AddressStyle::Unknown == style) || chains.empty();
 
     if (bad) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to decode address").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to decode address").Flush();
 
         return false;
     }
 
     if (0 == chains.count(type)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Address is not valid for specified chain")
             .Flush();
 
@@ -546,7 +541,7 @@ auto Contact::AddBlockchainAddress(
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         contact::SectionType::Address,
-        translate(Translate(chain)),
+        UnitToClaim(BlockchainToUnit(chain)),
         bytes.asHex(),
         {contact::Attribute::Local, contact::Attribute::Active},
         NULL_START,
@@ -620,7 +615,7 @@ auto Contact::AddPaymentCode(
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         contact::SectionType::Procedure,
-        translate(currency),
+        UnitToClaim(currency),
         value,
         attr,
         NULL_START,
@@ -628,7 +623,7 @@ auto Contact::AddPaymentCode(
         ""));
 
     if (false == imp_->add_claim(claim)) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to add claim.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Unable to add claim.").Flush();
 
         return false;
     }
@@ -753,9 +748,8 @@ auto Contact::BlockchainAddresses() const
         OT_ASSERT(group);
 
         const bool currency = proto::ValidContactItemType(
-            {version,
-             contact::internal::translate(contact::SectionType::Contract)},
-            contact::internal::translate(type));
+            {version, translate(contact::SectionType::Contract)},
+            translate(type));
 
         if (false == currency) { continue; }
 
@@ -767,7 +761,7 @@ auto Contact::BlockchainAddresses() const
             try {
                 output.push_back(Imp::translate(
                     imp_->api_,
-                    core::translate(type),
+                    ClaimToUnit(type),
                     item->Value(),
                     item->Subtype()));
             } catch (...) {
@@ -890,7 +884,7 @@ auto Contact::PaymentCode(
     const core::UnitType currency) -> std::string
 {
     auto group =
-        data.Group(contact::SectionType::Procedure, translate(currency));
+        data.Group(contact::SectionType::Procedure, UnitToClaim(currency));
 
     if (false == bool(group)) { return {}; }
 
@@ -1066,7 +1060,7 @@ void Contact::Update(const proto::Nym& serialized)
     auto nym = imp_->api_.Wallet().Nym(serialized);
 
     if (false == bool(nym)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid serialized nym.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid serialized nym.").Flush();
 
         return;
     }

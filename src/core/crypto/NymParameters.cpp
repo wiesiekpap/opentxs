@@ -13,10 +13,10 @@
 #include <memory>
 
 #include "internal/crypto/key/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Primitives.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/crypto/Language.hpp"

@@ -10,19 +10,19 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/Widget.hpp"
 
 namespace opentxs::ui::implementation
 {
 ActivityThreadItem::ActivityThreadItem(
     const ActivityThreadInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,

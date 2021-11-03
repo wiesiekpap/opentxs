@@ -20,7 +20,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -44,7 +44,7 @@ class Outbailment final : public request::Outbailment,
 {
 public:
     Outbailment(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
@@ -52,7 +52,7 @@ public:
         const Amount& amount,
         const std::string& terms);
     Outbailment(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized);
 

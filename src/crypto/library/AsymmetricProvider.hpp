@@ -6,16 +6,16 @@
 #pragma once
 
 #include "Proto.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace crypto
@@ -41,13 +41,13 @@ public:
         const AllocateOutput privateKey,
         const AllocateOutput publicKey) const noexcept -> bool final;
     auto SignContract(
-        const api::Core& api,
+        const api::Session& api,
         const String& contract,
         const ReadView key,
         const crypto::HashType hashType,
         Signature& output) const -> bool override;
     auto VerifyContractSignature(
-        const api::Core& api,
+        const api::Session& api,
         const String& strContractToVerify,
         const ReadView key,
         const Signature& theSignature,

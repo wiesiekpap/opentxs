@@ -15,8 +15,8 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/protobuf/StorageNymList.pb.h"
 #include "storage/tree/Node.hpp"

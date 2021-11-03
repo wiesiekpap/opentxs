@@ -9,14 +9,14 @@
 #include <mutex>
 #include <optional>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -25,7 +25,8 @@ namespace opentxs::blockchain::database::wallet::db
 struct Position {
     const Space data_;
 
-    auto Decode(const api::Core& api) const noexcept -> const block::Position&;
+    auto Decode(const api::Session& api) const noexcept
+        -> const block::Position&;
     auto Hash() const noexcept -> ReadView;
     auto Height() const noexcept -> block::Height;
 

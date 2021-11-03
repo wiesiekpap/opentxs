@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CRYPTO_BIP39_HPP
-#define OPENTXS_CRYPTO_BIP39_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -18,7 +17,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 class Secret;
@@ -43,7 +42,7 @@ public:
         Secret& words,
         const Language lang) const noexcept -> bool = 0;
     virtual auto WordsToSeed(
-        const api::Core& api,
+        const api::Session& api,
         const SeedStyle type,
         const Language lang,
         const Secret& words,
@@ -63,4 +62,3 @@ private:
 };
 }  // namespace crypto
 }  // namespace opentxs
-#endif

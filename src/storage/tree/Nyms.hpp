@@ -14,8 +14,8 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
-#include "opentxs/api/Storage.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/protobuf/StorageNymList.pb.h"
 #include "storage/tree/Node.hpp"
 

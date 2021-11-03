@@ -11,13 +11,14 @@ extern "C" {
 #include <sodium.h>
 }
 
+#include <cstdint>
 #include <cstring>
 #include <iterator>
 #include <memory>
 
 #include "internal/core/Core.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::Secret>;
 

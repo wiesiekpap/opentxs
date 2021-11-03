@@ -12,16 +12,14 @@
 #include <string>
 
 #include "core/OTStorage.hpp"
-#include "internal/api/Api.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/api/Legacy.hpp"
+#include "internal/api/session/Session.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Legacy.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
@@ -29,6 +27,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/util/Common.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::Helpers"
 
@@ -159,7 +159,7 @@ auto LoadAbbreviatedRecord(
 
     if (!strTransNum->Exists() || !strInRefTo->Exists() ||
         !strInRefDisplay->Exists() || !strDateSigned->Exists()) {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": Failure: missing "
             "strTransNum (")(strTransNum)(") or strInRefTo (")(
             strInRefTo)(") or strInRefDisplay (")(
@@ -189,7 +189,7 @@ auto LoadAbbreviatedRecord(
         theType = OTTransaction::GetTypeFromString(strAbbrevType);
 
         if (transactionType::error_state == theType) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failure: Error_state was the found type (based on "
                 "string ")(strAbbrevType)("), when loading abbreviated receipt "
                                           "for trans num: ")(
@@ -198,8 +198,8 @@ auto LoadAbbreviatedRecord(
             return (-1);
         }
     } else {
-        LogNormal(OT_METHOD)(__func__)(": Failure: unknown "
-                                       "transaction type (")(
+        LogConsole()(OT_METHOD)(__func__)(": Failure: unknown "
+                                          "transaction type (")(
             strAbbrevType)(") when "
                            "loading abbreviated receipt for trans num: ")(
             lTransactionNum)(" (In Reference To: ")(lInRefTo)(").")
@@ -211,9 +211,10 @@ auto LoadAbbreviatedRecord(
     //
     strHash.Set(xml->getAttributeValue("receiptHash"));
     if (!strHash.Exists()) {
-        LogNormal(OT_METHOD)(__func__)(": Failure: Expected "
-                                       "receiptHash while loading "
-                                       "abbreviated receipt for trans num: ")(
+        LogConsole()(OT_METHOD)(__func__)(
+            ": Failure: Expected "
+            "receiptHash while loading "
+            "abbreviated receipt for trans num: ")(
             lTransactionNum)(" (In Reference To: ")(lInRefTo)(").")
             .Flush();
         return (-1);
@@ -238,7 +239,7 @@ auto LoadAbbreviatedRecord(
             String::Factory(xml->getAttributeValue("requestNumber"));
 
         if (!strRequestNum->Exists()) {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": Failed loading "
                 "abbreviated receipt: "
                 "expected requestNumber on replyNotice trans num: ")(
@@ -264,7 +265,7 @@ auto LoadAbbreviatedRecord(
             String::Factory(xml->getAttributeValue("closingNum"));
 
         if (!strAbbrevClosingNum->Exists()) {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": Failed loading "
                 "abbreviated receipt: "
                 "expected closingNum on trans num: ")(
@@ -293,7 +294,7 @@ auto LoadAbbreviatedRecord(
 }
 
 auto VerifyBoxReceiptExists(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& dataFolder,
     const identifier::Server& NOTARY_ID,
     const identifier::Nym& NYM_ID,  // Unused here for now, but still
@@ -339,17 +340,18 @@ auto VerifyBoxReceiptExists(
         strFolder3name->Get(),
         strFilename->Get());
 
-    LogDetail(OT_METHOD)(__func__)(": ")(
+    LogDetail()(OT_METHOD)(__func__)(": ")(
         bExists ? "(Already have this one)" : "(Need to download this one) : ")(
-        strFolder1name)(PathSeparator())(strFolder2name)(PathSeparator())(
-        strFolder3name)(PathSeparator())(strFilename)
+        strFolder1name)(api::Legacy::PathSeparator())(
+        strFolder2name)(api::Legacy::PathSeparator())(
+        strFolder3name)(api::Legacy::PathSeparator())(strFilename)
         .Flush();
 
     return bExists;
 }
 
 auto LoadBoxReceipt(
-    const api::Core& api,
+    const api::Session& api,
     OTTransaction& theAbbrev,
     Ledger& theLedger) -> std::unique_ptr<OTTransaction>
 {
@@ -358,7 +360,7 @@ auto LoadBoxReceipt(
 }
 
 auto LoadBoxReceipt(
-    const api::Core& api,
+    const api::Session& api,
     OTTransaction& theAbbrev,
     std::int64_t lLedgerType) -> std::unique_ptr<OTTransaction>
 {
@@ -371,7 +373,7 @@ auto LoadBoxReceipt(
     // form.)
     //
     if (!theAbbrev.IsAbbreviated()) {
-        LogNormal(OT_METHOD)(__func__)(": Unable to load box receipt ")(
+        LogConsole()(OT_METHOD)(__func__)(": Unable to load box receipt ")(
             theAbbrev.GetTransactionNum())(
             ": (Because argument 'theAbbrev' wasn't abbreviated).")
             .Flush();
@@ -404,9 +406,10 @@ auto LoadBoxReceipt(
             strFolder2name->Get(),
             strFolder3name->Get(),
             strFilename->Get())) {
-        LogDetail(OT_METHOD)(__func__)(": Box receipt does not exist: ")(
-            strFolder1name)(PathSeparator())(strFolder2name)(PathSeparator())(
-            strFolder3name)(PathSeparator())(strFilename)
+        LogDetail()(OT_METHOD)(__func__)(": Box receipt does not exist: ")(
+            strFolder1name)(api::Legacy::PathSeparator())(
+            strFolder2name)(api::Legacy::PathSeparator())(
+            strFolder3name)(api::Legacy::PathSeparator())(strFilename)
             .Flush();
         return nullptr;
     }
@@ -421,9 +424,10 @@ auto LoadBoxReceipt(
         strFolder3name->Get(),
         strFilename->Get()));
     if (strFileContents.length() < 2) {
-        LogOutput(OT_METHOD)(__func__)(": Error reading file: ")(
-            strFolder1name)(PathSeparator())(strFolder2name)(PathSeparator())(
-            strFolder3name)(PathSeparator())(strFilename)(".")
+        LogError()(OT_METHOD)(__func__)(": Error reading file: ")(
+            strFolder1name)(api::Legacy::PathSeparator())(
+            strFolder2name)(api::Legacy::PathSeparator())(
+            strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
             .Flush();
         return nullptr;
     }
@@ -431,10 +435,11 @@ auto LoadBoxReceipt(
     auto strRawFile = String::Factory(strFileContents.c_str());
 
     if (!strRawFile->Exists()) {
-        LogOutput(OT_METHOD)(__func__)(": Error reading file (resulting output "
-                                       "string is empty): ")(
-            strFolder1name)(PathSeparator())(strFolder2name)(PathSeparator())(
-            strFolder3name)(PathSeparator())(strFilename)(".")
+        LogError()(OT_METHOD)(__func__)(
+            ": Error reading file (resulting output "
+            "string is empty): ")(strFolder1name)(api::Legacy::PathSeparator())(
+            strFolder2name)(api::Legacy::PathSeparator())(
+            strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
             .Flush();
         return nullptr;
     }
@@ -445,10 +450,11 @@ auto LoadBoxReceipt(
     auto pTransType = api.Factory().Transaction(strRawFile);
 
     if (false == bool(pTransType)) {
-        LogOutput(OT_METHOD)(__func__)(": Error instantiating transaction "
-                                       "type based on strRawFile: ")(
-            strFolder1name)(PathSeparator())(strFolder2name)(PathSeparator())(
-            strFolder3name)(PathSeparator())(strFilename)(".")
+        LogError()(OT_METHOD)(__func__)(": Error instantiating transaction "
+                                        "type based on strRawFile: ")(
+            strFolder1name)(api::Legacy::PathSeparator())(
+            strFolder2name)(api::Legacy::PathSeparator())(
+            strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
             .Flush();
         return nullptr;
     }
@@ -457,11 +463,12 @@ auto LoadBoxReceipt(
         dynamic_cast<OTTransaction*>(pTransType.release())};
 
     if (false == bool(pBoxReceipt)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Error dynamic_cast from transaction "
             "type to transaction, based on strRawFile: ")(
-            strFolder1name)(PathSeparator())(strFolder2name)(PathSeparator())(
-            strFolder3name)(PathSeparator())(strFilename)(".")
+            strFolder1name)(api::Legacy::PathSeparator())(
+            strFolder2name)(api::Legacy::PathSeparator())(
+            strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
             .Flush();
         return nullptr;
     }
@@ -475,17 +482,19 @@ auto LoadBoxReceipt(
     bool bSuccess = theAbbrev.VerifyBoxReceipt(*pBoxReceipt);
 
     if (!bSuccess) {
-        LogOutput(OT_METHOD)(__func__)(": Failed verifying Box Receipt: ")(
-            strFolder1name)(PathSeparator())(strFolder2name)(PathSeparator())(
-            strFolder3name)(PathSeparator())(strFilename)(".")
+        LogError()(OT_METHOD)(__func__)(": Failed verifying Box Receipt: ")(
+            strFolder1name)(api::Legacy::PathSeparator())(
+            strFolder2name)(api::Legacy::PathSeparator())(
+            strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
             .Flush();
 
         return nullptr;
     } else
-        LogVerbose(OT_METHOD)(__func__)(
+        LogVerbose()(OT_METHOD)(__func__)(
             ": Successfully loaded Box Receipt in: ")(
-            strFolder1name)(PathSeparator())(strFolder2name)(PathSeparator())(
-            strFolder3name)(PathSeparator())(strFilename)
+            strFolder1name)(api::Legacy::PathSeparator())(
+            strFolder2name)(api::Legacy::PathSeparator())(
+            strFolder3name)(api::Legacy::PathSeparator())(strFilename)
             .Flush();
 
     // Todo: security analysis. By this point we've verified the hash of the
@@ -507,7 +516,7 @@ auto LoadBoxReceipt(
 }
 
 auto SetupBoxReceiptFilename(
-    const api::Core& api,
+    const api::Session& api,
     std::int64_t lLedgerType,
     const String& strUserOrAcctID,
     const String& strNotaryID,
@@ -542,7 +551,7 @@ auto SetupBoxReceiptFilename(
             pszFolder = api.Internal().Legacy().ExpiredBox();
             break;
         default:
-            LogOutput(OT_METHOD)(__func__)(": Error: Unknown box type: ")(
+            LogError()(OT_METHOD)(__func__)(": Error: Unknown box type: ")(
                 lLedgerType)(". (This should never happen).")
                 .Flush();
             return false;
@@ -562,7 +571,7 @@ auto SetupBoxReceiptFilename(
 }
 
 auto SetupBoxReceiptFilename(
-    const api::Core& api,
+    const api::Session& api,
     std::int64_t lLedgerType,
     OTTransaction& theTransaction,
     const char* szCaller,
@@ -590,7 +599,7 @@ auto SetupBoxReceiptFilename(
 }
 
 auto SetupBoxReceiptFilename(
-    const api::Core& api,
+    const api::Session& api,
     Ledger& theLedger,
     OTTransaction& theTransaction,
     const char* szCaller,
@@ -622,8 +631,8 @@ auto SetupBoxReceiptFilename(
             lLedgerType = 6;
             break;
         default:
-            LogOutput(OT_METHOD)(__func__)(": Error: unknown box type. "
-                                           "(This should never happen).")
+            LogError()(OT_METHOD)(__func__)(": Error: unknown box type. "
+                                            "(This should never happen).")
                 .Flush();
             return false;
     }

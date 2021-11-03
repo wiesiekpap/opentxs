@@ -19,19 +19,19 @@
 #include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -67,8 +67,6 @@ namespace zeromq
 class Message;
 }  // namespace zeromq
 }  // namespace network
-
-class Factory;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::node::implementation
@@ -134,7 +132,7 @@ public:
         -> std::size_t final;
 
     HeaderOracle(
-        const api::Core& api,
+        const api::Session& api,
         const internal::HeaderDatabase& database,
         const blockchain::Type type) noexcept;
 
@@ -148,7 +146,7 @@ private:
 
     using Candidates = std::vector<Candidate>;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const internal::HeaderDatabase& database_;
     const blockchain::Type chain_;
     mutable std::mutex lock_;

@@ -13,15 +13,15 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::node
 {
 UpdateTransaction::UpdateTransaction(
-    const api::Core& api,
+    const api::Session& api,
     const internal::HeaderDatabase& db)
     : api_(api)
     , db_(db)

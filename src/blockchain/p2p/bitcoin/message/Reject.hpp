@@ -20,7 +20,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -49,14 +49,14 @@ public:
     }
 
     Reject(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const std::string& message,
         const bitcoin::RejectCode code,
         const std::string& reason,
         const Data& extra) noexcept;
     Reject(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const std::string& message,
         const bitcoin::RejectCode code,

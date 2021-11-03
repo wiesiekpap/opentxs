@@ -22,23 +22,21 @@ extern "C" {
 #include <optional>
 
 #include "Proto.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "crypto/library/AsymmetricProvider.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "internal/crypto/library/OpenSSL.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
 class Crypto;
+class Session;
 }  // namespace api
 
 namespace crypto
@@ -76,11 +74,7 @@ using OpenSSL_RSA = std::unique_ptr<::RSA, decltype(&::RSA_free)>;
 
 namespace opentxs::crypto::implementation
 {
-class OpenSSL final : virtual public crypto::OpenSSL
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
-    ,
-                      public AsymmetricProvider
-#endif
+class OpenSSL final : virtual public crypto::OpenSSL, public AsymmetricProvider
 {
 public:
     auto Digest(
@@ -109,7 +103,6 @@ public:
         const std::size_t inputSize,
         std::uint8_t* output) const -> bool final;
 
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
     auto RandomKeypair(
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
@@ -131,7 +124,6 @@ public:
         const ReadView theKey,
         const ReadView signature,
         const crypto::HashType hashType) const -> bool final;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
     OpenSSL() noexcept;
 
@@ -218,11 +210,8 @@ private:
         OpenSSL_EVP_PKEY& output) noexcept -> bool;
     static auto HashTypeToOpenSSLType(const crypto::HashType hashType) noexcept
         -> const ::EVP_MD*;
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
     static auto primes(const int bits) -> int;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
     auto generate_dh(const NymParameters& options, ::EVP_PKEY* output)
         const noexcept -> bool;
     auto get_params(
@@ -246,7 +235,6 @@ private:
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
         ::EVP_PKEY* evp) const noexcept -> bool;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
     OpenSSL(const OpenSSL&) = delete;
     OpenSSL(OpenSSL&&) = delete;

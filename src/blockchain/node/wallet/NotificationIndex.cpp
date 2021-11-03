@@ -15,10 +15,9 @@
 #include <vector>
 
 #include "blockchain/node/wallet/Progress.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD                                                              \
@@ -69,7 +68,7 @@ auto NotificationStateData::Index::Do(
         }
     }
 
-    LogTrace(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
+    LogTrace()(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
         " indexed")
         .Flush();
 }
@@ -81,13 +80,13 @@ auto NotificationStateData::Index::need_index(
     const auto version = code_->Version();
 
     if (current.value_or(0) < version) {
-        LogVerbose(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
+        LogVerbose()(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
             " notification elements not yet indexed for version ")(version)
             .Flush();
 
         return static_cast<Bip32Index>(version);
     } else {
-        LogTrace(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
+        LogTrace()(OT_METHOD)(__func__)(": Payment code ")(code_->asBase58())(
             " already indexed")
             .Flush();
 

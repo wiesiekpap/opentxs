@@ -3,23 +3,22 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_OTX_REPLY_HPP
-#define OPENTXS_OTX_REPLY_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace otx
@@ -47,7 +46,7 @@ public:
     static const VersionNumber MaxVersion;
 
     OPENTXS_NO_EXPORT static auto Factory(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p signer,
         const identifier::Nym& recipient,
         const identifier::Server& server,
@@ -58,7 +57,7 @@ public:
         std::shared_ptr<const proto::OTXPush>&& push = {})
         -> Pimpl<opentxs::otx::Reply>;
     static auto Factory(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p signer,
         const identifier::Nym& recipient,
         const identifier::Server& server,
@@ -69,9 +68,9 @@ public:
         opentxs::otx::OTXPushType pushtype,
         const std::string& payload) -> Pimpl<opentxs::otx::Reply>;
     OPENTXS_NO_EXPORT static auto Factory(
-        const api::Core& api,
+        const api::Session& api,
         const proto::ServerReply serialized) -> Pimpl<opentxs::otx::Reply>;
-    static auto Factory(const api::Core& api, const ReadView& view)
+    static auto Factory(const api::Session& api, const ReadView& view)
         -> Pimpl<opentxs::otx::Reply>;
 
     virtual auto Number() const -> RequestNumber = 0;
@@ -105,4 +104,3 @@ private:
 };
 }  // namespace otx
 }  // namespace opentxs
-#endif

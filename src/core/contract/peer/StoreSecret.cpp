@@ -14,14 +14,14 @@
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/StoreSecret.pb.h"
 #include "opentxs/protobuf/verify/PeerRequest.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define CURRENT_VERSION 4
 
@@ -31,7 +31,7 @@ using ParentType = contract::peer::implementation::Request;
 using ReturnType = contract::peer::request::implementation::StoreSecret;
 
 auto Factory::StoreSecret(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const contract::peer::SecretType type,
@@ -53,20 +53,20 @@ auto Factory::StoreSecret(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::StoreSecret(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::PeerRequest& serialized) noexcept
     -> std::shared_ptr<contract::peer::request::StoreSecret>
 {
     if (false == proto::Validate(serialized, VERBOSE)) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
             .Flush();
 
@@ -82,7 +82,7 @@ auto Factory::StoreSecret(
         Lock lock(contract.lock_);
 
         if (false == contract.validate(lock)) {
-            LogOutput("opentxs::Factory::")(__func__)(": Invalid request.")
+            LogError()("opentxs::Factory::")(__func__)(": Invalid request.")
                 .Flush();
 
             return {};
@@ -90,7 +90,7 @@ auto Factory::StoreSecret(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -100,7 +100,7 @@ auto Factory::StoreSecret(
 namespace opentxs::contract::peer::request::implementation
 {
 StoreSecret::StoreSecret(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const SecretType type,
@@ -123,11 +123,11 @@ StoreSecret::StoreSecret(
 }
 
 StoreSecret::StoreSecret(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const SerializedType& serialized)
     : Request(api, nym, serialized)
-    , secret_type_(internal::translate(serialized.storesecret().type()))
+    , secret_type_(translate(serialized.storesecret().type()))
     , primary_(serialized.storesecret().primary())
     , secondary_(serialized.storesecret().secondary())
 {
@@ -148,7 +148,7 @@ auto StoreSecret::IDVersion(const Lock& lock) const -> SerializedType
     auto contract = Request::IDVersion(lock);
     auto& storesecret = *contract.mutable_storesecret();
     storesecret.set_version(version_);
-    storesecret.set_type(internal::translate(secret_type_));
+    storesecret.set_type(translate(secret_type_));
     storesecret.set_primary(primary_);
     storesecret.set_secondary(secondary_);
 

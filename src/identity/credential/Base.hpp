@@ -20,12 +20,13 @@
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/protobuf/Credential.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -146,7 +147,7 @@ protected:
         const PasswordPrompt& reason) noexcept(false);
 
     Base(
-        const api::Core& api,
+        const api::Session& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const NymParameters& nymParameters,
@@ -155,7 +156,7 @@ protected:
         const crypto::key::asymmetric::Mode mode,
         const std::string& masterID) noexcept;
     Base(
-        const api::Core& api,
+        const api::Session& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const proto::Credential& serialized,

@@ -5,8 +5,7 @@
 
 // IWYU pragma: no_include "opentxs/network/blockchain/sync/MessageType.hpp"
 
-#ifndef OPENTXS_NETWORK_BLOCKCHAIN_SYNC_MESSAGE_HPP
-#define OPENTXS_NETWORK_BLOCKCHAIN_SYNC_MESSAGE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -14,12 +13,13 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/network/blockchain/sync/Types.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -52,7 +52,7 @@ namespace blockchain
 namespace sync
 {
 OPENTXS_EXPORT auto Factory(
-    const api::Core& api,
+    const api::Session& api,
     const zeromq::Message& in) noexcept -> std::unique_ptr<Base>;
 
 class OPENTXS_EXPORT Base
@@ -88,4 +88,3 @@ private:
 }  // namespace blockchain
 }  // namespace network
 }  // namespace opentxs
-#endif

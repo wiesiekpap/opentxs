@@ -3,15 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_STRINGXML_HPP
-#define OPENTXS_CORE_STRINGXML_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace irr
 {
@@ -55,4 +54,3 @@ private:
     auto operator=(StringXML&&) -> StringXML& = delete;
 };
 }  // namespace opentxs
-#endif

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_RECURRING_OTPAYMENTPLAN_HPP
-#define OPENTXS_CORE_RECURRING_OTPAYMENTPLAN_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -16,18 +15,23 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/recurring/OTAgreement.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
+{
+namespace session
 {
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
 
-class Core;
 class Wallet;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -264,15 +268,15 @@ public:
     ~OTPaymentPlan() override;
 
 private:
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
-    OTPaymentPlan(const api::Core& core);
+    OTPaymentPlan(const api::Session& core);
     OTPaymentPlan(
-        const api::Core& core,
+        const api::Session& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTPaymentPlan(
-        const api::Core& core,
+        const api::Session& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& SENDER_ACCT_ID,
@@ -355,14 +359,14 @@ protected:
     inline void IncrementNoFailedPayments() { m_nNoFailedPayments++; }
 
     auto ProcessPayment(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const Amount& amount,
         const PasswordPrompt& reason) -> bool;
     void ProcessInitialPayment(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const PasswordPrompt& reason);
     void ProcessPaymentPlan(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const PasswordPrompt& reason);
 
 private:
@@ -411,4 +415,3 @@ private:
     OTPaymentPlan() = delete;
 };
 }  // namespace opentxs
-#endif

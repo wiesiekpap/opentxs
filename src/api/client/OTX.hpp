@@ -8,6 +8,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <future>
 #include <iosfwd>
 #include <map>
@@ -15,11 +16,14 @@
 #include <mutex>
 #include <set>
 #include <string>
+#include <tuple>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/otx/client/Client.hpp"
+#include "internal/otx/client/OTPayment.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/OTX.hpp"
@@ -32,27 +36,28 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/UniqueQueue.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Time.hpp"
 #include "otx/client/StateMachine.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace contract
@@ -302,7 +307,7 @@ public:
 #endif  // OT_CASH
 
     OTX(const Flag& running,
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const ContextLockCallback& lockCallback);
 
     ~OTX() final;
@@ -316,7 +321,7 @@ private:
 
     ContextLockCallback lock_callback_;
     const Flag& running_;
-    const api::client::Manager& client_;
+    const api::session::Client& client_;
     mutable std::mutex introduction_server_lock_{};
     mutable std::mutex nym_fetch_lock_{};
     mutable std::mutex task_status_lock_{};

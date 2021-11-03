@@ -3,13 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_PROTOBUF_CONTACT
-#define OPENTXS_PROTOBUF_CONTACT
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <map>
 #include <set>
+#include <string>
+#include <utility>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wlanguage-extension-token"
@@ -50,4 +52,3 @@ auto ContactItemAttributes() noexcept -> const EnumTranslation&;
 auto RelationshipMap() noexcept -> const RelationshipReciprocity&;
 }  // namespace proto
 }  // namespace opentxs
-#endif  // OPENTXS_PROTOBUF_CONTACT

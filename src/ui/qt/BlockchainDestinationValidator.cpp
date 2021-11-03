@@ -14,16 +14,17 @@
 #include <type_traits>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD "opentxs::ui::BlockchainDestinationValidator::"
 
@@ -62,7 +63,8 @@ struct BlockchainDestinationValidator final : public Super {
             return QValidator::State::Acceptable;
         }
 
-        const auto decoded = api_.Blockchain().DecodeAddress(candidate);
+        const auto decoded =
+            api_.Crypto().Blockchain().DecodeAddress(candidate);
         const auto& [data, style, chains, supported] = decoded;
 
         if (0 == data->size()) {
@@ -131,7 +133,7 @@ struct BlockchainDestinationValidator final : public Super {
     }
 
     BlockchainDestinationValidator(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         DestinationValidator& main,
         blockchain::Type chain,
         Parent& parent) noexcept
@@ -145,7 +147,7 @@ struct BlockchainDestinationValidator final : public Super {
 
 private:
     DestinationValidator& parent_;
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
     const blockchain::Type chain_;
     mutable std::string details_;
 
@@ -159,13 +161,14 @@ private:
 #endif  // OT_BLOCKCHAIN
 
 auto DestinationValidator::Imp::Blockchain(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     DestinationValidator& main,
     const Identifier& account,
     Parent& parent) noexcept -> std::unique_ptr<Imp>
 {
 #if OT_BLOCKCHAIN
-    const auto [chain, owner] = api.Blockchain().LookupAccount(account);
+    const auto [chain, owner] =
+        api.Crypto().Blockchain().LookupAccount(account);
 
     if (blockchain::Type::Unknown == chain) { return nullptr; }
 

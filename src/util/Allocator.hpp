@@ -13,8 +13,7 @@ extern "C" {
 #include <cstdlib>
 #include <limits>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
@@ -49,8 +48,8 @@ struct SecureAllocator {
 
         if (0 > ::sodium_mlock(output, bytes)) {
             if (false == warn) {
-                LogVerbose("Unable to lock memory. Passwords and/or secret "
-                           "keys may be swapped to disk")
+                LogVerbose()("Unable to lock memory. Passwords and/or secret "
+                             "keys may be swapped to disk")
                     .Flush();
             }
 

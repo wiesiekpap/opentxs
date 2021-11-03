@@ -8,6 +8,7 @@
 #include "server/MessageProcessor.hpp"  // IWYU pragma: associated
 
 #include <chrono>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -16,18 +17,16 @@
 #include <utility>
 
 #include "Proto.tpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -52,6 +51,9 @@
 #include "opentxs/protobuf/ServerReply.pb.h"
 #include "opentxs/protobuf/ServerRequest.pb.h"
 #include "opentxs/protobuf/verify/ServerRequest.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "server/Server.hpp"
 #include "server/UserCommandProcessor.hpp"
 
@@ -126,7 +128,7 @@ void MessageProcessor::associate_connection(
     const auto result = active_connections_.emplace(nymID, connection);
 
     if (std::get<1>(result)) {
-        LogDetail(OT_METHOD)(__func__)(": Nym ")(
+        LogDetail()(OT_METHOD)(__func__)(": Nym ")(
             nymID)(" is available via connection ")(connection.asHex())(".")
             .Flush();
     }
@@ -205,7 +207,7 @@ void MessageProcessor::init(
         throw std::invalid_argument("Cannot connect to endpoint.");
     }
 
-    LogNormal("Bound to endpoint: ")(endpoint.str()).Flush();
+    LogConsole()("Bound to endpoint: ")(endpoint.str()).Flush();
 }
 
 void MessageProcessor::run()
@@ -254,7 +256,7 @@ auto MessageProcessor::process_command(
     const auto nym = server_.API().Wallet().Nym(allegedNymID);
 
     if (false == bool(nym)) {
-        LogOutput(OT_METHOD)(__func__)(": Nym is not yet registered.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Nym is not yet registered.").Flush();
 
         return true;
     }
@@ -264,7 +266,7 @@ auto MessageProcessor::process_command(
     if (request->Validate()) {
         nymID.Assign(request->Initiator());
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Invalid request.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid request.").Flush();
 
         return false;
     }
@@ -279,7 +281,7 @@ void MessageProcessor::process_frontend(const zmq::Message& incoming)
     Lock lock(counter_lock_);
 
     if (0 < drop_incoming_) {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": Dropping incoming message for testing.")
             .Flush();
         --drop_incoming_;
@@ -301,7 +303,7 @@ void MessageProcessor::process_internal(const zmq::Message& incoming)
     Lock lock(counter_lock_);
 
     if (0 < drop_outgoing_) {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": Dropping outgoing message for testing.")
             .Flush();
         --drop_outgoing_;
@@ -311,9 +313,10 @@ void MessageProcessor::process_internal(const zmq::Message& incoming)
         const auto sent = frontend_socket_->Send(reply);
 
         if (sent) {
-            LogTrace(OT_METHOD)(__func__)(": Reply message delivered.").Flush();
+            LogTrace()(OT_METHOD)(__func__)(": Reply message delivered.")
+                .Flush();
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Failed to send reply message.")
+            LogError()(OT_METHOD)(__func__)(": Failed to send reply message.")
                 .Flush();
         }
     }
@@ -323,7 +326,7 @@ void MessageProcessor::process_legacy(
     const Data& id,
     const network::zeromq::Message& incoming)
 {
-    LogTrace(OT_METHOD)(__func__)(": Processing request via ")(id.asHex())
+    LogTrace()(OT_METHOD)(__func__)(": Processing request via ")(id.asHex())
         .Flush();
     OTZMQMessage request{incoming};
     internal_socket_->Send(request);
@@ -347,13 +350,13 @@ auto MessageProcessor::process_message(
     auto request{server_.API().Factory().Message()};
 
     if (false == serialized->Exists()) {
-        LogOutput(OT_METHOD)(__func__)(": Empty serialized request.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Empty serialized request.").Flush();
 
         return true;
     }
 
     if (false == request->LoadContractFromString(serialized)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to deserialized request.")
+        LogError()(OT_METHOD)(__func__)(": Failed to deserialized request.")
             .Flush();
 
         return true;
@@ -367,12 +370,12 @@ auto MessageProcessor::process_message(
         server_.CommandProcessor().ProcessUserCommand(*request, *replymsg);
 
     if (false == processed) {
-        LogDetail(OT_METHOD)(__func__)(": Failed to process user command ")(
+        LogDetail()(OT_METHOD)(__func__)(": Failed to process user command ")(
             request->m_strCommand)
             .Flush();
-        LogVerbose(OT_METHOD)(__func__)(String::Factory(*request)).Flush();
+        LogVerbose()(OT_METHOD)(__func__)(String::Factory(*request)).Flush();
     } else {
-        LogDetail(OT_METHOD)(__func__)(
+        LogDetail()(OT_METHOD)(__func__)(
             ": Successfully processed user command ")(request->m_strCommand)
             .Flush();
     }
@@ -380,7 +383,7 @@ auto MessageProcessor::process_message(
     auto serializedReply = String::Factory(*replymsg);
 
     if (false == serializedReply->Exists()) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize reply.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize reply.").Flush();
 
         return true;
     }
@@ -388,7 +391,7 @@ auto MessageProcessor::process_message(
     auto armoredReply = Armored::Factory(serializedReply);
 
     if (false == armoredReply->Exists()) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to armor reply.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to armor reply.").Flush();
 
         return true;
     }
@@ -401,7 +404,7 @@ auto MessageProcessor::process_message(
 void MessageProcessor::process_notification(const zmq::Message& incoming)
 {
     if (2 != incoming.Body().size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message.").Flush();
 
         return;
     }
@@ -410,7 +413,7 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
     const auto connection = query_connection(nymID);
 
     if (connection->empty()) {
-        LogDebug(OT_METHOD)(__func__)(
+        LogDebug()(OT_METHOD)(__func__)(
             ": No notification channel available for ")(nymID)(".")
             .Flush();
 
@@ -437,7 +440,8 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
 
     auto serialized = proto::ServerReply{};
     if (false == message->Serialize(serialized)) {
-        LogVerbose(OT_METHOD)(__func__)(": Failed to serialize reply.").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Failed to serialize reply.")
+            .Flush();
 
         return;
     }
@@ -450,11 +454,11 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
     const auto sent = frontend_socket_->Send(pushNotification);
 
     if (sent) {
-        LogVerbose(OT_METHOD)(__func__)(": Push notification for ")(
+        LogVerbose()(OT_METHOD)(__func__)(": Push notification for ")(
             nymID)(" delivered via ")(connection->asHex())
             .Flush();
     } else {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to deliver push notifcation "
             "for ")(nymID)(" via ")(connection->asHex())(".")
             .Flush();
@@ -465,12 +469,12 @@ void MessageProcessor::process_proto(
     const Data& id,
     const network::zeromq::Message& incoming)
 {
-    LogTrace(OT_METHOD)(__func__)(": Processing request via ")(id.asHex())
+    LogTrace()(OT_METHOD)(__func__)(": Processing request via ")(id.asHex())
         .Flush();
     const auto command = extract_proto(incoming.Body().at(0));
 
     if (false == proto::Validate(command, VERBOSE)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid otx request.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid otx request.").Flush();
 
         return;
     }

@@ -17,14 +17,13 @@
 #include "Proto.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/otx/client/Client.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Editor.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Message.hpp"
@@ -38,15 +37,17 @@
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace blind
@@ -192,7 +193,7 @@ private:
     static const std::map<otx::OperationType, Category> category_;
     static const std::map<otx::OperationType, std::size_t> transaction_numbers_;
 
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
     const OTPasswordPrompt reason_;
     const OTNymID nym_id_;
     const OTServerID server_id_;
@@ -348,7 +349,7 @@ private:
     void transaction_numbers();
 
     Operation(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nym,
         const identifier::Server& server,
         const PasswordPrompt& reason);

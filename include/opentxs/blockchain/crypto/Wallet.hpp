@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_CRYPTO_WALLET_HPP
-#define OPENTXS_BLOCKCHAIN_CRYPTO_WALLET_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -15,10 +14,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 }  // namespace api
 
 namespace blockchain
@@ -61,7 +60,7 @@ public:
         -> Account& = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> internal::Wallet& = 0;
-    virtual auto Parent() const noexcept -> const api::client::Blockchain& = 0;
+    virtual auto Parent() const noexcept -> const api::crypto::Blockchain& = 0;
 
     OPENTXS_NO_EXPORT virtual ~Wallet() = default;
 
@@ -77,4 +76,3 @@ private:
 }  // namespace crypto
 }  // namespace blockchain
 }  // namespace opentxs
-#endif  // OPENTXS_BLOCKCHAIN_CRYPTO_BALANCELIST_HPP

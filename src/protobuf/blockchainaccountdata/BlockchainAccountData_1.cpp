@@ -8,7 +8,7 @@
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/BlockchainAccountData.pb.h"
 #include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/verify/BlockchainActivity.hpp"
+#include "opentxs/protobuf/verify/BlockchainActivity.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"

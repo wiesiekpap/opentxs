@@ -11,22 +11,23 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -44,8 +45,8 @@ public:
     static const Expected expected_;
     static Nyms nyms_;
 
-    const ot::api::Core& sender_;
-    const ot::api::Core& recipient_;
+    const ot::api::Session& sender_;
+    const ot::api::Session& recipient_;
     const ot::OTPasswordPrompt reason_s_;
     const ot::OTPasswordPrompt reason_r_;
     const ot::OTString plaintext_;
@@ -68,8 +69,8 @@ public:
     }
 
     Test_Envelope()
-        : sender_(ot::Context().StartClient(0))
-        , recipient_(ot::Context().StartClient(1))
+        : sender_(ot::Context().StartClientSession(0))
+        , recipient_(ot::Context().StartClientSession(1))
         , reason_s_(sender_.Factory().PasswordPrompt(__func__))
         , reason_r_(recipient_.Factory().PasswordPrompt(__func__))
         , plaintext_(ot::String::Factory(

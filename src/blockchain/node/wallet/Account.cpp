@@ -15,6 +15,7 @@
 
 #include "blockchain/node/wallet/DeterministicStateData.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Deterministic.hpp"
@@ -22,7 +23,6 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
@@ -122,8 +122,8 @@ struct Account::Imp {
             [&](auto& s) { s.ProcessTaskComplete(id, type, enabled); });
     }
 
-    Imp(const api::Core& api,
-        const api::client::internal::Blockchain& crypto,
+    Imp(const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const BalanceTree& ref,
         const node::internal::Network& node,
         Accounts& parent,
@@ -163,8 +163,8 @@ struct Account::Imp {
 private:
     using Map = std::map<OTIdentifier, DeterministicStateData>;
 
-    const api::Core& api_;
-    const api::client::internal::Blockchain& crypto_;
+    const api::Session& api_;
+    const api::crypto::Blockchain& crypto_;
     const BalanceTree& ref_;
     const node::internal::Network& node_;
     Accounts& parent_;
@@ -245,8 +245,8 @@ private:
 };
 
 Account::Account(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const BalanceTree& ref,
     const node::internal::Network& node,
     Accounts& parent,

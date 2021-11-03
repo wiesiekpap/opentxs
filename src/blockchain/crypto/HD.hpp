@@ -31,17 +31,18 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/protobuf/HDAccount.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -82,14 +83,14 @@ public:
         const PasswordPrompt& reason) const noexcept -> ECKey final;
     auto Standard() const noexcept -> HDProtocol final { return standard_; }
 
-    HD(const api::Core& api,
+    HD(const api::Session& api,
        const Account& parent,
        const proto::HDPath& path,
        const HDProtocol standard,
        const PasswordPrompt& reason,
        Identifier& id)
     noexcept(false);
-    HD(const api::Core& api,
+    HD(const api::Session& api,
        const Account& parent,
        const SerializedType& serialized,
        Identifier& id)

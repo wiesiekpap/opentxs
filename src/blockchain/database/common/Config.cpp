@@ -15,14 +15,14 @@ extern "C" {
 
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/LMDB.hpp"
 
@@ -38,7 +38,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 }
 
 Configuration::Configuration(
-    const api::Core& api,
+    const api::Session& api,
     storage::lmdb::LMDB& lmdb) noexcept
     : api_(api)
     , lmdb_(lmdb)

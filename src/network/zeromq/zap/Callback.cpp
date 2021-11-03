@@ -9,16 +9,14 @@
 
 #include <atomic>
 #include <functional>
-#include <memory>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::zap::Callback>;
 
@@ -87,7 +85,7 @@ auto Callback::Process(const zap::Request& request) const -> OTZMQZAPReply
     auto [valid, error] = request.Validate();
 
     if (false == valid) {
-        LogOutput(OT_METHOD)(__func__)(": Rejecting invalid request.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Rejecting invalid request.").Flush();
 
         return zap::Reply::Factory(request, Status::SystemError, error);
     }
@@ -104,13 +102,13 @@ auto Callback::SetDomain(
     Lock lock(domain_lock_);
 
     if (domain.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid domain.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid domain.").Flush();
 
         return false;
     }
 
     if (0 < domains_.count(domain)) {
-        LogOutput(OT_METHOD)(__func__)(": Domain ")(
+        LogError()(OT_METHOD)(__func__)(": Domain ")(
             domain)(" already registered.")
             .Flush();
 

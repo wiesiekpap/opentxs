@@ -11,20 +11,20 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/accountactivity/BalanceItem.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -34,7 +34,7 @@ namespace opentxs::ui::implementation
 {
 ChequeBalanceItem::ChequeBalanceItem(
     const AccountActivityInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const AccountActivityRowID& rowID,
     const AccountActivitySortKey& sortKey,
     CustomData& custom,
@@ -140,7 +140,7 @@ auto ChequeBalanceItem::startup(
                 case proto::PAYMENTEVENTTYPE_CANCEL:
                 case proto::PAYMENTEVENTTYPE_COMPLETE:
                 default: {
-                    LogOutput(OT_METHOD)(__func__)(": Invalid event state (")(
+                    LogError()(OT_METHOD)(__func__)(": Invalid event state (")(
                         event.type())(")")
                         .Flush();
                 }
@@ -165,7 +165,7 @@ auto ChequeBalanceItem::startup(
                 case proto::PAYMENTEVENTTYPE_CANCEL:
                 case proto::PAYMENTEVENTTYPE_COMPLETE:
                 default: {
-                    LogOutput(OT_METHOD)(__func__)(": Invalid event state (")(
+                    LogError()(OT_METHOD)(__func__)(": Invalid event state (")(
                         event.type())(")")
                         .Flush();
                 }
@@ -188,7 +188,7 @@ auto ChequeBalanceItem::startup(
         case StorageBox::DRAFT:
         case StorageBox::UNKNOWN:
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Invalid item type (")(
+            LogError()(OT_METHOD)(__func__)(": Invalid item type (")(
                 static_cast<std::uint8_t>(type_))(")")
                 .Flush();
         }

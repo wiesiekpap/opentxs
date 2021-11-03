@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <functional>
 #include <iosfwd>
 #include <map>
 #include <set>
@@ -19,19 +20,25 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/protobuf/Issuer.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+namespace session
+{
 class Wallet;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace proto
@@ -56,12 +63,12 @@ public:
     auto BailmentInitiated(const identifier::UnitDefinition& unitID) const
         -> bool final;
     auto BailmentInstructions(
-        const api::Core& client,
+        const api::Session& client,
         const identifier::UnitDefinition& unitID,
         const bool onlyUnused = true) const
         -> std::vector<BailmentDetails> final;
     auto ConnectionInfo(
-        const api::Core& client,
+        const api::Session& client,
         const contract::peer::ConnectionInfoType type) const
         -> std::vector<ConnectionDetails> final;
     auto ConnectionInfoInitiated(
@@ -104,11 +111,11 @@ public:
         const bool isUsed = true) -> bool final;
 
     Issuer(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const identifier::Nym& nymID,
         const proto::Issuer& serialized);
     Issuer(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const identifier::Nym& nymID,
         const identifier::Nym& issuerID);
 
@@ -119,7 +126,7 @@ private:
     using WorkflowMap = std::map<contract::peer::PeerRequestType, Workflow>;
     using UnitAccountPair = std::pair<OTUnitID, OTIdentifier>;
 
-    const api::Wallet& wallet_;
+    const api::session::Wallet& wallet_;
     VersionNumber version_{0};
     std::string pairing_code_{""};
     mutable OTFlag paired_;

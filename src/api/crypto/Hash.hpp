@@ -11,9 +11,10 @@
 #include <string>
 
 #include "Proto.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -22,6 +23,7 @@ namespace api
 namespace crypto
 {
 class Encode;
+class Hash;
 }  // namespace crypto
 }  // namespace api
 
@@ -48,7 +50,7 @@ class Secret;
 
 namespace opentxs::api::crypto::implementation
 {
-class Hash final : public api::crypto::Hash
+class Hash final : public internal::Hash
 {
 public:
     auto Digest(
@@ -68,10 +70,10 @@ public:
         const ReadView key,
         const ReadView& data,
         const AllocateOutput digest) const noexcept -> bool final;
-    void MurmurHash3_32(
+    auto MurmurHash3_32(
         const std::uint32_t& key,
         const Data& data,
-        std::uint32_t& output) const noexcept final;
+        std::uint32_t& output) const noexcept -> void final;
     auto PKCS5_PBKDF2_HMAC(
         const Data& input,
         const Data& salt,

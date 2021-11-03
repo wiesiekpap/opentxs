@@ -8,19 +8,25 @@
 #include <cstdint>
 #include <string>
 
+#include "internal/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace crypto
+{
+class Config;
+}  // namespace crypto
+
 class Settings;
 }  // namespace api
 }  // namespace opentxs
 
 namespace opentxs::api::crypto::implementation
 {
-class Config final : public api::crypto::Config
+class Config final : public internal::Config
 {
 public:
     auto IterationCount() const -> std::uint32_t override;

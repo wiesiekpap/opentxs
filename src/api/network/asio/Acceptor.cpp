@@ -19,12 +19,11 @@
 
 #include "network/asio/Endpoint.hpp"
 #include "network/asio/Socket.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace ip = boost::asio::ip;
 
@@ -54,13 +53,13 @@ struct Acceptor::Imp {
         auto lock = Lock{lock_};
 
         if (running_) {
-            LogTrace(OT_METHOD)(__func__)(": shutting down ")(endpoint_.str())
+            LogTrace()(OT_METHOD)(__func__)(": shutting down ")(endpoint_.str())
                 .Flush();
             auto ec = boost::system::error_code{};
             acceptor_.cancel(ec);
             acceptor_.close(ec);
             running_ = false;
-            LogTrace(OT_METHOD)(__func__)(": ")(endpoint_.str())(" closed")
+            LogTrace()(OT_METHOD)(__func__)(": ")(endpoint_.str())(" closed")
                 .Flush();
         }
     }
@@ -97,7 +96,7 @@ private:
                 case Error::operation_canceled: {
                 } break;
                 default: {
-                    LogOutput(OT_METHOD)(__func__)(": error ")(error)(", ")(
+                    LogError()(OT_METHOD)(__func__)(": error ")(error)(", ")(
                         ec.message())
                         .Flush();
                 }
@@ -105,7 +104,7 @@ private:
 
             return;
         } else {
-            LogVerbose(OT_METHOD)(__func__)(
+            LogVerbose()(OT_METHOD)(__func__)(
                 ": incoming connection request on ")(endpoint_.str())
                 .Flush();
         }

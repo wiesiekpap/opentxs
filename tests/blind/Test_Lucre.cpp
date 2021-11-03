@@ -10,23 +10,23 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/api/session/Client.hpp"
+#include "internal/api/session/Wallet.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Editor.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"
 #include "opentxs/blind/PurseType.hpp"
 #include "opentxs/blind/Token.hpp"
 #include "opentxs/blind/TokenState.hpp"
+#include "opentxs/blind/Types.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
@@ -35,6 +35,9 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 #define MINT_EXPIRE_MONTHS 6
 #define MINT_VALID_MONTHS 12
@@ -60,14 +63,14 @@ public:
     static ot::Time valid_from_;
     static ot::Time valid_to_;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     ot::OTPasswordPrompt reason_;
     ot::Nym_p alice_;
     ot::Nym_p bob_;
 
     Test_Basic()
-        : api_(dynamic_cast<const ot::api::client::Manager&>(
-              ot::Context().StartClient(0)))
+        : api_(dynamic_cast<const ot::api::session::Client&>(
+              ot::Context().StartClientSession(0)))
         , reason_(api_.Factory().PasswordPrompt(__func__))
         , alice_()
         , bob_()
@@ -80,11 +83,11 @@ public:
 
     void init()
     {
-        const auto seedA = api_.Exec().Wallet_ImportSeed(
+        const auto seedA = api_.InternalClient().Exec().Wallet_ImportSeed(
             "spike nominee miss inquiry fee nothing belt list other "
             "daughter leave valley twelve gossip paper",
             "");
-        const auto seedB = api_.Exec().Wallet_ImportSeed(
+        const auto seedB = api_.InternalClient().Exec().Wallet_ImportSeed(
             "trim thunder unveil reduce crop cradle zone inquiry "
             "anchor skate property fringe obey butter text tank drama "
             "palm guilt pudding laundry stay axis prosper",
@@ -391,7 +394,7 @@ TEST_F(Test_Basic, wallet)
     }
 
     {
-        api_.Wallet().mutable_Purse(
+        api_.Wallet().Internal().mutable_Purse(
             alice_nym_id_,
             server_id_,
             unit_id_,
@@ -409,7 +412,7 @@ TEST_F(Test_Basic, wallet)
 
 TEST_F(Test_Basic, PushPop)
 {
-    auto purseEditor = api_.Wallet().mutable_Purse(
+    auto purseEditor = api_.Wallet().Internal().mutable_Purse(
         alice_nym_id_,
         server_id_,
         unit_id_,

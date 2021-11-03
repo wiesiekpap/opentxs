@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_STRING_HPP
-#define OPENTXS_CORE_STRING_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -17,8 +16,8 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #ifdef __GNUC__
 #define ATTR_PRINTF(a, b) __attribute__((format(printf, a, b)))
@@ -154,4 +153,3 @@ private:
     auto operator=(String&& rhs) -> String& = delete;
 };
 }  // namespace opentxs
-#endif

@@ -14,9 +14,9 @@
 #include <string>
 #include <utility>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::NumList::"
 
@@ -130,7 +130,7 @@ auto NumList::Add(const char* szNumbers) -> bool  // if false, means the numbers
                        // comma-separated list.)
             bStartedANumber = false;  // reset
         } else {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error: Unexpected character found in "
                 "erstwhile comma-separated list of longs: ") (*pChar)(".")
                 .Flush();
@@ -237,7 +237,7 @@ auto NumList::Verify(const std::set<std::int64_t>& theNumbers) const -> bool
 auto NumList::Verify(const NumList& rhs) const -> bool
 {
     if (Count() != rhs.Count()) {
-        LogOutput(OT_METHOD)(__func__)(": Incorrect count ")(rhs.Count())(
+        LogError()(OT_METHOD)(__func__)(": Incorrect count ")(rhs.Count())(
             " should be ")(Count())
             .Flush();
 
@@ -246,7 +246,8 @@ auto NumList::Verify(const NumList& rhs) const -> bool
 
     for (auto& it : m_setData) {
         if (false == rhs.Verify(it)) {
-            LogOutput(OT_METHOD)(__func__)(": Number ")(it)(" missing").Flush();
+            LogError()(OT_METHOD)(__func__)(": Number ")(it)(" missing")
+                .Flush();
 
             return false;
         }

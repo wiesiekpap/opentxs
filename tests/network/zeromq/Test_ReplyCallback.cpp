@@ -7,8 +7,6 @@
 #include <string>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -16,6 +14,8 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 using namespace opentxs;
 

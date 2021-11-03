@@ -11,20 +11,17 @@
 #include <sstream>
 #include <utility>
 
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/server/Manager.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/Language.hpp"
@@ -33,6 +30,11 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace ottest
 {
@@ -56,7 +58,7 @@ const User IntegrationFixture::chris_{
 const Server IntegrationFixture::server_1_{};
 
 auto set_introduction_server(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const Server& server) noexcept -> void
 {
     auto bytes = ot::Space{};
@@ -106,12 +108,12 @@ auto Callbacks::callback(const ot::network::zeromq::Message& incoming) noexcept
             future = {};
             limit = 0;
         } else {
-            ot::LogOutput("::Callbacks::")(__func__)(": ")(
+            ot::LogError()("::Callbacks::")(__func__)(": ")(
                 name_)(" missing callback for ")(static_cast<int>(type))
                 .Flush();
         }
     } else {
-        ot::LogVerbose("::Callbacks::")(__func__)(": Skipping update ")(
+        ot::LogVerbose()("::Callbacks::")(__func__)(": Skipping update ")(
             counter)(" to ")(static_cast<int>(type))
             .Flush();
     }
@@ -131,7 +133,7 @@ auto Callbacks::RegisterWidget(
     int counter,
     WidgetCallback callback) noexcept -> std::future<bool>
 {
-    ot::LogDetail("::Callbacks::")(__func__)(": Name: ")(name_)(" ID: ")(id)
+    ot::LogDetail()("::Callbacks::")(__func__)(": Name: ")(name_)(" ID: ")(id)
         .Flush();
     WidgetData data{};
     std::get<0>(data) = type;
@@ -182,7 +184,7 @@ auto Server::Reason() const noexcept -> ot::OTPasswordPrompt
     return api_->Factory().PasswordPrompt(__func__);
 }
 
-auto Server::init(const ot::api::server::Manager& api) noexcept -> void
+auto Server::init(const ot::api::session::Notary& api) noexcept -> void
 {
     if (init_) { return; }
 
@@ -254,7 +256,7 @@ auto User::Contact(const std::string& contact) const noexcept
 }
 
 auto User::init_basic(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const ot::contact::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
@@ -262,7 +264,7 @@ auto User::init_basic(
     if (init_) { return false; }
 
     api_ = &api;
-    seed_id_ = api.Seeds().ImportSeed(
+    seed_id_ = api.Crypto().Seed().ImportSeed(
         api.Factory().SecretFromText(words_),
         api.Factory().SecretFromText(passphrase_),
         seed,
@@ -291,7 +293,7 @@ auto User::init_basic(
 }
 
 auto User::init(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const Server& server,
     const ot::contact::ClaimType type,
     const std::uint32_t index,
@@ -308,7 +310,7 @@ auto User::init(
 }
 
 auto User::init(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const ot::contact::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
@@ -323,7 +325,7 @@ auto User::init(
 }
 
 auto User::init_custom(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const Server& server,
     const std::function<void(User&)> custom,
     const ot::contact::ClaimType type,
@@ -334,7 +336,7 @@ auto User::init_custom(
 }
 
 auto User::init_custom(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const std::function<void(User&)> custom,
     const ot::contact::ClaimType type,
     const std::uint32_t index,

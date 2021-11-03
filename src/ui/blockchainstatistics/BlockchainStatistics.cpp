@@ -14,12 +14,13 @@
 #include <set>
 #include <vector>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -27,14 +28,12 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/util/Log.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::BlockchainStatistics::"
@@ -44,7 +43,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto BlockchainStatisticsModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::BlockchainStatistics>
 {
@@ -57,7 +56,7 @@ auto BlockchainStatisticsModel(
 namespace opentxs::ui::implementation
 {
 BlockchainStatistics::BlockchainStatistics(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     : BlockchainStatisticsList(api, api.Factory().Identifier(), cb, false)
     , Worker(api, {})
@@ -128,7 +127,7 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -167,7 +166,7 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type: ")(
+            LogError()(OT_METHOD)(__func__)(": Unhandled type: ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 

@@ -24,21 +24,20 @@
 
 #include "blockchain/node/base/SyncClient.hpp"
 #include "blockchain/node/base/SyncServer.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Options.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -53,10 +52,9 @@
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -75,6 +73,10 @@
 #include "opentxs/protobuf/BlockchainTransactionProposedOutput.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/protobuf/PaymentCode.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Options.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::implementation::Base::"
 
@@ -85,7 +87,7 @@ constexpr auto notification_version_ = VersionNumber{1};
 constexpr auto output_version_ = VersionNumber{1};
 
 struct NullWallet final : public node::internal::Wallet {
-    const api::Core& api_;
+    const api::Session& api_;
 
     auto ConstructTransaction(
         const proto::BlockchainTransactionProposal&,
@@ -153,7 +155,7 @@ struct NullWallet final : public node::internal::Wallet {
         return promise.get_future();
     }
 
-    NullWallet(const api::Core& api)
+    NullWallet(const api::Session& api)
         : api_(api)
     {
     }
@@ -166,8 +168,8 @@ struct NullWallet final : public node::internal::Wallet {
 };
 
 Base::Base(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const api::network::internal::Blockchain& network,
     const Type type,
     const node::internal::Config& config,
@@ -316,7 +318,7 @@ Base::Base(
 
     header_.Init();
     init_executor({api_.Endpoints().InternalBlockchainFilterUpdated(chain_)});
-    LogVerbose(config_.print()).Flush();
+    LogVerbose()(config_.print()).Flush();
 
     for (const auto& addr : api_.GetOptions().BlockchainBindIpv4()) {
         try {
@@ -348,7 +350,7 @@ Base::Base(
 
             peer_.Listen(*address);
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             continue;
         }
@@ -384,7 +386,7 @@ Base::Base(
 
             peer_.Listen(*address);
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             continue;
         }
@@ -395,7 +397,7 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
     const noexcept -> bool
 {
     if (!pBlock) {
-        LogOutput(OT_METHOD)(__func__)(": invalid ")(DisplayString(chain_))(
+        LogError()(OT_METHOD)(__func__)(": invalid ")(DisplayString(chain_))(
             " block")
             .Flush();
 
@@ -416,7 +418,7 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
         }();
         block_.SubmitBlock(reader(bytes));
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": failed to serialize ")(
+        LogError()(OT_METHOD)(__func__)(": failed to serialize ")(
             DisplayString(chain_))(" block")
             .Flush();
 
@@ -427,7 +429,7 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
 
     if (std::future_status::ready !=
         block_.LoadBitcoin(id).wait_for(std::chrono::seconds(60))) {
-        LogOutput(OT_METHOD)(__func__)(": failed to load ")(
+        LogError()(OT_METHOD)(__func__)(": failed to load ")(
             DisplayString(chain_))(" block")
             .Flush();
 
@@ -435,7 +437,7 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
     }
 
     if (false == filters_.ProcessBlock(block)) {
-        LogOutput(OT_METHOD)(__func__)(": failed to index ")(
+        LogError()(OT_METHOD)(__func__)(": failed to index ")(
             DisplayString(chain_))(" block")
             .Flush();
 
@@ -443,7 +445,7 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
     }
 
     if (false == header_.AddHeader(block.Header().clone())) {
-        LogOutput(OT_METHOD)(__func__)(": failed to process ")(
+        LogError()(OT_METHOD)(__func__)(": failed to process ")(
             DisplayString(chain_))(" header")
             .Flush();
 
@@ -537,8 +539,9 @@ auto Base::init() noexcept -> void
         OT_ASSERT(best);
 
         const auto position = best->Position();
-        LogVerbose(DisplayString(chain_))(" chain initialized with best hash ")(
-            position.second->asHex())(" at height ")(position.first)
+        LogVerbose()(DisplayString(chain_))(
+            " chain initialized with best hash ")(position.second->asHex())(
+            " at height ")(position.first)
             .Flush();
     }
 
@@ -618,7 +621,7 @@ auto Base::pipeline(zmq::Message& in) noexcept -> void
 
             return body.at(0).as<Task>();
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             OT_FAIL;
         }
@@ -674,7 +677,7 @@ auto Base::process_block(network::zeromq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (2 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid block").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid block").Flush();
 
         return;
     }
@@ -701,7 +704,7 @@ auto Base::process_filter_update(network::zeromq::Message& in) noexcept -> void
         display << std::setprecision(3) << progress << "%";
 
         if (false == config_.disable_wallet_) {
-            LogDetail(DisplayString(chain_))(" chain sync progress: ")(
+            LogDetail()(DisplayString(chain_))(" chain sync progress: ")(
                 height)(" of ")(target)(" (")(display.str())(")")
                 .Flush();
         }
@@ -723,7 +726,7 @@ auto Base::process_header(network::zeromq::Message& in) noexcept -> void
         const auto body = in.Body();
 
         if (2 > body.size()) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
             return;
         }
@@ -830,7 +833,7 @@ auto Base::process_send_to_address(network::zeromq::Message& in) noexcept
 
         wallet_.ConstructTransaction(proposal, send_promises_.finish(promise));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
         static const auto blank = api_.Factory().Data();
         send_promises_.finish(promise).set_value({rc, blank});
     }
@@ -900,7 +903,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
         }();
         const auto reason = api_.Factory().PasswordPrompt(
             std::string{"Sending a transaction to "} + recipient->asBase58());
-        const auto& account = crypto_.PaymentCodeSubaccount(
+        const auto& account = crypto_.Internal().PaymentCodeSubaccount(
             nymID, sender, recipient, path, chain_, reason);
         using Subchain = blockchain::crypto::Subchain;
         constexpr auto subchain{Subchain::Outgoing};
@@ -945,8 +948,8 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
             txout.set_index(index.value());
             txout.set_paymentcodechannel(account.ID().str());
             const auto pubkey = api_.Factory().Data(key.PublicKey());
-            LogVerbose(OT_METHOD)(__func__)(": ")(" using derived public key ")(
-                pubkey->asHex())(
+            LogVerbose()(OT_METHOD)(__func__)(": ")(
+                " using derived public key ")(pubkey->asHex())(
                 " at "
                 "index"
                 " ")(index.value())(" for outgoing transaction")
@@ -975,7 +978,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
 
         wallet_.ConstructTransaction(proposal, send_promises_.finish(promise));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
         static const auto blank = api_.Factory().Data();
         send_promises_.finish(promise).set_value({rc, blank});
     }
@@ -991,7 +994,7 @@ auto Base::process_sync_data(network::zeromq::Message& in) noexcept -> void
         const auto& state = data.State();
 
         if (state.Chain() != chain_) {
-            LogOutput(OT_METHOD)(__func__)(": Wrong chain").Flush();
+            LogError()(OT_METHOD)(__func__)(": Wrong chain").Flush();
 
             return;
         }
@@ -1007,19 +1010,19 @@ auto Base::process_sync_data(network::zeromq::Message& in) noexcept -> void
     if (0u < accepted) {
         const auto& blocks = data.Blocks();
 
-        LogVerbose("Accepted ")(accepted)(" of ")(blocks.size())(" ")(
+        LogVerbose()("Accepted ")(accepted)(" of ")(blocks.size())(" ")(
             DisplayString(chain_))(" headers")
             .Flush();
         filters_.ProcessSyncData(prior, hashes, data);
         const auto elapsed =
             std::chrono::duration_cast<std::chrono::microseconds>(
                 Clock::now() - start);
-        LogDetail("Processed ")(blocks.size())(" ")(DisplayString(chain_))(
+        LogDetail()("Processed ")(blocks.size())(" ")(DisplayString(chain_))(
             " sync packets in ")(elapsed.count())(" microseconds (")(
             blocks.size() * 1000000 / elapsed.count())(" blocks/sec)")
             .Flush();
     } else {
-        LogOutput("Invalid ")(DisplayString(chain_))(" sync data").Flush();
+        LogError()("Invalid ")(DisplayString(chain_))(" sync data").Flush();
     }
 
     notify_sync_client();
@@ -1121,7 +1124,7 @@ auto Base::state_machine() noexcept -> bool
 {
     if (false == running_.get()) { return false; }
 
-    LogDebug(OT_METHOD)(__func__)(": Starting state machine for ")(
+    LogDebug()(OT_METHOD)(__func__)(": Starting state machine for ")(
         DisplayString(chain_))
         .Flush();
     state_machine_headers();
@@ -1129,7 +1132,7 @@ auto Base::state_machine() noexcept -> bool
     switch (state_.load()) {
         case State::UpdatingHeaders: {
             if (is_synchronized_headers()) {
-                LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+                LogDetail()(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                     " header oracle is synchronized")
                     .Flush();
                 using Policy = database::BlockStorage;
@@ -1140,19 +1143,19 @@ auto Base::state_machine() noexcept -> bool
                     state_transition_filters();
                 }
             } else {
-                LogDebug(OT_METHOD)(__func__)(": updating ")(
+                LogDebug()(OT_METHOD)(__func__)(": updating ")(
                     DisplayString(chain_))(" header oracle")
                     .Flush();
             }
         } break;
         case State::UpdatingBlocks: {
             if (is_synchronized_blocks()) {
-                LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+                LogDetail()(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                     " block oracle is synchronized")
                     .Flush();
                 state_transition_filters();
             } else {
-                LogDebug(OT_METHOD)(__func__)(": updating ")(
+                LogDebug()(OT_METHOD)(__func__)(": updating ")(
                     DisplayString(chain_))(" block oracle")
                     .Flush();
 
@@ -1161,7 +1164,7 @@ auto Base::state_machine() noexcept -> bool
         } break;
         case State::UpdatingFilters: {
             if (is_synchronized_filters()) {
-                LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+                LogDetail()(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                     " filter oracle is synchronized")
                     .Flush();
 
@@ -1171,7 +1174,7 @@ auto Base::state_machine() noexcept -> bool
                     state_transition_normal();
                 }
             } else {
-                LogDebug(OT_METHOD)(__func__)(": updating ")(
+                LogDebug()(OT_METHOD)(__func__)(": updating ")(
                     DisplayString(chain_))(" filter oracle")
                     .Flush();
 
@@ -1180,12 +1183,12 @@ auto Base::state_machine() noexcept -> bool
         } break;
         case State::UpdatingSyncData: {
             if (is_synchronized_sync_server()) {
-                LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+                LogDetail()(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
                     " sync server is synchronized")
                     .Flush();
                 state_transition_normal();
             } else {
-                LogDebug(OT_METHOD)(__func__)(": updating ")(
+                LogDebug()(OT_METHOD)(__func__)(": updating ")(
                     DisplayString(chain_))(" sync server")
                     .Flush();
 
@@ -1197,7 +1200,7 @@ auto Base::state_machine() noexcept -> bool
         }
     }
 
-    LogDebug(OT_METHOD)(__func__)(": Completed state machine for ")(
+    LogDebug()(OT_METHOD)(__func__)(": Completed state machine for ")(
         DisplayString(chain_))
         .Flush();
 
@@ -1212,9 +1215,9 @@ auto Base::state_machine_headers() noexcept -> void
     const auto requestInterval = Clock::now() - headers_requested_;
     const auto receiveInterval = Clock::now() - headers_received_;
     const auto requestHeaders = [&] {
-        LogVerbose(OT_METHOD)(__func__)(": Requesting ")(DisplayString(chain_))(
-            " block headers from all connected peers "
-            "(instance ")(api_.Instance())(")")
+        LogVerbose()(OT_METHOD)(__func__)(": Requesting ")(
+            DisplayString(chain_))(" block headers from all connected peers "
+                                   "(instance ")(api_.Instance())(")")
             .Flush();
         waiting_for_headers_->On();
         peer_.RequestHeaders();
@@ -1226,7 +1229,7 @@ auto Base::state_machine_headers() noexcept -> void
     if (waiting_for_headers_.get()) {
         if (requestInterval < timeout) { return; }
 
-        LogDetail(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
+        LogDetail()(OT_METHOD)(__func__)(": ")(DisplayString(chain_))(
             " headers not received before timeout "
             "(instance ")(api_.Instance())(")")
             .Flush();
@@ -1321,7 +1324,7 @@ auto Base::UpdateLocalHeight(const block::Position position) const noexcept
     if (false == running_.get()) { return; }
 
     const auto& [height, hash] = position;
-    LogDetail(DisplayString(chain_))(" block header chain updated to hash ")(
+    LogDetail()(DisplayString(chain_))(" block header chain updated to hash ")(
         hash->asHex())(" at height ")(height)
         .Flush();
     local_chain_height_.store(height);

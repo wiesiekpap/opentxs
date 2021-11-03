@@ -39,6 +39,8 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/Bip47Channel.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/Latest.hpp"
 
 namespace opentxs
@@ -47,11 +49,15 @@ namespace api
 {
 namespace client
 {
-class Blockchain;
 class Contacts;
 }  // namespace client
 
-class Core;
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -116,7 +122,7 @@ public:
 #endif  // OT_CRYPTO_WITH_BIP32
 
     PaymentCode(
-        const api::Core& api,
+        const api::Session& api,
         const api::client::Contacts& contacts,
         const Account& parent,
         const opentxs::PaymentCode& local,
@@ -126,7 +132,7 @@ public:
         const PasswordPrompt& reason,
         Identifier& id) noexcept(false);
     PaymentCode(
-        const api::Core& api,
+        const api::Session& api,
         const api::client::Contacts& contacts,
         const Account& parent,
         const SerializedType& serialized,

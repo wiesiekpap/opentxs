@@ -11,15 +11,16 @@
 #include <optional>
 
 #include "blockchain/regtest/Helpers.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
@@ -30,16 +31,17 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/identity/Nym.hpp"
 #include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/core/Identifier.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/request/SendPayment.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/SendPayment.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {
@@ -77,7 +79,7 @@ protected:
 
                 OT_ASSERT(alex_p_)
 
-                client_1_.Blockchain().NewHDSubaccount(
+                client_1_.Crypto().Blockchain().NewHDSubaccount(
                     alex_p_->ID(),
                     ot::blockchain::crypto::HDProtocol::BIP_44,
                     test_chain_,
@@ -88,12 +90,13 @@ protected:
 
             return *alex_p_;
         }())
-        , account_(client_1_.Blockchain()
+        , account_(client_1_.Crypto()
+                       .Blockchain()
                        .Account(alex_.ID(), test_chain_)
                        .GetHD()
                        .at(0))
         , mine_to_alex_([&](Height height) -> Transaction {
-            using OutputBuilder = ot::api::Factory::OutputBuilder;
+            using OutputBuilder = ot::api::session::Factory::OutputBuilder;
             static const auto baseAmount = ot::blockchain::Amount{10000000000};
             auto output = miner_.Factory().BitcoinGenerationTransaction(
                 test_chain_,

@@ -16,21 +16,21 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Headers::"
 
 namespace opentxs::factory
 {
 auto BitcoinP2PHeaders(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -41,7 +41,7 @@ auto BitcoinP2PHeaders(
     using ReturnType = bitcoin::message::implementation::Headers;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -50,7 +50,7 @@ auto BitcoinP2PHeaders(
     auto expectedSize = sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Payload too short (compactsize)")
             .Flush();
 
@@ -63,7 +63,7 @@ auto BitcoinP2PHeaders(
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
     if (false == decodedSize) {
-        LogOutput(__func__)(": CompactSize incomplete").Flush();
+        LogError()(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
@@ -75,7 +75,7 @@ auto BitcoinP2PHeaders(
             expectedSize += 81;
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__func__)(
+                LogError()("opentxs::factory::")(__func__)(
                     ": Block Header entries incomplete at entry index ")(i)
                     .Flush();
 
@@ -92,7 +92,7 @@ auto BitcoinP2PHeaders(
 
                 it += 81;
             } else {
-                LogOutput("opentxs::factory::")(__func__)(
+                LogError()("opentxs::factory::")(__func__)(
                     ": Invalid header received at index ")(i)
                     .Flush();
 
@@ -105,7 +105,7 @@ auto BitcoinP2PHeaders(
 }
 
 auto BitcoinP2PHeaders(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     std::vector<std::unique_ptr<blockchain::block::bitcoin::Header>>&& headers)
     -> blockchain::p2p::bitcoin::message::internal::Headers*
@@ -120,7 +120,7 @@ auto BitcoinP2PHeaders(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Headers::Headers(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     std::vector<std::unique_ptr<value_type>>&& headers) noexcept
     : Message(api, network, bitcoin::Command::headers)
@@ -130,7 +130,7 @@ Headers::Headers(
 }
 
 Headers::Headers(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     std::vector<std::unique_ptr<value_type>>&& headers) noexcept
     : Message(api, std::move(header))

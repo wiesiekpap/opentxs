@@ -19,7 +19,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -49,11 +49,11 @@ public:
     auto Nonce() const noexcept -> bitcoin::Nonce final { return nonce_; }
 
     Pong(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const bitcoin::Nonce nonce) noexcept;
     Pong(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const bitcoin::Nonce nonce) noexcept;
 

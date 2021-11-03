@@ -12,7 +12,6 @@
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -20,12 +19,14 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/protobuf/ServerContract.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -69,7 +70,7 @@ public:
     void SetAlias(const std::string& alias) final;
 
     Server(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const VersionNumber version,
         const std::string& terms,
@@ -79,7 +80,7 @@ public:
         const std::string& id = {},
         Signatures&& signatures = {});
     Server(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const proto::ServerContract& serialized);
 

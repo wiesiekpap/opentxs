@@ -16,29 +16,31 @@
 
 #include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/otx/client/OTPayment.hpp"
+#include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
 #include "opentxs/client/ServerAction.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Cheque.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/core/recurring/OTPaymentPlan.hpp"
-#include "opentxs/core/script/OTSmartContract.hpp"
-#include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -104,14 +106,14 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const proto::UnitDefinition& unitDefinition,
@@ -120,7 +122,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const identifier::Nym& nymID2);
@@ -128,7 +130,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const identifier::Nym& nymID2,
@@ -137,7 +139,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& recipientID,
@@ -146,7 +148,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const TransactionNumber& transactionNumber,
@@ -156,7 +158,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& accountID,
@@ -166,7 +168,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& recipientID,
@@ -176,7 +178,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const identifier::Nym& nymID2,
@@ -187,7 +189,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& targetID,
@@ -198,7 +200,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& recipientID,
@@ -210,7 +212,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
@@ -222,7 +224,7 @@ public:
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& assetAccountID,
@@ -284,7 +286,7 @@ private:
     Time lifetime_{};
     std::int32_t nRequestNum_{-1};
     std::int32_t nTransNumsNeeded_{0};
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
     Editor<otx::context::Server> context_editor_;
     otx::context::Server& context_;
     CommandResult last_attempt_;
@@ -313,7 +315,7 @@ private:
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         std::recursive_mutex& apilock,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const OTAPI_Func_Type type);

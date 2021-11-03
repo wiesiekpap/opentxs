@@ -16,18 +16,17 @@
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace boost
 {
@@ -53,7 +52,7 @@ namespace ottest
 class Test_Message : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
 
     void test_service_bit(const bp::Service service)
     {
@@ -64,7 +63,7 @@ public:
     }
 
     Test_Message()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
     {
     }
 };

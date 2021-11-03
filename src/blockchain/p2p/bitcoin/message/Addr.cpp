@@ -15,11 +15,11 @@
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 //#define OT_METHOD "
 // opentxs::blockchain::p2p::bitcoin::message::implementation::Addr::"
@@ -27,7 +27,7 @@
 namespace opentxs::factory
 {
 auto BitcoinP2PAddr(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -39,7 +39,7 @@ auto BitcoinP2PAddr(
     using ReturnType = bitcoin::message::implementation::Addr;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -48,7 +48,7 @@ auto BitcoinP2PAddr(
     auto expectedSize = sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Payload too short (compactsize)")
             .Flush();
 
@@ -61,7 +61,7 @@ auto BitcoinP2PAddr(
         network::blockchain::bitcoin::DecodeSize(it, expectedSize, size, count);
 
     if (false == haveCount) {
-        LogOutput(__func__)(": Invalid CompactSizee").Flush();
+        LogError()(__func__)(": Invalid CompactSizee").Flush();
 
         return nullptr;
     }
@@ -78,7 +78,7 @@ auto BitcoinP2PAddr(
             expectedSize += addressSize;
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__func__)(
+                LogError()("opentxs::factory::")(__func__)(
                     ": Address entries incomplete at entry index ")(i)
                     .Flush();
 
@@ -134,7 +134,7 @@ auto BitcoinP2PAddr(
 }
 
 auto BitcoinP2PAddr(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     std::vector<std::unique_ptr<blockchain::p2p::internal::Address>>&&
@@ -150,7 +150,7 @@ auto BitcoinP2PAddr(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Addr::Addr(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const ProtocolVersion version,
     AddressVector&& addresses) noexcept
@@ -162,7 +162,7 @@ Addr::Addr(
 }
 
 Addr::Addr(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const ProtocolVersion version,
     AddressVector&& addresses) noexcept

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_MESSAGE_HPP
-#define OPENTXS_CORE_MESSAGE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -22,17 +21,21 @@
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -100,7 +103,7 @@ protected:
     bool m_bIsSigned{false};
 
 private:
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
     using TypeMap = std::map<MessageType, std::string>;
     using ReverseTypeMap = std::map<std::string, MessageType>;
@@ -112,7 +115,7 @@ private:
     static auto make_reverse_map() -> ReverseTypeMap;
     static auto reply_command(const MessageType& type) -> MessageType;
 
-    Message(const api::Core& api);
+    Message(const api::Session& api);
 
     auto updateContentsByType(Tag& parent) -> bool;
 
@@ -232,5 +235,3 @@ public:
 };
 
 }  // namespace opentxs
-
-#endif

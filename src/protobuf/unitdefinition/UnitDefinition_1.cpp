@@ -10,20 +10,20 @@
 #include <utility>
 
 #include "opentxs/protobuf/Basic.hpp"
-#include "opentxs/protobuf/BasketParams.pb.h"
+#include "opentxs/protobuf/BasketParams.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/ContractEnums.pb.h"
-#include "opentxs/protobuf/CurrencyParams.pb.h"
+#include "opentxs/protobuf/CurrencyParams.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/EquityParams.pb.h"
+#include "opentxs/protobuf/EquityParams.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
+#include "opentxs/protobuf/Signature.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/UnitDefinition.pb.h"
-#include "opentxs/protobuf/verify/BasketParams.hpp"
-#include "opentxs/protobuf/verify/CurrencyParams.hpp"
-#include "opentxs/protobuf/verify/EquityParams.hpp"
-#include "opentxs/protobuf/verify/Nym.hpp"
-#include "opentxs/protobuf/verify/Signature.hpp"
+#include "opentxs/protobuf/verify/BasketParams.hpp"    // IWYU pragma: keep
+#include "opentxs/protobuf/verify/CurrencyParams.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/EquityParams.hpp"    // IWYU pragma: keep
+#include "opentxs/protobuf/verify/Nym.hpp"             // IWYU pragma: keep
+#include "opentxs/protobuf/verify/Signature.hpp"       // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyContracts.hpp"
 #include "protobuf/Check.hpp"
 

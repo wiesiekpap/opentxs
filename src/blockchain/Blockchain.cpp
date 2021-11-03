@@ -22,16 +22,17 @@
 #include <utility>
 
 #include "internal/blockchain/Params.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
 {
@@ -356,7 +357,7 @@ auto Deserialize(const Type chain, const std::uint8_t type) noexcept
     }
 }
 
-auto Deserialize(const api::Core& api, const ReadView in) noexcept
+auto Deserialize(const api::Session& api, const ReadView in) noexcept
     -> block::Position
 {
     auto output = make_blank<block::Position>::value(api);
@@ -382,7 +383,7 @@ auto Deserialize(const api::Core& api, const ReadView in) noexcept
 }
 
 auto FilterHashToHeader(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView hash,
     const ReadView previous) noexcept -> OTData
 {
@@ -401,7 +402,7 @@ auto FilterHashToHeader(
     return output;
 }
 
-auto FilterToHash(const api::Core& api, const ReadView filter) noexcept
+auto FilterToHash(const api::Session& api, const ReadView filter) noexcept
     -> OTData
 {
     auto output = api.Factory().Data();
@@ -411,7 +412,7 @@ auto FilterToHash(const api::Core& api, const ReadView filter) noexcept
 }
 
 auto FilterToHeader(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView filter,
     const ReadView previous) noexcept -> OTData
 {

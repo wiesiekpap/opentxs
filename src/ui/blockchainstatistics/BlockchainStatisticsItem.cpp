@@ -10,9 +10,9 @@
 #include <memory>
 
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Log.hpp"
 #include "ui/base/Widget.hpp"
 
 // #define OT_METHOD "opentxs::ui::implementation::BlockchainStatisticsItem::"
@@ -21,7 +21,7 @@ namespace opentxs::factory
 {
 auto BlockchainStatisticsItem(
     const ui::implementation::BlockchainStatisticsInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::BlockchainStatisticsRowID& rowID,
     const ui::implementation::BlockchainStatisticsSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -37,7 +37,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainStatisticsItem::BlockchainStatisticsItem(
     const BlockchainStatisticsInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const BlockchainStatisticsRowID& rowID,
     const BlockchainStatisticsSortKey& sortKey,
     CustomData& custom) noexcept

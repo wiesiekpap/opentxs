@@ -10,14 +10,14 @@
 #include <memory>
 #include <utility>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "Proto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
 #include "opentxs/protobuf/ClientContext.pb.h"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
 #include "opentxs/protobuf/Context.pb.h"
+#include "opentxs/util/Log.hpp"
 #include "otx/consensus/Base.hpp"
 
 #define CURRENT_VERSION 1
@@ -29,7 +29,7 @@ namespace opentxs::factory
 using ReturnType = otx::context::implementation::ClientContext;
 
 auto ClientContext(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& local,
     const Nym_p& remote,
     const identifier::Server& server) -> otx::context::internal::Client*
@@ -38,7 +38,7 @@ auto ClientContext(
 }
 
 auto ClientContext(
-    const api::Core& api,
+    const api::Session& api,
     const proto::Context& serialized,
     const Nym_p& local,
     const Nym_p& remote,
@@ -51,7 +51,7 @@ auto ClientContext(
 namespace opentxs::otx::context::implementation
 {
 ClientContext::ClientContext(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& local,
     const Nym_p& remote,
     const identifier::Server& server)
@@ -64,7 +64,7 @@ ClientContext::ClientContext(
 }
 
 ClientContext::ClientContext(
-    const api::Core& api,
+    const api::Session& api,
     const proto::Context& serialized,
     const Nym_p& local,
     const Nym_p& remote,
@@ -220,14 +220,14 @@ auto ClientContext::Verify(
         const bool inserted = effective.insert(number).second;
 
         if (!inserted) {
-            LogNormal(OT_METHOD)(__func__)(": New transaction # ")(
+            LogConsole()(OT_METHOD)(__func__)(": New transaction # ")(
                 number)(" already exists in context.")
                 .Flush();
 
             return false;
         }
 
-        LogDetail(OT_METHOD)(__func__)(": Transaction statement MUST ")(
+        LogDetail()(OT_METHOD)(__func__)(": Transaction statement MUST ")(
             "include number ")(number)(" which IS NOT currently in "
                                        "the context. ")
             .Flush();
@@ -237,14 +237,14 @@ auto ClientContext::Verify(
         const bool removed = (1 == effective.erase(number));
 
         if (!removed) {
-            LogNormal(OT_METHOD)(__func__)(": Burned transaction # ")(
+            LogConsole()(OT_METHOD)(__func__)(": Burned transaction # ")(
                 number)(" does not exist in context.")
                 .Flush();
 
             return false;
         }
 
-        LogDetail(OT_METHOD)(__func__)(
+        LogDetail()(OT_METHOD)(__func__)(
             ": Transaction statement MUST "
             "NOT include number ")(number)(" which IS currently in "
                                            "the context.")
@@ -255,7 +255,7 @@ auto ClientContext::Verify(
         const bool found = (1 == effective.count(number));
 
         if (!found) {
-            LogNormal(OT_METHOD)(__func__)(": Issued transaction # ")(
+            LogConsole()(OT_METHOD)(__func__)(": Issued transaction # ")(
                 number)(" from statement not found on context.")
                 .Flush();
 
@@ -267,7 +267,7 @@ auto ClientContext::Verify(
         const bool found = (1 == statement.Issued().count(number));
 
         if (!found) {
-            LogNormal(OT_METHOD)(__func__)(": Issued transaction # ")(
+            LogConsole()(OT_METHOD)(__func__)(": Issued transaction # ")(
                 number)(" from context not found on statement.")
                 .Flush();
 
@@ -290,7 +290,7 @@ auto ClientContext::VerifyIssuedNumber(
     const bool excluded = (1 == exclude.count(number));
 
     if (excluded) {
-        LogVerbose(OT_METHOD)(__func__)(": Transaction number ")(
+        LogVerbose()(OT_METHOD)(__func__)(": Transaction number ")(
             number)(" appears on the list of numbers which are being removed")
             .Flush();
 

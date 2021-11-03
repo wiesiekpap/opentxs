@@ -8,7 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <cassert>
 
-#include "opentxs/api/Options.hpp"
+#include "opentxs/util/Options.hpp"
 
 namespace fs = boost::filesystem;
 

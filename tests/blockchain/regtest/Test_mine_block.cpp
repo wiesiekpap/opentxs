@@ -12,12 +12,9 @@
 #include <vector>
 
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Types.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -28,6 +25,9 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace ottest
 {
@@ -48,7 +48,7 @@ TEST_F(Regtest_fixture_single, generate_block)
 
     ASSERT_TRUE(previousHeader);
 
-    using OutputBuilder = ot::api::Factory::OutputBuilder;
+    using OutputBuilder = ot::api::session::Factory::OutputBuilder;
     auto tx = miner_.Factory().BitcoinGenerationTransaction(
         test_chain_,
         previousHeader->Height() + 1,

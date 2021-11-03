@@ -21,13 +21,13 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
@@ -71,6 +71,8 @@
 #include "opentxs/ui/UnitList.hpp"
 #include "opentxs/ui/UnitListItem.hpp"
 #include "opentxs/ui/Widget.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/qt/SendMonitor.hpp"
 #include "util/Blank.hpp"
 
@@ -78,11 +80,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Manager;
-}  // namespace client
-
 namespace network
 {
 namespace internal
@@ -91,7 +88,12 @@ struct Blockchain;
 }  // namespace internal
 }  // namespace network
 
-class Core;
+namespace session
+{
+class Client;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace contract
@@ -507,10 +509,10 @@ using UnitListSortKey = std::string;
 namespace opentxs::ui::internal
 {
 struct List : virtual public ui::List {
-    static auto MakeQT(const api::Core& api) noexcept
+    static auto MakeQT(const api::Session& api) noexcept
         -> ui::qt::internal::Model*;
 
-    virtual auto API() const noexcept(false) -> const api::Core& = 0;
+    virtual auto API() const noexcept(false) -> const api::Session& = 0;
     virtual auto GetQt() const noexcept -> ui::qt::internal::Model* = 0;
 
     ~List() override = default;
@@ -915,7 +917,7 @@ struct Row : virtual public ui::internal::Row, public Widget {
 };
 template <typename ListType, typename RowType, typename RowIDType>
 struct List : virtual public ListType, public Row {
-    auto API() const noexcept(false) -> const api::Core& final
+    auto API() const noexcept(false) -> const api::Session& final
     {
         throw std::out_of_range{"blank model"};
     }
@@ -1432,13 +1434,13 @@ auto AccountActivityQtModel(ui::internal::AccountActivity& parent) noexcept
     -> std::unique_ptr<ui::AccountActivityQt>;
 auto AccountListItem(
     const ui::implementation::AccountListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::AccountListRowID& rowID,
     const ui::implementation::AccountListSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::AccountListRowInternal>;
 auto AccountListModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::AccountList>;
@@ -1446,13 +1448,13 @@ auto AccountListQtModel(ui::internal::AccountList& parent) noexcept
     -> std::unique_ptr<ui::AccountListQt>;
 auto AccountSummaryItem(
     const ui::implementation::IssuerItemInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::IssuerItemRowID& rowID,
     const ui::implementation::IssuerItemSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::IssuerItemRowInternal>;
 auto AccountSummaryModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const core::UnitType currency,
     const SimpleCallback& cb) noexcept
@@ -1461,7 +1463,7 @@ auto AccountSummaryQtModel(ui::internal::AccountSummary& parent) noexcept
     -> std::unique_ptr<ui::AccountSummaryQt>;
 auto ActivitySummaryItem(
     const ui::implementation::ActivitySummaryInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivitySummaryRowID& rowID,
     const ui::implementation::ActivitySummarySortKey& sortKey,
@@ -1469,7 +1471,7 @@ auto ActivitySummaryItem(
     const Flag& running) noexcept
     -> std::shared_ptr<ui::implementation::ActivitySummaryRowInternal>;
 auto ActivitySummaryModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const Flag& running,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
@@ -1477,7 +1479,7 @@ auto ActivitySummaryModel(
 auto ActivitySummaryQtModel(ui::internal::ActivitySummary& parent) noexcept
     -> std::unique_ptr<ui::ActivitySummaryQt>;
 auto ActivityThreadModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const opentxs::Identifier& threadID,
     const SimpleCallback& cb) noexcept
@@ -1485,20 +1487,20 @@ auto ActivityThreadModel(
 auto ActivityThreadQtModel(ui::internal::ActivityThread& parent) noexcept
     -> std::unique_ptr<ui::ActivityThreadQt>;
 auto BlockchainAccountActivityModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const opentxs::Identifier& accountID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::AccountActivity>;
 auto BlockchainAccountListItem(
     const ui::implementation::AccountListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::AccountListRowID& rowID,
     const ui::implementation::AccountListSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::AccountListRowInternal>;
 auto BlockchainAccountStatusModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::BlockchainAccountStatusPrimaryID& id,
     const blockchain::Type chain,
     const SimpleCallback& cb) noexcept
@@ -1508,21 +1510,21 @@ auto BlockchainAccountStatusQtModel(
     -> std::unique_ptr<ui::BlockchainAccountStatusQt>;
 auto BlockchainActivityThreadItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ActivityThreadRowInternal>;
 auto BlockchainSelectionModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::BlockchainSelection>;
 auto BlockchainSelectionItem(
     const ui::implementation::BlockchainSelectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::BlockchainSelectionRowID& rowID,
     const ui::implementation::BlockchainSelectionSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -1531,12 +1533,12 @@ auto BlockchainSelectionQtModel(
     ui::internal::BlockchainSelection& parent) noexcept
     -> std::unique_ptr<ui::BlockchainSelectionQt>;
 auto BlockchainStatisticsModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::BlockchainStatistics>;
 auto BlockchainStatisticsItem(
     const ui::implementation::BlockchainStatisticsInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::BlockchainStatisticsRowID& rowID,
     const ui::implementation::BlockchainStatisticsSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -1546,7 +1548,7 @@ auto BlockchainStatisticsQtModel(
     -> std::unique_ptr<ui::BlockchainStatisticsQt>;
 auto BlockchainSubaccountSourceWidget(
     const ui::implementation::BlockchainAccountStatusInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::BlockchainAccountStatusRowID& rowID,
     const ui::implementation::BlockchainAccountStatusSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -1554,7 +1556,7 @@ auto BlockchainSubaccountSourceWidget(
 auto BlockchainSubaccountWidget(
     const ui::implementation::BlockchainSubaccountSourceInternalInterface&
         parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::BlockchainSubaccountSourceRowID& rowID,
     const ui::implementation::BlockchainSubaccountSourceSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -1562,14 +1564,14 @@ auto BlockchainSubaccountWidget(
         ui::implementation::BlockchainSubaccountSourceRowInternal>;
 auto BlockchainSubchainWidget(
     const ui::implementation::BlockchainSubaccountInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::BlockchainSubaccountRowID& rowID,
     const ui::implementation::BlockchainSubaccountSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::BlockchainSubaccountRowInternal>;
 auto BalanceItem(
     const ui::implementation::AccountActivityInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::AccountActivityRowID& rowID,
     const ui::implementation::AccountActivitySortKey& sortKey,
     ui::implementation::CustomData& custom,
@@ -1578,26 +1580,26 @@ auto BalanceItem(
     -> std::shared_ptr<ui::implementation::AccountActivityRowInternal>;
 auto ContactItemWidget(
     const ui::implementation::ContactSubsectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactSubsectionRowID& rowID,
     const ui::implementation::ContactSubsectionSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ContactSubsectionRowInternal>;
 auto ContactListItem(
     const ui::implementation::ContactListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactListRowID& rowID,
     const ui::implementation::ContactListSortKey& key) noexcept
     -> std::shared_ptr<ui::implementation::ContactListRowInternal>;
 auto ContactListModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::ContactList>;
 auto ContactListQtModel(ui::internal::ContactList& parent) noexcept
     -> std::unique_ptr<ui::ContactListQt>;
 auto ContactModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactPrimaryID& contactID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::Contact>;
@@ -1605,27 +1607,27 @@ auto ContactQtModel(ui::internal::Contact& parent) noexcept
     -> std::unique_ptr<ui::ContactQt>;
 auto ContactSectionWidget(
     const ui::implementation::ContactInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactRowID& rowID,
     const ui::implementation::ContactSortKey& key,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ContactRowInternal>;
 auto ContactSubsectionWidget(
     const ui::implementation::ContactSectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactSectionRowID& rowID,
     const ui::implementation::ContactSectionSortKey& key,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ContactSectionRowInternal>;
 auto CustodialAccountActivityModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const opentxs::Identifier& accountID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::AccountActivity>;
 auto IssuerItem(
     const ui::implementation::AccountSummaryInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::AccountSummaryRowID& rowID,
     const ui::implementation::AccountSummarySortKey& sortKey,
     ui::implementation::CustomData& custom,
@@ -1633,7 +1635,7 @@ auto IssuerItem(
     -> std::shared_ptr<ui::implementation::AccountSummaryRowInternal>;
 auto MailItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
@@ -1641,12 +1643,12 @@ auto MailItem(
     -> std::shared_ptr<ui::implementation::ActivityThreadRowInternal>;
 auto MessagableListItem(
     const ui::implementation::ContactListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactListRowID& rowID,
     const ui::implementation::ContactListSortKey& key) noexcept
     -> std::shared_ptr<ui::implementation::MessagableListRowInternal>;
 auto MessagableListModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::MessagableList>;
@@ -1654,7 +1656,7 @@ auto MessagableListQtModel(ui::internal::MessagableList& parent) noexcept
     -> std::unique_ptr<ui::MessagableListQt>;
 auto PayableListItem(
     const ui::implementation::PayableInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::PayableListRowID& rowID,
     const ui::implementation::PayableListSortKey& key,
     const std::string& paymentcode,
@@ -1662,14 +1664,14 @@ auto PayableListItem(
     -> std::shared_ptr<ui::implementation::PayableListRowInternal>;
 auto PaymentItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ActivityThreadRowInternal>;
 auto PayableListModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const core::UnitType& currency,
     const SimpleCallback& cb) noexcept
@@ -1678,14 +1680,14 @@ auto PayableListQtModel(ui::internal::PayableList& parent) noexcept
     -> std::unique_ptr<ui::PayableListQt>;
 auto PendingSend(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ActivityThreadRowInternal>;
 auto ProfileModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::Profile>;
@@ -1693,34 +1695,34 @@ auto ProfileQtModel(ui::internal::Profile& parent) noexcept
     -> std::unique_ptr<ui::ProfileQt>;
 auto ProfileItemWidget(
     const ui::implementation::ProfileSubsectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ProfileSubsectionRowID& rowID,
     const ui::implementation::ProfileSubsectionSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ProfileSubsectionRowInternal>;
 auto ProfileSectionWidget(
     const ui::implementation::ProfileInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ProfileRowID& rowID,
     const ui::implementation::ProfileSortKey& key,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ProfileRowInternal>;
 auto ProfileSubsectionWidget(
     const ui::implementation::ProfileSectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ProfileSectionRowID& rowID,
     const ui::implementation::ProfileSectionSortKey& key,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::ProfileSectionRowInternal>;
 auto UnitListItem(
     const ui::implementation::UnitListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::UnitListRowID& rowID,
     const ui::implementation::UnitListSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
     -> std::shared_ptr<ui::implementation::UnitListRowInternal>;
 auto UnitListModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::UnitList>;

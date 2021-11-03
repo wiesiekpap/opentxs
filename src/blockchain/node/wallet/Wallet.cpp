@@ -15,24 +15,25 @@
 #include <utility>
 
 #include "core/Worker.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::implementation::Wallet::"
@@ -40,8 +41,8 @@
 namespace opentxs::factory
 {
 auto BlockchainWallet(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const blockchain::node::internal::Network& parent,
     const blockchain::node::internal::WalletDatabase& db,
     const blockchain::node::internal::Mempool& mempool,
@@ -59,8 +60,8 @@ auto BlockchainWallet(
 namespace opentxs::blockchain::node::implementation
 {
 Wallet::Wallet(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const node::internal::Network& parent,
     const node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
@@ -87,7 +88,7 @@ Wallet::Wallet(
         api.Endpoints().BlockchainReorg(),
         api.Endpoints().NymCreated(),
         api.Endpoints().BlockchainNewFilter(),
-        crypto_.KeyEndpoint(),
+        crypto_.Internal().KeyEndpoint(),
         api.Endpoints().BlockchainMempool(),
         api.Endpoints().BlockchainBlockAvailable(),
     });
@@ -188,7 +189,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -242,7 +243,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -273,7 +274,7 @@ auto Wallet::process_block_header(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (3 >= body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -361,7 +362,7 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (6 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -393,7 +394,7 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
                 throw std::runtime_error{"Finalize transaction failed"};
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             OT_FAIL;
         }
@@ -405,7 +406,7 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
             throw std::runtime_error{"Advance chain failed"};
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         OT_FAIL;
     }
@@ -419,7 +420,7 @@ auto Wallet::process_wallet() noexcept -> void
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 {
     if (running_->Off()) {
-        LogDetail("Shutting down ")(DisplayString(chain_))(" wallet").Flush();
+        LogDetail()("Shutting down ")(DisplayString(chain_))(" wallet").Flush();
         accounts_.Shutdown();
 
         try {

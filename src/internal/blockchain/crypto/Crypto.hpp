@@ -23,7 +23,6 @@
 
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -44,6 +43,8 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/BlockchainAddress.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace std
 {
@@ -73,13 +74,13 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
 class Crypto;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -267,7 +268,7 @@ struct Imported : virtual public crypto::Imported, virtual public Subaccount {
 struct PaymentCode : virtual public crypto::PaymentCode,
                      virtual public Deterministic {
     static auto GetID(
-        const api::Core& api,
+        const api::Session& api,
         const Chain chain,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote) noexcept -> OTIdentifier;

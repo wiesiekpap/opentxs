@@ -21,20 +21,19 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/Api.hpp"
+#include "internal/api/session/Session.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/identifier/Identifier.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/Pair.hpp"
 #include "opentxs/api/client/Types.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -48,6 +47,7 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -57,7 +57,6 @@ namespace client
 {
 namespace internal
 {
-struct Blockchain;
 struct UI;
 }  // namespace internal
 
@@ -66,10 +65,19 @@ class ServerAction;
 class Workflow;
 }  // namespace client
 
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
+namespace session
+{
+class Wallet;
+}  // namespace session
+
 class Crypto;
 class Legacy;
 class Settings;
-class Wallet;
 }  // namespace api
 
 namespace blockchain
@@ -128,23 +136,6 @@ class UniqueQueue;
 
 namespace opentxs
 {
-auto Translate(const blockchain::Type type) noexcept -> core::UnitType;
-auto Translate(const core::UnitType type) noexcept -> blockchain::Type;
-}  // namespace opentxs
-
-namespace opentxs::api::client::internal
-{
-using PaymentWorkflowStateMap =
-    std::map<api::client::PaymentWorkflowState, proto::PaymentWorkflowState>;
-using PaymentWorkflowStateReverseMap =
-    std::map<proto::PaymentWorkflowState, api::client::PaymentWorkflowState>;
-using PaymentWorkflowTypeMap =
-    std::map<api::client::PaymentWorkflowType, proto::PaymentWorkflowType>;
-using PaymentWorkflowTypeReverseMap =
-    std::map<proto::PaymentWorkflowType, api::client::PaymentWorkflowType>;
-
-auto paymentworkflowstate_map() noexcept -> const PaymentWorkflowStateMap&;
-auto paymentworkflowtype_map() noexcept -> const PaymentWorkflowTypeMap&;
 auto translate(const api::client::PaymentWorkflowState in) noexcept
     -> proto::PaymentWorkflowState;
 auto translate(const api::client::PaymentWorkflowType in) noexcept
@@ -153,67 +144,19 @@ auto translate(const proto::PaymentWorkflowState in) noexcept
     -> api::client::PaymentWorkflowState;
 auto translate(const proto::PaymentWorkflowType in) noexcept
     -> api::client::PaymentWorkflowType;
+}  // namespace opentxs
 
-struct Blockchain : virtual public api::client::Blockchain {
-    virtual auto Contacts() const noexcept -> const api::client::Contacts& = 0;
-    virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
-    virtual auto KeyGenerated(const Chain chain) const noexcept -> void = 0;
-    virtual auto NewNym(const identifier::Nym& id) const noexcept -> void = 0;
-    virtual auto ProcessContact(const Contact& contact) const noexcept
-        -> bool = 0;
-    virtual auto ProcessMergedContact(
-        const Contact& parent,
-        const Contact& child) const noexcept -> bool = 0;
-    virtual auto ProcessTransaction(
-        const Chain chain,
-        const opentxs::blockchain::block::bitcoin::Transaction& transaction,
-        const PasswordPrompt& reason) const noexcept -> bool = 0;
-    /// Throws std::runtime_error if type is invalid
-    virtual auto PubkeyHash(
-        const opentxs::blockchain::Type chain,
-        const Data& pubkey) const noexcept(false) -> OTData = 0;
-    virtual auto ReportScan(
-        const Chain chain,
-        const identifier::Nym& owner,
-        const opentxs::blockchain::crypto::SubaccountType type,
-        const Identifier& account,
-        const opentxs::blockchain::crypto::Subchain subchain,
-        const opentxs::blockchain::block::Position& progress) const noexcept
-        -> void = 0;
-    virtual auto UpdateBalance(
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept -> void = 0;
-    virtual auto UpdateBalance(
-        const identifier::Nym& owner,
-        const opentxs::blockchain::Type chain,
-        const opentxs::blockchain::Balance balance) const noexcept -> void = 0;
-    virtual auto UpdateElement(
-        std::vector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
-
-    virtual auto Init() noexcept -> void = 0;
-
-    ~Blockchain() override = default;
-};
+namespace opentxs::api::client::internal
+{
 struct Contacts : virtual public api::client::Contacts {
-#if OT_BLOCKCHAIN
     virtual auto init(
-        const std::shared_ptr<const internal::Blockchain>& blockchain)
+        const std::shared_ptr<const crypto::Blockchain>& blockchain)
         -> void = 0;
     virtual auto prepare_shutdown() -> void = 0;
-#endif  // OT_BLOCKCHAIN
     virtual auto start() -> void = 0;
 
     ~Contacts() override = default;
 };
-struct Manager : virtual public api::client::Manager,
-                 virtual public api::internal::Core {
-    virtual auto InternalUI() const noexcept -> const internal::UI& = 0;
-
-    virtual auto Init() -> void = 0;
-
-    ~Manager() override = default;
-};
-
 struct OTX : virtual public api::client::OTX {
     virtual void associate_message_id(
         const Identifier& messageID,

@@ -11,8 +11,9 @@
 #include <string>
 #include <vector>
 
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 
@@ -31,7 +32,8 @@ struct SeedValidator::Imp {
             if (0 == word.size()) { return false; }
 
             const auto in = word.toStdString();
-            const auto matches = api_.Seeds().ValidateWord(type_, lang_, in);
+            const auto matches =
+                api_.Crypto().Seed().ValidateWord(type_, lang_, in);
 
             if (1 != matches.size()) { return false; }
         }
@@ -57,7 +59,8 @@ struct SeedValidator::Imp {
         if (0 == input.size()) { return State::Intermediate; }
 
         const auto string = input.toStdString();
-        const auto matches = api_.Seeds().ValidateWord(type_, lang_, string);
+        const auto matches =
+            api_.Crypto().Seed().ValidateWord(type_, lang_, string);
 
         if (0 == matches.size()) {
 
@@ -73,7 +76,7 @@ struct SeedValidator::Imp {
         }
     }
 
-    Imp(const api::client::Manager& api,
+    Imp(const api::session::Client& api,
         const crypto::SeedStyle type,
         const crypto::Language lang) noexcept
         : api_(api)
@@ -83,13 +86,13 @@ struct SeedValidator::Imp {
     }
 
 private:
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
     const crypto::SeedStyle type_;
     const crypto::Language lang_;
 };
 
 SeedValidator::SeedValidator(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     std::uint8_t type,
     std::uint8_t lang) noexcept
     : QValidator()

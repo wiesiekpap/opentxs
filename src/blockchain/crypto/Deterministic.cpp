@@ -15,29 +15,31 @@
 #include <tuple>
 #include <utility>
 
+#include "Proto.hpp"
 #include "blockchain/crypto/Element.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
-#include "internal/api/client/Client.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::crypto::implementation::Deterministic::"
 
 namespace opentxs::blockchain::crypto::implementation
 {
 Deterministic::ChainData::ChainData(
-    const api::Core& api,
+    const api::Session& api,
     Subchain internalType,
     bool internalContact,
     Subchain externalType,
@@ -48,7 +50,7 @@ Deterministic::ChainData::ChainData(
 }
 
 Deterministic::Deterministic(
-    const api::Core& api,
+    const api::Session& api,
     const Account& parent,
     const SubaccountType type,
     OTIdentifier&& id,
@@ -68,7 +70,7 @@ Deterministic::Deterministic(
 }
 
 Deterministic::Deterministic(
-    const api::Core& api,
+    const api::Session& api,
     const Account& parent,
     const SubaccountType type,
     const SerializedType& serialized,
@@ -121,7 +123,7 @@ auto Deterministic::accept(
     auto& element =
         const_cast<Deterministic&>(*this).element(lock, type, index);
     element.Internal().Reserve(time);
-    LogTrace(OT_METHOD)(__func__)(": Accepted index ")(index).Flush();
+    LogTrace()(OT_METHOD)(__func__)(": Accepted index ")(index).Flush();
 
     return index;
 }
@@ -159,28 +161,29 @@ auto Deterministic::check(
     };
 
     if (is_generated(lock, type, candidate)) {
-        LogTrace(OT_METHOD)(__func__)(": Examining generated index ")(candidate)
+        LogTrace()(OT_METHOD)(__func__)(": Examining generated index ")(
+            candidate)
             .Flush();
         const auto& element = this->element(lock, type, candidate);
         const auto status = element.Internal().IsAvailable(contact, label);
 
         switch (status) {
             case Status::NeverUsed: {
-                LogTrace(OT_METHOD)(__func__)(": index ")(
+                LogTrace()(OT_METHOD)(__func__)(": index ")(
                     candidate)(" was never used")
                     .Flush();
 
                 return accept(candidate);
             }
             case Status::Reissue: {
-                LogTrace(OT_METHOD)(__func__)(": Recycling unused index ")(
+                LogTrace()(OT_METHOD)(__func__)(": Recycling unused index ")(
                     candidate)
                     .Flush();
 
                 return accept(candidate);
             }
             case Status::Used: {
-                LogTrace(OT_METHOD)(__func__)(": index ")(
+                LogTrace()(OT_METHOD)(__func__)(": index ")(
                     candidate)(" has confirmed transactions")
                     .Flush();
                 gap = 0;
@@ -188,7 +191,7 @@ auto Deterministic::check(
                 throw std::runtime_error("Not acceptable");
             }
             case Status::MetadataConflict: {
-                LogTrace(OT_METHOD)(__func__)(": index ")(
+                LogTrace()(OT_METHOD)(__func__)(": index ")(
                     candidate)(" can not be used")
                     .Flush();
                 ++gap;
@@ -196,7 +199,7 @@ auto Deterministic::check(
                 throw std::runtime_error("Not acceptable");
             }
             case Status::Reserved: {
-                LogTrace(OT_METHOD)(__func__)(": index ")(
+                LogTrace()(OT_METHOD)(__func__)(": index ")(
                     candidate)(" is reserved")
                     .Flush();
                 ++gap;
@@ -205,7 +208,7 @@ auto Deterministic::check(
             }
             case Status::StaleUnconfirmed:
             default: {
-                LogTrace(OT_METHOD)(__func__)(": saving index ")(
+                LogTrace()(OT_METHOD)(__func__)(": saving index ")(
                     candidate)(" as a fallback")
                     .Flush();
                 fallback[status].emplace(candidate);
@@ -215,7 +218,8 @@ auto Deterministic::check(
             }
         }
     } else {
-        LogTrace(OT_METHOD)(__func__)(": Generating index ")(candidate).Flush();
+        LogTrace()(OT_METHOD)(__func__)(": Generating index ")(candidate)
+            .Flush();
         const auto newIndex = generate(lock, type, candidate, reason);
 
         OT_ASSERT(newIndex == candidate);
@@ -593,17 +597,17 @@ auto Deterministic::RootNode(const PasswordPrompt& reason) const noexcept
     if (key) { return key; }
 
     auto fingerprint(path_.root());
-    auto path = api::HDSeed::Path{};
+    auto path = std::vector<Bip32Index>{};
 
     for (const auto& child : path_.child()) { path.emplace_back(child); }
 
-    key = api_.Seeds().GetHDKey(
+    key = api_.Crypto().Seed().GetHDKey(
         fingerprint,
         EcdsaCurve::secp256k1,
         path,
-        reason,
         opentxs::crypto::key::asymmetric::Role::Sign,
-        opentxs::crypto::key::EllipticCurve::MaxVersion);
+        opentxs::crypto::key::EllipticCurve::MaxVersion,
+        reason);
 
     return key;
 }
@@ -616,7 +620,7 @@ auto Deterministic::ScanProgress(Subchain type) const noexcept
 
         return data_.Get(type).progress_;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return Subaccount::ScanProgress(type);
     }
@@ -659,7 +663,7 @@ auto Deterministic::SetScanProgress(
 
         data_.Get(type).progress_ = progress;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 }
 
@@ -713,7 +717,7 @@ auto Deterministic::use_next(
             }
         }
 
-        LogTrace(OT_METHOD)(__func__)(
+        LogTrace()(OT_METHOD)(__func__)(
             ": Gap limit reached. Searching for acceptable fallback")
             .Flush();
         const auto accept = [&](Bip32Index index) {
@@ -722,14 +726,14 @@ auto Deterministic::use_next(
         };
 
         if (auto& set = fallback[Status::StaleUnconfirmed]; 0 < set.size()) {
-            LogTrace(OT_METHOD)(__func__)(
+            LogTrace()(OT_METHOD)(__func__)(
                 ": Recycling index with old never-confirmed transactions")
                 .Flush();
 
             return accept(*set.cbegin());
         }
 
-        LogTrace(OT_METHOD)(__func__)(
+        LogTrace()(OT_METHOD)(__func__)(
             ": No acceptable fallback discovered. Generating past the gap "
             "limit")
             .Flush();

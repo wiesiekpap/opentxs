@@ -5,11 +5,7 @@
 
 #include "opentxs/protobuf/verify/BlockchainHDAccountData.hpp"  // IWYU pragma: associated
 
-#include "opentxs/protobuf/Basic.hpp"
-#include "opentxs/protobuf/BlockchainHDAccountData.pb.h"
-#include "opentxs/protobuf/verify/BlockchainAccountData.hpp"
-#include "opentxs/protobuf/verify/HDPath.hpp"
-#include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
+#include "opentxs/protobuf/BlockchainHDAccountData.pb.h"  // IWYU pragma: keep
 #include "protobuf/Check.hpp"
 
 #define PROTO_NAME "blockchain hd account data"

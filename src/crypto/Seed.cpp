@@ -16,15 +16,14 @@
 #include <stdexcept>
 #include <utility>
 
+#include "internal/api/crypto/Symmetric.hpp"
 #include "internal/crypto/key/Key.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip39.hpp"
@@ -36,6 +35,9 @@
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Seed.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::crypto::Seed::"
@@ -77,7 +79,7 @@ struct Seed::Imp {
         auto lock = Lock{lock_};
 
         if (index_ > index) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Index values must always increase.")
                 .Flush();
 
@@ -93,8 +95,8 @@ struct Seed::Imp {
     Imp(const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
-        const api::Factory& factory,
-        const api::storage::Storage& storage,
+        const api::session::Factory& factory,
+        const api::session::Storage& storage,
         const Language lang,
         const SeedStrength strength,
         const PasswordPrompt& reason) noexcept(false)
@@ -160,12 +162,12 @@ struct Seed::Imp {
             throw std::runtime_error{"Failed to save seed"};
         }
     }
-    Imp(const api::Core& api,
+    Imp(const api::Session& api,
         const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
-        const api::Factory& factory,
-        const api::storage::Storage& storage,
+        const api::session::Factory& factory,
+        const api::session::Storage& storage,
         const SeedStyle type,
         const Language lang,
         const Secret& words,
@@ -219,8 +221,8 @@ struct Seed::Imp {
     Imp(const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
-        const api::Factory& factory,
-        const api::storage::Storage& storage,
+        const api::session::Factory& factory,
+        const api::session::Storage& storage,
         const Secret& entropy,
         const PasswordPrompt& reason) noexcept(false)
         : type_(SeedStyle::BIP32)
@@ -259,11 +261,11 @@ struct Seed::Imp {
             throw std::runtime_error{"Failed to save seed"};
         }
     }
-    Imp(const api::Core& api,
+    Imp(const api::Session& api,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
-        const api::Factory& factory,
-        const api::storage::Storage& storage,
+        const api::session::Factory& factory,
+        const api::session::Storage& storage,
         const proto::Seed& proto,
         const PasswordPrompt& reason) noexcept(false)
         : type_(translate(proto.type()))
@@ -285,9 +287,8 @@ struct Seed::Imp {
     {
         const auto& session =
             (3 > version_) ? encrypted_words_ : encrypted_entropy_;
-        const auto key = symmetric.Key(
-            session.key(),
-            opentxs::crypto::key::internal::translate(session.mode()));
+        const auto key = symmetric.InternalSymmetric().Key(
+            session.key(), opentxs::translate(session.mode()));
 
         if (false == key.get()) {
             throw std::runtime_error{"Failed to get decryption key"};
@@ -362,7 +363,7 @@ private:
     static constexpr auto default_version_ = VersionNumber{4u};
     static constexpr auto no_passphrase_{""};
 
-    const api::storage::Storage& storage_;
+    const api::session::Storage& storage_;
     mutable std::mutex lock_;
     const proto::Ciphertext encrypted_words_;
     const proto::Ciphertext encrypted_phrase_;
@@ -480,7 +481,7 @@ private:
         *proto.mutable_raw() = encrypted_entropy_;
 
         if (false == storage_.Store(proto, id)) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to store seed.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Failed to store seed.").Flush();
 
             return false;
         }
@@ -493,8 +494,8 @@ Seed::Seed(
     const opentxs::crypto::Bip32& bip32,
     const opentxs::crypto::Bip39& bip39,
     const api::crypto::Symmetric& symmetric,
-    const api::Factory& factory,
-    const api::storage::Storage& storage,
+    const api::session::Factory& factory,
+    const api::session::Storage& storage,
     const Language lang,
     const SeedStrength strength,
     const PasswordPrompt& reason) noexcept(false)
@@ -512,12 +513,12 @@ Seed::Seed(
 }
 
 Seed::Seed(
-    const api::Core& api,
+    const api::Session& api,
     const opentxs::crypto::Bip32& bip32,
     const opentxs::crypto::Bip39& bip39,
     const api::crypto::Symmetric& symmetric,
-    const api::Factory& factory,
-    const api::storage::Storage& storage,
+    const api::session::Factory& factory,
+    const api::session::Storage& storage,
     const SeedStyle type,
     const Language lang,
     const Secret& words,
@@ -543,8 +544,8 @@ Seed::Seed(
     const opentxs::crypto::Bip32& bip32,
     const opentxs::crypto::Bip39& bip39,
     const api::crypto::Symmetric& symmetric,
-    const api::Factory& factory,
-    const api::storage::Storage& storage,
+    const api::session::Factory& factory,
+    const api::session::Storage& storage,
     const Secret& entropy,
     const PasswordPrompt& reason) noexcept(false)
     : imp_(std::make_unique<
@@ -554,11 +555,11 @@ Seed::Seed(
 }
 
 Seed::Seed(
-    const api::Core& api,
+    const api::Session& api,
     const opentxs::crypto::Bip39& bip39,
     const api::crypto::Symmetric& symmetric,
-    const api::Factory& factory,
-    const api::storage::Storage& storage,
+    const api::session::Factory& factory,
+    const api::session::Storage& storage,
     const proto::Seed& proto,
     const PasswordPrompt& reason) noexcept(false)
     : imp_(std::make_unique<

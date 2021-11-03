@@ -31,7 +31,6 @@
 #include "internal/blockchain/database/Database.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "internal/core/Core.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -53,6 +52,7 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Blank.hpp"
 #include "util/LMDB.hpp"
@@ -74,14 +74,14 @@ class Database;
 }  // namespace implementation
 }  // namespace database
 }  // namespace blockchain
-
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
 }  // namespace client
 
-class Core;
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -181,14 +181,14 @@ namespace opentxs
 {
 template <>
 struct make_blank<blockchain::block::Height> {
-    static auto value(const api::Core&) -> blockchain::block::Height
+    static auto value(const api::Session&) -> blockchain::block::Height
     {
         return -1;
     }
 };
 template <>
 struct make_blank<blockchain::block::Position> {
-    static auto value(const api::Core& api) -> blockchain::block::Position
+    static auto value(const api::Session& api) -> blockchain::block::Position
     {
         return {
             make_blank<blockchain::block::Height>::value(api),

@@ -9,13 +9,13 @@
 #include <string>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "util/Work.hpp"
 
 namespace boost
@@ -30,13 +30,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
 class Legacy;
 }  // namespace api
@@ -142,7 +139,7 @@ struct Blockchain {
         const std::string& address) const noexcept -> void = 0;
 
     virtual auto Init(
-        const api::client::internal::Blockchain& crypto,
+        const api::crypto::Blockchain& crypto,
         const api::Legacy& legacy,
         const std::string& dataFolder,
         const Options& args) noexcept -> void = 0;

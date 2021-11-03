@@ -3,10 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CONTACT_CONTACT_HPP
-#define OPENTXS_CONTACT_CONTACT_HPP
+#pragma once
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -37,12 +37,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 class ContactData;
@@ -54,6 +54,7 @@ class PaymentCode;
 namespace proto
 {
 class Contact;
+class Nym;
 }  // namespace proto
 }  // namespace opentxs
 
@@ -74,9 +75,9 @@ public:
         const core::UnitType currency) -> std::string;
 
     OPENTXS_NO_EXPORT Contact(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const proto::Contact& serialized);
-    Contact(const api::client::Manager& api, const std::string& label);
+    Contact(const api::session::Client& api, const std::string& label);
 
     auto operator+=(Contact& rhs) -> Contact&;
 
@@ -148,4 +149,3 @@ private:
     auto operator=(Contact&&) -> Contact& = delete;
 };
 }  // namespace opentxs
-#endif

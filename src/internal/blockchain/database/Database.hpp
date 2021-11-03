@@ -10,8 +10,8 @@
 #include <cstdint>
 #include <shared_mutex>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {

@@ -3,12 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_OT_HPP
-#define OPENTXS_OT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
+#include <functional>
 #include <map>
 #include <string>
 
@@ -69,5 +69,8 @@ OPENTXS_EXPORT auto Join() noexcept -> void;
 using LicenseMap = std::map<std::string, std::string>;
 
 OPENTXS_EXPORT auto LicenseData() noexcept -> const LicenseMap&;
+OPENTXS_EXPORT auto VersionMajor() noexcept -> unsigned int;
+OPENTXS_EXPORT auto VersionMinor() noexcept -> unsigned int;
+OPENTXS_EXPORT auto VersionPatch() noexcept -> unsigned int;
+OPENTXS_EXPORT auto VersionString() noexcept -> const char*;
 }  // namespace opentxs
-#endif

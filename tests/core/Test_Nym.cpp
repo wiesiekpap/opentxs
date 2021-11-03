@@ -8,16 +8,15 @@
 #include <optional>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
+#include "internal/api/session/Client.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -25,6 +24,9 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define TEST_MASTER_PASSWORD "test password"
 #define TEST_PLAINTEXT "The quick brown fox jumped over the lazy dog."
@@ -45,13 +47,13 @@ struct Test_Symmetric : public ::testing::Test {
     static ot::Space ciphertext_;
     static ot::Space second_ciphertext_;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     ot::OTPasswordPrompt reason_;
     ot::Nym_p alice_;
     ot::Nym_p bob_;
 
     Test_Symmetric()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
         , reason_(api_.Factory().PasswordPrompt(__func__))
         , alice_()
         , bob_()
@@ -64,11 +66,11 @@ struct Test_Symmetric : public ::testing::Test {
 
     void init()
     {
-        const auto seedA = api_.Exec().Wallet_ImportSeed(
+        const auto seedA = api_.InternalClient().Exec().Wallet_ImportSeed(
             "spike nominee miss inquiry fee nothing belt list other "
             "daughter leave valley twelve gossip paper",
             "");
-        const auto seedB = api_.Exec().Wallet_ImportSeed(
+        const auto seedB = api_.InternalClient().Exec().Wallet_ImportSeed(
             "trim thunder unveil reduce crop cradle zone inquiry "
             "anchor skate property fringe obey butter text tank drama "
             "palm guilt pudding laundry stay axis prosper",
@@ -100,7 +102,7 @@ TEST_F(Test_Symmetric, create_key)
 
     ASSERT_TRUE(password->SetPassword(key_password_.value()));
 
-    key_ = api_.Symmetric().Key(password, mode_);
+    key_ = api_.Crypto().Symmetric().Key(password, mode_);
 
     EXPECT_TRUE(key_.get());
 }
@@ -116,7 +118,8 @@ TEST_F(Test_Symmetric, key_functionality)
 
     ASSERT_TRUE(encrypted);
 
-    auto recoveredKey = api_.Symmetric().Key(ot::reader(ciphertext_), mode_);
+    auto recoveredKey =
+        api_.Crypto().Symmetric().Key(ot::reader(ciphertext_), mode_);
 
     ASSERT_TRUE(recoveredKey.get());
 
@@ -135,7 +138,8 @@ TEST_F(Test_Symmetric, key_functionality)
 
     ASSERT_TRUE(password->SetPassword(wrongPassword));
 
-    recoveredKey = api_.Symmetric().Key(ot::reader(ciphertext_), mode_);
+    recoveredKey =
+        api_.Crypto().Symmetric().Key(ot::reader(ciphertext_), mode_);
 
     ASSERT_TRUE(recoveredKey.get());
 
@@ -158,7 +162,7 @@ TEST_F(Test_Symmetric, create_second_key)
 
     ASSERT_TRUE(password->SetPassword(key_password_.value()));
 
-    second_key_ = api_.Symmetric().Key(password, mode_);
+    second_key_ = api_.Crypto().Symmetric().Key(password, mode_);
 
     EXPECT_TRUE(second_key_.get());
 

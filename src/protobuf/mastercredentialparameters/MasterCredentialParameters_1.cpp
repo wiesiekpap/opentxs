@@ -11,10 +11,10 @@
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/MasterCredentialParameters.pb.h"
-#include "opentxs/protobuf/NymIDSource.pb.h"
-#include "opentxs/protobuf/SourceProof.pb.h"
-#include "opentxs/protobuf/verify/NymIDSource.hpp"
-#include "opentxs/protobuf/verify/SourceProof.hpp"
+#include "opentxs/protobuf/NymIDSource.pb.h"        // IWYU pragma: keep
+#include "opentxs/protobuf/SourceProof.pb.h"        // IWYU pragma: keep
+#include "opentxs/protobuf/verify/NymIDSource.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/SourceProof.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyCredentials.hpp"
 #include "protobuf/Check.hpp"
 

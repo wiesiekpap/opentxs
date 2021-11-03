@@ -14,9 +14,9 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/NymIDSource.pb.h"
-#include "opentxs/protobuf/verify/Authority.hpp"
-#include "opentxs/protobuf/verify/NymIDSource.hpp"
+#include "opentxs/protobuf/NymIDSource.pb.h"        // IWYU pragma: keep
+#include "opentxs/protobuf/verify/Authority.hpp"    // IWYU pragma: keep
+#include "opentxs/protobuf/verify/NymIDSource.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyCredentials.hpp"
 #include "protobuf/Check.hpp"
 

@@ -9,44 +9,61 @@ namespace opentxs
 {
 namespace api
 {
+namespace client
+{
+class Activity;
+class Contacts;
+}  // namespace client
+
 namespace crypto
 {
-namespace internal
-{
-struct Asymmetric;
-}  // namespace internal
-
+class Asymmetric;
+class Blockchain;
 class Config;
 class Encode;
 class Hash;
+class Seed;
 class Symmetric;
 }  // namespace crypto
 
-namespace internal
+namespace session
 {
-struct Crypto;
-}  // namespace internal
+class Factory;
+class Storage;
+}  // namespace session
 
-class Core;
 class Crypto;
+class Legacy;
+class Session;
 class Settings;
 }  // namespace api
 
 namespace crypto
 {
+class Bip32;
+class Bip39;
 class HashingProvider;
 class Pbkdf2;
 class Ripemd160;
 class Scrypt;
 }  // namespace crypto
+
+class Options;
 }  // namespace opentxs
 
 namespace opentxs::factory
 {
-auto AsymmetricAPI(const api::Core& api) noexcept
-    -> std::unique_ptr<api::crypto::internal::Asymmetric>;
+auto AsymmetricAPI(const api::Session& api) noexcept
+    -> std::unique_ptr<api::crypto::Asymmetric>;
+auto BlockchainAPI(
+    const api::Session& api,
+    const api::client::Activity& activity,
+    const api::client::Contacts& contacts,
+    const api::Legacy& legacy,
+    const std::string& dataFolder,
+    const Options& args) noexcept -> std::shared_ptr<api::crypto::Blockchain>;
 auto CryptoAPI(const api::Settings& settings) noexcept
-    -> std::unique_ptr<api::internal::Crypto>;
+    -> std::unique_ptr<api::Crypto>;
 auto CryptoConfig(const api::Settings& settings) noexcept
     -> std::unique_ptr<api::crypto::Config>;
 auto Encode(const api::Crypto& crypto) noexcept
@@ -59,6 +76,14 @@ auto Hash(
     const crypto::Ripemd160& ripe,
     const crypto::Scrypt& scrypt) noexcept
     -> std::unique_ptr<api::crypto::Hash>;
-auto Symmetric(const api::Core& api) noexcept
+auto SeedAPI(
+    const api::Session& api,
+    const api::session::Factory& factory,
+    const api::crypto::Asymmetric& asymmetric,
+    const api::crypto::Symmetric& symmetric,
+    const api::session::Storage& storage,
+    const crypto::Bip32& bip32,
+    const crypto::Bip39& bip39) noexcept -> std::unique_ptr<api::crypto::Seed>;
+auto Symmetric(const api::Session& api) noexcept
     -> std::unique_ptr<api::crypto::Symmetric>;
 }  // namespace opentxs::factory

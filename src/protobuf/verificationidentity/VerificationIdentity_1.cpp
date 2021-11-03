@@ -13,7 +13,7 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Verification.pb.h"
 #include "opentxs/protobuf/VerificationIdentity.pb.h"
-#include "opentxs/protobuf/verify/Verification.hpp"
+#include "opentxs/protobuf/verify/Verification.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
 

@@ -8,6 +8,7 @@
 #include "opentxs/crypto/Types.hpp"  // IWYU pragma: associated
 
 #include <map>
+#include <string>
 
 #include "opentxs/crypto/SeedStyle.hpp"
 

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {

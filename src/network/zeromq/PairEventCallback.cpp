@@ -8,11 +8,11 @@
 #include "network/zeromq/PairEventCallback.hpp"  // IWYU pragma: associated
 
 #include "Proto.tpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/protobuf/PairEvent.pb.h"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>;
 

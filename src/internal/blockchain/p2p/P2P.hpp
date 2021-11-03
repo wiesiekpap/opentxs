@@ -43,7 +43,7 @@ struct Peer : virtual public p2p::Peer {
 namespace opentxs::factory
 {
 auto BlockchainAddress(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::p2p::Protocol protocol,
     const blockchain::p2p::Network network,
     const Data& bytes,
@@ -54,7 +54,7 @@ auto BlockchainAddress(
     const bool incoming) noexcept
     -> std::unique_ptr<blockchain::p2p::internal::Address>;
 auto BlockchainAddress(
-    const api::Core& api,
+    const api::Session& api,
     const proto::BlockchainPeerAddress serialized) noexcept
     -> std::unique_ptr<blockchain::p2p::internal::Address>;
 }  // namespace opentxs::factory

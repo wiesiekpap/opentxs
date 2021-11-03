@@ -20,8 +20,7 @@ extern "C" {
 #include <memory>
 
 #include "internal/api/Factory.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"

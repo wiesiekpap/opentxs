@@ -20,15 +20,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -98,8 +95,8 @@ public:
     auto Shutdown() noexcept -> void final;
 
     Accounts(
-        const api::Core& api,
-        const api::client::internal::Blockchain& crypto,
+        const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const Type chain,

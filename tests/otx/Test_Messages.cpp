@@ -7,21 +7,18 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
+#include "internal/api/session/Client.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -32,6 +29,10 @@
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -48,18 +49,18 @@ public:
     static const std::string Alice_;
     static const OTNymID alice_nym_id_;
 
-    const ot::api::client::Manager& client_;
-    const ot::api::server::Manager& server_;
+    const ot::api::session::Client& client_;
+    const ot::api::session::Notary& server_;
     ot::OTPasswordPrompt reason_c_;
     ot::OTPasswordPrompt reason_s_;
     const identifier::Server& server_id_;
     const OTServerContract server_contract_;
 
     Test_Messages()
-        : client_(dynamic_cast<const ot::api::client::Manager&>(
-              Context().StartClient(0)))
-        , server_(dynamic_cast<const ot::api::server::Manager&>(
-              Context().StartServer(0)))
+        : client_(dynamic_cast<const ot::api::session::Client&>(
+              Context().StartClientSession(0)))
+        , server_(dynamic_cast<const ot::api::session::Notary&>(
+              Context().StartNotarySession(0)))
         , reason_c_(client_.Factory().PasswordPrompt(__func__))
         , reason_s_(server_.Factory().PasswordPrompt(__func__))
         , server_id_(server_.ID())
@@ -70,7 +71,7 @@ public:
 
     void import_server_contract(
         const contract::Server& contract,
-        const ot::api::client::Manager& client)
+        const ot::api::session::Client& client)
     {
         auto bytes = ot::Space{};
         server_contract_->Serialize(ot::writer(bytes), true);
@@ -80,10 +81,11 @@ public:
 
     void init()
     {
-        const_cast<std::string&>(SeedA_) = client_.Exec().Wallet_ImportSeed(
-            "spike nominee miss inquiry fee nothing belt list other "
-            "daughter leave valley twelve gossip paper",
-            "");
+        const_cast<std::string&>(SeedA_) =
+            client_.InternalClient().Exec().Wallet_ImportSeed(
+                "spike nominee miss inquiry fee nothing belt list other "
+                "daughter leave valley twelve gossip paper",
+                "");
         const_cast<OTNymID&>(alice_nym_id_) =
             client_.Wallet().Nym(reason_c_, "Alice", {SeedA_, 0})->ID();
         const_cast<std::string&>(Alice_) = alice_nym_id_->str();

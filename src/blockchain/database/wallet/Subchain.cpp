@@ -23,18 +23,19 @@
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/SubchainID.hpp"
 #include "internal/api/network/Network.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::SubchainData::"
@@ -109,7 +110,7 @@ struct SubchainData::Imp {
 
             return load_patterns(key, patterns);
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return {};
         }
@@ -149,7 +150,7 @@ struct SubchainData::Imp {
 
             return load_patterns(key, patterns);
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return {};
         }
@@ -237,7 +238,7 @@ struct SubchainData::Imp {
 
             return true;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -311,7 +312,7 @@ struct SubchainData::Imp {
 
             return output;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -326,7 +327,7 @@ struct SubchainData::Imp {
         return set_last_scanned(lock, nullptr, subchain, position);
     }
 
-    Imp(const api::Core& api,
+    Imp(const api::Session& api,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::filter::Type filter) noexcept
         : api_(api)
@@ -379,7 +380,7 @@ private:
         std::map<pSubchainIndex, db::Position> last_scanned_{};
     };
 
-    const api::Core& api_;
+    const api::Session& api_;
     const storage::lmdb::LMDB& lmdb_;
     const filter::Type default_filter_type_;
     const VersionNumber current_version_;
@@ -402,7 +403,7 @@ private:
                 auto [first, second] = map.try_emplace(key, bytes);
                 it = first;
             } catch (const std::exception& e) {
-                LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+                LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
             }
         });
 
@@ -469,7 +470,7 @@ private:
                 auto [first, second] = map.try_emplace(subchain, bytes);
                 it = first;
             } catch (const std::exception& e) {
-                LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+                LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
             }
         });
 
@@ -538,7 +539,7 @@ private:
 
             return true;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -576,7 +577,7 @@ private:
 };
 
 SubchainData::SubchainData(
-    const api::Core& api,
+    const api::Session& api,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::filter::Type filter) noexcept
     : imp_(std::make_unique<Imp>(api, lmdb, filter))

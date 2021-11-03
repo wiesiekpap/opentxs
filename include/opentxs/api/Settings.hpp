@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_SETTINGS_HPP
-#define OPENTXS_API_SETTINGS_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -121,7 +120,7 @@ public:
 
     virtual auto Reset() -> bool = 0;
 
-    virtual ~Settings() = default;
+    OPENTXS_NO_EXPORT virtual ~Settings() = default;
 
 protected:
     Settings() = default;
@@ -134,4 +133,3 @@ private:
 };
 }  // namespace api
 }  // namespace opentxs
-#endif

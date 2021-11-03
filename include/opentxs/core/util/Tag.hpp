@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_UTIL_TAG_HPP
-#define OPENTXS_CORE_UTIL_TAG_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -85,4 +84,3 @@ public:
 
 
  */
-#endif

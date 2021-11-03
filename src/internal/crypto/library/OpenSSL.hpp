@@ -7,20 +7,15 @@
 
 #include "internal/crypto/library/Pbkdf2.hpp"
 #include "internal/crypto/library/Ripemd160.hpp"
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 #include "opentxs/crypto/library/HashingProvider.hpp"
 
 namespace opentxs::crypto
 {
 class OpenSSL : virtual public HashingProvider,
                 virtual public Pbkdf2,
-                virtual public Ripemd160
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
-    ,
+                virtual public Ripemd160,
                 virtual public AsymmetricProvider
-#endif
 {
 public:
     ~OpenSSL() override = default;

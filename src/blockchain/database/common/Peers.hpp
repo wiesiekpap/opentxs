@@ -17,16 +17,17 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace storage
@@ -52,7 +53,7 @@ public:
     auto Import(std::vector<Address_p> peers) noexcept -> bool;
     auto Insert(Address_p address) noexcept -> bool;
 
-    Peers(const api::Core& api, storage::lmdb::LMDB& lmdb) noexcept(false);
+    Peers(const api::Session& api, storage::lmdb::LMDB& lmdb) noexcept(false);
 
 private:
     using ChainIndexMap = std::map<Chain, std::set<std::string>>;
@@ -61,7 +62,7 @@ private:
     using TypeIndexMap = std::map<Type, std::set<std::string>>;
     using ConnectedIndexMap = std::map<std::string, Time>;
 
-    const api::Core& api_;
+    const api::Session& api_;
     storage::lmdb::LMDB& lmdb_;
     mutable std::mutex lock_;
     ChainIndexMap chains_;

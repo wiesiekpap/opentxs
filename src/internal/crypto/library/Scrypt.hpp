@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-#include "opentxs/Bytes.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::crypto
 {

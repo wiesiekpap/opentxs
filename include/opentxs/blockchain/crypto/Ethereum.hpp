@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_CRYPTO_ETHEREUM_HPP
-#define OPENTXS_BLOCKCHAIN_CRYPTO_ETHEREUM_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -42,4 +41,3 @@ private:
 }  // namespace crypto
 }  // namespace blockchain
 }  // namespace opentxs
-#endif  // OPENTXS_BLOCKCHAIN_CRYPTO_ETHEREUM_HPP

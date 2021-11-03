@@ -9,14 +9,13 @@
 
 #include <iosfwd>
 
-#include "internal/api/client/Client.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/api/session/Client.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::ui::implementation
 {
@@ -28,7 +27,7 @@ auto verify_empty(const CustomData& custom) noexcept -> bool
         ++counter;
 
         if (nullptr != ptr) {
-            LogOutput("opentxs::ui::implementation::")(__func__)(
+            LogError()("opentxs::ui::implementation::")(__func__)(
                 ": unused pointer at index ")(counter)
                 .Flush();
 
@@ -40,7 +39,7 @@ auto verify_empty(const CustomData& custom) noexcept -> bool
 }
 
 Widget::Widget(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const Identifier& id,
     const SimpleCallback& cb) noexcept
     : api_(api)

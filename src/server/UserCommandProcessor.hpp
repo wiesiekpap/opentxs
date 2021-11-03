@@ -9,22 +9,22 @@
 #include <memory>
 #include <vector>
 
-#include "internal/api/server/Server.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Message.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace server
+namespace session
 {
-class Manager;
-}  // namespace server
-
-class Core;
+class Notary;
 class Wallet;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -75,7 +75,7 @@ public:
     static auto isAdmin(const identifier::Nym& nymID) -> bool;
 
     void drop_reply_notice_to_nymbox(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const Message& message,
         const std::int64_t& requestNum,
         const bool replyTransSuccess,
@@ -91,7 +91,7 @@ private:
     {
     public:
         FinalizeResponse(
-            const api::Core& core,
+            const api::Session& core,
             const identity::Nym& nym,
             ReplyMessage& reply,
             Ledger& ledger);
@@ -107,7 +107,7 @@ private:
         ~FinalizeResponse();
 
     private:
-        const api::Core& api_;
+        const api::Session& api_;
         const identity::Nym& nym_;
         ReplyMessage& reply_;
         Ledger& ledger_;
@@ -116,7 +116,7 @@ private:
 
     Server& server_;
     const PasswordPrompt& reason_;
-    const api::server::Manager& manager_;
+    const api::session::Notary& manager_;
 
     auto add_numbers_to_nymbox(
         const TransactionNumber transactionNumber,
@@ -216,7 +216,7 @@ private:
     UserCommandProcessor(
         Server& server,
         const PasswordPrompt& reason,
-        const opentxs::api::server::Manager& manager);
+        const opentxs::api::session::Notary& manager);
     UserCommandProcessor() = delete;
     UserCommandProcessor(const UserCommandProcessor&) = delete;
     UserCommandProcessor(UserCommandProcessor&&) = delete;

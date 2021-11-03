@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CONTRACT_PEER_CONNECTIONINFOTYPE_HPP
-#define OPENTXS_CORE_CONTRACT_PEER_CONNECTIONINFOTYPE_HPP
+#pragma once
 
 #include "opentxs/core/contract/peer/Types.hpp"  // IWYU pragma: associated
 
@@ -28,4 +27,3 @@ enum class ConnectionInfoType : std::uint8_t {
 }  // namespace peer
 }  // namespace contract
 }  // namespace opentxs
-#endif

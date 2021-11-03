@@ -9,9 +9,9 @@
 #include <memory>
 
 #include "internal/api/client/Client.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
@@ -102,7 +102,8 @@ namespace opentxs
 {
 template <>
 struct make_blank<otx::client::DepositPaymentTask> {
-    static auto value(const api::Core& api) -> otx::client::DepositPaymentTask
+    static auto value(const api::Session& api)
+        -> otx::client::DepositPaymentTask
     {
         return {
             make_blank<OTUnitID>::value(api),
@@ -113,7 +114,7 @@ struct make_blank<otx::client::DepositPaymentTask> {
 #if OT_CASH
 template <>
 struct make_blank<otx::client::DownloadMintTask> {
-    static auto value(const api::Core& api) -> otx::client::DownloadMintTask
+    static auto value(const api::Session& api) -> otx::client::DownloadMintTask
     {
         return {make_blank<OTUnitID>::value(api), 0};
     }
@@ -121,7 +122,7 @@ struct make_blank<otx::client::DownloadMintTask> {
 #endif  // OT_CASH
 template <>
 struct make_blank<otx::client::IssueUnitDefinitionTask> {
-    static auto value(const api::Core& api)
+    static auto value(const api::Session& api)
         -> otx::client::IssueUnitDefinitionTask
     {
         return {make_blank<OTUnitID>::value(api), "", core::UnitType::Error};
@@ -129,7 +130,7 @@ struct make_blank<otx::client::IssueUnitDefinitionTask> {
 };
 template <>
 struct make_blank<otx::client::MessageTask> {
-    static auto value(const api::Core& api) -> otx::client::MessageTask
+    static auto value(const api::Session& api) -> otx::client::MessageTask
     {
         return {make_blank<OTNymID>::value(api), "", nullptr};
     }
@@ -137,7 +138,7 @@ struct make_blank<otx::client::MessageTask> {
 #if OT_CASH
 template <>
 struct make_blank<otx::client::PayCashTask> {
-    static auto value(const api::Core& api) -> otx::client::PayCashTask
+    static auto value(const api::Session& api) -> otx::client::PayCashTask
     {
         return {
             make_blank<OTNymID>::value(api),
@@ -147,14 +148,14 @@ struct make_blank<otx::client::PayCashTask> {
 #endif  // OT_CASH
 template <>
 struct make_blank<otx::client::PaymentTask> {
-    static auto value(const api::Core& api) -> otx::client::PaymentTask
+    static auto value(const api::Session& api) -> otx::client::PaymentTask
     {
         return {make_blank<OTNymID>::value(api), nullptr};
     }
 };
 template <>
 struct make_blank<otx::client::PeerReplyTask> {
-    static auto value(const api::Core& api) -> otx::client::PeerReplyTask
+    static auto value(const api::Session& api) -> otx::client::PeerReplyTask
     {
         return {
             make_blank<OTNymID>::value(api),
@@ -164,14 +165,14 @@ struct make_blank<otx::client::PeerReplyTask> {
 };
 template <>
 struct make_blank<otx::client::PeerRequestTask> {
-    static auto value(const api::Core& api) -> otx::client::PeerRequestTask
+    static auto value(const api::Session& api) -> otx::client::PeerRequestTask
     {
         return {make_blank<OTNymID>::value(api), api.Factory().PeerRequest()};
     }
 };
 template <>
 struct make_blank<otx::client::PublishServerContractTask> {
-    static auto value(const api::Core& api)
+    static auto value(const api::Session& api)
         -> otx::client::PublishServerContractTask
     {
         return {make_blank<OTServerID>::value(api), false};
@@ -179,14 +180,15 @@ struct make_blank<otx::client::PublishServerContractTask> {
 };
 template <>
 struct make_blank<otx::client::RegisterAccountTask> {
-    static auto value(const api::Core& api) -> otx::client::RegisterAccountTask
+    static auto value(const api::Session& api)
+        -> otx::client::RegisterAccountTask
     {
         return {"", make_blank<OTUnitID>::value(api)};
     }
 };
 template <>
 struct make_blank<otx::client::SendChequeTask> {
-    static auto value(const api::Core& api) -> otx::client::SendChequeTask
+    static auto value(const api::Session& api) -> otx::client::SendChequeTask
     {
         return {
             make_blank<OTIdentifier>::value(api),
@@ -199,7 +201,7 @@ struct make_blank<otx::client::SendChequeTask> {
 };
 template <>
 struct make_blank<otx::client::SendTransferTask> {
-    static auto value(const api::Core& api) -> otx::client::SendTransferTask
+    static auto value(const api::Session& api) -> otx::client::SendTransferTask
     {
         return {
             make_blank<OTIdentifier>::value(api),
@@ -211,7 +213,7 @@ struct make_blank<otx::client::SendTransferTask> {
 #if OT_CASH
 template <>
 struct make_blank<otx::client::WithdrawCashTask> {
-    static auto value(const api::Core& api) -> otx::client::WithdrawCashTask
+    static auto value(const api::Session& api) -> otx::client::WithdrawCashTask
     {
         return {make_blank<OTIdentifier>::value(api), 0};
     }
@@ -308,7 +310,7 @@ struct StateMachine {
     using Result = api::client::OTX::Result;
     using TaskID = api::client::OTX::TaskID;
 
-    virtual auto api() const -> const api::Core& = 0;
+    virtual auto api() const -> const api::Session& = 0;
     virtual auto DepositPayment(const otx::client::DepositPaymentTask& params)
         const -> BackgroundTask = 0;
     virtual auto DownloadUnitDefinition(

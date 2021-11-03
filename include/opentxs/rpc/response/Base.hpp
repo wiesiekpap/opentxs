@@ -6,8 +6,7 @@
 // IWYU pragma: no_include "opentxs/rpc/CommandType.hpp"
 // IWYU pragma: no_include "opentxs/rpc/ResponseCode.hpp"
 
-#ifndef OPENTXS_RPC_RESPONSE_BASE_HPP
-#define OPENTXS_RPC_RESPONSE_BASE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -18,9 +17,10 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/rpc/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -98,4 +98,3 @@ private:
 }  // namespace response
 }  // namespace rpc
 }  // namespace opentxs
-#endif

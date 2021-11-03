@@ -11,13 +11,13 @@
 #include <utility>
 
 #include "blockchain/database/common/Database.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Wallet::"
@@ -25,8 +25,8 @@
 namespace opentxs::blockchain::database
 {
 Wallet::Wallet(
-    const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const common::Database& common,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::Type chain,
@@ -252,7 +252,7 @@ auto Wallet::ReorgTo(
             return true;
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         OT_FAIL;
     }
@@ -273,7 +273,7 @@ auto Wallet::ReserveUTXO(
     node::internal::SpendPolicy& policy) const noexcept -> std::optional<UTXO>
 {
     if (false == proposals_.Exists(id)) {
-        LogOutput(OT_METHOD)(__func__)(": Proposal ")(id)(" does not exist")
+        LogError()(OT_METHOD)(__func__)(": Proposal ")(id)(" does not exist")
             .Flush();
 
         return std::nullopt;

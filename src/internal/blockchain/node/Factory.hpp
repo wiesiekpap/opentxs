@@ -15,13 +15,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
 namespace network
 {
@@ -31,7 +28,7 @@ struct Blockchain;
 }  // namespace internal
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -74,15 +71,15 @@ struct Database;
 namespace opentxs::factory
 {
 auto BlockchainDatabase(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const blockchain::node::internal::Network& node,
     const blockchain::database::common::Database& db,
     const blockchain::Type chain,
     const blockchain::filter::Type filter) noexcept
     -> std::unique_ptr<blockchain::internal::Database>;
 auto BlockchainFilterOracle(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Network& node,
@@ -94,8 +91,8 @@ auto BlockchainFilterOracle(
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::FilterOracle>;
 auto BlockchainNetworkBitcoin(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const api::network::internal::Blockchain& network,
     const blockchain::Type type,
     const blockchain::node::internal::Config& config,
@@ -103,15 +100,15 @@ auto BlockchainNetworkBitcoin(
     const std::string& syncEndpoint) noexcept
     -> std::unique_ptr<blockchain::node::internal::Network>;
 auto BlockchainNetworkBitcoin(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const blockchain::Type type,
     const blockchain::node::internal::Config& config,
     const std::string& seednode,
     const std::string& syncEndpoint) noexcept
     -> std::unique_ptr<blockchain::node::internal::Network>;
 auto BlockchainPeerManager(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
@@ -126,8 +123,8 @@ auto BlockchainPeerManager(
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::PeerManager>;
 auto BlockchainWallet(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const blockchain::node::internal::Network& parent,
     const blockchain::node::internal::WalletDatabase& db,
     const blockchain::node::internal::Mempool& mempool,
@@ -135,7 +132,7 @@ auto BlockchainWallet(
     const std::string& shutdown)
     -> std::unique_ptr<blockchain::node::internal::Wallet>;
 auto BlockOracle(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Network& node,
     const blockchain::node::internal::HeaderOracle& header,
@@ -144,7 +141,7 @@ auto BlockOracle(
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::BlockOracle>;
 auto HeaderOracle(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::node::internal::HeaderDatabase& database,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::node::internal::HeaderOracle>;

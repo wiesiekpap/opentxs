@@ -16,14 +16,15 @@
 
 #include "Proto.hpp"
 #include "internal/identity/Identity.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/util/Types.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/ContactData.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -34,12 +35,14 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace crypto
@@ -253,7 +256,7 @@ private:
     static const VersionConversionMap
         contact_credential_to_contact_data_version_;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const std::unique_ptr<const identity::Source> source_p_;
     const identity::Source& source_;
     const OTNymID id_;
@@ -269,25 +272,25 @@ private:
     String::List m_listRevokedIDs;
 
     static auto create_authority(
-        const api::Core& api,
+        const api::Session& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const VersionNumber version,
         const NymParameters& params,
         const PasswordPrompt& reason) noexcept(false) -> CredentialMap;
     static auto load_authorities(
-        const api::Core& api,
+        const api::Session& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const Serialized& serialized) noexcept(false) -> CredentialMap;
     static auto load_revoked(
-        const api::Core& api,
+        const api::Session& api,
         const identity::Nym& parent,
         const identity::Source& source,
         const Serialized& serialized,
         CredentialMap& revoked) noexcept(false) -> String::List;
     static auto normalize(
-        const api::Core& api,
+        const api::Session& api,
         const NymParameters& in,
         const PasswordPrompt& reason) noexcept(false) -> NymParameters;
 
@@ -331,11 +334,11 @@ private:
         const PasswordPrompt& reason) -> bool;
     auto path(const sLock& lock, proto::HDPath& output) const -> bool;
 
-    Nym(const api::Core& api,
+    Nym(const api::Session& api,
         NymParameters& nymParameters,
         std::unique_ptr<const identity::Source> source,
         const PasswordPrompt& reason) noexcept(false);
-    Nym(const api::Core& api,
+    Nym(const api::Session& api,
         const proto::Nym& serialized,
         const std::string& alias) noexcept(false);
     Nym() = delete;

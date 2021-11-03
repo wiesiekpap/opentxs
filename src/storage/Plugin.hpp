@@ -12,14 +12,14 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/storage/Driver.hpp"
 #include "opentxs/storage/Plugin.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
@@ -30,10 +30,10 @@ namespace network
 class Asio;
 }  // namespace network
 
-namespace storage
+namespace session
 {
 class Storage;
-}  // namespace storage
+}  // namespace session
 
 class Crypto;
 }  // namespace api
@@ -94,7 +94,7 @@ protected:
     Plugin(
         const api::Crypto& crypto,
         const api::network::Asio& asio,
-        const api::storage::Storage& storage,
+        const api::session::Storage& storage,
         const storage::Config& config,
         const Flag& bucket);
     Plugin() = delete;
@@ -107,7 +107,7 @@ protected:
         std::promise<bool>* promise) const = 0;
 
 private:
-    const api::storage::Storage& storage_;
+    const api::session::Storage& storage_;
     const Flag& current_bucket_;
 
     Plugin(const Plugin&) = delete;
@@ -142,16 +142,16 @@ auto Driver::LoadProto(
 
     if (!valid) {
         if (loaded) {
-            LogOutput(": Specified object was located but could not be "
-                      "validated.")
+            LogError()(": Specified object was located but could not be "
+                       "validated.")
                 .Flush();
-            LogOutput(": Hash: ")(hash).Flush();
-            LogOutput(": Size: ")(raw.size()).Flush();
+            LogError()(": Hash: ")(hash).Flush();
+            LogError()(": Size: ")(raw.size()).Flush();
         } else {
 
-            LogDetail("Specified object is missing.").Flush();
-            LogDetail("Hash: ")(hash).Flush();
-            LogDetail("Size: ")(raw.size()).Flush();
+            LogDetail()("Specified object is missing.").Flush();
+            LogDetail()("Hash: ")(hash).Flush();
+            LogDetail()("Size: ")(raw.size()).Flush();
         }
     }
 

@@ -10,6 +10,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace ot = opentxs;
 

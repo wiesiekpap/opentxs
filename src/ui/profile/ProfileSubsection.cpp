@@ -14,11 +14,11 @@
 
 #include "internal/contact/Contact.hpp"
 #include "internal/ui/UI.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
@@ -29,7 +29,7 @@ namespace opentxs::factory
 {
 auto ProfileSubsectionWidget(
     const ui::implementation::ProfileSectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ProfileSectionRowID& rowID,
     const ui::implementation::ProfileSectionSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -45,7 +45,7 @@ namespace opentxs::ui::implementation
 {
 ProfileSubsection::ProfileSubsection(
     const ProfileSectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ProfileSectionRowID& rowID,
     const ProfileSectionSortKey& key,
     CustomData& custom) noexcept
@@ -90,8 +90,7 @@ auto ProfileSubsection::Delete(const std::string& claimID) const noexcept
 auto ProfileSubsection::Name(const std::string& lang) const noexcept
     -> std::string
 {
-    return proto::TranslateItemType(
-        contact::internal::translate(row_id_.second), lang);
+    return proto::TranslateItemType(translate(row_id_.second), lang);
 }
 
 auto ProfileSubsection::process_group(

@@ -47,6 +47,9 @@ target_link_libraries(
     unofficial-sodium::sodium
 )
 target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
+target_include_directories(
+  opentxs-crypto SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-crypto PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-crypto>)
 add_dependencies(opentxs-crypto generated_code)

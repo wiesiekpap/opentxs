@@ -22,7 +22,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -43,19 +43,19 @@ public:
     void AddElement(const Data& element) noexcept final;
 
     BloomFilter(
-        const api::Core& api,
+        const api::Session& api,
         const Tweak tweak,
         const BloomUpdateFlag update,
         const std::size_t functionCount,
         const Filter& data) noexcept;
     BloomFilter(
-        const api::Core& api,
+        const api::Session& api,
         const Tweak tweak,
         const BloomUpdateFlag update,
         const std::size_t targets,
         const FalsePositiveRate rate) noexcept;
     BloomFilter(
-        const api::Core& api,
+        const api::Session& api,
         const Tweak tweak,
         const BloomUpdateFlag update,
         const std::size_t functionCount,
@@ -68,7 +68,7 @@ private:
     static const std::size_t max_hash_function_count_;
     static const std::uint32_t seed_;
 
-    const api::Core& api_;
+    const api::Session& api_;
     Tweak tweak_{};
     BloomUpdateFlag flags_{};
     std::size_t function_count_{};

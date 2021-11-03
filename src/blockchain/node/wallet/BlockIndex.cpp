@@ -13,9 +13,9 @@
 #include <unordered_set>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD "opentxs::blockchain::node::wallet::BlockIndex::Imp::"
 

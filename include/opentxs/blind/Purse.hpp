@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLIND_PURSE_HPP
-#define OPENTXS_BLIND_PURSE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -12,19 +11,19 @@
 #include <cstdint>
 
 #if OT_CASH
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blind/Types.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace server
+namespace session
 {
-class Manager;
-}  // namespace server
+class Notary;
+}  // namespace session
 }  // namespace api
 
 namespace blind
@@ -91,7 +90,7 @@ public:
     virtual auto Unit() const -> const identifier::UnitDefinition& = 0;
     virtual auto Unlock(const identity::Nym& nym, const PasswordPrompt& reason)
         const -> bool = 0;
-    virtual auto Verify(const api::server::Manager& server) const -> bool = 0;
+    virtual auto Verify(const api::session::Notary& server) const -> bool = 0;
     virtual auto Value() const -> const Amount& = 0;
 
     virtual auto AddNym(const identity::Nym& nym, const PasswordPrompt& reason)
@@ -131,4 +130,3 @@ private:
 }  // namespace blind
 }  // namespace opentxs
 #endif  // OT_CASH
-#endif

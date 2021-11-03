@@ -14,8 +14,8 @@
 #include <string_view>
 
 #include "Proto.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/protobuf/BlockchainP2PSync.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs::network::blockchain::sync
 {

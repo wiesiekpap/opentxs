@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_SCRIPT_HPP
-#define OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_SCRIPT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -13,21 +12,20 @@
 #include <string>
 #include <tuple>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-class Manager;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 class PaymentCode;
@@ -76,7 +74,7 @@ public:
         -> const value_type& = 0;
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto CalculateHash160(
-        const api::Core& api,
+        const api::Session& api,
         const AllocateOutput output) const noexcept -> bool = 0;
     virtual auto CalculateSize() const noexcept -> std::size_t = 0;
     virtual auto cbegin() const noexcept -> const_iterator = 0;
@@ -85,8 +83,8 @@ public:
     virtual auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> = 0;
     virtual auto ExtractPatterns(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain) const noexcept
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain) const noexcept
         -> std::vector<PatternID> = 0;
     virtual auto IsNotification(
         const std::uint8_t version,
@@ -133,4 +131,3 @@ private:
 }  // namespace block
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

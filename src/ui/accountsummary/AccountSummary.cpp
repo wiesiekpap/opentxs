@@ -14,19 +14,19 @@
 #include <utility>
 #include <vector>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Issuer.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/util/Log.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::AccountSummary::"
@@ -34,7 +34,7 @@
 namespace opentxs::factory
 {
 auto AccountSummaryModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const core::UnitType currency,
     const SimpleCallback& cb) noexcept
@@ -49,7 +49,7 @@ auto AccountSummaryModel(
 namespace opentxs::ui::implementation
 {
 AccountSummary::AccountSummary(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const core::UnitType currency,
     const SimpleCallback& cb) noexcept
@@ -230,7 +230,7 @@ void AccountSummary::process_server(const identifier::Server& serverID) noexcept
 void AccountSummary::startup() noexcept
 {
     const auto issuers = api_.Wallet().IssuerList(primary_id_);
-    LogDetail(OT_METHOD)(__func__)(": Loading ")(issuers.size())(" issuers.")
+    LogDetail()(OT_METHOD)(__func__)(": Loading ")(issuers.size())(" issuers.")
         .Flush();
 
     for (const auto& id : issuers) { process_issuer(id); }

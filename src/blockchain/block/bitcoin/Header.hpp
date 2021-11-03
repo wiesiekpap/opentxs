@@ -15,7 +15,6 @@
 #include "blockchain/block/Header.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -25,12 +24,15 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -43,8 +45,6 @@ class Header;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
-
-class Factory;
 }  // namespace opentxs
 
 namespace be = boost::endian;
@@ -79,19 +79,19 @@ public:
     static const VersionNumber subversion_default_;
 
     static auto calculate_hash(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         const ReadView serialized) -> block::pHash;
     static auto calculate_hash(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         const BitcoinFormat& serialized) -> block::pHash;
     static auto calculate_pow(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         const ReadView serialized) -> block::pHash;
     static auto calculate_pow(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         const BitcoinFormat& serialized) -> block::pHash;
 
@@ -123,7 +123,7 @@ public:
     }
 
     Header(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         const VersionNumber subversion,
         block::pHash&& hash,
@@ -136,12 +136,12 @@ public:
         const std::uint32_t nonce,
         const bool isGenesis) noexcept(false);
     Header(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type chain,
         const blockchain::block::Hash& merkle,
         const blockchain::block::Hash& parent,
         const block::Height height) noexcept(false);
-    Header(const api::Core& api, const SerializedType& serialized) noexcept(
+    Header(const api::Session& api, const SerializedType& serialized) noexcept(
         false);
     Header(const Header& rhs) noexcept;
 
@@ -158,10 +158,10 @@ private:
     const std::uint32_t nonce_;
 
     static auto calculate_hash(
-        const api::Core& api,
+        const api::Session& api,
         const SerializedType& serialized) -> block::pHash;
     static auto calculate_pow(
-        const api::Core& api,
+        const api::Session& api,
         const SerializedType& serialized) -> block::pHash;
     static auto calculate_work(
         const blockchain::Type chain,
@@ -173,7 +173,7 @@ private:
     auto find_nonce() noexcept(false) -> void;
 
     Header(
-        const api::Core& api,
+        const api::Session& api,
         const VersionNumber version,
         const blockchain::Type chain,
         block::pHash&& hash,

@@ -15,10 +15,10 @@
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::p2p::bitcoin::message
 {
@@ -149,7 +149,7 @@ auto FilterRequest::Type(const blockchain::Type chain) const noexcept
 }
 
 auto VerifyChecksum(
-    const api::Core& api,
+    const api::Session& api,
     const Header& header,
     const network::zeromq::Frame& payload) noexcept -> bool
 {
@@ -170,7 +170,7 @@ auto VerifyChecksum(
         case p2p::Protocol::opentxs:
         case p2p::Protocol::ethereum:
         default: {
-            LogOutput(__func__)(": Unsupported type").Flush();
+            LogError()(__func__)(": Unsupported type").Flush();
         }
     }
 

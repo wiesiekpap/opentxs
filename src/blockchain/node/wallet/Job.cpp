@@ -13,11 +13,12 @@
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/api/network/Network.hpp"
-#include "opentxs/api/Core.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 
@@ -88,12 +89,12 @@ auto Job::queue_work(
         });
 
     if (queued) {
-        LogDebug(OT_METHOD)(__func__)(": ")(parent_.name_)(" ")(
+        LogDebug()(OT_METHOD)(__func__)(": ")(parent_.name_)(" ")(
             log)(" job queued")
             .Flush();
     } else {
-        LogDebug(OT_METHOD)(__func__)(": ")(parent_.name_)(" failed to queue ")(
-            log)(" job")
+        LogDebug()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+            " failed to queue ")(log)(" job")
             .Flush();
         --parent_.job_counter_;
     }
@@ -115,7 +116,7 @@ auto Job::wait(Lock& lock) const noexcept -> void
 
         const auto duration = std::chrono::duration_cast<std::chrono::seconds>(
             Clock::now() - start);
-        LogOutput(OT_METHOD)(__func__)(": ")(parent_.name_)(" waiting on ")(
+        LogError()(OT_METHOD)(__func__)(": ")(parent_.name_)(" waiting on ")(
             type())(" job for ")(duration.count())(" seconds")
             .Flush();
     }

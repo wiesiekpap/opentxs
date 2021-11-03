@@ -17,7 +17,7 @@ namespace message = bitcoin::message;
 namespace opentxs::factory
 {
 auto BitcoinP2PFilterclear(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> header)
     -> blockchain::p2p::bitcoin::message::internal::Filterclear*
 {
@@ -27,7 +27,9 @@ auto BitcoinP2PFilterclear(
     return new ReturnType(api, std::move(header));
 }
 
-auto BitcoinP2PFilterclear(const api::Core& api, const blockchain::Type network)
+auto BitcoinP2PFilterclear(
+    const api::Session& api,
+    const blockchain::Type network)
     -> blockchain::p2p::bitcoin::message::internal::Filterclear*
 {
     using ReturnType =
@@ -36,7 +38,7 @@ auto BitcoinP2PFilterclear(const api::Core& api, const blockchain::Type network)
     return new ReturnType(api, network, bitcoin::Command::filterclear);
 }
 auto BitcoinP2PGetaddr(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> header)
     -> blockchain::p2p::bitcoin::message::internal::Getaddr*
 {
@@ -46,7 +48,7 @@ auto BitcoinP2PGetaddr(
     return new ReturnType(api, std::move(header));
 }
 
-auto BitcoinP2PGetaddr(const api::Core& api, const blockchain::Type network)
+auto BitcoinP2PGetaddr(const api::Session& api, const blockchain::Type network)
     -> blockchain::p2p::bitcoin::message::internal::Getaddr*
 {
     using ReturnType =
@@ -56,7 +58,7 @@ auto BitcoinP2PGetaddr(const api::Core& api, const blockchain::Type network)
 }
 
 auto BitcoinP2PMempool(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> header)
     -> blockchain::p2p::bitcoin::message::internal::Mempool*
 {
@@ -66,7 +68,7 @@ auto BitcoinP2PMempool(
     return new ReturnType(api, std::move(header));
 }
 
-auto BitcoinP2PMempool(const api::Core& api, const blockchain::Type network)
+auto BitcoinP2PMempool(const api::Session& api, const blockchain::Type network)
     -> blockchain::p2p::bitcoin::message::internal::Mempool*
 {
     using ReturnType =
@@ -76,7 +78,7 @@ auto BitcoinP2PMempool(const api::Core& api, const blockchain::Type network)
 }
 
 auto BitcoinP2PSendheaders(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> header)
     -> blockchain::p2p::bitcoin::message::internal::Sendheaders*
 {
@@ -86,7 +88,9 @@ auto BitcoinP2PSendheaders(
     return new ReturnType(api, std::move(header));
 }
 
-auto BitcoinP2PSendheaders(const api::Core& api, const blockchain::Type network)
+auto BitcoinP2PSendheaders(
+    const api::Session& api,
+    const blockchain::Type network)
     -> blockchain::p2p::bitcoin::message::internal::Sendheaders*
 {
     using ReturnType =
@@ -96,7 +100,7 @@ auto BitcoinP2PSendheaders(const api::Core& api, const blockchain::Type network)
 }
 
 auto BitcoinP2PVerack(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> header)
     -> blockchain::p2p::bitcoin::message::internal::Verack*
 {
@@ -106,7 +110,7 @@ auto BitcoinP2PVerack(
     return new ReturnType(api, std::move(header));
 }
 
-auto BitcoinP2PVerack(const api::Core& api, const blockchain::Type network)
+auto BitcoinP2PVerack(const api::Session& api, const blockchain::Type network)
     -> blockchain::p2p::bitcoin::message::internal::Verack*
 {
     using ReturnType =

@@ -15,31 +15,28 @@
 #include <vector>
 
 #include "Basic.hpp"
+#include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Shared.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -75,6 +72,9 @@
 #include "opentxs/rpc/request/SendPayment.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/SendPayment.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 #if OT_CRYPTO_WITH_BIP32
 #define TEST_SEED                                                              \
@@ -136,7 +136,7 @@ protected:
     static std::string claim_id_;
 
     static std::size_t get_index(const std::int32_t instance);
-    static const api::Core& get_session(const std::int32_t instance);
+    static const api::Session& get_session(const std::int32_t instance);
 
     proto::RPCCommand init(proto::RPCCommandType commandtype)
     {
@@ -170,7 +170,7 @@ protected:
             if (server2_id_.empty()) {
                 auto& manager = Test_Rpc::get_session(response.session());
                 auto& servermanager =
-                    dynamic_cast<const api::server::Manager&>(manager);
+                    dynamic_cast<const api::session::Notary&>(manager);
 #if OT_CASH
                 servermanager.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
 #endif
@@ -181,13 +181,13 @@ protected:
                 // Import the server contract
                 auto& client = get_session(0);
                 auto& clientmanager =
-                    dynamic_cast<const api::client::Manager&>(client);
+                    dynamic_cast<const api::session::Client&>(client);
                 auto clientservercontract = clientmanager.Wallet().Server(
                     servercontract->PublicContract());
             } else if (server3_id_.empty()) {
                 auto& manager = Test_Rpc::get_session(response.session());
                 auto& servermanager =
-                    dynamic_cast<const api::server::Manager&>(manager);
+                    dynamic_cast<const api::session::Notary&>(manager);
 #if OT_CASH
                 servermanager.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
 #endif
@@ -198,7 +198,7 @@ protected:
                 // Import the server contract
                 auto& client = get_session(0);
                 auto& clientmanager =
-                    dynamic_cast<const api::client::Manager&>(client);
+                    dynamic_cast<const api::session::Client&>(client);
                 auto clientservercontract = clientmanager.Wallet().Server(
                     servercontract->PublicContract());
             }
@@ -225,7 +225,7 @@ protected:
     }
 
     void wait_for_state_machine(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID)
     {
@@ -246,7 +246,7 @@ protected:
     }
 
     void receive_payment(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const identifier::Nym& nymID,
         const identifier::Server& serverID,
         const Identifier& accountID)
@@ -293,14 +293,15 @@ std::size_t Test_Rpc::get_index(const std::int32_t instance)
     return (instance - (instance % 2)) / 2;
 }
 
-const api::Core& Test_Rpc::get_session(const std::int32_t instance)
+const api::Session& Test_Rpc::get_session(const std::int32_t instance)
 {
     auto is_server = instance % 2;
 
     if (is_server) {
         return ot::Context().Server(static_cast<int>(get_index(instance)));
     } else {
-        return ot::Context().Client(static_cast<int>(get_index(instance)));
+        return ot::Context().ClientSession(
+            static_cast<int>(get_index(instance)));
     }
 }
 
@@ -371,7 +372,7 @@ TEST_F(Test_Rpc, Add_Server_Session)
     auto reason = manager.Factory().PasswordPrompt(__func__);
 
     // Register the server on the client.
-    auto& servermanager = dynamic_cast<const api::server::Manager&>(manager);
+    auto& servermanager = dynamic_cast<const api::session::Notary&>(manager);
 #if OT_CASH
     servermanager.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
 #endif
@@ -379,7 +380,7 @@ TEST_F(Test_Rpc, Add_Server_Session)
     auto servercontract = servermanager.Wallet().Server(servermanager.ID());
 
     auto& client = get_session(0);
-    auto& clientmanager = dynamic_cast<const api::client::Manager&>(client);
+    auto& clientmanager = dynamic_cast<const api::session::Client&>(client);
     auto clientservercontract =
         clientmanager.Wallet().Server(servercontract->PublicContract());
 
@@ -637,8 +638,7 @@ TEST_F(Test_Rpc, Create_Nym)
     EXPECT_NE(nullptr, createnym);
 
     createnym->set_version(CREATENYM_VERSION);
-    createnym->set_type(
-        contact::internal::translate(contact::ClaimType::Individual));
+    createnym->set_type(translate(contact::ClaimType::Individual));
     createnym->set_name("testNym1");
     createnym->set_index(-1);
 
@@ -665,8 +665,7 @@ TEST_F(Test_Rpc, Create_Nym)
     EXPECT_NE(nullptr, createnym);
 
     createnym->set_version(CREATENYM_VERSION);
-    createnym->set_type(
-        contact::internal::translate(contact::ClaimType::Individual));
+    createnym->set_type(translate(contact::ClaimType::Individual));
     createnym->set_name("testNym2");
     createnym->set_index(-1);
 
@@ -689,8 +688,7 @@ TEST_F(Test_Rpc, Create_Nym)
     EXPECT_NE(nullptr, createnym);
 
     createnym->set_version(CREATENYM_VERSION);
-    createnym->set_type(
-        contact::internal::translate(contact::ClaimType::Individual));
+    createnym->set_type(translate(contact::ClaimType::Individual));
     createnym->set_name("testNym3");
     createnym->set_index(-1);
 
@@ -749,10 +747,10 @@ TEST_F(Test_Rpc, Add_Contact)
     EXPECT_EQ(1, response.identifier_size());
 
     // Add a contact using a nym id.
-    auto& client = ot_.Client(0);
+    auto& client = ot_.ClientSession(0);
     EXPECT_EQ(4, client.Contacts().ContactList().size());
 
-    ot_.Client(2);
+    ot_.ClientSession(2);
 
     command = init(proto::RPCCOMMAND_ADDCONTACT);
 
@@ -821,8 +819,7 @@ TEST_F(Test_Rpc, Create_Unit_Definition)
     def->set_tla("GTD");
     def->set_power(2);
     def->set_terms("Google Test Dollars");
-    def->set_unitofaccount(
-        contact::internal::translate(contact::ClaimType::USD));
+    def->set_unitofaccount(translate(contact::ClaimType::USD));
     auto response = ot_.RPC(command);
 
     EXPECT_TRUE(proto::Validate(response, VERBOSE));
@@ -926,7 +923,7 @@ TEST_F(Test_Rpc, Delete_Claim_No_Nym)
 
     command.set_owner(unit_definition_id_->str());
 
-    auto& client = ot_.Client(0);
+    auto& client = ot_.ClientSession(0);
     auto nym = client.Wallet().Nym(ot::identifier::Nym::Factory(nym1_id_));
     auto& claims = nym->Claims();
     auto group = claims.Group(
@@ -1202,7 +1199,7 @@ TEST_F(Test_Rpc, Create_Account)
 
 TEST_F(Test_Rpc, Send_Payment_Transfer)
 {
-    auto& client = ot_.Client(0);
+    auto& client = ot_.ClientSession(0);
     auto& contacts = client.Contacts();
     const auto contactid =
         contacts.ContactID(identifier::Nym::Factory(nym3_id_));
@@ -1262,7 +1259,7 @@ TEST_F(Test_Rpc, Move_Funds)
 {
     auto command = init(proto::RPCCOMMAND_MOVEFUNDS);
     command.set_session(0);
-    const auto& manager = ot_.Client(0);
+    const auto& manager = ot_.ClientSession(0);
     auto nym3id = identifier::Nym::Factory(nym3_id_);
     auto movefunds = command.mutable_movefunds();
 
@@ -1311,7 +1308,7 @@ TEST_F(Test_Rpc, Move_Funds)
 
 TEST_F(Test_Rpc, Get_Workflow)
 {
-    auto& client = ot_.Client(0);
+    auto& client = ot_.ClientSession(0);
 
     // Make sure the workflows on the client are up-to-date.
     client.OTX().Refresh();
@@ -1354,10 +1351,10 @@ TEST_F(Test_Rpc, Get_Workflow)
     EXPECT_STREQ(workflowid->str().c_str(), paymentworkflow.id().c_str());
     EXPECT_EQ(
         api::client::PaymentWorkflowType::InternalTransfer,
-        api::client::internal::translate(paymentworkflow.type()));
+        translate(paymentworkflow.type()));
     EXPECT_EQ(
         api::client::PaymentWorkflowState::Completed,
-        api::client::internal::translate(paymentworkflow.state()));
+        translate(paymentworkflow.state()));
 
     workflow_id_ = workflowid->str();
 }
@@ -1389,7 +1386,7 @@ TEST_F(Test_Rpc, Rename_Account_Not_Found)
 {
     auto command = init(proto::RPCCOMMAND_RENAMEACCOUNT);
     command.set_session(0);
-    ot_.Client(0);
+    ot_.ClientSession(0);
 
     auto& modify = *command.add_modifyaccount();
     modify.set_version(MODIFYACCOUNT_VERSION);
@@ -1412,7 +1409,7 @@ TEST_F(Test_Rpc, Rename_Accounts)
 {
     auto command = init(proto::RPCCOMMAND_RENAMEACCOUNT);
     command.set_session(0);
-    ot_.Client(0);
+    ot_.ClientSession(0);
     const std::vector<std::string> accounts{
         issuer_account_id_,
         nym2_account_id_,

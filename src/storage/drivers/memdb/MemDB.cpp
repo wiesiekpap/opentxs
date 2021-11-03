@@ -11,8 +11,8 @@
 #include <string>
 
 #include "internal/storage/drivers/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
 
 // #define OT_METHOD "opentxs::storage::driver::MemDB::"
 
@@ -21,7 +21,7 @@ namespace opentxs::factory
 auto StorageMemDB(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& parent,
+    const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket) noexcept -> std::unique_ptr<storage::Plugin>
 {
@@ -36,7 +36,7 @@ namespace opentxs::storage::driver
 MemDB::MemDB(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& storage,
+    const api::session::Storage& storage,
     const storage::Config& config,
     const Flag& bucket)
     : ot_super(crypto, asio, storage, config, bucket)

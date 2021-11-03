@@ -18,10 +18,10 @@
 #include "Basic.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace b = ot::blockchain::block::bitcoin;
 

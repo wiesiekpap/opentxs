@@ -13,10 +13,10 @@
 #include <utility>
 
 #include "internal/rpc/RPC.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/protobuf/AccountData.pb.h"
 #include "opentxs/rpc/AccountType.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs::rpc
 {

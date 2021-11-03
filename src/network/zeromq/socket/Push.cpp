@@ -12,9 +12,9 @@
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Sender.tpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Push>;
 

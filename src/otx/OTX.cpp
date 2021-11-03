@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"        // IWYU pragma: associated
 #include "internal/otx/OTX.hpp"  // IWYU pragma: associated
 
+#include <map>
+
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OTXPushType.hpp"
@@ -16,7 +18,31 @@
 #include "opentxs/protobuf/OTXEnums.pb.h"
 #include "util/Container.hpp"
 
-namespace opentxs::otx::internal
+namespace opentxs::otx
+{
+using ConsensusTypeMap = std::map<ConsensusType, proto::ConsensusType>;
+using ConsensusTypeReverseMap = std::map<proto::ConsensusType, ConsensusType>;
+using LastReplyStatusMap = std::map<LastReplyStatus, proto::LastReplyStatus>;
+using LastReplyStatusReverseMap =
+    std::map<proto::LastReplyStatus, LastReplyStatus>;
+using OTXPushTypeMap = std::map<OTXPushType, proto::OTXPushType>;
+using OTXPushTypeReverseMap = std::map<proto::OTXPushType, OTXPushType>;
+using ServerReplyTypeMap = std::map<ServerReplyType, proto::ServerReplyType>;
+using ServerReplyTypeReverseMap =
+    std::map<proto::ServerReplyType, ServerReplyType>;
+using ServerRequestTypeMap =
+    std::map<ServerRequestType, proto::ServerRequestType>;
+using ServerRequestTypeReverseMap =
+    std::map<proto::ServerRequestType, ServerRequestType>;
+
+auto consensustype_map() noexcept -> const ConsensusTypeMap&;
+auto lastreplystatus_map() noexcept -> const LastReplyStatusMap&;
+auto otxpushtype_map() noexcept -> const OTXPushTypeMap&;
+auto serverreplytype_map() noexcept -> const ServerReplyTypeMap&;
+auto serverrequesttype_map() noexcept -> const ServerRequestTypeMap&;
+}  // namespace opentxs::otx
+
+namespace opentxs::otx
 {
 auto consensustype_map() noexcept -> const ConsensusTypeMap&
 {
@@ -77,11 +103,14 @@ auto serverrequesttype_map() noexcept -> const ServerRequestTypeMap&
 
     return map;
 }
+}  // namespace opentxs::otx
 
+namespace opentxs
+{
 auto translate(otx::ConsensusType in) noexcept -> proto::ConsensusType
 {
     try {
-        return consensustype_map().at(in);
+        return otx::consensustype_map().at(in);
     } catch (...) {
         return proto::CONSENSUSTYPE_ERROR;
     }
@@ -90,7 +119,7 @@ auto translate(otx::ConsensusType in) noexcept -> proto::ConsensusType
 auto translate(otx::LastReplyStatus in) noexcept -> proto::LastReplyStatus
 {
     try {
-        return lastreplystatus_map().at(in);
+        return otx::lastreplystatus_map().at(in);
     } catch (...) {
         return proto::LASTREPLYSTATUS_INVALID;
     }
@@ -99,7 +128,7 @@ auto translate(otx::LastReplyStatus in) noexcept -> proto::LastReplyStatus
 auto translate(otx::OTXPushType in) noexcept -> proto::OTXPushType
 {
     try {
-        return otxpushtype_map().at(in);
+        return otx::otxpushtype_map().at(in);
     } catch (...) {
         return proto::OTXPUSH_ERROR;
     }
@@ -108,7 +137,7 @@ auto translate(otx::OTXPushType in) noexcept -> proto::OTXPushType
 auto translate(otx::ServerReplyType in) noexcept -> proto::ServerReplyType
 {
     try {
-        return serverreplytype_map().at(in);
+        return otx::serverreplytype_map().at(in);
     } catch (...) {
         return proto::SERVERREPLY_ERROR;
     }
@@ -117,7 +146,7 @@ auto translate(otx::ServerReplyType in) noexcept -> proto::ServerReplyType
 auto translate(otx::ServerRequestType in) noexcept -> proto::ServerRequestType
 {
     try {
-        return serverrequesttype_map().at(in);
+        return otx::serverrequesttype_map().at(in);
     } catch (...) {
         return proto::SERVERREQUEST_ERROR;
     }
@@ -128,7 +157,7 @@ auto translate(proto::ConsensusType in) noexcept -> otx::ConsensusType
     static const auto map = reverse_arbitrary_map<
         otx::ConsensusType,
         proto::ConsensusType,
-        ConsensusTypeReverseMap>(consensustype_map());
+        otx::ConsensusTypeReverseMap>(otx::consensustype_map());
 
     try {
         return map.at(in);
@@ -142,7 +171,7 @@ auto translate(proto::LastReplyStatus in) noexcept -> otx::LastReplyStatus
     static const auto map = reverse_arbitrary_map<
         otx::LastReplyStatus,
         proto::LastReplyStatus,
-        LastReplyStatusReverseMap>(lastreplystatus_map());
+        otx::LastReplyStatusReverseMap>(otx::lastreplystatus_map());
 
     try {
         return map.at(in);
@@ -156,7 +185,7 @@ auto translate(proto::OTXPushType in) noexcept -> otx::OTXPushType
     static const auto map = reverse_arbitrary_map<
         otx::OTXPushType,
         proto::OTXPushType,
-        OTXPushTypeReverseMap>(otxpushtype_map());
+        otx::OTXPushTypeReverseMap>(otx::otxpushtype_map());
 
     try {
         return map.at(in);
@@ -170,7 +199,7 @@ auto translate(proto::ServerReplyType in) noexcept -> otx::ServerReplyType
     static const auto map = reverse_arbitrary_map<
         otx::ServerReplyType,
         proto::ServerReplyType,
-        ServerReplyTypeReverseMap>(serverreplytype_map());
+        otx::ServerReplyTypeReverseMap>(otx::serverreplytype_map());
 
     try {
         return map.at(in);
@@ -184,7 +213,7 @@ auto translate(proto::ServerRequestType in) noexcept -> otx::ServerRequestType
     static const auto map = reverse_arbitrary_map<
         otx::ServerRequestType,
         proto::ServerRequestType,
-        ServerRequestTypeReverseMap>(serverrequesttype_map());
+        otx::ServerRequestTypeReverseMap>(otx::serverrequesttype_map());
 
     try {
         return map.at(in);
@@ -192,4 +221,4 @@ auto translate(proto::ServerRequestType in) noexcept -> otx::ServerRequestType
         return otx::ServerRequestType::Error;
     }
 }
-}  // namespace opentxs::otx::internal
+}  // namespace opentxs

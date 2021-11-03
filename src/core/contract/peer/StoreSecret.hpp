@@ -19,7 +19,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -44,7 +44,7 @@ class StoreSecret final : public request::StoreSecret,
 {
 public:
     StoreSecret(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const SecretType type,
@@ -52,7 +52,7 @@ public:
         const std::string& secondary,
         const identifier::Server& serverID);
     StoreSecret(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized);
 

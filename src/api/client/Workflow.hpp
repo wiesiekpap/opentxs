@@ -6,6 +6,7 @@
 #pragma once
 
 #include <chrono>
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -31,6 +32,8 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/protobuf/RPCEnums.pb.h"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
@@ -42,7 +45,7 @@ class Activity;
 class Contacts;
 }  // namespace client
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blind
@@ -193,7 +196,7 @@ public:
     auto WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier final;
 
     Workflow(
-        const api::Core& api,
+        const api::Session& api,
         const Activity& activity,
         const Contacts& contact);
 
@@ -211,7 +214,7 @@ private:
 
     static const VersionMap versions_;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const Activity& activity_;
     const Contacts& contact_;
     const OTZMQPublishSocket account_publisher_;

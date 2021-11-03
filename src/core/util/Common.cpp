@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "opentxs/core/util/Common.hpp"  // IWYU pragma: associated
 
-#include <memory>
 #include <string>
 
 auto formatBool(bool in) -> std::string { return in ? "true" : "false"; }

@@ -24,18 +24,19 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -87,7 +88,7 @@ public:
     using HeaderType = bitcoin::Header;
 
     Peer(
-        const api::Core& api,
+        const api::Session& api,
         const node::internal::Config& config,
         const node::internal::Mempool& mempool,
         const node::internal::Network& network,
@@ -159,7 +160,7 @@ private:
         const blockchain::Type network,
         const database::BlockStorage policy,
         const std::set<p2p::Service>& input) noexcept -> std::set<p2p::Service>;
-    static auto nonce(const api::Core& api) noexcept -> Nonce;
+    static auto nonce(const api::Session& api) noexcept -> Nonce;
 
     auto broadcast_inv(
         std::vector<blockchain::bitcoin::Inventory>&& inv) noexcept -> void;

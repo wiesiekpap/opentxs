@@ -19,18 +19,18 @@
 #include <vector>
 
 #include "crypto/Bip32Vectors.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/api/session/Client.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
@@ -51,6 +51,10 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 #if OT_CRYPTO_WITH_BIP32
 namespace ot = opentxs;
@@ -186,7 +190,7 @@ public:
     using ThreadData = std::tuple<std::string, std::uint64_t, std::string>;
     using ThreadVectors = std::map<int, std::vector<ThreadData>>;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     ot::PasswordPrompt& reason_;
     const ot::identifier::Nym& invalid_nym_;
     const ot::identifier::Nym& nym_not_in_wallet_;
@@ -211,9 +215,9 @@ public:
     ot::Identifier& account_9_id_;  // alex, bch, bip44
     const ThreadVectors threads_;
 
-    static const ot::api::client::Manager& init()
+    static const ot::api::session::Client& init()
     {
-        const auto& api = ot::Context().StartClient(0);
+        const auto& api = ot::Context().StartClientSession(0);
 
         if (false == init_) {
             reason_p_.reset(new ot::OTPasswordPrompt{
@@ -222,17 +226,17 @@ public:
             nym_not_in_wallet_p_.reset(new ot::OTNymID{
                 api.Factory().NymID("ottaRUsttUuJZj738f9AE6kJJMBp6iedFYQ")});
             const_cast<std::string&>(fingerprint_a_) =
-                api.Exec().Wallet_ImportSeed(
+                api.InternalClient().Exec().Wallet_ImportSeed(
                     "response seminar brave tip suit recall often sound stick "
                     "owner lottery motion",
                     "");
             const_cast<std::string&>(fingerprint_b_) =
-                api.Exec().Wallet_ImportSeed(
+                api.InternalClient().Exec().Wallet_ImportSeed(
                     "reward upper indicate eight swift arch injury crystal "
                     "super wrestle already dentist",
                     "");
             const_cast<std::string&>(fingerprint_c_) =
-                api.Exec().Wallet_ImportSeed(
+                api.InternalClient().Exec().Wallet_ImportSeed(
                     "predict cinnamon gauge spoon media food nurse improve "
                     "employ similar own kid genius seed ghost",
                     "");
@@ -302,8 +306,11 @@ public:
         const std::string label2) const noexcept -> bool
     {
         auto output = true;
-        const auto& account =
-            api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+        const auto& account = api_.Crypto()
+                                  .Blockchain()
+                                  .Account(nym, chain)
+                                  .GetHD()
+                                  .at(accountID);
 
         EXPECT_EQ(account.ID(), accountID);
 
@@ -383,7 +390,7 @@ public:
 
         const auto& target = expected.at(i);
         const auto [bytes, style, chains, supported] =
-            api_.Blockchain().DecodeAddress(target);
+            api_.Crypto().Blockchain().DecodeAddress(target);
 
         EXPECT_GT(chains.size(), 0u);
 
@@ -391,7 +398,7 @@ public:
 
         const auto& chain = *chains.cbegin();
         const auto encoded =
-            api_.Blockchain().EncodeAddress(style, chain, bytes);
+            api_.Crypto().Blockchain().EncodeAddress(style, chain, bytes);
 
         EXPECT_EQ(target, encoded);
 
@@ -556,14 +563,14 @@ TEST_F(Test_BlockchainAPI, invalid_nym)
     bool loaded(false);
 
     try {
-        api_.Blockchain().Account(invalid_nym_, btc_chain_);
+        api_.Crypto().Blockchain().Account(invalid_nym_, btc_chain_);
         loaded = true;
     } catch (...) {
     }
 
     EXPECT_FALSE(loaded);
 
-    auto accountID = api_.Blockchain().NewHDSubaccount(
+    auto accountID = api_.Crypto().Blockchain().NewHDSubaccount(
         invalid_nym_,
         ot::blockchain::crypto::HDProtocol::BIP_44,
         btc_chain_,
@@ -571,7 +578,8 @@ TEST_F(Test_BlockchainAPI, invalid_nym)
 
     EXPECT_TRUE(accountID->empty());
 
-    auto list = api_.Blockchain().SubaccountList(invalid_nym_, btc_chain_);
+    auto list =
+        api_.Crypto().Blockchain().SubaccountList(invalid_nym_, btc_chain_);
 
     EXPECT_EQ(list.size(), 0);
     EXPECT_EQ(list.count(accountID), 0);
@@ -579,14 +587,14 @@ TEST_F(Test_BlockchainAPI, invalid_nym)
     loaded = false;
 
     try {
-        api_.Blockchain().Account(nym_not_in_wallet_, btc_chain_);
+        api_.Crypto().Blockchain().Account(nym_not_in_wallet_, btc_chain_);
         loaded = true;
     } catch (...) {
     }
 
     EXPECT_FALSE(loaded);
 
-    accountID = api_.Blockchain().NewHDSubaccount(
+    accountID = api_.Crypto().Blockchain().NewHDSubaccount(
         nym_not_in_wallet_,
         ot::blockchain::crypto::HDProtocol::BIP_44,
         btc_chain_,
@@ -594,7 +602,8 @@ TEST_F(Test_BlockchainAPI, invalid_nym)
 
     EXPECT_TRUE(accountID->empty());
 
-    list = api_.Blockchain().SubaccountList(nym_not_in_wallet_, btc_chain_);
+    list = api_.Crypto().Blockchain().SubaccountList(
+        nym_not_in_wallet_, btc_chain_);
 
     EXPECT_EQ(list.size(), 0);
     EXPECT_EQ(list.count(accountID), 0);
@@ -604,12 +613,12 @@ TEST_F(Test_BlockchainAPI, invalid_nym)
 // blockchain account associated with that nym should also be A.
 TEST_F(Test_BlockchainAPI, TestSeedRoot)
 {
-    account_1_id_.Assign(api_.Blockchain().NewHDSubaccount(
+    account_1_id_.Assign(api_.Crypto().Blockchain().NewHDSubaccount(
         alex_,
         ot::blockchain::crypto::HDProtocol::BIP_32,
         btc_chain_,
         reason_));
-    account_2_id_.Assign(api_.Blockchain().NewHDSubaccount(
+    account_2_id_.Assign(api_.Crypto().Blockchain().NewHDSubaccount(
         daniel_,
         ot::blockchain::crypto::HDProtocol::BIP_32,
         btc_chain_,
@@ -618,12 +627,12 @@ TEST_F(Test_BlockchainAPI, TestSeedRoot)
     EXPECT_FALSE(account_1_id_.empty());
     EXPECT_FALSE(account_2_id_.empty());
 
-    auto list = api_.Blockchain().SubaccountList(alex_, btc_chain_);
+    auto list = api_.Crypto().Blockchain().SubaccountList(alex_, btc_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_1_id_), 1);
 
-    list = api_.Blockchain().SubaccountList(daniel_, btc_chain_);
+    list = api_.Crypto().Blockchain().SubaccountList(daniel_, btc_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_2_id_), 1);
@@ -633,7 +642,7 @@ TEST_F(Test_BlockchainAPI, TestSeedRoot)
 
     try {
         const auto& account1 =
-            api_.Blockchain().HDSubaccount(alex_, account_1_id_);
+            api_.Crypto().Blockchain().HDSubaccount(alex_, account_1_id_);
 
         EXPECT_EQ(account1.PathRoot(), fingerprint_a_);
     } catch (const std::exception& e) {
@@ -643,7 +652,7 @@ TEST_F(Test_BlockchainAPI, TestSeedRoot)
 
     try {
         const auto& account2 =
-            api_.Blockchain().HDSubaccount(daniel_, account_2_id_);
+            api_.Crypto().Blockchain().HDSubaccount(daniel_, account_2_id_);
 
         EXPECT_EQ(account2.PathRoot(), fingerprint_a_);
     } catch (const std::exception& e) {
@@ -651,20 +660,20 @@ TEST_F(Test_BlockchainAPI, TestSeedRoot)
         EXPECT_TRUE(false);
     }
 
-    EXPECT_EQ(alex_, api_.Blockchain().Owner(account_1_id_));
-    EXPECT_EQ(daniel_, api_.Blockchain().Owner(account_2_id_));
+    EXPECT_EQ(alex_, api_.Crypto().Blockchain().Owner(account_1_id_));
+    EXPECT_EQ(daniel_, api_.Crypto().Blockchain().Owner(account_2_id_));
 }
 
 // Test that one nym creates the same account for the same chain (BIP32 or
 // BIP44).
 TEST_F(Test_BlockchainAPI, TestNym_AccountIdempotence)
 {
-    account_3_id_.Assign(api_.Blockchain().NewHDSubaccount(
+    account_3_id_.Assign(api_.Crypto().Blockchain().NewHDSubaccount(
         chris_,
         ot::blockchain::crypto::HDProtocol::BIP_32,
         btc_chain_,
         reason_));
-    account_4_id_.Assign(api_.Blockchain().NewHDSubaccount(
+    account_4_id_.Assign(api_.Crypto().Blockchain().NewHDSubaccount(
         chris_,
         ot::blockchain::crypto::HDProtocol::BIP_44,
         btc_chain_,
@@ -674,12 +683,15 @@ TEST_F(Test_BlockchainAPI, TestNym_AccountIdempotence)
     EXPECT_FALSE(account_4_id_.empty());
     EXPECT_NE(account_3_id_, account_4_id_);
 
-    const auto& before =
-        api_.Blockchain().Account(chris_, btc_chain_).GetHD().at(account_4_id_);
+    const auto& before = api_.Crypto()
+                             .Blockchain()
+                             .Account(chris_, btc_chain_)
+                             .GetHD()
+                             .at(account_4_id_);
 
     EXPECT_EQ(before.ID(), account_4_id_);
 
-    const auto duplicate = api_.Blockchain().NewHDSubaccount(
+    const auto duplicate = api_.Crypto().Blockchain().NewHDSubaccount(
         chris_,
         ot::blockchain::crypto::HDProtocol::BIP_44,
         btc_chain_,
@@ -687,12 +699,15 @@ TEST_F(Test_BlockchainAPI, TestNym_AccountIdempotence)
 
     EXPECT_EQ(account_4_id_, duplicate);
 
-    const auto& after =
-        api_.Blockchain().Account(chris_, btc_chain_).GetHD().at(account_4_id_);
+    const auto& after = api_.Crypto()
+                            .Blockchain()
+                            .Account(chris_, btc_chain_)
+                            .GetHD()
+                            .at(account_4_id_);
 
     EXPECT_EQ(after.ID(), account_4_id_);
 
-    auto list = api_.Blockchain().SubaccountList(chris_, btc_chain_);
+    auto list = api_.Crypto().Blockchain().SubaccountList(chris_, btc_chain_);
 
     EXPECT_EQ(list.size(), 2);
     EXPECT_EQ(list.count(account_3_id_), 1);
@@ -702,7 +717,7 @@ TEST_F(Test_BlockchainAPI, TestNym_AccountIdempotence)
 // Test that the same nym creates different accounts for two chains
 TEST_F(Test_BlockchainAPI, TestChainDiff)
 {
-    account_5_id_.Assign(api_.Blockchain().NewHDSubaccount(
+    account_5_id_.Assign(api_.Crypto().Blockchain().NewHDSubaccount(
         chris_,
         ot::blockchain::crypto::HDProtocol::BIP_44,
         bch_chain_,
@@ -710,7 +725,7 @@ TEST_F(Test_BlockchainAPI, TestChainDiff)
 
     EXPECT_NE(account_5_id_, account_4_id_);
 
-    auto list = api_.Blockchain().SubaccountList(chris_, bch_chain_);
+    auto list = api_.Crypto().Blockchain().SubaccountList(chris_, bch_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_5_id_), 1);
@@ -722,7 +737,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
     const std::string empty{};
     auto bytes = api_.Factory().Data(test.seed_, ot::StringStyle::Hex);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
-    const auto fingerprint = api_.Seeds().ImportRaw(seed, reason_);
+    const auto fingerprint = api_.Crypto().Seed().ImportRaw(seed, reason_);
 
     ASSERT_FALSE(fingerprint.empty());
 
@@ -733,13 +748,13 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
 
     ASSERT_FALSE(nymID.empty());
 
-    const auto accountID = api_.Blockchain().NewHDSubaccount(
+    const auto accountID = api_.Crypto().Blockchain().NewHDSubaccount(
         nymID, ot::blockchain::crypto::HDProtocol::BIP_32, btc_chain_, reason_);
 
     ASSERT_FALSE(accountID->empty());
 
     const auto& account =
-        api_.Blockchain().Account(nymID, btc_chain_).GetHD().at(0);
+        api_.Crypto().Blockchain().Account(nymID, btc_chain_).GetHD().at(0);
 
     EXPECT_EQ(account.ID(), accountID);
 
@@ -761,7 +776,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
     const std::string empty{};
     auto bytes = api_.Factory().Data(test.seed_, ot::StringStyle::Hex);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
-    const auto fingerprint = api_.Seeds().ImportRaw(seed, reason_);
+    const auto fingerprint = api_.Crypto().Seed().ImportRaw(seed, reason_);
 
     ASSERT_FALSE(fingerprint.empty());
 
@@ -772,13 +787,13 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
 
     ASSERT_FALSE(nymID.empty());
 
-    const auto accountID = api_.Blockchain().NewHDSubaccount(
+    const auto accountID = api_.Crypto().Blockchain().NewHDSubaccount(
         nymID, ot::blockchain::crypto::HDProtocol::BIP_32, btc_chain_, reason_);
 
     ASSERT_FALSE(accountID->empty());
 
     const auto& account =
-        api_.Blockchain().Account(nymID, btc_chain_).GetHD().at(0);
+        api_.Crypto().Blockchain().Account(nymID, btc_chain_).GetHD().at(0);
 
     EXPECT_EQ(account.ID(), accountID);
 
@@ -806,12 +821,12 @@ TEST_F(Test_BlockchainAPI, testBip32_SeedA)
 
 TEST_F(Test_BlockchainAPI, testBip32_SeedB)
 {
-    account_6_id_.Assign(api_.Blockchain().NewHDSubaccount(
+    account_6_id_.Assign(api_.Crypto().Blockchain().NewHDSubaccount(
         bob_, ot::blockchain::crypto::HDProtocol::BIP_32, btc_chain_, reason_));
 
     ASSERT_FALSE(account_6_id_.empty());
 
-    auto list = api_.Blockchain().SubaccountList(bob_, btc_chain_);
+    auto list = api_.Crypto().Blockchain().SubaccountList(bob_, btc_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_6_id_), 1);
@@ -848,7 +863,7 @@ TEST_F(Test_BlockchainAPI, testBip44_bch)
 
 TEST_F(Test_BlockchainAPI, testBip44_ltc)
 {
-    account_7_id_.Assign(api_.Blockchain().NewHDSubaccount(
+    account_7_id_.Assign(api_.Crypto().Blockchain().NewHDSubaccount(
         chris_,
         ot::blockchain::crypto::HDProtocol::BIP_44,
         ltc_chain_,
@@ -856,7 +871,7 @@ TEST_F(Test_BlockchainAPI, testBip44_ltc)
 
     ASSERT_FALSE(account_7_id_.empty());
 
-    auto list = api_.Blockchain().SubaccountList(chris_, ltc_chain_);
+    auto list = api_.Crypto().Blockchain().SubaccountList(chris_, ltc_chain_);
 
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list.count(account_7_id_), 1);
@@ -871,27 +886,27 @@ TEST_F(Test_BlockchainAPI, testBip44_ltc)
 
 TEST_F(Test_BlockchainAPI, AccountList)
 {
-    auto list = api_.Blockchain().SubaccountList(alex_, bch_chain_);
+    auto list = api_.Crypto().Blockchain().SubaccountList(alex_, bch_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().SubaccountList(alex_, ltc_chain_);
+    list = api_.Crypto().Blockchain().SubaccountList(alex_, ltc_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().SubaccountList(bob_, bch_chain_);
+    list = api_.Crypto().Blockchain().SubaccountList(bob_, bch_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().SubaccountList(bob_, ltc_chain_);
+    list = api_.Crypto().Blockchain().SubaccountList(bob_, ltc_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().SubaccountList(daniel_, bch_chain_);
+    list = api_.Crypto().Blockchain().SubaccountList(daniel_, bch_chain_);
 
     EXPECT_EQ(list.size(), 0);
 
-    list = api_.Blockchain().SubaccountList(daniel_, ltc_chain_);
+    list = api_.Crypto().Blockchain().SubaccountList(daniel_, ltc_chain_);
 
     EXPECT_EQ(list.size(), 0);
 }
@@ -900,19 +915,19 @@ TEST_F(Test_BlockchainAPI, reserve_addresses)
 {
     const auto& nym = alex_;
     const auto chain = btc_chain_;
-    account_8_id_.Assign(api_.Blockchain().NewHDSubaccount(
+    account_8_id_.Assign(api_.Crypto().Blockchain().NewHDSubaccount(
         nym, ot::blockchain::crypto::HDProtocol::BIP_44, chain, reason_));
     const auto& accountID = account_8_id_;
     const auto subchain = Subchain::External;
 
     ASSERT_FALSE(accountID.empty());
 
-    auto list = api_.Blockchain().SubaccountList(nym, chain);
+    auto list = api_.Crypto().Blockchain().SubaccountList(nym, chain);
 
     EXPECT_EQ(list.count(accountID), 1);
 
     const auto& account =
-        api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+        api_.Crypto().Blockchain().Account(nym, chain).GetHD().at(accountID);
 
     ASSERT_EQ(account.ID(), accountID);
     ASSERT_EQ(account.Lookahead(), 20u);
@@ -990,7 +1005,7 @@ TEST_F(Test_BlockchainAPI, set_metadata)
     const auto chain = btc_chain_;
     const auto& accountID = account_8_id_;
     const auto& account =
-        api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+        api_.Crypto().Blockchain().Account(nym, chain).GetHD().at(accountID);
     const auto subchain = Subchain::External;
     const auto setContact =
         std::vector<ot::Bip32Index>{0, 1, 6, 8, 9, 14, 16, 17, 22};
@@ -1010,7 +1025,7 @@ TEST_F(Test_BlockchainAPI, set_metadata)
     const auto confirmed = std::vector<ot::Bip32Index>{7, 15, 23};
 
     for (const auto& index : setContact) {
-        EXPECT_TRUE(api_.Blockchain().AssignContact(
+        EXPECT_TRUE(api_.Crypto().Blockchain().AssignContact(
             nym, accountID, subchain, index, contact_bob_));
 
         const auto& element = account.BalanceElement(subchain, index);
@@ -1019,7 +1034,7 @@ TEST_F(Test_BlockchainAPI, set_metadata)
     }
 
     for (const auto& index : clearContact) {
-        EXPECT_TRUE(api_.Blockchain().AssignContact(
+        EXPECT_TRUE(api_.Crypto().Blockchain().AssignContact(
             nym, accountID, subchain, index, empty_id_));
 
         const auto& element = account.BalanceElement(subchain, index);
@@ -1030,7 +1045,7 @@ TEST_F(Test_BlockchainAPI, set_metadata)
     for (const auto& [index, time] : unconfirmed) {
         const auto& txid = address_data_.txids_.emplace_back(random());
 
-        EXPECT_TRUE(api_.Blockchain().Unconfirm(
+        EXPECT_TRUE(api_.Crypto().Blockchain().Unconfirm(
             {accountID.str(), subchain, index},
             txid,
             address_data_.times_.at(time)));
@@ -1049,7 +1064,7 @@ TEST_F(Test_BlockchainAPI, set_metadata)
     for (const auto& index : confirmed) {
         const auto& txid = address_data_.txids_.emplace_back(random());
 
-        EXPECT_TRUE(api_.Blockchain().Unconfirm(
+        EXPECT_TRUE(api_.Crypto().Blockchain().Unconfirm(
             {accountID.str(), subchain, index}, txid));
 
         const auto& element = account.BalanceElement(subchain, index);
@@ -1062,7 +1077,7 @@ TEST_F(Test_BlockchainAPI, set_metadata)
     for (const auto& index : confirmed) {
         const auto& txid = address_data_.txids_.at(++tIndex);
 
-        EXPECT_TRUE(api_.Blockchain().Confirm(
+        EXPECT_TRUE(api_.Crypto().Blockchain().Confirm(
             {accountID.str(), subchain, index}, txid));
 
         const auto& element = account.BalanceElement(subchain, index);
@@ -1080,7 +1095,7 @@ TEST_F(Test_BlockchainAPI, reserve)
     const auto chain = btc_chain_;
     const auto& accountID = account_8_id_;
     const auto& account =
-        api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+        api_.Crypto().Blockchain().Account(nym, chain).GetHD().at(accountID);
     const auto subchain = Subchain::External;
 
     {
@@ -1146,7 +1161,7 @@ TEST_F(Test_BlockchainAPI, release)
     const auto& nym = alex_;
     const auto chain = btc_chain_;
     const auto& accountID = account_8_id_;
-    const auto& bc = api_.Blockchain();
+    const auto& bc = api_.Crypto().Blockchain();
     const auto& account = bc.Account(nym, chain).GetHD().at(accountID);
     const auto subchain = Subchain::External;
 
@@ -1230,7 +1245,7 @@ TEST_F(Test_BlockchainAPI, floor)
     const auto& nym = alex_;
     const auto chain = btc_chain_;
     const auto& accountID = account_8_id_;
-    const auto& bc = api_.Blockchain();
+    const auto& bc = api_.Crypto().Blockchain();
     const auto& account = bc.Account(nym, chain).GetHD().at(accountID);
     const auto subchain = Subchain::External;
     auto& txids = address_data_.txids_;
@@ -1298,7 +1313,7 @@ TEST_F(Test_BlockchainAPI, paymentcode)
     const auto& chain = btc_chain_;
     const auto pNym = api_.Wallet().Nym(nym);
     auto bytes = ot::Space{};
-    const auto accountID = api_.Blockchain().NewPaymentCodeSubaccount(
+    const auto accountID = api_.Crypto().Blockchain().NewPaymentCodeSubaccount(
         nym,
         api_.Factory().PaymentCode(pNym->PaymentCode()),
         api_.Factory().PaymentCode(std::string{
@@ -1312,8 +1327,11 @@ TEST_F(Test_BlockchainAPI, paymentcode)
 
     ASSERT_FALSE(accountID->empty());
 
-    const auto& account =
-        api_.Blockchain().Account(nym, chain).GetPaymentCode().at(accountID);
+    const auto& account = api_.Crypto()
+                              .Blockchain()
+                              .Account(nym, chain)
+                              .GetPaymentCode()
+                              .at(accountID);
 
     EXPECT_EQ(account.ID(), accountID);
     EXPECT_TRUE(check_initial_state(account, Subchain::Outgoing));
@@ -1329,18 +1347,18 @@ TEST_F(Test_BlockchainAPI, batch)
 {
     const auto& nym = alex_;
     const auto chain = bch_chain_;
-    account_9_id_.Assign(api_.Blockchain().NewHDSubaccount(
+    account_9_id_.Assign(api_.Crypto().Blockchain().NewHDSubaccount(
         nym, ot::blockchain::crypto::HDProtocol::BIP_44, chain, reason_));
     const auto& accountID = account_9_id_;
 
     ASSERT_FALSE(accountID.empty());
 
-    auto list = api_.Blockchain().SubaccountList(nym, chain);
+    auto list = api_.Crypto().Blockchain().SubaccountList(nym, chain);
 
     EXPECT_EQ(list.count(accountID), 1);
 
     const auto& account =
-        api_.Blockchain().Account(nym, chain).GetHD().at(accountID);
+        api_.Crypto().Blockchain().Account(nym, chain).GetHD().at(accountID);
 
     ASSERT_EQ(account.ID(), accountID);
 

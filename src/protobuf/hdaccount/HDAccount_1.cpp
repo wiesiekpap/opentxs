@@ -8,8 +8,8 @@
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/HDAccount.pb.h"
 #include "opentxs/protobuf/verify/BlockchainAddress.hpp"  // IWYU pragma: keep
-#include "opentxs/protobuf/verify/BlockchainDeterministicAccountData.hpp"
-#include "opentxs/protobuf/verify/BlockchainHDAccountData.hpp"
+#include "opentxs/protobuf/verify/BlockchainDeterministicAccountData.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BlockchainHDAccountData.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
 #include "protobuf/Check.hpp"
 

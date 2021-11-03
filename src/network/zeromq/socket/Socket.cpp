@@ -12,15 +12,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
-#include <memory>
 #include <utility>
 
-#include "opentxs/Bytes.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameIterator.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "util/Random.hpp"
 
 #define INPROC_PREFIX "inproc://opentxs/"

@@ -12,11 +12,9 @@
 #include <sstream>
 
 #include "integration/Helpers.hpp"
-#include "opentxs/SharedPimpl.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/AccountList.hpp"
@@ -34,6 +32,7 @@
 #include "opentxs/ui/ContactList.hpp"
 #include "opentxs/ui/ContactListItem.hpp"
 #include "opentxs/ui/MessagableList.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace ottest
 {
@@ -403,7 +402,7 @@ auto check_blockchain_account_status(
 }
 
 auto check_blockchain_selection(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const ot::ui::Blockchains type,
     const BlockchainSelectionData& expected) noexcept -> bool
 {

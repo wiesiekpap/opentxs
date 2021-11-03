@@ -15,17 +15,17 @@
 
 #include "blockchain/block/bitcoin/BlockParser.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::blockchain::block::pkt::Block::"
 
 namespace opentxs::factory
 {
 auto parse_pkt_block(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept(false)
     -> std::shared_ptr<blockchain::block::bitcoin::Block>
@@ -106,7 +106,7 @@ auto parse_pkt_block(
 namespace opentxs::blockchain::block::pkt
 {
 Block::Block(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     std::unique_ptr<const bitcoin::internal::Header> header,
     Proofs&& proofs,
@@ -150,7 +150,7 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
 {
     for (const auto& [type, proof] : proofs_) {
         if (remaining < sizeof(type)) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to serialize proof type")
+            LogError()(OT_METHOD)(__func__)(": Failed to serialize proof type")
                 .Flush();
 
             return false;
@@ -166,7 +166,7 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
         const auto cs = network::blockchain::bitcoin::CompactSize{proof.size()};
 
         if (false == cs.Encode(preallocated(remaining, it))) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to serialize proof size")
+            LogError()(OT_METHOD)(__func__)(": Failed to serialize proof size")
                 .Flush();
 
             return false;
@@ -179,7 +179,7 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
         }
 
         if (remaining < cs.Value()) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to serialize proof")
+            LogError()(OT_METHOD)(__func__)(": Failed to serialize proof")
                 .Flush();
 
             return false;

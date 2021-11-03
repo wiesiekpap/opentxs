@@ -16,10 +16,10 @@
 #include <utility>
 
 #include "internal/blockchain/block/Block.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
 namespace opentxs::blockchain::block::bitcoin::implementation
@@ -31,7 +31,7 @@ auto Input::Cache::add(crypto::Key&& key) noexcept -> void
 }
 
 auto Input::Cache::associate(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     const internal::Output& in) noexcept -> bool
 {
     auto lock = rLock{lock_};
@@ -62,7 +62,7 @@ auto Input::Cache::keys() const noexcept -> std::vector<crypto::Key>
 }
 
 auto Input::Cache::merge(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     const internal::Input& rhs) noexcept -> bool
 {
     const auto keys = rhs.Keys();
@@ -81,7 +81,7 @@ auto Input::Cache::merge(
 }
 
 auto Input::Cache::net_balance_change(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     const identifier::Nym& nym) const noexcept -> opentxs::Amount
 {
     auto lock = rLock{lock_};

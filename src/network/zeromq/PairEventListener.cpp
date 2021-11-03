@@ -9,11 +9,11 @@
 
 #include <memory>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/PairEventCallback.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define PAIR_EVENT_ENDPOINT_PATH "pairevent"
 #define PAIR_EVENT_ENDPOINT_VERSION 1
@@ -36,7 +36,7 @@ PairEventListener::PairEventListener(
 
     OT_ASSERT(started)
 
-    LogVerbose(OT_METHOD)(__func__)(": listening on ")(endpoint).Flush();
+    LogVerbose()(OT_METHOD)(__func__)(": listening on ")(endpoint).Flush();
 }
 
 auto PairEventListener::clone() const noexcept -> PairEventListener*

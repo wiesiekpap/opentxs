@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_OTSTORAGEPB_HPP
-#define OPENTXS_CORE_OTSTORAGEPB_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -336,5 +335,3 @@ PROPERTY_NAME_GOES_HERE    = __pb_obj.PROPERTY_NAME_GOES_HERE();
 }  // namespace opentxs
 
 #endif  // defined(OTDB_PROTOCOL_BUFFERS)
-
-#endif

@@ -12,8 +12,8 @@
 
 #include "Proto.hpp"
 #include "internal/network/Factory.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::network::zeromq::implementation
 {

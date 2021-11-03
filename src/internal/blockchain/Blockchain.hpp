@@ -20,7 +20,6 @@
 
 #include "Proto.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -29,12 +28,13 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/protobuf/GCS.pb.h"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -70,12 +70,12 @@ auto GolombEncode(
     const std::uint8_t P,
     const std::vector<std::uint64_t>& hashedSet) noexcept(false) -> Space;
 auto HashToRange(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView key,
     const std::uint64_t range,
     const ReadView item) noexcept(false) -> std::uint64_t;
 auto HashedSetConstruct(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView key,
     const std::uint32_t N,
     const std::uint32_t M,
@@ -165,17 +165,17 @@ auto DecodeSerializedCfilter(const ReadView bytes) noexcept(false)
     -> std::pair<std::uint32_t, ReadView>;
 auto Deserialize(const Type chain, const std::uint8_t type) noexcept
     -> filter::Type;
-auto Deserialize(const api::Core& api, const ReadView bytes) noexcept
+auto Deserialize(const api::Session& api, const ReadView bytes) noexcept
     -> block::Position;
 auto BlockHashToFilterKey(const ReadView hash) noexcept(false) -> ReadView;
 auto FilterHashToHeader(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView hash,
     const ReadView previous = {}) noexcept -> OTData;
-auto FilterToHash(const api::Core& api, const ReadView filter) noexcept
+auto FilterToHash(const api::Session& api, const ReadView filter) noexcept
     -> OTData;
 auto FilterToHeader(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView filter,
     const ReadView previous = {}) noexcept -> OTData;
 auto Format(const Type chain, const opentxs::Amount&) noexcept -> std::string;
@@ -195,38 +195,38 @@ namespace opentxs::factory
 {
 #if OT_BLOCKCHAIN
 auto BloomFilter(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint32_t tweak,
     const blockchain::BloomUpdateFlag update,
     const std::size_t targets,
     const double falsePositiveRate) -> blockchain::BloomFilter*;
-auto BloomFilter(const api::Core& api, const Data& serialized)
+auto BloomFilter(const api::Session& api, const Data& serialized)
     -> blockchain::BloomFilter*;
 auto GCS(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
     const std::vector<OTData>& elements) noexcept
     -> std::unique_ptr<blockchain::GCS>;
 auto GCS(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::filter::Type type,
     const blockchain::block::Block& block) noexcept
     -> std::unique_ptr<blockchain::GCS>;
-auto GCS(const api::Core& api, const proto::GCS& serialized) noexcept
+auto GCS(const api::Session& api, const proto::GCS& serialized) noexcept
     -> std::unique_ptr<blockchain::GCS>;
-auto GCS(const api::Core& api, const ReadView serialized) noexcept
+auto GCS(const api::Session& api, const ReadView serialized) noexcept
     -> std::unique_ptr<blockchain::GCS>;
 auto GCS(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
     const std::uint32_t filterElementCount,
     const ReadView filter) noexcept -> std::unique_ptr<blockchain::GCS>;
 auto GCS(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::filter::Type type,
     const ReadView key,
     const ReadView encoded) noexcept -> std::unique_ptr<blockchain::GCS>;

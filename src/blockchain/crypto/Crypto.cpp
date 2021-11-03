@@ -13,14 +13,14 @@
 #include <boost/move/algo/move.hpp>
 #include <memory>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {

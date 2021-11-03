@@ -13,15 +13,18 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Types.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/CurrencyContract.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 class PasswordPrompt;
@@ -45,7 +48,7 @@ public:
     }
 
     Currency(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -57,7 +60,7 @@ public:
         const core::UnitType unitOfAccount,
         const VersionNumber version);
     Currency(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized);
 

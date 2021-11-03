@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_NETWORK_ZEROMQ_FRAME_HPP
-#define OPENTXS_NETWORK_ZEROMQ_FRAME_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -12,8 +11,8 @@
 #include <string>
 #include <type_traits>
 
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 struct zmq_msg_t;
 
@@ -84,4 +83,3 @@ private:
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
-#endif

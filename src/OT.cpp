@@ -11,11 +11,12 @@
 #include <memory>
 #include <stdexcept>
 
-#include "internal/api/Api.hpp"
+#include "internal/api/Context.hpp"
 #include "internal/api/Factory.hpp"
-#include "opentxs/api/Options.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Options.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {

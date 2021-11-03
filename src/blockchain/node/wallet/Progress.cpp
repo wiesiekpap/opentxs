@@ -19,11 +19,10 @@
 #include <vector>
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::Progress::Imp::"
 
@@ -134,8 +133,8 @@ private:
         }();
 
         if (report) {
-            LogVerbose(OT_METHOD)(__func__)(": ")(parent_.name_)(" progress: ")(
-                best.first)
+            LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+                " progress: ")(best.first)
                 .Flush();
             parent_.update_scan(best, reorg);
             last_reported_ = std::move(best);

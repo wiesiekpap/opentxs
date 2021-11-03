@@ -18,27 +18,28 @@
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"  // IWYU pragma: keep
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::implementation::PeerManager::"
 
 namespace opentxs::factory
 {
 auto BlockchainPeerManager(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
@@ -75,7 +76,7 @@ auto BlockchainPeerManager(
 namespace opentxs::blockchain::node::implementation
 {
 PeerManager::PeerManager(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::internal::Blockchain& network,
     const internal::Config& config,
     const node::internal::Mempool& mempool,
@@ -450,7 +451,7 @@ auto PeerManager::shutdown(std::promise<void>& promise) noexcept -> void
 
 auto PeerManager::state_machine() noexcept -> bool
 {
-    LogTrace(OT_METHOD)(__func__).Flush();
+    LogTrace()(OT_METHOD)(__func__).Flush();
 
     if (false == running_.get()) { return false; }
 

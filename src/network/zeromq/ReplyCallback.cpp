@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "network/zeromq/ReplyCallback.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::ReplyCallback>;
 

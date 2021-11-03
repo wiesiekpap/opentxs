@@ -13,10 +13,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 class Identifier;
@@ -30,7 +30,7 @@ struct UpdateManager {
     auto RegisterUICallback(const Identifier& widget, const SimpleCallback& cb)
         const noexcept -> void;
 
-    UpdateManager(const api::client::Manager& api) noexcept;
+    UpdateManager(const api::session::Client& api) noexcept;
 
     ~UpdateManager();
 

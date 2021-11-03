@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_CLIENT_WORKFLOW_HPP
-#define OPENTXS_API_CLIENT_WORKFLOW_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -18,7 +17,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blind
@@ -155,18 +154,18 @@ public:
     OPENTXS_NO_EXPORT static auto ExtractTransfer(
         const proto::PaymentWorkflow& workflow) -> std::string;
     OPENTXS_NO_EXPORT static auto InstantiateCheque(
-        const api::Core& api,
+        const api::Session& api,
         const proto::PaymentWorkflow& workflow) -> Cheque;
 #if OT_CASH
     OPENTXS_NO_EXPORT static auto InstantiatePurse(
-        const api::Core& api,
+        const api::Session& api,
         const proto::PaymentWorkflow& workflow) -> Purse;
 #endif
     OPENTXS_NO_EXPORT static auto InstantiateTransfer(
-        const api::Core& api,
+        const api::Session& api,
         const proto::PaymentWorkflow& workflow) -> Transfer;
     OPENTXS_NO_EXPORT static auto UUID(
-        const api::Core& api,
+        const api::Session& api,
         const proto::PaymentWorkflow& workflown) -> OTIdentifier;
     static auto UUID(const Identifier& notary, const TransactionNumber& number)
         -> OTIdentifier;
@@ -334,4 +333,3 @@ private:
 }  // namespace client
 }  // namespace api
 }  // namespace opentxs
-#endif

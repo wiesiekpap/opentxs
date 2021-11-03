@@ -8,13 +8,13 @@
 #include "network/zeromq/PairEventCallbackSwig.hpp"  // IWYU pragma: associated
 
 #include "Proto.tpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/PairEventCallbackSwig.hpp"
 #include "opentxs/protobuf/PairEvent.pb.h"
 #include "opentxs/protobuf/ZMQEnums.pb.h"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::network::zeromq::implementation::PairEventCallbackSwig::"
@@ -36,7 +36,7 @@ PairEventCallbackSwig::PairEventCallbackSwig(
     : callback_(callback)
 {
     if (nullptr == callback_) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid callback pointer.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid callback pointer.").Flush();
 
         OT_FAIL;
     }
@@ -62,7 +62,7 @@ void PairEventCallbackSwig::Process(zeromq::Message& message) const
             callback_->ProcessStoreSecret(event.issuer());
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unknown event type.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unknown event type.").Flush();
         }
     }
 }

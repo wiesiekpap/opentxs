@@ -12,12 +12,13 @@
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/protobuf/ContactData.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -62,7 +63,7 @@ private:
         -> std::shared_ptr<Base::SerializedType> final;
 
     Contact(
-        const api::Core& api,
+        const api::Session& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const internal::Primary& master,
@@ -70,7 +71,7 @@ private:
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     Contact(
-        const api::Core& api,
+        const api::Session& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const internal::Primary& master,

@@ -14,10 +14,10 @@ namespace opentxs
 {
 namespace blockchain
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace blockchain
 }  // namespace opentxs
 
@@ -28,10 +28,10 @@ namespace ottest
 class Test_StartStop : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
 
     Test_StartStop()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
     {
     }
 };

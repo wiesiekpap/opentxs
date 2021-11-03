@@ -10,9 +10,9 @@
 #include <memory>
 #include <utility>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "ui/activitythread/ActivityThreadItem.hpp"
 #include "ui/base/Widget.hpp"
@@ -23,7 +23,7 @@ namespace opentxs::factory
 {
 auto PendingSend(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
@@ -50,7 +50,7 @@ namespace opentxs::ui::implementation
 {
 PendingSend::PendingSend(
     const ActivityThreadInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,

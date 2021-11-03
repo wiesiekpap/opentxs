@@ -18,13 +18,13 @@
 #include <utility>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
+#include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD                                                              \
@@ -44,7 +44,7 @@ auto BitcoinTransactionInputs(
 
         return std::make_unique<ReturnType>(std::move(inputs), size);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -81,14 +81,14 @@ auto Inputs::AnyoneCanPay(const std::size_t index) noexcept -> bool
 
         return true;
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid index").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid index").Flush();
 
         return false;
     }
 }
 
 auto Inputs::AssociatedLocalNyms(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     std::vector<OTNymID>& output) const noexcept -> void
 {
     std::for_each(
@@ -98,7 +98,7 @@ auto Inputs::AssociatedLocalNyms(
 }
 
 auto Inputs::AssociatedRemoteContacts(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     std::vector<OTIdentifier>& output) const noexcept -> void
 {
     std::for_each(
@@ -108,7 +108,7 @@ auto Inputs::AssociatedRemoteContacts(
 }
 
 auto Inputs::AssociatePreviousOutput(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     const std::size_t index,
     const internal::Output& output) noexcept -> bool
 {
@@ -116,7 +116,7 @@ auto Inputs::AssociatePreviousOutput(
 
         return inputs_.at(index)->AssociatePreviousOutput(blockchain, output);
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid index").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid index").Flush();
 
         return false;
     }
@@ -153,7 +153,7 @@ auto Inputs::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
-    LogTrace(OT_METHOD)(__func__)(": processing ")(size())(" inputs").Flush();
+    LogTrace()(OT_METHOD)(__func__)(": processing ")(size())(" inputs").Flush();
 
     for (const auto& txin : *this) {
         auto temp = txin.Internal().ExtractElements(style);
@@ -163,7 +163,7 @@ auto Inputs::ExtractElements(const filter::Type style) const noexcept
             std::make_move_iterator(temp.end()));
     }
 
-    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
+    LogTrace()(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -182,7 +182,7 @@ auto Inputs::FindMatches(
 
     for (const auto& txin : *this) {
         auto temp = txin.Internal().FindMatches(txid, type, txos, patterns);
-        LogTrace(OT_METHOD)(__func__)(": Verified ")(
+        LogTrace()(OT_METHOD)(__func__)(": Verified ")(
             temp.second.size() +
             temp.first.size())(" matches in input ")(++index)
             .Flush();
@@ -227,13 +227,13 @@ auto Inputs::Keys() const noexcept -> std::vector<crypto::Key>
 }
 
 auto Inputs::MergeMetadata(
-    const api::client::Blockchain& api,
+    const api::crypto::Blockchain& api,
     const internal::Inputs& rhs) noexcept -> bool
 {
     const auto count = size();
 
     if (count != rhs.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong number of inputs").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong number of inputs").Flush();
 
         return false;
     }
@@ -243,7 +243,7 @@ auto Inputs::MergeMetadata(
         auto& r = rhs.at(i).Internal();
 
         if (false == l.MergeMetadata(api, r)) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to merge input ")(i)
+            LogError()(OT_METHOD)(__func__)(": Failed to merge input ")(i)
                 .Flush();
 
             return false;
@@ -254,7 +254,7 @@ auto Inputs::MergeMetadata(
 }
 
 auto Inputs::NetBalanceChange(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     const identifier::Nym& nym) const noexcept -> opentxs::Amount
 {
     return std::accumulate(
@@ -273,7 +273,7 @@ auto Inputs::ReplaceScript(const std::size_t index) noexcept -> bool
 
         return inputs_.at(index)->ReplaceScript();
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid index").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid index").Flush();
 
         return false;
     }
@@ -283,7 +283,7 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
     const noexcept -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return std::nullopt;
     }
@@ -292,7 +292,7 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
+        LogError()(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -313,7 +313,7 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
                       : row->Serialize(preallocated(remaining, it));
 
         if (false == bytes.has_value()) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to serialize input")
+            LogError()(OT_METHOD)(__func__)(": Failed to serialize input")
                 .Flush();
 
             return std::nullopt;
@@ -333,7 +333,7 @@ auto Inputs::Serialize(const AllocateOutput destination) const noexcept
 }
 
 auto Inputs::Serialize(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     proto::BlockchainTransaction& destination) const noexcept -> bool
 {
     auto index = std::uint32_t{0};

@@ -15,8 +15,8 @@
 #include <vector>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 
 namespace opentxs::blockchain::database::wallet::db
@@ -48,7 +48,7 @@ Position::Position(const ReadView bytes) noexcept(false)
     }
 }
 
-auto Position::Decode(const api::Core& api) const noexcept
+auto Position::Decode(const api::Session& api) const noexcept
     -> const block::Position&
 {
     auto lock = Lock{lock_};

@@ -21,13 +21,14 @@
 
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
@@ -45,7 +46,7 @@ struct Blockchain;
 class Blockchain;
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -74,7 +75,7 @@ class Message;
 namespace opentxs::blockchain::node::implementation
 {
 class BlockOracle final : public node::internal::BlockOracle,
-                          public Worker<BlockOracle, api::Core>
+                          public Worker<BlockOracle, api::Session>
 {
 public:
     class BlockDownloader;
@@ -118,7 +119,7 @@ public:
     }
 
     BlockOracle(
-        const api::Core& api,
+        const api::Session& api,
         const api::network::internal::Blockchain& network,
         const internal::Network& node,
         const internal::HeaderOracle& header,
@@ -129,7 +130,7 @@ public:
     ~BlockOracle() final;
 
 private:
-    friend Worker<BlockOracle, api::Core>;
+    friend Worker<BlockOracle, api::Session>;
 
     using Promise = std::promise<BitcoinBlock_p>;
     using PendingData = std::tuple<Time, Promise, BitcoinBlockFuture, bool>;
@@ -148,7 +149,7 @@ private:
         auto Shutdown() noexcept -> void;
 
         Cache(
-            const api::Core& api_,
+            const api::Session& api_,
             const internal::Network& node,
             const internal::BlockDatabase& db,
             const network::zeromq::socket::Publish& blockAvailable,
@@ -180,7 +181,7 @@ private:
             Index index_;
         };
 
-        const api::Core& api_;
+        const api::Session& api_;
         const internal::Network& node_;
         const internal::BlockDatabase& db_;
         const network::zeromq::socket::Publish& block_available_;

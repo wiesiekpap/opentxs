@@ -14,12 +14,12 @@
 #include <string_view>
 #include <tuple>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Primitives.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "util/Sodium.hpp"
 

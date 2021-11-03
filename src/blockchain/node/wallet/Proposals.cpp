@@ -8,6 +8,7 @@
 #include "blockchain/node/wallet/Proposals.hpp"  // IWYU pragma: associated
 
 #include <chrono>
+#include <cstdint>
 #include <deque>
 #include <functional>
 #include <map>
@@ -24,23 +25,24 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposedNotification.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::Proposals::"
@@ -56,7 +58,7 @@ public:
         auto id = api_.Factory().Identifier(tx.id());
 
         if (false == db_.AddProposal(id, tx)) {
-            LogOutput(OT_METHOD)(__func__)(": Database error").Flush();
+            LogError()(OT_METHOD)(__func__)(": Database error").Flush();
             static const auto blank = api_.Factory().Data();
             promise.set_value({SendResult::DatabaseError, blank});
         }
@@ -73,8 +75,8 @@ public:
         return pending_.HasData();
     }
 
-    Imp(const api::Core& api,
-        const api::client::Blockchain& crypto,
+    Imp(const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const Type chain) noexcept
@@ -133,7 +135,7 @@ private:
             auto lock = Lock{lock_};
 
             if (0 < ids_.count(id)) {
-                LogOutput(OT_METHOD)(__func__)(": Proposal already exists")
+                LogError()(OT_METHOD)(__func__)(": Proposal already exists")
                     .Flush();
                 static const auto blank = api_.Factory().Data();
                 promise.set_value({SendResult::DuplicateProposal, blank});
@@ -177,7 +179,7 @@ private:
             return std::move(data_.front());
         }
 
-        Pending(const api::Core& api) noexcept
+        Pending(const api::Session& api) noexcept
             : api_(api)
             , lock_()
             , data_()
@@ -186,14 +188,14 @@ private:
         }
 
     private:
-        const api::Core& api_;
+        const api::Session& api_;
         mutable std::mutex lock_;
         std::deque<Data> data_;
         std::set<OTIdentifier> ids_;
     };
 
-    const api::Core& api_;
-    const api::client::Blockchain& crypto_;
+    const api::Session& api_;
+    const api::crypto::Blockchain& crypto_;
     const node::internal::Network& node_;
     const node::internal::WalletDatabase& db_;
     const Type chain_;
@@ -234,7 +236,7 @@ private:
         }};
 
         if (false == builder.CreateOutputs(proposal)) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to create outputs")
+            LogError()(OT_METHOD)(__func__)(": Failed to create outputs")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::OutputCreationError;
@@ -243,7 +245,8 @@ private:
         }
 
         if (false == builder.AddChange(proposal)) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to allocate change output")
+            LogError()(OT_METHOD)(__func__)(
+                ": Failed to allocate change output")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::ChangeError;
@@ -256,7 +259,7 @@ private:
             auto utxo = db_.ReserveUTXO(builder.Spender(), id, policy);
 
             if (false == utxo.has_value()) {
-                LogOutput(OT_METHOD)(__func__)(": Insufficient funds").Flush();
+                LogError()(OT_METHOD)(__func__)(": Insufficient funds").Flush();
                 output = BuildResult::PermanentFailure;
                 rc = SendResult::InsufficientFunds;
 
@@ -264,7 +267,8 @@ private:
             }
 
             if (false == builder.AddInput(utxo.value())) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to add input").Flush();
+                LogError()(OT_METHOD)(__func__)(": Failed to add input")
+                    .Flush();
                 output = BuildResult::PermanentFailure;
                 rc = SendResult::InputCreationError;
 
@@ -277,7 +281,7 @@ private:
         builder.FinalizeOutputs();
 
         if (false == builder.SignInputs()) {
-            LogOutput(OT_METHOD)(__func__)(": Transaction signing failure")
+            LogError()(OT_METHOD)(__func__)(": Transaction signing failure")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::SignatureError;
@@ -288,7 +292,7 @@ private:
         auto pTransaction = builder.FinalizeTransaction();
 
         if (false == bool(pTransaction)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed to instantiate transaction")
                 .Flush();
             output = BuildResult::PermanentFailure;
@@ -302,7 +306,7 @@ private:
             const auto proto = transaction.Serialize(crypto_);
 
             if (false == proto.has_value()) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Failed to serialize transaction")
                     .Flush();
                 output = BuildResult::PermanentFailure;
@@ -314,7 +318,7 @@ private:
         }
 
         if (!db_.AddProposal(id, proposal)) {
-            LogOutput(OT_METHOD)(__func__)(": Database error (proposal)")
+            LogError()(OT_METHOD)(__func__)(": Database error (proposal)")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::DatabaseError;
@@ -323,7 +327,7 @@ private:
         }
 
         if (!db_.AddOutgoingTransaction(id, proposal, transaction)) {
-            LogOutput(OT_METHOD)(__func__)(": Database error (transaction)")
+            LogError()(OT_METHOD)(__func__)(": Database error (transaction)")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::DatabaseError;
@@ -338,10 +342,10 @@ private:
             if (sent) {
                 auto bytes = api_.Factory().Data();
                 transaction.Serialize(bytes->WriteInto());
-                LogOutput("Broadcasting ")(DisplayString(chain_))(
+                LogError()("Broadcasting ")(DisplayString(chain_))(
                     " transaction ")(txid->asHex())
                     .Flush();
-                LogOutput(bytes->asHex()).Flush();
+                LogError()(bytes->asHex()).Flush();
             } else {
                 throw std::runtime_error{"Failed to send tx"};
             }
@@ -369,7 +373,7 @@ private:
                 account.AddNotification(transaction.ID());
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
         }
 
         return output;
@@ -407,7 +411,7 @@ private:
             case Type::Ethereum_frontier:
             case Type::Ethereum_ropsten:
             default: {
-                LogOutput(OT_METHOD)(__func__)(": Unsupported chain").Flush();
+                LogError()(OT_METHOD)(__func__)(": Unsupported chain").Flush();
 
                 return {};
             }
@@ -486,8 +490,8 @@ private:
 };
 
 Proposals::Proposals(
-    const api::Core& api,
-    const api::client::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
     const Type chain) noexcept

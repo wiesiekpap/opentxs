@@ -14,9 +14,9 @@
 #include <utility>
 
 #include "display/Definition.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/ui/AccountActivity.hpp"

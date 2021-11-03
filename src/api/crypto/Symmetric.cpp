@@ -10,21 +10,20 @@
 #include <memory>
 
 #include "Proto.tpp"
+#include "internal/api/Crypto.hpp"
 #include "internal/api/crypto/Factory.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 
-#define OT_METHOD "opentxs::api::crypto::implementation::Symmetric::"
+// #define OT_METHOD "opentxs::api::crypto::implementation::Symmetric::"
 
 namespace opentxs::factory
 {
-auto Symmetric(const api::Core& api) noexcept
+auto Symmetric(const api::Session& api) noexcept
     -> std::unique_ptr<api::crypto::Symmetric>
 {
     using ReturnType = api::crypto::implementation::Symmetric;
@@ -35,59 +34,17 @@ auto Symmetric(const api::Core& api) noexcept
 
 namespace opentxs::api::crypto::implementation
 {
-Symmetric::Symmetric(const api::Core& api) noexcept
+Symmetric::Symmetric(const api::Session& api) noexcept
     : api_(api)
 {
-}
-
-auto Symmetric::GetEngine(const opentxs::crypto::key::symmetric::Algorithm mode)
-    const -> const opentxs::crypto::SymmetricProvider*
-{
-    const opentxs::crypto::SymmetricProvider* engine{nullptr};
-
-    // Add support for other crypto engines here
-    switch (mode) {
-        case opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305: {
-            engine = &api_.Crypto().Sodium();
-        } break;
-        default: {
-            OT_FAIL;
-        }
-    }
-
-    return engine;
-}
-
-auto Symmetric::GetEngine(const opentxs::crypto::key::symmetric::Source type)
-    const -> const opentxs::crypto::SymmetricProvider*
-{
-    switch (type) {
-        case opentxs::crypto::key::symmetric::Source::Argon2i:
-        case opentxs::crypto::key::symmetric::Source::Argon2id: {
-
-            return &api_.Crypto().Sodium();
-        }
-        default: {
-
-            return nullptr;
-        }
-    }
 }
 
 auto Symmetric::IvSize(
     const opentxs::crypto::key::symmetric::Algorithm mode) const -> std::size_t
 {
-    auto pEngine = GetEngine(mode);
+    const auto& provider = api_.Crypto().Internal().SymmetricProvider(mode);
 
-    if (nullptr == pEngine) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid mode").Flush();
-
-        return 0;
-    }
-
-    auto& engine = *pEngine;
-
-    return engine.IvSize(mode);
+    return provider.IvSize(mode);
 }
 
 auto Symmetric::Key(
@@ -95,11 +52,9 @@ auto Symmetric::Key(
     const opentxs::crypto::key::symmetric::Algorithm mode) const
     -> OTSymmetricKey
 {
-    auto engine = GetEngine(mode);
+    const auto& provider = api_.Crypto().Internal().SymmetricProvider(mode);
 
-    OT_ASSERT(nullptr != engine);
-
-    return api_.Factory().SymmetricKey(*engine, password, mode);
+    return api_.Factory().SymmetricKey(provider, password, mode);
 }
 
 auto Symmetric::Key(
@@ -107,11 +62,9 @@ auto Symmetric::Key(
     const opentxs::crypto::key::symmetric::Algorithm mode) const
     -> OTSymmetricKey
 {
-    auto engine = GetEngine(mode);
+    const auto& provider = api_.Crypto().Internal().SymmetricProvider(mode);
 
-    OT_ASSERT(nullptr != engine);
-
-    return api_.Factory().SymmetricKey(*engine, serialized);
+    return api_.Factory().SymmetricKey(provider, serialized);
 }
 
 auto Symmetric::Key(
@@ -119,13 +72,10 @@ auto Symmetric::Key(
     const opentxs::crypto::key::symmetric::Algorithm mode) const
     -> OTSymmetricKey
 {
-    auto engine = GetEngine(mode);
-
-    OT_ASSERT(nullptr != engine);
-
+    const auto& provider = api_.Crypto().Internal().SymmetricProvider(mode);
     auto ciphertext = proto::Factory<proto::Ciphertext>(serializedCiphertext);
 
-    return api_.Factory().SymmetricKey(*engine, ciphertext.key());
+    return api_.Factory().SymmetricKey(provider, ciphertext.key());
 }
 
 auto Symmetric::Key(
@@ -135,12 +85,10 @@ auto Symmetric::Key(
     const opentxs::crypto::key::symmetric::Algorithm mode,
     const opentxs::crypto::key::symmetric::Source type) const -> OTSymmetricKey
 {
-    auto engine = GetEngine(mode);
-
-    OT_ASSERT(nullptr != engine);
+    const auto& provider = api_.Crypto().Internal().SymmetricProvider(mode);
 
     return api_.Factory().SymmetricKey(
-        *engine, seed, operations, difficulty, engine->KeySize(mode), type);
+        provider, seed, operations, difficulty, provider.KeySize(mode), type);
 }
 
 auto Symmetric::Key(
@@ -152,11 +100,9 @@ auto Symmetric::Key(
     const std::size_t bytes,
     const opentxs::crypto::key::symmetric::Source type) const -> OTSymmetricKey
 {
-    auto engine = GetEngine(type);
-
-    OT_ASSERT(nullptr != engine);
+    const auto& provider = api_.Crypto().Internal().SymmetricProvider(type);
 
     return api_.Factory().SymmetricKey(
-        *engine, seed, salt, operations, difficulty, parallel, bytes, type);
+        provider, seed, salt, operations, difficulty, parallel, bytes, type);
 }
 }  // namespace opentxs::api::crypto::implementation

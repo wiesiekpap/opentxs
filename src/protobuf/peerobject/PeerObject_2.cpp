@@ -10,14 +10,14 @@
 
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Nym.pb.h"
+#include "opentxs/protobuf/Nym.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/protobuf/PeerObject.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"
 #include "opentxs/protobuf/PeerRequest.pb.h"
-#include "opentxs/protobuf/verify/Nym.hpp"
-#include "opentxs/protobuf/verify/PeerReply.hpp"
-#include "opentxs/protobuf/verify/PeerRequest.hpp"
+#include "opentxs/protobuf/verify/Nym.hpp"          // IWYU pragma: keep
+#include "opentxs/protobuf/verify/PeerReply.hpp"    // IWYU pragma: keep
+#include "opentxs/protobuf/verify/PeerRequest.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyPeer.hpp"
 #include "protobuf/Check.hpp"
 

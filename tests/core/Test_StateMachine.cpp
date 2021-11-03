@@ -11,8 +11,8 @@
 #include <memory>
 
 #include "core/StateMachine.hpp"
-#include "opentxs/Version.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 using namespace opentxs;
 

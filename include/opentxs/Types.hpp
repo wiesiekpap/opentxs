@@ -3,12 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_TYPES_HPP
-#define OPENTXS_TYPES_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <limits>
@@ -22,11 +20,10 @@
 #include <tuple>
 #include <vector>
 
+#include "opentxs/util/Numbers.hpp"
+
 namespace opentxs
 {
-using TransactionNumber = std::int64_t;
-using RequestNumber = std::int64_t;
-
 namespace identity
 {
 class Nym;
@@ -35,13 +32,10 @@ class Nym;
 class Identifier;
 class Message;
 class String;
+}  // namespace opentxs
 
-using VersionNumber = std::uint32_t;
-using VersionConversionMap = std::map<VersionNumber, VersionNumber>;
-
-using Clock = std::chrono::system_clock;
-using Time = Clock::time_point;
-
+namespace opentxs
+{
 using CredentialIndexModeFlag = bool;
 static const CredentialIndexModeFlag CREDENTIAL_INDEX_MODE_ONLY_IDS = true;
 static const CredentialIndexModeFlag CREDENTIAL_INDEX_MODE_FULL_CREDS = false;
@@ -663,4 +657,3 @@ enum class PaymentType : int {
     Blinded = 4,
 };
 }  // namespace opentxs
-#endif

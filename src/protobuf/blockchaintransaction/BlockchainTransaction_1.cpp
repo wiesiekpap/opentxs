@@ -17,8 +17,8 @@
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Contact.hpp"
-#include "opentxs/protobuf/verify/BlockchainTransactionInput.hpp"
-#include "opentxs/protobuf/verify/BlockchainTransactionOutput.hpp"
+#include "opentxs/protobuf/verify/BlockchainTransactionInput.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BlockchainTransactionOutput.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"

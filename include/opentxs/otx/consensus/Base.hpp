@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_OTX_CONSENSUS_BASE_HPP
-#define OPENTXS_OTX_CONSENSUS_BASE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -12,17 +11,23 @@
 #include <set>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/otx/Types.hpp"
 
 namespace opentxs
 {
+namespace identifier
+{
+class Server;
+}  // namespace identifier
+
 namespace proto
 {
 class Context;
 }  // namespace proto
 
+class NymFile;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -98,4 +103,3 @@ private:
 }  // namespace context
 }  // namespace otx
 }  // namespace opentxs
-#endif

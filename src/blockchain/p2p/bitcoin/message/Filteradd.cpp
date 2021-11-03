@@ -14,10 +14,9 @@
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD
 // "opentxs::blockchain::p2p::bitcoin::message::implementation::Filteradd::"
@@ -25,7 +24,7 @@
 namespace opentxs::factory
 {
 auto BitcoinP2PFilteradd(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -36,7 +35,7 @@ auto BitcoinP2PFilteradd(
     using ReturnType = bitcoin::message::implementation::Filteradd;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -46,7 +45,7 @@ auto BitcoinP2PFilteradd(
 }
 
 auto BitcoinP2PFilteradd(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const Data& element)
     -> blockchain::p2p::bitcoin::message::internal::Filteradd*
@@ -61,7 +60,7 @@ auto BitcoinP2PFilteradd(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Filteradd::Filteradd(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const Data& element) noexcept
     : Message(api, network, bitcoin::Command::filteradd)
@@ -71,7 +70,7 @@ Filteradd::Filteradd(
 }
 
 Filteradd::Filteradd(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const Data& element) noexcept
     : Message(api, std::move(header))

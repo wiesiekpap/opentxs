@@ -10,12 +10,10 @@
 #include <atomic>
 #include <chrono>
 #include <map>
-#include <thread>
 #include <tuple>
 #include <utility>
 
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
 
 namespace opentxs::api::implementation
 {

@@ -8,17 +8,16 @@
 #include <gtest/gtest.h>
 #include <future>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Shared.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/Shared.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/Pair.hpp"
-#include "opentxs/api/server/Manager.hpp"
-#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -29,6 +28,7 @@
 #include "opentxs/rpc/request/SendPayment.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/SendPayment.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
@@ -43,7 +43,7 @@ constexpr auto chris_{"ot2C1sgqWjrt6sMJcY2SJLLcB3qMCgJQRmxU"};
 TEST_F(RPC_fixture, preconditions)
 {
     {
-        const auto& session = StartServer(0);
+        const auto& session = StartNotarySession(0);
         const auto instance = session.Instance();
         const auto& seeds = seed_map_.at(instance);
         const auto& nyms = local_nym_map_.at(instance);
@@ -52,7 +52,7 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_EQ(nyms.size(), 1);
     }
     {
-        const auto& server = ot_.Server(0);
+        const auto& server = ot_.NotarySession(0);
         const auto& session = StartClient(0);
         session.OTX().DisableAutoaccept();
         session.Pair().Stop().get();
@@ -106,7 +106,7 @@ TEST_F(RPC_fixture, preconditions)
 TEST_F(RPC_fixture, bad_client_session)
 {
     constexpr auto index{88};
-    const auto& api = ot_.Client(0);
+    const auto& api = ot_.ClientSession(0);
     const auto& source = registered_accounts_.at(issuer_).front();
     const auto& destination = registered_accounts_.at(brian_).front();
     const auto recipient =
@@ -152,7 +152,7 @@ TEST_F(RPC_fixture, bad_client_session)
 TEST_F(RPC_fixture, bad_server_session)
 {
     constexpr auto index{99};
-    const auto& api = ot_.Client(0);
+    const auto& api = ot_.ClientSession(0);
     const auto& source = registered_accounts_.at(issuer_).front();
     const auto& destination = registered_accounts_.at(brian_).front();
     const auto recipient =
@@ -198,8 +198,8 @@ TEST_F(RPC_fixture, bad_server_session)
 TEST_F(RPC_fixture, transfer)
 {
     constexpr auto index{0};
-    const auto& api = ot_.Client(0);
-    const auto& server = ot_.Server(0);
+    const auto& api = ot_.ClientSession(0);
+    const auto& server = ot_.NotarySession(0);
     const auto& source = registered_accounts_.at(issuer_).front();
     const auto& destination = registered_accounts_.at(brian_).front();
     const auto recipient =
@@ -253,8 +253,8 @@ TEST_F(RPC_fixture, transfer)
 TEST_F(RPC_fixture, cheque)
 {
     constexpr auto index{0};
-    const auto& api = ot_.Client(0);
-    const auto& server = ot_.Server(0);
+    const auto& api = ot_.ClientSession(0);
+    const auto& server = ot_.NotarySession(0);
     constexpr auto type = ot::rpc::PaymentType::cheque;
     const auto& source = registered_accounts_.at(brian_).front();
     const auto recipient =
@@ -312,12 +312,12 @@ TEST_F(RPC_fixture, cheque)
 
 TEST_F(RPC_fixture, postconditions)
 {
-    const auto& api = ot_.Client(0);
-    auto account1 = api.Wallet().Account(
+    const auto& api = ot_.ClientSession(0);
+    auto account1 = api.Wallet().Internal().Account(
         api.Factory().Identifier(registered_accounts_.at(issuer_).front()));
-    auto account2 = api.Wallet().Account(
+    auto account2 = api.Wallet().Internal().Account(
         api.Factory().Identifier(registered_accounts_.at(brian_).front()));
-    auto account3 = api.Wallet().Account(
+    auto account3 = api.Wallet().Internal().Account(
         api.Factory().Identifier(registered_accounts_.at(chris_).front()));
 
     EXPECT_EQ(account1.get().GetBalance(), -100);

@@ -15,6 +15,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/PayableListItem.hpp"
 )
 target_link_libraries(opentxs-ui-payablelist PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-ui-payablelist SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-ui-payablelist PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-payablelist>)
 add_dependencies(opentxs-ui-payablelist generated_code)

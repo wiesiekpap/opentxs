@@ -21,14 +21,13 @@
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/contact/Contact.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
@@ -44,8 +43,8 @@ auto tsv(const Input& in) noexcept -> opentxs::ReadView
 namespace opentxs::blockchain::database::common
 {
 Wallet::Wallet(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     storage::lmdb::LMDB& lmdb,
     Bulk& bulk) noexcept(false)
     : api_(api)
@@ -65,7 +64,7 @@ auto Wallet::AssociateTransaction(
     const Txid& txid,
     const std::vector<PatternID>& in) const noexcept -> bool
 {
-    LogTrace(OT_METHOD)(__func__)(": Transaction ")(txid.asHex())(
+    LogTrace()(OT_METHOD)(__func__)(": Transaction ")(txid.asHex())(
         " is associated with patterns:")
         .Flush();
     // TODO transaction data never changes so indexing should only happen
@@ -73,7 +72,7 @@ auto Wallet::AssociateTransaction(
     auto incoming = std::set<PatternID>{};
     std::for_each(std::begin(in), std::end(in), [&](auto& pattern) {
         incoming.emplace(pattern);
-        LogTrace("    * ")(pattern).Flush();
+        LogTrace()("    * ")(pattern).Flush();
     });
     Lock lock(lock_);
     auto& existing = transaction_to_patterns_[txid];
@@ -93,7 +92,7 @@ auto Wallet::AssociateTransaction(
         std::back_inserter(removedElements));
 
     if (0 < newElements.size()) {
-        LogTrace(OT_METHOD)(__func__)(": New patterns:").Flush();
+        LogTrace()(OT_METHOD)(__func__)(": New patterns:").Flush();
     }
 
     std::for_each(
@@ -101,11 +100,11 @@ auto Wallet::AssociateTransaction(
         std::end(newElements),
         [&](const auto& element) {
             pattern_to_transactions_[element].insert(txid);
-            LogTrace("    * ")(element).Flush();
+            LogTrace()("    * ")(element).Flush();
         });
 
     if (0 < removedElements.size()) {
-        LogTrace(OT_METHOD)(__func__)(": Obsolete patterns:").Flush();
+        LogTrace()(OT_METHOD)(__func__)(": Obsolete patterns:").Flush();
     }
 
     std::for_each(
@@ -113,7 +112,7 @@ auto Wallet::AssociateTransaction(
         std::end(removedElements),
         [&](const auto& element) {
             pattern_to_transactions_[element].erase(txid);
-            LogTrace("    * ")(element).Flush();
+            LogTrace()("    * ")(element).Flush();
         });
     existing.swap(incoming);
 
@@ -147,7 +146,7 @@ auto Wallet::LoadTransaction(const ReadView txid) const noexcept
 
         return factory::BitcoinTransaction(api_, blockchain_, proto);
     } catch (const std::exception& e) {
-        LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -209,7 +208,7 @@ auto Wallet::StoreTransaction(
                 lmdb_.Store(transaction_table_, hash, tsv(index), tx);
 
             if (false == result.first) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Failed to update index for transaction ")(
                     in.ID().asHex())
                     .Flush();
@@ -241,7 +240,7 @@ auto Wallet::StoreTransaction(
 
         return true;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }

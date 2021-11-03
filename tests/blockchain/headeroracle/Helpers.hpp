@@ -20,9 +20,9 @@
 #include "Basic.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -35,10 +35,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace blockchain
@@ -137,14 +137,14 @@ public:
     static const std::vector<Test> sequence_10_;
     static const std::vector<std::string> bitcoin_;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const b::Type type_;
     std::unique_ptr<bc::Manager> network_;
     bc::HeaderOracle& header_oracle_;
     std::map<std::string, std::unique_ptr<bb::Header>> test_blocks_;
 
     static auto init_network(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const b::Type type) noexcept -> std::unique_ptr<bc::Manager>;
 
     auto apply_blocks(const std::vector<Test>& vector) -> bool;

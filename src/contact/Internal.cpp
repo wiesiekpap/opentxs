@@ -7,13 +7,38 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "internal/contact/Contact.hpp"  // IWYU pragma: associated
 
+#include <map>
+
 #include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/SectionType.hpp"
+#include "opentxs/contact/Types.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "util/Container.hpp"
 
-namespace opentxs::contact::internal
+namespace opentxs::contact
+{
+using AttributeMap = std::map<contact::Attribute, proto::ContactItemAttribute>;
+using AttributeReverseMap =
+    std::map<proto::ContactItemAttribute, contact::Attribute>;
+using ClaimTypeMap = std::map<contact::ClaimType, proto::ContactItemType>;
+using ClaimTypeReverseMap =
+    std::map<proto::ContactItemType, contact::ClaimType>;
+using SectionTypeMap =
+    std::map<contact::SectionType, proto::ContactSectionName>;
+using SectionTypeReverseMap =
+    std::map<proto::ContactSectionName, contact::SectionType>;
+using UnitTypeMap = std::map<core::UnitType, contact::ClaimType>;
+using UnitTypeReverseMap = std::map<contact::ClaimType, core::UnitType>;
+
+auto attribute_map() noexcept -> const AttributeMap&;
+auto claimtype_map() noexcept -> const ClaimTypeMap&;
+auto sectiontype_map() noexcept -> const SectionTypeMap&;
+auto unittype_map() noexcept -> const UnitTypeMap&;
+}  // namespace opentxs::contact
+
+namespace opentxs::contact
 {
 auto attribute_map() noexcept -> const AttributeMap&
 {
@@ -248,72 +273,179 @@ auto sectiontype_map() noexcept -> const SectionTypeMap&
     return map;
 }
 
-auto translate(const Attribute in) noexcept -> proto::ContactItemAttribute
+auto unittype_map() noexcept -> const UnitTypeMap&
+{
+    static const auto map = UnitTypeMap{
+        {core::UnitType::Error, ClaimType::Error},
+        {core::UnitType::BTC, ClaimType::BTC},
+        {core::UnitType::ETH, ClaimType::ETH},
+        {core::UnitType::XRP, ClaimType::XRP},
+        {core::UnitType::LTC, ClaimType::LTC},
+        {core::UnitType::DAO, ClaimType::DAO},
+        {core::UnitType::XEM, ClaimType::XEM},
+        {core::UnitType::DASH, ClaimType::DASH},
+        {core::UnitType::MAID, ClaimType::MAID},
+        {core::UnitType::LSK, ClaimType::LSK},
+        {core::UnitType::DOGE, ClaimType::DOGE},
+        {core::UnitType::DGD, ClaimType::DGD},
+        {core::UnitType::XMR, ClaimType::XMR},
+        {core::UnitType::WAVES, ClaimType::WAVES},
+        {core::UnitType::NXT, ClaimType::NXT},
+        {core::UnitType::SC, ClaimType::SC},
+        {core::UnitType::STEEM, ClaimType::STEEM},
+        {core::UnitType::AMP, ClaimType::AMP},
+        {core::UnitType::XLM, ClaimType::XLM},
+        {core::UnitType::FCT, ClaimType::FCT},
+        {core::UnitType::BTS, ClaimType::BTS},
+        {core::UnitType::USD, ClaimType::USD},
+        {core::UnitType::EUR, ClaimType::EUR},
+        {core::UnitType::GBP, ClaimType::GBP},
+        {core::UnitType::INR, ClaimType::INR},
+        {core::UnitType::AUD, ClaimType::AUD},
+        {core::UnitType::CAD, ClaimType::CAD},
+        {core::UnitType::SGD, ClaimType::SGD},
+        {core::UnitType::CHF, ClaimType::CHF},
+        {core::UnitType::MYR, ClaimType::MYR},
+        {core::UnitType::JPY, ClaimType::JPY},
+        {core::UnitType::CNY, ClaimType::CNY},
+        {core::UnitType::NZD, ClaimType::NZD},
+        {core::UnitType::THB, ClaimType::THB},
+        {core::UnitType::HUF, ClaimType::HUF},
+        {core::UnitType::AED, ClaimType::AED},
+        {core::UnitType::HKD, ClaimType::HKD},
+        {core::UnitType::MXN, ClaimType::MXN},
+        {core::UnitType::ZAR, ClaimType::ZAR},
+        {core::UnitType::PHP, ClaimType::PHP},
+        {core::UnitType::SEC, ClaimType::SEC},
+        {core::UnitType::TNBTC, ClaimType::TNBTC},
+        {core::UnitType::TNXRP, ClaimType::TNXRP},
+        {core::UnitType::TNLTX, ClaimType::TNLTX},
+        {core::UnitType::TNXEM, ClaimType::TNXEM},
+        {core::UnitType::TNDASH, ClaimType::TNDASH},
+        {core::UnitType::TNMAID, ClaimType::TNMAID},
+        {core::UnitType::TNLSK, ClaimType::TNLSK},
+        {core::UnitType::TNDOGE, ClaimType::TNDOGE},
+        {core::UnitType::TNXMR, ClaimType::TNXMR},
+        {core::UnitType::TNWAVES, ClaimType::TNWAVES},
+        {core::UnitType::TNNXT, ClaimType::TNNXT},
+        {core::UnitType::TNSC, ClaimType::TNSC},
+        {core::UnitType::TNSTEEM, ClaimType::TNSTEEM},
+        {core::UnitType::BCH, ClaimType::BCH},
+        {core::UnitType::TNBCH, ClaimType::TNBCH},
+        {core::UnitType::PKT, ClaimType::PKT},
+        {core::UnitType::TNPKT, ClaimType::TNPKT},
+        {core::UnitType::Ethereum_Olympic, ClaimType::Ethereum_Olympic},
+        {core::UnitType::Ethereum_Classic, ClaimType::Ethereum_Classic},
+        {core::UnitType::Ethereum_Expanse, ClaimType::Ethereum_Expanse},
+        {core::UnitType::Ethereum_Morden, ClaimType::Ethereum_Morden},
+        {core::UnitType::Ethereum_Ropsten, ClaimType::Ethereum_Ropsten},
+        {core::UnitType::Ethereum_Rinkeby, ClaimType::Ethereum_Rinkeby},
+        {core::UnitType::Ethereum_Kovan, ClaimType::Ethereum_Kovan},
+        {core::UnitType::Ethereum_Sokol, ClaimType::Ethereum_Sokol},
+        {core::UnitType::Ethereum_POA, ClaimType::Ethereum_POA},
+        {core::UnitType::Regtest, ClaimType::Regtest},
+        {core::UnitType::Unknown, ClaimType::Unknown},
+    };
+
+    return map;
+}
+}  // namespace opentxs::contact
+
+namespace opentxs
+{
+auto ClaimToUnit(const contact::ClaimType in) noexcept -> core::UnitType
+{
+    static const auto map = reverse_arbitrary_map<
+        core::UnitType,
+        contact::ClaimType,
+        contact::UnitTypeReverseMap>(contact::unittype_map());
+
+    try {
+        return map.at(in);
+    } catch (...) {
+        return core::UnitType::Error;
+    }
+}
+
+auto translate(const contact::Attribute in) noexcept
+    -> proto::ContactItemAttribute
 {
     try {
-        return attribute_map().at(in);
+        return contact::attribute_map().at(in);
     } catch (...) {
         return proto::CITEMATTR_ERROR;
     }
 }
 
-auto translate(const ClaimType in) noexcept -> proto::ContactItemType
+auto translate(const contact::ClaimType in) noexcept -> proto::ContactItemType
 {
     try {
-        return claimtype_map().at(in);
+        return contact::claimtype_map().at(in);
     } catch (...) {
         return proto::CITEMTYPE_ERROR;
     }
 }
 
-auto translate(const SectionType in) noexcept -> proto::ContactSectionName
+auto translate(const contact::SectionType in) noexcept
+    -> proto::ContactSectionName
 {
     try {
-        return sectiontype_map().at(in);
+        return contact::sectiontype_map().at(in);
     } catch (...) {
         return proto::CONTACTSECTION_ERROR;
     }
 }
 
-auto translate(const proto::ContactItemAttribute in) noexcept -> Attribute
+auto translate(const proto::ContactItemAttribute in) noexcept
+    -> contact::Attribute
 {
     static const auto map = reverse_arbitrary_map<
         contact::Attribute,
         proto::ContactItemAttribute,
-        AttributeReverseMap>(attribute_map());
+        contact::AttributeReverseMap>(contact::attribute_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return Attribute::Error;
+        return contact::Attribute::Error;
     }
 }
 
-auto translate(const proto::ContactItemType in) noexcept -> ClaimType
+auto translate(const proto::ContactItemType in) noexcept -> contact::ClaimType
 {
     static const auto map = reverse_arbitrary_map<
         contact::ClaimType,
         proto::ContactItemType,
-        ClaimTypeReverseMap>(claimtype_map());
+        contact::ClaimTypeReverseMap>(contact::claimtype_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return ClaimType::Error;
+        return contact::ClaimType::Error;
     }
 }
 
-auto translate(const proto::ContactSectionName in) noexcept -> SectionType
+auto translate(const proto::ContactSectionName in) noexcept
+    -> contact::SectionType
 {
     static const auto map = reverse_arbitrary_map<
         contact::SectionType,
         proto::ContactSectionName,
-        SectionTypeReverseMap>(sectiontype_map());
+        contact::SectionTypeReverseMap>(contact::sectiontype_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return SectionType::Error;
+        return contact::SectionType::Error;
     }
 }
-}  // namespace opentxs::contact::internal
+
+auto UnitToClaim(const core::UnitType in) noexcept -> contact::ClaimType
+{
+    try {
+        return contact::unittype_map().at(in);
+    } catch (...) {
+        return contact::ClaimType::Error;
+    }
+}
+}  // namespace opentxs

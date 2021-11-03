@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "internal/storage/drivers/Drivers.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -26,10 +26,10 @@ namespace network
 class Asio;
 }  // namespace network
 
-namespace storage
+namespace session
 {
 class Storage;
-}  // namespace storage
+}  // namespace session
 
 class Crypto;
 }  // namespace api
@@ -41,7 +41,6 @@ class Plugin;
 class Root;
 }  // namespace storage
 
-class Factory;
 class Flag;
 class String;
 }  // namespace opentxs
@@ -91,18 +90,16 @@ public:
     Multiplex(
         const api::Crypto& crypto,
         const api::network::Asio& asio,
-        const api::storage::Storage& storage,
+        const api::session::Storage& storage,
         const Flag& primaryBucket,
         const storage::Config& config);
 
     ~Multiplex() final;
 
 private:
-    friend Factory;
-
     const api::Crypto& crypto_;
     const api::network::Asio& asio_;
-    const api::storage::Storage& storage_;
+    const api::session::Storage& storage_;
     const Flag& primary_bucket_;
     const storage::Config& config_;
     std::unique_ptr<storage::Plugin> primary_plugin_;

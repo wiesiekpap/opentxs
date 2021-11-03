@@ -19,13 +19,14 @@
 #include "blockchain/node/wallet/Progress.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::Rescan::"
 
@@ -69,7 +70,7 @@ auto Rescan::flush(const Lock& lock) noexcept -> void
     if (have) {
         OT_ASSERT(last_scanned_.has_value());
 
-        LogVerbose(OT_METHOD)(__func__)(": ")(parent_.name_)(
+        LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
             " rescanning from block ")(last_scanned_.value().first)
             .Flush();
     }
@@ -78,7 +79,7 @@ auto Rescan::flush(const Lock& lock) noexcept -> void
 auto Rescan::process(const Lock& lock, const block::Position& position) noexcept
     -> void
 {
-    LogVerbose(OT_METHOD)(__func__)(": ")(parent_.name_)(
+    LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
         " incoming position: ")(position.second->asHex())(" at height ")(
         position.first)
         .Flush();
@@ -86,7 +87,7 @@ auto Rescan::process(const Lock& lock, const block::Position& position) noexcept
 
     if (rescan.has_value() && (rescan.value() != parent_.null_position_)) {
         const auto current = rescan.value();
-        LogVerbose(OT_METHOD)(__func__)(":  ")(parent_.name_)(
+        LogVerbose()(OT_METHOD)(__func__)(":  ")(parent_.name_)(
             " current position: ")(current.second->asHex())(" at height ")(
             current.first)
             .Flush();
@@ -133,7 +134,7 @@ auto Rescan::Run() noexcept -> bool
 
             return last_scanned_;
         }();
-        auto& log = LogTrace;
+        auto& log = LogTrace();
         const auto& name = parent_.name_;
         log(OT_METHOD)(__func__)(": ")(name)(" last_scanned_ before flush is ");
 

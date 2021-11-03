@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_SCRIPT_OTSCRIPTABLE_HPP
-#define OPENTXS_CORE_SCRIPT_OTSCRIPTABLE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -22,7 +21,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -390,7 +389,7 @@ protected:
                           // smart contract would normally want to log its
                           // transaction #, not just the clause name.)
 
-    OTScriptable(const api::Core& api);
+    OTScriptable(const api::Session& api);
 
 private:
     using ot_super = Contract;
@@ -400,4 +399,3 @@ private:
     OTScriptable() = delete;
 };
 }  // namespace opentxs
-#endif

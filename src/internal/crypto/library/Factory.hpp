@@ -30,15 +30,11 @@ class Sodium;
 
 namespace opentxs::factory
 {
-#if OT_CRYPTO_USING_OPENSSL
 auto OpenSSL() noexcept -> std::unique_ptr<crypto::OpenSSL>;
-#endif  // OT_CRYPTO_USING_OPENSSL
-#if OT_CRYPTO_USING_LIBSECP256K1
 auto Secp256k1(
     const api::Crypto& crypto,
     const api::crypto::Util& util) noexcept
     -> std::unique_ptr<crypto::Secp256k1>;
-#endif  // OT_CRYPTO_USING_LIBSECP256K1
 auto Sodium(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<crypto::Sodium>;
 }  // namespace opentxs::factory

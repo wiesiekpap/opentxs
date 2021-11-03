@@ -20,12 +20,13 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -109,7 +110,7 @@ public:
     }
 
     Version(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const bitcoin::ProtocolVersion version,
         const tcp::endpoint localAddress,
@@ -123,7 +124,7 @@ public:
         const bool relay,
         const Time time = Clock::now()) noexcept;
     Version(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const bitcoin::ProtocolVersion version,
         const tcp::endpoint localAddress,

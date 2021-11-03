@@ -10,11 +10,11 @@
 #include <memory>
 #include <utility>
 
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "ui/base/Widget.hpp"
@@ -23,7 +23,7 @@ namespace opentxs::factory
 {
 auto AccountSummaryItem(
     const ui::implementation::IssuerItemInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::IssuerItemRowID& rowID,
     const ui::implementation::IssuerItemSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -39,7 +39,7 @@ namespace opentxs::ui::implementation
 {
 AccountSummaryItem::AccountSummaryItem(
     const IssuerItemInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const IssuerItemRowID& rowID,
     const IssuerItemSortKey& sortKey,
     CustomData& custom) noexcept
@@ -79,8 +79,9 @@ auto AccountSummaryItem::DisplayBalance() const noexcept -> std::string
     return {};
 }
 
-auto AccountSummaryItem::load_unit(const api::Core& api, const Identifier& id)
-    -> OTUnitDefinition
+auto AccountSummaryItem::load_unit(
+    const api::Session& api,
+    const Identifier& id) -> OTUnitDefinition
 {
     try {
         return api.Wallet().UnitDefinition(api.Storage().AccountContract(id));

@@ -9,27 +9,13 @@
 
 #include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
 
-#include <string>
-
-#define OPENTXS_VERSION_MAJOR @opentxs_VERSION_MAJOR@
-#define OPENTXS_VERSION_MINOR @opentxs_VERSION_MINOR@
-#define OPENTXS_VERSION_BUGFIX @opentxs_VERSION_PATCH@
-#define OPENTXS_VERSION_HASH "@opentxs_VERSION_SHA1@"
-#define OPENTXS_VERSION_STRING "@opentxs_VERSION_STRING@"
-
 #define OT_CASH @OT_CASH_EXPORT@
 #define OT_CASH_USING_LUCRE @CASH_LUCRE_EXPORT@
 #define OT_CRYPTO_SUPPORTED_KEY_ED25519 @ED25519_EXPORT@
 #define OT_CRYPTO_SUPPORTED_KEY_RSA @RSA_EXPORT@
 #define OT_CRYPTO_SUPPORTED_KEY_SECP256K1 @SECP256K1_EXPORT@
-#define OT_CRYPTO_USING_LIBSECP256K1 @LIBSECP256K1_EXPORT@
 #define OT_CRYPTO_WITH_BIP32 @BIP32_EXPORT@
 #define OT_SCRIPT_CHAI @SCRIPT_CHAI_EXPORT@
 #define OT_BLOCKCHAIN @OT_BLOCKCHAIN_EXPORT@
-
-namespace opentxs
-{
-OPENTXS_EXPORT std::string stack_trace() noexcept;
-}  // namespace opentxs
 #endif // OPENTXS_VERSION_HPP
 // clang-format on

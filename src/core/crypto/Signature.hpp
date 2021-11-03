@@ -13,7 +13,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -28,7 +28,7 @@ public:
     }
     auto getMetaData() -> OTSignatureMetadata& final { return metadata_; }
 
-    Signature(const api::Core& api);
+    Signature(const api::Session& api);
 
     ~Signature() final = default;
 

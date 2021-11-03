@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "internal/core/contract/peer/Peer.hpp"  // IWYU pragma: associated
 
+#include <map>
+
 #include "Proto.tpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
@@ -41,7 +43,36 @@ PairEvent::PairEvent(
     , issuer_(issuer)
 {
 }
+}  // namespace opentxs::contract::peer::internal
 
+namespace opentxs::contract::peer
+{
+using ConnectionInfoTypeMap =
+    std::map<ConnectionInfoType, proto::ConnectionInfoType>;
+using ConnectionInfoTypeReverseMap =
+    std::map<proto::ConnectionInfoType, ConnectionInfoType>;
+using PairEventTypeMap =
+    std::map<internal::PairEventType, proto::PairEventType>;
+using PairEventTypeReverseMap =
+    std::map<proto::PairEventType, internal::PairEventType>;
+using PeerObjectTypeMap = std::map<PeerObjectType, proto::PeerObjectType>;
+using PeerObjectTypeReverseMap =
+    std::map<proto::PeerObjectType, PeerObjectType>;
+using PeerRequestTypeMap = std::map<PeerRequestType, proto::PeerRequestType>;
+using PeerRequestTypeReverseMap =
+    std::map<proto::PeerRequestType, PeerRequestType>;
+using SecretTypeMap = std::map<SecretType, proto::SecretType>;
+using SecretTypeReverseMap = std::map<proto::SecretType, SecretType>;
+
+auto connectioninfotype_map() noexcept -> const ConnectionInfoTypeMap&;
+auto paireventtype_map() noexcept -> const PairEventTypeMap&;
+auto peerobjecttype_map() noexcept -> const PeerObjectTypeMap&;
+auto peerrequesttype_map() noexcept -> const PeerRequestTypeMap&;
+auto secrettype_map() noexcept -> const SecretTypeMap&;
+}  // namespace opentxs::contract::peer
+
+namespace opentxs::contract::peer
+{
 auto connectioninfotype_map() noexcept -> const ConnectionInfoTypeMap&
 {
     static const auto map = ConnectionInfoTypeMap{
@@ -61,9 +92,9 @@ auto connectioninfotype_map() noexcept -> const ConnectionInfoTypeMap&
 auto paireventtype_map() noexcept -> const PairEventTypeMap&
 {
     static const auto map = PairEventTypeMap{
-        {PairEventType::Error, proto::PAIREVENT_ERROR},
-        {PairEventType::Rename, proto::PAIREVENT_RENAME},
-        {PairEventType::StoreSecret, proto::PAIREVENT_STORESECRET},
+        {internal::PairEventType::Error, proto::PAIREVENT_ERROR},
+        {internal::PairEventType::Rename, proto::PAIREVENT_RENAME},
+        {internal::PairEventType::StoreSecret, proto::PAIREVENT_STORESECRET},
     };
 
     return map;
@@ -108,120 +139,134 @@ auto secrettype_map() noexcept -> const SecretTypeMap&
 
     return map;
 }
+}  // namespace opentxs::contract::peer
 
-auto translate(ConnectionInfoType in) noexcept -> proto::ConnectionInfoType
+namespace opentxs
+{
+auto translate(contract::peer::ConnectionInfoType in) noexcept
+    -> proto::ConnectionInfoType
 {
     try {
-        return connectioninfotype_map().at(in);
+        return contract::peer::connectioninfotype_map().at(in);
     } catch (...) {
         return proto::CONNECTIONINFO_ERROR;
     }
 }
 
-auto translate(PairEventType in) noexcept -> proto::PairEventType
+auto translate(contract::peer::internal::PairEventType in) noexcept
+    -> proto::PairEventType
 {
     try {
-        return paireventtype_map().at(in);
+        return contract::peer::paireventtype_map().at(in);
     } catch (...) {
         return proto::PAIREVENT_ERROR;
     }
 }
 
-auto translate(PeerObjectType in) noexcept -> proto::PeerObjectType
+auto translate(contract::peer::PeerObjectType in) noexcept
+    -> proto::PeerObjectType
 {
     try {
-        return peerobjecttype_map().at(in);
+        return contract::peer::peerobjecttype_map().at(in);
     } catch (...) {
         return proto::PEEROBJECT_ERROR;
     }
 }
 
-auto translate(PeerRequestType in) noexcept -> proto::PeerRequestType
+auto translate(contract::peer::PeerRequestType in) noexcept
+    -> proto::PeerRequestType
 {
     try {
-        return peerrequesttype_map().at(in);
+        return contract::peer::peerrequesttype_map().at(in);
     } catch (...) {
         return proto::PEERREQUEST_ERROR;
     }
 }
 
-auto translate(SecretType in) noexcept -> proto::SecretType
+auto translate(contract::peer::SecretType in) noexcept -> proto::SecretType
 {
     try {
-        return secrettype_map().at(in);
+        return contract::peer::secrettype_map().at(in);
     } catch (...) {
         return proto::SECRETTYPE_ERROR;
     }
 }
 
-auto translate(proto::ConnectionInfoType in) noexcept -> ConnectionInfoType
+auto translate(proto::ConnectionInfoType in) noexcept
+    -> contract::peer::ConnectionInfoType
 {
     static const auto map = reverse_arbitrary_map<
-        ConnectionInfoType,
+        contract::peer::ConnectionInfoType,
         proto::ConnectionInfoType,
-        ConnectionInfoTypeReverseMap>(connectioninfotype_map());
+        contract::peer::ConnectionInfoTypeReverseMap>(
+        contract::peer::connectioninfotype_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return ConnectionInfoType::Error;
+        return contract::peer::ConnectionInfoType::Error;
     }
 }
 
-auto translate(proto::PairEventType in) noexcept -> PairEventType
+auto translate(proto::PairEventType in) noexcept
+    -> contract::peer::internal::PairEventType
 {
     static const auto map = reverse_arbitrary_map<
-        PairEventType,
+        contract::peer::internal::PairEventType,
         proto::PairEventType,
-        PairEventTypeReverseMap>(paireventtype_map());
+        contract::peer::PairEventTypeReverseMap>(
+        contract::peer::paireventtype_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return PairEventType::Error;
+        return contract::peer::internal::PairEventType::Error;
     }
 }
 
-auto translate(proto::PeerObjectType in) noexcept -> PeerObjectType
+auto translate(proto::PeerObjectType in) noexcept
+    -> contract::peer::PeerObjectType
 {
     static const auto map = reverse_arbitrary_map<
-        PeerObjectType,
+        contract::peer::PeerObjectType,
         proto::PeerObjectType,
-        PeerObjectTypeReverseMap>(peerobjecttype_map());
+        contract::peer::PeerObjectTypeReverseMap>(
+        contract::peer::peerobjecttype_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return PeerObjectType::Error;
+        return contract::peer::PeerObjectType::Error;
     }
 }
 
-auto translate(proto::PeerRequestType in) noexcept -> PeerRequestType
+auto translate(proto::PeerRequestType in) noexcept
+    -> contract::peer::PeerRequestType
 {
     static const auto map = reverse_arbitrary_map<
-        PeerRequestType,
+        contract::peer::PeerRequestType,
         proto::PeerRequestType,
-        PeerRequestTypeReverseMap>(peerrequesttype_map());
+        contract::peer::PeerRequestTypeReverseMap>(
+        contract::peer::peerrequesttype_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return PeerRequestType::Error;
+        return contract::peer::PeerRequestType::Error;
     }
 }
 
-auto translate(proto::SecretType in) noexcept -> SecretType
+auto translate(proto::SecretType in) noexcept -> contract::peer::SecretType
 {
     static const auto map = reverse_arbitrary_map<
-        SecretType,
+        contract::peer::SecretType,
         proto::SecretType,
-        SecretTypeReverseMap>(secrettype_map());
+        contract::peer::SecretTypeReverseMap>(contract::peer::secrettype_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return SecretType::Error;
+        return contract::peer::SecretType::Error;
     }
 }
-
-}  // namespace opentxs::contract::peer::internal
+}  // namespace opentxs

@@ -33,15 +33,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -156,8 +153,8 @@ public:
         const block::Position& position) noexcept -> bool;
 
     Output(
-        const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain,
         const wallet::SubchainData& subchains,

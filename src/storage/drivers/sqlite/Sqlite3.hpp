@@ -17,11 +17,11 @@ extern "C" {
 #include <utility>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "storage/Plugin.hpp"
 
 namespace opentxs
@@ -33,10 +33,10 @@ namespace network
 class Asio;
 }  // namespace network
 
-namespace storage
+namespace session
 {
 class Storage;
-}  // namespace storage
+}  // namespace session
 
 class Crypto;
 }  // namespace api
@@ -46,8 +46,6 @@ namespace storage
 class Config;
 class Plugin;
 }  // namespace storage
-
-class Factory;
 }  // namespace opentxs
 
 namespace opentxs::storage::driver
@@ -72,7 +70,7 @@ public:
     Sqlite3(
         const api::Crypto& crypto,
         const api::network::Asio& asio,
-        const api::storage::Storage& storage,
+        const api::session::Storage& storage,
         const storage::Config& config,
         const Flag& bucket);
 
@@ -80,8 +78,6 @@ public:
 
 private:
     using ot_super = Plugin;
-
-    friend Factory;
 
     std::string folder_;
     mutable std::mutex transaction_lock_;

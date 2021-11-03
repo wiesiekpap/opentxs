@@ -17,12 +17,13 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -79,7 +80,7 @@ public:
 protected:
     static const VersionNumber default_version_{1};
 
-    const api::Core& api_;
+    const api::Session& api_;
     const OTData hash_;
     const OTData pow_;
     const OTData parent_hash_;
@@ -88,7 +89,7 @@ protected:
     static auto minimum_work(const blockchain::Type chain) -> OTWork;
 
     Header(
-        const api::Core& api,
+        const api::Session& api,
         const VersionNumber version,
         const blockchain::Type type,
         block::pHash&& hash,

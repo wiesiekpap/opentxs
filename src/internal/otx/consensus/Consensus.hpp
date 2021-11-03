@@ -13,7 +13,12 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+namespace session
+{
+class Client;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace network
@@ -64,12 +69,12 @@ struct Server : virtual public opentxs::otx::context::Server,
 namespace opentxs::factory
 {
 auto ClientContext(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& local,
     const Nym_p& remote,
     const identifier::Server& server) -> otx::context::internal::Client*;
 auto ClientContext(
-    const api::Core& api,
+    const api::Session& api,
     const proto::Context& serialized,
     const Nym_p& local,
     const Nym_p& remote,
@@ -77,7 +82,7 @@ auto ClientContext(
 auto ManagedNumber(const TransactionNumber number, otx::context::Server&)
     -> otx::context::ManagedNumber*;
 auto ServerContext(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const network::zeromq::socket::Publish& requestSent,
     const network::zeromq::socket::Publish& replyReceived,
     const Nym_p& local,
@@ -85,7 +90,7 @@ auto ServerContext(
     const identifier::Server& server,
     network::ServerConnection& connection) -> otx::context::internal::Server*;
 auto ServerContext(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const network::zeromq::socket::Publish& requestSent,
     const network::zeromq::socket::Publish& replyReceived,
     const proto::Context& serialized,

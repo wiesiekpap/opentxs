@@ -13,11 +13,10 @@
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 //#define OT_METHOD "
 // opentxs::blockchain::p2p::bitcoin::message::implementation::Block::"
@@ -25,7 +24,7 @@
 namespace opentxs::factory
 {
 auto BitcoinP2PBlock(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -36,7 +35,7 @@ auto BitcoinP2PBlock(
     using ReturnType = bitcoin::message::implementation::Block;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -47,7 +46,7 @@ auto BitcoinP2PBlock(
 }
 
 auto BitcoinP2PBlock(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const Data& raw_block)
     -> blockchain::p2p::bitcoin::message::internal::Block*
@@ -62,7 +61,7 @@ auto BitcoinP2PBlock(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Block::Block(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const Data& block) noexcept
     : Message(api, network, bitcoin::Command::block)
@@ -72,7 +71,7 @@ Block::Block(
 }
 
 Block::Block(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const Data& block) noexcept
     : Message(api, std::move(header))

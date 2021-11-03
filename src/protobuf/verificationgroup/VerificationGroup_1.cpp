@@ -5,6 +5,7 @@
 
 #include "opentxs/protobuf/verify/VerificationGroup.hpp"  // IWYU pragma: associated
 
+#include <map>
 #include <stdexcept>
 #include <utility>
 

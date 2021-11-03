@@ -26,18 +26,20 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/ui/Types.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 class Identifier;
@@ -211,11 +213,11 @@ auto check_activity_thread_qt(
     const ActivityThreadData& expected) noexcept -> bool;
 
 auto check_blockchain_selection(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const ot::ui::Blockchains type,
     const BlockchainSelectionData& expected) noexcept -> bool;
 auto check_blockchain_selection_qt(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const ot::ui::Blockchains type,
     const BlockchainSelectionData& expected) noexcept -> bool;
 

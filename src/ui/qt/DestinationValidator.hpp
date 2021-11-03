@@ -19,10 +19,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace ui
@@ -42,12 +42,12 @@ struct DestinationValidator::Imp {
     using Parent = implementation::AccountActivity;
 
     static auto Blockchain(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         DestinationValidator& main,
         const Identifier& account,
         Parent& parent) noexcept -> std::unique_ptr<Imp>;
     static auto Custodial(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         Parent& parent) noexcept -> std::unique_ptr<Imp>;
 
     virtual auto fixup(QString& input) const -> void = 0;

@@ -6,8 +6,7 @@
 // IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/node/TxoTag.hpp"
 
-#ifndef OPENTXS_BLOCKCHAIN_CLIENT_WALLET_HPP
-#define OPENTXS_BLOCKCHAIN_CLIENT_WALLET_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -97,4 +96,3 @@ private:
 }  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

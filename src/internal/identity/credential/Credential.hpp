@@ -19,20 +19,6 @@
 
 namespace opentxs::identity::credential::internal
 {
-using CredentialRoleMap = std::map<CredentialRole, proto::CredentialRole>;
-using CredentialRoleReverseMap =
-    std::map<proto::CredentialRole, CredentialRole>;
-using CredentialTypeMap = std::map<CredentialType, proto::CredentialType>;
-using CredentialTypeReverseMap =
-    std::map<proto::CredentialType, CredentialType>;
-
-auto credentialrole_map() noexcept -> const CredentialRoleMap&;
-auto credentialtype_map() noexcept -> const CredentialTypeMap&;
-auto translate(CredentialRole in) noexcept -> proto::CredentialRole;
-auto translate(CredentialType in) noexcept -> proto::CredentialType;
-auto translate(proto::CredentialRole in) noexcept -> CredentialRole;
-auto translate(proto::CredentialType in) noexcept -> CredentialType;
-
 struct Base : virtual public identity::credential::Base {
     virtual void ReleaseSignatures(const bool onlyPrivate) = 0;
 
@@ -81,3 +67,15 @@ struct Verification : virtual public Base,
     ~Verification() override = default;
 };
 }  // namespace opentxs::identity::credential::internal
+
+namespace opentxs
+{
+auto translate(const identity::CredentialRole in) noexcept
+    -> proto::CredentialRole;
+auto translate(const identity::CredentialType in) noexcept
+    -> proto::CredentialType;
+auto translate(const proto::CredentialRole in) noexcept
+    -> identity::CredentialRole;
+auto translate(const proto::CredentialType in) noexcept
+    -> identity::CredentialType;
+}  // namespace opentxs

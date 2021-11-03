@@ -15,11 +15,10 @@
 #include <set>
 #include <vector>
 
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
@@ -37,7 +36,7 @@ namespace client
 class Contacts;
 }  // namespace client
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -90,7 +89,7 @@ public:
     {
         return const_cast<Wallet&>(*this);
     }
-    auto Parent() const noexcept -> const api::client::Blockchain& final
+    auto Parent() const noexcept -> const api::crypto::Blockchain& final
     {
         return parent_;
     }
@@ -104,9 +103,9 @@ public:
         Identifier& id) noexcept -> bool final;
 
     Wallet(
-        const api::Core& api,
+        const api::Session& api,
         const api::client::Contacts& contacts,
-        const api::client::Blockchain& parent,
+        const api::crypto::Blockchain& parent,
         const AccountIndex& index,
         const opentxs::blockchain::Type chain) noexcept;
 
@@ -115,9 +114,9 @@ public:
 private:
     using Accounts = std::set<OTIdentifier>;
 
-    const api::client::Blockchain& parent_;
+    const api::crypto::Blockchain& parent_;
     const AccountIndex& account_index_;
-    const api::Core& api_;
+    const api::Session& api_;
     const api::client::Contacts& contacts_;
     const opentxs::blockchain::Type chain_;
     mutable std::mutex lock_;

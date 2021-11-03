@@ -13,11 +13,11 @@
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Merkleblock::"
 
@@ -25,7 +25,7 @@ namespace opentxs::factory
 {
 // We have a header and a raw payload. Parse it.
 auto BitcoinP2PMerkleblock(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -35,7 +35,7 @@ auto BitcoinP2PMerkleblock(
     using ReturnType = bitcoin::message::Merkleblock;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -45,7 +45,7 @@ auto BitcoinP2PMerkleblock(
     auto expectedSize = sizeof(raw_item);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for Merkleblock 1")
             .Flush();
 
@@ -63,7 +63,7 @@ auto BitcoinP2PMerkleblock(
     expectedSize += sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for Merkleblock 1")
             .Flush();
 
@@ -75,7 +75,7 @@ auto BitcoinP2PMerkleblock(
         it, expectedSize, size, hashCount);
 
     if (!decodedSize) {
-        LogOutput(__func__)(": CompactSize incomplete").Flush();
+        LogError()(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
@@ -87,7 +87,7 @@ auto BitcoinP2PMerkleblock(
             expectedSize += sizeof(bitcoin::BlockHeaderHashField);
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__func__)(
+                LogError()("opentxs::factory::")(__func__)(
                     ": Hash entries incomplete at entry index ")(ii)
                     .Flush();
 
@@ -103,7 +103,7 @@ auto BitcoinP2PMerkleblock(
     expectedSize += sizeof(std::byte);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for Merkleblock 1")
             .Flush();
 
@@ -115,7 +115,7 @@ auto BitcoinP2PMerkleblock(
         it, expectedSize, size, flagByteCount);
 
     if (!decodedFlagSize) {
-        LogOutput(__func__)(": CompactSize incomplete").Flush();
+        LogError()(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
@@ -126,7 +126,8 @@ auto BitcoinP2PMerkleblock(
         expectedSize += flagByteCount;
 
         if (expectedSize > size) {
-            LogOutput("opentxs::factory::")(__func__)(": Flag field incomplete")
+            LogError()("opentxs::factory::")(__func__)(
+                ": Flag field incomplete")
                 .Flush();
 
             return nullptr;
@@ -142,7 +143,8 @@ auto BitcoinP2PMerkleblock(
         return new ReturnType(
             api, std::move(pHeader), block_header, txn_count, hashes, flags);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Checksum failure")
+            .Flush();
 
         return nullptr;
     }
@@ -150,7 +152,7 @@ auto BitcoinP2PMerkleblock(
 
 // We have all the data members to create the message from scratch (for sending)
 auto BitcoinP2PMerkleblock(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const Data& block_header,
     const std::uint32_t txn_count,
@@ -205,7 +207,7 @@ Merkleblock::Raw::Raw() noexcept
 
 // We have all the data members to create the message from scratch (for sending)
 Merkleblock::Merkleblock(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const Data& block_header,
     const TxnCount txn_count,
@@ -223,7 +225,7 @@ Merkleblock::Merkleblock(
 // We have a header and the data members. They've been parsed, so now we are
 // instantiating the message from them.
 Merkleblock::Merkleblock(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const Data& block_header,
     const TxnCount txn_count,

@@ -6,6 +6,8 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "internal/core/contract/Contract.hpp"  // IWYU pragma: associated
 
+#include <map>
+
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/protobuf/ContractEnums.pb.h"
@@ -103,7 +105,19 @@ auto Unit::Serialize(proto::UnitDefinition& output, bool includeNym) const
 }
 }  // namespace opentxs::contract::blank
 
-namespace opentxs::contract::internal
+namespace opentxs::contract
+{
+using ProtocolVersionMap = std::map<ProtocolVersion, proto::ProtocolVersion>;
+using ProtocolVersionReverseMap =
+    std::map<proto::ProtocolVersion, ProtocolVersion>;
+using UnitTypeMap = std::map<UnitType, proto::UnitType>;
+using UnitTypeReverseMap = std::map<proto::UnitType, UnitType>;
+
+auto protocolversion_map() noexcept -> const ProtocolVersionMap&;
+auto unittype_map() noexcept -> const UnitTypeMap&;
+}  // namespace opentxs::contract
+
+namespace opentxs::contract
 {
 auto protocolversion_map() noexcept -> const ProtocolVersionMap&
 {
@@ -114,51 +128,6 @@ auto protocolversion_map() noexcept -> const ProtocolVersionMap&
     };
 
     return map;
-}
-
-auto translate(ProtocolVersion in) noexcept -> proto::ProtocolVersion
-{
-    try {
-        return protocolversion_map().at(in);
-    } catch (...) {
-        return proto::PROTOCOLVERSION_ERROR;
-    }
-}
-
-auto translate(UnitType in) noexcept -> proto::UnitType
-{
-    try {
-        return unittype_map().at(in);
-    } catch (...) {
-        return proto::UNITTYPE_ERROR;
-    }
-}
-
-auto translate(proto::ProtocolVersion in) noexcept -> ProtocolVersion
-{
-    static const auto map = reverse_arbitrary_map<
-        ProtocolVersion,
-        proto::ProtocolVersion,
-        ProtocolVersionReverseMap>(protocolversion_map());
-
-    try {
-        return map.at(in);
-    } catch (...) {
-        return ProtocolVersion::Error;
-    }
-}
-
-auto translate(proto::UnitType in) noexcept -> UnitType
-{
-    static const auto map =
-        reverse_arbitrary_map<UnitType, proto::UnitType, UnitTypeReverseMap>(
-            unittype_map());
-
-    try {
-        return map.at(in);
-    } catch (...) {
-        return UnitType::Error;
-    }
 }
 
 auto unittype_map() noexcept -> const UnitTypeMap&
@@ -172,5 +141,53 @@ auto unittype_map() noexcept -> const UnitTypeMap&
 
     return map;
 }
+}  // namespace opentxs::contract
 
-}  // namespace opentxs::contract::internal
+namespace opentxs
+{
+auto translate(contract::ProtocolVersion in) noexcept -> proto::ProtocolVersion
+{
+    try {
+        return contract::protocolversion_map().at(in);
+    } catch (...) {
+        return proto::PROTOCOLVERSION_ERROR;
+    }
+}
+
+auto translate(contract::UnitType in) noexcept -> proto::UnitType
+{
+    try {
+        return contract::unittype_map().at(in);
+    } catch (...) {
+        return proto::UNITTYPE_ERROR;
+    }
+}
+
+auto translate(proto::ProtocolVersion in) noexcept -> contract::ProtocolVersion
+{
+    static const auto map = reverse_arbitrary_map<
+        contract::ProtocolVersion,
+        proto::ProtocolVersion,
+        contract::ProtocolVersionReverseMap>(contract::protocolversion_map());
+
+    try {
+        return map.at(in);
+    } catch (...) {
+        return contract::ProtocolVersion::Error;
+    }
+}
+
+auto translate(proto::UnitType in) noexcept -> contract::UnitType
+{
+    static const auto map = reverse_arbitrary_map<
+        contract::UnitType,
+        proto::UnitType,
+        contract::UnitTypeReverseMap>(contract::unittype_map());
+
+    try {
+        return map.at(in);
+    } catch (...) {
+        return contract::UnitType::Error;
+    }
+}
+}  // namespace opentxs

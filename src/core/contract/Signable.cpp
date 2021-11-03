@@ -10,19 +10,19 @@
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::contract::implementation::Signable::"
 
 namespace opentxs::contract::implementation
 {
 Signable::Signable(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const VersionNumber version,
     const std::string& conditions,
@@ -41,7 +41,7 @@ Signable::Signable(
 }
 
 Signable::Signable(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const VersionNumber version,
     const std::string& conditions,
@@ -140,7 +140,7 @@ auto Signable::update_signature(const Lock& lock, const PasswordPrompt& reason)
     OT_ASSERT(verify_write_lock(lock));
 
     if (!nym_) {
-        LogOutput(OT_METHOD)(__func__)(": Missing nym.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing nym.").Flush();
 
         return false;
     }
@@ -166,13 +166,13 @@ auto Signable::Validate() const -> bool
 auto Signable::verify_write_lock(const Lock& lock) const -> bool
 {
     if (lock.mutex() != &lock_) {
-        LogOutput(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogOutput(OT_METHOD)(__func__)(": Lock not owned.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock not owned.").Flush();
 
         return false;
     }
@@ -186,7 +186,7 @@ auto Signable::verify_signature(const Lock& lock, const proto::Signature&) const
     OT_ASSERT(verify_write_lock(lock));
 
     if (!nym_) {
-        LogOutput(OT_METHOD)(__func__)(": Missing nym.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing nym.").Flush();
 
         return false;
     }

@@ -10,16 +10,16 @@
 #include <optional>
 #include <utility>
 
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Log.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {
 ScriptForm::ScriptForm(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::Element& input,
     blockchain::Type chain,
     Type primary,
@@ -154,7 +154,7 @@ ScriptForm::ScriptForm(
 }
 
 ScriptForm::ScriptForm(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::Element& input,
     blockchain::Type chain,
     Type primary) noexcept

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_UI_TYPES_HPP
-#define OPENTXS_UI_TYPES_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -18,4 +17,3 @@ namespace ui
 enum class Blockchains : std::uint8_t;
 }  // namespace ui
 }  // namespace opentxs
-#endif

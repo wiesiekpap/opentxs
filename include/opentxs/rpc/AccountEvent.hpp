@@ -5,8 +5,7 @@
 
 // IWYU pragma: no_include "opentxs/rpc/AccountEventType.hpp"
 
-#ifndef OPENTXS_RPC_ACCOUNT_EVENT_HPP
-#define OPENTXS_RPC_ACCOUNT_EVENT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -14,6 +13,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/rpc/Types.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
@@ -77,4 +77,3 @@ private:
 };
 }  // namespace rpc
 }  // namespace opentxs
-#endif

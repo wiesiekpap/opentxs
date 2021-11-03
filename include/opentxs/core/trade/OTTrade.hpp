@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_TRADE_OTTRADE_HPP
-#define OPENTXS_CORE_TRADE_OTTRADE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -27,12 +26,15 @@ namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -225,7 +227,7 @@ protected:
     void onRemovalFromCron(const PasswordPrompt& reason) override;
 
 private:
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
     using ot_super = OTCronItem;
 
@@ -254,9 +256,9 @@ private:
 
     OTString marketOffer_;  // The market offer associated with this trade.
 
-    OTTrade(const api::Core& api);
+    OTTrade(const api::Session& api);
     OTTrade(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Server& notaryID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& assetAcctId,
@@ -271,4 +273,3 @@ private:
     OTTrade() = delete;
 };
 }  // namespace opentxs
-#endif

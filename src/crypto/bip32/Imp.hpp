@@ -12,20 +12,20 @@
 
 #include "crypto/HDNode.hpp"
 #include "internal/crypto/Crypto.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
 class Crypto;
-class Primitives;
+class Factory;
 }  // namespace api
 
 namespace crypto
@@ -76,7 +76,7 @@ public:
         Bip32Index& index,
         Data& chainCode,
         Data& key) const -> bool;
-    auto Init(const api::Primitives& factory) noexcept -> void final;
+    auto Init(const api::Factory& factory) noexcept -> void final;
     auto SeedID(const ReadView entropy) const -> OTIdentifier;
     auto SerializePrivate(
         const Bip32Network network,
@@ -129,7 +129,7 @@ private:
         Bip32Fingerprint& parent,
         Bip32Index& index,
         Data& chainCode) const noexcept -> bool;
-    auto provider(const EcdsaCurve& curve) const noexcept(false)
+    auto provider(const EcdsaCurve& curve) const noexcept
         -> const crypto::EcdsaProvider&;
     auto root_node(
         const EcdsaCurve& curve,

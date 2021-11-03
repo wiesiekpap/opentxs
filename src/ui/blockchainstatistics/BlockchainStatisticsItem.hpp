@@ -14,8 +14,6 @@
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -26,6 +24,8 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/ui/BlockchainStatisticsItem.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/Row.hpp"
 
 class QVariant;
@@ -34,15 +34,15 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
+}  // namespace crypto
 
-class Manager;
-}  // namespace client
+namespace session
+{
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -96,7 +96,7 @@ public:
 
     BlockchainStatisticsItem(
         const BlockchainStatisticsInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const BlockchainStatisticsRowID& rowID,
         const BlockchainStatisticsSortKey& sortKey,
         CustomData& custom) noexcept;

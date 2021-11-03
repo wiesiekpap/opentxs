@@ -10,10 +10,10 @@
 #include <algorithm>
 #include <atomic>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::ui::internal
 {

@@ -11,8 +11,8 @@
 #include <cstddef>
 #include <iosfwd>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/network/asio/Socket.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace opentxs

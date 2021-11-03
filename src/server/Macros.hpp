@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 #include "server/ServerSettings.hpp"
 
 namespace opentxs::server
@@ -25,7 +25,7 @@ namespace opentxs::server
         const char* pActionNameStr = msgIn.m_strCommand->Get();                \
                                                                                \
         if (false == NYM_IS_ALLOWED(pNymAllowedIDStr, BOOL_VAR_NAME)) {        \
-            LogNormal(OT_METHOD)(__func__)(": Nym ")(                          \
+            LogConsole()(OT_METHOD)(__func__)(": Nym ")(                       \
                 pNymAllowedIDStr)(" attempted an action "                      \
                                   "(")(pActionNameStr)("), but "               \
                                                        "based on "             \

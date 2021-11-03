@@ -24,20 +24,21 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BitcoinBlockHeaderFields.pb.h"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
 #include "opentxs/protobuf/BlockchainBlockLocalData.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Blank.hpp"
 
 #define OT_BITCOIN_BLOCK_HEADER_SIZE 80
@@ -49,7 +50,7 @@ namespace opentxs::factory
 using ReturnType = blockchain::block::bitcoin::implementation::Header;
 
 auto BitcoinBlockHeader(
-    const api::Core& api,
+    const api::Session& api,
     const opentxs::blockchain::block::Header& previous,
     const std::uint32_t nBits,
     const std::int32_t version,
@@ -109,34 +110,34 @@ auto BitcoinBlockHeader(
             serialized.nonce_.value(),
             false);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto BitcoinBlockHeader(
-    const api::Core& api,
+    const api::Session& api,
     const proto::BlockchainBlockHeader& serialized) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>
 {
     try {
         return std::make_unique<ReturnType>(api, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto BitcoinBlockHeader(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const ReadView raw) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>
 {
     if (OT_BITCOIN_BLOCK_HEADER_SIZE != raw.size()) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Invalid serialized block size. Got: ")(raw.size())(" expected ")(
             OT_BITCOIN_BLOCK_HEADER_SIZE)
             .Flush();
@@ -155,7 +156,7 @@ auto BitcoinBlockHeader(
         std::memcpy(static_cast<void*>(&serialized), raw.data(), raw.size());
 
     if (nullptr == result) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Failed to deserialize header")
             .Flush();
 
@@ -183,14 +184,14 @@ auto BitcoinBlockHeader(
             serialized.nonce_.value(),
             isGenesis);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto BitcoinBlockHeader(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const blockchain::block::Hash& merkle,
     const blockchain::block::Hash& parent,
@@ -202,7 +203,7 @@ auto BitcoinBlockHeader(
     try {
         return std::make_unique<ReturnType>(api, chain, merkle, parent, height);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -215,7 +216,7 @@ const VersionNumber Header::local_data_version_{1};
 const VersionNumber Header::subversion_default_{1};
 
 Header::Header(
-    const api::Core& api,
+    const api::Session& api,
     const VersionNumber version,
     const blockchain::Type chain,
     block::pHash&& hash,
@@ -265,7 +266,7 @@ Header::Header(
 }
 
 Header::Header(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const VersionNumber subversion,
     block::pHash&& hash,
@@ -300,7 +301,7 @@ Header::Header(
 }
 
 Header::Header(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const blockchain::block::Hash& merkle,
     const blockchain::block::Hash& parent,
@@ -328,8 +329,9 @@ Header::Header(
     find_nonce();
 }
 
-Header::Header(const api::Core& api, const SerializedType& serialized) noexcept(
-    false)
+Header::Header(
+    const api::Session& api,
+    const SerializedType& serialized) noexcept(false)
     : Header(
           api,
           serialized.version(),
@@ -413,7 +415,7 @@ auto Header::BitcoinFormat::Target() const noexcept -> OTNumericHash
 }
 
 auto Header::calculate_hash(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const ReadView serialized) -> block::pHash
 {
@@ -424,7 +426,7 @@ auto Header::calculate_hash(
 }
 
 auto Header::calculate_hash(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const BitcoinFormat& in) -> block::pHash
 {
@@ -433,7 +435,7 @@ auto Header::calculate_hash(
 }
 
 auto Header::calculate_pow(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const ReadView serialized) -> block::pHash
 {
@@ -444,7 +446,7 @@ auto Header::calculate_pow(
 }
 
 auto Header::calculate_pow(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const BitcoinFormat& in) -> block::pHash
 {
@@ -453,7 +455,7 @@ auto Header::calculate_pow(
 }
 
 auto Header::calculate_hash(
-    const api::Core& api,
+    const api::Session& api,
     const SerializedType& serialized) -> block::pHash
 {
     try {
@@ -464,14 +466,14 @@ auto Header::calculate_hash(
             static_cast<blockchain::Type>(serialized.type()),
             ReadView(reinterpret_cast<const char*>(&bytes), sizeof(bytes)));
     } catch (const std::invalid_argument& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return BlankHash();
     }
 }
 
 auto Header::calculate_pow(
-    const api::Core& api,
+    const api::Session& api,
     const SerializedType& serialized) -> block::pHash
 {
     try {
@@ -482,7 +484,7 @@ auto Header::calculate_pow(
             static_cast<blockchain::Type>(serialized.type()),
             ReadView(reinterpret_cast<const char*>(&bytes), sizeof(bytes)));
     } catch (const std::invalid_argument& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return BlankHash();
     }
@@ -600,7 +602,7 @@ auto Header::Serialize(
             nonce_};
 
         if (false == bool(destination)) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid output allocator")
+            LogError()(OT_METHOD)(__func__)(": Invalid output allocator")
                 .Flush();
 
             return false;
@@ -609,7 +611,7 @@ auto Header::Serialize(
         const auto out = destination(sizeof(raw));
 
         if (false == out.valid(sizeof(raw))) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to allocate output")
+            LogError()(OT_METHOD)(__func__)(": Failed to allocate output")
                 .Flush();
 
             return false;

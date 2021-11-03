@@ -3,18 +3,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CONSENSUS_TRANSACTIONSTATEMENT_HPP
-#define OPENTXS_CONSENSUS_TRANSACTIONSTATEMENT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <set>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
 {
@@ -58,4 +58,3 @@ public:
 }  // namespace context
 }  // namespace otx
 }  // namespace opentxs
-#endif

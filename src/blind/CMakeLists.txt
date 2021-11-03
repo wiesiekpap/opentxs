@@ -51,6 +51,9 @@ if(OT_CASH_EXPORT)
       opentxs-blind SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/lucre/include"
                                    "${OPENSSL_INCLUDE_DIR}"
     )
+    target_compile_definitions(opentxs-blind PRIVATE OT_CRYPTO_USING_OPENSSL=1)
+  else()
+    target_compile_definitions(opentxs-blind PRIVATE OT_CRYPTO_USING_OPENSSL=0)
   endif()
 
   if(OT_OPENSSL_FLAVOR_LIBRESSL)

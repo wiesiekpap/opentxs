@@ -9,11 +9,11 @@
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/ui/BlockchainSubchain.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/Row.hpp"
 
 class QVariant;
@@ -22,10 +22,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace ui
@@ -53,7 +53,7 @@ public:
 
     BlockchainSubchain(
         const BlockchainSubaccountInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const BlockchainSubaccountRowID& rowID,
         const BlockchainSubaccountSortKey& sortKey,
         CustomData& custom) noexcept;

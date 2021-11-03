@@ -27,10 +27,9 @@
 
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -41,20 +40,20 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
-
-class Core;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::block::bitcoin::implementation
@@ -63,10 +62,10 @@ class Output final : public internal::Output
 {
 public:
     auto AssociatedLocalNyms(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         std::vector<OTNymID>& output) const noexcept -> void final;
     auto AssociatedRemoteContacts(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void final;
     auto CalculateSize() const noexcept -> std::size_t final;
     auto clone() const noexcept -> std::unique_ptr<internal::Output> final
@@ -93,9 +92,9 @@ public:
         return cache_.position();
     }
     auto NetBalanceChange(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
-    auto Note(const api::client::Blockchain& blockchain) const noexcept
+    auto Note(const api::crypto::Blockchain& blockchain) const noexcept
         -> std::string final;
     auto Payee() const noexcept -> ContactID final { return cache_.payee(); }
     auto Payer() const noexcept -> ContactID final { return cache_.payer(); }
@@ -103,7 +102,7 @@ public:
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
     auto Serialize(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         SerializeType& destination) const noexcept -> bool final;
     auto SigningSubscript() const noexcept
         -> std::unique_ptr<internal::Script> final
@@ -161,8 +160,8 @@ public:
     }
 
     Output(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t index,
         const blockchain::Amount& value,
@@ -170,8 +169,8 @@ public:
         const ReadView script,
         const VersionNumber version = default_version_) noexcept(false);
     Output(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t index,
         const blockchain::Amount& value,
@@ -179,8 +178,8 @@ public:
         boost::container::flat_set<crypto::Key>&& keys,
         const VersionNumber version = default_version_) noexcept(false);
     Output(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const VersionNumber version,
         const std::uint32_t index,
@@ -235,7 +234,7 @@ private:
         }
 
         Cache(
-            const api::Core& api,
+            const api::Session& api,
             std::optional<std::size_t>&& size,
             boost::container::flat_set<crypto::Key>&& keys,
             block::Position&& minedPosition,
@@ -262,8 +261,8 @@ private:
     static const VersionNumber default_version_;
     static const VersionNumber key_version_;
 
-    const api::Core& api_;
-    const api::client::Blockchain& crypto_;
+    const api::Session& api_;
+    const api::crypto::Blockchain& crypto_;
     const blockchain::Type chain_;
     const VersionNumber serialize_version_;
     const std::uint32_t index_;

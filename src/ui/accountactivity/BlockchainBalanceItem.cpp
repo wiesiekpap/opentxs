@@ -11,16 +11,17 @@
 #include <string>
 
 #include "internal/blockchain/Blockchain.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/accountactivity/BalanceItem.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -30,7 +31,7 @@ namespace opentxs::ui::implementation
 {
 BlockchainBalanceItem::BlockchainBalanceItem(
     const AccountActivityInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const AccountActivityRowID& rowID,
     const AccountActivitySortKey& sortKey,
     CustomData& custom,
@@ -95,8 +96,9 @@ auto BlockchainBalanceItem::reindex(
     auto output = BalanceItem::reindex(key, custom);
     const auto chain = extract_custom<blockchain::Type>(custom, 3);
     const auto txid = extract_custom<OTData>(custom, 5);
-    const auto amount = tx.NetBalanceChange(Widget::api_.Blockchain(), nym_id_);
-    const auto memo = tx.Memo(Widget::api_.Blockchain());
+    const auto amount =
+        tx.NetBalanceChange(Widget::api_.Crypto().Blockchain(), nym_id_);
+    const auto memo = tx.Memo(Widget::api_.Crypto().Blockchain());
     const auto text = extract_custom<std::string>(custom, 4);
     const auto conf = extract_custom<int>(custom, 6);
 

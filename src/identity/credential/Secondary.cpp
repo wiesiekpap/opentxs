@@ -12,12 +12,11 @@
 
 #include "2_Factory.hpp"
 #include "identity/credential/Key.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/protobuf/Credential.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::identity::credential::implementation::Secondary::"
 
@@ -26,7 +25,7 @@ namespace opentxs
 using ReturnType = identity::credential::implementation::Secondary;
 
 auto Factory::SecondaryCredential(
-    const api::Core& api,
+    const api::Session& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
@@ -40,7 +39,7 @@ auto Factory::SecondaryCredential(
         return new ReturnType(
             api, parent, source, master, parameters, version, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Failed to create credential: ")(e.what())
             .Flush();
 
@@ -49,7 +48,7 @@ auto Factory::SecondaryCredential(
 }
 
 auto Factory::SecondaryCredential(
-    const api::Core& api,
+    const api::Session& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
@@ -60,7 +59,7 @@ auto Factory::SecondaryCredential(
 
         return new ReturnType(api, parent, source, master, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Failed to deserialize credential: ")(e.what())
             .Flush();
 
@@ -72,7 +71,7 @@ auto Factory::SecondaryCredential(
 namespace opentxs::identity::credential::implementation
 {
 Secondary::Secondary(
-    const api::Core& api,
+    const api::Session& api,
     const identity::internal::Authority& owner,
     const identity::Source& source,
     const internal::Primary& master,
@@ -98,7 +97,7 @@ Secondary::Secondary(
 }
 
 Secondary::Secondary(
-    const api::Core& api,
+    const api::Session& api,
     const identity::internal::Authority& owner,
     const identity::Source& source,
     const internal::Primary& master,
@@ -128,7 +127,7 @@ auto Secondary::serialize(
         if (masterSignature) {
             *serializedCredential->add_signature() = *masterSignature;
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Failed to get master signature.")
+            LogError()(OT_METHOD)(__func__)(": Failed to get master signature.")
                 .Flush();
         }
     }

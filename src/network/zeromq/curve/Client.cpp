@@ -13,12 +13,12 @@
 #include <type_traits>
 #include <utility>
 
+#include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::network::zeromq::curve::implementation::Client::"
 
@@ -40,7 +40,8 @@ auto curve::Client::RandomKeypair() noexcept
         privKey.assign(secretKey.data(), secretKey.size());
         pubKey.assign(publicKey.data(), publicKey.size());
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to generate keypair.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to generate keypair.")
+            .Flush();
     }
 
     return output;
@@ -60,7 +61,7 @@ auto Client::SetKeysZ85(
     const std::string& clientPublic) const noexcept -> bool
 {
     if (CURVE_KEY_Z85_BYTES > serverPublic.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid server key size (")(
+        LogError()(OT_METHOD)(__func__)(": Invalid server key size (")(
             serverPublic.size())(").")
             .Flush();
 
@@ -71,7 +72,7 @@ auto Client::SetKeysZ85(
     ::zmq_z85_decode(key.data(), serverPublic.data());
 
     if (false == set_remote_key(key.data(), key.size())) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to set server key.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to set server key.").Flush();
 
         return false;
     }
@@ -96,7 +97,7 @@ auto Client::set_public_key(const contract::Server& contract) const noexcept
     const auto& key = contract.TransportKey();
 
     if (CURVE_KEY_BYTES != key.GetSize()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid server key.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid server key.").Flush();
 
         return false;
     }
@@ -118,7 +119,8 @@ auto Client::set_local_keys() const noexcept -> bool
     const auto [secretKey, publicKey] = RandomKeypair();
 
     if (secretKey.empty() || publicKey.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to generate keypair.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to generate keypair.")
+            .Flush();
 
         return false;
     }
@@ -133,7 +135,7 @@ auto Client::set_local_keys(
     OT_ASSERT(nullptr != parent_);
 
     if (CURVE_KEY_Z85_BYTES > privateKey.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid private key size (")(
+        LogError()(OT_METHOD)(__func__)(": Invalid private key size (")(
             privateKey.size())(").")
             .Flush();
 
@@ -144,7 +146,7 @@ auto Client::set_local_keys(
     ::zmq_z85_decode(privateDecoded.data(), privateKey.data());
 
     if (CURVE_KEY_Z85_BYTES > publicKey.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid public key size (")(
+        LogError()(OT_METHOD)(__func__)(": Invalid public key size (")(
             publicKey.size())(").")
             .Flush();
 
@@ -174,7 +176,7 @@ auto Client::set_local_keys(
             parent_, ZMQ_CURVE_SECRETKEY, privateKey, privateKeySize);
 
         if (0 != set) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to set private key.")
+            LogError()(OT_METHOD)(__func__)(": Failed to set private key.")
                 .Flush();
 
             return false;
@@ -184,7 +186,7 @@ auto Client::set_local_keys(
             parent_, ZMQ_CURVE_PUBLICKEY, publicKey, publicKeySize);
 
         if (0 != set) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to set public key.")
+            LogError()(OT_METHOD)(__func__)(": Failed to set public key.")
                 .Flush();
 
             return false;
@@ -206,7 +208,7 @@ auto Client::set_remote_key(const void* key, const std::size_t size)
             zmq_setsockopt(parent_, ZMQ_CURVE_SERVERKEY, key, size);
 
         if (0 != set) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to set server key.")
+            LogError()(OT_METHOD)(__func__)(": Failed to set server key.")
                 .Flush();
 
             return false;

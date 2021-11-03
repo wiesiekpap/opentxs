@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_OTX_CONSENSUS_SERVER_HPP
-#define OPENTXS_OTX_CONSENSUS_SERVER_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -19,10 +18,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace blind
@@ -30,10 +29,22 @@ namespace blind
 class Purse;
 }  // namespace blind
 
+namespace identifier
+{
+class Nym;
+class UnitDefinition;
+}  // namespace identifier
+
 namespace network
 {
 class ServerConnection;
 }  // namespace network
+
+namespace identifier
+{
+class Nym;
+class UnitDefinition;
+}  // namespace identifier
 
 namespace otx
 {
@@ -146,16 +157,16 @@ public:
     virtual auto PingNotary(const PasswordPrompt& reason)
         -> NetworkReplyMessage = 0;
     virtual auto ProcessNotification(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const otx::Reply& notification,
         const PasswordPrompt& reason) -> bool = 0;
     virtual auto Queue(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         std::shared_ptr<Message> message,
         const PasswordPrompt& reason,
         const ExtraArgs& args = ExtraArgs{}) -> QueueResult = 0;
     virtual auto Queue(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         std::shared_ptr<Message> message,
         std::shared_ptr<Ledger> inbox,
         std::shared_ptr<Ledger> outbox,
@@ -163,14 +174,14 @@ public:
         const PasswordPrompt& reason,
         const ExtraArgs& args = ExtraArgs{}) -> QueueResult = 0;
     virtual auto RefreshNymbox(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const PasswordPrompt& reason) -> QueueResult = 0;
     virtual auto RemoveTentativeNumber(const TransactionNumber& number)
         -> bool = 0;
     virtual void ResetThread() = 0;
     virtual auto Resync(const proto::Context& serialized) -> bool = 0;
     [[deprecated]] virtual auto SendMessage(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const std::set<OTManagedNumber>& pending,
         Server& context,
         const Message& message,
@@ -210,4 +221,3 @@ private:
 }  // namespace context
 }  // namespace otx
 }  // namespace opentxs
-#endif

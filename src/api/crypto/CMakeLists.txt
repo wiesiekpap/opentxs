@@ -3,50 +3,58 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+add_subdirectory(base)
 add_subdirectory(base58)
+add_subdirectory(blockchain)
 
 add_library(
   opentxs-api-crypto OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Asymmetric.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Config.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Encode.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Factory.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Hash.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Null.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Seed.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Symmetric.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Util.hpp"
   "Asymmetric.cpp"
   "Asymmetric.hpp"
   "Config.cpp"
   "Config.hpp"
-  "Crypto.cpp"
-  "Crypto.hpp"
   "Encode.cpp"
   "Encode.hpp"
   "Hash.cpp"
   "Hash.hpp"
+  "Seed.cpp"
+  "Seed.hpp"
   "Symmetric.cpp"
   "Symmetric.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Asymmetric.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Config.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Crypto.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Encode.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Hash.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Seed.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Symmetric.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/crypto/Util.hpp"
 )
-target_link_libraries(
-  opentxs-api-crypto PRIVATE Boost::headers opentxs::messages
-)
+target_link_libraries(opentxs-api-crypto PRIVATE Boost::headers opentxs-common)
 target_include_directories(
   opentxs-api-crypto SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
 
-if(OPENSSL_EXPORT)
-  target_compile_definitions(
-    opentxs-api-crypto PUBLIC OT_CRYPTO_USING_OPENSSL=1
-  )
-else()
-  target_compile_definitions(
-    opentxs-api-crypto PUBLIC OT_CRYPTO_USING_OPENSSL=0
+target_sources(opentxs-api-crypto PRIVATE ${cxx-install-headers})
+
+if(NOT OT_IWYU)
+  target_precompile_headers(
+    opentxs-api-crypto
+    REUSE_FROM
+    opentxs-common
   )
 endif()
 
-target_sources(opentxs-api-crypto PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-crypto>)
 add_dependencies(opentxs-api-crypto generated_code)
 

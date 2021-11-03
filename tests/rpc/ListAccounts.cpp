@@ -10,12 +10,11 @@
 #include <iterator>
 #include <list>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/rpc/CommandType.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/rpc/request/ListAccounts.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/ListAccounts.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
 namespace ot = opentxs;
@@ -34,7 +34,7 @@ namespace ottest
 TEST_F(RPC_fixture, preconditions)
 {
     {
-        const auto& session = StartServer(0);
+        const auto& session = StartNotarySession(0);
         const auto instance = session.Instance();
         const auto& seeds = seed_map_.at(instance);
         const auto& nyms = local_nym_map_.at(instance);
@@ -43,7 +43,7 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_EQ(nyms.size(), 1);
     }
     {
-        const auto& session = StartServer(1);
+        const auto& session = StartNotarySession(1);
         const auto instance = session.Instance();
         const auto& seeds = seed_map_.at(instance);
         const auto& nyms = local_nym_map_.at(instance);
@@ -52,7 +52,7 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_EQ(nyms.size(), 1);
     }
     {
-        const auto& session = StartServer(2);
+        const auto& session = StartNotarySession(2);
         const auto instance = session.Instance();
         const auto& seeds = seed_map_.at(instance);
         const auto& nyms = local_nym_map_.at(instance);
@@ -61,8 +61,8 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_EQ(nyms.size(), 1);
     }
     {
-        const auto& server1 = ot_.Server(0);
-        const auto& server2 = ot_.Server(1);
+        const auto& server1 = ot_.NotarySession(0);
+        const auto& server2 = ot_.NotarySession(1);
         const auto& session = StartClient(0);
         const auto instance = session.Instance();
         const auto& nyms = local_nym_map_.at(instance);
@@ -106,8 +106,8 @@ TEST_F(RPC_fixture, preconditions)
         ASSERT_EQ(created_units_.size(), 2);
     }
     {
-        const auto& server1 = ot_.Server(0);
-        const auto& server2 = ot_.Server(1);
+        const auto& server1 = ot_.NotarySession(0);
+        const auto& server2 = ot_.NotarySession(1);
         const auto& session = StartClient(1);
         const auto instance = session.Instance();
         const auto& nyms = local_nym_map_.at(instance);
@@ -240,7 +240,7 @@ TEST_F(RPC_fixture, issuer_accounts)
     const auto& codes = response.ResponseCodes();
     const auto expected = [&] {
         auto out = std::set<std::string>{};
-        const auto& api = ot_.Client(0);
+        const auto& api = ot_.ClientSession(0);
         const auto& issuer = *local_nym_map_.at(0).begin();
         const auto nym = api.Factory().NymID(issuer);
         const auto ids = api.Storage().AccountsByOwner(nym);
@@ -298,7 +298,7 @@ TEST_F(RPC_fixture, user_accounts)
     const auto& codes = response.ResponseCodes();
     const auto expected = [&] {
         auto out = std::set<std::string>{};
-        const auto& api = ot_.Client(1);
+        const auto& api = ot_.ClientSession(1);
         const auto ids = api.Storage().AccountList();
         std::transform(
             ids.begin(),
@@ -397,7 +397,7 @@ TEST_F(RPC_fixture, filter_nym_match)
     const auto& codes = response.ResponseCodes();
     const auto expected = [&] {
         auto out = std::set<std::string>{};
-        const auto& api = ot_.Client(1);
+        const auto& api = ot_.ClientSession(1);
         const auto nym = api.Factory().NymID(filterNym);
         const auto ids = api.Storage().AccountsByOwner(nym);
         std::transform(
@@ -492,7 +492,7 @@ TEST_F(RPC_fixture, filter_nym_no_match)
 TEST_F(RPC_fixture, filter_server_match)
 {
     constexpr auto index{2};
-    const auto filterServer = ot_.Server(1).ID().str();
+    const auto filterServer = ot_.NotarySession(1).ID().str();
     const auto command =
         ot::rpc::request::ListAccounts{index, "", filterServer};
     const auto& list = command.asListAccounts();
@@ -543,7 +543,7 @@ TEST_F(RPC_fixture, filter_server_match)
 TEST_F(RPC_fixture, filter_server_no_match)
 {
     constexpr auto index{2};
-    const auto filterServer = ot_.Server(2).ID().str();
+    const auto filterServer = ot_.NotarySession(2).ID().str();
     const auto command =
         ot::rpc::request::ListAccounts{index, "", filterServer};
     const auto& list = command.asListAccounts();

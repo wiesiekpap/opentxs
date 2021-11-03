@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_NODE_TXOSTATE_HPP
-#define OPENTXS_BLOCKCHAIN_NODE_TXOSTATE_HPP
+#pragma once
 
 #include "opentxs/blockchain/node/Types.hpp"  // IWYU pragma: associated
 
@@ -30,4 +29,3 @@ enum class TxoState : std::uint16_t {
 }  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

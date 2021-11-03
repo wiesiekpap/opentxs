@@ -3,27 +3,29 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CRYPTO_OTPASSWORDDATA_HPP
-#define OPENTXS_CORE_CRYPTO_OTPASSWORDDATA_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
-class Core;
+class Session;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 class Factory;
@@ -68,22 +70,23 @@ public:
 private:
     friend OTPasswordPrompt;
     friend opentxs::Factory;
-    friend api::implementation::Core;
+    friend api::session::implementation::Session;
 
     auto clone() const noexcept -> PasswordPrompt*
     {
         return new PasswordPrompt(*this);
     }
 
-    const api::Core& api_;
+    const api::Session& api_;
     std::string display_;
     OTSecret password_;
 
-    PasswordPrompt(const api::Core& api, const std::string& display) noexcept;
+    PasswordPrompt(
+        const api::Session& api,
+        const std::string& display) noexcept;
     PasswordPrompt(const PasswordPrompt&) noexcept;
     PasswordPrompt(const PasswordPrompt&&) = delete;
     auto operator=(const PasswordPrompt&) -> const PasswordPrompt& = delete;
     auto operator=(const PasswordPrompt&&) -> const PasswordPrompt& = delete;
 };
 }  // namespace opentxs
-#endif

@@ -6,11 +6,11 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameIterator.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 using namespace opentxs;
 

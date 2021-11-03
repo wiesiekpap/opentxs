@@ -22,12 +22,13 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
@@ -37,8 +38,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -50,6 +49,8 @@
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 #include "util/Container.hpp"
@@ -59,14 +60,15 @@
 namespace opentxs::factory
 {
 auto BlockchainAccountActivityModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::AccountActivity>
 {
     using ReturnType = ui::implementation::BlockchainAccountActivity;
-    const auto [chain, owner] = api.Blockchain().LookupAccount(accountID);
+    const auto [chain, owner] =
+        api.Crypto().Blockchain().LookupAccount(accountID);
 
     OT_ASSERT(owner == nymID);
 
@@ -77,7 +79,7 @@ auto BlockchainAccountActivityModel(
 namespace opentxs::ui::implementation
 {
 BlockchainAccountActivity::BlockchainAccountActivity(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const blockchain::Type chain,
     const identifier::Nym& nymID,
     const Identifier& accountID,
@@ -130,7 +132,8 @@ auto BlockchainAccountActivity::DepositAddress(
         return {};
     }
 
-    const auto& wallet = Widget::api_.Blockchain().Account(primary_id_, chain_);
+    const auto& wallet =
+        Widget::api_.Crypto().Blockchain().Account(primary_id_, chain_);
     const auto reason = Widget::api_.Factory().PasswordPrompt(
         "Calculating next deposit address");
     const auto& styles = blockchain::params::Data::Chains().at(chain_).styles_;
@@ -178,7 +181,7 @@ auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -227,7 +230,7 @@ auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -426,7 +429,7 @@ auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
     const auto rowID = AccountActivityRowID{
         blockchain_thread_item_id(Widget::api_.Crypto(), chain_, txid),
         proto::PAYMENTEVENTTYPE_COMPLETE};
-    auto pTX = Widget::api_.Blockchain().LoadTransactionBitcoin(txid);
+    auto pTX = Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(txid);
 
     if (false == bool(pTX)) { return std::nullopt; }
 
@@ -447,7 +450,7 @@ auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
         new proto::PaymentEvent(),
         const_cast<void*>(static_cast<const void*>(pTX.release())),
         new blockchain::Type{chain_},
-        new std::string{Widget::api_.Blockchain().ActivityDescription(
+        new std::string{Widget::api_.Crypto().Blockchain().ActivityDescription(
             primary_id_, chain_, tx)},
         new OTData{tx.ID()},
         new int{conf},
@@ -509,7 +512,7 @@ auto BlockchainAccountActivity::ValidateAddress(
     using Style = blockchain::crypto::AddressStyle;
 
     const auto [data, style, chains, supported] =
-        Widget::api_.Blockchain().DecodeAddress(in);
+        Widget::api_.Crypto().Blockchain().DecodeAddress(in);
 
     if (Style::Unknown == style) { return false; }
 

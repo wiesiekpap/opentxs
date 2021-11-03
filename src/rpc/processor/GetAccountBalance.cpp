@@ -13,19 +13,19 @@
 #include <vector>
 
 #include "display/Definition.hpp"
+#include "internal/api/session/Wallet.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/core/Core.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Shared.hpp"
-#include "opentxs/SharedPimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "internal/util/Shared.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -40,6 +40,8 @@
 #include "opentxs/rpc/request/GetAccountBalance.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/GetAccountBalance.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "rpc/RPC.hpp"
 
 namespace opentxs::rpc::implementation
@@ -93,7 +95,7 @@ auto RPC::get_account_balance_blockchain(
 {
     try {
         const auto& api = client_session(base);
-        const auto& blockchain = api.Blockchain();
+        const auto& blockchain = api.Crypto().Blockchain();
         const auto [chain, owner] = blockchain.LookupAccount(accountID);
         api.Network().Blockchain().Start(chain);
         const auto& client = api.Network().Blockchain().GetChain(chain);
@@ -118,13 +120,13 @@ auto RPC::get_account_balance_blockchain(
 }
 
 auto RPC::get_account_balance_custodial(
-    const api::Core& api,
+    const api::Session& api,
     const std::size_t index,
     const Identifier& accountID,
     std::vector<AccountData>& balances,
     response::Base::Responses& codes) const noexcept -> void
 {
-    const auto account = api.Wallet().Account(accountID);
+    const auto account = api.Wallet().Internal().Account(accountID);
 
     if (account) {
         const auto& unit = account.get().GetInstrumentDefinitionID();

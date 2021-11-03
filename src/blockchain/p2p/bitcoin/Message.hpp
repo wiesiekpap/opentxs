@@ -15,17 +15,19 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -43,7 +45,7 @@ public:
     ~Message() override = default;
 
 protected:
-    const ot::api::Core& api_;
+    const ot::api::Session& api_;
     std::unique_ptr<Header> header_;
 
     auto verify_checksum() const noexcept(false) -> void;
@@ -51,10 +53,10 @@ protected:
     auto init_hash() noexcept -> void;
 
     Message(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const bitcoin::Command command) noexcept;
-    Message(const api::Core& api, std::unique_ptr<Header> header) noexcept;
+    Message(const api::Session& api, std::unique_ptr<Header> header) noexcept;
 
 private:
     auto calculate_checksum(const Data& payload) const noexcept -> OTData;

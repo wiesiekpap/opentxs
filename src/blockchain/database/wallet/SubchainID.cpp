@@ -13,9 +13,10 @@
 #include <stdexcept>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::blockchain::database::wallet::db
 {
@@ -75,7 +76,7 @@ auto SubchainID::FilterType() const noexcept -> filter::Type
     return filter_.value();
 }
 
-auto SubchainID::SubaccountID(const api::Core& api) const noexcept
+auto SubchainID::SubaccountID(const api::Session& api) const noexcept
     -> const Identifier&
 {
     auto lock = Lock{lock_};

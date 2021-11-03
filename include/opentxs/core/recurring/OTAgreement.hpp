@@ -5,8 +5,7 @@
 
 // OTAgreement is derived from OTCronItem.  It handles re-occuring billing.
 
-#ifndef OPENTXS_CORE_RECURRING_OTAGREEMENT_HPP
-#define OPENTXS_CORE_RECURRING_OTAGREEMENT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -22,12 +21,14 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/cron/OTCronItem.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -415,7 +416,7 @@ public:
 
      */
     auto SendNoticeToAllParties(
-        const api::Core& core,
+        const api::Session& core,
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
         const identifier::Server& theNotaryID,
@@ -430,7 +431,7 @@ public:
 
     // Nym receives an Item::acknowledgment or Item::rejection.
     static auto DropServerNoticeToNymbox(
-        const api::Core& core,
+        const api::Session& core,
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
         const identifier::Server& NOTARY_ID,
@@ -464,13 +465,13 @@ public:
                    // is where the ledger saves its contents
 
 protected:
-    OTAgreement(const api::Core& core);
+    OTAgreement(const api::Session& core);
     OTAgreement(
-        const api::Core& core,
+        const api::Session& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTAgreement(
-        const api::Core& core,
+        const api::Session& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& SENDER_ACCT_ID,
@@ -481,4 +482,3 @@ protected:
     OTAgreement() = delete;
 };
 }  // namespace opentxs
-#endif

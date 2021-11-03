@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(activity)
-add_subdirectory(blockchain)
 add_subdirectory(ui)
 
 add_library(
@@ -14,28 +13,20 @@ add_library(
   "Client.cpp"
   "Contacts.cpp"
   "Contacts.hpp"
-  "Factory.cpp"
-  "Factory.hpp"
   "Issuer.cpp"
   "Issuer.hpp"
-  "Manager.cpp"
-  "Manager.hpp"
   "OTX.cpp"
   "OTX.hpp"
   "Pair.cpp"
   "Pair.hpp"
   "ServerAction.cpp"
   "ServerAction.hpp"
-  "Wallet.cpp"
-  "Wallet.hpp"
   "Workflow.cpp"
   "Workflow.hpp"
 )
 set(cxx-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Blockchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Contacts.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Issuer.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Manager.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/OTX.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Pair.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/PaymentWorkflowState.hpp"
@@ -44,15 +35,23 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Types.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/UI.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Workflow.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/api/session/Notary.hpp"
 )
-target_link_libraries(
-  opentxs-api-client PRIVATE Boost::headers opentxs::messages
-)
+target_link_libraries(opentxs-api-client PRIVATE Boost::headers opentxs-common)
 target_include_directories(
   opentxs-api-client SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
 
 target_sources(opentxs-api-client PRIVATE ${cxx-install-headers})
+
+if(NOT OT_IWYU)
+  target_precompile_headers(
+    opentxs-api-client
+    REUSE_FROM
+    opentxs-common
+  )
+endif()
+
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-client>)
 add_dependencies(opentxs-api-client generated_code)
 

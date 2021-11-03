@@ -11,12 +11,14 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
 #include "opentxs/protobuf/Signature.pb.h"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -67,7 +69,7 @@ private:
     const proto::Signature sig_;
 
     static auto calculate_id(
-        const api::Core& api,
+        const api::Session& api,
         const VersionNumber version,
         const Identifier& claim,
         const Type value,

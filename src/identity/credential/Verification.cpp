@@ -12,15 +12,14 @@
 #include <string>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
@@ -31,6 +30,7 @@
 #include "opentxs/protobuf/VerificationGroup.pb.h"
 #include "opentxs/protobuf/VerificationIdentity.pb.h"
 #include "opentxs/protobuf/VerificationSet.pb.h"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::identity::credential::Verification::"
 
@@ -39,7 +39,7 @@ namespace opentxs
 using ReturnType = identity::credential::implementation::Verification;
 
 auto Factory::VerificationCredential(
-    const api::Core& api,
+    const api::Session& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
@@ -53,7 +53,7 @@ auto Factory::VerificationCredential(
         return new ReturnType(
             api, parent, source, master, parameters, version, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Failed to create credential: ")(e.what())
             .Flush();
 
@@ -62,7 +62,7 @@ auto Factory::VerificationCredential(
 }
 
 auto Factory::VerificationCredential(
-    const api::Core& api,
+    const api::Session& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
@@ -73,7 +73,7 @@ auto Factory::VerificationCredential(
 
         return new ReturnType(api, parent, source, master, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Failed to deserialize credential: ")(e.what())
             .Flush();
 
@@ -96,7 +96,7 @@ auto Verification::SigningForm(const proto::Verification& item)
 
 // static
 auto Verification::VerificationID(
-    const api::Core& api,
+    const api::Session& api,
     const proto::Verification& item) -> std::string
 {
     return api.Factory().Identifier(item)->str();
@@ -106,7 +106,7 @@ auto Verification::VerificationID(
 namespace opentxs::identity::credential::implementation
 {
 Verification::Verification(
-    const api::Core& api,
+    const api::Session& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const internal::Primary& master,
@@ -137,7 +137,7 @@ Verification::Verification(
 }
 
 Verification::Verification(
-    const api::Core& api,
+    const api::Session& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const internal::Primary& master,
@@ -169,8 +169,8 @@ auto Verification::serialize(
     -> std::shared_ptr<Base::SerializedType>
 {
     auto serializedCredential = Base::serialize(lock, asPrivate, asSigned);
-    serializedCredential->set_mode(opentxs::crypto::key::internal::translate(
-        crypto::key::asymmetric::Mode::Null));
+    serializedCredential->set_mode(
+        translate(crypto::key::asymmetric::Mode::Null));
     serializedCredential->clear_signature();  // this fixes a bug, but shouldn't
 
     if (asSigned) {
@@ -182,7 +182,7 @@ auto Verification::serialize(
                 serializedCredential->add_signature();
             *serializedMasterSignature = *masterSignature;
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Failed to get master signature.")
+            LogError()(OT_METHOD)(__func__)(": Failed to get master signature.")
                 .Flush();
         }
     }
@@ -202,7 +202,7 @@ auto Verification::verify_internally(const Lock& lock) const -> bool
             bool valid = parent_.Verify(claim);
 
             if (!valid) {
-                LogOutput(OT_METHOD)(__func__)(": Invalid claim verification.")
+                LogError()(OT_METHOD)(__func__)(": Invalid claim verification.")
                     .Flush();
 
                 return false;

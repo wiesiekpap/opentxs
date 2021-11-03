@@ -20,18 +20,15 @@
 
 #include "core/Worker.hpp"
 #include "internal/api/network/Network.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
@@ -39,6 +36,9 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ByteLiterals.hpp"
 #include "util/JobCounter.hpp"
@@ -61,7 +61,7 @@ struct MailCache::Imp {
         std::promise<std::string> promise_;
 
         Task(
-            const api::Core& api,
+            const api::Session& api,
             const identifier::Nym& nym,
             const Identifier& id,
             const StorageBox box,
@@ -107,14 +107,14 @@ struct MailCache::Imp {
             api_.Storage().Load(nym.str(), id.str(), box, raw, alias, true);
 
         if (false == loaded) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to load message ")(id)
+            LogError()(OT_METHOD)(__func__)(": Failed to load message ")(id)
                 .Flush();
 
             return output;
         }
 
         if (raw.empty()) {
-            LogOutput(OT_METHOD)(__func__)(": Empty message ")(id).Flush();
+            LogError()(OT_METHOD)(__func__)(": Empty message ")(id).Flush();
 
             return output;
         }
@@ -125,7 +125,7 @@ struct MailCache::Imp {
 
         if (false ==
             output->LoadContractFromString(String::Factory(raw.c_str()))) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to deserialize message ")(
+            LogError()(OT_METHOD)(__func__)(": Failed to deserialize message ")(
                 id)
                 .Flush();
 
@@ -251,7 +251,7 @@ struct MailCache::Imp {
         return future;
     }
 
-    Imp(const api::Core& api,
+    Imp(const api::Session& api,
         const opentxs::network::zeromq::socket::Publish& messageLoaded) noexcept
         : api_(api)
         , message_loaded_(messageLoaded)
@@ -267,7 +267,7 @@ struct MailCache::Imp {
     ~Imp() = default;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     const opentxs::network::zeromq::socket::Publish& message_loaded_;
     mutable std::mutex lock_;
     JobCounter jobs_;
@@ -344,7 +344,7 @@ private:
 };
 
 MailCache::MailCache(
-    const api::Core& api,
+    const api::Session& api,
     const opentxs::network::zeromq::socket::Publish& messageLoaded) noexcept
     : imp_(std::make_unique<Imp>(api, messageLoaded))
 {

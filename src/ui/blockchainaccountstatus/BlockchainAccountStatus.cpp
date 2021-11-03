@@ -19,13 +19,15 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
@@ -37,13 +39,12 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Log.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::BlockchainAccountStatus::"
@@ -51,7 +52,7 @@
 namespace opentxs::factory
 {
 auto BlockchainAccountStatusModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::BlockchainAccountStatusPrimaryID& id,
     const blockchain::Type chain,
     const SimpleCallback& cb) noexcept
@@ -66,7 +67,7 @@ auto BlockchainAccountStatusModel(
 namespace opentxs::ui::implementation
 {
 BlockchainAccountStatus::BlockchainAccountStatus(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const BlockchainAccountStatusPrimaryID& id,
     const blockchain::Type chain,
     const SimpleCallback& cb) noexcept
@@ -118,7 +119,8 @@ auto BlockchainAccountStatus::load() noexcept -> void
         auto map = [&] {
             auto out = ChildMap{};
             const auto& api = Widget::api_;
-            const auto& account = api.Blockchain().Account(primary_id_, chain_);
+            const auto& account =
+                api.Crypto().Blockchain().Account(primary_id_, chain_);
             // TODO imported accounts
 
             for (const auto& subaccountID : account.GetHD().all()) {
@@ -143,7 +145,7 @@ auto BlockchainAccountStatus::load() noexcept -> void
         }();
         add_children(std::move(map));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 }
 
@@ -154,7 +156,7 @@ auto BlockchainAccountStatus::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -197,7 +199,7 @@ auto BlockchainAccountStatus::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -221,7 +223,7 @@ auto BlockchainAccountStatus::populate(
             populate(
                 subaccount,
                 api.Factory().Identifier(path.root()),
-                api.Seeds().SeedDescription(path.root()),
+                api.Crypto().Seed().SeedDescription(path.root()),
                 subaccount.Name(),
                 subchain,
                 out[type]);
@@ -347,7 +349,8 @@ auto BlockchainAccountStatus::process_account(const Message& in) noexcept
 
         return out;
     }();
-    const auto& account = api.Blockchain().Account(primary_id_, chain_);
+    const auto& account =
+        api.Crypto().Blockchain().Account(primary_id_, chain_);
     auto out = ChildMap{};
 
     try {
@@ -364,7 +367,7 @@ auto BlockchainAccountStatus::process_account(const Message& in) noexcept
         }();
         add_children(std::move(map));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 }
 
@@ -397,7 +400,8 @@ auto BlockchainAccountStatus::process_progress(const Message& in) noexcept
         return out;
     }();
     const auto subchain = body.at(5).as<blockchain::crypto::Subchain>();
-    const auto& account = api.Blockchain().Account(primary_id_, chain_);
+    const auto& account =
+        api.Crypto().Blockchain().Account(primary_id_, chain_);
     auto out = ChildMap{};
 
     try {
@@ -409,7 +413,7 @@ auto BlockchainAccountStatus::process_progress(const Message& in) noexcept
         }();
         add_children(std::move(map));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
     }
 }
 

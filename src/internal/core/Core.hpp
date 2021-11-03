@@ -14,7 +14,6 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -23,13 +22,14 @@
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/ContractEnums.pb.h"
 #include "opentxs/protobuf/PeerEnums.pb.h"
+#include "opentxs/util/Bytes.hpp"
 #include "util/Blank.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -51,11 +51,11 @@ struct make_blank;
 
 template <>
 struct make_blank<OTData> {
-    static auto value(const api::Core&) -> OTData { return Data::Factory(); }
+    static auto value(const api::Session&) -> OTData { return Data::Factory(); }
 };
 template <>
 struct make_blank<OTIdentifier> {
-    static auto value(const api::Core&) -> OTIdentifier
+    static auto value(const api::Session&) -> OTIdentifier
     {
         return Identifier::Factory();
     }
@@ -73,40 +73,19 @@ struct NymFile : virtual public opentxs::NymFile {
 namespace opentxs::blockchain
 {
 auto AccountName(const Type chain) noexcept -> std::string;
-auto Chain(const api::Core& api, const identifier::Nym& id) noexcept -> Type;
-auto Chain(const api::Core& api, const identifier::Server& id) noexcept -> Type;
-auto Chain(const api::Core& api, const identifier::UnitDefinition& id) noexcept
+auto Chain(const api::Session& api, const identifier::Nym& id) noexcept -> Type;
+auto Chain(const api::Session& api, const identifier::Server& id) noexcept
     -> Type;
-auto IssuerID(const api::Core& api, const Type chain) noexcept
+auto Chain(
+    const api::Session& api,
+    const identifier::UnitDefinition& id) noexcept -> Type;
+auto IssuerID(const api::Session& api, const Type chain) noexcept
     -> const identifier::Nym&;
-auto NotaryID(const api::Core& api, const Type chain) noexcept
+auto NotaryID(const api::Session& api, const Type chain) noexcept
     -> const identifier::Server&;
-auto UnitID(const api::Core& api, const Type chain) noexcept
+auto UnitID(const api::Session& api, const Type chain) noexcept
     -> const identifier::UnitDefinition&;
 }  // namespace opentxs::blockchain
-
-namespace opentxs::core
-{
-using UnitTypeMap = std::map<UnitType, contact::ClaimType>;
-using UnitTypeReverseMap = std::map<contact::ClaimType, UnitType>;
-
-auto unittype_map() noexcept -> const UnitTypeMap&;
-
-auto translate(const contact::ClaimType in) noexcept -> UnitType;
-auto translate(const UnitType in) noexcept -> contact::ClaimType;
-}  // namespace opentxs::core
-
-namespace opentxs::core::internal
-{
-using AddressTypeMap = std::map<AddressType, proto::AddressType>;
-using AddressTypeReverseMap = std::map<proto::AddressType, AddressType>;
-
-auto addresstype_map() noexcept -> const AddressTypeMap&;
-auto translate(const AddressType in) noexcept -> proto::AddressType;
-auto translate(const proto::AddressType in) noexcept -> AddressType;
-auto translate(const UnitType in) noexcept -> proto::ContactItemType;
-auto translate(const proto::ContactItemType in) noexcept -> UnitType;
-}  // namespace opentxs::core::internal
 
 namespace opentxs::factory
 {
@@ -115,3 +94,9 @@ auto Secret(const std::size_t bytes) noexcept
 auto Secret(const ReadView bytes, const bool mode) noexcept
     -> std::unique_ptr<opentxs::Secret>;
 }  // namespace opentxs::factory
+
+namespace opentxs
+{
+auto translate(const core::AddressType in) noexcept -> proto::AddressType;
+auto translate(const proto::AddressType in) noexcept -> core::AddressType;
+}  // namespace opentxs

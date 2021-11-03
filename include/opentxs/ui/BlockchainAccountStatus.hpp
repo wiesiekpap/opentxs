@@ -5,14 +5,13 @@
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 
-#ifndef OPENTXS_UI_BLOCKCHAINACCOUNTSTATUS_HPP
-#define OPENTXS_UI_BLOCKCHAINACCOUNTSTATUS_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/ui/List.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
 {
@@ -56,4 +55,3 @@ private:
 };
 }  // namespace ui
 }  // namespace opentxs
-#endif

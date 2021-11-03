@@ -17,7 +17,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -42,13 +42,13 @@ class Connection final : public request::Connection,
 {
 public:
     Connection(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const contract::peer::ConnectionInfoType type,
         const identifier::Server& serverID);
     Connection(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const proto::PeerRequest& serialized);
 

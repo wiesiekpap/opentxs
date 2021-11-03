@@ -16,12 +16,12 @@
 #include "blockchain/node/wallet/Scan.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/api/network/Network.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::Index::"
 
@@ -103,7 +103,7 @@ auto Index::rescan(
     const block::Position& pos,
     const std::size_t matches) noexcept -> void
 {
-    LogVerbose(OT_METHOD)(__func__)(": ")(parent_.name_)(
+    LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
         " processing for block ")(pos.second->asHex())(" at height ")(
         pos.first)(" found ")(matches)(" new matches");
     const auto interval = [&]() -> block::Height {

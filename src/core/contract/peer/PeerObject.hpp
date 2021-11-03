@@ -16,6 +16,7 @@
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/protobuf/PeerObject.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -26,7 +27,7 @@ namespace client
 class Contacts;
 }  // namespace client
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blind
@@ -51,34 +52,34 @@ class Object final : virtual public opentxs::PeerObject
 public:
     Object(
         const api::client::Contacts& contacts,
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& signerNym,
         const proto::PeerObject serialized);
     Object(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& senderNym,
         const std::string& message);
 #if OT_CASH
     Object(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& senderNym,
         const std::shared_ptr<blind::Purse> purse);
 #endif
     Object(
-        const api::Core& api,
+        const api::Session& api,
         const std::string& payment,
         const Nym_p& senderNym);
     Object(
-        const api::Core& api,
+        const api::Session& api,
         const OTPeerRequest request,
         const OTPeerReply reply,
         const VersionNumber version);
     Object(
-        const api::Core& api,
+        const api::Session& api,
         const OTPeerRequest request,
         const VersionNumber version);
     Object(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const std::string& message,
         const std::string& payment,
@@ -117,7 +118,7 @@ public:
     ~Object() final = default;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     Nym_p nym_{nullptr};
     std::unique_ptr<std::string> message_{nullptr};
     std::unique_ptr<std::string> payment_{nullptr};

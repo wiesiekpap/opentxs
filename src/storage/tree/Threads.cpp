@@ -20,9 +20,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "Proto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/StorageBlockchainTransactions.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
@@ -30,6 +29,8 @@
 #include "opentxs/protobuf/verify/StorageBlockchainTransactions.hpp"
 #include "opentxs/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 #include "storage/tree/Thread.hpp"
@@ -148,7 +149,7 @@ auto Threads::create(
         node.swap(newThread);
         save(lock);
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Thread already exists.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Thread already exists.").Flush();
     }
 
     return id;
@@ -233,7 +234,7 @@ void Threads::init(const std::string& hash)
                 data.emplace(std::move(threadID));
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             continue;
         }
@@ -334,7 +335,7 @@ auto Threads::Rename(const std::string& existingID, const std::string& newID)
     auto it = item_map_.find(existingID);
 
     if (item_map_.end() == it) {
-        LogOutput(OT_METHOD)(__func__)(": Thread ")(
+        LogError()(OT_METHOD)(__func__)(": Thread ")(
             existingID)(" does not exist.")
             .Flush();
 
@@ -356,7 +357,7 @@ auto Threads::Rename(const std::string& existingID, const std::string& newID)
     std::unique_ptr<storage::Thread> newThread{nullptr};
 
     if (false == oldThread->Rename(newID)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to rename thread ")(
+        LogError()(OT_METHOD)(__func__)(": Failed to rename thread ")(
             existingID)(".")
             .Flush();
 

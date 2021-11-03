@@ -19,28 +19,28 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -50,6 +50,9 @@
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/base/List.hpp"
 
 template class std::
@@ -62,7 +65,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::factory
 {
 auto ActivityThreadModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const Identifier& threadID,
     const SimpleCallback& cb) noexcept
@@ -77,7 +80,7 @@ auto ActivityThreadModel(
 namespace opentxs::ui::implementation
 {
 ActivityThread::ActivityThread(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const Identifier& threadID,
     const SimpleCallback& cb) noexcept
@@ -247,7 +250,7 @@ auto ActivityThread::load_contacts(const proto::StorageThread& thread) noexcept
 auto ActivityThread::load_thread(const proto::StorageThread& thread) noexcept
     -> void
 {
-    LogDetail(OT_METHOD)(__func__)(": Loading ")(thread.item().size())(
+    LogDetail()(OT_METHOD)(__func__)(": Loading ")(thread.item().size())(
         " items.")
         .Flush();
 
@@ -283,7 +286,7 @@ auto ActivityThread::Pay(
     const auto& unitID = Widget::api_.Storage().AccountContract(sourceAccount);
 
     if (unitID->empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid account: (")(
+        LogError()(OT_METHOD)(__func__)(": Invalid account: (")(
             sourceAccount)(")")
             .Flush();
 
@@ -297,7 +300,7 @@ auto ActivityThread::Pay(
             contract->StringToAmountLocale(value, amount, "", "");
 
         if (false == converted) {
-            LogOutput(OT_METHOD)(__func__)(": Error parsing amount (")(
+            LogError()(OT_METHOD)(__func__)(": Error parsing amount (")(
                 amount)(")")
                 .Flush();
 
@@ -306,7 +309,7 @@ auto ActivityThread::Pay(
 
         return Pay(value, sourceAccount, memo, type);
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Missing unit definition (")(
+        LogError()(OT_METHOD)(__func__)(": Missing unit definition (")(
             unitID)(")")
             .Flush();
 
@@ -323,7 +326,8 @@ auto ActivityThread::Pay(
     wait_for_startup();
 
     if (0 >= amount) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid amount: (")(amount.str())(")")
+        LogError()(OT_METHOD)(__func__)(": Invalid amount: (")(amount.str())(
+            ")")
             .Flush();
 
         return false;
@@ -334,7 +338,7 @@ auto ActivityThread::Pay(
             return send_cheque(amount, sourceAccount, memo);
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported payment type: (")(
+            LogError()(OT_METHOD)(__func__)(": Unsupported payment type: (")(
                 static_cast<int>(type))(")")
                 .Flush();
 
@@ -365,7 +369,7 @@ auto ActivityThread::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -413,7 +417,7 @@ auto ActivityThread::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -510,22 +514,23 @@ auto ActivityThread::process_item(
             const auto txid =
                 Widget::api_.Factory().Data(item.txid(), StringStyle::Raw);
             const auto pTx =
-                Widget::api_.Blockchain().LoadTransactionBitcoin(txid->asHex());
+                Widget::api_.Crypto().Blockchain().LoadTransactionBitcoin(
+                    txid->asHex());
             const auto chain = static_cast<blockchain::Type>(item.chain());
 
             if (!pTx) { throw std::runtime_error{"transaction not found"}; }
 
             const auto& tx = *pTx;
-            text = Widget::api_.Blockchain().ActivityDescription(
+            text = Widget::api_.Crypto().Blockchain().ActivityDescription(
                 primary_id_, chain, tx);
-            const auto amount =
-                tx.NetBalanceChange(Widget::api_.Blockchain(), primary_id_);
+            const auto amount = tx.NetBalanceChange(
+                Widget::api_.Crypto().Blockchain(), primary_id_);
             custom.emplace_back(new std::string{item.txid()});
             custom.emplace_back(new opentxs::Amount{amount});
             custom.emplace_back(
                 new std::string{blockchain::internal::Format(chain, amount)});
             custom.emplace_back(
-                new std::string{tx.Memo(Widget::api_.Blockchain())});
+                new std::string{tx.Memo(Widget::api_.Crypto().Blockchain())});
 
             outgoing = (0 > amount);
         } break;
@@ -633,7 +638,7 @@ auto ActivityThread::process_otx(const Message& in) noexcept -> void
         const auto [status, reply] = future.get();
 
         if (otx::LastReplyStatus::MessageSuccess == status) {
-            LogDebug(OT_METHOD)(__func__)(": Task ")(
+            LogDebug()(OT_METHOD)(__func__)(": Task ")(
                 taskID)(" completed successfully")
                 .Flush();
         } else {
@@ -714,7 +719,7 @@ auto ActivityThread::send_cheque(
     if (false == validate_account(sourceAccount)) { return false; }
 
     if (1 < contacts_.size()) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Sending to multiple recipient not yet supported.")
             .Flush();
 
@@ -728,7 +733,7 @@ auto ActivityThread::send_cheque(
             Widget::api_.Storage().AccountContract(sourceAccount));
         contract->FormatAmountLocale(amount, displayAmount, ",", ".");
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to load unit definition contract")
             .Flush();
 
@@ -742,7 +747,8 @@ auto ActivityThread::send_cheque(
     const auto taskID = std::get<0>(otx);
 
     if (0 == taskID) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to queue payment for sending.")
+        LogError()(OT_METHOD)(__func__)(
+            ": Failed to queue payment for sending.")
             .Flush();
 
         return false;
@@ -779,7 +785,7 @@ auto ActivityThread::SendDraft() const noexcept -> bool
         auto lock = rLock{recursive_lock_};
 
         if (draft_.empty()) {
-            LogDetail(OT_METHOD)(__func__)(": No draft message to send.")
+            LogDetail()(OT_METHOD)(__func__)(": No draft message to send.")
                 .Flush();
 
             return false;
@@ -792,7 +798,7 @@ auto ActivityThread::SendDraft() const noexcept -> bool
         const auto taskID = std::get<0>(otx);
 
         if (0 == taskID) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed to queue message for sending.")
                 .Flush();
 
@@ -961,7 +967,7 @@ auto ActivityThread::update_payment_codes() noexcept -> bool
     OT_ASSERT(contact);
 
     for (const auto chain : blockchain::DefinedChains()) {
-        auto type = Translate(chain);
+        auto type = BlockchainToUnit(chain);
         auto code = contact->PaymentCode(type);
 
         if (code.empty()) { continue; }
@@ -985,7 +991,7 @@ auto ActivityThread::validate_account(
     const auto owner = Widget::api_.Storage().AccountOwner(sourceAccount);
 
     if (owner->empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid account id: (")(
+        LogError()(OT_METHOD)(__func__)(": Invalid account id: (")(
             sourceAccount)(")")
             .Flush();
 
@@ -993,7 +999,7 @@ auto ActivityThread::validate_account(
     }
 
     if (primary_id_ != owner) {
-        LogOutput(OT_METHOD)(__func__)(": Account ")(
+        LogError()(OT_METHOD)(__func__)(": Account ")(
             sourceAccount)(" is not owned by nym ")(primary_id_)
             .Flush();
 

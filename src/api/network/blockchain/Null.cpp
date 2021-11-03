@@ -10,8 +10,8 @@
 namespace opentxs::factory
 {
 auto BlockchainNetworkAPI(
-    const api::Core&,
-    const api::Endpoints&,
+    const api::Session&,
+    const api::session::Endpoints&,
     const opentxs::network::zeromq::Context&) noexcept
     -> api::network::Blockchain::Imp*
 {

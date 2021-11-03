@@ -10,16 +10,15 @@
 #include <cstdint>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/transaction/Helpers.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::OTTransactionType::"
 
@@ -27,7 +26,7 @@ namespace opentxs
 {
 // keeping constructor private in order to force people to use the other
 // constructors and therefore provide the requisite IDs.
-OTTransactionType::OTTransactionType(const api::Core& core)
+OTTransactionType::OTTransactionType(const api::Session& core)
     : Contract(core)
     , m_AcctID(core.Factory().Identifier())
     , m_NotaryID(core.Factory().ServerID())
@@ -48,7 +47,7 @@ OTTransactionType::OTTransactionType(const api::Core& core)
 }
 
 OTTransactionType::OTTransactionType(
-    const api::Core& core,
+    const api::Session& core,
     const identifier::Nym& theNymID,
     const Identifier& theAccountID,
     const identifier::Server& theNotaryID,
@@ -71,7 +70,7 @@ OTTransactionType::OTTransactionType(
 }
 
 OTTransactionType::OTTransactionType(
-    const api::Core& core,
+    const api::Session& core,
     const identifier::Nym& theNymID,
     const Identifier& theAccountID,
     const identifier::Server& theNotaryID,
@@ -239,16 +238,17 @@ auto OTTransactionType::VerifyAccount(const identity::Nym& theNym) -> bool
     // Make sure that the supposed AcctID matches the one read from the file.
     //
     if (!VerifyContractID()) {
-        LogOutput(OT_METHOD)(__func__)(": Error verifying account ID.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Error verifying account ID.")
+            .Flush();
 
         return false;
     } else if (!VerifySignature(theNym)) {
-        LogOutput(OT_METHOD)(__func__)(": Error verifying signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Error verifying signature.").Flush();
 
         return false;
     }
 
-    LogTrace(OT_METHOD)(__func__)(
+    LogTrace()(OT_METHOD)(__func__)(
         ": We now know that...1) The expected Account ID matches the ID that "
         "was found on the object. 2) The SIGNATURE VERIFIED on the object.")
         .Flush();
@@ -272,9 +272,9 @@ auto OTTransactionType::VerifyContractID() const -> bool
         auto str1 = String::Factory(m_ID), str2 = String::Factory(m_AcctID),
              str3 = String::Factory(m_NotaryID),
              str4 = String::Factory(m_AcctNotaryID);
-        LogOutput(OT_METHOD)(__func__)(": Identifiers mismatch").Flush();
-        LogOutput("m_AcctID actual: ")(m_AcctID)(" expected: ")(m_ID).Flush();
-        LogOutput("m_NotaryID actual: ")(m_AcctNotaryID)(" expected: ")(
+        LogError()(OT_METHOD)(__func__)(": Identifiers mismatch").Flush();
+        LogError()("m_AcctID actual: ")(m_AcctID)(" expected: ")(m_ID).Flush();
+        LogError()("m_NotaryID actual: ")(m_AcctNotaryID)(" expected: ")(
             m_NotaryID)
             .Flush();
 

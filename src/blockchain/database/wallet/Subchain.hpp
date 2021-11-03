@@ -13,19 +13,19 @@
 
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -94,7 +94,7 @@ public:
         const block::Position& position) const noexcept -> bool;
 
     SubchainData(
-        const api::Core& api,
+        const api::Session& api,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::filter::Type filter) noexcept;
 

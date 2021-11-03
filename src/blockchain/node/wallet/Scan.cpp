@@ -25,16 +25,17 @@
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::Scan::"
@@ -82,7 +83,7 @@ auto Scan::Do(
             lock.lock();
             last_scanned_ = highestTested;
         } else {
-            LogTrace(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
+            LogTrace()(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
                 " job had no work to do. Start height: ")(
                 startHeight)(", stop height: ")(stopHeight)
                 .Flush();
@@ -94,7 +95,7 @@ auto Scan::Do(
 
     if (startHeight > stopHeight) { return; }
 
-    LogVerbose(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
+    LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
         "ning filters from ")(startHeight)(" to ")(stopHeight)
         .Flush();
     const auto [elements, utxos, patterns] = parent_.get_account_targets();
@@ -106,7 +107,7 @@ auto Scan::Do(
         blockHash = headers.BestHash(i, best);
 
         if (blockHash->empty()) {
-            LogVerbose(OT_METHOD)(__func__)(": ")(name)(" interrupting ")(
+            LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" interrupting ")(
                 this->type())(" due to chain reorg")
                 .Flush();
 
@@ -117,7 +118,7 @@ auto Scan::Do(
         const auto pFilter = filters.LoadFilterOrResetTip(type, testPosition);
 
         if (false == bool(pFilter)) {
-            LogVerbose(OT_METHOD)(__func__)(": ")(name)(" filter at height ")(
+            LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" filter at height ")(
                 i)(" not found ")
                 .Flush();
 
@@ -135,7 +136,7 @@ auto Scan::Do(
             matches = filter.Match(retest);
 
             if (0 < matches.size()) {
-                LogVerbose(OT_METHOD)(__func__)(": ")(name)(" GCS ")(
+                LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" GCS ")(
                     this->type())(" for block ")(blockHash->asHex())(
                     " at height ")(i)(" found ")(matches.size())(
                     " new potential matches for the ")(patterns.size())(
@@ -162,7 +163,7 @@ auto Scan::Do(
 
     if (atLeastOnce) {
         const auto count = jobs.size();
-        LogVerbose(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
+        LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
             " found ")(count)(" new potential matches between blocks ")(
             startHeight)(" and ")(highestTested.first)(" in ")(
             std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -170,7 +171,7 @@ auto Scan::Do(
                 .count())(" milliseconds")
             .Flush();
     } else {
-        LogVerbose(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
+        LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" ")(this->type())(
             " interrupted due to missing filter")
             .Flush();
     }
@@ -229,7 +230,7 @@ auto Scan::Run(const block::Position& filterTip) noexcept -> bool
         // NOTE below this line we can assume only one Scan thread is running
         if (current.has_value()) {
             if (current == filterTip) {
-                LogVerbose(OT_METHOD)(__func__)(": ")(name)(" has been ")(
+                LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" has been ")(
                     type())("ned to the newest downloaded cfilter ")(
                     filterTip.second->asHex())(" at height ")(filterTip.first)
                     .Flush();

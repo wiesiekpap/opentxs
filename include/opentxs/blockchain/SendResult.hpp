@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_SENDRESULT_HPP
-#define OPENTXS_BLOCKCHAIN_SENDRESULT_HPP
+#pragma once
 
 #include "opentxs/blockchain/Types.hpp"  // IWYU pragma: associated
 
@@ -34,4 +33,3 @@ enum class SendResult : TypeEnum {
 };
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

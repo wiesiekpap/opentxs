@@ -15,23 +15,23 @@
 #include <string>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Shared.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "internal/util/Shared.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"  // IWYU pragma: keep
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"  // IWYU pragma: keep
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -41,6 +41,9 @@
 #include "opentxs/protobuf/PaymentEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/base/Widget.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::CustodialAccountActivity::"
@@ -48,7 +51,7 @@
 namespace opentxs::factory
 {
 auto CustodialAccountActivityModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
@@ -63,7 +66,7 @@ auto CustodialAccountActivityModel(
 namespace opentxs::ui::implementation
 {
 CustodialAccountActivity::CustodialAccountActivity(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
@@ -152,8 +155,8 @@ auto CustodialAccountActivity::extract_event(
     }
 
     if (false == found) {
-        LogOutput(OT_METHOD)(__func__)(": Workflow ")(workflow.id())(", type ")(
-            workflow.type())(", state ")(workflow.state())(
+        LogError()(OT_METHOD)(__func__)(": Workflow ")(workflow.id())(
+            ", type ")(workflow.type())(", state ")(workflow.state())(
             " does not contain an event of type ")(eventType)
             .Flush();
 
@@ -168,10 +171,9 @@ auto CustodialAccountActivity::extract_rows(
 {
     auto output = std::vector<RowKey>{};
 
-    switch (opentxs::api::client::internal::translate(workflow.type())) {
+    switch (translate(workflow.type())) {
         case api::client::PaymentWorkflowType::OutgoingCheque: {
-            switch (
-                opentxs::api::client::internal::translate(workflow.state())) {
+            switch (translate(workflow.state())) {
                 case api::client::PaymentWorkflowState::Unsent:
                 case api::client::PaymentWorkflowState::Conveyed:
                 case api::client::PaymentWorkflowState::Expired: {
@@ -204,15 +206,14 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Error:
                 case api::client::PaymentWorkflowState::Initiated:
                 default: {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
             }
         } break;
         case api::client::PaymentWorkflowType::IncomingCheque: {
-            switch (
-                opentxs::api::client::internal::translate(workflow.state())) {
+            switch (translate(workflow.state())) {
                 case api::client::PaymentWorkflowState::Conveyed:
                 case api::client::PaymentWorkflowState::Expired:
                 case api::client::PaymentWorkflowState::Completed: {
@@ -227,15 +228,14 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Accepted:
                 case api::client::PaymentWorkflowState::Initiated:
                 default: {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
             }
         } break;
         case api::client::PaymentWorkflowType::OutgoingTransfer: {
-            switch (
-                opentxs::api::client::internal::translate(workflow.state())) {
+            switch (translate(workflow.state())) {
                 case api::client::PaymentWorkflowState::Acknowledged:
                 case api::client::PaymentWorkflowState::Accepted: {
                     output.emplace_back(
@@ -262,15 +262,14 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Cancelled:
                 case api::client::PaymentWorkflowState::Expired:
                 default: {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
             }
         } break;
         case api::client::PaymentWorkflowType::IncomingTransfer: {
-            switch (
-                opentxs::api::client::internal::translate(workflow.state())) {
+            switch (translate(workflow.state())) {
                 case api::client::PaymentWorkflowState::Conveyed: {
                     output.emplace_back(
                         proto::PAYMENTEVENTTYPE_CONVEY,
@@ -296,15 +295,14 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Aborted:
                 case api::client::PaymentWorkflowState::Acknowledged:
                 default: {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
             }
         } break;
         case api::client::PaymentWorkflowType::InternalTransfer: {
-            switch (
-                opentxs::api::client::internal::translate(workflow.state())) {
+            switch (translate(workflow.state())) {
                 case api::client::PaymentWorkflowState::Acknowledged:
                 case api::client::PaymentWorkflowState::Conveyed:
                 case api::client::PaymentWorkflowState::Accepted: {
@@ -331,7 +329,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Cancelled:
                 case api::client::PaymentWorkflowState::Expired:
                 default: {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -341,7 +339,7 @@ auto CustodialAccountActivity::extract_rows(
         case api::client::PaymentWorkflowType::OutgoingInvoice:
         case api::client::PaymentWorkflowType::IncomingInvoice:
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported workflow type (")(
+            LogError()(OT_METHOD)(__func__)(": Unsupported workflow type (")(
                 workflow.type())(")")
                 .Flush();
         }
@@ -378,7 +376,7 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -421,7 +419,7 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -451,7 +449,7 @@ auto CustodialAccountActivity::process_balance(const Message& message) noexcept
     }();
     const auto balanceChanged = (oldBalance != balance);
     const auto alias = [&] {
-        auto account = Widget::api_.Wallet().Account(account_id_);
+        auto account = Widget::api_.Wallet().Internal().Account(account_id_);
 
         OT_ASSERT(account);
 
@@ -561,7 +559,7 @@ auto CustodialAccountActivity::process_unit(const Message& message) noexcept
 auto CustodialAccountActivity::startup() noexcept -> void
 {
     const auto alias = [&] {
-        auto account = Widget::api_.Wallet().Account(account_id_);
+        auto account = Widget::api_.Wallet().Internal().Account(account_id_);
 
         OT_ASSERT(account);
 
