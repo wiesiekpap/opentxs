@@ -7,12 +7,8 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "core/crypto/NullCallback.hpp"  // IWYU pragma: associated
 
-#include <memory>
-
 #include "2_Factory.hpp"
 #include "opentxs/core/Secret.hpp"
-
-#define OPENTXS_NULL_PASSWORD "opentxs"
 
 namespace opentxs
 {
@@ -20,22 +16,27 @@ auto Factory::NullCallback() -> OTCallback*
 {
     return new implementation::NullCallback();
 }
+
+auto DefaultPassword() noexcept -> const char*
+{
+    static constexpr auto password{"opentxs"};
+
+    return password;
+}
 }  // namespace opentxs
 
 namespace opentxs::implementation
 {
-const std::string NullCallback::password_{OPENTXS_NULL_PASSWORD};
-
-void NullCallback::runOne(const char*, Secret& output, const std::string& key)
-    const
+auto NullCallback::runOne(const char*, Secret& output, const std::string& key)
+    const -> void
 {
-    output.AssignText(password_);
+    output.AssignText(DefaultPassword());
 }
 
-void NullCallback::runTwo(
+auto NullCallback::runTwo(
     const char* display,
     Secret& output,
-    const std::string& key) const
+    const std::string& key) const -> void
 {
     runOne(display, output, key);
 }

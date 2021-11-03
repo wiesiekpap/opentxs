@@ -16,15 +16,20 @@ class OTPassword;
 class Secret;
 }  // namespace opentxs
 
+namespace opentxs
+{
+auto DefaultPassword() noexcept -> const char*;
+}  // namespace opentxs
+
 namespace opentxs::implementation
 {
 class NullCallback final : virtual public OTCallback
 {
 public:
-    void runOne(const char* display, Secret& output, const std::string& key)
-        const final;
-    void runTwo(const char* display, Secret& output, const std::string& key)
-        const final;
+    auto runOne(const char* display, Secret& output, const std::string& key)
+        const -> void final;
+    auto runTwo(const char* display, Secret& output, const std::string& key)
+        const -> void final;
 
     NullCallback() = default;
 
@@ -32,8 +37,6 @@ public:
 
 private:
     friend opentxs::Factory;
-
-    static const std::string password_;
 
     NullCallback(const NullCallback&) = delete;
     NullCallback(NullCallback&&) = delete;

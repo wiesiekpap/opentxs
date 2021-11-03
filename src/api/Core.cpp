@@ -16,6 +16,7 @@
 #include "api/Scheduler.hpp"
 #include "api/StorageParent.hpp"
 #include "api/ZMQ.hpp"
+#include "core/crypto/NullCallback.hpp"
 #include "internal/api/Factory.hpp"
 #include "internal/api/storage/Storage.hpp"
 #include "opentxs/Pimpl.hpp"
@@ -26,7 +27,6 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -132,10 +132,8 @@ Core::Core(
           master_secret_,
           symmetric_,
           *storage_))
-    , password_timeout_()
     , password_duration_(-1)
     , last_activity_()
-    , timeout_thread_running_(false)
 {
     OT_ASSERT(seeds_);
 
@@ -148,13 +146,6 @@ Core::Core(
 void Core::bump_password_timer(const opentxs::Lock& lock) const
 {
     last_activity_ = Clock::now();
-    const auto running = timeout_thread_running_.exchange(true);
-
-    if (running) { return; }
-
-    if (password_timeout_.joinable()) { password_timeout_.join(); }
-
-    password_timeout_ = std::thread{&Core::password_timeout, this};
 }
 
 void Core::cleanup()
@@ -163,8 +154,6 @@ void Core::cleanup()
     wallet_.reset();
     seeds_.reset();
     factory_p_.reset();
-
-    if (password_timeout_.joinable()) { password_timeout_.join(); }
 }
 
 auto Core::get_api(const PasswordPrompt& reason) noexcept -> const api::Core&
@@ -202,19 +191,30 @@ auto Core::GetSecret(
     OT_ASSERT(master_secret_.has_value());
 
     auto& callback = *external_password_callback_;
-    auto masterPassword = factory_.Secret(256);
-    const std::string password_key{key.empty() ? parent_.ProfileId() : key};
+    static const auto defaultPassword =
+        factory_.SecretFromText(DefaultPassword());
+    auto prompt = factory_.PasswordPrompt(reason.GetDisplayString());
+    prompt->SetPassword(defaultPassword);
+    auto unlocked = master_key_->Unlock(prompt);
+    auto tries{0};
 
-    if (twice) {
-        callback.AskTwice(reason, masterPassword, password_key);
-    } else {
-        callback.AskOnce(reason, masterPassword, password_key);
+    if ((false == unlocked) && (tries < 3)) {
+        auto masterPassword = factory_.Secret(256);
+        const std::string password_key{key.empty() ? parent_.ProfileId() : key};
+
+        if (twice) {
+            callback.AskTwice(reason, masterPassword, password_key);
+        } else {
+            callback.AskOnce(reason, masterPassword, password_key);
+        }
+
+        prompt->SetPassword(masterPassword);
+        unlocked = master_key_->Unlock(prompt);
+
+        if (false == unlocked) { ++tries; }
     }
 
-    auto prompt = factory_.PasswordPrompt(reason.GetDisplayString());
-    prompt->SetPassword(masterPassword);
-
-    if (false == master_key_->Unlock(prompt)) {
+    if (false == unlocked) {
         opentxs::LogOutput(__func__)(": Failed to unlock master key").Flush();
 
         return success;
@@ -320,42 +320,43 @@ void Core::storage_gc_hook()
     if (storage_) { storage_->RunGC(); }
 }
 
-void Core::password_timeout() const
-{
-    struct Cleanup {
-        std::atomic<bool>& running_;
-
-        Cleanup(std::atomic<bool>& running)
-            : running_(running)
-        {
-            running_.store(true);
-        }
-
-        ~Cleanup() { running_.store(false); }
-    };
-
-    opentxs::Lock lock(master_key_lock_, std::defer_lock);
-    Cleanup cleanup(timeout_thread_running_);
-
-    while (running_) {
-        lock.lock();
-
-        // Negative durations means never time out
-        if (0 > password_duration_.count()) { return; }
-
-        const auto now = Clock::now();
-        const auto interval = now - last_activity_;
-
-        if (interval > password_duration_) {
-            master_secret_.reset();
-
-            return;
-        }
-
-        lock.unlock();
-        Sleep(std::chrono::milliseconds(250));
-    }
-}
+// TODO
+// void Core::password_timeout() const
+// {
+//     struct Cleanup {
+//         std::atomic<bool>& running_;
+//
+//         Cleanup(std::atomic<bool>& running)
+//             : running_(running)
+//         {
+//             running_.store(true);
+//         }
+//
+//         ~Cleanup() { running_.store(false); }
+//     };
+//
+//     opentxs::Lock lock(master_key_lock_, std::defer_lock);
+//     Cleanup cleanup(timeout_thread_running_);
+//
+//     while (running_) {
+//         lock.lock();
+//
+//         // Negative durations means never time out
+//         if (0 > password_duration_.count()) { return; }
+//
+//         const auto now = Clock::now();
+//         const auto interval = now - last_activity_;
+//
+//         if (interval > password_duration_) {
+//             master_secret_.reset();
+//
+//             return;
+//         }
+//
+//         lock.unlock();
+//         Sleep(std::chrono::milliseconds(250));
+//     }
+// }
 
 auto Core::Wallet() const noexcept -> const api::Wallet&
 {
