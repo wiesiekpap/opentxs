@@ -17,7 +17,7 @@
 
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
@@ -44,9 +44,9 @@ auto ContactSectionWidget(
 
 namespace opentxs::ui::implementation
 {
-const std::map<contact::ContactSectionName, std::set<proto::ContactItemType>>
+const std::map<contact::SectionType, std::set<proto::ContactItemType>>
     ContactSection::allowed_types_{
-        {contact::ContactSectionName::Communication,
+        {contact::SectionType::Communication,
          {
              proto::CITEMTYPE_PHONE,
              proto::CITEMTYPE_EMAIL,
@@ -61,7 +61,7 @@ const std::map<contact::ContactSectionName, std::set<proto::ContactItemType>>
              proto::CITEMTYPE_WECHAT,
              proto::CITEMTYPE_KAKAOTALK,
          }},
-        {contact::ContactSectionName::Profile,
+        {contact::SectionType::Profile,
          {
              proto::CITEMTYPE_FACEBOOK,  proto::CITEMTYPE_GOOGLE,
              proto::CITEMTYPE_LINKEDIN,  proto::CITEMTYPE_VK,
@@ -77,50 +77,49 @@ const std::map<contact::ContactSectionName, std::set<proto::ContactItemType>>
          }},
     };
 
-const std::
-    map<contact::ContactSectionName, std::map<proto::ContactItemType, int>>
-        ContactSection::sort_keys_{
-            {contact::ContactSectionName::Communication,
-             {
-                 {proto::CITEMTYPE_PHONE, 0},
-                 {proto::CITEMTYPE_EMAIL, 1},
-                 {proto::CITEMTYPE_SKYPE, 2},
-                 {proto::CITEMTYPE_TELEGRAM, 3},
-                 {proto::CITEMTYPE_WIRE, 4},
-                 {proto::CITEMTYPE_WECHAT, 5},
-                 {proto::CITEMTYPE_QQ, 6},
-                 {proto::CITEMTYPE_KIK, 7},
-                 {proto::CITEMTYPE_KAKAOTALK, 8},
-                 {proto::CITEMTYPE_BBM, 9},
-                 {proto::CITEMTYPE_WHATSAPP, 10},
-                 {proto::CITEMTYPE_BITMESSAGE, 11},
-             }},
-            {contact::ContactSectionName::Profile,
-             {
-                 {proto::CITEMTYPE_FACEBOOK, 0},
-                 {proto::CITEMTYPE_TWITTER, 1},
-                 {proto::CITEMTYPE_REDDIT, 2},
-                 {proto::CITEMTYPE_GOOGLE, 3},
-                 {proto::CITEMTYPE_SNAPCHAT, 4},
-                 {proto::CITEMTYPE_YOUTUBE, 5},
-                 {proto::CITEMTYPE_TWITCH, 6},
-                 {proto::CITEMTYPE_GITHUB, 7},
-                 {proto::CITEMTYPE_LINKEDIN, 8},
-                 {proto::CITEMTYPE_MEDIUM, 9},
-                 {proto::CITEMTYPE_TUMBLR, 10},
-                 {proto::CITEMTYPE_YAHOO, 11},
-                 {proto::CITEMTYPE_MYSPACE, 12},
-                 {proto::CITEMTYPE_VK, 13},
-                 {proto::CITEMTYPE_MEETUP, 14},
-                 {proto::CITEMTYPE_VIMEO, 15},
-                 {proto::CITEMTYPE_ANGELLIST, 16},
-                 {proto::CITEMTYPE_ONENAME, 17},
-                 {proto::CITEMTYPE_ABOUTME, 18},
-                 {proto::CITEMTYPE_BITBUCKET, 19},
-                 {proto::CITEMTYPE_WIKIPEDIA, 20},
-                 {proto::CITEMTYPE_HACKERNEWS, 21},
-             }},
-        };
+const std::map<contact::SectionType, std::map<proto::ContactItemType, int>>
+    ContactSection::sort_keys_{
+        {contact::SectionType::Communication,
+         {
+             {proto::CITEMTYPE_PHONE, 0},
+             {proto::CITEMTYPE_EMAIL, 1},
+             {proto::CITEMTYPE_SKYPE, 2},
+             {proto::CITEMTYPE_TELEGRAM, 3},
+             {proto::CITEMTYPE_WIRE, 4},
+             {proto::CITEMTYPE_WECHAT, 5},
+             {proto::CITEMTYPE_QQ, 6},
+             {proto::CITEMTYPE_KIK, 7},
+             {proto::CITEMTYPE_KAKAOTALK, 8},
+             {proto::CITEMTYPE_BBM, 9},
+             {proto::CITEMTYPE_WHATSAPP, 10},
+             {proto::CITEMTYPE_BITMESSAGE, 11},
+         }},
+        {contact::SectionType::Profile,
+         {
+             {proto::CITEMTYPE_FACEBOOK, 0},
+             {proto::CITEMTYPE_TWITTER, 1},
+             {proto::CITEMTYPE_REDDIT, 2},
+             {proto::CITEMTYPE_GOOGLE, 3},
+             {proto::CITEMTYPE_SNAPCHAT, 4},
+             {proto::CITEMTYPE_YOUTUBE, 5},
+             {proto::CITEMTYPE_TWITCH, 6},
+             {proto::CITEMTYPE_GITHUB, 7},
+             {proto::CITEMTYPE_LINKEDIN, 8},
+             {proto::CITEMTYPE_MEDIUM, 9},
+             {proto::CITEMTYPE_TUMBLR, 10},
+             {proto::CITEMTYPE_YAHOO, 11},
+             {proto::CITEMTYPE_MYSPACE, 12},
+             {proto::CITEMTYPE_VK, 13},
+             {proto::CITEMTYPE_MEETUP, 14},
+             {proto::CITEMTYPE_VIMEO, 15},
+             {proto::CITEMTYPE_ANGELLIST, 16},
+             {proto::CITEMTYPE_ONENAME, 17},
+             {proto::CITEMTYPE_ABOUTME, 18},
+             {proto::CITEMTYPE_BITBUCKET, 19},
+             {proto::CITEMTYPE_WIKIPEDIA, 20},
+             {proto::CITEMTYPE_HACKERNEWS, 21},
+         }},
+    };
 
 ContactSection::ContactSection(
     const ContactInternalInterface& parent,

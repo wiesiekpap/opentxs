@@ -35,7 +35,7 @@
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/contact/Contact.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -455,7 +455,7 @@ TEST_F(Test_BlockchainActivity, setup_ui)
         make_cb(account_activity_, u8"account_activity_"));
     api_.UI().AccountSummary(
         nym_1_id(),
-        ot::contact::ContactItemType::BTC,
+        ot::core::UnitType::BTC,
         make_cb(account_summary_, u8"account_summary"));
     api_.UI().ActivitySummary(
         nym_1_id(), make_cb(activity_summary_, u8"activity_summary"));
@@ -490,7 +490,7 @@ TEST_F(Test_BlockchainActivity, initial_state_account_list)
     EXPECT_EQ(row->NotaryID(), btc_notary_id_);
     EXPECT_EQ(row->NotaryName(), u8"Bitcoin");
     EXPECT_EQ(row->Type(), ot::AccountType::Blockchain);
-    EXPECT_EQ(row->Unit(), ot::contact::ContactItemType::BTC);
+    EXPECT_EQ(row->Unit(), ot::core::UnitType::BTC);
     EXPECT_TRUE(row->Last());
 }
 
@@ -535,8 +535,7 @@ TEST_F(Test_BlockchainActivity, initial_state_account_list_qt)
         const auto displayBalance = widget.data(widget.index(0, 3));
 
         EXPECT_EQ(notaryID.toString().toStdString(), btc_notary_id_);
-        EXPECT_EQ(
-            unit.toInt(), static_cast<int>(ot::contact::ContactItemType::BTC));
+        EXPECT_EQ(unit.toInt(), static_cast<int>(ot::core::UnitType::BTC));
         EXPECT_EQ(accountID.toString().toStdString(), btc_account_id_);
         EXPECT_EQ(balance.toInt(), 0);
         EXPECT_EQ(polarity.toInt(), 0);
@@ -572,7 +571,7 @@ TEST_F(Test_BlockchainActivity, initial_state_account_activity)
     EXPECT_EQ(widget.NotaryID(), btc_notary_id_);
     EXPECT_EQ(widget.NotaryName(), u8"Bitcoin");
     EXPECT_EQ(widget.Type(), ot::AccountType::Blockchain);
-    EXPECT_EQ(widget.Unit(), ot::contact::ContactItemType::BTC);
+    EXPECT_EQ(widget.Unit(), ot::core::UnitType::BTC);
 
     auto row = widget.First();
 
@@ -705,7 +704,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_account_list)
     EXPECT_EQ(row->NotaryID(), btc_notary_id_);
     EXPECT_EQ(row->NotaryName(), u8"Bitcoin");
     EXPECT_EQ(row->Type(), ot::AccountType::Blockchain);
-    EXPECT_EQ(row->Unit(), ot::contact::ContactItemType::BTC);
+    EXPECT_EQ(row->Unit(), ot::core::UnitType::BTC);
     EXPECT_TRUE(row->Last());
 }
 
@@ -731,7 +730,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_account_activity)
     EXPECT_EQ(widget.NotaryID(), btc_notary_id_);
     EXPECT_EQ(widget.NotaryName(), u8"Bitcoin");
     EXPECT_EQ(widget.Type(), ot::AccountType::Blockchain);
-    EXPECT_EQ(widget.Unit(), ot::contact::ContactItemType::BTC);
+    EXPECT_EQ(widget.Unit(), ot::core::UnitType::BTC);
 
     auto row = widget.First();
 
@@ -1045,7 +1044,7 @@ TEST_F(Test_BlockchainActivity, send_account_activity)
     EXPECT_EQ(widget.NotaryID(), btc_notary_id_);
     EXPECT_EQ(widget.NotaryName(), u8"Bitcoin");
     EXPECT_EQ(widget.Type(), ot::AccountType::Blockchain);
-    EXPECT_EQ(widget.Unit(), ot::contact::ContactItemType::BTC);
+    EXPECT_EQ(widget.Unit(), ot::core::UnitType::BTC);
 
     auto row = widget.First();
 
@@ -1373,7 +1372,7 @@ TEST_F(Test_BlockchainActivity, receive_unassigned_account_activity)
     EXPECT_EQ(widget.NotaryID(), btc_notary_id_);
     EXPECT_EQ(widget.NotaryName(), u8"Bitcoin");
     EXPECT_EQ(widget.Type(), ot::AccountType::Blockchain);
-    EXPECT_EQ(widget.Unit(), ot::contact::ContactItemType::BTC);
+    EXPECT_EQ(widget.Unit(), ot::core::UnitType::BTC);
 
     auto row = widget.First();
 

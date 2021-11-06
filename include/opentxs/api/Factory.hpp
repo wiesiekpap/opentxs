@@ -211,7 +211,7 @@ public:
         const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version) const noexcept(false)
         -> OTBasketContract = 0;
     OPENTXS_NO_EXPORT virtual auto BasketContract(
@@ -367,7 +367,7 @@ public:
         const std::string& tla,
         const std::uint32_t power,
         const std::string& fraction,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTCurrencyContract = 0;
@@ -662,7 +662,7 @@ public:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTSecurityContract = 0;

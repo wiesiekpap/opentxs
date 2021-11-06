@@ -25,6 +25,7 @@
 #include "core/OTStorage.hpp"
 #include "internal/api/Api.hpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/core/Core.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Shared.hpp"
@@ -32,7 +33,7 @@
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Legacy.hpp"
 #include "opentxs/api/Wallet.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/AccountVisitor.hpp"
 #include "opentxs/core/Data.hpp"
@@ -283,21 +284,20 @@ auto Unit::ParseFormatted(
 }
 
 auto Unit::ValidUnits(const VersionNumber version) noexcept
-    -> std::set<contact::ContactItemType>
+    -> std::set<core::UnitType>
 {
     try {
         auto validunits = proto::AllowedItemTypes().at(
             {implementation::Unit::unit_of_account_version_map_.at(version),
-             contact::internal::translate(
-                 contact::ContactSectionName::Contract)});
+             contact::internal::translate(contact::SectionType::Contract)});
 
-        std::set<contact::ContactItemType> output;
+        std::set<core::UnitType> output;
         std::transform(
             validunits.begin(),
             validunits.end(),
             std::inserter(output, output.end()),
-            [](proto::ContactItemType itemtype) -> contact::ContactItemType {
-                return contact::internal::translate(itemtype);
+            [](proto::ContactItemType itemtype) -> core::UnitType {
+                return core::internal::translate(itemtype);
             });
 
         return output;
@@ -321,7 +321,7 @@ Unit::Unit(
     const std::string& name,
     const std::string& symbol,
     const std::string& terms,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version)
     : Signable(
           api,
@@ -354,7 +354,7 @@ Unit::Unit(
                     serialized.signature())}
               : Signatures{})
     , primary_unit_symbol_(serialized.symbol())
-    , unit_of_account_(contact::internal::translate(serialized.unitofaccount()))
+    , unit_of_account_(core::internal::translate(serialized.unitofaccount()))
     , primary_unit_name_(serialized.name())
     , short_name_(serialized.shortname())
 {
@@ -762,8 +762,7 @@ auto Unit::IDVersion(const Lock& lock) const -> SerializedType
     contract.set_type(contract::internal::translate(Type()));
 
     if (version_ > 1) {
-        contract.set_unitofaccount(
-            contact::internal::translate(unit_of_account_));
+        contract.set_unitofaccount(core::internal::translate(unit_of_account_));
     }
 
     return contract;

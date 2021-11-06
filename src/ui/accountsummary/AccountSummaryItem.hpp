@@ -14,7 +14,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
@@ -83,7 +83,7 @@ public:
 
 private:
     const Identifier& account_id_;
-    const contact::ContactItemType& currency_;
+    const core::UnitType& currency_;
     mutable Amount balance_;
     IssuerItemSortKey name_;
     mutable OTUnitDefinition contract_;

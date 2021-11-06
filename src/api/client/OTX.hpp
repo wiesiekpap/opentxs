@@ -23,7 +23,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/client/OTX.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -214,7 +214,7 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Server& serverID,
         const identifier::UnitDefinition& unitID,
-        const contact::ContactItemType advertise,
+        const core::UnitType advertise,
         const std::string& label) const -> BackgroundTask final;
     auto MessageContact(
         const identifier::Nym& senderNymID,

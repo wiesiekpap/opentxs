@@ -17,7 +17,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"
@@ -75,7 +75,7 @@ class ContactSubsection final : public Combined<
 {
 public:
     auto Name(const std::string& lang) const noexcept -> std::string final;
-    auto Type() const noexcept -> contact::ContactItemType final
+    auto Type() const noexcept -> contact::ClaimType final
     {
         return row_id_.second;
     }

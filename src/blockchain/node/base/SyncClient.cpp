@@ -48,7 +48,7 @@
 
 #define OT_METHOD "opentxs::blockchain::node::base::SyncClient::"
 
-namespace sync = opentxs::network::blockchain::sync;
+namespace bcsync = opentxs::network::blockchain::sync;
 
 namespace opentxs::blockchain::node::base
 {
@@ -206,7 +206,7 @@ private:
         msg->AddFrame(chain_);
         msg->AddFrame([&] {
             auto proto = proto::BlockchainP2PChainState{};
-            const auto state = sync::State{chain_, position};
+            const auto state = bcsync::State{chain_, position};
             state.Serialize(proto);
 
             return proto;
@@ -220,7 +220,7 @@ private:
 
     auto add_to_queue(OTZMQMessage&& msg) noexcept -> void
     {
-        const auto base = sync::Factory(api_, msg);
+        const auto base = bcsync::Factory(api_, msg);
         const auto& data = base->asData();
         const auto& blocks = data.Blocks();
         update_remote_position(data.State());
@@ -345,7 +345,7 @@ private:
                     running_ = false;
                 } break;
                 case Task::Ack: {
-                    const auto base = sync::Factory(api_, msg);
+                    const auto base = bcsync::Factory(api_, msg);
                     const auto& ack = base->asAcknowledgement();
                     update_remote_position(ack.State(chain_));
                     activity_ = Clock::now();
@@ -486,11 +486,11 @@ private:
         }
 
         if (blank() == queue_position_) {
-            const auto base = sync::Factory(api_, queue_.back());
+            const auto base = bcsync::Factory(api_, queue_.back());
             update_queue_position(base->asData());
         }
     }
-    auto update_queue_position(const sync::Data& data) noexcept -> void
+    auto update_queue_position(const bcsync::Data& data) noexcept -> void
     {
         const auto& blocks = data.Blocks();
 
@@ -498,7 +498,7 @@ private:
 
         queue_position_ = data.LastPosition(api_);
     }
-    auto update_remote_position(const sync::State& state) noexcept -> void
+    auto update_remote_position(const bcsync::State& state) noexcept -> void
     {
         remote_position_ = state.Position();
     }

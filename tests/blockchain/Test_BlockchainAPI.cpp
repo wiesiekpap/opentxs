@@ -42,7 +42,7 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -63,8 +63,7 @@ struct AddressData {
 };
 
 bool init_{false};
-const ot::contact::ContactItemType individual_{
-    ot::contact::ContactItemType::Individual};
+const ot::contact::ClaimType individual_{ot::contact::ClaimType::Individual};
 const ot::blockchain::Type btc_chain_{ot::blockchain::Type::Bitcoin};
 const ot::blockchain::Type bch_chain_{ot::blockchain::Type::BitcoinCash};
 const ot::blockchain::Type ltc_chain_{ot::blockchain::Type::Litecoin};

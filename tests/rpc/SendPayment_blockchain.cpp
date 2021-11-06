@@ -33,6 +33,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"

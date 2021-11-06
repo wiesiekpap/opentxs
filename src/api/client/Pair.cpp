@@ -39,7 +39,7 @@
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Log.hpp"
@@ -513,7 +513,7 @@ void Pair::check_accounts(
     const auto& localNymID = issuer.LocalNymID();
     const auto& issuerNymID = issuer.IssuerID();
     const auto contractSection =
-        issuerClaims.Section(contact::ContactSectionName::Contract);
+        issuerClaims.Section(contact::SectionType::Contract);
     const auto haveAccounts = bool(contractSection);
 
     if (false == haveAccounts) {
@@ -553,7 +553,8 @@ void Pair::check_accounts(
                 continue;
             }
 
-            const auto accountList = issuer.AccountList(type, unitID);
+            const auto accountList =
+                issuer.AccountList(core::translate(type), unitID);
 
             if (0 == accountList.size()) {
                 LogDetail(OT_METHOD)(__func__)(": Registering ")(
@@ -567,7 +568,7 @@ void Pair::check_accounts(
                     LogDetail(OT_METHOD)(__func__)(
                         ": Success registering account")
                         .Flush();
-                    issuer.AddAccount(type, unitID, id);
+                    issuer.AddAccount(core::translate(type), unitID, id);
                 } else {
                     LogOutput(OT_METHOD)(__func__)(
                         ": Failed to register account")

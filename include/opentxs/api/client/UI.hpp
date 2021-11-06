@@ -7,7 +7,7 @@
 #define OPENTXS_API_CLIENT_UI_HPP
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
-// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/ui/Blockchains.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -17,7 +17,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/ui/Types.hpp"
 
@@ -101,13 +101,13 @@ public:
         -> opentxs::ui::AccountListQt*;
     auto AccountSummary(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback updateCB = {}) const noexcept
         -> const opentxs::ui::AccountSummary&;
     /// Caller does not own this pointer
     auto AccountSummaryQt(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::AccountSummaryQt*;
     auto ActivitySummary(
@@ -191,13 +191,13 @@ public:
         -> opentxs::ui::MessagableListQt*;
     auto PayableList(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback updateCB = {}) const noexcept
         -> const opentxs::ui::PayableList&;
     /// Caller does not own this pointer
     auto PayableListQt(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback updateCB = {}) const noexcept
         -> opentxs::ui::PayableListQt*;
     auto Profile(

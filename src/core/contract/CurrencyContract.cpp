@@ -35,7 +35,7 @@ auto Factory::CurrencyContract(
     const std::string& tla,
     const std::uint32_t power,
     const std::string& fraction,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::unit::Currency>
@@ -107,7 +107,7 @@ Currency::Currency(
     const std::string& tla,
     const std::uint32_t power,
     const std::string& fraction,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version)
     : Unit(api, nym, shortname, name, symbol, terms, unitOfAccount, version)
     , tla_(tla)

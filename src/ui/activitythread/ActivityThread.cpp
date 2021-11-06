@@ -343,8 +343,8 @@ auto ActivityThread::Pay(
     }
 }
 
-auto ActivityThread::PaymentCode(
-    const contact::ContactItemType currency) const noexcept -> std::string
+auto ActivityThread::PaymentCode(const core::UnitType currency) const noexcept
+    -> std::string
 {
     wait_for_startup();
     auto lock = rLock{recursive_lock_};
@@ -952,7 +952,7 @@ auto ActivityThread::update_messagability(Messagability value) noexcept -> bool
 
 auto ActivityThread::update_payment_codes() noexcept -> bool
 {
-    auto map = std::map<contact::ContactItemType, std::string>{};
+    auto map = std::map<core::UnitType, std::string>{};
 
     if (1 != contacts_.size()) { OT_FAIL; }
 

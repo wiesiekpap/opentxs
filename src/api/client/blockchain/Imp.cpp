@@ -311,50 +311,50 @@ auto Blockchain::Imp::AssignLabel(
     }
 }
 
-auto Blockchain::Imp::bip44_type(
-    const contact::ContactItemType type) const noexcept -> Bip44Type
+auto Blockchain::Imp::bip44_type(const core::UnitType type) const noexcept
+    -> Bip44Type
 {
     switch (type) {
-        case contact::ContactItemType::BTC: {
+        case core::UnitType::BTC: {
 
             return Bip44Type::BITCOIN;
         }
-        case contact::ContactItemType::LTC: {
+        case core::UnitType::LTC: {
 
             return Bip44Type::LITECOIN;
         }
-        case contact::ContactItemType::DOGE: {
+        case core::UnitType::DOGE: {
 
             return Bip44Type::DOGECOIN;
         }
-        case contact::ContactItemType::DASH: {
+        case core::UnitType::DASH: {
 
             return Bip44Type::DASH;
         }
-        case contact::ContactItemType::BCH: {
+        case core::UnitType::BCH: {
 
             return Bip44Type::BITCOINCASH;
         }
-        case contact::ContactItemType::PKT: {
+        case core::UnitType::PKT: {
 
             return Bip44Type::PKT;
         }
-        case contact::ContactItemType::TNBCH:
-        case contact::ContactItemType::TNBTC:
-        case contact::ContactItemType::TNXRP:
-        case contact::ContactItemType::TNLTX:
-        case contact::ContactItemType::TNXEM:
-        case contact::ContactItemType::TNDASH:
-        case contact::ContactItemType::TNMAID:
-        case contact::ContactItemType::TNLSK:
-        case contact::ContactItemType::TNDOGE:
-        case contact::ContactItemType::TNXMR:
-        case contact::ContactItemType::TNWAVES:
-        case contact::ContactItemType::TNNXT:
-        case contact::ContactItemType::TNSC:
-        case contact::ContactItemType::TNSTEEM:
-        case contact::ContactItemType::TNPKT:
-        case contact::ContactItemType::Regtest: {
+        case core::UnitType::TNBCH:
+        case core::UnitType::TNBTC:
+        case core::UnitType::TNXRP:
+        case core::UnitType::TNLTX:
+        case core::UnitType::TNXEM:
+        case core::UnitType::TNDASH:
+        case core::UnitType::TNMAID:
+        case core::UnitType::TNLSK:
+        case core::UnitType::TNDOGE:
+        case core::UnitType::TNXMR:
+        case core::UnitType::TNWAVES:
+        case core::UnitType::TNNXT:
+        case core::UnitType::TNSC:
+        case core::UnitType::TNSTEEM:
+        case core::UnitType::TNPKT:
+        case core::UnitType::Regtest: {
             return Bip44Type::TESTNET;
         }
         default: {
@@ -639,7 +639,7 @@ auto Blockchain::Imp::get_node(const Identifier& accountID) const
     {
         const auto type = api_.Storage().BlockchainAccountType(nym, id);
 
-        if (contact::ContactItemType::Error == type) {
+        if (core::UnitType::Error == type) {
             const auto error = std::string{"account "} + id + " for nym " +
                                nym + " does not exist";
 
@@ -681,7 +681,7 @@ auto Blockchain::Imp::HDSubaccount(
     const auto nym = nymID.str();
     const auto type = api_.Storage().BlockchainAccountType(nym, id);
 
-    if (contact::ContactItemType::Error == type) {
+    if (core::UnitType::Error == type) {
         const auto error =
             std::string{"HD account "} + id + " for " + nym + " does not exist";
 
@@ -711,7 +711,7 @@ auto Blockchain::Imp::Init() noexcept -> void
 
 auto Blockchain::Imp::init_path(
     const std::string& root,
-    const contact::ContactItemType chain,
+    const core::UnitType chain,
     const Bip32Index account,
     const opentxs::blockchain::crypto::HDProtocol standard,
     proto::HDPath& path) const noexcept -> void
@@ -1067,7 +1067,7 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
 {
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
-    if (contact::ContactItemType::Error == type) {
+    if (core::UnitType::Error == type) {
         const auto error = std::string{"Payment code account "} +
                            accountID.str() + " for " + nymID.str() +
                            " does not exist";
@@ -1096,7 +1096,7 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
             api_, chain, local, remote);
     const auto type = api_.Storage().Bip47Chain(nymID, accountID);
 
-    if (contact::ContactItemType::Error == type) {
+    if (core::UnitType::Error == type) {
         const auto id =
             new_payment_code(lock, nymID, local, remote, path, chain, reason);
 

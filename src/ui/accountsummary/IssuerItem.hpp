@@ -21,7 +21,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Issuer.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"
@@ -69,7 +69,7 @@ struct make_blank<ui::implementation::IssuerItemRowID> {
     static auto value(const api::Core& api)
         -> ui::implementation::IssuerItemRowID
     {
-        return {api.Factory().Identifier(), contact::ContactItemType::Error};
+        return {api.Factory().Identifier(), core::UnitType::Error};
     }
 };
 }  // namespace opentxs
@@ -108,7 +108,7 @@ public:
         const AccountSummaryRowID& rowID,
         const AccountSummarySortKey& sortKey,
         CustomData& custom,
-        const contact::ContactItemType currency) noexcept;
+        const core::UnitType currency) noexcept;
     ~IssuerItem() final;
 
 private:
@@ -116,7 +116,7 @@ private:
     const std::string& name_;
     std::atomic<bool> connection_;
     const std::shared_ptr<const api::client::Issuer> issuer_;
-    const contact::ContactItemType currency_;
+    const core::UnitType currency_;
 
     auto construct_row(
         const IssuerItemRowID& id,

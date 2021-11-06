@@ -13,7 +13,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "ui/contactlist/ContactListItem.hpp"
 
 class QVariant;
@@ -59,14 +59,14 @@ public:
         const PayableListRowID& rowID,
         const PayableListSortKey& key,
         const std::string& paymentcode,
-        const contact::ContactItemType& currency) noexcept;
+        const core::UnitType& currency) noexcept;
     ~PayableListItem() final = default;
 
 private:
     using ot_super = implementation::ContactListItem;
 
     std::string payment_code_;
-    const contact::ContactItemType currency_;
+    const core::UnitType currency_;
 
     auto calculate_section(const Lock& lock) const noexcept -> std::string final
     {

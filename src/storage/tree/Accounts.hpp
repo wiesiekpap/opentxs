@@ -12,8 +12,8 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -39,8 +39,7 @@ public:
     auto AccountOwner(const Identifier& accountID) const -> OTNymID;
     auto AccountServer(const Identifier& accountID) const -> OTServerID;
     auto AccountSigner(const Identifier& accountID) const -> OTNymID;
-    auto AccountUnit(const Identifier& accountID) const
-        -> contact::ContactItemType;
+    auto AccountUnit(const Identifier& accountID) const -> core::UnitType;
     auto AccountsByContract(const identifier::UnitDefinition& unit) const
         -> std::set<OTIdentifier>;
     auto AccountsByIssuer(const identifier::Nym& issuerNym) const
@@ -49,7 +48,7 @@ public:
         -> std::set<OTIdentifier>;
     auto AccountsByServer(const identifier::Server& server) const
         -> std::set<OTIdentifier>;
-    auto AccountsByUnit(const contact::ContactItemType unit) const
+    auto AccountsByUnit(const core::UnitType unit) const
         -> std::set<OTIdentifier>;
     auto Alias(const std::string& id) const -> std::string;
     auto Load(
@@ -69,7 +68,7 @@ public:
         const identifier::Nym& issuerNym,
         const identifier::Server& server,
         const identifier::UnitDefinition& contract,
-        const contact::ContactItemType unit) -> bool;
+        const core::UnitType unit) -> bool;
 
     ~Accounts() final = default;
 
@@ -79,16 +78,10 @@ private:
     using NymIndex = std::map<OTNymID, std::set<OTIdentifier>>;
     using ServerIndex = std::map<OTServerID, std::set<OTIdentifier>>;
     using ContractIndex = std::map<OTUnitID, std::set<OTIdentifier>>;
-    using UnitIndex =
-        std::map<contact::ContactItemType, std::set<OTIdentifier>>;
+    using UnitIndex = std::map<core::UnitType, std::set<OTIdentifier>>;
     /** owner, signer, issuer, server, contract, unit */
-    using AccountData = std::tuple<
-        OTNymID,
-        OTNymID,
-        OTNymID,
-        OTServerID,
-        OTUnitID,
-        contact::ContactItemType>;
+    using AccountData = std::
+        tuple<OTNymID, OTNymID, OTNymID, OTServerID, OTUnitID, core::UnitType>;
     using ReverseIndex = std::map<OTIdentifier, AccountData>;
 
     NymIndex owner_index_{};
@@ -130,7 +123,7 @@ private:
         const identifier::Nym& issuerNym,
         const identifier::Server& server,
         const identifier::UnitDefinition& contract,
-        const contact::ContactItemType unit) -> bool;
+        const core::UnitType unit) -> bool;
     void init(const std::string& hash) final;
     auto save(const Lock& lock) const -> bool final;
 

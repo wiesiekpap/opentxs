@@ -11,7 +11,7 @@
 #include "Proto.hpp"
 #include "core/contract/UnitDefinition.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -52,7 +52,7 @@ public:
         const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version);
     Basket(
         const api::Core& api,

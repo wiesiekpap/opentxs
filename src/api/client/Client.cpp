@@ -16,6 +16,7 @@
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
 
@@ -124,19 +125,18 @@ auto translate(const proto::PaymentWorkflowType in) noexcept
 }
 }  // namespace api::client::internal
 
-auto Translate(const blockchain::Type type) noexcept -> contact::ContactItemType
+auto Translate(const blockchain::Type type) noexcept -> core::UnitType
 {
     try {
         return blockchain::params::Data::Chains().at(type).itemtype_;
     } catch (...) {
-        return contact::ContactItemType::Unknown;
+        return core::UnitType::Unknown;
     }
 }
 
-auto Translate(const contact::ContactItemType type) noexcept -> blockchain::Type
+auto Translate(const core::UnitType type) noexcept -> blockchain::Type
 {
-    using Map =
-        std::map<opentxs::contact::ContactItemType, opentxs::blockchain::Type>;
+    using Map = std::map<opentxs::core::UnitType, opentxs::blockchain::Type>;
 
     static const auto build = []() -> auto
     {

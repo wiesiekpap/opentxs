@@ -30,10 +30,10 @@
 #include "opentxs/api/client/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -131,8 +131,7 @@ public:
     auto AccountOwner(const Identifier& accountID) const -> OTNymID final;
     auto AccountServer(const Identifier& accountID) const -> OTServerID final;
     auto AccountSigner(const Identifier& accountID) const -> OTNymID final;
-    auto AccountUnit(const Identifier& accountID) const
-        -> contact::ContactItemType final;
+    auto AccountUnit(const Identifier& accountID) const -> core::UnitType final;
     auto AccountsByContract(const identifier::UnitDefinition& contract) const
         -> std::set<OTIdentifier> final;
     auto AccountsByIssuer(const identifier::Nym& issuerNym) const
@@ -141,20 +140,19 @@ public:
         -> std::set<OTIdentifier> final;
     auto AccountsByServer(const identifier::Server& server) const
         -> std::set<OTIdentifier> final;
-    auto AccountsByUnit(const contact::ContactItemType unit) const
+    auto AccountsByUnit(const core::UnitType unit) const
         -> std::set<OTIdentifier> final;
     auto Bip47Chain(const identifier::Nym& nymID, const Identifier& channelID)
-        const -> contact::ContactItemType final;
+        const -> core::UnitType final;
     auto Bip47ChannelsByChain(
         const identifier::Nym& nymID,
-        const contact::ContactItemType chain) const -> Bip47ChannelList final;
+        const core::UnitType chain) const -> Bip47ChannelList final;
     auto BlockchainAccountList(
         const std::string& nymID,
-        const contact::ContactItemType type) const
-        -> std::set<std::string> final;
+        const core::UnitType type) const -> std::set<std::string> final;
     auto BlockchainAccountType(
         const std::string& nymID,
-        const std::string& accountID) const -> contact::ContactItemType final;
+        const std::string& accountID) const -> core::UnitType final;
     auto BlockchainThreadMap(const identifier::Nym& nym, const Data& txid)
         const noexcept -> std::vector<OTIdentifier> final;
     auto BlockchainTransactionList(const identifier::Nym& nym) const noexcept
@@ -396,10 +394,10 @@ public:
         const identifier::Nym& issuerNym,
         const identifier::Server& server,
         const identifier::UnitDefinition& contract,
-        const contact::ContactItemType unit) const -> bool final;
+        const core::UnitType unit) const -> bool final;
     auto Store(
         const std::string& nymID,
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const proto::HDAccount& data) const -> bool final;
     auto Store(
         const identifier::Nym& nymID,

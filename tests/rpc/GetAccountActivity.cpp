@@ -15,8 +15,8 @@
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/server/Manager.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
@@ -80,7 +80,7 @@ TEST_F(RPC_fixture, preconditions)
             "USD",
             "cents",
             2,
-            ot::contact::ContactItemType::USD);
+            ot::core::UnitType::USD);
 
         EXPECT_FALSE(unit.empty());
 

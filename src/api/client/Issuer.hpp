@@ -15,10 +15,10 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Issuer.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -50,7 +50,7 @@ public:
     auto toString() const -> std::string final;
 
     auto AccountList(
-        const contact::ContactItemType type,
+        const core::UnitType type,
         const identifier::UnitDefinition& unitID) const
         -> std::set<OTIdentifier> final;
     auto BailmentInitiated(const identifier::UnitDefinition& unitID) const
@@ -82,7 +82,7 @@ public:
     auto StoreSecretInitiated() const -> bool final;
 
     void AddAccount(
-        const contact::ContactItemType type,
+        const core::UnitType type,
         const identifier::UnitDefinition& unitID,
         const Identifier& accountID) final;
     auto AddReply(
@@ -93,7 +93,7 @@ public:
         const contract::peer::PeerRequestType type,
         const Identifier& requestID) -> bool final;
     auto RemoveAccount(
-        const contact::ContactItemType type,
+        const core::UnitType type,
         const identifier::UnitDefinition& unitID,
         const Identifier& accountID) -> bool final;
     void SetPaired(const bool paired) final;
@@ -125,7 +125,7 @@ private:
     mutable OTFlag paired_;
     const OTNymID nym_id_;
     const OTNymID issuer_id_;
-    std::map<contact::ContactItemType, std::set<UnitAccountPair>> account_map_;
+    std::map<core::UnitType, std::set<UnitAccountPair>> account_map_;
     WorkflowMap peer_requests_;
 
     auto find_request(

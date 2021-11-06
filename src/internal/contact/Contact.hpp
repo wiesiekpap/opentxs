@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/contact/ContactItemAttribute.hpp"
-// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
-// IWYU pragma: no_include "opentxs/contact/ContactSectionName.hpp"
+// IWYU pragma: no_include "opentxs/contact/Attribute.hpp"
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/contact/SectionType.hpp"
 
 #pragma once
 
@@ -16,32 +16,28 @@
 
 namespace opentxs::contact::internal
 {
-using ContactItemAttributeMap =
-    std::map<contact::ContactItemAttribute, proto::ContactItemAttribute>;
-using ContactItemAttributeReverseMap =
-    std::map<proto::ContactItemAttribute, contact::ContactItemAttribute>;
-using ContactItemTypeMap =
-    std::map<contact::ContactItemType, proto::ContactItemType>;
-using ContactItemTypeReverseMap =
-    std::map<proto::ContactItemType, contact::ContactItemType>;
-using ContactSectionNameMap =
-    std::map<contact::ContactSectionName, proto::ContactSectionName>;
-using ContactSectionNameReverseMap =
-    std::map<proto::ContactSectionName, contact::ContactSectionName>;
+using AttributeMap = std::map<contact::Attribute, proto::ContactItemAttribute>;
+using AttributeReverseMap =
+    std::map<proto::ContactItemAttribute, contact::Attribute>;
+using ClaimTypeMap = std::map<contact::ClaimType, proto::ContactItemType>;
+using ClaimTypeReverseMap =
+    std::map<proto::ContactItemType, contact::ClaimType>;
+using SectionTypeMap =
+    std::map<contact::SectionType, proto::ContactSectionName>;
+using SectionTypeReverseMap =
+    std::map<proto::ContactSectionName, contact::SectionType>;
 
-auto contactitemattribute_map() noexcept -> const ContactItemAttributeMap&;
-auto contactitemtype_map() noexcept -> const ContactItemTypeMap&;
-auto contactsectionname_map() noexcept -> const ContactSectionNameMap&;
-auto translate(const contact::ContactItemAttribute in) noexcept
+auto attribute_map() noexcept -> const AttributeMap&;
+auto claimtype_map() noexcept -> const ClaimTypeMap&;
+auto sectiontype_map() noexcept -> const SectionTypeMap&;
+auto translate(const contact::Attribute in) noexcept
     -> proto::ContactItemAttribute;
-auto translate(const contact::ContactItemType in) noexcept
-    -> proto::ContactItemType;
-auto translate(const contact::ContactSectionName in) noexcept
+auto translate(const contact::ClaimType in) noexcept -> proto::ContactItemType;
+auto translate(const contact::SectionType in) noexcept
     -> proto::ContactSectionName;
 auto translate(const proto::ContactItemAttribute in) noexcept
-    -> contact::ContactItemAttribute;
-auto translate(const proto::ContactItemType in) noexcept
-    -> contact::ContactItemType;
+    -> contact::Attribute;
+auto translate(const proto::ContactItemType in) noexcept -> contact::ClaimType;
 auto translate(const proto::ContactSectionName in) noexcept
-    -> contact::ContactSectionName;
+    -> contact::SectionType;
 }  // namespace opentxs::contact::internal

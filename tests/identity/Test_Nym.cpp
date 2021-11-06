@@ -25,9 +25,8 @@
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
 #include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -83,7 +82,7 @@ public:
         {
             const auto& claims = nym.Claims();
             const auto pSection =
-                claims.Section(ot::contact::ContactSectionName::Scope);
+                claims.Section(ot::contact::SectionType::Scope);
 
             EXPECT_TRUE(pSection);
 
@@ -94,7 +93,7 @@ public:
             EXPECT_EQ(1, section.Size());
 
             const auto pGroup =
-                section.Group(ot::contact::ContactItemType::Individual);
+                section.Group(ot::contact::ClaimType::Individual);
 
             EXPECT_TRUE(pGroup);
 
@@ -120,7 +119,7 @@ public:
         const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto alias = std::string{"alias"};
         std::unique_ptr<ot::identity::internal::Nym> pNym(ot::Factory::Nym(
-            api, {}, ot::contact::ContactItemType::Individual, alias, reason));
+            api, {}, ot::contact::ClaimType::Individual, alias, reason));
 
         EXPECT_TRUE(pNym);
 
@@ -232,8 +231,7 @@ TEST_F(Test_Nym, default_params)
     EXPECT_EQ(1, nym.Revision());
     EXPECT_TRUE(nym.Name().empty());
 
-    const auto pSection =
-        claims.Section(ot::contact::ContactSectionName::Scope);
+    const auto pSection = claims.Section(ot::contact::SectionType::Scope);
 
     EXPECT_FALSE(pSection);
 }

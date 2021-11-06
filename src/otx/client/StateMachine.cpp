@@ -31,8 +31,8 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OT_API.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -361,8 +361,8 @@ auto StateMachine::check_server_name(const otx::context::Server& context) const
 
         DO_OPERATION(
             AddClaim,
-            contact::ContactSectionName::Scope,
-            contact::ContactItemType::Server,
+            contact::SectionType::Scope,
+            contact::ClaimType::Server,
             String::Factory(myName),
             true);
 
@@ -664,7 +664,7 @@ auto StateMachine::issue_unit_definition(
 
         DO_OPERATION(IssueUnitDefinition, serialized, args);
 
-        if (success && (contact::ContactItemType::Error != advertise)) {
+        if (success && (core::UnitType::Error != advertise)) {
             OT_ASSERT(result.second);
 
             const auto& reply = *result.second;

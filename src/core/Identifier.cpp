@@ -296,7 +296,7 @@ auto Identifier::Factory(const Item& item) -> OTIdentifier
 }
 
 auto Identifier::Factory(
-    const contact::ContactItemType type,
+    const contact::ClaimType type,
     const proto::HDPath& path) -> OTIdentifier
 {
     return OTIdentifier(new implementation::Identifier(type, path));
@@ -369,9 +369,7 @@ Identifier::Identifier(const Vector& data, const ID type)
 {
 }
 
-Identifier::Identifier(
-    const contact::ContactItemType type,
-    const proto::HDPath& path)
+Identifier::Identifier(const contact::ClaimType type, const proto::HDPath& path)
     : ot_super()
     , type_(DefaultType)
 {
@@ -434,7 +432,7 @@ auto Identifier::IDToHashType(const ID type) -> crypto::HashType
 }
 
 auto Identifier::path_to_data(
-    const contact::ContactItemType type,
+    const contact::ClaimType type,
     const proto::HDPath& path) -> OTData
 {
     auto output = Data::Factory(static_cast<const void*>(&type), sizeof(type));

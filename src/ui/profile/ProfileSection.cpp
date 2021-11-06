@@ -21,7 +21,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
@@ -52,44 +52,43 @@ auto ProfileSectionWidget(
 
 namespace opentxs::ui
 {
-static const std::
-    map<contact::ContactSectionName, std::set<proto::ContactItemType>>
-        allowed_types_{
-            {contact::ContactSectionName::Communication,
-             {
-                 proto::CITEMTYPE_PHONE,
-                 proto::CITEMTYPE_EMAIL,
-                 proto::CITEMTYPE_SKYPE,
-                 proto::CITEMTYPE_WIRE,
-                 proto::CITEMTYPE_QQ,
-                 proto::CITEMTYPE_BITMESSAGE,
-                 proto::CITEMTYPE_WHATSAPP,
-                 proto::CITEMTYPE_TELEGRAM,
-                 proto::CITEMTYPE_KIK,
-                 proto::CITEMTYPE_BBM,
-                 proto::CITEMTYPE_WECHAT,
-                 proto::CITEMTYPE_KAKAOTALK,
-             }},
-            {contact::ContactSectionName::Profile,
-             {
-                 proto::CITEMTYPE_FACEBOOK,  proto::CITEMTYPE_GOOGLE,
-                 proto::CITEMTYPE_LINKEDIN,  proto::CITEMTYPE_VK,
-                 proto::CITEMTYPE_ABOUTME,   proto::CITEMTYPE_ONENAME,
-                 proto::CITEMTYPE_TWITTER,   proto::CITEMTYPE_MEDIUM,
-                 proto::CITEMTYPE_TUMBLR,    proto::CITEMTYPE_YAHOO,
-                 proto::CITEMTYPE_MYSPACE,   proto::CITEMTYPE_MEETUP,
-                 proto::CITEMTYPE_REDDIT,    proto::CITEMTYPE_HACKERNEWS,
-                 proto::CITEMTYPE_WIKIPEDIA, proto::CITEMTYPE_ANGELLIST,
-                 proto::CITEMTYPE_GITHUB,    proto::CITEMTYPE_BITBUCKET,
-                 proto::CITEMTYPE_YOUTUBE,   proto::CITEMTYPE_VIMEO,
-                 proto::CITEMTYPE_TWITCH,    proto::CITEMTYPE_SNAPCHAT,
-             }},
-        };
+static const std::map<contact::SectionType, std::set<proto::ContactItemType>>
+    allowed_types_{
+        {contact::SectionType::Communication,
+         {
+             proto::CITEMTYPE_PHONE,
+             proto::CITEMTYPE_EMAIL,
+             proto::CITEMTYPE_SKYPE,
+             proto::CITEMTYPE_WIRE,
+             proto::CITEMTYPE_QQ,
+             proto::CITEMTYPE_BITMESSAGE,
+             proto::CITEMTYPE_WHATSAPP,
+             proto::CITEMTYPE_TELEGRAM,
+             proto::CITEMTYPE_KIK,
+             proto::CITEMTYPE_BBM,
+             proto::CITEMTYPE_WECHAT,
+             proto::CITEMTYPE_KAKAOTALK,
+         }},
+        {contact::SectionType::Profile,
+         {
+             proto::CITEMTYPE_FACEBOOK,  proto::CITEMTYPE_GOOGLE,
+             proto::CITEMTYPE_LINKEDIN,  proto::CITEMTYPE_VK,
+             proto::CITEMTYPE_ABOUTME,   proto::CITEMTYPE_ONENAME,
+             proto::CITEMTYPE_TWITTER,   proto::CITEMTYPE_MEDIUM,
+             proto::CITEMTYPE_TUMBLR,    proto::CITEMTYPE_YAHOO,
+             proto::CITEMTYPE_MYSPACE,   proto::CITEMTYPE_MEETUP,
+             proto::CITEMTYPE_REDDIT,    proto::CITEMTYPE_HACKERNEWS,
+             proto::CITEMTYPE_WIKIPEDIA, proto::CITEMTYPE_ANGELLIST,
+             proto::CITEMTYPE_GITHUB,    proto::CITEMTYPE_BITBUCKET,
+             proto::CITEMTYPE_YOUTUBE,   proto::CITEMTYPE_VIMEO,
+             proto::CITEMTYPE_TWITCH,    proto::CITEMTYPE_SNAPCHAT,
+         }},
+    };
 
 static const std::
-    map<contact::ContactSectionName, std::map<proto::ContactItemType, int>>
+    map<contact::SectionType, std::map<proto::ContactItemType, int>>
         sort_keys_{
-            {contact::ContactSectionName::Communication,
+            {contact::SectionType::Communication,
              {
                  {proto::CITEMTYPE_PHONE, 0},
                  {proto::CITEMTYPE_EMAIL, 1},
@@ -104,7 +103,7 @@ static const std::
                  {proto::CITEMTYPE_WHATSAPP, 10},
                  {proto::CITEMTYPE_BITMESSAGE, 11},
              }},
-            {contact::ContactSectionName::Profile,
+            {contact::SectionType::Profile,
              {
                  {proto::CITEMTYPE_FACEBOOK, 0},
                  {proto::CITEMTYPE_TWITTER, 1},
@@ -132,7 +131,7 @@ static const std::
         };
 
 auto ProfileSection::AllowedItems(
-    const contact::ContactSectionName section,
+    const contact::SectionType section,
     const std::string& lang) noexcept -> ProfileSection::ItemTypeList
 {
     ItemTypeList output{};
@@ -169,7 +168,7 @@ ProfileSection::ProfileSection(
 }
 
 auto ProfileSection::AddClaim(
-    const contact::ContactItemType type,
+    const contact::ClaimType type,
     const std::string& value,
     const bool primary,
     const bool active) const noexcept -> bool
@@ -201,7 +200,7 @@ auto ProfileSection::Delete(const int type, const std::string& claimID)
 {
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
-        row_id_, static_cast<contact::ContactItemType>(type)};
+        row_id_, static_cast<contact::ClaimType>(type)};
     auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
@@ -260,7 +259,7 @@ auto ProfileSection::SetActive(
 {
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
-        row_id_, static_cast<contact::ContactItemType>(type)};
+        row_id_, static_cast<contact::ClaimType>(type)};
     auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
@@ -275,7 +274,7 @@ auto ProfileSection::SetPrimary(
 {
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
-        row_id_, static_cast<contact::ContactItemType>(type)};
+        row_id_, static_cast<contact::ClaimType>(type)};
     auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }
@@ -290,7 +289,7 @@ auto ProfileSection::SetValue(
 {
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{
-        row_id_, static_cast<contact::ContactItemType>(type)};
+        row_id_, static_cast<contact::ClaimType>(type)};
     auto& group = lookup(lock, key);
 
     if (false == group.Valid()) { return false; }

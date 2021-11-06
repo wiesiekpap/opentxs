@@ -20,6 +20,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/NymFile.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/ContractEnums.pb.h"
 #include "opentxs/protobuf/PeerEnums.pb.h"
 #include "util/Blank.hpp"
@@ -84,6 +85,17 @@ auto UnitID(const api::Core& api, const Type chain) noexcept
     -> const identifier::UnitDefinition&;
 }  // namespace opentxs::blockchain
 
+namespace opentxs::core
+{
+using UnitTypeMap = std::map<UnitType, contact::ClaimType>;
+using UnitTypeReverseMap = std::map<contact::ClaimType, UnitType>;
+
+auto unittype_map() noexcept -> const UnitTypeMap&;
+
+auto translate(const contact::ClaimType in) noexcept -> UnitType;
+auto translate(const UnitType in) noexcept -> contact::ClaimType;
+}  // namespace opentxs::core
+
 namespace opentxs::core::internal
 {
 using AddressTypeMap = std::map<AddressType, proto::AddressType>;
@@ -92,6 +104,8 @@ using AddressTypeReverseMap = std::map<proto::AddressType, AddressType>;
 auto addresstype_map() noexcept -> const AddressTypeMap&;
 auto translate(const AddressType in) noexcept -> proto::AddressType;
 auto translate(const proto::AddressType in) noexcept -> AddressType;
+auto translate(const UnitType in) noexcept -> proto::ContactItemType;
+auto translate(const proto::ContactItemType in) noexcept -> UnitType;
 }  // namespace opentxs::core::internal
 
 namespace opentxs::factory

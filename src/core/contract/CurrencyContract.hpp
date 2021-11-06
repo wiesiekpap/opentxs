@@ -11,7 +11,7 @@
 #include "Proto.hpp"
 #include "core/contract/UnitDefinition.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/contract/CurrencyContract.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -54,7 +54,7 @@ public:
         const std::string& tla,
         const std::uint32_t power,
         const std::string& fraction,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version);
     Currency(
         const api::Core& api,

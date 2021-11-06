@@ -10,10 +10,10 @@
 #include <functional>
 #include <type_traits>
 
-#include "internal/contact/Contact.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/protobuf/BlockchainAccountData.pb.h"
@@ -162,7 +162,7 @@ auto Nym::Bip47Channels() const -> const storage::Bip47Channels&
     return *bip47();
 }
 
-auto Nym::BlockchainAccountList(const contact::ContactItemType type) const
+auto Nym::BlockchainAccountList(const core::UnitType type) const
     -> std::set<std::string>
 {
     Lock lock(blockchain_lock_);
@@ -175,7 +175,7 @@ auto Nym::BlockchainAccountList(const contact::ContactItemType type) const
 }
 
 auto Nym::BlockchainAccountType(const std::string& accountID) const
-    -> contact::ContactItemType
+    -> core::UnitType
 {
     Lock lock(blockchain_lock_);
 
@@ -184,7 +184,7 @@ auto Nym::BlockchainAccountType(const std::string& accountID) const
         return blockchain_account_index_.at(accountID);
     } catch (...) {
 
-        return contact::ContactItemType::Error;
+        return core::UnitType::Error;
     }
 }
 
@@ -338,12 +338,12 @@ void Nym::init(const std::string& hash)
     for (const auto& it : serialized->blockchainaccountindex()) {
         const auto& id = it.id();
         auto& accountSet =
-            blockchain_account_types_[contact::internal::translate(id)];
+            blockchain_account_types_[core::internal::translate(id)];
 
         for (const auto& accountID : it.list()) {
             accountSet.emplace(accountID);
             blockchain_account_index_.emplace(
-                accountID, contact::internal::translate(id));
+                accountID, core::internal::translate(id));
         }
     }
 
@@ -770,7 +770,7 @@ auto Nym::serialize() const -> proto::StorageNym
         const auto& accountSet = it.second;
         auto& index = *serialized.add_blockchainaccountindex();
         index.set_version(BLOCKCHAIN_INDEX_VERSION);
-        index.set_id(contact::internal::translate(chainType));
+        index.set_id(core::internal::translate(chainType));
 
         for (const auto& accountID : accountSet) { index.add_list(accountID); }
     }
@@ -807,9 +807,7 @@ auto Nym::SetAlias(const std::string& alias) -> bool
     return true;
 }
 
-auto Nym::Store(
-    const contact::ContactItemType type,
-    const proto::HDAccount& data) -> bool
+auto Nym::Store(const core::UnitType type, const proto::HDAccount& data) -> bool
 {
     const auto& accountID = data.deterministic().common().id();
 

@@ -19,9 +19,9 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -77,7 +77,7 @@ public:
     virtual auto AccountSigner(const Identifier& accountID) const
         -> OTNymID = 0;
     virtual auto AccountUnit(const Identifier& accountID) const
-        -> contact::ContactItemType = 0;
+        -> core::UnitType = 0;
     virtual auto AccountsByContract(const identifier::UnitDefinition& contract)
         const -> std::set<OTIdentifier> = 0;
     virtual auto AccountsByIssuer(const identifier::Nym& issuerNym) const
@@ -86,20 +86,20 @@ public:
         -> std::set<OTIdentifier> = 0;
     virtual auto AccountsByServer(const identifier::Server& server) const
         -> std::set<OTIdentifier> = 0;
-    virtual auto AccountsByUnit(const contact::ContactItemType unit) const
+    virtual auto AccountsByUnit(const core::UnitType unit) const
         -> std::set<OTIdentifier> = 0;
     virtual auto Bip47Chain(
         const identifier::Nym& nymID,
-        const Identifier& channelID) const -> contact::ContactItemType = 0;
+        const Identifier& channelID) const -> core::UnitType = 0;
     virtual auto Bip47ChannelsByChain(
         const identifier::Nym& nymID,
-        const contact::ContactItemType chain) const -> Bip47ChannelList = 0;
+        const core::UnitType chain) const -> Bip47ChannelList = 0;
     virtual auto BlockchainAccountList(
         const std::string& nymID,
-        const contact::ContactItemType type) const -> std::set<std::string> = 0;
+        const core::UnitType type) const -> std::set<std::string> = 0;
     virtual auto BlockchainAccountType(
         const std::string& nymID,
-        const std::string& accountID) const -> contact::ContactItemType = 0;
+        const std::string& accountID) const -> core::UnitType = 0;
     virtual auto BlockchainThreadMap(
         const identifier::Nym& nym,
         const Data& txid) const noexcept -> std::vector<OTIdentifier> = 0;
@@ -347,10 +347,10 @@ public:
         const identifier::Nym& issuerNym,
         const identifier::Server& server,
         const identifier::UnitDefinition& contract,
-        const contact::ContactItemType unit) const -> bool = 0;
+        const core::UnitType unit) const -> bool = 0;
     virtual auto Store(
         const std::string& nymID,
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const proto::HDAccount& data) const -> bool = 0;
     virtual auto Store(
         const identifier::Nym& nymID,

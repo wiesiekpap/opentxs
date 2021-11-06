@@ -49,8 +49,8 @@ public:
         const std::string& memo = "",
         const PaymentType type = PaymentType::Cheque) const noexcept
         -> bool = 0;
-    virtual auto PaymentCode(const contact::ContactItemType currency)
-        const noexcept -> std::string = 0;
+    virtual auto PaymentCode(const core::UnitType currency) const noexcept
+        -> std::string = 0;
     virtual auto SendDraft() const noexcept -> bool = 0;
     virtual auto SetDraft(const std::string& draft) const noexcept -> bool = 0;
     virtual auto ThreadID() const noexcept -> std::string = 0;

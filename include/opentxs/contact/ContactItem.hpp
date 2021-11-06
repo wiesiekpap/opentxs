@@ -9,7 +9,7 @@
 #define NULL_START 0
 #define NULL_END 0
 
-// IWYU pragma: no_include "opentxs/contact/ContactItemAttribute.hpp"
+// IWYU pragma: no_include "opentxs/contact/Attribute.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -50,10 +50,10 @@ public:
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
-        const contact::ContactSectionName section,
-        const contact::ContactItemType& type,
+        const contact::SectionType section,
+        const contact::ClaimType& type,
         const std::string& value,
-        const std::set<contact::ContactItemAttribute>& attributes,
+        const std::set<contact::Attribute>& attributes,
         const std::time_t start,
         const std::time_t end,
         const std::string subtype);
@@ -67,13 +67,13 @@ public:
         const api::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
-        const contact::ContactSectionName section,
+        const contact::SectionType section,
         const proto::ContactItem& serialized);
     ContactItem(
         const api::Core& api,
         const std::string& nym,
         const VersionNumber parentVersion,
-        const contact::ContactSectionName section,
+        const contact::SectionType section,
         const ReadView& serialized);
     ContactItem(const ContactItem&) noexcept;
     ContactItem(ContactItem&&) noexcept;
@@ -85,7 +85,7 @@ public:
     auto isActive() const -> bool;
     auto isLocal() const -> bool;
     auto isPrimary() const -> bool;
-    auto Section() const -> const contact::ContactSectionName&;
+    auto Section() const -> const contact::SectionType&;
     auto Serialize(AllocateOutput destination, const bool withID = false) const
         -> bool;
     OPENTXS_NO_EXPORT auto Serialize(
@@ -99,7 +99,7 @@ public:
     auto SetValue(const std::string& value) const -> ContactItem;
     auto Start() const -> const std::time_t&;
     auto Subtype() const -> const std::string&;
-    auto Type() const -> const contact::ContactItemType&;
+    auto Type() const -> const contact::ClaimType&;
     auto Value() const -> const std::string&;
     auto Version() const -> VersionNumber;
 

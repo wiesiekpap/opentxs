@@ -53,7 +53,7 @@
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -502,7 +502,7 @@ protected:
     const std::string expected_notary_name_;
     const std::string memo_outgoing_;
     const ot::AccountType expected_account_type_;
-    const ot::contact::ContactItemType expected_unit_type_;
+    const ot::core::UnitType expected_unit_type_;
     const Generator hd_generator_;
     ScanListener& listener_;
 
@@ -537,7 +537,7 @@ protected:
     const std::string expected_notary_name_;
     const std::string memo_outgoing_;
     const ot::AccountType expected_account_type_;
-    const ot::contact::ContactItemType expected_unit_type_;
+    const ot::core::UnitType expected_unit_type_;
     const Generator mine_to_alice_;
     ScanListener& listener_alice_;
     ScanListener& listener_bob_;

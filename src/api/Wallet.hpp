@@ -29,7 +29,7 @@
 #include "opentxs/api/Wallet.hpp"
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/client/NymData.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
@@ -185,7 +185,7 @@ public:
         const PasswordPrompt& reason,
         const std::string name,
         const NymParameters& parameters,
-        const contact::ContactItemType type) const -> Nym_p final;
+        const contact::ClaimType type) const -> Nym_p final;
     auto mutable_Nym(const identifier::Nym& id, const PasswordPrompt& reason)
         const -> NymData final;
     auto Nymfile(const identifier::Nym& id, const PasswordPrompt& reason) const
@@ -324,7 +324,7 @@ public:
         const std::string& tla,
         const std::uint32_t power,
         const std::string& fraction,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         -> OTUnitDefinition final;
@@ -334,13 +334,13 @@ public:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         -> OTUnitDefinition final;
     auto CurrencyTypeBasedOnUnitType(
         const identifier::UnitDefinition& contractID) const
-        -> contact::ContactItemType final;
+        -> core::UnitType final;
 
     auto LoadCredential(
         const std::string& id,
@@ -366,9 +366,8 @@ protected:
         const identifier::Nym& remoteNymID) const
         -> std::shared_ptr<otx::context::Base>;
     auto extract_unit(const identifier::UnitDefinition& contractID) const
-        -> contact::ContactItemType;
-    auto extract_unit(const contract::Unit& contract) const
-        -> contact::ContactItemType;
+        -> core::UnitType;
+    auto extract_unit(const contract::Unit& contract) const -> core::UnitType;
     void save(
         const PasswordPrompt& reason,
         otx::context::internal::Base* context) const;

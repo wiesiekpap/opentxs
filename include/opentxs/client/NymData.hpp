@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CLIENT_NYMDATA_HPP
 #define OPENTXS_CLIENT_NYMDATA_HPP
 
-// IWYU pragma: no_include "opentxs/contact/ContactItemType.hpp"
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -64,7 +64,7 @@ public:
     auto asPublicNym() const -> identity::Nym::Serialized;
     auto BestEmail() const -> std::string;
     auto BestPhoneNumber() const -> std::string;
-    auto BestSocialMediaProfile(const contact::ContactItemType type) const
+    auto BestSocialMediaProfile(const contact::ClaimType type) const
         -> std::string;
     auto Claims() const -> const opentxs::ContactData&;
     auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
@@ -72,21 +72,19 @@ public:
     auto EmailAddresses(bool active = true) const -> std::string;
     auto HaveContract(
         const identifier::UnitDefinition& id,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const bool primary,
         const bool active) const -> bool;
     auto Name() const -> std::string;
     auto Nym() const -> const identity::Nym&;
-    auto PaymentCode(const contact::ContactItemType currency) const
-        -> std::string;
+    auto PaymentCode(const core::UnitType currency) const -> std::string;
     auto PhoneNumbers(bool active = true) const -> std::string;
     auto PreferredOTServer() const -> std::string;
     auto PrintContactData() const -> std::string;
-    auto SocialMediaProfiles(
-        const contact::ContactItemType type,
-        bool active = true) const -> std::string;
-    auto SocialMediaProfileTypes() const -> std::set<contact::ContactItemType>;
-    auto Type() const -> contact::ContactItemType;
+    auto SocialMediaProfiles(const contact::ClaimType type, bool active = true)
+        const -> std::string;
+    auto SocialMediaProfileTypes() const -> std::set<contact::ClaimType>;
+    auto Type() const -> contact::ClaimType;
     auto Valid() const -> bool;
 
     auto AddChildKeyCredential(
@@ -96,7 +94,7 @@ public:
     auto AddClaim(const Claim& claim, const PasswordPrompt& reason) -> bool;
     auto AddContract(
         const std::string& instrumentDefinitionID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
@@ -107,7 +105,7 @@ public:
         const PasswordPrompt& reason) -> bool;
     auto AddPaymentCode(
         const std::string& code,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
@@ -122,7 +120,7 @@ public:
         const PasswordPrompt& reason) -> bool;
     auto AddSocialMediaProfile(
         const std::string& value,
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
@@ -135,7 +133,7 @@ public:
     auto SetContactData(const ReadView& data, const PasswordPrompt& reason)
         -> bool;
     auto SetScope(
-        const contact::ContactItemType type,
+        const contact::ClaimType type,
         const std::string& name,
         const bool primary,
         const PasswordPrompt& reason) -> bool;

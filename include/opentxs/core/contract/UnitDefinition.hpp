@@ -14,6 +14,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/Types.hpp"
+#include "opentxs/core/Types.hpp"
 
 namespace opentxs
 {
@@ -63,7 +64,7 @@ public:
         const char* szDecimalPoint = ".") -> bool;
     static auto ValidUnits(
         const VersionNumber version = DefaultVersion) noexcept
-        -> std::set<contact::ContactItemType>;
+        -> std::set<core::UnitType>;
 
     virtual auto AddAccountRecord(
         const std::string& dataFolder,
@@ -104,7 +105,7 @@ public:
         const std::string& str_decimal) const -> bool = 0;
     virtual auto TLA() const -> std::string = 0;
     virtual auto Type() const -> contract::UnitType = 0;
-    virtual auto UnitOfAccount() const -> contact::ContactItemType = 0;
+    virtual auto UnitOfAccount() const -> core::UnitType = 0;
     virtual auto VisitAccountRecords(
         const std::string& dataFolder,
         AccountVisitor& visitor,

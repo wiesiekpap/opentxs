@@ -16,9 +16,9 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactItemAttribute.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/Attribute.hpp"
+#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
 
 namespace ot = opentxs;
@@ -32,18 +32,18 @@ public:
         : api_(ot::Context().StartClient(0))
         , contactGroup_(
               std::string("testContactGroupNym1"),
-              ot::contact::ContactSectionName::Identifier,
-              ot::contact::ContactItemType::Employee,
+              ot::contact::SectionType::Identifier,
+              ot::contact::ClaimType::Employee,
               {})
         , primary_(new ot::ContactItem(
               dynamic_cast<const ot::api::client::Manager&>(api_),
               std::string("primaryContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
-              ot::contact::ContactSectionName::Identifier,
-              ot::contact::ContactItemType::Employee,
+              ot::contact::SectionType::Identifier,
+              ot::contact::ClaimType::Employee,
               std::string("primaryContactItemValue"),
-              {ot::contact::ContactItemAttribute::Primary},
+              {ot::contact::Attribute::Primary},
               NULL_START,
               NULL_END,
               ""))
@@ -52,10 +52,10 @@ public:
               std::string("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
-              ot::contact::ContactSectionName::Identifier,
-              ot::contact::ContactItemType::Employee,
+              ot::contact::SectionType::Identifier,
+              ot::contact::ClaimType::Employee,
               std::string("activeContactItemValue"),
-              {ot::contact::ContactItemAttribute::Active},
+              {ot::contact::Attribute::Active},
               NULL_START,
               NULL_END,
               ""))
@@ -76,10 +76,10 @@ TEST_F(Test_ContactGroup, first_constructor)
         std::string("primaryContactItemNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::ContactSectionName::Identifier,
-        ot::contact::ContactItemType::Employee,
+        ot::contact::SectionType::Identifier,
+        ot::contact::ClaimType::Employee,
         std::string("primaryContactItemValue2"),
-        {ot::contact::ContactItemAttribute::Primary},
+        {ot::contact::Attribute::Primary},
         NULL_START,
         NULL_END,
         ""));
@@ -90,12 +90,12 @@ TEST_F(Test_ContactGroup, first_constructor)
 
     const ot::ContactGroup group1(
         std::string("testContactGroupNym1"),
-        ot::contact::ContactSectionName::Identifier,
-        ot::contact::ContactItemType::Employee,
+        ot::contact::SectionType::Identifier,
+        ot::contact::ClaimType::Employee,
         map);
     // Verify two items were added.
     ASSERT_EQ(2, group1.Size());
-    ASSERT_EQ(ot::contact::ContactItemType::Employee, group1.Type());
+    ASSERT_EQ(ot::contact::ClaimType::Employee, group1.Type());
     // Verify only one item is primary.
     if (primary_->ID() == group1.Primary()) {
         ASSERT_TRUE(group1.Claim(primary_->ID())->isPrimary());
@@ -111,19 +111,19 @@ TEST_F(Test_ContactGroup, first_constructor_no_items)
     // Test constructing a group with a map containing no items.
     const ot::ContactGroup group1(
         std::string("testContactGroupNym1"),
-        ot::contact::ContactSectionName::Identifier,
-        ot::contact::ContactItemType::Employee,
+        ot::contact::SectionType::Identifier,
+        ot::contact::ClaimType::Employee,
         {});
     // Verify the private static methods didn't blow up.
     ASSERT_EQ(group1.Size(), 0);
-    ASSERT_EQ(ot::contact::ContactItemType::Employee, group1.Type());
+    ASSERT_EQ(ot::contact::ClaimType::Employee, group1.Type());
 }
 
 TEST_F(Test_ContactGroup, second_constructor)
 {
     const ot::ContactGroup group1(
         std::string("testContactGroupNym1"),
-        ot::contact::ContactSectionName::Identifier,
+        ot::contact::SectionType::Identifier,
         active_);
 
     ASSERT_EQ(1, group1.Size());
@@ -136,7 +136,7 @@ TEST_F(Test_ContactGroup, copy_constructor)
 {
     const ot::ContactGroup group1(
         std::string("testContactGroupNym1"),
-        ot::contact::ContactSectionName::Identifier,
+        ot::contact::SectionType::Identifier,
         active_);
 
     ot::ContactGroup copiedContactGroup(group1);
@@ -173,10 +173,10 @@ TEST_F(Test_ContactGroup, operator_plus)
         std::string("primaryContactItemNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::ContactSectionName::Identifier,
-        ot::contact::ContactItemType::Employee,
+        ot::contact::SectionType::Identifier,
+        ot::contact::ClaimType::Employee,
         std::string("primaryContactItemValue2"),
-        {ot::contact::ContactItemAttribute::Primary},
+        {ot::contact::Attribute::Primary},
         NULL_START,
         NULL_END,
         ""));
@@ -282,10 +282,10 @@ TEST_F(Test_ContactGroup, Best_active_and_local)
         std::string("localContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::ContactSectionName::Identifier,
-        ot::contact::ContactItemType::Employee,
+        ot::contact::SectionType::Identifier,
+        ot::contact::ClaimType::Employee,
         std::string("localContactItemValue"),
-        {ot::contact::ContactItemAttribute::Local},
+        {ot::contact::Attribute::Local},
         NULL_START,
         NULL_END,
         ""));
@@ -411,6 +411,6 @@ TEST_F(Test_ContactGroup, Size)
 
 TEST_F(Test_ContactGroup, Type)
 {
-    ASSERT_EQ(ot::contact::ContactItemType::Employee, contactGroup_.Type());
+    ASSERT_EQ(ot::contact::ClaimType::Employee, contactGroup_.Type());
 }
 }  // namespace ottest

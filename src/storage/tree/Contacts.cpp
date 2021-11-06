@@ -13,8 +13,8 @@
 #include <tuple>
 
 #include "internal/contact/Contact.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Check.hpp"
@@ -67,14 +67,14 @@ void Contacts::extract_nyms(const Lock& lock, const proto::Contact& data) const
     const auto& contact = data.id();
 
     for (const auto& section : data.contactdata().section()) {
-        if (section.name() != contact::internal::translate(
-                                  contact::ContactSectionName::Relationship)) {
+        if (section.name() !=
+            contact::internal::translate(contact::SectionType::Relationship)) {
             break;
         }
 
         for (const auto& item : section.item()) {
             if (contact::internal::translate(item.type()) !=
-                contact::ContactItemType::Contact) {
+                contact::ClaimType::Contact) {
                 break;
             }
 

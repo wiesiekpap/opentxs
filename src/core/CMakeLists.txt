@@ -90,6 +90,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/String.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/StringXML.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Types.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/UnitType.hpp"
 )
 target_link_libraries(
   opentxs-core

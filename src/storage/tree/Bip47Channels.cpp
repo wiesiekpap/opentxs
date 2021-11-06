@@ -13,11 +13,13 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/contact/Contact.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/Types.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/protobuf/Bip47Channel.pb.h"
 #include "opentxs/protobuf/BlockchainAccountData.pb.h"
 #include "opentxs/protobuf/BlockchainDeterministicAccountData.pb.h"
@@ -51,15 +53,14 @@ Bip47Channels::Bip47Channels(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Bip47Channels::Chain(const Identifier& channelID) const
-    -> contact::ContactItemType
+auto Bip47Channels::Chain(const Identifier& channelID) const -> core::UnitType
 {
     auto lock = sLock{index_lock_};
 
     return get_channel_data(lock, channelID);
 }
 
-auto Bip47Channels::ChannelsByChain(const contact::ContactItemType chain) const
+auto Bip47Channels::ChannelsByChain(const core::UnitType chain) const
     -> Bip47Channels::ChannelList
 {
     return extract_set(chain, chain_index_);
@@ -93,7 +94,7 @@ auto Bip47Channels::get_channel_data(const L& lock, const Identifier& id) const
 
         return channel_data_.at(id);
     } catch (const std::out_of_range&) {
-        static auto blank = ChannelData{contact::ContactItemType::Error};
+        static auto blank = ChannelData{core::UnitType::Error};
 
         return blank;
     }
@@ -106,7 +107,7 @@ auto Bip47Channels::index(
 {
     const auto& common = data.deterministic().common();
     auto& chain = channel_data_[id];
-    chain = contact::internal::translate(common.chain());
+    chain = core::internal::translate(common.chain());
     chain_index_[chain].emplace(id);
 }
 
@@ -135,7 +136,7 @@ auto Bip47Channels::init(const std::string& hash) -> void
         for (const auto& index : proto->index()) {
             auto id = Identifier::Factory(index.channelid());
             auto& chain = channel_data_[id];
-            chain = contact::internal::translate(index.chain());
+            chain = core::internal::translate(index.chain());
             chain_index_[chain].emplace(std::move(id));
         }
     }
@@ -211,7 +212,7 @@ auto Bip47Channels::serialize() const -> proto::StorageBip47Contexts
         auto& index = *serialized.add_index();
         index.set_version(CHANNEL_INDEX_VERSION);
         index.set_channelid(id->str());
-        index.set_chain(contact::internal::translate(chain));
+        index.set_chain(core::internal::translate(chain));
     }
 
     return serialized;

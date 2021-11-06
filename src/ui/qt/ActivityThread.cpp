@@ -17,7 +17,7 @@
 #include "internal/ui/UI.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "ui/activitythread/ActivityThreadItem.hpp"
@@ -151,8 +151,7 @@ auto ActivityThreadQt::pay(
 
 auto ActivityThreadQt::paymentCode(const int currency) const noexcept -> QString
 {
-    return imp_->parent_
-        .PaymentCode(static_cast<contact::ContactItemType>(currency))
+    return imp_->parent_.PaymentCode(static_cast<core::UnitType>(currency))
         .c_str();
 }
 

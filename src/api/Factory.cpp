@@ -337,7 +337,7 @@ auto Factory::BasketContract(
     const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version) const noexcept(false) -> OTBasketContract
 {
     auto output = opentxs::Factory::BasketContract(
@@ -882,7 +882,7 @@ auto Factory::CurrencyContract(
     const std::string& tla,
     const std::uint32_t power,
     const std::string& fraction,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTCurrencyContract
@@ -2166,7 +2166,7 @@ auto Factory::SecurityContract(
     const std::string& name,
     const std::string& symbol,
     const std::string& terms,
-    const contact::ContactItemType unitOfAccount,
+    const core::UnitType unitOfAccount,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTSecurityContract

@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
-#include "internal/contact/Contact.hpp"
+#include "internal/core/Core.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Endpoints.hpp"
@@ -133,7 +133,7 @@ auto UnitList::process_unit(const UnitListRowID& id) noexcept -> void
 {
     auto custom = CustomData{};
     add_item(
-        id, proto::TranslateItemType(contact::internal::translate(id)), custom);
+        id, proto::TranslateItemType(core::internal::translate(id)), custom);
 }
 
 #if OT_BLOCKCHAIN

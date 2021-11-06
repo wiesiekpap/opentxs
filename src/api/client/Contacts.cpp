@@ -30,7 +30,7 @@
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -195,12 +195,11 @@ auto Contacts::ContactList() const -> ObjectList
 
 auto Contacts::ContactName(const Identifier& id) const -> std::string
 {
-    return ContactName(id, contact::ContactItemType::Error);
+    return ContactName(id, core::UnitType::Error);
 }
 
-auto Contacts::ContactName(
-    const Identifier& id,
-    contact::ContactItemType currencyHint) const -> std::string
+auto Contacts::ContactName(const Identifier& id, core::UnitType currencyHint)
+    const -> std::string
 {
     auto alias = std::string{};
     const auto fallback = [&](const rLock&) {
@@ -224,7 +223,7 @@ auto Contacts::ContactName(
         }
     }
 
-    using Type = contact::ContactItemType;
+    using Type = core::UnitType;
 
     if ((Type::Error == currencyHint) && (false == alias.empty())) {
         const auto isPaymentCode = [&] {
@@ -258,10 +257,10 @@ auto Contacts::ContactName(
         return output;
     }
 
-    using Section = contact::ContactSectionName;
+    using Section = contact::SectionType;
 
     if (Type::Error != currencyHint) {
-        auto group = data->Group(Section::Procedure, currencyHint);
+        auto group = data->Group(Section::Procedure, translate(currencyHint));
 
         if (group) {
             if (auto best = group->Best(); best) {
@@ -311,15 +310,15 @@ auto Contacts::import_contacts(const rLock& lock) -> void
             }
 
             switch (nym->Claims().Type()) {
-                case contact::ContactItemType::Individual:
-                case contact::ContactItemType::Organization:
-                case contact::ContactItemType::Business:
-                case contact::ContactItemType::Government: {
+                case contact::ClaimType::Individual:
+                case contact::ClaimType::Organization:
+                case contact::ClaimType::Business:
+                case contact::ClaimType::Government: {
                     auto code = api_.Factory().PaymentCode(nym->PaymentCode());
                     new_contact(lock, nym->Alias(), nymID, code);
                 } break;
-                case contact::ContactItemType::Error:
-                case contact::ContactItemType::Server:
+                case contact::ClaimType::Error:
+                case contact::ClaimType::Server:
                 default: {
                 }
             }
@@ -361,7 +360,7 @@ void Contacts::init_nym_map(const rLock& lock)
 
         const auto type = contact->Type();
 
-        if (contact::ContactItemType::Error == type) {
+        if (contact::ClaimType::Error == type) {
             LogOutput(OT_METHOD)(__func__)(": Invalid contact ")(it.first)(".")
                 .Flush();
             api_.Storage().DeleteContact(it.first);
@@ -834,10 +833,10 @@ auto Contacts::Update(const identity::Nym& nym) const
     auto& data = nym.Claims();
 
     switch (data.Type()) {
-        case contact::ContactItemType::Individual:
-        case contact::ContactItemType::Organization:
-        case contact::ContactItemType::Business:
-        case contact::ContactItemType::Government: {
+        case contact::ClaimType::Individual:
+        case contact::ClaimType::Organization:
+        case contact::ClaimType::Business:
+        case contact::ClaimType::Government: {
             break;
         }
         default: {

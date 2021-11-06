@@ -36,7 +36,7 @@ public:
         NameRole = Qt::UserRole + 0,         // QString
         NotaryIDRole = Qt::UserRole + 1,     // QString
         NotaryNameRole = Qt::UserRole + 2,   // QString
-        UnitRole = Qt::UserRole + 3,         // int (contact::ContactItemType)
+        UnitRole = Qt::UserRole + 3,         // int (contact::)
         UnitNameRole = Qt::UserRole + 4,     // QString
         AccountIDRole = Qt::UserRole + 5,    // QString
         BalanceRole = Qt::UserRole + 6,      // QString

@@ -36,7 +36,7 @@ namespace opentxs::factory
 auto AccountSummaryModel(
     const api::client::Manager& api,
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::AccountSummary>
 {
@@ -51,7 +51,7 @@ namespace opentxs::ui::implementation
 AccountSummary::AccountSummary(
     const api::client::Manager& api,
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback& cb) noexcept
     : AccountSummaryList(api, nymID, cb, false)
     , listeners_({

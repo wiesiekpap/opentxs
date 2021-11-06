@@ -180,13 +180,13 @@ private:
         }();
 
         try {
-            namespace sync = opentxs::network::blockchain::sync;
-            const auto base = sync::Factory(api_, incoming);
+            namespace bcsync = opentxs::network::blockchain::sync;
+            const auto base = bcsync::Factory(api_, incoming);
             const auto type = base->Type();
 
             switch (type) {
-                case sync::MessageType::query:
-                case sync::MessageType::sync_request: {
+                case bcsync::MessageType::query:
+                case bcsync::MessageType::sync_request: {
                 } break;
                 default: {
                     LogOutput(OT_METHOD)(__func__)(
@@ -198,7 +198,7 @@ private:
             }
 
             {
-                const auto ack = sync::Acknowledgement{
+                const auto ack = bcsync::Acknowledgement{
                     parent_.Hello(), update_public_endpoint_};
                 auto msg = api_.Network().ZeroMQ().ReplyMessage(incoming);
 
@@ -207,7 +207,7 @@ private:
                 }
             }
 
-            if (sync::MessageType::sync_request == type) {
+            if (bcsync::MessageType::sync_request == type) {
                 const auto& request = base->asRequest();
 
                 for (const auto& state : request.State()) {

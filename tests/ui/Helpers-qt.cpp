@@ -587,8 +587,7 @@ auto check_row(
         output &=
             (notaryName.toString().toStdString() == expected.notary_name_);
         output &=
-            (static_cast<ot::contact::ContactItemType>(unit.toInt()) ==
-             expected.unit_);
+            (static_cast<ot::core::UnitType>(unit.toInt()) == expected.unit_);
         output &= (unitName.toString().toStdString() == expected.display_unit_);
         output &= (accountID.toString().toStdString() == expected.account_id_);
         output &=
@@ -602,8 +601,7 @@ auto check_row(
         EXPECT_EQ(notaryID.toString().toStdString(), expected.notary_id_);
         EXPECT_EQ(notaryName.toString().toStdString(), expected.notary_name_);
         EXPECT_EQ(
-            static_cast<ot::contact::ContactItemType>(unit.toInt()),
-            expected.unit_);
+            static_cast<ot::core::UnitType>(unit.toInt()), expected.unit_);
         EXPECT_EQ(unitName.toString().toStdString(), expected.display_unit_);
         EXPECT_EQ(accountID.toString().toStdString(), expected.account_id_);
         EXPECT_EQ(balance.toString().toStdString(), expected.display_balance_);

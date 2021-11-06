@@ -17,7 +17,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/ui/PayableList.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -77,7 +77,7 @@ public:
     PayableList(
         const api::client::Manager& api,
         const identifier::Nym& nymID,
-        const contact::ContactItemType& currency,
+        const core::UnitType& currency,
         const SimpleCallback& cb) noexcept;
     ~PayableList() final;
 
@@ -93,7 +93,7 @@ private:
     };
 
     const OTIdentifier owner_contact_id_;
-    const contact::ContactItemType currency_;
+    const core::UnitType currency_;
 
     auto construct_row(
         const PayableListRowID& id,

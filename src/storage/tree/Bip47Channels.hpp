@@ -14,8 +14,9 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/protobuf/StorageBip47Contexts.pb.h"
 #include "storage/tree/Node.hpp"
 
@@ -43,9 +44,8 @@ class Bip47Channels final : public Node
 public:
     using ChannelList = std::set<OTIdentifier>;
 
-    auto Chain(const Identifier& channelID) const -> contact::ContactItemType;
-    auto ChannelsByChain(const contact::ContactItemType chain) const
-        -> ChannelList;
+    auto Chain(const Identifier& channelID) const -> core::UnitType;
+    auto ChannelsByChain(const core::UnitType chain) const -> ChannelList;
     auto Load(
         const Identifier& id,
         std::shared_ptr<proto::Bip47Channel>& output,
@@ -61,10 +61,10 @@ private:
     friend Nym;
 
     /** chain */
-    using ChannelData = contact::ContactItemType;
+    using ChannelData = core::UnitType;
     /** channel id, channel data */
     using ChannelIndex = std::map<OTIdentifier, ChannelData>;
-    using ChainIndex = std::map<contact::ContactItemType, ChannelList>;
+    using ChainIndex = std::map<core::UnitType, ChannelList>;
 
     mutable std::shared_mutex index_lock_;
     ChannelIndex channel_data_;

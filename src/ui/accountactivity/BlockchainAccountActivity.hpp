@@ -27,7 +27,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
@@ -143,7 +143,7 @@ public:
     {
         return progress_.get_progress();
     }
-    auto Unit() const noexcept -> contact::ContactItemType final
+    auto Unit() const noexcept -> core::UnitType final
     {
         return Translate(chain_);
     }

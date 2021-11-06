@@ -17,7 +17,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/ui/Blockchains.hpp"
@@ -77,7 +77,7 @@ public:
         const noexcept -> opentxs::ui::AccountListQt* final;
     auto AccountSummaryQt(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::AccountSummaryQt* final;
     auto ActivitySummaryQt(
@@ -110,7 +110,7 @@ public:
         const noexcept -> opentxs::ui::MessagableListQt* final;
     auto PayableListQt(
         const identifier::Nym& nymID,
-        const contact::ContactItemType currency,
+        const core::UnitType currency,
         const SimpleCallback cb) const noexcept
         -> opentxs::ui::PayableListQt* final;
     auto ProfileQt(const identifier::Nym& nymID, const SimpleCallback cb)

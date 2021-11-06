@@ -79,7 +79,7 @@ auto NymData::DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
 
 auto NymData::AddContract(
     const std::string& instrumentDefinitionID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const bool primary,
     const bool active,
     const PasswordPrompt& reason) -> bool
@@ -107,7 +107,7 @@ auto NymData::AddEmail(
 
 auto NymData::AddPaymentCode(
     const std::string& code,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const bool primary,
     const bool active,
     const PasswordPrompt& reason) -> bool
@@ -148,7 +148,7 @@ auto NymData::AddPreferredOTServer(
 
 auto NymData::AddSocialMediaProfile(
     const std::string& value,
-    const contact::ContactItemType type,
+    const contact::ClaimType type,
     const bool primary,
     const bool active,
     const PasswordPrompt& reason) -> bool
@@ -170,7 +170,7 @@ auto NymData::BestPhoneNumber() const -> std::string
     return nym().BestPhoneNumber();
 }
 
-auto NymData::BestSocialMediaProfile(const contact::ContactItemType type) const
+auto NymData::BestSocialMediaProfile(const contact::ClaimType type) const
     -> std::string
 {
     return nym().BestSocialMediaProfile(type);
@@ -190,7 +190,7 @@ auto NymData::EmailAddresses(bool active) const -> std::string
 
 auto NymData::HaveContract(
     const identifier::UnitDefinition& instrumentDefinitionID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const bool primary,
     const bool active) const -> bool
 {
@@ -235,8 +235,7 @@ auto NymData::nym() const -> const identity::Nym&
     return *nym_;
 }
 
-auto NymData::PaymentCode(const contact::ContactItemType currency) const
-    -> std::string
+auto NymData::PaymentCode(const core::UnitType currency) const -> std::string
 {
     return Contact::PaymentCode(data(), currency);
 }
@@ -303,7 +302,7 @@ auto NymData::SetContactData(
 }
 
 auto NymData::SetScope(
-    const contact::ContactItemType type,
+    const contact::ClaimType type,
     const std::string& name,
     const bool primary,
     const PasswordPrompt& reason) -> bool
@@ -311,20 +310,18 @@ auto NymData::SetScope(
     return nym().SetScope(type, name, reason, primary);
 }
 
-auto NymData::SocialMediaProfiles(
-    const contact::ContactItemType type,
-    bool active) const -> std::string
+auto NymData::SocialMediaProfiles(const contact::ClaimType type, bool active)
+    const -> std::string
 {
     return nym().SocialMediaProfiles(type, active);
 }
 
-auto NymData::SocialMediaProfileTypes() const
-    -> std::set<contact::ContactItemType>
+auto NymData::SocialMediaProfileTypes() const -> std::set<contact::ClaimType>
 {
     return nym().SocialMediaProfileTypes();
 }
 
-auto NymData::Type() const -> contact::ContactItemType { return data().Type(); }
+auto NymData::Type() const -> contact::ClaimType { return data().Type(); }
 
 auto NymData::Valid() const -> bool { return bool(nym_); }
 

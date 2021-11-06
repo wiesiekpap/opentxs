@@ -21,8 +21,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Editor.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -89,8 +89,8 @@ public:
     }
 
     auto AddClaim(
-        const contact::ContactSectionName section,
-        const contact::ContactItemType type,
+        const contact::SectionType section,
+        const contact::ClaimType type,
         const String& value,
         const bool primary) -> bool override;
     auto ConveyPayment(
@@ -215,8 +215,8 @@ private:
     Amount amount_;
     OTString memo_;
     bool bool_;
-    contact::ContactSectionName claim_section_;
-    contact::ContactItemType claim_type_;
+    contact::SectionType claim_section_;
+    contact::ClaimType claim_type_;
     std::shared_ptr<Cheque> cheque_;
     std::shared_ptr<const OTPayment> payment_;
     std::shared_ptr<Ledger> inbox_;

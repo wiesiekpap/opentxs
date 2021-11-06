@@ -10,7 +10,7 @@
 #include "Proto.hpp"
 #include "core/contract/UnitDefinition.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/contract/SecurityContract.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -46,7 +46,7 @@ public:
         const std::string& name,
         const std::string& symbol,
         const std::string& terms,
-        const contact::ContactItemType unitOfAccount,
+        const core::UnitType unitOfAccount,
         const VersionNumber version);
     Security(
         const api::Core& api,

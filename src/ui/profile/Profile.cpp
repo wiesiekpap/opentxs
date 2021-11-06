@@ -27,9 +27,9 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactItemAttribute.hpp"
+#include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -59,13 +59,13 @@ auto ProfileModel(
 
 namespace opentxs::ui::implementation
 {
-const std::set<contact::ContactSectionName> Profile::allowed_types_{
-    contact::ContactSectionName::Communication,
-    contact::ContactSectionName::Profile};
+const std::set<contact::SectionType> Profile::allowed_types_{
+    contact::SectionType::Communication,
+    contact::SectionType::Profile};
 
-const std::map<contact::ContactSectionName, int> Profile::sort_keys_{
-    {contact::ContactSectionName::Communication, 0},
-    {contact::ContactSectionName::Profile, 1}};
+const std::map<contact::SectionType, int> Profile::sort_keys_{
+    {contact::SectionType::Communication, 0},
+    {contact::SectionType::Profile, 1}};
 
 Profile::Profile(
     const api::client::Manager& api,
@@ -87,8 +87,8 @@ Profile::Profile(
 }
 
 auto Profile::AddClaim(
-    const contact::ContactSectionName section,
-    const contact::ContactItemType type,
+    const contact::SectionType section,
+    const contact::ClaimType type,
     const std::string& value,
     const bool primary,
     const bool active) const noexcept -> bool
@@ -97,21 +97,21 @@ auto Profile::AddClaim(
     auto nym = api_.Wallet().mutable_Nym(primary_id_, reason);
 
     switch (section) {
-        case contact::ContactSectionName::Scope: {
+        case contact::SectionType::Scope: {
 
             return nym.SetScope(type, value, primary, reason);
         }
-        case contact::ContactSectionName::Communication: {
+        case contact::SectionType::Communication: {
             switch (type) {
-                case contact::ContactItemType::Email: {
+                case contact::ClaimType::Email: {
 
                     return nym.AddEmail(value, primary, active, reason);
                 }
-                case contact::ContactItemType::Phone: {
+                case contact::ClaimType::Phone: {
 
                     return nym.AddPhoneNumber(value, primary, active, reason);
                 }
-                case contact::ContactItemType::Opentxs: {
+                case contact::ClaimType::Opentxs: {
 
                     return nym.AddPreferredOTServer(value, primary, reason);
                 }
@@ -119,17 +119,19 @@ auto Profile::AddClaim(
                 }
             }
         } break;
-        case contact::ContactSectionName::Profile: {
+        case contact::SectionType::Profile: {
 
             return nym.AddSocialMediaProfile(
                 value, type, primary, active, reason);
         }
-        case contact::ContactSectionName::Contract: {
+        case contact::SectionType::Contract: {
 
-            return nym.AddContract(value, type, primary, active, reason);
+            return nym.AddContract(
+                value, core::translate(type), primary, active, reason);
         }
-        case contact::ContactSectionName::Procedure: {
-            return nym.AddPaymentCode(value, type, primary, active, reason);
+        case contact::SectionType::Procedure: {
+            return nym.AddPaymentCode(
+                value, core::translate(type), primary, active, reason);
         }
         default: {
         }
@@ -146,20 +148,20 @@ auto Profile::AddClaim(
     end = 0;
 
     if (primary) {
-        attributes.emplace(contact::internal::translate(
-            contact::ContactItemAttribute::Primary));
+        attributes.emplace(
+            contact::internal::translate(contact::Attribute::Primary));
     }
 
     if (primary || active) {
-        attributes.emplace(contact::internal::translate(
-            contact::ContactItemAttribute::Active));
+        attributes.emplace(
+            contact::internal::translate(contact::Attribute::Active));
     }
 
     return nym.AddClaim(claim, reason);
 }
 
 auto Profile::AllowedItems(
-    const contact::ContactSectionName section,
+    const contact::SectionType section,
     const std::string& lang) const noexcept -> Profile::ItemTypeList
 {
     return ui::ProfileSection::AllowedItems(section, lang);
@@ -180,8 +182,7 @@ auto Profile::AllowedSections(const std::string& lang) const noexcept
     return output;
 }
 
-auto Profile::check_type(const contact::ContactSectionName type) noexcept
-    -> bool
+auto Profile::check_type(const contact::SectionType type) noexcept -> bool
 {
     return 1 == allowed_types_.count(type);
 }
@@ -357,7 +358,7 @@ auto Profile::SetValue(
     return section.SetValue(type, claimID, value);
 }
 
-auto Profile::sort_key(const contact::ContactSectionName type) noexcept -> int
+auto Profile::sort_key(const contact::SectionType type) noexcept -> int
 {
     return sort_keys_.at(type);
 }

@@ -116,7 +116,7 @@ auto ImpQt::AccountListQt(const identifier::Nym& nymID, const SimpleCallback cb)
 
 auto ImpQt::AccountSummaryQt(
     const identifier::Nym& nymID,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const SimpleCallback cb) const noexcept -> opentxs::ui::AccountSummaryQt*
 {
     auto lock = Lock{lock_};
@@ -316,7 +316,7 @@ auto ImpQt::MessagableListQt(
 
 auto ImpQt::PayableListQt(
     const identifier::Nym& nymID,
-    contact::ContactItemType currency,
+    core::UnitType currency,
     const SimpleCallback cb) const noexcept -> opentxs::ui::PayableListQt*
 {
     auto lock = Lock{lock_};

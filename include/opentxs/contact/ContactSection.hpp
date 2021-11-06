@@ -6,7 +6,7 @@
 #ifndef OPENTXS_CONTACT_CONTACTSECTION_HPP
 #define OPENTXS_CONTACT_CONTACTSECTION_HPP
 
-// IWYU pragma: no_include "opentxs/contact/ContactSectionName.hpp"
+// IWYU pragma: no_include "opentxs/contact/SectionType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -44,21 +44,21 @@ class OPENTXS_EXPORT ContactSection
 {
 public:
     using GroupMap =
-        std::map<contact::ContactItemType, std::shared_ptr<ContactGroup>>;
+        std::map<contact::ClaimType, std::shared_ptr<ContactGroup>>;
 
     ContactSection(
         const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
-        const contact::ContactSectionName section,
+        const contact::SectionType section,
         const GroupMap& groups);
     ContactSection(
         const api::Core& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
-        const contact::ContactSectionName section,
+        const contact::SectionType section,
         const std::shared_ptr<ContactItem>& item);
     OPENTXS_NO_EXPORT ContactSection(
         const api::Core& api,
@@ -81,7 +81,7 @@ public:
     auto Claim(const Identifier& item) const -> std::shared_ptr<ContactItem>;
     auto Delete(const Identifier& id) const -> ContactSection;
     auto end() const -> GroupMap::const_iterator;
-    auto Group(const contact::ContactItemType& type) const
+    auto Group(const contact::ClaimType& type) const
         -> std::shared_ptr<ContactGroup>;
     auto HaveClaim(const Identifier& item) const -> bool;
     auto Serialize(AllocateOutput destination, const bool withIDs = false) const
@@ -90,7 +90,7 @@ public:
         proto::ContactData& data,
         const bool withIDs = false) const -> bool;
     auto Size() const -> std::size_t;
-    auto Type() const -> const contact::ContactSectionName&;
+    auto Type() const -> const contact::SectionType&;
     auto Version() const -> VersionNumber;
 
     ~ContactSection();

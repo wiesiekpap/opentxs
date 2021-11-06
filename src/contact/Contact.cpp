@@ -31,9 +31,9 @@
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactItemAttribute.hpp"
+#include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ContactSection.hpp"  // IWYU pragma: keep
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
@@ -134,7 +134,7 @@ struct Contact::Imp {
 
     static auto translate(
         const api::client::Manager& api,
-        const contact::ContactItemType chain,
+        const core::UnitType chain,
         const std::string& value,
         const std::string& subtype) noexcept(false)
         -> Contact::BlockchainAddress
@@ -259,9 +259,8 @@ struct Contact::Imp {
 
         const auto contactType = type(lock);
         const auto nymType = ExtractType(*nym);
-        const bool haveType =
-            (contact::ContactItemType::Error != contactType) &&
-            (contact::ContactItemType::Unknown != contactType);
+        const bool haveType = (contact::ClaimType::Error != contactType) &&
+                              (contact::ClaimType::Unknown != contactType);
         const bool typeMismatch = (contactType != nymType);
 
         if (haveType && typeMismatch) {
@@ -289,11 +288,10 @@ struct Contact::Imp {
     {
         OT_ASSERT(verify_write_lock(lock));
 
-        std::set<contact::ContactItemAttribute> attr{
-            contact::ContactItemAttribute::Local,
-            contact::ContactItemAttribute::Active};
+        std::set<contact::Attribute> attr{
+            contact::Attribute::Local, contact::Attribute::Active};
 
-        if (primary) { attr.emplace(contact::ContactItemAttribute::Primary); }
+        if (primary) { attr.emplace(contact::Attribute::Primary); }
 
         std::shared_ptr<ContactItem> claim{nullptr};
         claim.reset(new ContactItem(
@@ -301,8 +299,8 @@ struct Contact::Imp {
             String::Factory(id_)->Get(),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            contact::ContactSectionName::Relationship,
-            contact::ContactItemType::Contact,
+            contact::SectionType::Relationship,
+            contact::ClaimType::Contact,
             String::Factory(nymID)->Get(),
             attr,
             NULL_START,
@@ -333,8 +331,7 @@ struct Contact::Imp {
         OT_ASSERT(contact_data_);
 
         const auto nyms = contact_data_->Group(
-            contact::ContactSectionName::Relationship,
-            contact::ContactItemType::Contact);
+            contact::SectionType::Relationship, contact::ClaimType::Contact);
 
         if (false == bool(nyms)) { return; }
 
@@ -395,25 +392,24 @@ struct Contact::Imp {
         return output;
     }
 
-    auto payment_codes(
-        const Lock& lock,
-        const contact::ContactItemType currency) const
+    auto payment_codes(const Lock& lock, const core::UnitType currency) const
         -> std::shared_ptr<ContactGroup>
     {
         const auto data = merged_data(lock);
 
         if (false == bool(data)) { return {}; }
 
-        return data->Group(contact::ContactSectionName::Procedure, currency);
+        return data->Group(
+            contact::SectionType::Procedure, core::translate(currency));
     }
 
-    auto type(const Lock& lock) const -> contact::ContactItemType
+    auto type(const Lock& lock) const -> contact::ClaimType
     {
         OT_ASSERT(verify_write_lock(lock));
 
         const auto data = merged_data(lock);
 
-        if (false == bool(data)) { return contact::ContactItemType::Error; }
+        if (false == bool(data)) { return contact::ClaimType::Error; }
 
         return data->Type();
     }
@@ -549,11 +545,10 @@ auto Contact::AddBlockchainAddress(
         String::Factory(imp_->id_)->Get(),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        contact::ContactSectionName::Address,
-        Translate(chain),
+        contact::SectionType::Address,
+        translate(Translate(chain)),
         bytes.asHex(),
-        {contact::ContactItemAttribute::Local,
-         contact::ContactItemAttribute::Active},
+        {contact::Attribute::Local, contact::Attribute::Active},
         NULL_START,
         NULL_END,
         translate_style(style)));
@@ -608,15 +603,14 @@ auto Contact::AddNym(const identifier::Nym& nymID, const bool primary) -> bool
 auto Contact::AddPaymentCode(
     const opentxs::PaymentCode& code,
     const bool primary,
-    const contact::ContactItemType currency,
+    const core::UnitType currency,
     const bool active) -> bool
 {
-    std::set<contact::ContactItemAttribute> attr{
-        contact::ContactItemAttribute::Local};
+    std::set<contact::Attribute> attr{contact::Attribute::Local};
 
-    if (active) { attr.emplace(contact::ContactItemAttribute::Active); }
+    if (active) { attr.emplace(contact::Attribute::Active); }
 
-    if (primary) { attr.emplace(contact::ContactItemAttribute::Primary); }
+    if (primary) { attr.emplace(contact::Attribute::Primary); }
 
     const std::string value = code.asBase58();
     std::shared_ptr<ContactItem> claim{nullptr};
@@ -625,8 +619,8 @@ auto Contact::AddPaymentCode(
         String::Factory(imp_->id_)->Get(),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        contact::ContactSectionName::Procedure,
-        currency,
+        contact::SectionType::Procedure,
+        translate(currency),
         value,
         attr,
         NULL_START,
@@ -665,7 +659,7 @@ auto Contact::AddPhoneNumber(
 
 auto Contact::AddSocialMediaProfile(
     const std::string& value,
-    const contact::ContactItemType type,
+    const contact::ClaimType type,
     const bool primary,
     const bool active) -> bool
 {
@@ -725,7 +719,7 @@ auto Contact::BestPhoneNumber() const -> std::string
     return data->BestPhoneNumber();
 }
 
-auto Contact::BestSocialMediaProfile(const contact::ContactItemType type) const
+auto Contact::BestSocialMediaProfile(const contact::ClaimType type) const
     -> std::string
 {
     auto lock = Lock{imp_->lock_};
@@ -748,7 +742,7 @@ auto Contact::BlockchainAddresses() const
     if (false == bool(data)) { return {}; }
 
     const auto& version = data->Version();
-    const auto section = data->Section(contact::ContactSectionName::Address);
+    const auto section = data->Section(contact::SectionType::Address);
 
     if (false == bool(section)) { return {}; }
 
@@ -760,8 +754,7 @@ auto Contact::BlockchainAddresses() const
 
         const bool currency = proto::ValidContactItemType(
             {version,
-             contact::internal::translate(
-                 contact::ContactSectionName::Contract)},
+             contact::internal::translate(contact::SectionType::Contract)},
             contact::internal::translate(type));
 
         if (false == currency) { continue; }
@@ -773,7 +766,10 @@ auto Contact::BlockchainAddresses() const
 
             try {
                 output.push_back(Imp::translate(
-                    imp_->api_, type, item->Value(), item->Subtype()));
+                    imp_->api_,
+                    core::translate(type),
+                    item->Value(),
+                    item->Subtype()));
             } catch (...) {
                 continue;
             }
@@ -806,7 +802,7 @@ auto Contact::ExtractLabel(const identity::Nym& nym) -> std::string
     return nym.Claims().Name();
 }
 
-auto Contact::ExtractType(const identity::Nym& nym) -> contact::ContactItemType
+auto Contact::ExtractType(const identity::Nym& nym) -> contact::ClaimType
 {
     return nym.Claims().Type();
 }
@@ -820,8 +816,7 @@ auto Contact::LastUpdated() const -> std::time_t
     OT_ASSERT(imp_->contact_data_);
 
     const auto group = imp_->contact_data_->Group(
-        contact::ContactSectionName::Event,
-        contact::ContactItemType::Refreshed);
+        contact::SectionType::Event, contact::ClaimType::Refreshed);
 
     if (false == bool(group)) { return {}; }
 
@@ -862,8 +857,7 @@ auto Contact::Nyms(const bool includeInactive) const
     if (false == bool(data)) { return {}; }
 
     const auto group = data->Group(
-        contact::ContactSectionName::Relationship,
-        contact::ContactItemType::Contact);
+        contact::SectionType::Relationship, contact::ClaimType::Contact);
 
     if (false == bool(group)) { return {}; }
 
@@ -893,9 +887,10 @@ auto Contact::Nyms(const bool includeInactive) const
 
 auto Contact::PaymentCode(
     const ContactData& data,
-    const contact::ContactItemType currency) -> std::string
+    const core::UnitType currency) -> std::string
 {
-    auto group = data.Group(contact::ContactSectionName::Procedure, currency);
+    auto group =
+        data.Group(contact::SectionType::Procedure, translate(currency));
 
     if (false == bool(group)) { return {}; }
 
@@ -906,8 +901,7 @@ auto Contact::PaymentCode(
     return item->Value();
 }
 
-auto Contact::PaymentCode(const contact::ContactItemType currency) const
-    -> std::string
+auto Contact::PaymentCode(const core::UnitType currency) const -> std::string
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -918,7 +912,7 @@ auto Contact::PaymentCode(const contact::ContactItemType currency) const
     return PaymentCode(*data, currency);
 }
 
-auto Contact::PaymentCodes(const contact::ContactItemType currency) const
+auto Contact::PaymentCodes(const core::UnitType currency) const
     -> std::vector<std::string>
 {
     auto lock = Lock{imp_->lock_};
@@ -1038,9 +1032,8 @@ void Contact::SetLabel(const std::string& label)
     }
 }
 
-auto Contact::SocialMediaProfiles(
-    const contact::ContactItemType type,
-    bool active) const -> std::string
+auto Contact::SocialMediaProfiles(const contact::ClaimType type, bool active)
+    const -> std::string
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -1052,7 +1045,7 @@ auto Contact::SocialMediaProfiles(
 }
 
 auto Contact::SocialMediaProfileTypes() const
-    -> const std::set<contact::ContactItemType>
+    -> const std::set<contact::ClaimType>
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -1061,7 +1054,7 @@ auto Contact::SocialMediaProfileTypes() const
     return data->SocialMediaProfileTypes();
 }
 
-auto Contact::Type() const -> contact::ContactItemType
+auto Contact::Type() const -> contact::ClaimType
 {
     auto lock = Lock{imp_->lock_};
 
@@ -1094,12 +1087,12 @@ void Contact::Update(const proto::Nym& serialized)
         String::Factory(imp_->id_)->Get(),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        contact::ContactSectionName::Event,
-        contact::ContactItemType::Refreshed,
+        contact::SectionType::Event,
+        contact::ClaimType::Refreshed,
         std::to_string(std::time(nullptr)),
-        {contact::ContactItemAttribute::Primary,
-         contact::ContactItemAttribute::Active,
-         contact::ContactItemAttribute::Local},
+        {contact::Attribute::Primary,
+         contact::Attribute::Active,
+         contact::Attribute::Local},
         NULL_START,
         NULL_END,
         ""));

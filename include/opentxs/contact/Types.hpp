@@ -13,9 +13,9 @@ namespace opentxs
 {
 namespace contact
 {
-enum class ContactItemAttribute : std::uint8_t;
-enum class ContactItemType : std::uint32_t;
-enum class ContactSectionName : std::uint8_t;
+enum class Attribute : std::uint8_t;
+enum class ClaimType : std::uint32_t;
+enum class SectionType : std::uint8_t;
 }  // namespace contact
 }  // namespace opentxs
 #endif

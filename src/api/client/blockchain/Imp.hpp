@@ -30,7 +30,7 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -296,8 +296,7 @@ protected:
     mutable blockchain::AccountCache accounts_;
     mutable blockchain::Wallets wallets_;
 
-    auto bip44_type(const contact::ContactItemType type) const noexcept
-        -> Bip44Type;
+    auto bip44_type(const core::UnitType type) const noexcept -> Bip44Type;
     auto decode_bech23(const std::string& encoded) const noexcept
         -> std::optional<DecodedAddress>;
     auto decode_legacy(const std::string& encoded) const noexcept
@@ -306,7 +305,7 @@ protected:
         -> opentxs::blockchain::crypto::Subaccount&;
     auto init_path(
         const std::string& root,
-        const contact::ContactItemType chain,
+        const core::UnitType chain,
         const Bip32Index account,
         const opentxs::blockchain::crypto::HDProtocol standard,
         proto::HDPath& path) const noexcept -> void;

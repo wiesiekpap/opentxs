@@ -15,7 +15,7 @@
 #include "Proto.tpp"
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
-#include "opentxs/contact/ContactItemAttribute.hpp"
+#include "opentxs/contact/Attribute.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -28,24 +28,24 @@
 namespace opentxs
 {
 static auto extract_attributes(const proto::ContactItem& serialized)
-    -> std::set<contact::ContactItemAttribute>
+    -> std::set<contact::Attribute>
 {
-    std::set<contact::ContactItemAttribute> output{};
+    std::set<contact::Attribute> output{};
 
     for (const auto& attribute : serialized.attribute()) {
-        output.emplace(static_cast<contact::ContactItemAttribute>(attribute));
+        output.emplace(static_cast<contact::Attribute>(attribute));
     }
 
     return output;
 }
 
 static auto extract_attributes(const Claim& claim)
-    -> std::set<contact::ContactItemAttribute>
+    -> std::set<contact::Attribute>
 {
-    std::set<contact::ContactItemAttribute> output{};
+    std::set<contact::Attribute> output{};
 
     for (const auto& attribute : std::get<6>(claim)) {
-        output.emplace(static_cast<contact::ContactItemAttribute>(attribute));
+        output.emplace(static_cast<contact::Attribute>(attribute));
     }
 
     return output;
@@ -55,12 +55,12 @@ struct ContactItem::Imp {
     const api::Core& api_;
     const VersionNumber version_;
     const std::string nym_;
-    const contact::ContactSectionName section_;
-    const contact::ContactItemType type_;
+    const contact::SectionType section_;
+    const contact::ClaimType type_;
     const std::string value_;
     const std::time_t start_;
     const std::time_t end_;
-    const std::set<contact::ContactItemAttribute> attributes_;
+    const std::set<contact::Attribute> attributes_;
     const OTIdentifier id_;
     const std::string subtype_;
 
@@ -78,10 +78,10 @@ struct ContactItem::Imp {
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
-        const contact::ContactSectionName section,
-        const contact::ContactItemType& type,
+        const contact::SectionType section,
+        const contact::ClaimType& type,
         const std::string& value,
-        const std::set<contact::ContactItemAttribute>& attributes,
+        const std::set<contact::Attribute>& attributes,
         const std::time_t start,
         const std::time_t end,
         const std::string subtype)
@@ -130,25 +130,23 @@ struct ContactItem::Imp {
         , value_(std::move(const_cast<std::string&>(rhs.value_)))
         , start_(rhs.start_)
         , end_(rhs.end_)
-        , attributes_(
-              std::move(const_cast<std::set<contact::ContactItemAttribute>&>(
-                  rhs.attributes_)))
+        , attributes_(std::move(
+              const_cast<std::set<contact::Attribute>&>(rhs.attributes_)))
         , id_(std::move(const_cast<OTIdentifier&>(rhs.id_)))
         , subtype_(std::move(const_cast<std::string&>(rhs.subtype_)))
     {
     }
 
-    auto set_attribute(
-        const contact::ContactItemAttribute& attribute,
-        const bool value) const -> ContactItem
+    auto set_attribute(const contact::Attribute& attribute, const bool value)
+        const -> ContactItem
     {
         auto attributes = attributes_;
 
         if (value) {
             attributes.emplace(attribute);
 
-            if (contact::ContactItemAttribute::Primary == attribute) {
-                attributes.emplace(contact::ContactItemAttribute::Active);
+            if (contact::Attribute::Primary == attribute) {
+                attributes.emplace(contact::Attribute::Active);
             }
         } else {
             attributes.erase(attribute);
@@ -174,10 +172,10 @@ ContactItem::ContactItem(
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
-    const contact::ContactSectionName section,
-    const contact::ContactItemType& type,
+    const contact::SectionType section,
+    const contact::ClaimType& type,
     const std::string& value,
-    const std::set<contact::ContactItemAttribute>& attributes,
+    const std::set<contact::Attribute>& attributes,
     const std::time_t start,
     const std::time_t end,
     const std::string subtype)
@@ -220,8 +218,8 @@ ContactItem::ContactItem(
           nym,
           version,
           parentVersion,
-          static_cast<contact::ContactSectionName>(std::get<1>(claim)),
-          static_cast<contact::ContactItemType>(std::get<2>(claim)),
+          static_cast<contact::SectionType>(std::get<1>(claim)),
+          static_cast<contact::ClaimType>(std::get<2>(claim)),
           std::get<3>(claim),
           extract_attributes(claim),
           std::get<4>(claim),
@@ -234,7 +232,7 @@ ContactItem::ContactItem(
     const api::Core& api,
     const std::string& nym,
     const VersionNumber parentVersion,
-    const contact::ContactSectionName section,
+    const contact::SectionType section,
     const proto::ContactItem& data)
     : ContactItem(
           api,
@@ -255,7 +253,7 @@ ContactItem::ContactItem(
     const api::Core& api,
     const std::string& nym,
     const VersionNumber parentVersion,
-    const contact::ContactSectionName section,
+    const contact::SectionType section,
     const ReadView& bytes)
     : ContactItem(
           api,
@@ -295,20 +293,20 @@ auto ContactItem::ID() const -> const Identifier& { return imp_->id_; }
 
 auto ContactItem::isActive() const -> bool
 {
-    return 1 == imp_->attributes_.count(contact::ContactItemAttribute::Active);
+    return 1 == imp_->attributes_.count(contact::Attribute::Active);
 }
 
 auto ContactItem::isLocal() const -> bool
 {
-    return 1 == imp_->attributes_.count(contact::ContactItemAttribute::Local);
+    return 1 == imp_->attributes_.count(contact::Attribute::Local);
 }
 
 auto ContactItem::isPrimary() const -> bool
 {
-    return 1 == imp_->attributes_.count(contact::ContactItemAttribute::Primary);
+    return 1 == imp_->attributes_.count(contact::Attribute::Primary);
 }
 
-auto ContactItem::Section() const -> const contact::ContactSectionName&
+auto ContactItem::Section() const -> const contact::SectionType&
 {
     return imp_->section_;
 }
@@ -348,11 +346,11 @@ auto ContactItem::Serialize(proto::ContactItem& output, const bool withID) const
 auto ContactItem::SetActive(const bool active) const -> ContactItem
 {
     const bool existingValue =
-        1 == imp_->attributes_.count(contact::ContactItemAttribute::Active);
+        1 == imp_->attributes_.count(contact::Attribute::Active);
 
     if (existingValue == active) { return *this; }
 
-    return imp_->set_attribute(contact::ContactItemAttribute::Active, active);
+    return imp_->set_attribute(contact::Attribute::Active, active);
 }
 
 auto ContactItem::SetEnd(const std::time_t end) const -> ContactItem
@@ -376,21 +374,21 @@ auto ContactItem::SetEnd(const std::time_t end) const -> ContactItem
 auto ContactItem::SetLocal(const bool local) const -> ContactItem
 {
     const bool existingValue =
-        1 == imp_->attributes_.count(contact::ContactItemAttribute::Local);
+        1 == imp_->attributes_.count(contact::Attribute::Local);
 
     if (existingValue == local) { return *this; }
 
-    return imp_->set_attribute(contact::ContactItemAttribute::Local, local);
+    return imp_->set_attribute(contact::Attribute::Local, local);
 }
 
 auto ContactItem::SetPrimary(const bool primary) const -> ContactItem
 {
     const bool existingValue =
-        1 == imp_->attributes_.count(contact::ContactItemAttribute::Primary);
+        1 == imp_->attributes_.count(contact::Attribute::Primary);
 
     if (existingValue == primary) { return *this; }
 
-    return imp_->set_attribute(contact::ContactItemAttribute::Primary, primary);
+    return imp_->set_attribute(contact::Attribute::Primary, primary);
 }
 
 auto ContactItem::SetStart(const std::time_t start) const -> ContactItem
@@ -436,7 +434,7 @@ auto ContactItem::Subtype() const -> const std::string&
     return imp_->subtype_;
 }
 
-auto ContactItem::Type() const -> const contact::ContactItemType&
+auto ContactItem::Type() const -> const contact::ClaimType&
 {
     return imp_->type_;
 }

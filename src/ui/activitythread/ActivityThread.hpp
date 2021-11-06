@@ -30,7 +30,7 @@
 #include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/OTX.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
@@ -162,7 +162,7 @@ public:
         const Identifier& sourceAccount,
         const std::string& memo,
         const PaymentType type) const noexcept -> bool final;
-    auto PaymentCode(const contact::ContactItemType currency) const noexcept
+    auto PaymentCode(const core::UnitType currency) const noexcept
         -> std::string final;
     auto SendDraft() const noexcept -> bool final;
     auto SetDraft(const std::string& draft) const noexcept -> bool final;
@@ -198,7 +198,7 @@ private:
     const std::string participants_;
     std::string me_;
     std::string display_name_;
-    std::map<contact::ContactItemType, std::string> payment_codes_;
+    std::map<core::UnitType, std::string> payment_codes_;
     std::optional<Messagability> can_message_;
     mutable std::string draft_;
     mutable std::map<api::client::OTX::TaskID, DraftTask> draft_tasks_;

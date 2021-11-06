@@ -44,7 +44,7 @@
 #include "opentxs/blind/Purse.hpp"
 #endif  // OT_CASH
 #include "opentxs/client/OT_API.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -378,8 +378,8 @@ Operation::Operation(
     , amount_(0)
     , memo_(String::Factory())
     , bool_(false)
-    , claim_section_(contact::ContactSectionName::Error)
-    , claim_type_(contact::ContactItemType::Error)
+    , claim_section_(contact::SectionType::Error)
+    , claim_type_(contact::ClaimType::Error)
     , cheque_()
     , payment_()
     , inbox_()
@@ -426,8 +426,8 @@ void Operation::account_post()
 }
 
 auto Operation::AddClaim(
-    const contact::ContactSectionName section,
-    const contact::ContactItemType type,
+    const contact::SectionType section,
+    const contact::ClaimType type,
     const String& value,
     const bool primary) -> bool
 {
@@ -2358,8 +2358,8 @@ void Operation::reset()
     amount_ = 0;
     memo_ = String::Factory();
     bool_ = false;
-    claim_section_ = contact::ContactSectionName::Error;
-    claim_type_ = contact::ContactItemType::Error;
+    claim_section_ = contact::SectionType::Error;
+    claim_type_ = contact::ClaimType::Error;
     cheque_.reset();
     payment_.reset();
     inbox_.reset();

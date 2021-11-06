@@ -898,7 +898,7 @@ Regtest_fixture_hd::Regtest_fixture_hd()
     , expected_notary_name_(u8"Unit Test Simulation")
     , memo_outgoing_("memo for outgoing transaction")
     , expected_account_type_(ot::AccountType::Blockchain)
-    , expected_unit_type_(ot::contact::ContactItemType::Regtest)
+    , expected_unit_type_(ot::core::UnitType::Regtest)
     , hd_generator_([&](Height height) -> Transaction {
         using OutputBuilder = ot::api::Factory::OutputBuilder;
         using Index = ot::Bip32Index;
@@ -1124,7 +1124,7 @@ Regtest_payment_code::Regtest_payment_code()
     , expected_notary_name_(u8"Unit Test Simulation")
     , memo_outgoing_("memo for outgoing transaction")
     , expected_account_type_(ot::AccountType::Blockchain)
-    , expected_unit_type_(ot::contact::ContactItemType::Regtest)
+    , expected_unit_type_(ot::core::UnitType::Regtest)
     , mine_to_alice_([&](Height height) -> Transaction {
         using OutputBuilder = ot::api::Factory::OutputBuilder;
         static const auto baseAmmount = ot::blockchain::Amount{10000000000};
@@ -1626,8 +1626,8 @@ struct SyncSubscriber::Imp {
 
     auto check_update(const ot::network::zeromq::Message& in) noexcept -> void
     {
-        namespace sync = ot::network::blockchain::sync;
-        const auto base = sync::Factory(api_, in);
+        namespace bcsync = ot::network::blockchain::sync;
+        const auto base = bcsync::Factory(api_, in);
 
         try {
             const auto& data = base->asData();
@@ -1637,7 +1637,7 @@ struct SyncSubscriber::Imp {
             const auto future = cache_.get(index);
             const auto hash = future.get();
 
-            if (sync::MessageType::new_block_header != base->Type()) {
+            if (bcsync::MessageType::new_block_header != base->Type()) {
                 throw std::runtime_error{"invalid message"};
             }
 

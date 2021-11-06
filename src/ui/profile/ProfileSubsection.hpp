@@ -18,7 +18,7 @@
 #include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Core.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -92,7 +92,7 @@ public:
     {
         return primary_id_;
     }
-    auto Section() const noexcept -> contact::ContactSectionName final
+    auto Section() const noexcept -> contact::SectionType final
     {
         return row_id_.first;
     }
@@ -102,7 +102,7 @@ public:
         const noexcept -> bool final;
     auto SetValue(const std::string& claimID, const std::string& value)
         const noexcept -> bool final;
-    auto Type() const noexcept -> contact::ContactItemType final
+    auto Type() const noexcept -> contact::ClaimType final
     {
         return row_id_.second;
     }

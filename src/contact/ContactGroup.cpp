@@ -12,8 +12,8 @@
 #include "internal/contact/Contact.hpp"
 #include "opentxs/Pimpl.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactItemType.hpp"
-#include "opentxs/contact/ContactSectionName.hpp"
+#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Log.hpp"
 #include "opentxs/core/LogSource.hpp"
@@ -25,9 +25,8 @@ namespace opentxs
 {
 struct ContactGroup::Imp {
     const std::string nym_{};
-    const contact::ContactSectionName section_{
-        contact::ContactSectionName::Error};
-    const contact::ContactItemType type_{contact::ContactItemType::Error};
+    const contact::SectionType section_{contact::SectionType::Error};
+    const contact::ClaimType type_{contact::ClaimType::Error};
     const OTIdentifier primary_;
     const ItemMap items_{};
 
@@ -51,8 +50,8 @@ struct ContactGroup::Imp {
     }
 
     Imp(const std::string& nym,
-        const contact::ContactSectionName section,
-        const contact::ContactItemType type,
+        const contact::SectionType section,
+        const contact::ClaimType type,
         const ItemMap& items)
         : nym_(nym)
         , section_(section)
@@ -119,8 +118,8 @@ static auto create_item(const std::shared_ptr<ContactItem>& item)
 
 ContactGroup::ContactGroup(
     const std::string& nym,
-    const contact::ContactSectionName section,
-    const contact::ContactItemType type,
+    const contact::SectionType section,
+    const contact::ClaimType type,
     const ItemMap& items)
     : imp_(std::make_unique<Imp>(nym, section, type, items))
 {
@@ -129,7 +128,7 @@ ContactGroup::ContactGroup(
 
 ContactGroup::ContactGroup(
     const std::string& nym,
-    const contact::ContactSectionName section,
+    const contact::SectionType section,
     const std::shared_ptr<ContactItem>& item)
     : ContactGroup(nym, section, item->Type(), create_item(item))
 {
@@ -324,7 +323,7 @@ auto ContactGroup::PrimaryClaim() const -> std::shared_ptr<ContactItem>
 
 auto ContactGroup::Size() const -> std::size_t { return imp_->items_.size(); }
 
-auto ContactGroup::Type() const -> const contact::ContactItemType&
+auto ContactGroup::Type() const -> const contact::ClaimType&
 {
     return imp_->type_;
 }

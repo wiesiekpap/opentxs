@@ -19,7 +19,7 @@
 #include "opentxs/api/client/Manager.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactItemAttribute.hpp"
+#include "opentxs/contact/Attribute.hpp"
 #include "opentxs/core/Log.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -75,13 +75,13 @@ auto ProfileItem::as_claim() const noexcept -> Claim
     end = item_->End();
 
     if (item_->isPrimary()) {
-        attributes.emplace(contact::internal::translate(
-            contact::ContactItemAttribute::Primary));
+        attributes.emplace(
+            contact::internal::translate(contact::Attribute::Primary));
     }
 
     if (item_->isPrimary() || item_->isActive()) {
-        attributes.emplace(contact::internal::translate(
-            contact::ContactItemAttribute::Active));
+        attributes.emplace(
+            contact::internal::translate(contact::Attribute::Active));
     }
 
     return output;
@@ -115,13 +115,13 @@ auto ProfileItem::SetActive(const bool& active) const noexcept -> bool
     auto& attributes = std::get<6>(claim);
 
     if (active) {
-        attributes.emplace(contact::internal::translate(
-            contact::ContactItemAttribute::Active));
+        attributes.emplace(
+            contact::internal::translate(contact::Attribute::Active));
     } else {
-        attributes.erase(contact::internal::translate(
-            contact::ContactItemAttribute::Active));
-        attributes.erase(contact::internal::translate(
-            contact::ContactItemAttribute::Primary));
+        attributes.erase(
+            contact::internal::translate(contact::Attribute::Active));
+        attributes.erase(
+            contact::internal::translate(contact::Attribute::Primary));
     }
 
     return add_claim(claim);
@@ -133,13 +133,13 @@ auto ProfileItem::SetPrimary(const bool& primary) const noexcept -> bool
     auto& attributes = std::get<6>(claim);
 
     if (primary) {
-        attributes.emplace(contact::internal::translate(
-            contact::ContactItemAttribute::Primary));
-        attributes.emplace(contact::internal::translate(
-            contact::ContactItemAttribute::Active));
+        attributes.emplace(
+            contact::internal::translate(contact::Attribute::Primary));
+        attributes.emplace(
+            contact::internal::translate(contact::Attribute::Active));
     } else {
-        attributes.erase(contact::internal::translate(
-            contact::ContactItemAttribute::Primary));
+        attributes.erase(
+            contact::internal::translate(contact::Attribute::Primary));
     }
 
     return add_claim(claim);
