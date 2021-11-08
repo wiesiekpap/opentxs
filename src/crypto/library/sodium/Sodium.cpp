@@ -36,8 +36,6 @@ extern "C" {
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::crypto::implementation::Sodium::"
-
 namespace opentxs::factory
 {
 auto Sodium(const api::Crypto& crypto) noexcept
@@ -79,13 +77,13 @@ auto Sodium::Decrypt(
     const auto& mode = ciphertext.mode();
 
     if (KeySize(translate(mode)) != keySize) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect key size.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect key size.").Flush();
 
         return false;
     }
 
     if (IvSize(translate(mode)) != nonce.size()) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect nonce size.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect nonce size.").Flush();
 
         return false;
     }
@@ -105,8 +103,8 @@ auto Sodium::Decrypt(
                          key));
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
-                mode)(").")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unsupported encryption mode (")(mode)(").")
                 .Flush();
         }
     }
@@ -271,7 +269,7 @@ auto Sodium::Derive(
 
         return true;
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }
@@ -309,7 +307,7 @@ auto Sodium::Digest(
         }
     }
 
-    LogError()(OT_METHOD)(__func__)(": Unsupported hash function.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Unsupported hash function.").Flush();
 
     return false;
 }
@@ -332,19 +330,19 @@ auto Sodium::Encrypt(
     bool result = false;
 
     if (mode == opentxs::crypto::key::symmetric::Algorithm::Error) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect mode.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect mode.").Flush();
 
         return result;
     }
 
     if (KeySize(mode) != keySize) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect key size.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect key size.").Flush();
 
         return result;
     }
 
     if (IvSize(mode) != nonce.size()) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect nonce size.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect nonce size.").Flush();
 
         return result;
     }
@@ -372,8 +370,8 @@ auto Sodium::Encrypt(
                          key));
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
-                value(mode))(").")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
     }
@@ -391,13 +389,13 @@ auto Sodium::Generate(
     AllocateOutput writer) const noexcept -> bool
 {
     if (false == bool(writer)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid writer").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid writer").Flush();
 
         return false;
     }
 
     if (bytes < crypto_pwhash_scryptsalsa208sha256_BYTES_MIN) {
-        LogError()(OT_METHOD)(__func__)(": Too few bytes requested: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Too few bytes requested: ")(
             bytes)(" vs "
                    "minimum:"
                    " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MIN)
@@ -407,7 +405,7 @@ auto Sodium::Generate(
     }
 
     if (bytes > crypto_pwhash_scryptsalsa208sha256_BYTES_MAX) {
-        LogError()(OT_METHOD)(__func__)(": Too many bytes requested: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Too many bytes requested: ")(
             bytes)(" vs "
                    "maximum:"
                    " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MAX)
@@ -419,7 +417,7 @@ auto Sodium::Generate(
     auto output = writer(bytes);
 
     if (false == output.valid(bytes)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to allocated requested ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocated requested ")(
             bytes)(" bytes")
             .Flush();
 
@@ -465,7 +463,8 @@ auto Sodium::HMAC(
             success = (0 == crypto_auth_hmacsha256_init(&state, key, keySize));
 
             if (false == success) {
-                LogError()(OT_METHOD)(__func__)(": Failed to initialize hash")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to initialize hash")
                     .Flush();
 
                 return false;
@@ -475,7 +474,7 @@ auto Sodium::HMAC(
                 (0 == crypto_auth_hmacsha256_update(&state, input, inputSize));
 
             if (false == success) {
-                LogError()(OT_METHOD)(__func__)(": Failed to update hash")
+                LogError()(OT_PRETTY_CLASS(__func__))("Failed to update hash")
                     .Flush();
 
                 return false;
@@ -489,7 +488,8 @@ auto Sodium::HMAC(
             success = (0 == crypto_auth_hmacsha512_init(&state, key, keySize));
 
             if (false == success) {
-                LogError()(OT_METHOD)(__func__)(": Failed to initialize hash")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to initialize hash")
                     .Flush();
 
                 return false;
@@ -499,7 +499,7 @@ auto Sodium::HMAC(
                 (0 == crypto_auth_hmacsha512_update(&state, input, inputSize));
 
             if (false == success) {
-                LogError()(OT_METHOD)(__func__)(": Failed to update hash")
+                LogError()(OT_PRETTY_CLASS(__func__))("Failed to update hash")
                     .Flush();
 
                 return false;
@@ -509,7 +509,7 @@ auto Sodium::HMAC(
         }
         case (crypto::HashType::SipHash24): {
             if (crypto_shorthash_KEYBYTES < keySize) {
-                LogError()(OT_METHOD)(__func__)(": Incorrect key size: ")(
+                LogError()(OT_PRETTY_CLASS(__func__))("Incorrect key size: ")(
                     keySize)(" vs "
                              "expected"
                              " ")(crypto_shorthash_KEYBYTES)
@@ -528,7 +528,7 @@ auto Sodium::HMAC(
         }
     }
 
-    LogError()(OT_METHOD)(__func__)(": Unsupported hash function.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Unsupported hash function.").Flush();
 
     return false;
 }
@@ -541,8 +541,8 @@ auto Sodium::IvSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
             return crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
-                value(mode))(").")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
     }
@@ -557,8 +557,8 @@ auto Sodium::KeySize(
             return crypto_aead_chacha20poly1305_IETF_KEYBYTES;
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
-                value(mode))(").")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
     }
@@ -583,7 +583,7 @@ auto Sodium::SaltSize(const crypto::key::symmetric::Source type) const
             return crypto_pwhash_SALTBYTES;
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported key type (")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported key type (")(
                 value(type))(").")
                 .Flush();
         }
@@ -618,8 +618,8 @@ auto Sodium::TagSize(
             return crypto_aead_chacha20poly1305_IETF_ABYTES;
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
-                value(mode))(").")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unsupported encryption mode (")(value(mode))(").")
                 .Flush();
         }
     }

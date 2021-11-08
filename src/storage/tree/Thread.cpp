@@ -23,8 +23,6 @@
 #include "storage/tree/Mailbox.hpp"
 #include "storage/tree/Node.hpp"
 
-#define OT_METHOD "opentxs::storage::Thread::"
-
 namespace opentxs
 {
 namespace storage
@@ -103,12 +101,13 @@ auto Thread::Add(
         case StorageBox::INCOMINGTRANSFER: {
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Warning: unknown box.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Warning: unknown box.")
+                .Flush();
         }
     }
 
     if (false == saved) {
-        LogError()(OT_METHOD)(__func__)(": Unable to save item.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to save item.").Flush();
 
         return false;
     }
@@ -157,7 +156,8 @@ void Thread::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to load thread index file.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to load thread index file.")
             .Flush();
         OT_FAIL;
     }
@@ -207,7 +207,7 @@ auto Thread::Read(const std::string& id, const bool unread) -> bool
     auto it = items_.find(id);
 
     if (items_.end() == it) {
-        LogError()(OT_METHOD)(__func__)(": Item does not exist.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Item does not exist.").Flush();
 
         return false;
     }
@@ -241,7 +241,8 @@ auto Thread::Remove(const std::string& id) -> bool
         case StorageBox::BLOCKCHAIN: {
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Warning: unknown box.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Warning: unknown box.")
+                .Flush();
         }
     }
 

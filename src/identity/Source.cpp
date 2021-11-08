@@ -41,8 +41,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
-#define OT_METHOD "opentxs::identity::Source::"
-
 namespace opentxs
 {
 auto Factory::NymIDSource(
@@ -361,8 +359,8 @@ auto Source::Verify(
             signingKey = extract_key(master, proto::KEYROLE_SIGN);
 
             if (!signingKey) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to extract signing key.")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to extract signing key.")
                     .Flush();
 
                 return false;
@@ -370,7 +368,7 @@ auto Source::Verify(
 
             auto sourceKey = proto::AsymmetricKey{};
             if (false == pubkey_->Serialize(sourceKey)) {
-                LogError()(OT_METHOD)(__func__)(": Failed to serialize key")
+                LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize key")
                     .Flush();
 
                 return false;
@@ -378,8 +376,9 @@ auto Source::Verify(
             sameSource = (sourceKey.key() == signingKey->key());
 
             if (!sameSource) {
-                LogError()(OT_METHOD)(__func__)(": Master credential was not"
-                                                " derived from this source.")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Master credential was not"
+                    " derived from this source.")
                     .Flush();
 
                 return false;
@@ -389,7 +388,8 @@ auto Source::Verify(
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         {
             if (!payment_code_->Verify(master, sourceSignature)) {
-                LogError()(OT_METHOD)(__func__)(": Invalid source signature.")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Invalid source signature.")
                     .Flush();
 
                 return false;
@@ -397,7 +397,8 @@ auto Source::Verify(
         } break;
 #else
         {
-            LogError()(OT_METHOD)(__func__)(": Missing support for secp256k1")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Missing support for secp256k1")
                 .Flush();
 
             return false;
@@ -427,7 +428,8 @@ auto Source::Sign(
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
             goodsig = payment_code_->Sign(credential, sig, reason);
 #else
-            LogError()(OT_METHOD)(__func__)(": Missing support for secp256k1")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Missing support for secp256k1")
                 .Flush();
 #endif
         } break;

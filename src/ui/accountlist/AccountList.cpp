@@ -46,8 +46,6 @@
 #include "ui/base/List.hpp"
 #include "util/Blank.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::AccountList::"
-
 namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
@@ -157,7 +155,7 @@ auto AccountList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unhandled type: ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type: ")(
                 static_cast<OTZMQWorkType>(work))
                 .Flush();
 
@@ -215,7 +213,7 @@ auto AccountList::process_blockchain_account(const Message& message) noexcept
     -> void
 {
     if (5 > message.Body().size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
 
         return;
     }
@@ -225,8 +223,8 @@ auto AccountList::process_blockchain_account(const Message& message) noexcept
     nymID->Assign(nymFrame.Bytes());
 
     if (nymID != primary_id_) {
-        LogTrace()(OT_METHOD)(__func__)(
-            ": Update does not apply to this widget")
+        LogTrace()(OT_PRETTY_CLASS(__func__))(
+            "Update does not apply to this widget")
             .Flush();
 
         return;
@@ -267,7 +265,7 @@ auto AccountList::process_blockchain_balance(const Message& message) noexcept
 auto AccountList::startup() noexcept -> void
 {
     const auto accounts = Widget::api_.Storage().AccountsByOwner(primary_id_);
-    LogDetail()(OT_METHOD)(__func__)(": Loading ")(accounts.size())(
+    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(accounts.size())(
         " accounts.")
         .Flush();
 

@@ -34,8 +34,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
-#define OT_METHOD "opentxs::api::session::server::Wallet::"
-
 namespace opentxs::factory
 {
 auto WalletAPI(const api::session::Notary& parent) noexcept
@@ -109,18 +107,19 @@ auto Wallet::load_legacy_account(
     const auto signerNym = Nym(server_.NymID());
 
     if (false == bool(signerNym)) {
-        LogError()(OT_METHOD)(__func__)(": Unable to load signer nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to load signer nym.")
+            .Flush();
 
         return false;
     }
 
     if (false == pAccount->VerifySignature(*signerNym)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid signature.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature.").Flush();
 
         return false;
     }
 
-    LogError()(OT_METHOD)(__func__)(": Legacy account ")(accountID.str())(
+    LogError()(OT_PRETTY_CLASS(__func__))("Legacy account ")(accountID.str())(
         " exists.")
         .Flush();
 

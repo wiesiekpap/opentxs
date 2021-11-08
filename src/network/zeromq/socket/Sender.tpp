@@ -9,8 +9,6 @@
 
 #include "network/zeromq/socket/Socket.hpp"
 
-//#define OT_METHOD "opentxs::network::zeromq::socket::implementation::Sender::"
-
 namespace opentxs::network::zeromq::socket::implementation
 {
 template <typename Interface, typename ImplementationParent>

@@ -74,9 +74,9 @@ protected:
         m_NotaryID = NOTARY_ID;
     }
 
-    Instrument(const api::Session& core);
+    Instrument(const api::Session& api);
     Instrument(
-        const api::Session& core,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
 

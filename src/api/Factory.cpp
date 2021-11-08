@@ -12,8 +12,6 @@
 #include "internal/api/Factory.hpp"
 #include "internal/core/Core.hpp"
 
-// #define OT_METHOD "opentxs::api::implementation::Factory::"
-
 namespace opentxs::factory
 {
 using ReturnType = api::implementation::Factory;

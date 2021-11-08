@@ -19,8 +19,6 @@
 
 namespace be = boost::endian;
 
-// #define OT_METHOD "opentxs::blockchain::block::Outpoint::"
-
 namespace opentxs::blockchain::block
 {
 Outpoint::Outpoint() noexcept

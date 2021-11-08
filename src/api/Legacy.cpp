@@ -33,8 +33,6 @@ extern "C" {
 #define CONFIG_FILE_EXT ".cfg"
 #define PID_FILE "opentxs.lock"
 
-//#define OT_METHOD "opentxs::Legacy::"
-
 using ReturnType = opentxs::api::implementation::Legacy;
 
 namespace opentxs::factory

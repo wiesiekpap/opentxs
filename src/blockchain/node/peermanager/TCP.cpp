@@ -28,10 +28,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::node::implementation::"                              \
-    "TCPIncomingConnectionManager::"
-
 namespace opentxs::blockchain::node::implementation
 {
 class TCPIncomingConnectionManager final
@@ -86,7 +82,7 @@ public:
 
             return output;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }
@@ -158,7 +154,7 @@ private:
         const auto peerID = parent_.ConstructPeer(std::move(address));
 
         if (-1 == peerID) {
-            LogError()(OT_METHOD)(__func__)(": Failed to instantiate peer")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to instantiate peer")
                 .Flush();
 
             return;

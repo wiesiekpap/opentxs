@@ -9,10 +9,9 @@
 
 #include <cstdint>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Log.hpp"
-
-#define OT_METHOD "opentxs::OTStashItem"
 
 namespace opentxs
 {
@@ -66,9 +65,10 @@ auto OTStashItem::CreditStash(const std::int64_t& lAmount) -> bool
 {
     if (lAmount < 0) {
         {
-            LogConsole()(OT_METHOD)(__func__)(": Failed attempt to credit a "
-                                              "negative amount (")(
-                lAmount)("). Asset Type: ")(m_strInstrumentDefinitionID)(".")
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "Failed attempt to credit a "
+                "negative amount (")(lAmount)("). Asset Type: ")(
+                m_strInstrumentDefinitionID)(".")
                 .Flush();
         }
         return false;
@@ -83,8 +83,8 @@ auto OTStashItem::DebitStash(const std::int64_t& lAmount) -> bool
 {
     if (lAmount < 0) {
         {
-            LogConsole()(OT_METHOD)(__func__)(": Failed attempt to debit a "
-                                              "negative amount (")(
+            LogConsole()(OT_PRETTY_CLASS(__func__))("Failed attempt to debit a "
+                                                    "negative amount (")(
                 lAmount)("). Asset Type: ")(m_strInstrumentDefinitionID)(".")
                 .Flush();
         }
@@ -95,8 +95,8 @@ auto OTStashItem::DebitStash(const std::int64_t& lAmount) -> bool
 
     if (lTentativeNewBalance < 0) {
         {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": Failed attempt to debit (amount of) ")(
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "Failed attempt to debit (amount of) ")(
                 lAmount)(": New stash balance would have been a negative "
                          "amount (")(lTentativeNewBalance)("). Asset Type: ")(
                 m_strInstrumentDefinitionID)(".")

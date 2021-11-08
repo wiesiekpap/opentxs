@@ -14,6 +14,7 @@
 #include <memory>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/XML.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -40,14 +41,12 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::OTAgreement::"
-
 // OTAgreement is derived from OTCronItem.  It handles re-occuring billing.
 
 namespace opentxs
 {
-OTAgreement::OTAgreement(const api::Session& core)
-    : ot_super(core)
+OTAgreement::OTAgreement(const api::Session& api)
+    : ot_super(api)
     , m_RECIPIENT_ACCT_ID(api_.Factory().Identifier())
     , m_RECIPIENT_NYM_ID(api_.Factory().NymID())
     , m_strConsideration(String::Factory())
@@ -58,10 +57,10 @@ OTAgreement::OTAgreement(const api::Session& core)
 }
 
 OTAgreement::OTAgreement(
-    const api::Session& core,
+    const api::Session& api,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
-    : ot_super(core, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
+    : ot_super(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
     , m_RECIPIENT_ACCT_ID(api_.Factory().Identifier())
     , m_RECIPIENT_NYM_ID(api_.Factory().NymID())
     , m_strConsideration(String::Factory())
@@ -72,7 +71,7 @@ OTAgreement::OTAgreement(
 }
 
 OTAgreement::OTAgreement(
-    const api::Session& core,
+    const api::Session& api,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const Identifier& SENDER_ACCT_ID,
@@ -80,7 +79,7 @@ OTAgreement::OTAgreement(
     const Identifier& RECIPIENT_ACCT_ID,
     const identifier::Nym& RECIPIENT_NYM_ID)
     : ot_super(
-          core,
+          api,
           NOTARY_ID,
           INSTRUMENT_DEFINITION_ID,
           SENDER_ACCT_ID,
@@ -102,7 +101,7 @@ void OTAgreement::setCustomerNymId(const identifier::Nym& NYM_ID)
 }
 
 auto OTAgreement::SendNoticeToAllParties(
-    const api::Session& core,
+    const api::Session& api,
     bool bSuccessMsg,
     const identity::Nym& theServerNym,
     const identifier::Server& theNotaryID,
@@ -119,7 +118,7 @@ auto OTAgreement::SendNoticeToAllParties(
 
     // Sender
     if (!OTAgreement::DropServerNoticeToNymbox(
-            core,
+            api,
             bSuccessMsg,  // "success" notice? or "failure" notice?
             theServerNym,
             theNotaryID,
@@ -138,7 +137,7 @@ auto OTAgreement::SendNoticeToAllParties(
 
     // Recipient
     if (!OTAgreement::DropServerNoticeToNymbox(
-            core,
+            api,
             bSuccessMsg,  // "success" notice? or "failure" notice?
             theServerNym,
             theNotaryID,
@@ -160,7 +159,7 @@ auto OTAgreement::SendNoticeToAllParties(
 // Used by payment plans and smart contracts. Nym receives an
 // Item::acknowledgment or Item::rejection.
 auto OTAgreement::DropServerNoticeToNymbox(
-    const api::Session& core,
+    const api::Session& api,
     bool bSuccessMsg,
     const identity::Nym& theServerNym,
     const identifier::Server& NOTARY_ID,
@@ -174,7 +173,7 @@ auto OTAgreement::DropServerNoticeToNymbox(
     const identifier::Nym& actualNymID,
     const PasswordPrompt& reason) -> bool
 {
-    auto theLedger{core.Factory().Ledger(NYM_ID, NYM_ID, NOTARY_ID)};
+    auto theLedger{api.Factory().Ledger(NYM_ID, NYM_ID, NOTARY_ID)};
 
     OT_ASSERT(false != bool(theLedger));
 
@@ -192,15 +191,15 @@ auto OTAgreement::DropServerNoticeToNymbox(
     }
 
     if (!bSuccessLoading) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed loading or generating a nymbox. "
+        LogError()(OT_PRETTY_STATIC(OTAgreement, __func__))(
+            "Failed loading or generating a nymbox. "
             "(FAILED WRITING RECEIPT!!).")
             .Flush();
 
         return false;
     }
 
-    auto pTransaction{core.Factory().Transaction(
+    auto pTransaction{api.Factory().Transaction(
         *theLedger,
         transactionType::notice,
         theOriginType,
@@ -213,8 +212,8 @@ auto OTAgreement::DropServerNoticeToNymbox(
 
         // Set up the transaction items (each transaction may have multiple
         // items... but not in this case.)
-        auto pItem1{core.Factory().Item(
-            *pTransaction, itemType::notice, core.Factory().Identifier())};
+        auto pItem1{api.Factory().Item(
+            *pTransaction, itemType::notice, api.Factory().Identifier())};
         OT_ASSERT(false != bool(pItem1));  // This may be unnecessary, I'll have
                                            // to check
                                            // CreateItemFromTransaction. I'll
@@ -280,7 +279,7 @@ auto OTAgreement::DropServerNoticeToNymbox(
 
         // TODO: Better rollback capabilities in case of failures here:
 
-        auto theNymboxHash = core.Factory().Identifier();
+        auto theNymboxHash = api.Factory().Identifier();
 
         // Save nymbox to storage. (File, DB, wherever it goes.)
         (theLedger->SaveNymbox(theNymboxHash));
@@ -290,7 +289,7 @@ auto OTAgreement::DropServerNoticeToNymbox(
         //
         transaction->SaveBoxReceipt(*theLedger);
 
-        auto context = core.Wallet().Internal().mutable_ClientContext(
+        auto context = api.Wallet().Internal().mutable_ClientContext(
 
             actualNymID, reason);
         context.get().SetLocalNymboxHash(theNymboxHash);
@@ -300,7 +299,8 @@ auto OTAgreement::DropServerNoticeToNymbox(
 
         return true;
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed trying to create Nymbox.")
+        LogError()(OT_PRETTY_STATIC(OTAgreement, __func__))(
+            "Failed trying to create Nymbox.")
             .Flush();
     }
 
@@ -437,13 +437,13 @@ void OTAgreement::onFinalReceipt(
                 reason,
                 String::Factory(),
                 pstrAttachment)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failure dropping sender final receipt into nymbox.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failure dropping sender final receipt into nymbox.")
                 .Flush();
         }
     } else {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failure verifying sender's opening number.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failure verifying sender's opening number.")
             .Flush();
     }
 
@@ -465,8 +465,8 @@ void OTAgreement::onFinalReceipt(
                                   // call will load it up and update its
                                   // inbox hash.)
         {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failure dropping receipt into sender's inbox.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failure dropping receipt into sender's inbox.")
                 .Flush();
         }
         // This part below doesn't happen until theOriginator ACCEPTS the final
@@ -475,8 +475,8 @@ void OTAgreement::onFinalReceipt(
         //      theOriginator.RemoveIssuedNum(strNotaryID, lSenderClosingNumber,
         // true); //bSave=false
     } else {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed verifying "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed verifying "
             "lSenderClosingNumber=theOrigCronItem. "
             "GetClosingTransactionNoAt(0)>0 && "
             "theOriginator.VerifyTransactionNum(lSenderClosingNumber).")
@@ -513,13 +513,13 @@ void OTAgreement::onFinalReceipt(
             pstrAttachment);
 
         if (!dropped) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failure dropping recipient final receipt into nymbox.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failure dropping recipient final receipt into nymbox.")
                 .Flush();
         }
     } else {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed verifying "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed verifying "
             "lRecipientClosingNumber="
             "GetRecipientClosingTransactionNoAt(1)>0 && "
             "pRecipient->VerifyTransactionNum(lRecipientClosingNumber) && "
@@ -540,13 +540,13 @@ void OTAgreement::onFinalReceipt(
                 reason,
                 String::Factory(),
                 pstrAttachment)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failure dropping receipt into recipient's inbox.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failure dropping receipt into recipient's inbox.")
                 .Flush();
         }
     } else {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed verifying "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed verifying "
             "lRecipientClosingNumber="
             "GetRecipientClosingTransactionNoAt(1)>0 && "
             "pRecipient->VerifyTransactionNum(lRecipientClosingNumber) && "
@@ -748,7 +748,7 @@ auto OTAgreement::CanRemoveItemFromCron(const otx::context::Client& context)
     // sender -- in a payment plan.) We check such things HERE in this function
     // (see below.)
     if (!context.RemoteNym().CompareID(GetRecipientNymID())) {
-        LogConsole()(OT_METHOD)(__func__)(": Context Remote Nym ID: ")(
+        LogConsole()(OT_PRETTY_CLASS(__func__))("Context Remote Nym ID: ")(
             (context.RemoteNym().ID()))(". Sender Nym ID: ")(
             (GetSenderNymID()))(". Recipient Nym ID: ")((GetRecipientNymID()))(
             ". Weird: Nym tried to remove agreement (payment plan), even "
@@ -757,8 +757,8 @@ auto OTAgreement::CanRemoveItemFromCron(const otx::context::Client& context)
 
         return false;
     } else if (GetRecipientCountClosingNumbers() < 2) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Weird: Recipient tried to remove agreement "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Weird: Recipient tried to remove agreement "
             "(or payment plan); expected 2 closing numbers to be "
             "available--that weren't."
             " (Found ")(GetRecipientCountClosingNumbers())(").")
@@ -768,9 +768,9 @@ auto OTAgreement::CanRemoveItemFromCron(const otx::context::Client& context)
     }
 
     if (!context.VerifyIssuedNumber(GetRecipientClosingNum())) {
-        LogConsole()(OT_METHOD)(__func__)(": Recipient Closing "
-                                          "number didn't verify (for "
-                                          "removal from cron).")
+        LogConsole()(OT_PRETTY_CLASS(__func__))("Recipient Closing "
+                                                "number didn't verify (for "
+                                                "removal from cron).")
             .Flush();
 
         return false;
@@ -847,31 +847,32 @@ auto OTAgreement::SetProposal(
     const auto& id_MERCHANT_ACCT = MERCHANT_ACCT.GetPurportedAccountID();
 
     if (GetRecipientNymID() != id_MERCHANT_NYM) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Merchant has wrong NymID (should be same "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Merchant has wrong NymID (should be same "
             "as RecipientNymID).")
             .Flush();
         return false;
     } else if (GetRecipientAcctID() != id_MERCHANT_ACCT) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Merchant has wrong AcctID (should be same "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Merchant has wrong AcctID (should be same "
             "as RecipientAcctID).")
             .Flush();
         return false;
     } else if (!MERCHANT_ACCT.VerifyOwner(nym)) {
-        LogConsole()(OT_METHOD)(__func__)(": Failure: Merchant account is not "
-                                          "owned by Merchant Nym.")
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Failure: Merchant account is not "
+            "owned by Merchant Nym.")
             .Flush();
         return false;
     } else if (GetRecipientNymID() == GetSenderNymID()) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Failure: Sender and recipient have the same "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Failure: Sender and recipient have the same "
             "Nym ID (not allowed).")
             .Flush();
         return false;
     } else if (context.AvailableNumbers() < 2) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Failure. You need at least 2 transaction "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Failure. You need at least 2 transaction "
             "numbers available to do this.")
             .Flush();
         return false;
@@ -909,7 +910,7 @@ auto OTAgreement::SetProposal(
         SetValidTo(VALID_TO);
     } else  // VALID_TO is a NEGATIVE number... Error.
     {
-        LogError()(OT_METHOD)(__func__)(": Invalid value for valid_to: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid value for valid_to: ")(
             VALID_TO)
             .Flush();
 
@@ -925,16 +926,16 @@ auto OTAgreement::SetProposal(
         context.NextTransactionNumber(MessageType::notarizeTransaction);
 
     if (0 == openingNumber->Value()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error: Unable to get a transaction number.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Error: Unable to get a transaction number.")
             .Flush();
 
         return false;
     }
 
     if (0 == closingNumber->Value()) {
-        LogError()(OT_METHOD)(__func__)(": Error: Unable to get a closing "
-                                        "transaction number.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: Unable to get a closing "
+                                              "transaction number.")
             .Flush();
         // (Since the first one was successful, we just put it back before
         // returning.)
@@ -945,12 +946,12 @@ auto OTAgreement::SetProposal(
     // Above this line, the transaction numbers will be recovered automatically
     openingNumber->SetSuccess(true);
     closingNumber->SetSuccess(true);
-    LogError()(OT_METHOD)(__func__)(": Allocated opening transaction number ")(
-        openingNumber->Value())(".")
+    LogError()(OT_PRETTY_CLASS(__func__))(
+        "Allocated opening transaction number ")(openingNumber->Value())(".")
         .Flush();
 
-    LogError()(OT_METHOD)(__func__)(": Allocated closing transaction number ")(
-        closingNumber->Value())(".")
+    LogError()(OT_PRETTY_CLASS(__func__))(
+        "Allocated closing transaction number ")(closingNumber->Value())(".")
         .Flush();
 
     // At this point we now have 2 transaction numbers...
@@ -966,7 +967,7 @@ auto OTAgreement::SetProposal(
 
     // Set the Consideration memo...
     m_strConsideration->Set(strConsideration);
-    LogTrace()(OT_METHOD)(__func__)(": Successfully performed SetProposal.")
+    LogTrace()(OT_PRETTY_CLASS(__func__))("Successfully performed SetProposal.")
         .Flush();
 
     return true;
@@ -989,55 +990,55 @@ auto OTAgreement::Confirm(
     const auto& id_PAYER_ACCT = PAYER_ACCT.GetPurportedAccountID();
 
     if (GetRecipientNymID() == GetSenderNymID()) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Error: Sender and recipient have the same "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Error: Sender and recipient have the same "
             "Nym ID (not allowed).")
             .Flush();
         return false;
     } else if (
         (!p_id_MERCHANT_NYM.empty()) &&
         (GetRecipientNymID() != p_id_MERCHANT_NYM)) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Merchant has wrong NymID (should be same "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Merchant has wrong NymID (should be same "
             "as RecipientNymID).")
             .Flush();
         return false;
     } else if (
         (nullptr != pMERCHANT_NYM) &&
         (GetRecipientNymID() != pMERCHANT_NYM->ID())) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Merchant has wrong NymID (should be same "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Merchant has wrong NymID (should be same "
             "as RecipientNymID).")
             .Flush();
         return false;
     } else if (GetSenderNymID() != id_PAYER_NYM) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Payer has wrong NymID (should be same"
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Payer has wrong NymID (should be same"
             " as SenderNymID).")
             .Flush();
         return false;
     } else if (
         !GetSenderAcctID().empty() && (GetSenderAcctID() != id_PAYER_ACCT)) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Payer has wrong AcctID (should be same "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Payer has wrong AcctID (should be same "
             "as SenderAcctID).")
             .Flush();
         return false;
     } else if (!PAYER_ACCT.VerifyOwner(*nym)) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Failure: Payer (customer) account is not "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Failure: Payer (customer) account is not "
             "owned by Payer Nym.")
             .Flush();
         return false;
     } else if (context.AvailableNumbers() < 2) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Failure. You need at least 2 transaction "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Failure. You need at least 2 transaction "
             "numbers available to do this.")
             .Flush();
         return false;
     } else if (GetRecipientCountClosingNumbers() < 2) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Failure. (The merchant was supposed to "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Failure. (The merchant was supposed to "
             "attach 2 transaction numbers).")
             .Flush();
         return false;
@@ -1048,8 +1049,8 @@ auto OTAgreement::Confirm(
     //
     if ((nullptr != pMERCHANT_NYM) &&
         (false == VerifySignature(*pMERCHANT_NYM))) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Merchant's signature failed to verify.")
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Merchant's signature failed to verify.")
             .Flush();
         return false;
     }
@@ -1093,16 +1094,16 @@ auto OTAgreement::Confirm(
         context.NextTransactionNumber(MessageType::notarizeTransaction);
 
     if (0 == openingNumber->Value()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error: Strangely unable to get a transaction number.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Error: Strangely unable to get a transaction number.")
             .Flush();
 
         return false;
     }
 
     if (false == closingNumber->Value()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error: Strangely unable to get a closing "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Error: Strangely unable to get a closing "
             "transaction number.")
             .Flush();
 
@@ -1128,7 +1129,7 @@ auto OTAgreement::Confirm(
     //
     // Set the Creation Date.
     SetCreationDate(Clock::now());
-    LogTrace()(OT_METHOD)(__func__)(": Success!").Flush();
+    LogTrace()(OT_PRETTY_CLASS(__func__))("Success!").Flush();
 
     return true;
 }
@@ -1245,12 +1246,12 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetRecipientAcctID(RECIPIENT_ACCT_ID);
         SetRecipientNymID(RECIPIENT_NYM_ID);
 
-        LogDetail()(OT_METHOD)(__func__)(": ")(
+        LogDetail()(OT_PRETTY_CLASS(__func__))(
             m_bCanceled ? "Canceled a" : "A")("greement. Transaction Number: ")(
             m_lTransactionNum)
             .Flush();
 
-        LogVerbose()(OT_METHOD)(__func__)(": Creation Date: ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Creation Date: ")(
             tCreation)(" Valid From: ")(tValidFrom)(" Valid To: ")(
             tValidTo)(" InstrumentDefinitionID: ")(
             strInstrumentDefinitionID)(" NotaryID: ")(
@@ -1261,9 +1262,9 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         nReturnVal = 1;
     } else if (!strcmp("consideration", xml->getNodeName())) {
-        if (false == Contract::LoadEncodedTextField(xml, m_strConsideration)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Error in OTPaymentPlan::ProcessXMLNode: Consideration "
+        if (false == LoadEncodedTextField(xml, m_strConsideration)) {
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error in OTPaymentPlan::ProcessXMLNode: Consideration "
                 "field without value.")
                 .Flush();
             return (-1);  // error condition
@@ -1271,10 +1272,9 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         nReturnVal = 1;
     } else if (!strcmp("merchantSignedCopy", xml->getNodeName())) {
-        if (false ==
-            Contract::LoadEncodedTextField(xml, m_strMerchantSignedCopy)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Error in OTPaymentPlan::ProcessXMLNode: "
+        if (false == LoadEncodedTextField(xml, m_strMerchantSignedCopy)) {
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error in OTPaymentPlan::ProcessXMLNode: "
                 "merchant_signed_copy field without value.")
                 .Flush();
             return (-1);  // error condition
@@ -1295,8 +1295,8 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
             AddRecipientClosingTransactionNo(lClosingNumber);
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": closingRecipientNumber field without value.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "closingRecipientNumber field without value.")
                 .Flush();
             return (-1);  // error condition
         }

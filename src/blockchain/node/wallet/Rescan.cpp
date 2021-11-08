@@ -28,8 +28,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::Rescan::"
-
 namespace opentxs::blockchain::node::wallet
 {
 Rescan::Rescan(
@@ -70,7 +68,7 @@ auto Rescan::flush(const Lock& lock) noexcept -> void
     if (have) {
         OT_ASSERT(last_scanned_.has_value());
 
-        LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
             " rescanning from block ")(last_scanned_.value().first)
             .Flush();
     }
@@ -79,7 +77,7 @@ auto Rescan::flush(const Lock& lock) noexcept -> void
 auto Rescan::process(const Lock& lock, const block::Position& position) noexcept
     -> void
 {
-    LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
         " incoming position: ")(position.second->asHex())(" at height ")(
         position.first)
         .Flush();
@@ -87,7 +85,7 @@ auto Rescan::process(const Lock& lock, const block::Position& position) noexcept
 
     if (rescan.has_value() && (rescan.value() != parent_.null_position_)) {
         const auto current = rescan.value();
-        LogVerbose()(OT_METHOD)(__func__)(":  ")(parent_.name_)(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(" ")(parent_.name_)(
             " current position: ")(current.second->asHex())(" at height ")(
             current.first)
             .Flush();
@@ -136,7 +134,7 @@ auto Rescan::Run() noexcept -> bool
         }();
         auto& log = LogTrace();
         const auto& name = parent_.name_;
-        log(OT_METHOD)(__func__)(": ")(name)(" last_scanned_ before flush is ");
+        log(OT_PRETTY_CLASS(__func__))(name)(" last_scanned_ before flush is ");
 
         if (last_scanned_.has_value()) {
             const auto& value = last_scanned_.value();
@@ -147,7 +145,7 @@ auto Rescan::Run() noexcept -> bool
 
         log.Flush();
         flush(lock);
-        log(OT_METHOD)(__func__)(": ")(name)(" last_scanned_ after flush is ");
+        log(OT_PRETTY_CLASS(__func__))(name)(" last_scanned_ after flush is ");
         if (last_scanned_.has_value()) {
             const auto& value = last_scanned_.value();
             log(value.second->asHex())(" at height ")(value.first);
@@ -163,13 +161,13 @@ auto Rescan::Run() noexcept -> bool
             const auto& last = last_scanned_.value();
 
             if (last.first >= (ceiling_.first - 1)) {
-                log(OT_METHOD)(__func__)(": ")(
-                    name)(" unable to rescan until scan has made more progress")
+                log(OT_PRETTY_CLASS(__func__))(name)(
+                    " unable to rescan until scan has made more progress")
                     .Flush();
                 wait = true;
             } else if (last_scanned_ == ceiling_) {
-                log(OT_METHOD)(__func__)(": ")(
-                    name)(" rescan has caught up to scan progress")
+                log(OT_PRETTY_CLASS(__func__))(name)(
+                    " rescan has caught up to scan progress")
                     .Flush();
                 caughtUp = true;
             } else {
@@ -198,11 +196,11 @@ auto Rescan::Run() noexcept -> bool
 
                         return std::min(ceiling_.first, dirty);
                     }();
-                    log(OT_METHOD)(__func__)(": ")(
-                        name)(" highest clean block height is ")(ceiling)
+                    log(OT_PRETTY_CLASS(__func__))(name)(
+                        " highest clean block height is ")(ceiling)
                         .Flush();
                     auto best = update_tip(lock);
-                    log(OT_METHOD)(__func__)(": ")(name)(" best cfilter is ")(
+                    log(OT_PRETTY_CLASS(__func__))(name)(" best cfilter is ")(
                         best.second->asHex())(" at height ")(best.first)
                         .Flush();
                     needScan = queue_work(

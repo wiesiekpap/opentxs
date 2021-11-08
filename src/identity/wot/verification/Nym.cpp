@@ -25,8 +25,6 @@
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::identity::wot::verification::implementation::Nym::"
-
 namespace opentxs
 {
 auto Factory::VerificationNym(
@@ -132,7 +130,8 @@ auto Nym::AddItem(
         version)};
 
     if (false == bool(pCandidate)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to construct item").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct item")
+            .Flush();
 
         return false;
     }
@@ -145,7 +144,8 @@ auto Nym::AddItem(const Item::SerializedType item) noexcept -> bool
     auto pCandidate = Child{Factory::VerificationItem(*this, item)};
 
     if (false == bool(pCandidate)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to construct item").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct item")
+            .Flush();
 
         return false;
     }
@@ -277,7 +277,7 @@ auto Nym::UpgradeItemVersion(
                 proto::VerificationIdentityAllowedVerification().at(nymVersion);
 
             if (itemVersion < min) {
-                LogError()(OT_METHOD)(__func__)(": Version ")(
+                LogError()(OT_PRETTY_CLASS(__func__))("Version ")(
                     itemVersion)(" too old")
                     .Flush();
 
@@ -292,7 +292,7 @@ auto Nym::UpgradeItemVersion(
             }
         }
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": No support for version ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("No support for version ")(
             itemVersion)(" items")
             .Flush();
 

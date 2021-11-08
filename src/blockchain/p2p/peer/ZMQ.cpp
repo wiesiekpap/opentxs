@@ -27,9 +27,6 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::p2p::implementation::ZMQConnectionManager::"
-
 namespace opentxs::blockchain::p2p::implementation
 {
 struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
@@ -59,7 +56,7 @@ struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
 
     auto connect() noexcept -> void override
     {
-        LogVerbose()(OT_METHOD)(__func__)(": Connecting to ")(zmq_).Flush();
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Connecting to ")(zmq_).Flush();
         dealer_->Start(zmq_);
         parent_.on_connect();
     }

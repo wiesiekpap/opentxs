@@ -23,8 +23,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::Index::"
-
 namespace opentxs::blockchain::node::wallet
 {
 Index::Index(
@@ -103,7 +101,7 @@ auto Index::rescan(
     const block::Position& pos,
     const std::size_t matches) noexcept -> void
 {
-    LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
         " processing for block ")(pos.second->asHex())(" at height ")(
         pos.first)(" found ")(matches)(" new matches");
     const auto interval = [&]() -> block::Height {

@@ -27,8 +27,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::blind::token::implementation::Token::"
-
 namespace opentxs
 {
 using ReturnType = blind::token::implementation::Lucre;
@@ -185,7 +183,7 @@ auto Token::reencrypt(
         oldKey.Decrypt(ciphertext, oldPassword, plaintext->WriteInto());
 
     if (false == output) {
-        LogError()(OT_METHOD)(__func__)(": Failed to decrypt ciphertext.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to decrypt ciphertext.")
             .Flush();
 
         return false;
@@ -199,7 +197,7 @@ auto Token::reencrypt(
         opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305);
 
     if (false == output) {
-        LogError()(OT_METHOD)(__func__)(": Failed to encrypt ciphertext.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to encrypt ciphertext.")
             .Flush();
 
         return false;

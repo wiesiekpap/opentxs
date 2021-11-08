@@ -11,8 +11,6 @@
 
 #include "display/Definition.hpp"
 
-// #define OT_METHOD "opentxs::ui::DisplayScale::"
-
 namespace opentxs::ui
 {
 DisplayScaleQt::DisplayScaleQt(const display::Definition& data) noexcept

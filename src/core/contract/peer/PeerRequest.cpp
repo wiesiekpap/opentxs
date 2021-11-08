@@ -30,8 +30,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::contract::peer::implementation::Request::"
-
 namespace opentxs::factory
 {
 auto PeerRequest(const api::Session& api) noexcept
@@ -156,7 +154,8 @@ auto Request::Finish(Request& contract, const PasswordPrompt& reason) -> bool
 
         return true;
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to finalize contract.")
+        LogError()(OT_PRETTY_STATIC(Request, __func__))(
+            "Failed to finalize contract.")
             .Flush();
 
         return false;
@@ -236,7 +235,7 @@ auto Request::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to create signature.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create signature.")
             .Flush();
     }
 
@@ -250,17 +249,17 @@ auto Request::validate(const Lock& lock) const -> bool
     if (nym_) {
         validNym = nym_->VerifyPseudonym();
     } else {
-        LogError()(OT_METHOD)(__func__)(": Invalid nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid nym.").Flush();
     }
 
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogError()(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid syntax.").Flush();
     }
 
     if (1 > signatures_.size()) {
-        LogError()(OT_METHOD)(__func__)(": Missing signature.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing signature.").Flush();
 
         return false;
     }
@@ -271,7 +270,7 @@ auto Request::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogError()(OT_METHOD)(__func__)(": Invalid signature.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature.").Flush();
     }
 
     return (validNym && validSyntax && validSig);

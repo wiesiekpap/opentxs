@@ -25,8 +25,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/client/DepositPayment.hpp"
 
-#define OT_METHOD "opentxs::otx::client::implementation::PaymentTasks::"
-
 namespace opentxs::otx::client::implementation
 {
 PaymentTasks::PaymentTasks(client::internal::StateMachine& parent)
@@ -50,7 +48,7 @@ auto PaymentTasks::cleanup() -> bool
         auto status = future.wait_for(std::chrono::nanoseconds(10));
 
         if (std::future_status::ready == status) {
-            LogInsane()(OT_METHOD)(__func__)(": Task for ")(i->first)(
+            LogInsane()(OT_PRETTY_CLASS(__func__))("Task for ")(i->first)(
                 " is done")
                 .Flush();
 
@@ -104,7 +102,8 @@ auto PaymentTasks::get_payment_id(const OTPayment& payment) const
                 cheque.LoadContractFromString(payment.Payment());
 
             if (false == loaded) {
-                LogError()(OT_METHOD)(__func__)(": Invalid cheque.").Flush();
+                LogError()(OT_PRETTY_CLASS(__func__))("Invalid cheque.")
+                    .Flush();
 
                 return output;
             }
@@ -114,7 +113,7 @@ auto PaymentTasks::get_payment_id(const OTPayment& payment) const
             return output;
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unknown payment type ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Unknown payment type ")(
                 OTPayment::GetTypeString(payment.GetType()))
                 .Flush();
 
@@ -129,7 +128,7 @@ auto PaymentTasks::PaymentTasks::Queue(const DepositPaymentTask& task)
     const auto& pPayment = std::get<2>(task);
 
     if (false == bool(pPayment)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid payment").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid payment").Flush();
 
         return error_task();
     }
@@ -150,13 +149,13 @@ auto PaymentTasks::PaymentTasks::Queue(const DepositPaymentTask& task)
         std::forward_as_tuple(parent_, taskID, task, *this));
 
     if (false == success) {
-        LogError()(OT_METHOD)(__func__)(": Failed to start queue for payment ")(
-            id)
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to start queue for payment ")(id)
             .Flush();
 
         return error_task();
     } else {
-        LogTrace()(OT_METHOD)(__func__)(": Started deposit task for ")(id)
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Started deposit task for ")(id)
             .Flush();
         it->second.Trigger();
     }

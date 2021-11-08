@@ -30,8 +30,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::Helpers"
-
 namespace
 {
 // NOTE: The below strings correspond to the transaction types
@@ -159,8 +157,8 @@ auto LoadAbbreviatedRecord(
 
     if (!strTransNum->Exists() || !strInRefTo->Exists() ||
         !strInRefDisplay->Exists() || !strDateSigned->Exists()) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Failure: missing "
+        LogConsole()(__func__)(
+            "Failure: missing "
             "strTransNum (")(strTransNum)(") or strInRefTo (")(
             strInRefTo)(") or strInRefDisplay (")(
             strInRefDisplay)(") or strDateSigned(")(
@@ -189,8 +187,8 @@ auto LoadAbbreviatedRecord(
         theType = OTTransaction::GetTypeFromString(strAbbrevType);
 
         if (transactionType::error_state == theType) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failure: Error_state was the found type (based on "
+            LogError()(__func__)(
+                "Failure: Error_state was the found type (based on "
                 "string ")(strAbbrevType)("), when loading abbreviated receipt "
                                           "for trans num: ")(
                 lTransactionNum)(" (In Reference To: ")(lInRefTo)(").")
@@ -198,8 +196,8 @@ auto LoadAbbreviatedRecord(
             return (-1);
         }
     } else {
-        LogConsole()(OT_METHOD)(__func__)(": Failure: unknown "
-                                          "transaction type (")(
+        LogConsole()(__func__)("Failure: unknown "
+                               "transaction type (")(
             strAbbrevType)(") when "
                            "loading abbreviated receipt for trans num: ")(
             lTransactionNum)(" (In Reference To: ")(lInRefTo)(").")
@@ -211,10 +209,9 @@ auto LoadAbbreviatedRecord(
     //
     strHash.Set(xml->getAttributeValue("receiptHash"));
     if (!strHash.Exists()) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Failure: Expected "
-            "receiptHash while loading "
-            "abbreviated receipt for trans num: ")(
+        LogConsole()(__func__)("Failure: Expected "
+                               "receiptHash while loading "
+                               "abbreviated receipt for trans num: ")(
             lTransactionNum)(" (In Reference To: ")(lInRefTo)(").")
             .Flush();
         return (-1);
@@ -239,8 +236,8 @@ auto LoadAbbreviatedRecord(
             String::Factory(xml->getAttributeValue("requestNumber"));
 
         if (!strRequestNum->Exists()) {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": Failed loading "
+            LogConsole()(__func__)(
+                "Failed loading "
                 "abbreviated receipt: "
                 "expected requestNumber on replyNotice trans num: ")(
                 lTransactionNum)(" (In Reference To: ")(lInRefTo)(").")
@@ -265,10 +262,9 @@ auto LoadAbbreviatedRecord(
             String::Factory(xml->getAttributeValue("closingNum"));
 
         if (!strAbbrevClosingNum->Exists()) {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": Failed loading "
-                "abbreviated receipt: "
-                "expected closingNum on trans num: ")(
+            LogConsole()(__func__)("Failed loading "
+                                   "abbreviated receipt: "
+                                   "expected closingNum on trans num: ")(
                 lTransactionNum)(" (In Reference To: ")(lInRefTo)(").")
                 .Flush();
             return (-1);
@@ -340,7 +336,7 @@ auto VerifyBoxReceiptExists(
         strFolder3name->Get(),
         strFilename->Get());
 
-    LogDetail()(OT_METHOD)(__func__)(": ")(
+    LogDetail()(__func__)(
         bExists ? "(Already have this one)" : "(Need to download this one) : ")(
         strFolder1name)(api::Legacy::PathSeparator())(
         strFolder2name)(api::Legacy::PathSeparator())(
@@ -373,7 +369,7 @@ auto LoadBoxReceipt(
     // form.)
     //
     if (!theAbbrev.IsAbbreviated()) {
-        LogConsole()(OT_METHOD)(__func__)(": Unable to load box receipt ")(
+        LogConsole()(__func__)("Unable to load box receipt ")(
             theAbbrev.GetTransactionNum())(
             ": (Because argument 'theAbbrev' wasn't abbreviated).")
             .Flush();
@@ -406,7 +402,7 @@ auto LoadBoxReceipt(
             strFolder2name->Get(),
             strFolder3name->Get(),
             strFilename->Get())) {
-        LogDetail()(OT_METHOD)(__func__)(": Box receipt does not exist: ")(
+        LogDetail()(__func__)("Box receipt does not exist: ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(strFilename)
@@ -424,7 +420,7 @@ auto LoadBoxReceipt(
         strFolder3name->Get(),
         strFilename->Get()));
     if (strFileContents.length() < 2) {
-        LogError()(OT_METHOD)(__func__)(": Error reading file: ")(
+        LogError()(__func__)("Error reading file: ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
@@ -435,8 +431,8 @@ auto LoadBoxReceipt(
     auto strRawFile = String::Factory(strFileContents.c_str());
 
     if (!strRawFile->Exists()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error reading file (resulting output "
+        LogError()(__func__)(
+            "Error reading file (resulting output "
             "string is empty): ")(strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
@@ -450,8 +446,8 @@ auto LoadBoxReceipt(
     auto pTransType = api.Factory().Transaction(strRawFile);
 
     if (false == bool(pTransType)) {
-        LogError()(OT_METHOD)(__func__)(": Error instantiating transaction "
-                                        "type based on strRawFile: ")(
+        LogError()(__func__)("Error instantiating transaction "
+                             "type based on strRawFile: ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
@@ -463,9 +459,8 @@ auto LoadBoxReceipt(
         dynamic_cast<OTTransaction*>(pTransType.release())};
 
     if (false == bool(pBoxReceipt)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error dynamic_cast from transaction "
-            "type to transaction, based on strRawFile: ")(
+        LogError()(__func__)("Error dynamic_cast from transaction "
+                             "type to transaction, based on strRawFile: ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
@@ -482,7 +477,7 @@ auto LoadBoxReceipt(
     bool bSuccess = theAbbrev.VerifyBoxReceipt(*pBoxReceipt);
 
     if (!bSuccess) {
-        LogError()(OT_METHOD)(__func__)(": Failed verifying Box Receipt: ")(
+        LogError()(__func__)("Failed verifying Box Receipt: ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(strFilename)(".")
@@ -490,8 +485,7 @@ auto LoadBoxReceipt(
 
         return nullptr;
     } else
-        LogVerbose()(OT_METHOD)(__func__)(
-            ": Successfully loaded Box Receipt in: ")(
+        LogVerbose()(__func__)("Successfully loaded Box Receipt in: ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(strFilename)
@@ -551,7 +545,7 @@ auto SetupBoxReceiptFilename(
             pszFolder = api.Internal().Legacy().ExpiredBox();
             break;
         default:
-            LogError()(OT_METHOD)(__func__)(": Error: Unknown box type: ")(
+            LogError()(__func__)("Error: Unknown box type: ")(
                 lLedgerType)(". (This should never happen).")
                 .Flush();
             return false;
@@ -631,8 +625,8 @@ auto SetupBoxReceiptFilename(
             lLedgerType = 6;
             break;
         default:
-            LogError()(OT_METHOD)(__func__)(": Error: unknown box type. "
-                                            "(This should never happen).")
+            LogError()(__func__)("Error: unknown box type. "
+                                 "(This should never happen).")
                 .Flush();
             return false;
     }

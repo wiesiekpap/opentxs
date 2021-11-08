@@ -10,8 +10,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "ui/qt/AmountValidator.hpp"
 
-// #define OT_METHOD "opentxs::ui::AmountValidator::"
-
 namespace opentxs::ui
 {
 AmountValidator::AmountValidator(

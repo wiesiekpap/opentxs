@@ -103,9 +103,9 @@ protected:
     const zeromq::Context& context_;
     const Socket::Direction direction_;
     mutable void* socket_;
-    mutable std::atomic<int> linger_{0};
-    mutable std::atomic<int> send_timeout_{-1};
-    mutable std::atomic<int> receive_timeout_{-1};
+    mutable std::atomic<int> linger_;
+    mutable std::atomic<int> send_timeout_;
+    mutable std::atomic<int> receive_timeout_;
     mutable std::mutex endpoint_lock_;
     mutable std::set<std::string> endpoints_;
     mutable OTFlag running_;

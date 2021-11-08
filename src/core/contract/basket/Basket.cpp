@@ -23,8 +23,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::Basket"
-
 // This is a good implementation. Dots all the i's, so to speak.
 // client-side.
 // The basket ONLY stores closing numbers, so this means "harvest 'em all."
@@ -70,10 +68,10 @@
 namespace opentxs
 {
 Basket::Basket(
-    const api::Session& core,
+    const api::Session& api,
     std::int32_t nCount,
     const Amount& lMinimumTransferAmount)
-    : Contract(core)
+    : Contract(api)
     , m_nSubCount(nCount)
     , m_lMinimumTransfer(lMinimumTransferAmount)
     , m_nTransferMultiple(0)
@@ -85,8 +83,8 @@ Basket::Basket(
 {
 }
 
-Basket::Basket(const api::Session& core)
-    : Basket(core, 0, 0)
+Basket::Basket(const api::Session& api)
+    : Basket(api, 0, 0)
 {
 }
 
@@ -218,7 +216,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_nSubCount = atoi(strSubCount->Get());
         m_lMinimumTransfer = Amount(strMinTrans->Get());
 
-        LogDetail()(OT_METHOD)(__func__)(": Loading currency basket...")
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Loading currency basket...")
             .Flush();
 
         return 1;
@@ -241,7 +239,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             m_bExchangingIn = strDirection->Compare("in");
         if (strTemp->Exists()) SetClosingNum(strTemp->ToLong());
 
-        LogVerbose()(OT_METHOD)(__func__)("Basket Transfer multiple is ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Basket Transfer multiple is ")(
             m_nTransferMultiple)(". Direction is ")(
             strDirection)(". Closing number is ")(
             m_lClosingTransactionNo)(". Target account is: ")(
@@ -274,7 +272,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         m_dequeItems.push_back(pItem);
 
-        LogVerbose()(OT_METHOD)(__func__)("Loaded basket item. ").Flush();
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Loaded basket item. ").Flush();
 
         return 1;
     }

@@ -44,7 +44,6 @@ template class opentxs::Pimpl<opentxs::network::zeromq::Context>;
 
 #define INPROC_PREFIX "inproc://opentxs/"
 #define PATH_SEPERATOR "/"
-#define OT_METHOD "opentxs::network::zeromq::Context::"
 
 namespace opentxs::factory
 {
@@ -63,13 +62,16 @@ auto Context::RawToZ85(
     const AllocateOutput destination) noexcept -> bool
 {
     if (0 != input.size() % 4) {
-        LogError()(OT_METHOD)(__func__)(": Invalid input size.").Flush();
+        LogError()(OT_PRETTY_STATIC(Context, __func__))("Invalid input size.")
+            .Flush();
 
         return false;
     }
 
     if (false == bool(destination)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output allocator.").Flush();
+        LogError()(OT_PRETTY_STATIC(Context, __func__))(
+            "Invalid output allocator.")
+            .Flush();
 
         return false;
     }
@@ -78,7 +80,9 @@ auto Context::RawToZ85(
     auto out = destination(target);
 
     if (false == out.valid(target)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
+        LogError()(OT_PRETTY_STATIC(Context, __func__))(
+            "Failed to allocate output")
+            .Flush();
 
         return false;
     }
@@ -94,13 +98,16 @@ auto Context::Z85ToRaw(
     const AllocateOutput destination) noexcept -> bool
 {
     if (0 != input.size() % 5) {
-        LogError()(OT_METHOD)(__func__)(": Invalid input size.").Flush();
+        LogError()(OT_PRETTY_STATIC(Context, __func__))("Invalid input size.")
+            .Flush();
 
         return false;
     }
 
     if (false == bool(destination)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output allocator.").Flush();
+        LogError()(OT_PRETTY_STATIC(Context, __func__))(
+            "Invalid output allocator.")
+            .Flush();
 
         return false;
     }
@@ -109,7 +116,9 @@ auto Context::Z85ToRaw(
     auto out = destination(target);
 
     if (false == out.valid(target)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
+        LogError()(OT_PRETTY_STATIC(Context, __func__))(
+            "Failed to allocate output")
+            .Flush();
 
         return false;
     }
@@ -361,22 +370,7 @@ Context::~Context()
 {
     if (nullptr != context_) {
         zmq_ctx_shutdown(context_);
-        auto promise = std::promise<void>{};
-        auto future = promise.get_future();
-        auto thread = std::thread{[&] {
-            zmq_ctx_term(context_);
-            promise.set_value();
-        }};
-        using Status = std::future_status;
-        constexpr auto limit = std::chrono::seconds{10};
-
-        if (Status::ready != future.wait_for(limit)) {
-            std::cout << "WARNING: zmq_ctx_term timed out.\n";
-            thread.detach();
-        }
-
-        if (thread.joinable()) { thread.join(); }
-
+        zmq_ctx_term(context_);
         context_ = nullptr;
     }
 }

@@ -9,8 +9,6 @@
 
 #include <memory>
 
-// #define OT_METHOD "opentxs::ui::implementation::UnitListItem::"
-
 namespace opentxs::factory
 {
 auto UnitListItem(

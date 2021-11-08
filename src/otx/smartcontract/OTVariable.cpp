@@ -12,14 +12,13 @@
 #include <string>
 
 #include "internal/otx/smartcontract/OTScript.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/util/Common.hpp"
 #include "opentxs/core/util/Tag.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-#define OT_METHOD "opentxs::OTVariable::"
 
 namespace opentxs
 {
@@ -44,7 +43,7 @@ void OTVariable::Serialize(Tag& parent, bool bCalculatingID) const
             str_access = "important";
             break;
         default:
-            LogError()(OT_METHOD)(__func__)(": ERROR: Bad variable access.")
+            LogError()(OT_PRETTY_CLASS(__func__))("ERROR: Bad variable access.")
                 .Flush();
             break;
     }
@@ -80,7 +79,7 @@ void OTVariable::Serialize(Tag& parent, bool bCalculatingID) const
                 "value", bCalculatingID ? "false" : formatBool(m_bValue));
             break;
         default:
-            LogError()(OT_METHOD)(__func__)(": ERROR: Bad variable type.")
+            LogError()(OT_PRETTY_CLASS(__func__))("ERROR: Bad variable type.")
                 .Flush();
             break;
     }
@@ -178,7 +177,7 @@ OTVariable::~OTVariable()
 auto OTVariable::SetValue(const std::int32_t& nValue) -> bool
 {
     if (!IsInteger()) {
-        LogError()(OT_METHOD)(__func__)(": Error: This variable (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: This variable (")(
             m_strName)(") is not an integer.")
             .Flush();
         return false;
@@ -192,7 +191,7 @@ auto OTVariable::SetValue(const std::int32_t& nValue) -> bool
 auto OTVariable::SetValue(bool bValue) -> bool
 {
     if (!IsBool()) {
-        LogError()(OT_METHOD)(__func__)(": Error: This variable (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: This variable (")(
             m_strName)(") is not a bool.")
             .Flush();
         return false;
@@ -206,7 +205,7 @@ auto OTVariable::SetValue(bool bValue) -> bool
 auto OTVariable::SetValue(const std::string& str_Value) -> bool
 {
     if (!IsString()) {
-        LogError()(OT_METHOD)(__func__)(": Error: This variable (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: This variable (")(
             m_strName)(") is not a string.")
             .Flush();
         return false;
@@ -246,8 +245,8 @@ auto OTVariable::IsDirty() const -> bool
                 bReturnVal = true;
             break;
         default:
-            LogError()(OT_METHOD)(__func__)(
-                ": Error: Unknown type for variable: ")(m_strName)(".")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error: Unknown type for variable: ")(m_strName)(".")
                 .Flush();
             break;
     }
@@ -276,8 +275,8 @@ void OTVariable::SetAsClean()
                                         // different.
             break;
         default:
-            LogError()(OT_METHOD)(__func__)(
-                ": Error: Unknown type for variable: ")(m_strName)(".")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error: Unknown type for variable: ")(m_strName)(".")
                 .Flush();
             m_str_ValueBackup = m_str_Value;
             m_nValueBackup = m_nValue;
@@ -312,7 +311,7 @@ auto OTVariable::Compare(OTVariable& rhs) -> bool
 {
     if (!(GetName().Compare(rhs.GetName()))) {
         {
-            LogConsole()(OT_METHOD)(__func__)(": Names don't match: ")(
+            LogConsole()(OT_PRETTY_CLASS(__func__))("Names don't match: ")(
                 GetName())(" / ")(rhs.GetName())(".")
                 .Flush();
         }
@@ -320,7 +319,7 @@ auto OTVariable::Compare(OTVariable& rhs) -> bool
     }
     if (!(GetType() == rhs.GetType())) {
         {
-            LogConsole()(OT_METHOD)(__func__)(": Type doesn't match: ")(
+            LogConsole()(OT_PRETTY_CLASS(__func__))("Type doesn't match: ")(
                 GetName())(".")
                 .Flush();
         }
@@ -328,8 +327,8 @@ auto OTVariable::Compare(OTVariable& rhs) -> bool
     }
     if (!(GetAccess() == rhs.GetAccess())) {
         {
-            LogConsole()(OT_METHOD)(__func__)(": Access tyes don't match: ")(
-                GetName())(".")
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "Access tyes don't match: ")(GetName())(".")
                 .Flush();
         }
         return false;
@@ -348,7 +347,7 @@ auto OTVariable::Compare(OTVariable& rhs) -> bool
             bMatch = (GetValueString().compare(rhs.GetValueString()) == 0);
             break;
         default:
-            LogError()(OT_METHOD)(__func__)(": Unknown type in variable ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Unknown type in variable ")(
                 m_strName)(".")
                 .Flush();
             break;

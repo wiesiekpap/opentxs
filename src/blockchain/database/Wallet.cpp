@@ -20,8 +20,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
-#define OT_METHOD "opentxs::blockchain::database::Wallet::"
-
 namespace opentxs::blockchain::database
 {
 Wallet::Wallet(
@@ -252,7 +250,7 @@ auto Wallet::ReorgTo(
             return true;
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         OT_FAIL;
     }
@@ -273,7 +271,8 @@ auto Wallet::ReserveUTXO(
     node::internal::SpendPolicy& policy) const noexcept -> std::optional<UTXO>
 {
     if (false == proposals_.Exists(id)) {
-        LogError()(OT_METHOD)(__func__)(": Proposal ")(id)(" does not exist")
+        LogError()(OT_PRETTY_CLASS(__func__))("Proposal ")(
+            id)(" does not exist")
             .Flush();
 
         return std::nullopt;

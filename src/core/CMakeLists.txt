@@ -14,48 +14,49 @@ add_subdirectory(trade)
 add_subdirectory(transaction)
 add_subdirectory(util)
 
-add_library(
-  opentxs-core OBJECT
-  "${opentxs_SOURCE_DIR}/include/opentxs/core/UniqueQueue.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/core/Core.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/core/identifier/Identifier.hpp"
-  "Account.cpp"
-  "AccountVisitor.cpp"
-  "Amount.cpp"
-  "Armored.cpp"
-  "Armored.hpp"
-  "Cheque.cpp"
-  "Contract.cpp"
-  "Core.cpp"
-  "Data.cpp"
-  "Data.hpp"
-  "Flag.cpp"
-  "Flag.hpp"
-  "Identifier.cpp"
-  "Identifier.hpp"
-  "Instrument.cpp"
-  "Item.cpp"
-  "Ledger.cpp"
-  "Message.cpp"
-  "NumList.cpp"
-  "NymFile.cpp"
-  "NymFile.hpp"
-  "OTStorage.cpp"
-  "OTTrackable.cpp"
-  "OTTransaction.cpp"
-  "OTTransactionType.cpp"
-  "PasswordPrompt.cpp"
-  "Secret.cpp"
-  "Secret.hpp"
-  "Shutdown.cpp"
-  "Shutdown.hpp"
-  "StateMachine.cpp"
-  "StateMachine.hpp"
-  "String.cpp"
-  "String.hpp"
-  "StringXML.cpp"
-  "StringXML.hpp"
-  "Worker.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/UniqueQueue.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/core/Core.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/core/identifier/Identifier.hpp"
+    "Account.cpp"
+    "AccountVisitor.cpp"
+    "Amount.cpp"
+    "Armored.cpp"
+    "Armored.hpp"
+    "Cheque.cpp"
+    "Contract.cpp"
+    "Core.cpp"
+    "Data.cpp"
+    "Data.hpp"
+    "Flag.cpp"
+    "Flag.hpp"
+    "Identifier.cpp"
+    "Identifier.hpp"
+    "Instrument.cpp"
+    "Item.cpp"
+    "Ledger.cpp"
+    "Message.cpp"
+    "NumList.cpp"
+    "NymFile.cpp"
+    "NymFile.hpp"
+    "OTStorage.cpp"
+    "OTTrackable.cpp"
+    "OTTransaction.cpp"
+    "OTTransactionType.cpp"
+    "PasswordPrompt.cpp"
+    "Secret.cpp"
+    "Secret.hpp"
+    "Shutdown.cpp"
+    "Shutdown.hpp"
+    "StateMachine.cpp"
+    "StateMachine.hpp"
+    "String.cpp"
+    "String.hpp"
+    "StringXML.cpp"
+    "StringXML.hpp"
+    "Worker.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Account.hpp"
@@ -88,28 +89,14 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/UnitType.hpp"
 )
 target_link_libraries(
-  opentxs-core
+  opentxs-common
   PRIVATE
-    Boost::headers
     ZLIB::ZLIB
     opentxs-core-otprotob
-    opentxs::messages
     unofficial-sodium::sodium
 )
 target_link_libraries(opentxs PUBLIC ZLIB::ZLIB unofficial-sodium::sodium)
-target_include_directories(
-  opentxs-core SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-
-if(WIN32 AND OT_STATIC_DEPENDENCIES)
-  target_compile_definitions(
-    opentxs-core PRIVATE SODIUM_STATIC=1 SODIUM_EXPORT=
-  )
-endif()
-
-target_sources(opentxs-core PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-core>)
-add_dependencies(opentxs-core generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

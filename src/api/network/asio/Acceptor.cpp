@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "internal/util/LogMacros.hpp"
 #include "network/asio/Endpoint.hpp"
 #include "network/asio/Socket.hpp"
 #include "opentxs/Types.hpp"
@@ -26,8 +27,6 @@
 #include "opentxs/util/Log.hpp"
 
 namespace ip = boost::asio::ip;
-
-#define OT_METHOD "opentxs::api::network::asio::Acceptor::Imp::"
 
 namespace opentxs::api::network::asio
 {
@@ -53,13 +52,14 @@ struct Acceptor::Imp {
         auto lock = Lock{lock_};
 
         if (running_) {
-            LogTrace()(OT_METHOD)(__func__)(": shutting down ")(endpoint_.str())
+            LogTrace()(OT_PRETTY_CLASS(__func__))("shutting down ")(
+                endpoint_.str())
                 .Flush();
             auto ec = boost::system::error_code{};
             acceptor_.cancel(ec);
             acceptor_.close(ec);
             running_ = false;
-            LogTrace()(OT_METHOD)(__func__)(": ")(endpoint_.str())(" closed")
+            LogTrace()(OT_PRETTY_CLASS(__func__))(endpoint_.str())(" closed")
                 .Flush();
         }
     }
@@ -96,16 +96,16 @@ private:
                 case Error::operation_canceled: {
                 } break;
                 default: {
-                    LogError()(OT_METHOD)(__func__)(": error ")(error)(", ")(
-                        ec.message())
+                    LogError()(OT_PRETTY_CLASS(__func__))("error ")(
+                        error)(", ")(ec.message())
                         .Flush();
                 }
             }
 
             return;
         } else {
-            LogVerbose()(OT_METHOD)(__func__)(
-                ": incoming connection request on ")(endpoint_.str())
+            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                "incoming connection request on ")(endpoint_.str())
                 .Flush();
         }
 

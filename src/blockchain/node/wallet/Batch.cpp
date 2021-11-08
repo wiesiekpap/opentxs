@@ -15,8 +15,6 @@
 #include "blockchain/node/wallet/Work.hpp"
 #include "internal/blockchain/node/Node.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::node::wallet::Batch::"
-
 namespace opentxs::blockchain::node::wallet
 {
 Batch::Batch() noexcept

@@ -270,13 +270,13 @@ public:
 private:
     friend api::session::implementation::Factory;
 
-    OTPaymentPlan(const api::Session& core);
+    OTPaymentPlan(const api::Session& api);
     OTPaymentPlan(
-        const api::Session& core,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTPaymentPlan(
-        const api::Session& core,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& SENDER_ACCT_ID,

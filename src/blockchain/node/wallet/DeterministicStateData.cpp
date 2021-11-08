@@ -45,8 +45,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::DeterministicStateData::"
-
 namespace opentxs::blockchain::node::wallet
 {
 DeterministicStateData::DeterministicStateData(
@@ -177,7 +175,7 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.Pubkey().value()) {
-                    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+                    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
                         index)(": P2PK match found for ")(
                         DisplayString(node_.Chain()))(" transaction ")(
                         txid->asHex())(" output ")(i)(" via ")(
@@ -195,7 +193,7 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+                    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
                         index)(": P2PKH match found for ")(
                         DisplayString(node_.Chain()))(" transaction ")(
                         txid->asHex())(" output ")(i)(" via ")(hash->asHex())
@@ -212,7 +210,7 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+                    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
                         index)(": P2WPKH match found for ")(
                         DisplayString(node_.Chain()))(" transaction ")(
                         txid->asHex())(" output ")(i)(" via ")(hash->asHex())
@@ -243,7 +241,7 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.MultisigPubkey(0).value()) {
-                    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+                    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
                         index)(": ")(m.value())(" of ")(n.value())(
                         " P2MS match found for ")(DisplayString(node_.Chain()))(
                         " transaction ")(txid->asHex())(" output ")(i)(" via ")(

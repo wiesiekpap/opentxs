@@ -4,19 +4,21 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(client)
+add_subdirectory(common)
 add_subdirectory(consensus)
 add_subdirectory(smartcontract)
 
-add_library(
-  opentxs-otx OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/otx/AccountList.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/otx/OTX.hpp"
-  "AccountList.cpp"
-  "OTX.cpp"
-  "Reply.cpp"
-  "Reply.hpp"
-  "Request.cpp"
-  "Request.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/otx/AccountList.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/otx/OTX.hpp"
+    "AccountList.cpp"
+    "OTX.cpp"
+    "Reply.cpp"
+    "Reply.hpp"
+    "Request.cpp"
+    "Request.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/ConsensusType.hpp"
@@ -29,13 +31,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/ServerRequestType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/otx/Types.hpp"
 )
-target_link_libraries(opentxs-otx PRIVATE opentxs::messages)
-target_include_directories(
-  opentxs-otx SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-otx PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-otx>)
-add_dependencies(opentxs-otx generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

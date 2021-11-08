@@ -63,8 +63,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/HDIndex.hpp"
 
-#define OT_METHOD "opentxs::identity::implementation::Nym::"
-
 namespace opentxs
 {
 auto Factory::Nym(
@@ -285,7 +283,7 @@ auto Nym::AddChildKeyCredential(
     const bool noMaster = (it == active_.end());
 
     if (noMaster) {
-        LogError()(OT_METHOD)(__func__)(": Master ID not found.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Master ID not found.").Flush();
 
         return output;
     }
@@ -1096,8 +1094,8 @@ auto Nym::normalize(
         const auto defaultIndex = in.UseAutoIndex();
 
         if (false == defaultIndex) {
-            LogDetail()(OT_METHOD)(__func__)(
-                ": Re-creating nym at specified path.")
+            LogDetail()(OT_PRETTY_STATIC(Nym, __func__))(
+                "Re-creating nym at specified path.")
                 .Flush();
 
             nymIndex = in.Nym();
@@ -1138,7 +1136,8 @@ auto Nym::path(const sLock& lock, proto::HDPath& output) const -> bool
         }
     }
 
-    LogError()(OT_METHOD)(__func__)(": No authority contains a path.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("No authority contains a path.")
+        .Flush();
 
     return false;
 }
@@ -1193,8 +1192,8 @@ auto Nym::PaymentCodePath(AllocateOutput destination) const -> bool
 {
     auto path = proto::HDPath{};
     if (false == PaymentCodePath(path)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to serialize payment code path to HDPath.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to serialize payment code path to HDPath.")
             .Flush();
 
         return false;
@@ -1356,22 +1355,22 @@ auto Nym::set_contact_data(
     auto version = proto::NymRequiredVersion(data.version(), version_);
 
     if ((0 == version) || version > MaxVersion) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Contact data version not supported by this nym.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Contact data version not supported by this nym.")
             .Flush();
 
         return false;
     }
 
     if (false == has_capability(lock, NymCapability::SIGN_CHILDCRED)) {
-        LogError()(OT_METHOD)(__func__)(": This nym can not be modified.")
+        LogError()(OT_PRETTY_CLASS(__func__))("This nym can not be modified.")
             .Flush();
 
         return false;
     }
 
     if (false == proto::Validate(data, VERBOSE, proto::ClaimType::Normal)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid contact data.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid contact data.").Flush();
 
         return false;
     }
@@ -1606,7 +1605,7 @@ auto Nym::Verify(const ProtobufType& input, proto::Signature& signature) const
         }
     }
 
-    LogError()(OT_METHOD)(__func__)(": all ")(active_.size())(
+    LogError()(OT_PRETTY_CLASS(__func__))("all ")(active_.size())(
         " authorities on nym ")(id_)(" failed to verify "
                                      "signature")
         .Flush();
@@ -1626,7 +1625,7 @@ auto Nym::verify_pseudonym(const eLock& lock) const -> bool
             // Verify all Credentials in the Authority, including source
             // verification for the master credential.
             if (!pCredential->VerifyInternally()) {
-                LogConsole()(OT_METHOD)(__func__)(": Credential (")(
+                LogConsole()(OT_PRETTY_CLASS(__func__))("Credential (")(
                     pCredential->GetMasterCredID())(") failed its "
                                                     "own internal "
                                                     "verification.")
@@ -1636,7 +1635,7 @@ auto Nym::verify_pseudonym(const eLock& lock) const -> bool
         }
         return true;
     }
-    LogError()(OT_METHOD)(__func__)(": No credentials.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("No credentials.").Flush();
     return false;
 }
 
@@ -1653,7 +1652,7 @@ auto Nym::WriteCredentials() const -> bool
 
     for (auto& it : active_) {
         if (!it.second->WriteCredentials()) {
-            LogError()(OT_METHOD)(__func__)(": Failed to save credentials.")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to save credentials.")
                 .Flush();
 
             return false;

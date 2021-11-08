@@ -27,9 +27,6 @@
 #include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::block::bitcoin::implementation::Inputs::"
-
 namespace opentxs::factory
 {
 using ReturnType = blockchain::block::bitcoin::implementation::Inputs;
@@ -81,7 +78,7 @@ auto Inputs::AnyoneCanPay(const std::size_t index) noexcept -> bool
 
         return true;
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Invalid index").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid index").Flush();
 
         return false;
     }
@@ -116,7 +113,7 @@ auto Inputs::AssociatePreviousOutput(
 
         return inputs_.at(index)->AssociatePreviousOutput(blockchain, output);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Invalid index").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid index").Flush();
 
         return false;
     }
@@ -153,7 +150,8 @@ auto Inputs::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
-    LogTrace()(OT_METHOD)(__func__)(": processing ")(size())(" inputs").Flush();
+    LogTrace()(OT_PRETTY_CLASS(__func__))("processing ")(size())(" inputs")
+        .Flush();
 
     for (const auto& txin : *this) {
         auto temp = txin.Internal().ExtractElements(style);
@@ -163,7 +161,8 @@ auto Inputs::ExtractElements(const filter::Type style) const noexcept
             std::make_move_iterator(temp.end()));
     }
 
-    LogTrace()(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
+    LogTrace()(OT_PRETTY_CLASS(__func__))("extracted ")(output.size())(
+        " elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -182,7 +181,7 @@ auto Inputs::FindMatches(
 
     for (const auto& txin : *this) {
         auto temp = txin.Internal().FindMatches(txid, type, txos, patterns);
-        LogTrace()(OT_METHOD)(__func__)(": Verified ")(
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Verified ")(
             temp.second.size() +
             temp.first.size())(" matches in input ")(++index)
             .Flush();
@@ -233,7 +232,7 @@ auto Inputs::MergeMetadata(
     const auto count = size();
 
     if (count != rhs.size()) {
-        LogError()(OT_METHOD)(__func__)(": Wrong number of inputs").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Wrong number of inputs").Flush();
 
         return false;
     }
@@ -243,7 +242,7 @@ auto Inputs::MergeMetadata(
         auto& r = rhs.at(i).Internal();
 
         if (false == l.MergeMetadata(api, r)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to merge input ")(i)
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to merge input ")(i)
                 .Flush();
 
             return false;
@@ -273,7 +272,7 @@ auto Inputs::ReplaceScript(const std::size_t index) noexcept -> bool
 
         return inputs_.at(index)->ReplaceScript();
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Invalid index").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid index").Flush();
 
         return false;
     }
@@ -283,7 +282,8 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
     const noexcept -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
+            .Flush();
 
         return std::nullopt;
     }
@@ -292,7 +292,7 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to allocate output bytes")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -313,7 +313,7 @@ auto Inputs::serialize(const AllocateOutput destination, const bool normalize)
                       : row->Serialize(preallocated(remaining, it));
 
         if (false == bytes.has_value()) {
-            LogError()(OT_METHOD)(__func__)(": Failed to serialize input")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize input")
                 .Flush();
 
             return std::nullopt;

@@ -16,9 +16,6 @@
 #include "opentxs/protobuf/ZMQEnums.pb.h"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::network::zeromq::implementation::PairEventCallbackSwig::"
-
 namespace opentxs::network::zeromq
 {
 auto PairEventCallback::Factory(opentxs::PairEventCallbackSwig* callback)
@@ -36,7 +33,8 @@ PairEventCallbackSwig::PairEventCallbackSwig(
     : callback_(callback)
 {
     if (nullptr == callback_) {
-        LogError()(OT_METHOD)(__func__)(": Invalid callback pointer.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid callback pointer.")
+            .Flush();
 
         OT_FAIL;
     }
@@ -62,7 +60,8 @@ void PairEventCallbackSwig::Process(zeromq::Message& message) const
             callback_->ProcessStoreSecret(event.issuer());
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unknown event type.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unknown event type.")
+                .Flush();
         }
     }
 }

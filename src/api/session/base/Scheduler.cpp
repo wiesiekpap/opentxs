@@ -20,8 +20,6 @@
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/util/Time.hpp"
 
-//#define OT_METHOD "opentxs::api::session::Scheduler::"
-
 namespace opentxs::api::session
 {
 Scheduler::Scheduler(const api::Context& parent, Flag& running)

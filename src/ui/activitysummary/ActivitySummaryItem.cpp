@@ -34,8 +34,6 @@
 
 #define GET_TEXT_MILLISECONDS 10
 
-#define OT_METHOD "opentxs::ui::implementation::ActivitySummaryItem::"
-
 namespace opentxs::factory
 {
 auto ActivitySummaryItem(
@@ -126,7 +124,8 @@ auto ActivitySummaryItem::find_text(
 
                 return *text;
             } else {
-                LogError()(OT_METHOD)(__func__)(": Cheque item does not exist.")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Cheque item does not exist.")
                     .Flush();
             }
         } break;

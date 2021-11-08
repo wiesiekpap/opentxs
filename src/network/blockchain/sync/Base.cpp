@@ -27,8 +27,6 @@
 #include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
-#define OT_METHOD "opentxs::network::blockchain::sync::Base::"
-
 namespace opentxs::network::blockchain::sync
 {
 using LocalType = Base::Imp::LocalType;
@@ -168,7 +166,7 @@ auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
 auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
 {
     if (MessageType::error == type_) {
-        LogError()(OT_METHOD)(__func__)(": Invalid type").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid type").Flush();
 
         return false;
     }
@@ -178,7 +176,7 @@ auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
     } else if (0u != out.at(out.size() - 1u).size()) {
         // NOTE supplied message should either be empty or else have header
         // frames followed by an empty delimiter frame.
-        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
 
         return false;
     }

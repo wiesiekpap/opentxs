@@ -24,10 +24,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 
-#if OT_CRYPTO_WITH_BIP32
-#define OT_METHOD "opentxs::api::session::StorageParent::"
-#endif
-
 namespace opentxs::api::session::base
 {
 Storage::Storage(
@@ -81,9 +77,9 @@ auto Storage::init(
     auto seed = seeds.DefaultSeed();
 
     if (seed.empty()) {
-        LogError()(OT_METHOD)(__func__)(": No default seed.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("No default seed.").Flush();
     } else {
-        LogError()(OT_METHOD)(__func__)(": Default seed is: ")(seed)(".")
+        LogError()(OT_PRETTY_CLASS(__func__))("Default seed is: ")(seed)(".")
             .Flush();
     }
 
@@ -91,11 +87,11 @@ auto Storage::init(
     storage_encryption_key_ = seeds.GetStorageKey(seed, reason);
 
     if (storage_encryption_key_.get()) {
-        LogDetail()(OT_METHOD)(__func__)(": Obtained storage key ")(
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Obtained storage key ")(
             storage_encryption_key_->ID(reason))
             .Flush();
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to load storage key ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load storage key ")(
             seed)(".")
             .Flush();
     }

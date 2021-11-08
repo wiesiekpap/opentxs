@@ -3,36 +3,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-api-client-activity OBJECT
-  "Activity.cpp"
-  "Imp.cpp"
-  "Imp.hpp"
-  "MailCache.cpp"
-  "MailCache.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "Activity.cpp"
+    "Imp.cpp"
+    "Imp.hpp"
+    "MailCache.cpp"
+    "MailCache.hpp"
 )
-
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/client/Activity.hpp"
 )
-
-target_link_libraries(opentxs-api-client-activity PRIVATE opentxs-common)
-target_include_directories(
-  opentxs-api-client-activity SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-
-target_sources(opentxs-api-client-activity PRIVATE ${cxx-install-headers})
-
-if(NOT OT_IWYU)
-  target_precompile_headers(
-    opentxs-api-client-activity
-    REUSE_FROM
-    opentxs-common
-  )
-endif()
-
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-client-activity>)
-add_dependencies(opentxs-api-client-activity generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

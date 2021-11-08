@@ -71,9 +71,9 @@ public:
         const PasswordPrompt& reason,
         std::int64_t stashTransNum = 0) -> ExclusiveAccount;
 
-    explicit AccountList(const api::Session& core);
+    explicit AccountList(const api::Session& api);
     explicit AccountList(
-        const api::Session& core,
+        const api::Session& api,
         Account::AccountType acctType);
 
     ~AccountList();

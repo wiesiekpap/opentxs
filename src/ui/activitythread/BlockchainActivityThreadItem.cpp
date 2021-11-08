@@ -20,7 +20,6 @@
 #include "ui/activitythread/ActivityThreadItem.hpp"
 #include "ui/base/Widget.hpp"
 
-// #define OT_METHOD
 // "opentxs::ui::implementation::BlockchainActivityThreadItem::"
 
 namespace opentxs::factory

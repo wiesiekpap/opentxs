@@ -17,8 +17,6 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Log.hpp"
 
-//#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Sendcmpct::"
-
 namespace opentxs::factory
 {
 // We have a header and a raw payload. Parse it.

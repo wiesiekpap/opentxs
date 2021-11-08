@@ -93,8 +93,6 @@
 #define ACCOUNT_VERSION 1
 #define INDEX_VERSION 1
 
-#define OT_METHOD "opentxs::storage::Accounts::"
-
 namespace opentxs::storage
 {
 Accounts::Accounts(const Driver& storage, const std::string& hash)
@@ -179,8 +177,8 @@ auto Accounts::add_set_index(
         mapID->SetString(argID.str());
     } else {
         if (mapID != argID) {
-            LogError()(OT_METHOD)(__func__)(": Provided index id (")(
-                argID)(") for account ")(
+            LogError()(OT_PRETTY_STATIC(Accounts, __func__))(
+                "Provided index id (")(argID)(") for account ")(
                 accountID)(" does not match existing index id ")(mapID)
                 .Flush();
 
@@ -209,37 +207,37 @@ auto Accounts::check_update_account(
     const core::UnitType unit) -> bool
 {
     if (accountID->empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid account ID.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid account ID.").Flush();
 
         return false;
     }
 
     if (ownerNym.empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid owner nym ID.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid owner nym ID.").Flush();
 
         return false;
     }
 
     if (signerNym.empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid signer nym ID.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signer nym ID.").Flush();
 
         return false;
     }
 
     if (issuerNym.empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid issuer nym ID.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid issuer nym ID.").Flush();
 
         return false;
     }
 
     if (server.empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid server ID.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid server ID.").Flush();
 
         return false;
     }
 
     if (contract.empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid unit ID.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid unit ID.").Flush();
 
         return false;
     }
@@ -335,7 +333,8 @@ void Accounts::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to load account index file.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to load account index file.")
             .Flush();
         OT_FAIL;
     }
@@ -380,7 +379,7 @@ auto Accounts::Load(
 auto Accounts::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure.").Flush();
         OT_FAIL;
     }
 

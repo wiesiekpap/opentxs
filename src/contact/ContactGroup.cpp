@@ -19,8 +19,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::ContactGroup::"
-
 namespace opentxs
 {
 struct ContactGroup::Imp {
@@ -296,8 +294,8 @@ auto ContactGroup::SerializeTo(
     const bool withIDs) const -> bool
 {
     if (translate(section.name()) != imp_->section_) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Trying to serialize to incorrect section.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Trying to serialize to incorrect section.")
             .Flush();
 
         return false;

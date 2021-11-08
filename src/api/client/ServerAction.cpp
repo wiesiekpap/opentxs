@@ -19,8 +19,6 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-//#define OT_METHOD "opentxs::api::client::implementation::ServerAction::"
-
 namespace opentxs::factory
 {
 auto ServerAction(

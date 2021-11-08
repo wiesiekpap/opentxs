@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -27,8 +28,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-
-#define OT_METHOD "opentxs::api::client::ui::UpdateManager::"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -78,7 +77,7 @@ private:
 
         const auto& frame = in.at(0);
         const auto id = api_.Factory().Identifier(frame);
-        LogTrace()(OT_METHOD)(__func__)(": Widget ")(id->str())(" updated.")
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Widget ")(id->str())(" updated.")
             .Flush();
         auto lock = Lock{lock_};
         auto it = map_.find(id);

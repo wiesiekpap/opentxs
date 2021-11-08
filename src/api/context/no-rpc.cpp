@@ -7,8 +7,6 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "api/context/Context.hpp"  // IWYU pragma: associated
 
-// #define OT_METHOD "opentxs::api::implementation::Context::"
-
 namespace opentxs::api::implementation
 {
 auto Context::RPC(const ReadView command, const AllocateOutput response)

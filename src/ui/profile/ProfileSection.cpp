@@ -32,8 +32,6 @@
 
 template class opentxs::SharedPimpl<opentxs::ui::ProfileSection>;
 
-//#define OT_METHOD "opentxs::ui::implementation::ProfileSection::"
-
 namespace opentxs::factory
 {
 auto ProfileSectionWidget(

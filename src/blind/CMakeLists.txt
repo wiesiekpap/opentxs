@@ -29,9 +29,7 @@ if(OT_CASH_EXPORT)
     "${opentxs_SOURCE_DIR}/include/opentxs/blind/Types.hpp"
   )
 
-  target_link_libraries(
-    opentxs-blind PRIVATE opentxs::messages opentxs-api-crypto
-  )
+  target_link_libraries(opentxs-blind PRIVATE Boost::headers opentxs::messages)
   target_include_directories(
     opentxs-blind SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
   )

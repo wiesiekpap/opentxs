@@ -21,8 +21,6 @@ namespace C = std::chrono;
 
 #define STORAGE_CONFIG_KEY "storage"
 
-#define OT_METHOD "opentxs::storage::Config::"
-
 namespace opentxs::storage
 {
 Config::Config(
@@ -52,7 +50,7 @@ Config::Config(
         const auto& configFile = previous_primary_plugin_;
 
         if (false == cli.empty()) {
-            LogDetail()(OT_METHOD)(__func__)(": Using ")(
+            LogDetail()(OT_PRETTY_CLASS(__func__))("Using ")(
                 cli)(" as primary storage plugin based on initialization "
                      "arguments")
                 .Flush();
@@ -61,14 +59,14 @@ Config::Config(
         }
 
         if (false == configFile.empty()) {
-            LogDetail()(OT_METHOD)(__func__)(": Using ")(
+            LogDetail()(OT_PRETTY_CLASS(__func__))("Using ")(
                 cli)(" as primary storage plugin based saved configuration")
                 .Flush();
 
             return configFile;
         }
 
-        LogDetail()(OT_METHOD)(__func__)(": Using ")(
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Using ")(
             cli)(" as primary storage plugin")
             .Flush();
 
@@ -88,9 +86,9 @@ Config::Config(
             const auto migrate = false == previous.empty();
 
             if (migrate) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Migrating primary storage plugin from ")(
-                    previous)(" to ")(current)
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Migrating primary storage plugin from ")(previous)(" to ")(
+                    current)
                     .Flush();
             }
 
@@ -155,14 +153,16 @@ Config::Config(
         if (false ==
             legacy.AppendFolder(
                 output, dataFolder, String::Factory(legacy.Common()))) {
-            LogError()(OT_METHOD)(__func__)("Failed to calculate storage path")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to calculate storage path")
                 .Flush();
 
             return {};
         }
 
         if (false == legacy.BuildFolderPath(output)) {
-            LogError()(OT_METHOD)(__func__)("Failed to construct storage path")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to construct storage path")
                 .Flush();
 
             return {};
@@ -174,7 +174,7 @@ Config::Config(
 
             if (false ==
                 legacy.AppendFolder(newPath, output, String::Factory(subdir))) {
-                LogError()(OT_METHOD)(__func__)(
+                LogError()(OT_PRETTY_CLASS(__func__))(
                     "Failed to calculate lmdb storage path")
                     .Flush();
 
@@ -182,7 +182,7 @@ Config::Config(
             }
 
             if (false == legacy.BuildFolderPath(newPath)) {
-                LogError()(OT_METHOD)(__func__)(
+                LogError()(OT_PRETTY_CLASS(__func__))(
                     "Failed to construct lmdb storage path")
                     .Flush();
 

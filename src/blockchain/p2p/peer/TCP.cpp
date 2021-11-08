@@ -29,9 +29,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::p2p::implementation::TCPConnectionManager::"
-
 namespace asio = boost::asio;
 using tcp = asio::ip::tcp;
 
@@ -74,7 +71,7 @@ struct TCPConnectionManager : virtual public Peer::ConnectionManager {
     auto connect() noexcept -> void override
     {
         if (0 < connection_id_.size()) {
-            LogVerbose()(OT_METHOD)(__func__)(": Connecting to ")(
+            LogVerbose()(OT_PRETTY_CLASS(__func__))("Connecting to ")(
                 endpoint_.str())
                 .Flush();
             socket_.Connect(reader(connection_id_));
@@ -135,7 +132,7 @@ struct TCPConnectionManager : virtual public Peer::ConnectionManager {
                 }
             } break;
             case Peer::Task::Connect: {
-                LogVerbose()(OT_METHOD)(__func__)(": Connect to ")(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("Connect to ")(
                     endpoint_.str())(" successful")
                     .Flush();
                 parent_.on_connect();

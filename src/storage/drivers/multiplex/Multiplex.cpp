@@ -26,8 +26,6 @@
 #include "storage/tree/Root.hpp"
 #include "storage/tree/Tree.hpp"
 
-#define OT_METHOD "opentxs::storage::driver::Multiplex::"
-
 namespace opentxs::factory
 {
 auto StorageMultiplex(
@@ -161,7 +159,8 @@ void Multiplex::init(
 
 void Multiplex::init_memdb(std::unique_ptr<storage::Plugin>& plugin)
 {
-    LogVerbose()(OT_METHOD)(__func__)(": Initializing primary MemDB plugin.")
+    LogVerbose()(OT_PRETTY_CLASS(__func__))(
+        "Initializing primary MemDB plugin.")
         .Flush();
     plugin = factory::StorageMemDB(
         crypto_, asio_, storage_, config_, primary_bucket_);
@@ -204,8 +203,8 @@ auto Multiplex::Load(
     if (primary_plugin_->Load(key, checking, value)) { return true; }
 
     if (false == checking) {
-        LogVerbose()(OT_METHOD)(__func__)(
-            ": key not found by primary storage plugin.")
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            "key not found by primary storage plugin.")
             .Flush();
     }
 
@@ -222,8 +221,8 @@ auto Multiplex::Load(
         }
 
         if (false == checking) {
-            LogVerbose()(OT_METHOD)(__func__)(
-                ": key not found by backup storage plugin ")
+            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                "key not found by backup storage plugin ")
                 .Flush();
         }
 
@@ -231,7 +230,7 @@ auto Multiplex::Load(
     }
 
     if (false == checking) {
-        LogError()(OT_METHOD)(__func__)(": Key not found by any plugin.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Key not found by any plugin.")
             .Flush();
 
         throw std::runtime_error("Key not found by any plugin");
@@ -322,11 +321,12 @@ void Multiplex::migrate_primary(const std::string& from, const std::string& to)
     const auto migrated = tree.Migrate(*newPlugin);
 
     if (migrated) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Successfully migrated to new primary plugin.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Successfully migrated to new primary plugin.")
             .Flush();
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to migrate primary plugin.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to migrate primary plugin.")
             .Flush();
 
         OT_FAIL;
@@ -430,18 +430,18 @@ void Multiplex::SynchronizePlugins(
     if (syncPrimary) {
         OT_ASSERT(primary_plugin_);
 
-        LogError()(OT_METHOD)(__func__)(": Primary plugin is out of sync.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Primary plugin is out of sync.")
             .Flush();
 
         const auto migrated = tree.Migrate(*primary_plugin_);
 
         if (migrated) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Successfully restored primary plugin from backup.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Successfully restored primary plugin from backup.")
                 .Flush();
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to restore primary plugin from backup.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to restore primary plugin from backup.")
                 .Flush();
         }
     }
@@ -451,29 +451,29 @@ void Multiplex::SynchronizePlugins(
 
         if (hash == plugin->LoadRoot()) { continue; }
 
-        LogError()(OT_METHOD)(__func__)(
-            ": Backup plugin is uninitialized or out of sync.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Backup plugin is uninitialized or out of sync.")
             .Flush();
 
         if (tree.Migrate(*plugin)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Successfully initialized backup plugin.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Successfully initialized backup plugin.")
                 .Flush();
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to initialize backup plugin.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to initialize backup plugin.")
                 .Flush();
         }
 
         if (false == root.Save(*plugin)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to update root index object for backup plugin.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to update root index object for backup plugin.")
                 .Flush();
         }
 
         if (false == plugin->StoreRoot(false, hash)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to update root hash for backup plugin.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to update root hash for backup plugin.")
                 .Flush();
         }
     }

@@ -36,8 +36,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::implementation::Wallet::"
-
 namespace opentxs::factory
 {
 auto BlockchainWallet(
@@ -189,7 +187,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -243,7 +241,7 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -274,7 +272,7 @@ auto Wallet::process_block_header(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (3 >= body.size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -362,7 +360,7 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (6 > body.size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -394,7 +392,7 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
                 throw std::runtime_error{"Finalize transaction failed"};
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             OT_FAIL;
         }
@@ -406,7 +404,7 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
             throw std::runtime_error{"Advance chain failed"};
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         OT_FAIL;
     }

@@ -17,8 +17,6 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::crypto::AccountIndex::"
-
 namespace opentxs::blockchain::crypto
 {
 struct AccountIndex::Imp {

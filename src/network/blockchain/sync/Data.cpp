@@ -27,8 +27,6 @@
 #include "opentxs/protobuf/verify/BlockchainP2PSync.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::network::blockchain::sync::Data::"
-
 namespace opentxs::network::blockchain::sync
 {
 struct DataImp final : public Base::Imp {
@@ -111,7 +109,7 @@ auto Data::Add(ReadView data) noexcept -> bool
             static_cast<opentxs::blockchain::block::Height>(proto.height());
 
         if (height != expected) {
-            LogError()(OT_METHOD)(__func__)(": Non-contiguous sync data")
+            LogError()(OT_PRETTY_CLASS(__func__))("Non-contiguous sync data")
                 .Flush();
 
             return false;
@@ -123,7 +121,7 @@ auto Data::Add(ReadView data) noexcept -> bool
 
         return true;
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }

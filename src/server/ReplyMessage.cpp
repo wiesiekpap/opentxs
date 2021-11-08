@@ -26,8 +26,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "server/UserCommandProcessor.hpp"
 
-#define OT_METHOD "opentxs::ReplyMessage::"
-
 namespace opentxs::server
 {
 ReplyMessage::ReplyMessage(
@@ -101,7 +99,7 @@ void ReplyMessage::attach_request()
         case MessageType::getMarketList:
         case MessageType::requestAdmin:
         case MessageType::addClaim: {
-            LogVerbose()(OT_METHOD)(__func__)(": Attaching original ")(
+            LogVerbose()(OT_PRETTY_CLASS(__func__))("Attaching original ")(
                 command)(" message.")
                 .Flush();
             message_.m_ascInReferenceTo->SetString(String::Factory(original_));
@@ -127,7 +125,7 @@ void ReplyMessage::clear_request()
         case MessageType::getAccountData:
         case MessageType::getInstrumentDefinition:
         case MessageType::getMint: {
-            LogVerbose()(OT_METHOD)(__func__)(": Clearing original ")(
+            LogVerbose()(OT_PRETTY_CLASS(__func__))("Clearing original ")(
                 command)(" message.")
                 .Flush();
             message_.m_ascInReferenceTo->Release();
@@ -216,7 +214,7 @@ auto ReplyMessage::init_nym() -> bool
 auto ReplyMessage::LoadContext(const PasswordPrompt& reason) -> bool
 {
     if (false == init_nym()) {
-        LogError()(OT_METHOD)(__func__)(": Nym (")(original_.m_strNymID)(
+        LogError()(OT_PRETTY_CLASS(__func__))("Nym (")(original_.m_strNymID)(
             ") does not exist")
             .Flush();
 

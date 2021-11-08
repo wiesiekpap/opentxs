@@ -25,8 +25,6 @@
 #include "ui/accountactivity/BalanceItem.hpp"
 #include "ui/base/Widget.hpp"
 
-// #define OT_METHOD "opentxs::ui::implementation::BlockchainBalanceItem::"
-
 namespace opentxs::ui::implementation
 {
 BlockchainBalanceItem::BlockchainBalanceItem(

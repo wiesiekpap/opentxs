@@ -3,32 +3,26 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-api-client-ui OBJECT
-  "Imp-base.cpp"
-  "Imp-base.hpp"
-  "UI.cpp"
-  "UpdateManager.cpp"
-  "UpdateManager.hpp"
-)
-target_link_libraries(opentxs-api-client-ui PRIVATE opentxs::messages)
-target_include_directories(
-  opentxs-api-client-ui SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "Imp-base.cpp"
+    "Imp-base.hpp"
+    "UI.cpp"
+    "UpdateManager.cpp"
+    "UpdateManager.hpp"
 )
 
 if(OT_QT_EXPORT)
   target_sources(
-    opentxs-api-client-ui
+    opentxs-common
     PRIVATE
       "Imp-qt.cpp"
       "Imp-qt.hpp"
       "Qt.cpp"
   )
-  target_link_libraries(opentxs-api-client-ui PRIVATE Qt5::Core Qt5::Gui)
-  target_link_libraries(opentxs PRIVATE Qt5::Core Qt5::Gui)
+  target_link_libraries(opentxs-common PRIVATE Qt5::Core Qt5::Gui)
+  target_link_libraries(opentxs PUBLIC Qt5::Core Qt5::Gui)
 else()
-  target_sources(opentxs-api-client-ui PRIVATE "No_Qt.cpp")
+  target_sources(opentxs-common PRIVATE "No_Qt.cpp")
 endif()
-
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-client-ui>)
-add_dependencies(opentxs-api-client-ui generated_code)

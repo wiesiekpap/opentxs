@@ -22,8 +22,6 @@
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::OTScript::"
-
 namespace opentxs
 {
 // A script should be "Dumb", meaning that you just stick it with its
@@ -103,7 +101,8 @@ auto OTScriptFactory(const std::string& script_type)
 #else
     // default no script interpreter
     if (script_type == "") {
-        LogError()(OT_METHOD)(__func__)(": WARNING 1: script_type == noscript.")
+        LogError()("opentxs::")(__func__)(
+            ": WARNING 1: script_type == noscript.")
             .Flush();
 
         std::shared_ptr<OTScript> pNoScript(new OTScript);
@@ -111,8 +110,7 @@ auto OTScriptFactory(const std::string& script_type)
     }
 #endif
 
-    LogError()(OT_METHOD)(__func__)(": Script language (")(
-        script_type)(") not found.")
+    LogError()(__func__)(": Script language (")(script_type)(") not found.")
         .Flush();
 
     std::shared_ptr<OTScript> retVal;
@@ -144,16 +142,14 @@ auto OTScriptFactory(
 #else
     // default no script interpreter
     if (script_type == "") {
-        LogError()(OT_METHOD)(__func__)(": WARNING 2: script_type == noscript.")
-            .Flush();
+        LogError()(__func__)(": WARNING 2: script_type == noscript.").Flush();
 
         std::shared_ptr<OTScript> pNoScript(new OTScript);
         return pNoScript;
     }
 #endif
 
-    LogError()(OT_METHOD)(__func__)(": Script language (")(
-        script_type)(") not found.")
+    LogError()(__func__)(": Script language (")(script_type)(") not found.")
         .Flush();
 
     std::shared_ptr<OTScript> retVal;
@@ -308,7 +304,8 @@ void OTScript::RemoveVariable(OTVariable& theVar)
 
 auto OTScript::ExecuteScript(OTVariable*) -> bool
 {
-    LogError()(OT_METHOD)(__func__)(": Scripting has been disabled.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Scripting has been disabled.")
+        .Flush();
     return true;
 }
 

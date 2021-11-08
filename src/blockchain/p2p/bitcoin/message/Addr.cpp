@@ -21,7 +21,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
-//#define OT_METHOD "
 // opentxs::blockchain::p2p::bitcoin::message::implementation::Addr::"
 
 namespace opentxs::factory

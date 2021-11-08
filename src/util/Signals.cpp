@@ -12,11 +12,10 @@
 #include <string>
 #include <utility>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/util/Log.hpp"
-
-#define OT_METHOD "opentxs::Signals::"
 
 namespace opentxs
 {
@@ -74,7 +73,8 @@ void Signals::handle()
 
             if (shouldBreak) { break; }
         } else {
-            LogError()(OT_METHOD)(__func__)(": ERROR: Invalid signal received.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "ERROR: Invalid signal received.")
                 .Flush();
         }
     }
@@ -86,7 +86,7 @@ auto Signals::process(const int signal) -> bool
     auto handler = handler_.find(signal);
 
     if (handler_.end() == handler) {
-        LogError()(OT_METHOD)(__func__)(": Unhandled signal ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Unhandled signal ")(
             std::to_string(signal))(" received.")
             .Flush();
 

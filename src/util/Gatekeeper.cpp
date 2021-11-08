@@ -8,6 +8,7 @@
 #include "util/Gatekeeper.hpp"  // IWYU pragma: associated
 
 #include <atomic>
+#include <thread>
 
 #include "internal/util/LogMacros.hpp"
 
@@ -87,7 +88,7 @@ auto Gatekeeper::shutdown() noexcept -> void
 
     const auto target = shutdown - jobs;
 
-    while (count.load() > target) { ; }
+    while (count.load() > target) { std::this_thread::yield(); }
 }
 
 Ticket::operator bool() const noexcept

@@ -46,8 +46,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::NotificationStateData::"
-
 namespace opentxs::blockchain::node::wallet
 {
 NotificationStateData::NotificationStateData(
@@ -112,7 +110,7 @@ auto NotificationStateData::handle_confirmed_matches(
     const block::Matches& confirmed) noexcept -> void
 {
     const auto& [utxo, general] = confirmed;
-    LogVerbose()(OT_METHOD)(__func__)(": ")(general.size())(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))(general.size())(
         " confirmed matches for ")(code_.asBase58())(" on ")(
         DisplayString(node_.Chain()))
         .Flush();
@@ -124,7 +122,7 @@ auto NotificationStateData::handle_confirmed_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        LogVerbose()(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(DisplayString(node_.Chain()))(
             " transaction ")(txid->asHex())(" contains a version ")(
             version)(" notification for ")(code_.asBase58())
             .Flush();
@@ -149,7 +147,7 @@ auto NotificationStateData::handle_mempool_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        LogVerbose()(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(DisplayString(node_.Chain()))(
             " mempool transaction ")(txid->asHex())(" contains a version ")(
             version)(" notification for ")(code_.asBase58())
             .Flush();
@@ -213,13 +211,14 @@ auto NotificationStateData::process(
             if (!pSender) { continue; }
 
             const auto& sender = *pSender;
-            LogVerbose()(OT_METHOD)(__func__)(": decoded incoming notification "
-                                              "from ")(sender.asBase58())(
-                " on ")(DisplayString(node_.Chain()))(" for ")(code_.asBase58())
+            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                "decoded incoming notification "
+                "from ")(sender.asBase58())(" on ")(
+                DisplayString(node_.Chain()))(" for ")(code_.asBase58())
                 .Flush();
             const auto& account = crypto_.Internal().PaymentCodeSubaccount(
                 owner_, code_, sender, path_, node_.Chain(), reason);
-            LogVerbose()(OT_METHOD)(__func__)(": Created new account ")(
+            LogVerbose()(OT_PRETTY_CLASS(__func__))("Created new account ")(
                 account.ID())
                 .Flush();
         }

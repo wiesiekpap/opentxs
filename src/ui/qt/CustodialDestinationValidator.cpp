@@ -12,8 +12,6 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-// #define OT_METHOD "opentxs::ui::CustodialDestionationValidator::"
-
 namespace opentxs::ui
 {
 struct CustodialDestionationValidator final : public DestinationValidator::Imp {

@@ -17,8 +17,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::contract::implementation::Signable::"
-
 namespace opentxs::contract::implementation
 {
 Signable::Signable(
@@ -140,7 +138,7 @@ auto Signable::update_signature(const Lock& lock, const PasswordPrompt& reason)
     OT_ASSERT(verify_write_lock(lock));
 
     if (!nym_) {
-        LogError()(OT_METHOD)(__func__)(": Missing nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing nym.").Flush();
 
         return false;
     }
@@ -166,13 +164,13 @@ auto Signable::Validate() const -> bool
 auto Signable::verify_write_lock(const Lock& lock) const -> bool
 {
     if (lock.mutex() != &lock_) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogError()(OT_METHOD)(__func__)(": Lock not owned.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Lock not owned.").Flush();
 
         return false;
     }
@@ -186,7 +184,7 @@ auto Signable::verify_signature(const Lock& lock, const proto::Signature&) const
     OT_ASSERT(verify_write_lock(lock));
 
     if (!nym_) {
-        LogError()(OT_METHOD)(__func__)(": Missing nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing nym.").Flush();
 
         return false;
     }

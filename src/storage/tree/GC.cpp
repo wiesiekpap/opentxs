@@ -20,8 +20,6 @@
 #include "storage/tree/Tree.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD "opentxs::storage::Root::GC::"
-
 namespace opentxs::storage
 {
 Root::GC::GC(
@@ -47,14 +45,15 @@ auto Root::GC::Cleanup() noexcept -> void { future_.get(); }
 auto Root::GC::Check(const std::string root) noexcept -> CheckState
 {
     if (0 == interval_) {
-        LogVerbose()(OT_METHOD)(__func__)(": Garbage collection disabled")
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Garbage collection disabled")
             .Flush();
 
         return CheckState::Skip;
     }
 
     if (running_.get()) {
-        LogVerbose()(OT_METHOD)(__func__)(": Garbage collection in progress")
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            "Garbage collection in progress")
             .Flush();
 
         return CheckState::Skip;
@@ -93,7 +92,7 @@ auto Root::GC::collect_garbage(
     const Driver* to,
     const SimpleCallback done) noexcept -> void
 {
-    LogVerbose()(OT_METHOD)(__func__)(": Beginning garbage collection.")
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Beginning garbage collection.")
         .Flush();
     auto success{false};
     auto postcondition = ScopeGuard{[&] { promise_.set_value(success); }};
@@ -103,7 +102,7 @@ auto Root::GC::collect_garbage(
     if (success) {
         driver_.EmptyBucket(from);
     } else {
-        LogVerbose()(OT_METHOD)(__func__)(": Garbage collection failed")
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Garbage collection failed")
             .Flush();
     }
 
@@ -118,7 +117,8 @@ auto Root::GC::collect_garbage(
     OT_ASSERT(done);
 
     done();
-    LogVerbose()(OT_METHOD)(__func__)(": Finished garbage collection.").Flush();
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Finished garbage collection.")
+        .Flush();
 }
 
 auto Root::GC::Init(

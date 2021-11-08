@@ -34,8 +34,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Log.hpp"
 
-#define LOG_SINK "inproc://opentxs/logsink/1"
-
 namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::internal
@@ -43,21 +41,18 @@ namespace opentxs::internal
 auto Log::SetVerbosity(const int level) noexcept -> void
 {
     static auto& logger = opentxs::Log::Imp::logger_;
-    logger.verbosity_.store(level);
+    logger.verbosity_ = level;
 }
 
 auto Log::Shutdown() noexcept -> void
 {
     static auto& logger = opentxs::Log::Imp::logger_;
-    logger.running_.store(false);
+    logger.running_.shutdown();
+    auto lock = Lock{logger.lock_};
+    logger.map_.clear();
 }
 
-auto Log::StartLog(
-    const opentxs::Log& source,
-    const std::string& function) noexcept -> const opentxs::Log&
-{
-    return source(function);
-}
+auto Log::Start() noexcept -> void {}
 }  // namespace opentxs::internal
 
 namespace opentxs
@@ -76,7 +71,9 @@ auto Log::Imp::operator()(const char* in) const noexcept -> const opentxs::Log&
 
     auto id = std::string{};
 
-    if (logger_.running_.load()) { std::get<1>(get_buffer(id)) << in; }
+    if (auto done = logger_.running_.get(); false == done) {
+        std::get<1>(get_buffer(id)) << in;
+    }
 
     return parent_;
 }
@@ -86,7 +83,7 @@ auto Log::Imp::Assert(
     const std::size_t line,
     const char* message) const noexcept -> void
 {
-    {
+    if (auto done = logger_.running_.get(); false == done) {
         auto id = std::string{};
         auto& [socket, buffer] = get_buffer(id);
         buffer = std::stringstream{};
@@ -107,26 +104,60 @@ auto Log::Imp::Flush() const noexcept -> void { send(false); }
 
 auto Log::Imp::get_buffer(std::string& out) noexcept -> Logger::Source&
 {
-    const auto id = std::this_thread::get_id();
-    auto convert = std::stringstream{};
-    convert << std::hex << id;
-    out = convert.str();
-    static thread_local auto buffer = Logger::Source{
-        [] {
-            using Direction = zmq::socket::Socket::Direction;
-            auto out = Context().ZMQ().PushSocket(Direction::Connect);
-            out->Start(LOG_SINK);
+    struct Buffer {
+        const std::thread::id id_;
+        const std::string text_;
+        const int index_;
+        Logger::SourceMap::iterator source_;
 
-            return out;
-        }(),
-        std::stringstream{}};
+        Buffer() noexcept
+            : id_(std::this_thread::get_id())
+            , text_([&] {
+                auto buf = std::stringstream{};
+                buf << std::hex << id_;
 
-    return buffer;
+                return buf.str();
+            }())
+            , index_(++logger_.index_)
+            , source_([&] {
+                auto lock = Lock{logger_.lock_};
+                auto [it, added] = logger_.map_.try_emplace(
+                    index_,
+                    [] {
+                        using Direction = zmq::socket::Socket::Direction;
+                        auto out =
+                            Context().ZMQ().PushSocket(Direction::Connect);
+                        const auto started =
+                            out->Start(internal::Log::endpoint_);
+
+                        assert(started);
+
+                        return out;
+                    }(),
+                    std::stringstream{});
+                assert(added);
+
+                return it;
+            }())
+        {
+        }
+
+        ~Buffer()
+        {
+            auto lock = Lock{logger_.lock_};
+            logger_.map_.erase(index_);
+        }
+    };
+
+    static thread_local auto buffer = Buffer{};
+    out = buffer.text_;
+
+    return buffer.source_->second;
 }
 
 auto Log::Imp::send(const bool terminate) const noexcept -> void
 {
-    if (logger_.running_.load()) {
+    if (auto done = logger_.running_.get(); false == done) {
         auto id = std::string{};
         auto& [socket, buffer] = get_buffer(id);
         auto message = zmq::Message::Factory();
@@ -157,7 +188,7 @@ auto Log::Imp::Trace(
     const std::size_t line,
     const char* message) const noexcept -> void
 {
-    {
+    if (auto done = logger_.running_.get(); false == done) {
         std::string id{};
         auto& [socket, buffer] = get_buffer(id);
         buffer = std::stringstream{};

@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <iosfwd>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <string>
@@ -59,11 +60,11 @@ public:
 
     Blocks(storage::lmdb::LMDB& lmdb, Bulk& bulk) noexcept;
 
+    ~Blocks();
+
 private:
-    storage::lmdb::LMDB& lmdb_;
-    Bulk& bulk_;
-    const int table_;
-    mutable std::mutex lock_;
-    mutable std::map<pHash, std::shared_mutex> block_locks_;
+    struct Imp;
+
+    std::unique_ptr<Imp> imp_;
 };
 }  // namespace opentxs::blockchain::database::common

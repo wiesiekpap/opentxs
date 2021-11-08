@@ -3,24 +3,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-ui-activitysummary OBJECT
-  "ActivitySummary.cpp"
-  "ActivitySummary.hpp"
-  "ActivitySummaryItem.cpp"
-  "ActivitySummaryItem.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "ActivitySummary.cpp"
+    "ActivitySummary.hpp"
+    "ActivitySummaryItem.cpp"
+    "ActivitySummaryItem.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ActivitySummary.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ActivitySummaryItem.hpp"
 )
-target_link_libraries(opentxs-ui-activitysummary PRIVATE opentxs::messages)
-target_include_directories(
-  opentxs-ui-activitysummary SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-ui-activitysummary PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-activitysummary>)
-add_dependencies(opentxs-ui-activitysummary generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

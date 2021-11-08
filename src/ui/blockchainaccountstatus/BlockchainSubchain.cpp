@@ -14,8 +14,6 @@
 #include "opentxs/Types.hpp"
 #include "ui/base/Widget.hpp"
 
-//#define OT_METHOD "opentxs::ui::implementation::BlockchainSubchain::"
-
 namespace opentxs::factory
 {
 auto BlockchainSubchainWidget(

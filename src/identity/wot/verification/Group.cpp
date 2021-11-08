@@ -24,9 +24,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::identity::wot::verification::implementation::Group::"
-
 namespace opentxs
 {
 auto Factory::VerificationGroup(
@@ -127,7 +124,7 @@ auto Group::AddItem(
     const VersionNumber version) noexcept -> bool
 {
     if (external_) {
-        LogError()(OT_METHOD)(__func__)(": Invalid internal item").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid internal item").Flush();
 
         return false;
     }
@@ -141,14 +138,14 @@ auto Group::AddItem(
     const Item::SerializedType verification) noexcept -> bool
 {
     if (false == external_) {
-        LogError()(OT_METHOD)(__func__)(": Invalid external item").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid external item").Flush();
 
         return false;
     }
 
     if (verifier == parent_.NymID()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Attempting to add internal claim to external section")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Attempting to add internal claim to external section")
             .Flush();
 
         return false;
@@ -231,7 +228,7 @@ auto Group::UpgradeNymVersion(const VersionNumber nymVersion) noexcept -> bool
                 proto::VerificationGroupAllowedIdentity().at(groupVersion);
 
             if (nymVersion < min) {
-                LogError()(OT_METHOD)(__func__)(": Version ")(
+                LogError()(OT_PRETTY_CLASS(__func__))("Version ")(
                     nymVersion)(" too old")
                     .Flush();
 
@@ -249,7 +246,7 @@ auto Group::UpgradeNymVersion(const VersionNumber nymVersion) noexcept -> bool
             }
         }
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": No support for version ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("No support for version ")(
             nymVersion)(" items")
             .Flush();
 

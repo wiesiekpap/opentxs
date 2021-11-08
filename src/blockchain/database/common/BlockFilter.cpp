@@ -26,8 +26,6 @@
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
-#define OT_METHOD "opentxs::blockchain::database::common::BlockFilter::"
-
 namespace opentxs::blockchain::database::common
 {
 template <typename Input>
@@ -52,7 +50,7 @@ auto BlockFilter::HaveFilter(const filter::Type type, const ReadView blockHash)
     try {
         return lmdb_.Exists(translate_filter(type), blockHash);
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }
@@ -65,7 +63,7 @@ auto BlockFilter::HaveFilterHeader(
     try {
         return lmdb_.Exists(translate_header(type), blockHash);
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }
@@ -95,7 +93,7 @@ auto BlockFilter::LoadFilter(const filter::Type type, const ReadView blockHash)
         output = factory::GCS(
             api_, proto::Factory<proto::GCS>(bulk_.ReadView(index)));
     } catch (const std::exception& e) {
-        LogVerbose()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
     }
 
     return output;
@@ -126,7 +124,7 @@ auto BlockFilter::LoadFilterHash(
     try {
         lmdb_.Load(translate_header(type), blockHash, cb);
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
     }
 
     return output;
@@ -157,7 +155,7 @@ auto BlockFilter::LoadFilterHeader(
     try {
         lmdb_.Load(translate_header(type), blockHash, cb);
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
     }
 
     return output;
@@ -197,8 +195,8 @@ auto BlockFilter::store(
             const auto result = lmdb_.Store(table, blockHash, tsv(index), tx);
 
             if (false == result.first) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to update index for cfilter header")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to update index for cfilter header")
                     .Flush();
 
                 return false;
@@ -215,7 +213,7 @@ auto BlockFilter::store(
 
         return proto::write(proto, preallocated(bytes, view.data()));
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }
@@ -258,7 +256,7 @@ auto BlockFilter::StoreFilters(
 
             if (false == stored.first) { return false; }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }

@@ -87,6 +87,9 @@ namespace opentxs::blockchain::database::common
 class Database final
 {
 public:
+    static const int default_storage_level_;
+    static const int storage_enabled_;
+
     enum class Key : std::size_t {
         BlockStoragePolicy = 0,
         NextBlockAddress = 1,

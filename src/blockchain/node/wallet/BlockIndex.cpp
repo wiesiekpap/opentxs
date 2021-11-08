@@ -17,8 +17,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::node::wallet::BlockIndex::Imp::"
-
 namespace opentxs::blockchain::node::wallet
 {
 struct BlockIndex::Imp {

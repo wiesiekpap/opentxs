@@ -10,6 +10,8 @@
 #include <irrxml/irrXML.hpp>
 #include <memory>
 
+#include "internal/otx/common/XML.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/NumList.hpp"
@@ -17,8 +19,6 @@
 #include "opentxs/core/util/Tag.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-#define OT_METHOD "opentxs::TransactionStatement::"
 
 namespace opentxs
 {
@@ -67,12 +67,11 @@ TransactionStatement::TransactionStatement(const String& serialized)
                 } else if (nodeName->Compare("transactionNums")) {
                     notary_ = xml->getAttributeValue("notaryID");
                     auto list = String::Factory();
-                    const bool loaded =
-                        Contract::LoadEncodedTextField(raw, list);
+                    const bool loaded = LoadEncodedTextField(raw, list);
 
                     if (notary_.empty() || !loaded) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": Error: transactionNums field without value.")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Error: transactionNums field without value.")
                             .Flush();
                         break;
                     }
@@ -86,8 +85,8 @@ TransactionStatement::TransactionStatement(const String& serialized)
                     while (numlist.Peek(number)) {
                         numlist.Pop();
 
-                        LogDebug()(OT_METHOD)(__func__)(
-                            ": Transaction Number ")(
+                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                            "Transaction Number ")(
                             number)(" ready-to-use for NotaryID: ")(notary_)
                             .Flush();
                         available_.insert(number);
@@ -95,12 +94,11 @@ TransactionStatement::TransactionStatement(const String& serialized)
                 } else if (nodeName->Compare("issuedNums")) {
                     notary_ = xml->getAttributeValue("notaryID");
                     auto list = String::Factory();
-                    const bool loaded =
-                        Contract::LoadEncodedTextField(raw, list);
+                    const bool loaded = LoadEncodedTextField(raw, list);
 
                     if (notary_.empty() || !loaded) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": Error: issuedNums field without value.")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Error: issuedNums field without value.")
                             .Flush();
                         break;
                     }
@@ -114,20 +112,20 @@ TransactionStatement::TransactionStatement(const String& serialized)
                     while (numlist.Peek(number)) {
                         numlist.Pop();
 
-                        LogDebug()(OT_METHOD)(__func__)(
-                            ": Currently liable for issued trans# ")(
+                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                            "Currently liable for issued trans# ")(
                             number)(" at NotaryID: ")(notary_)
                             .Flush();
                         issued_.insert(number);
                     }
                 } else {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Unknown element type in: ")(nodeName)(".")
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Unknown element type in: ")(nodeName)(".")
                         .Flush();
                 }
             } break;
             default: {
-                LogInsane()(OT_METHOD)(__func__)(": Unknown XML type in ")(
+                LogInsane()(OT_PRETTY_CLASS(__func__))("Unknown XML type in ")(
                     nodeName)
                     .Flush();
                 break;

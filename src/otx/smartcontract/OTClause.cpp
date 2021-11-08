@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/util/Tag.hpp"
@@ -26,8 +27,6 @@
 // only cares that the party has an active agent, but does not actually speak
 // directly
 // to said agent.)
-
-#define OT_METHOD "opentxs::OTClause::"
 
 namespace opentxs
 {
@@ -76,8 +75,8 @@ void OTClause::Serialize(Tag& parent) const
     if (m_strCode->GetLength() > 2)
         ascCode->SetString(m_strCode);
     else
-        LogError()(OT_METHOD)(__func__)(
-            ": Empty script code in OTClause::Serialize().")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Empty script code in OTClause::Serialize().")
             .Flush();
 
     TagPtr pTag(new Tag("clause", ascCode->Get()));
@@ -91,15 +90,15 @@ void OTClause::Serialize(Tag& parent) const
 auto OTClause::Compare(const OTClause& rhs) const -> bool
 {
     if (!(GetName().Compare(rhs.GetName()))) {
-        LogConsole()(OT_METHOD)(__func__)(": Names don't match: ")(GetName())(
-            " / ")(rhs.GetName())(".")
+        LogConsole()(OT_PRETTY_CLASS(__func__))("Names don't match: ")(
+            GetName())(" / ")(rhs.GetName())(".")
             .Flush();
         return false;
     }
 
     if (!(m_strCode->Compare(rhs.GetCode()))) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Source code for interpreted script fails "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Source code for interpreted script fails "
             "to match, on clause: ")(GetName())(".")
             .Flush();
         return false;

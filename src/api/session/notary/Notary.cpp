@@ -68,8 +68,6 @@
 #define MINT_GENERATE_DAYS 7
 #endif  // OT_CASH
 
-#define OT_METHOD "opentxs::api::session::implementation::Manager::"
-
 namespace opentxs::factory
 {
 auto NotarySession(
@@ -99,7 +97,7 @@ auto NotarySession(
             try {
                 output->Init();
             } catch (const std::invalid_argument& e) {
-                LogError()(OT_METHOD)(__func__)(
+                LogError()("opentxs::factory::")(__func__)(
                     ": There was a problem creating the server. The server "
                     "contract will be deleted. Error: ")(e.what())
                     .Flush();
@@ -189,7 +187,7 @@ Notary::Notary(
 
 void Notary::Cleanup()
 {
-    LogDetail()(OT_METHOD)(__func__)(": Shutting down and cleaning up.")
+    LogDetail()(OT_PRETTY_CLASS(__func__))("Shutting down and cleaning up.")
         .Flush();
     shutdown_sender_.Activate();
     message_processor_.cleanup();
@@ -217,7 +215,7 @@ void Notary::generate_mint(
     auto mint = GetPrivateMint(Factory().UnitID(unitID), series);
 
     if (mint) {
-        LogError()(OT_METHOD)(__func__)(": Mint already exists.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Mint already exists.").Flush();
 
         return;
     }
@@ -243,7 +241,8 @@ void Notary::generate_mint(
     const auto validTo = now + validInterval;
 
     if (false == verify_mint_directory(serverID)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to create mint directory.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to create mint directory.")
             .Flush();
 
         return;
@@ -493,7 +492,8 @@ void Notary::mint() const
         auto mint = GetPrivateMint(Factory().UnitID(unitID), last);
 
         if (false == bool(mint)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to load existing series.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to load existing series.")
                 .Flush();
 
             continue;
@@ -508,7 +508,7 @@ void Notary::mint() const
         if (generate) {
             generate_mint(serverID, unitID, next);
         } else {
-            LogDetail()(OT_METHOD)(__func__)(": Existing mint file for ")(
+            LogDetail()(OT_PRETTY_CLASS(__func__))("Existing mint file for ")(
                 unitID)(" is still valid.")
                 .Flush();
         }
@@ -571,13 +571,13 @@ auto Notary::verify_lock(const opentxs::Lock& lock, const std::mutex& mutex)
     const -> bool
 {
     if (lock.mutex() != &mutex) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogError()(OT_METHOD)(__func__)(": Lock not owned.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Lock not owned.").Flush();
 
         return false;
     }
@@ -601,7 +601,8 @@ auto Notary::verify_mint(
     }
 
     if (false == mint->VerifyMint(server_.GetServerNym())) {
-        LogError()(OT_METHOD)(__func__)(": Invalid mint for ")(unitID).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid mint for ")(unitID)
+            .Flush();
 
         return {};
     }

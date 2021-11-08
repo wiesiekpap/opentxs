@@ -373,7 +373,7 @@ protected:
         otx::context::internal::Base* context) const;
     auto server_to_nym(Identifier& nymOrNotaryID) const -> OTNymID;
 
-    Wallet(const api::Session& core);
+    Wallet(const api::Session& api);
 
 private:
     using AccountMap = std::map<OTIdentifier, AccountLock>;

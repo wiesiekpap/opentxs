@@ -6,20 +6,21 @@
 add_subdirectory(asio)
 add_subdirectory(blockchain)
 
-add_library(
-  opentxs-api-network OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/api/network/Factory.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/api/network/Network.hpp"
-  "Blockchain.cpp"
-  "Blockchain.hpp"
-  "Dht.cpp"
-  "Dht.hpp"
-  "Network.cpp"
-  "Network.hpp"
-  "ZAP.cpp"
-  "ZAP.hpp"
-  "ZMQ.cpp"
-  "ZMQ.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/api/network/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/api/network/Network.hpp"
+    "Blockchain.cpp"
+    "Blockchain.hpp"
+    "Dht.cpp"
+    "Dht.hpp"
+    "Network.cpp"
+    "Network.hpp"
+    "ZAP.cpp"
+    "ZAP.hpp"
+    "ZMQ.cpp"
+    "ZMQ.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/Asio.hpp"
@@ -29,13 +30,8 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/ZAP.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/api/network/ZMQ.hpp"
 )
-target_link_libraries(
-  opentxs-api-network
-  PRIVATE
-    opentxs-common
-    Boost::headers
-    OpenSSL::SSL
-)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
+target_link_libraries(opentxs-common PRIVATE OpenSSL::SSL)
 target_link_libraries(
   opentxs
   PUBLIC
@@ -43,21 +39,6 @@ target_link_libraries(
     Boost::thread
     OpenSSL::SSL
 )
-target_include_directories(
-  opentxs-api-network SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-api-network PRIVATE ${cxx-install-headers})
-
-if(NOT OT_IWYU)
-  target_precompile_headers(
-    opentxs-api-network
-    REUSE_FROM
-    opentxs-common
-  )
-endif()
-
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-network>)
-add_dependencies(opentxs-api-network generated_code)
 
 if(OPENTXS_STANDALONE)
   install(

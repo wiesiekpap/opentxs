@@ -37,8 +37,6 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::OTScriptChai::"
-
 namespace opentxs
 {
 
@@ -213,8 +211,8 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
                 } break;
 
                 default:
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Failure: Unknown "
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Failure: Unknown "
                         "variable type for variable: ")(var_name)(".")
                         .Flush();
                     return false;
@@ -264,9 +262,10 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
                     } break;
 
                     default:
-                        LogError()(OT_METHOD)(__func__)(": Unknown return "
-                                                        "type passed in, "
-                                                        "unable to service it.")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Unknown return "
+                            "type passed in, "
+                            "unable to service it.")
                             .Flush();
                         return false;
                 }  // switch
@@ -274,8 +273,8 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
         }          // try
         catch (const chaiscript::exception::eval_error& ee) {
             // Error in script parsing / execution
-            LogError()(OT_METHOD)(__func__)(
-                ": Caught "
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Caught "
                 "chaiscript::exception::eval_error: ")(ee.reason)(". File: ")(
                 ee.filename)(". Start position, line: ")(
                 ee.start_position.line)(". Column: ")(ee.start_position.column)(
@@ -324,8 +323,8 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
             return false;
         } catch (const chaiscript::exception::bad_boxed_cast& e) {
             // Error unboxing return value
-            LogError()(OT_METHOD)(__func__)(
-                ": Caught "
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Caught "
                 "chaiscript::exception::bad_boxed_cast : ")(
                 (e.what() != nullptr) ? e.what()
                                       : "e.what() returned null, sorry.")
@@ -333,8 +332,8 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
             return false;
         } catch (const std::exception& e) {
             // Error explicitly thrown from script
-            LogError()(OT_METHOD)(__func__)(": Caught std::exception "
-                                            "exception: ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Caught std::exception "
+                                                  "exception: ")(
                 (e.what() != nullptr) ? e.what()
                                       : "e.what() returned null, sorry.")
                 .Flush();
@@ -343,7 +342,7 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
         //      catch (chaiscript::Boxed_Value bv)
         catch (...) {
             //          std::int32_t i = chaiscript::boxed_cast<int32_t>(bv);
-            LogError()(OT_METHOD)(__func__)(": Caught exception.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Caught exception.").Flush();
             return false;
         }
     }

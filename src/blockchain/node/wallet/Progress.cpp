@@ -24,8 +24,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::Progress::Imp::"
-
 namespace opentxs::blockchain::node::wallet
 {
 struct Progress::Imp {
@@ -133,7 +131,7 @@ private:
         }();
 
         if (report) {
-            LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+            LogVerbose()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
                 " progress: ")(best.first)
                 .Flush();
             parent_.update_scan(best, reorg);

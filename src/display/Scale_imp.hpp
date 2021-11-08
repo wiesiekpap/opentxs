@@ -23,8 +23,6 @@
 
 namespace bmp = boost::multiprecision;
 
-#define OT_METHOD "opentxs::display::Scale::"
-
 namespace opentxs::display
 {
 struct Scale::Imp {
@@ -116,7 +114,7 @@ struct Scale::Imp {
                 output.convert_to<Amount::Imp::Backend>();
             return amount;
         } catch (const std::exception& e) {
-            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             throw std::current_exception();
         }

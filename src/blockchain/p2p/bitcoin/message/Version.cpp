@@ -21,7 +21,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-//#define OT_METHOD "
 // opentxs::blockchain::p2p::bitcoin::message::implementation::Version::"
 
 namespace opentxs::factory

@@ -12,6 +12,7 @@
 #include <string>
 
 #include "core/OTStorage.hpp"
+#include "internal/otx/common/XML.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
@@ -21,12 +22,10 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::OTSignedFile::"
-
 namespace opentxs
 {
-OTSignedFile::OTSignedFile(const api::Session& core)
-    : Contract(core)
+OTSignedFile::OTSignedFile(const api::Session& api)
+    : Contract(api)
     , m_strSignedFilePayload(String::Factory())
     , m_strLocalDir(String::Factory())
     , m_strSignedFilename(String::Factory())
@@ -38,10 +37,10 @@ OTSignedFile::OTSignedFile(const api::Session& core)
 }
 
 OTSignedFile::OTSignedFile(
-    const api::Session& core,
+    const api::Session& api,
     const String& LOCAL_SUBDIR,
     const String& FILE_NAME)
-    : Contract(core)
+    : Contract(api)
     , m_strSignedFilePayload(String::Factory())
     , m_strLocalDir(String::Factory())
     , m_strSignedFilename(String::Factory())
@@ -55,10 +54,10 @@ OTSignedFile::OTSignedFile(
 }
 
 OTSignedFile::OTSignedFile(
-    const api::Session& core,
+    const api::Session& api,
     const char* LOCAL_SUBDIR,
     const String& FILE_NAME)
-    : Contract(core)
+    : Contract(api)
     , m_strSignedFilePayload(String::Factory())
     , m_strLocalDir(String::Factory())
     , m_strSignedFilename(String::Factory())
@@ -74,10 +73,10 @@ OTSignedFile::OTSignedFile(
 }
 
 OTSignedFile::OTSignedFile(
-    const api::Session& core,
+    const api::Session& api,
     const char* LOCAL_SUBDIR,
     const char* FILE_NAME)
-    : Contract(core)
+    : Contract(api)
     , m_strSignedFilePayload(String::Factory())
     , m_strLocalDir(String::Factory())
     , m_strSignedFilename(String::Factory())
@@ -162,10 +161,9 @@ auto OTSignedFile::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         nReturnVal = 1;
     } else if (!strcmp("filePayload", xml->getNodeName())) {
-        if (false ==
-            Contract::LoadEncodedTextField(xml, m_strSignedFilePayload)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Error in OTSignedFile::ProcessXMLNode: filePayload field "
+        if (false == LoadEncodedTextField(xml, m_strSignedFilePayload)) {
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error in OTSignedFile::ProcessXMLNode: filePayload field "
                 "without value.")
                 .Flush();
             return (-1);  // error condition
@@ -192,8 +190,8 @@ auto OTSignedFile::VerifyFile() -> bool
         m_strSignedFilename->Compare(m_strPurportedFilename))
         return true;
 
-    LogError()(OT_METHOD)(__func__)(
-        ": Failed verifying signed file: "
+    LogError()(OT_PRETTY_CLASS(__func__))(
+        "Failed verifying signed file: "
         "Expected directory: ")(m_strLocalDir)(". Found: ")(
         m_strPurportedLocalDir)(". Expected filename: ")(
         m_strSignedFilename)(". Found: ")(m_strPurportedFilename)(".")

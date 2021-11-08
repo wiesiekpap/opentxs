@@ -14,12 +14,11 @@
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Getheaders::"
 
 namespace opentxs::factory
 {
@@ -171,7 +170,8 @@ auto Getheaders::payload() const noexcept -> OTData
         if (32 == hash->size()) {
             output += hash;
         } else {
-            LogError()(OT_METHOD)(__func__)(": Invalid hash: ")(hash->asHex())
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid hash: ")(
+                hash->asHex())
                 .Flush();
         }
     }

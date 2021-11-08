@@ -16,8 +16,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::display::Definition::"
-
 namespace opentxs::display
 {
 struct Definition::Imp {

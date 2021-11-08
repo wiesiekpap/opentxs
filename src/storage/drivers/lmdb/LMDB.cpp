@@ -16,8 +16,6 @@
 #include "storage/Config.hpp"
 #include "util/LMDB.hpp"
 
-#define OT_METHOD "opentxs::storage::driver::LMDB::"
-
 namespace opentxs::factory
 {
 auto StorageLMDB(
@@ -56,7 +54,7 @@ LMDB::LMDB(
               {Table::B, 0},
           })
 {
-    LogVerbose()(OT_METHOD)(__func__)(": Using ")(config_.path_).Flush();
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Using ")(config_.path_).Flush();
     Init_LMDB();
 }
 
@@ -76,7 +74,7 @@ auto LMDB::get_table(const bool bucket) const -> LMDB::Table
 
 void LMDB::Init_LMDB()
 {
-    LogVerbose()(OT_METHOD)(__func__)(": Database initialized.").Flush();
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Database initialized.").Flush();
 }
 
 auto LMDB::LoadFromBucket(

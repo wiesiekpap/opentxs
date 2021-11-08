@@ -48,8 +48,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
-//#define OT_METHOD "opentxs::blockchain::implementation::GCS::"
-
 namespace be = boost::endian;
 namespace bmp = boost::multiprecision;
 

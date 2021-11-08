@@ -35,8 +35,6 @@
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::SubchainStateData::"
-
 namespace opentxs::blockchain::node::wallet
 {
 SubchainStateData::SubchainStateData(
@@ -228,7 +226,7 @@ auto SubchainStateData::index_element(
     const Bip32Index index,
     WalletDatabase::ElementMap& output) const noexcept -> void
 {
-    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
         index)(" extracting filter matching patterns")
         .Flush();
     auto& list = output[index];
@@ -273,21 +271,21 @@ auto SubchainStateData::ProcessBlockAvailable(const block::Hash& block) noexcept
     -> void
 {
     if (block_index_.Query(block)) {
-        LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
+        LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
         process_.Run();
     }
 }
 
 auto SubchainStateData::ProcessKey() noexcept -> void
 {
-    LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
+    LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
     get_index().Run();
 }
 
 auto SubchainStateData::ProcessMempool(
     std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
 {
-    LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
+    LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
 
     if (mempool_.Queue(tx)) { mempool_.Run(); }
 }
@@ -295,7 +293,7 @@ auto SubchainStateData::ProcessMempool(
 auto SubchainStateData::ProcessNewFilter(const block::Position& tip) noexcept
     -> void
 {
-    LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
+    LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
     rescan_.UpdateTip(tip);
     scan_.Run(tip);
 }
@@ -305,7 +303,7 @@ auto SubchainStateData::ProcessReorg(
     std::atomic_int& errors,
     const block::Position& ancestor) noexcept -> bool
 {
-    LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
+    LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
     ++job_counter_;
     const auto queued =
         api_.Network().Asio().Internal().Post(ThreadPool::General, [&] {
@@ -315,10 +313,10 @@ auto SubchainStateData::ProcessReorg(
         });
 
     if (queued) {
-        LogDebug()(OT_METHOD)(__func__)(": ")(name_)(" reorg job queued")
+        LogDebug()(OT_PRETTY_CLASS(__func__))(name_)(" reorg job queued")
             .Flush();
     } else {
-        LogDebug()(OT_METHOD)(__func__)(": ")(
+        LogDebug()(OT_PRETTY_CLASS(__func__))(
             name_)(" failed to queue reorg job")
             .Flush();
         --job_counter_;
@@ -348,7 +346,7 @@ auto SubchainStateData::ProcessTaskComplete(
     bool enabled) noexcept -> void
 {
     if (id == db_key_) {
-        LogInsane()(OT_METHOD)(__func__)(": ")(type)(" ")(name_)(" complete")
+        LogInsane()(OT_PRETTY_CLASS(__func__))(type)(" ")(name_)(" complete")
             .Flush();
         ProcessStateMachine(enabled);
     }

@@ -15,6 +15,12 @@ configure_file(
   @ONLY
 )
 
+configure_file(
+  "StorageLevel.cpp.in"
+  "${opentxs_BINARY_DIR}/src/blockchain/database/common/StorageLevel.cpp"
+  @ONLY
+)
+
 if(OT_QT_EXPORT)
   file(
     READ

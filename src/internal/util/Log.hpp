@@ -7,16 +7,21 @@
 
 #include <string>
 
+namespace opentxs
+{
+class Log;
+}  // namespace opentxs
+
 namespace opentxs::internal
 {
 class Log
 {
 public:
+    static constexpr auto endpoint_{"inproc://opentxs/logsink/1"};
+
     static auto SetVerbosity(const int level) noexcept -> void;
     static auto Shutdown() noexcept -> void;
-    static auto StartLog(
-        const opentxs::Log& source,
-        const std::string& function) noexcept -> const opentxs::Log&;
+    static auto Start() noexcept -> void;
 
     Log() = default;
 

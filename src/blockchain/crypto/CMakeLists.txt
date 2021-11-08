@@ -3,28 +3,29 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-blockchain-crypto OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/blockchain/crypto/Crypto.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/blockchain/crypto/Factory.hpp"
-  "Account.cpp"
-  "Account.hpp"
-  "Account.tpp"
-  "AccountIndex.cpp"
-  "AccountIndex.hpp"
-  "Crypto.cpp"
-  "Deterministic.cpp"
-  "Deterministic.hpp"
-  "Element.cpp"
-  "Element.hpp"
-  "HD.cpp"
-  "HD.hpp"
-  "PaymentCode.cpp"
-  "PaymentCode.hpp"
-  "Subaccount.cpp"
-  "Subaccount.hpp"
-  "Wallet.cpp"
-  "Wallet.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/crypto/Crypto.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/crypto/Factory.hpp"
+    "Account.cpp"
+    "Account.hpp"
+    "Account.tpp"
+    "AccountIndex.cpp"
+    "AccountIndex.hpp"
+    "Crypto.cpp"
+    "Deterministic.cpp"
+    "Deterministic.hpp"
+    "Element.cpp"
+    "Element.hpp"
+    "HD.cpp"
+    "HD.hpp"
+    "PaymentCode.cpp"
+    "PaymentCode.hpp"
+    "Subaccount.cpp"
+    "Subaccount.hpp"
+    "Wallet.cpp"
+    "Wallet.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/Account.hpp"
@@ -42,18 +43,12 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/Types.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/crypto/Wallet.hpp"
 )
-target_link_libraries(
-  opentxs-blockchain-crypto PRIVATE opentxs::messages Boost::headers
-)
 target_include_directories(
-  opentxs-blockchain-crypto SYSTEM
-  PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-          "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+  opentxs-common SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 
-target_sources(opentxs-blockchain-crypto PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-crypto>)
-add_dependencies(opentxs-blockchain-crypto generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

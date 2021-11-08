@@ -35,8 +35,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-//#define OT_METHOD "opentxs::api::session::client::Wallet::"
-
 namespace opentxs::factory
 {
 auto WalletAPI(const api::session::Client& parent) noexcept

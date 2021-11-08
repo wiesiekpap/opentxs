@@ -18,7 +18,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
 
-//#define OT_METHOD "
 // opentxs::blockchain::p2p::bitcoin::message::implementation::Ping::"
 
 namespace opentxs::factory

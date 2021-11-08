@@ -16,8 +16,6 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "ui/base/Widget.hpp"
 
-// #define OT_METHOD "opentxs::ui::implementation::BlockchainAccountListItem::"
-
 namespace opentxs::factory
 {
 auto BlockchainAccountListItem(

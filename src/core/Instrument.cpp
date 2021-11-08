@@ -17,8 +17,8 @@
 
 namespace opentxs
 {
-Instrument::Instrument(const api::Session& core)
-    : OTScriptable(core)
+Instrument::Instrument(const api::Session& api)
+    : OTScriptable(api)
     , m_InstrumentDefinitionID(api_.Factory().UnitID())
     , m_NotaryID(api_.Factory().ServerID())
     , m_VALID_FROM()
@@ -28,10 +28,10 @@ Instrument::Instrument(const api::Session& core)
 }
 
 Instrument::Instrument(
-    const api::Session& core,
+    const api::Session& api,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
-    : OTScriptable(core)
+    : OTScriptable(api)
     , m_InstrumentDefinitionID(INSTRUMENT_DEFINITION_ID)
     , m_NotaryID(NOTARY_ID)
     , m_VALID_FROM()

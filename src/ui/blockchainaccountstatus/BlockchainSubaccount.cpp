@@ -12,8 +12,6 @@
 #include "opentxs/core/Identifier.hpp"
 #include "ui/base/List.hpp"
 
-// #define OT_METHOD "opentxs::ui::implementation::BlockchainSubaccount::"
-
 namespace opentxs::factory
 {
 auto BlockchainSubaccountWidget(

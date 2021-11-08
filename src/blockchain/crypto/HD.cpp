@@ -49,8 +49,6 @@
 #include "opentxs/util/Log.hpp"
 #include "util/HDIndex.hpp"
 
-#define OT_METHOD "opentxs::blockchain::crypto::implementation::HD::"
-
 namespace opentxs::factory
 {
 using ReturnType = blockchain::crypto::implementation::HD;
@@ -247,7 +245,7 @@ auto HD::PrivateKey(
             OT_FAIL;
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Invalid subchain (")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid subchain (")(
                 opentxs::print(type))("). Only ")(opentxs::print(internalType))(
                 " and ")(opentxs::print(externalType))(
                 " are valid for this account.")
@@ -268,7 +266,8 @@ auto HD::PrivateKey(
             api_.Crypto().Seed().Internal().AccountKey(path_, change, reason);
 
         if (!pKey) {
-            LogError()(OT_METHOD)(__func__)(": Failed to derive account key")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to derive account key")
                 .Flush();
 
             return {};
@@ -311,7 +310,8 @@ auto HD::save(const rLock& lock) const noexcept -> bool
         parent_.NymID().str(), UnitToClaim(type), serialized);
 
     if (false == saved) {
-        LogError()(OT_METHOD)(__func__)(": Failed to save HD account.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save HD account.")
+            .Flush();
 
         return false;
     }

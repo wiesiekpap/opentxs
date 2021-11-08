@@ -14,8 +14,6 @@
 #include "opentxs/core/cron/OTCron.hpp"
 #include "opentxs/util/Log.hpp"
 
-// #define OT_METHOD "opentxs::api::session::server::Factory::"
-
 namespace opentxs::factory
 {
 auto SessionFactoryAPI(const api::session::Notary& parent) noexcept

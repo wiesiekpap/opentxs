@@ -3,27 +3,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-api-network-asio OBJECT
-  "Acceptor.cpp"
-  "Acceptor.hpp"
-  "Acceptors.cpp"
-  "Acceptors.hpp"
-  "Asio.cpp"
-  "Buffers.cpp"
-  "Buffers.hpp"
-  "Context.cpp"
-  "Context.hpp"
-  "Imp.cpp"
-  "Imp.hpp"
-)
-target_link_libraries(
-  opentxs-api-network-asio
+target_sources(
+  opentxs-common
   PRIVATE
-    opentxs-common
-    Boost::headers
-    OpenSSL::SSL
+    "Acceptor.cpp"
+    "Acceptor.hpp"
+    "Acceptors.cpp"
+    "Acceptors.hpp"
+    "Asio.cpp"
+    "Buffers.cpp"
+    "Buffers.hpp"
+    "Context.cpp"
+    "Context.hpp"
+    "Imp.cpp"
+    "Imp.hpp"
 )
+target_link_libraries(opentxs-common PRIVATE OpenSSL::SSL)
 target_link_libraries(
   opentxs
   PUBLIC
@@ -31,17 +26,3 @@ target_link_libraries(
     Boost::thread
     OpenSSL::SSL
 )
-target_include_directories(
-  opentxs-api-network-asio SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-
-if(NOT OT_IWYU)
-  target_precompile_headers(
-    opentxs-api-network-asio
-    REUSE_FROM
-    opentxs-common
-  )
-endif()
-
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-network-asio>)
-add_dependencies(opentxs-api-network-asio generated_code)

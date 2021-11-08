@@ -15,11 +15,10 @@
 #include <utility>
 
 #include "api/network/asio/Acceptor.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/util/Log.hpp"
-
-#define OT_METHOD "opentxs::api::network::asio::Acceptors::Imp::"
 
 namespace opentxs::api::network::asio
 {
@@ -46,7 +45,7 @@ struct Acceptors::Imp {
 
             return added;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }

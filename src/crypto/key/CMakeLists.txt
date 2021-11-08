@@ -6,13 +6,14 @@
 add_subdirectory(asymmetric)
 add_subdirectory(symmetric)
 
-add_library(
-  opentxs-crypto-key OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/crypto/key/Factory.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/crypto/key/Null.hpp"
-  "Key.cpp"
-  "Symmetric.cpp"
-  "Symmetric.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/key/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/key/Null.hpp"
+    "Key.cpp"
+    "Symmetric.cpp"
+    "Symmetric.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/key/Asymmetric.hpp"
@@ -25,10 +26,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/key/Symmetric.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/key/Types.hpp"
 )
-target_link_libraries(opentxs-crypto-key PRIVATE opentxs::messages)
-target_sources(opentxs-crypto-key PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-crypto-key>)
-add_dependencies(opentxs-crypto-key generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

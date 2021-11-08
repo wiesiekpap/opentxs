@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 target_sources(
-  opentxs-blockchain-database
+  opentxs-common
   PRIVATE
     "Output.cpp"
     "Output.hpp"
@@ -19,9 +19,7 @@ target_sources(
     "SubchainID.cpp"
     "SubchainID.hpp"
 )
-target_link_libraries(opentxs-blockchain-database PRIVATE Boost::headers)
 target_include_directories(
-  opentxs-blockchain-database SYSTEM
+  opentxs-common SYSTEM
   PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
-          "${opentxs_SOURCE_DIR}/deps/"
 )

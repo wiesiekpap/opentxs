@@ -3,31 +3,32 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-blockchain-block-bitcoin OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/bitcoin/Bitcoin.hpp"
-  "Bitcoin.cpp"
-  "Block.cpp"
-  "Block.hpp"
-  "BlockParser.cpp"
-  "BlockParser.hpp"
-  "Header.cpp"
-  "Header.hpp"
-  "Input.cpp"
-  "Input.hpp"
-  "InputCache.cpp"
-  "Inputs.cpp"
-  "Inputs.hpp"
-  "Output.cpp"
-  "Output.hpp"
-  "OutputCache.cpp"
-  "Outputs.cpp"
-  "Outputs.hpp"
-  "Script.cpp"
-  "Script.hpp"
-  "Transaction.cpp"
-  "Transaction.hpp"
-  "TransactionCache.cpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/bitcoin/Bitcoin.hpp"
+    "Bitcoin.cpp"
+    "Block.cpp"
+    "Block.hpp"
+    "BlockParser.cpp"
+    "BlockParser.hpp"
+    "Header.cpp"
+    "Header.hpp"
+    "Input.cpp"
+    "Input.hpp"
+    "InputCache.cpp"
+    "Inputs.cpp"
+    "Inputs.hpp"
+    "Output.cpp"
+    "Output.hpp"
+    "OutputCache.cpp"
+    "Outputs.cpp"
+    "Outputs.hpp"
+    "Script.cpp"
+    "Script.hpp"
+    "Transaction.cpp"
+    "Transaction.hpp"
+    "TransactionCache.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/bitcoin/Block.hpp"
@@ -39,18 +40,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/bitcoin/Script.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/bitcoin/Transaction.hpp"
 )
-
-target_link_libraries(
-  opentxs-blockchain-block-bitcoin PRIVATE Boost::headers opentxs::messages
-)
-target_include_directories(
-  opentxs-blockchain-block-bitcoin SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-blockchain-block-bitcoin PRIVATE ${cxx-install-headers})
-target_sources(
-  opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-block-bitcoin>
-)
-add_dependencies(opentxs-blockchain-block-bitcoin generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

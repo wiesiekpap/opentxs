@@ -3,11 +3,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(opentxs-api-network-blockchain OBJECT "")
-
 if(OT_BLOCKCHAIN_EXPORT)
   target_sources(
-    opentxs-api-network-blockchain
+    opentxs-common
     PRIVATE
       "Factory.cpp"
       "Imp.cpp"
@@ -18,16 +16,10 @@ if(OT_BLOCKCHAIN_EXPORT)
       "SyncServer.hpp"
   )
 else()
-  target_sources(opentxs-api-network-blockchain PRIVATE "Null.cpp")
+  target_sources(opentxs-common PRIVATE "Null.cpp")
 endif()
 
-target_link_libraries(
-  opentxs-api-network-blockchain
-  PRIVATE
-    opentxs-common
-    "${OT_ZMQ_TARGET}"
-    Boost::headers
-)
+target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")
 target_link_libraries(
   opentxs
   PUBLIC
@@ -35,17 +27,3 @@ target_link_libraries(
     Boost::system
     Boost::thread
 )
-target_include_directories(
-  opentxs-api-network-blockchain SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-
-if(NOT OT_IWYU)
-  target_precompile_headers(
-    opentxs-api-network-blockchain
-    REUSE_FROM
-    opentxs-common
-  )
-endif()
-
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-network-blockchain>)
-add_dependencies(opentxs-api-network-blockchain generated_code)

@@ -5,7 +5,32 @@
 
 #pragma once
 
+#include <boost/type_index.hpp>
+#include <sstream>
+
 #include "opentxs/util/Log.hpp"
+
+namespace opentxs
+{
+template <typename T>
+auto pretty_function(const char* function) noexcept -> std::string
+{
+    static const auto name = boost::typeindex::type_id<T>().pretty_name();
+    auto out = std::stringstream{};
+    out << name << "::" << function << ": ";
+
+    return out.str();
+}
+
+template <typename T>
+auto pretty_function(T*, const char* function) noexcept -> std::string
+{
+    return pretty_function<T>(function);
+}
+}  // namespace opentxs
+
+#define OT_PRETTY_CLASS(F) opentxs::pretty_function(this, F)
+#define OT_PRETTY_STATIC(C, F) opentxs::pretty_function<C>(F)
 
 #define OT_TRACE                                                               \
     {                                                                          \
@@ -29,43 +54,40 @@
     };
 
 #define OT_INTERMEDIATE_FORMAT(OT_THE_ERROR_STRING)                            \
-    ((std::string(OT_METHOD) + std::string(__func__) + std::string(": ") +     \
-      std::string(OT_THE_ERROR_STRING) + std::string("\n"))                    \
+    (((OT_PRETTY_CLASS(__func__)) + std::string(OT_THE_ERROR_STRING) +         \
+      std::string("\n"))                                                       \
          .c_str())
 
 #define OT_TO_STR_A(A) #A
 #define OT_TO_STR(A) OT_TO_STR_A(A)
 
 #define OT_ID_FORMAT(OT_ID_OBJECT)                                             \
-    ((std::string(OT_METHOD) + std::string(__func__) +                         \
-      std::string(": Empty ID for '") + std::string(OT_TO_STR(OT_ID_OBJECT)) + \
+    (((OT_PRETTY_CLASS(__func__)) + std::string("Empty ID for '") +            \
+      std::string(OT_TO_STR(OT_ID_OBJECT)) +                                   \
       std::string("' passed in to the API (by the client application).\n"))    \
          .c_str())
 
 #define OT_OTHER_ID_FORMAT(OT_ID_OBJECT)                                       \
-    ((std::string(OT_METHOD) + std::string(__func__) +                         \
-      std::string(": Empty or invalid ID for '") +                             \
+    (((OT_PRETTY_CLASS(__func__)) + std::string("Empty or invalid ID for '") + \
       std::string(OT_TO_STR(OT_ID_OBJECT)) +                                   \
       std::string("' passed in to the API (by the client application).\n"))    \
          .c_str())
 
 #define OT_BOUNDS_FORMAT(OT_NUMBER)                                            \
-    ((std::string(OT_METHOD) + std::string(__func__) +                         \
-      std::string(": Out-of-bounds value for '") +                             \
+    (((OT_PRETTY_CLASS(__func__)) + std::string("Out-of-bounds value for '") + \
       std::string(OT_TO_STR(OT_NUMBER)) +                                      \
       std::string("' passed in to the API (by the client application).\n"))    \
          .c_str())
 
 #define OT_MIN_BOUND_FORMAT(OT_NUMBER)                                         \
-    ((std::string(OT_METHOD) + std::string(__func__) +                         \
-      std::string(": Lower-than-minimum allowed value for '") +                \
+    (((OT_PRETTY_CLASS(__func__)) +                                            \
+      std::string("Lower-than-minimum allowed value for '") +                  \
       std::string(OT_TO_STR(OT_NUMBER)) +                                      \
       std::string("' passed in to the API (by the client application).\n"))    \
          .c_str())
 
 #define OT_STD_STR_FORMAT(OT_STRING_INPUT)                                     \
-    ((std::string(OT_METHOD) + std::string(__func__) +                         \
-      std::string(": Empty string for '") +                                    \
+    (((OT_PRETTY_CLASS(__func__)) + std::string(": Empty string for '") +      \
       std::string(OT_TO_STR(OT_STRING_INPUT)) +                                \
       std::string("' passed in to the API (by the client application).\n"))    \
          .c_str())

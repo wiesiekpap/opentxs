@@ -17,8 +17,6 @@
 #include "ui/activitythread/ActivityThreadItem.hpp"
 #include "ui/base/Widget.hpp"
 
-//#define OT_METHOD "opentxs::ui::implementation::PendingSend::"
-
 namespace opentxs::factory
 {
 auto PendingSend(

@@ -17,8 +17,6 @@
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 
-// #define OT_METHOD "opentxs::ui::SeedValidator::"
-
 namespace opentxs::ui
 {
 struct SeedValidator::Imp {

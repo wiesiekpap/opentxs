@@ -173,7 +173,7 @@ private:
         const std::string& str_id,
         const Identifier& theInput) -> bool;
 
-    NymFile(const api::Session& core, Nym_p targetNym, Nym_p signerNym);
+    NymFile(const api::Session& api, Nym_p targetNym, Nym_p signerNym);
     NymFile() = delete;
     NymFile(const NymFile&) = delete;
     NymFile(NymFile&&) = delete;

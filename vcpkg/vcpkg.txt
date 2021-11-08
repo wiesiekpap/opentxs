@@ -16,6 +16,7 @@ boost-program-options
 boost-stacktrace
 boost-system
 boost-thread
+boost-type-index
 gettext
 gtest
 libsodium

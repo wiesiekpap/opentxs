@@ -36,10 +36,6 @@
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::node::implementation::FilterOracle::BlockIndexer:"   \
-    ":"
-
 namespace opentxs::blockchain::node::implementation
 {
 FilterOracle::BlockIndexer::BlockIndexer(
@@ -109,7 +105,7 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
         const auto& [height, block] = task.position_;
 
         try {
-            LogTrace()(OT_METHOD)(__func__)(": Calculating cfheader for ")(
+            LogTrace()(OT_PRETTY_CLASS(__func__))("Calculating cfheader for ")(
                 DisplayString(chain_))(" block at height ")(height)
                 .Flush();
             auto& [blockHash, filterHeader, filterHashView] = data.header_data_;
@@ -118,8 +114,8 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
             using State = std::future_status;
 
             if (auto status = previous.wait_for(zero); State::ready != status) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Timeout waiting for previous ")(DisplayString(chain_))(
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Timeout waiting for previous ")(DisplayString(chain_))(
                     " cfheader #")(height - 1)
                     .Flush();
 
@@ -132,15 +128,15 @@ auto FilterOracle::BlockIndexer::calculate_cfheaders(
             filterHeader = gcs.Header(previous.get()->Bytes());
 
             if (filterHeader->empty()) {
-                LogError()(OT_METHOD)(__func__)(": failed to calculate ")(
+                LogError()(OT_PRETTY_CLASS(__func__))("failed to calculate ")(
                     DisplayString(chain_))(" cfheader #")(height)
                     .Flush();
 
                 throw std::runtime_error("Failed to calculate cfheader");
             }
 
-            LogTrace()(OT_METHOD)(__func__)(
-                ": Finished calculating cfheader and cfilter "
+            LogTrace()(OT_PRETTY_CLASS(__func__))(
+                "Finished calculating cfheader and cfilter "
                 "for ")(DisplayString(chain_))(" block at height ")(height)
                 .Flush();
             task.process(filter::pHeader{filterHeader});
@@ -234,11 +230,11 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 {
     const auto current = known();
     auto compare{current};
-    LogTrace()(OT_METHOD)(__func__)(":  Current position: ")(current.first)(
+    LogTrace()(OT_PRETTY_CLASS(__func__))(" Current position: ")(current.first)(
         ",")(current.second->asHex())
         .Flush();
-    LogTrace()(OT_METHOD)(__func__)(": Incoming position: ")(pos.first)(",")(
-        pos.second->asHex())
+    LogTrace()(OT_PRETTY_CLASS(__func__))("Incoming position: ")(pos.first)(
+        ",")(pos.second->asHex())
         .Flush();
     auto hashes = decltype(header_.Ancestors(current, pos)){};
     auto prior = Previous{std::nullopt};
@@ -250,7 +246,7 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 
             OT_ASSERT(0 < hashes.size());
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
             reset_to_genesis();
 
             return;
@@ -258,8 +254,8 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
 
         auto postcondition = ScopeGuard{[&] { hashes.erase(hashes.begin()); }};
         auto& first = hashes.front();
-        LogTrace()(OT_METHOD)(__func__)(":          Ancestor: ")(first.first)(
-            ",")(first.second->asHex())
+        LogTrace()(OT_PRETTY_CLASS(__func__))("         Ancestor: ")(
+            first.first)(",")(first.second->asHex())
             .Flush();
 
         if (first == pos) { return; }
@@ -273,13 +269,14 @@ auto FilterOracle::BlockIndexer::process_position(const Position& pos) noexcept
         const auto filter = db_.LoadFilter(type_, first.second->Bytes());
 
         if (header->empty()) {
-            LogError()(OT_METHOD)(__func__)(": Missing cfheader for block ")(
-                first.first)(",")(first.second->asHex())
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Missing cfheader for block ")(first.first)(",")(
+                first.second->asHex())
                 .Flush();
         }
 
         if (!filter) {
-            LogError()(OT_METHOD)(__func__)(": Missing cfilter for block ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Missing cfilter for block ")(
                 first.first)(",")(first.second->asHex())
                 .Flush();
         }
@@ -353,7 +350,7 @@ auto FilterOracle::BlockIndexer::queue_processing(
             throw std::runtime_error(DisplayString(chain_) + " database error");
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         for (auto& task : data) { task->process(std::current_exception()); }
     }
@@ -361,7 +358,7 @@ auto FilterOracle::BlockIndexer::queue_processing(
 
 auto FilterOracle::BlockIndexer::reset_to_genesis() noexcept -> void
 {
-    LogError()(OT_METHOD)(__func__)(": Performing full reset").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Performing full reset").Flush();
     static const auto genesis =
         block::Position{0, header_.GenesisBlockHash(chain_)};
     auto promise = std::promise<filter::pHeader>{};

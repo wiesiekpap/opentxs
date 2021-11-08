@@ -50,8 +50,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::implementation::FilterOracle::"
-
 using ReturnType = opentxs::blockchain::node::implementation::FilterOracle;
 
 namespace opentxs::factory
@@ -428,7 +426,7 @@ auto FilterOracle::ProcessBlock(
             .second;
 
     if (false == bool(pGCS)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to calculate ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate ")(
             DisplayString(chain_))(" cfilter")
             .Flush();
 
@@ -440,7 +438,7 @@ auto FilterOracle::ProcessBlock(
         LoadFilterHeader(default_type_, header.ParentHash());
 
     if (previousHeader->empty()) {
-        LogError()(OT_METHOD)(__func__)(": failed to load previous")(
+        LogError()(OT_PRETTY_CLASS(__func__))("failed to load previous")(
             DisplayString(chain_))(" cfheader")
             .Flush();
 
@@ -452,7 +450,7 @@ auto FilterOracle::ProcessBlock(
         id, gcs.Header(previousHeader->Bytes()), filterHash->Bytes()));
 
     if (cfheader->empty()) {
-        LogError()(OT_METHOD)(__func__)(": failed to calculate ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("failed to calculate ")(
             DisplayString(chain_))(" cfheader")
             .Flush();
 
@@ -467,7 +465,7 @@ auto FilterOracle::ProcessBlock(
 
         return true;
     } else {
-        LogError()(OT_METHOD)(__func__)(": Database error ").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Database error ").Flush();
 
         return false;
     }
@@ -480,7 +478,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
     const auto& [height, block] = task.position_;
 
     try {
-        LogTrace()(OT_METHOD)(__func__)(": Calculating cfilter for ")(
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Calculating cfilter for ")(
             DisplayString(chain_))(" block at height ")(height)
             .Flush();
         auto& [blockHashView, pGCS] = data.filter_data_;
@@ -490,7 +488,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
         const auto pBlock = task.data_.get();
 
         if (false == bool(pBlock)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to load ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to load ")(
                 DisplayString(chain_))(" block #")(height)
                 .Flush();
 
@@ -501,7 +499,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
         pGCS = process_block(data.type_, *pBlock);
 
         if (false == bool(pGCS)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to instantiate ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to instantiate ")(
                 DisplayString(chain_))(" cfilter #")(height)
                 .Flush();
 
@@ -510,8 +508,9 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
 
         const auto& gcs = *pGCS;
         data.filter_hash_ = gcs.Hash();
-        LogTrace()(OT_METHOD)(__func__)(": Finished calculating cfilter for ")(
-            DisplayString(chain_))(" block at height ")(height)
+        LogTrace()(OT_PRETTY_CLASS(__func__))(
+            "Finished calculating cfilter for ")(DisplayString(chain_))(
+            " block at height ")(height)
             .Flush();
         filterHashView = data.filter_hash_->Bytes();
     } catch (...) {
@@ -561,7 +560,7 @@ auto FilterOracle::ProcessSyncData(
                 auto output = LoadFilterHeader(filterType, prior);
 
                 if (output->empty()) {
-                    LogError()(OT_METHOD)(__func__)(": cfheader for ")(
+                    LogError()(OT_PRETTY_CLASS(__func__))("cfheader for ")(
                         DisplayString(chain_))(" block ")(prior.asHex())(
                         " not found")
                         .Flush();
@@ -610,7 +609,7 @@ auto FilterOracle::ProcessSyncData(
             }
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return;
     }
@@ -635,10 +634,10 @@ auto FilterOracle::ProcessSyncData(
                 .Flush();
             cb_(filterType, tip);
         } else {
-            LogError()(OT_METHOD)(__func__)(": Database error ").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Database error ").Flush();
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return;
     }
@@ -655,7 +654,7 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
         const auto type = data.incoming_data_.FilterType();
         const auto count = data.incoming_data_.FilterElements();
         const auto bytes = data.incoming_data_.Filter();
-        LogTrace()(OT_METHOD)(__func__)(": Received filter for ")(
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Received filter for ")(
             DisplayString(chain_))(" block at height ")(height)
             .Flush();
         auto& [blockHashView, pGCS] = data.filter_data_;
@@ -672,7 +671,7 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
             bytes);
 
         if (false == bool(pGCS)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to instantiate ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to instantiate ")(
                 DisplayString(chain_))(" cfilter #")(height)
                 .Flush();
 
@@ -682,8 +681,9 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
         const auto& gcs = *pGCS;
         data.filter_hash_ = gcs.Hash();
         filterHashView = data.filter_hash_->Bytes();
-        LogTrace()(OT_METHOD)(__func__)(": Finished calculating cfilter for ")(
-            DisplayString(chain_))(" block at height ")(height)
+        LogTrace()(OT_PRETTY_CLASS(__func__))(
+            "Finished calculating cfilter for ")(DisplayString(chain_))(
+            " block at height ")(height)
             .Flush();
     } catch (...) {
         data.calculated_header_.set_exception(std::current_exception());
@@ -705,8 +705,8 @@ auto FilterOracle::ProcessSyncData(
             using State = std::future_status;
 
             if (auto status = previous.wait_for(zero); State::ready != status) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Timeout waiting for previous ")(DisplayString(chain_))(
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Timeout waiting for previous ")(DisplayString(chain_))(
                     " cfheader #")(height - 1)
                     .Flush();
 
@@ -719,7 +719,7 @@ auto FilterOracle::ProcessSyncData(
             filterHeader = gcs.Header(previous.get()->Bytes());
 
             if (filterHeader->empty()) {
-                LogError()(OT_METHOD)(__func__)(": failed to calculate ")(
+                LogError()(OT_PRETTY_CLASS(__func__))("failed to calculate ")(
                     DisplayString(chain_))(" cfheader #")(height)
                     .Flush();
 
@@ -727,8 +727,8 @@ auto FilterOracle::ProcessSyncData(
             }
 
             data.calculated_header_.set_value(filterHeader);
-            LogTrace()(OT_METHOD)(__func__)(
-                ": Finished calculating cfheader for ")(DisplayString(chain_))(
+            LogTrace()(OT_PRETTY_CLASS(__func__))(
+                "Finished calculating cfheader for ")(DisplayString(chain_))(
                 " block at height ")(height)
                 .Flush();
         } catch (...) {

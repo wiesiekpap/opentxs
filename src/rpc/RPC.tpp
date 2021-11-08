@@ -22,8 +22,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::rpc::implementation::RPC::"
-
 namespace opentxs::rpc::implementation
 {
 template <typename T>

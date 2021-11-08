@@ -43,8 +43,6 @@
 
 #define OT_BITCOIN_BLOCK_HEADER_SIZE 80
 
-#define OT_METHOD "opentxs::blockchain::block::bitcoin::Header::"
-
 namespace opentxs::factory
 {
 using ReturnType = blockchain::block::bitcoin::implementation::Header;
@@ -466,7 +464,7 @@ auto Header::calculate_hash(
             static_cast<blockchain::Type>(serialized.type()),
             ReadView(reinterpret_cast<const char*>(&bytes), sizeof(bytes)));
     } catch (const std::invalid_argument& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_STATIC(Header, __func__))(e.what()).Flush();
 
         return BlankHash();
     }
@@ -484,7 +482,7 @@ auto Header::calculate_pow(
             static_cast<blockchain::Type>(serialized.type()),
             ReadView(reinterpret_cast<const char*>(&bytes), sizeof(bytes)));
     } catch (const std::invalid_argument& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_STATIC(Header, __func__))(e.what()).Flush();
 
         return BlankHash();
     }
@@ -602,7 +600,7 @@ auto Header::Serialize(
             nonce_};
 
         if (false == bool(destination)) {
-            LogError()(OT_METHOD)(__func__)(": Invalid output allocator")
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
                 .Flush();
 
             return false;
@@ -611,7 +609,7 @@ auto Header::Serialize(
         const auto out = destination(sizeof(raw));
 
         if (false == out.valid(sizeof(raw))) {
-            LogError()(OT_METHOD)(__func__)(": Failed to allocate output")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocate output")
                 .Flush();
 
             return false;

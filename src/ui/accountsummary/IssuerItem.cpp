@@ -39,8 +39,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "ui/base/Combined.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::IssuerItem::"
-
 namespace opentxs::factory
 {
 auto IssuerItem(
@@ -151,7 +149,7 @@ void IssuerItem::refresh_accounts() noexcept
 {
     const auto blank = identifier::UnitDefinition::Factory();
     const auto accounts = issuer_->AccountList(currency_, blank);
-    LogDetail()(OT_METHOD)(__func__)(": Loading ")(accounts.size())(
+    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(accounts.size())(
         " accounts.")
         .Flush();
 

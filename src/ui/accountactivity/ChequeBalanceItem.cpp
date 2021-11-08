@@ -28,8 +28,6 @@
 #include "ui/accountactivity/BalanceItem.hpp"
 #include "ui/base/Widget.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::ChequeBalanceItem::"
-
 namespace opentxs::ui::implementation
 {
 ChequeBalanceItem::ChequeBalanceItem(
@@ -140,8 +138,8 @@ auto ChequeBalanceItem::startup(
                 case proto::PAYMENTEVENTTYPE_CANCEL:
                 case proto::PAYMENTEVENTTYPE_COMPLETE:
                 default: {
-                    LogError()(OT_METHOD)(__func__)(": Invalid event state (")(
-                        event.type())(")")
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Invalid event state (")(event.type())(")")
                         .Flush();
                 }
             }
@@ -165,8 +163,8 @@ auto ChequeBalanceItem::startup(
                 case proto::PAYMENTEVENTTYPE_CANCEL:
                 case proto::PAYMENTEVENTTYPE_COMPLETE:
                 default: {
-                    LogError()(OT_METHOD)(__func__)(": Invalid event state (")(
-                        event.type())(")")
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Invalid event state (")(event.type())(")")
                         .Flush();
                 }
             }
@@ -188,7 +186,7 @@ auto ChequeBalanceItem::startup(
         case StorageBox::DRAFT:
         case StorageBox::UNKNOWN:
         default: {
-            LogError()(OT_METHOD)(__func__)(": Invalid item type (")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid item type (")(
                 static_cast<std::uint8_t>(type_))(")")
                 .Flush();
         }

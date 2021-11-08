@@ -60,13 +60,13 @@ public:
 private:
     friend opentxs::Factory;
 
-    Lucre(const api::Session& core);
+    Lucre(const api::Session& api);
     Lucre(
-        const api::Session& core,
+        const api::Session& api,
         const String& strNotaryID,
         const String& strInstrumentDefinitionID);
     Lucre(
-        const api::Session& core,
+        const api::Session& api,
         const String& strNotaryID,
         const String& strServerNymID,
         const String& strInstrumentDefinitionID);

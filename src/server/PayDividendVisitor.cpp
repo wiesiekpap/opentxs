@@ -31,8 +31,6 @@
 #include "server/Server.hpp"
 #include "server/Transactor.hpp"
 
-#define OT_METHOD "opentxs::PayDividendVisitor::"
-
 namespace opentxs
 {
 PayDividendVisitor::PayDividendVisitor(
@@ -74,8 +72,8 @@ auto PayDividendVisitor::Trigger(
 
     if (lPayoutAmount <= 0) {
         {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": Nothing to pay, "
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "Nothing to pay, "
                 "since this account owns no shares. (Returning "
                 "true.")
                 .Flush();
@@ -192,8 +190,8 @@ auto PayDividendVisitor::Trigger(
         } else {
             const auto strPayoutUnitTypeId = String::Factory(payoutUnitTypeId),
                        strRecipientNymID = String::Factory(RECIPIENT_ID);
-            LogError()(OT_METHOD)(__func__)(
-                ": ERROR failed issuing "
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "ERROR failed issuing "
                 "voucher (to send to dividend payout recipient). WAS "
                 "TRYING TO PAY ")(lPayoutAmount.str())(
                 " of instrument definition ")(strPayoutUnitTypeId)(" to Nym ")(
@@ -262,8 +260,8 @@ auto PayDividendVisitor::Trigger(
                 const auto strPayoutUnitTypeId =
                                String::Factory(payoutUnitTypeId),
                            strSenderNymID = String::Factory(theSenderNymID);
-                LogError()(OT_METHOD)(__func__)(
-                    ": ERROR! Failed issuing voucher (to return back to "
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "ERROR! Failed issuing voucher (to return back to "
                     "the dividend payout initiator, after a failed "
                     "payment attempt to the originally intended "
                     "recipient). WAS TRYING TO "
@@ -277,8 +275,8 @@ auto PayDividendVisitor::Trigger(
     {
         const auto strPayoutUnitTypeId = String::Factory(payoutUnitTypeId),
                    strRecipientNymID = String::Factory(RECIPIENT_ID);
-        LogError()(OT_METHOD)(__func__)(
-            ": ERROR! Failed issuing next transaction number while "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "ERROR! Failed issuing next transaction number while "
             "trying to send a voucher (while paying dividends). "
             "WAS TRYING TO PAY ")(lPayoutAmount.str())(
             " of instrument "

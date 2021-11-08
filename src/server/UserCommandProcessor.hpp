@@ -91,7 +91,7 @@ private:
     {
     public:
         FinalizeResponse(
-            const api::Session& core,
+            const api::Session& api,
             const identity::Nym& nym,
             ReplyMessage& reply,
             Ledger& ledger);

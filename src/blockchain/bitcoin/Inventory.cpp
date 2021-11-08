@@ -15,8 +15,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::bitcoin::CompactSize::"
-
 namespace opentxs::blockchain::bitcoin
 {
 const std::size_t Inventory::EncodedSize{sizeof(BitcoinFormat)};

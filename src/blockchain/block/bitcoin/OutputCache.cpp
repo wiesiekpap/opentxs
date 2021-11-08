@@ -21,9 +21,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::block::bitcoin::implementation::Output::Cache::"
-
 namespace opentxs::blockchain::block::bitcoin::implementation
 {
 Output::Cache::Cache(
@@ -113,7 +110,8 @@ auto Output::Cache::merge(const internal::Output& rhs) noexcept -> bool
         const auto& [account, subchain, index] = key;
 
         if (crypto::Subchain::Outgoing == subchain) {
-            LogError()(OT_METHOD)(__func__)(": discarding invalid key").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("discarding invalid key")
+                .Flush();
         } else {
             add(std::move(key));
         }

@@ -3,13 +3,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(opentxs-blockchain-database OBJECT "")
-
 add_subdirectory(common)
 add_subdirectory(wallet)
 
 target_sources(
-  opentxs-blockchain-database
+  opentxs-common
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/database/Database.hpp"
     "Blocks.cpp"
@@ -25,13 +23,5 @@ target_sources(
     "Wallet.cpp"
     "Wallet.hpp"
 )
-target_link_libraries(
-  opentxs-blockchain-database
-  PRIVATE
-    Boost::headers
-    opentxs::messages
-    lmdb
-)
+target_link_libraries(opentxs-common PRIVATE lmdb)
 target_link_libraries(opentxs PUBLIC lmdb)
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-database>)
-add_dependencies(opentxs-blockchain-database generated_code)

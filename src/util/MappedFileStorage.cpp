@@ -20,8 +20,6 @@
 #include "opentxs/util/Log.hpp"
 #include "util/ByteLiterals.hpp"
 
-#define OT_METHOD "opentxs::util::MappedFileStorage::"
-
 namespace fs = boost::filesystem;
 
 namespace opentxs::util
@@ -100,15 +98,16 @@ struct MappedFileStorage::Imp {
             calculate_file_name(prefix, file)};
         params.flags = boost::iostreams::mapped_file::readwrite;
         const auto& path = params.path;
-        LogTrace()(OT_METHOD)(__func__)(": initializing file ")(path).Flush();
+        LogTrace()(OT_PRETTY_CLASS(__func__))("initializing file ")(path)
+            .Flush();
 
         try {
             if (fs::exists(path)) {
                 if (target_file_size_ == fs::file_size(path)) {
                     params.new_file_size = 0;
                 } else {
-                    LogError()(OT_METHOD)(__func__)(": Incorrect size for ")(
-                        path)
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Incorrect size for ")(path)
                         .Flush();
                     fs::remove(path);
                     params.new_file_size = target_file_size_;
@@ -117,19 +116,19 @@ struct MappedFileStorage::Imp {
                 params.new_file_size = target_file_size_;
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             OT_FAIL;
         }
 
-        LogInsane()(OT_METHOD)(__func__)(": new_file_size: ")(
+        LogInsane()(OT_PRETTY_CLASS(__func__))("new_file_size: ")(
             params.new_file_size)
             .Flush();
 
         try {
             output.emplace_back(params);
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             OT_FAIL;
         }
@@ -158,14 +157,14 @@ struct MappedFileStorage::Imp {
         };
 
         if (replace) {
-            LogVerbose()(OT_METHOD)(__func__)(": Replacing existing item")
+            LogVerbose()(OT_PRETTY_CLASS(__func__))("Replacing existing item")
                 .Flush();
 
             return output();
         }
 
         increment_index(index, bytes);
-        LogDebug()(OT_METHOD)(__func__)(": Storing new item at position ")(
+        LogDebug()(OT_PRETTY_CLASS(__func__))("Storing new item at position ")(
             index.position_)
             .Flush();
         const auto nextPosition = index.position_ + bytes;
@@ -173,8 +172,8 @@ struct MappedFileStorage::Imp {
         if (cb && (false == cb(tx))) { return {}; }
 
         if (false == update_next_position(nextPosition, tx)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to update next write position")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to update next write position")
                 .Flush();
 
             return {};
@@ -243,7 +242,8 @@ struct MappedFileStorage::Imp {
         auto result = lmdb_.Store(table_, tsv(key_), tsv(position), tx);
 
         if (false == result.first) {
-            LogError()(OT_METHOD)(__func__)(": Failed to next write position")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to next write position")
                 .Flush();
 
             return {};

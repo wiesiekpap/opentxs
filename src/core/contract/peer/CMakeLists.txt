@@ -3,33 +3,34 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-core-contract-peer OBJECT
-  "BailmentNotice.cpp"
-  "BailmentNotice.cpp"
-  "BailmentReply.cpp"
-  "BailmentReply.cpp"
-  "BailmentRequest.cpp"
-  "BailmentRequest.cpp"
-  "ConnectionReply.cpp"
-  "ConnectionReply.cpp"
-  "ConnectionRequest.cpp"
-  "ConnectionRequest.cpp"
-  "NoticeAcknowledgement.cpp"
-  "NoticeAcknowledgement.cpp"
-  "OutBailmentReply.cpp"
-  "OutBailmentReply.cpp"
-  "OutBailmentRequest.cpp"
-  "OutBailmentRequest.cpp"
-  "Peer.cpp"
-  "PeerObject.cpp"
-  "PeerObject.hpp"
-  "PeerReply.cpp"
-  "PeerReply.cpp"
-  "PeerRequest.cpp"
-  "PeerRequest.cpp"
-  "StoreSecret.cpp"
-  "StoreSecret.cpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "BailmentNotice.cpp"
+    "BailmentNotice.cpp"
+    "BailmentReply.cpp"
+    "BailmentReply.cpp"
+    "BailmentRequest.cpp"
+    "BailmentRequest.cpp"
+    "ConnectionReply.cpp"
+    "ConnectionReply.cpp"
+    "ConnectionRequest.cpp"
+    "ConnectionRequest.cpp"
+    "NoticeAcknowledgement.cpp"
+    "NoticeAcknowledgement.cpp"
+    "OutBailmentReply.cpp"
+    "OutBailmentReply.cpp"
+    "OutBailmentRequest.cpp"
+    "OutBailmentRequest.cpp"
+    "Peer.cpp"
+    "PeerObject.cpp"
+    "PeerObject.hpp"
+    "PeerReply.cpp"
+    "PeerReply.cpp"
+    "PeerRequest.cpp"
+    "PeerRequest.cpp"
+    "StoreSecret.cpp"
+    "StoreSecret.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/peer/BailmentNotice.hpp"
@@ -50,13 +51,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/peer/StoreSecret.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/peer/Types.hpp"
 )
-target_link_libraries(opentxs-core-contract-peer PRIVATE opentxs::messages)
-target_include_directories(
-  opentxs-core-contract-peer SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-core-contract-peer PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-core-contract-peer>)
-add_dependencies(opentxs-core-contract-peer generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

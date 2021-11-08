@@ -15,8 +15,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "ui/base/Widget.hpp"
 
-// #define OT_METHOD "opentxs::ui::implementation::BlockchainStatisticsItem::"
-
 namespace opentxs::factory
 {
 auto BlockchainStatisticsItem(

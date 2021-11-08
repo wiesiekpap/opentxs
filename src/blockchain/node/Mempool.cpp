@@ -32,8 +32,6 @@
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::Mempool::Imp::"
-
 namespace opentxs::blockchain::node
 {
 struct Mempool::Imp {
@@ -105,7 +103,7 @@ struct Mempool::Imp {
 
         for (auto& tx : txns) {
             if (!tx) {
-                LogError()(OT_METHOD)(__func__)(": invalid transaction")
+                LogError()(OT_PRETTY_CLASS(__func__))("invalid transaction")
                     .Flush();
 
                 continue;
@@ -213,14 +211,14 @@ private:
 
         for (const auto& txid : wallet_.GetUnconfirmedTransactions()) {
             if (auto tx = crypto_.LoadTransactionBitcoin(txid); tx) {
-                LogVerbose()(OT_METHOD)(__func__)(
-                    ": adding unconfirmed transaction ")(txid->asHex())(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                    "adding unconfirmed transaction ")(txid->asHex())(
                     " to mempool")
                     .Flush();
                 transactions.emplace_back(std::move(tx));
             } else {
-                LogError()(OT_METHOD)(__func__)(
-                    ": failed to load transaction ")(txid->asHex())
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "failed to load transaction ")(txid->asHex())
                     .Flush();
             }
         }

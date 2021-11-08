@@ -17,8 +17,6 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 
-// #define OT_METHOD "opentxs::blockchain::node::base::Network::"
-
 namespace opentxs::factory
 {
 auto BlockchainNetworkBitcoin(

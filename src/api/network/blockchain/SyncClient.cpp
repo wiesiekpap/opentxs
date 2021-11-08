@@ -52,8 +52,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
-#define OT_METHOD "opentxs::api::network::blockchain::SyncClient::Imp::"
-
 namespace bc = opentxs::blockchain;
 
 namespace opentxs::api::network::blockchain
@@ -133,7 +131,7 @@ struct SyncClient::Imp {
 
             OT_ASSERT(0 == rc);
 
-            LogTrace()(OT_METHOD)(__func__)(": internal router bound to ")(
+            LogTrace()(OT_PRETTY_CLASS(__func__))("internal router bound to ")(
                 endpoint_)
                 .Flush();
 
@@ -325,7 +323,8 @@ private:
         }();
 
         if (0 == msg->size()) {
-            LogError()(OT_METHOD)(__func__)(": Dropping empty message").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Dropping empty message")
+                .Flush();
 
             return;
         }
@@ -405,9 +404,8 @@ private:
                                 ep)(" for new block notifications")
                                 .Flush();
                         } else {
-                            LogError()(OT_METHOD)(__func__)(
-                                ": failed to connect external subscriber to ")(
-                                ep)
+                            LogError()(OT_PRETTY_CLASS(__func__))(
+                                "failed to connect external subscriber to ")(ep)
                                 .Flush();
                         }
                     }
@@ -481,7 +479,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return;
         }
@@ -524,7 +522,7 @@ private:
                 const auto chain = body.at(1).as<Chain>();
                 clients_[chain] = identity;
                 const auto& providers = providers_[chain];
-                LogVerbose()(OT_METHOD)(__func__)(": querying ")(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("querying ")(
                     providers.size())(" providers for ")(DisplayString(chain))
                     .Flush();
 
@@ -540,7 +538,7 @@ private:
                 const auto provider = get_provider(chain);
 
                 if (provider.empty()) {
-                    LogError()(OT_METHOD)(__func__)(": no provider for ")(
+                    LogError()(OT_PRETTY_CLASS(__func__))("no provider for ")(
                         DisplayString(chain))
                         .Flush();
 
@@ -578,8 +576,8 @@ private:
             case Task::Push:
             case Task::Processed:
             default: {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Unsupported message type on internal socket: ")(
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Unsupported message type on internal socket: ")(
                     static_cast<OTZMQWorkType>(type))
                     .Flush();
 
@@ -609,8 +607,8 @@ private:
                 servers_.at(endpoint).connected_ = true;
             } break;
             default: {
-                LogError()(OT_METHOD)(__func__)(": Unexpected event type: ")(
-                    event)
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Unexpected event type: ")(event)
                     .Flush();
 
                 OT_FAIL;
@@ -620,8 +618,8 @@ private:
     auto process_server(const std::string& ep) noexcept -> void
     {
         if (0 != ::zmq_connect(external_router_.get(), ep.c_str())) {
-            LogError()(OT_METHOD)(__func__)(": failed to connect router to ")(
-                ep)
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "failed to connect router to ")(ep)
                 .Flush();
 
             return;
@@ -714,7 +712,7 @@ private:
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogError()(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
+                LogError()(OT_PRETTY_CLASS(__func__))(::zmq_strerror(error))
                     .Flush();
 
                 continue;

@@ -12,8 +12,6 @@
 
 #include "api/client/ui/Imp-base.hpp"
 
-// #define OT_METHOD "opentxs::api::UI"
-
 namespace opentxs::api::client
 {
 UI::UI(Imp* imp) noexcept

@@ -24,8 +24,6 @@
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Router>;
 
-#define OT_METHOD "opentxs::network::zeromq::socket::implementation::Router::"
-
 namespace opentxs::factory
 {
 auto RouterSocket(
@@ -67,15 +65,15 @@ void Router::process_incoming(const Lock& lock, Message& message) noexcept
 {
     OT_ASSERT(verify_lock(lock))
 
-    LogTrace()(OT_METHOD)(__func__)(
-        ": Incoming messaged received. Triggering callback.")
+    LogTrace()(OT_PRETTY_CLASS(__func__))(
+        "Incoming messaged received. Triggering callback.")
         .Flush();
     // Router prepends an identity frame to the message.  This makes sure
     // there is an empty frame between the identity frame(s) and the frames that
     // make up the rest of the message.
     message.EnsureDelimiter();
     callback_.Process(message);
-    LogTrace()(OT_METHOD)(__func__)(": Done.").Flush();
+    LogTrace()(OT_PRETTY_CLASS(__func__))("Done.").Flush();
 }
 
 Router::~Router() SHUTDOWN

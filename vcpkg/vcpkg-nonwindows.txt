@@ -15,6 +15,7 @@ boost-program-options
 boost-stacktrace
 boost-system
 boost-thread
+boost-type-index
 fontconfig
 gettext
 gtest

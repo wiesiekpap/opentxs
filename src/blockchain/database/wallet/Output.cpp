@@ -67,8 +67,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
-#define OT_METHOD "opentxs::blockchain::database::Output::"
-
 namespace opentxs
 {
 auto key_to_bytes(const blockchain::crypto::Key& in) noexcept -> Space;
@@ -361,8 +359,8 @@ struct Output::Imp {
 
                     if (!copy.AssociatePreviousOutput(
                             blockchain_, inputIndex, existing)) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": Error associating previous output to input")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Error associating previous output to input")
                             .Flush();
                         clear_cache(lock);
 
@@ -372,8 +370,8 @@ struct Output::Imp {
                     if (false ==
                         change_state(
                             lock, tx, outpoint, existing, consumed, block)) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": Error updating consumed output state")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Error updating consumed output state")
                             .Flush();
                         clear_cache(lock);
 
@@ -412,8 +410,8 @@ struct Output::Imp {
                     if (false ==
                         change_state(
                             lock, tx, outpoint, existing, created, block)) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": Error updating created output state")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Error updating created output state")
                             .Flush();
                         clear_cache(lock);
 
@@ -428,8 +426,8 @@ struct Output::Imp {
                                      created,
                                      block,
                                      output)) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": Error created new output state")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Error created new output state")
                             .Flush();
                         clear_cache(lock);
 
@@ -455,8 +453,8 @@ struct Output::Imp {
                     const auto& owner = blockchain_.Owner(key);
 
                     if (owner.empty()) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": No owner found for key ")(opentxs::print(key))
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "No owner found for key ")(opentxs::print(key))
                             .Flush();
 
                         OT_FAIL;
@@ -488,7 +486,7 @@ struct Output::Imp {
 
             return true;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
             clear_cache(lock);
 
             return false;
@@ -572,13 +570,13 @@ struct Output::Imp {
                 const auto keys = output.Keys();
 
                 if (0 == keys.size()) {
-                    LogTrace()(OT_METHOD)(__func__)(": output ")(
+                    LogTrace()(OT_PRETTY_CLASS(__func__))("output ")(
                         index)(" belongs to someone else")
                         .Flush();
 
                     continue;
                 } else {
-                    LogTrace()(OT_METHOD)(__func__)(": output ")(
+                    LogTrace()(OT_PRETTY_CLASS(__func__))("output ")(
                         index)(" belongs to me")
                         .Flush();
                 }
@@ -599,8 +597,8 @@ struct Output::Imp {
                                      existing,
                                      node::TxoState::UnconfirmedNew,
                                      blank_)) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": Error updating created output state")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Error updating created output state")
                             .Flush();
                         clear_cache(lock);
 
@@ -615,8 +613,8 @@ struct Output::Imp {
                                      node::TxoState::UnconfirmedNew,
                                      blank_,
                                      output)) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": Error creating new output state")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Error creating new output state")
                             .Flush();
                         clear_cache(lock);
 
@@ -640,7 +638,7 @@ struct Output::Imp {
             }
 
             for (const auto& outpoint : pending) {
-                LogVerbose()(OT_METHOD)(__func__)(": proposal ")(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("proposal ")(
                     proposalID.str())(" created outpoint ")(outpoint.str())
                     .Flush();
                 auto rc = lmdb_
@@ -689,7 +687,7 @@ struct Output::Imp {
 
             return true;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
             clear_cache(lock);
 
             return false;
@@ -778,7 +776,7 @@ struct Output::Imp {
 
             return output;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
             clear_cache(lock);
 
             return false;
@@ -858,8 +856,8 @@ struct Output::Imp {
                     throw std::runtime_error{"failed to erase spent outpoints"};
                 }
             } else {
-                LogError()(OT_METHOD)(__func__)(": Warning: spent index for ")(
-                    id.str())(" already removed")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Warning: spent index for ")(id.str())(" already removed")
                     .Flush();
             }
 
@@ -871,9 +869,8 @@ struct Output::Imp {
                         "failed to erase created outpoints"};
                 }
             } else {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Warning: created index for ")(id.str())(
-                    " already removed")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Warning: created index for ")(id.str())(" already removed")
                     .Flush();
             }
 
@@ -890,7 +887,7 @@ struct Output::Imp {
 
             return true;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
             clear_cache(lock);
 
             return false;
@@ -972,7 +969,7 @@ struct Output::Imp {
                 cache_.position_.emplace(pos);
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
             output = false;
         }
 
@@ -1035,7 +1032,7 @@ struct Output::Imp {
                         "Failed to update outpoint proposal index"};
                 }
 
-                LogVerbose()(OT_METHOD)(__func__)(": proposal ")(id.str())(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("proposal ")(id.str())(
                     " consumed outpoint ")(outpoint.str())
                     .Flush();
 
@@ -1058,8 +1055,8 @@ struct Output::Imp {
                     if (utxo.has_value()) { return utxo; }
                 }
 
-                LogTrace()(OT_METHOD)(__func__)(
-                    ": No spendable outputs for this group")
+                LogTrace()(OT_PRETTY_CLASS(__func__))(
+                    "No spendable outputs for this group")
                     .Flush();
 
                 return std::nullopt;
@@ -1088,7 +1085,7 @@ struct Output::Imp {
 
             return output;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
             clear_cache(lock);
 
             return std::nullopt;
@@ -1158,7 +1155,7 @@ struct Output::Imp {
 
             return true;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }
@@ -1194,7 +1191,7 @@ struct Output::Imp {
                 tsv(database::Key::WalletPosition),
                 [&](const auto bytes) { cache_.position_.emplace(bytes); });
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             OT_FAIL;
         }
@@ -1743,32 +1740,32 @@ private:
         const auto& orphan = output[node::TxoState::OrphanedNew];
         const auto& outgoingOrphan = output[node::TxoState::OrphanedSpend];
         const auto& immature = output[node::TxoState::Immature];
-        LogError()(OT_METHOD)(__func__)(": Instance ")(api_.Instance())(
+        LogError()(OT_PRETTY_CLASS(__func__))("Instance ")(api_.Instance())(
             " TXO database contents:")
             .Flush();
-        LogError()(OT_METHOD)(__func__)(": Unconfirmed available value: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Unconfirmed available value: ")(
             unconfirmed.total_)(unconfirmed.text_.str())
             .Flush();
-        LogError()(OT_METHOD)(__func__)(": Confirmed available value: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Confirmed available value: ")(
             confirmed.total_)(confirmed.text_.str())
             .Flush();
-        LogError()(OT_METHOD)(__func__)(": Unconfirmed spent value: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Unconfirmed spent value: ")(
             pending.total_)(pending.text_.str())
             .Flush();
-        LogError()(OT_METHOD)(__func__)(": Confirmed spent value: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Confirmed spent value: ")(
             spent.total_)(spent.text_.str())
             .Flush();
-        LogError()(OT_METHOD)(__func__)(": Orphaned incoming value: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Orphaned incoming value: ")(
             orphan.total_)(orphan.text_.str())
             .Flush();
-        LogError()(OT_METHOD)(__func__)(": Orphaned spend value: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Orphaned spend value: ")(
             outgoingOrphan.total_)(outgoingOrphan.text_.str())
             .Flush();
-        LogError()(OT_METHOD)(__func__)(": Immature value: ")(immature.total_)(
-            immature.text_.str())
+        LogError()(OT_PRETTY_CLASS(__func__))("Immature value: ")(
+            immature.total_)(immature.text_.str())
             .Flush();
 
-        LogError()(OT_METHOD)(__func__)(": Outputs by block:\n");
+        LogError()(OT_PRETTY_CLASS(__func__))("Outputs by block:\n");
 
         for (const auto& [position, outputs] : cache_.positions_) {
             const auto& [height, hash] = position;
@@ -1781,7 +1778,7 @@ private:
         }
 
         LogError().Flush();
-        LogError()(OT_METHOD)(__func__)(": Outputs by nym:\n");
+        LogError()(OT_PRETTY_CLASS(__func__))("Outputs by nym:\n");
 
         for (const auto& [id, outputs] : cache_.nyms_) {
             LogError()("  * ")(id->str())("\n");
@@ -1792,7 +1789,7 @@ private:
         }
 
         LogError().Flush();
-        LogError()(OT_METHOD)(__func__)(": Outputs by subaccount:\n");
+        LogError()(OT_PRETTY_CLASS(__func__))("Outputs by subaccount:\n");
 
         for (const auto& [id, outputs] : cache_.accounts_) {
             LogError()("  * ")(id->str())("\n");
@@ -1803,7 +1800,7 @@ private:
         }
 
         LogError().Flush();
-        LogError()(OT_METHOD)(__func__)(": Outputs by subchain:\n");
+        LogError()(OT_PRETTY_CLASS(__func__))("Outputs by subchain:\n");
 
         for (const auto& [id, outputs] : cache_.subchains_) {
             LogError()("  * ")(id->str())("\n");
@@ -1814,7 +1811,7 @@ private:
         }
 
         LogError().Flush();
-        LogError()(OT_METHOD)(__func__)(": Outputs by key:\n");
+        LogError()(OT_PRETTY_CLASS(__func__))("Outputs by key:\n");
 
         for (const auto& [key, outputs] : cache_.keys_) {
             LogError()("  * ")(opentxs::print(key))("\n");
@@ -1825,7 +1822,7 @@ private:
         }
 
         LogError().Flush();
-        LogError()(OT_METHOD)(__func__)(": Outputs by state:\n");
+        LogError()(OT_PRETTY_CLASS(__func__))("Outputs by state:\n");
 
         for (const auto& [state, outputs] : cache_.states_) {
             LogError()("  * ")(opentxs::print(state))("\n");
@@ -1836,7 +1833,7 @@ private:
         }
 
         LogError().Flush();
-        LogError()(OT_METHOD)(__func__)(": Generation outputs:\n");
+        LogError()(OT_PRETTY_CLASS(__func__))("Generation outputs:\n");
         lmdb_.Read(
             generation_,
             [](const auto key, const auto value) -> bool {
@@ -1923,7 +1920,7 @@ private:
                 throw std::runtime_error{"Failed to update subchain index"};
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }
@@ -1949,7 +1946,7 @@ private:
                 throw std::runtime_error{"Failed to update nym index"};
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }
@@ -1974,23 +1971,23 @@ private:
 
                 return change_state(lock, tx, id, existing, newState, blank_);
             } else if (state == newState) {
-                LogVerbose()(OT_METHOD)(__func__)(": Warning: outpoint ")(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("Warning: outpoint ")(
                     id.str())(" already in desired state: ")(
                     opentxs::print(newState))
                     .Flush();
 
                 return true;
             } else {
-                LogError()(OT_METHOD)(__func__)(
-                    ": incorrect state for outpoint ")(id.str())(
-                    ". Expected: ")(opentxs::print(oldState))(", actual: ")(
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "incorrect state for outpoint ")(id.str())(". Expected: ")(
+                    opentxs::print(oldState))(", actual: ")(
                     opentxs::print(state))
                     .Flush();
 
                 return false;
             }
         } catch (...) {
-            LogError()(OT_METHOD)(__func__)(": outpoint ")(id.str())(
+            LogError()(OT_PRETTY_CLASS(__func__))("outpoint ")(id.str())(
                 " does not exist")
                 .Flush();
 
@@ -2009,7 +2006,7 @@ private:
 
             return change_state(lock, tx, id, output, newState, newPosition);
         } catch (...) {
-            LogError()(OT_METHOD)(__func__)(": outpoint ")(id.str())(
+            LogError()(OT_PRETTY_CLASS(__func__))("outpoint ")(id.str())(
                 " does not exist")
                 .Flush();
 
@@ -2047,8 +2044,8 @@ private:
                 }
 
                 if ((0u == deleted.size()) || (oldState != deleted.front())) {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Warning: state index for ")(id.str())(
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Warning: state index for ")(id.str())(
                         " did not match expected value")
                         .Flush();
                 }
@@ -2079,8 +2076,8 @@ private:
                             "Failed to remove old position index"};
                     }
                 } else {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Warning: position index for ")(id.str())(
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Warning: position index for ")(id.str())(
                         " already removed")
                         .Flush();
                 }
@@ -2118,7 +2115,7 @@ private:
 
             return true;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }
@@ -2178,11 +2175,11 @@ private:
                     change_state(lock, tx, outpoint, state, block);
 
                 if (changed) {
-                    LogTrace()(OT_METHOD)(__func__)(": Updated ")(
+                    LogTrace()(OT_PRETTY_CLASS(__func__))("Updated ")(
                         outpoint.str())(" to state ")(opentxs::print(state))
                         .Flush();
                 } else {
-                    LogError()(OT_METHOD)(__func__)(": Failed to update ")(
+                    LogError()(OT_PRETTY_CLASS(__func__))("Failed to update ")(
                         outpoint.str())(" to state ")(opentxs::print(state))
                         .Flush();
 
@@ -2194,13 +2191,13 @@ private:
                 proposal_created_, proposalID.Bytes(), newOutpoint.Bytes(), tx);
 
             if (rc) {
-                LogTrace()(OT_METHOD)(__func__)(
-                    ": Deleted index for proposal ")(proposalID.str())(
+                LogTrace()(OT_PRETTY_CLASS(__func__))(
+                    "Deleted index for proposal ")(proposalID.str())(
                     " to created output ")(newOutpoint.str())
                     .Flush();
             } else {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to delete index for proposal ")(proposalID.str())(
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to delete index for proposal ")(proposalID.str())(
                     " to created output ")(newOutpoint.str())
                     .Flush();
 
@@ -2210,13 +2207,13 @@ private:
             rc = lmdb_.Delete(output_proposal_, newOutpoint.Bytes(), tx);
 
             if (rc) {
-                LogTrace()(OT_METHOD)(__func__)(
-                    ": Deleted index for created outpoint ")(newOutpoint.str())(
+                LogTrace()(OT_PRETTY_CLASS(__func__))(
+                    "Deleted index for created outpoint ")(newOutpoint.str())(
                     " to proposal ")(proposalID.str())
                     .Flush();
             } else {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to delete index for created outpoint ")(
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to delete index for created outpoint ")(
                     newOutpoint.str())(" to proposal ")(proposalID.str())
                     .Flush();
 
@@ -2229,13 +2226,13 @@ private:
                 proposal_spent_, proposalID.Bytes(), spentOutpoint.Bytes(), tx);
 
             if (rc) {
-                LogTrace()(OT_METHOD)(__func__)(": Delete index for proposal ")(
-                    proposalID.str())(" to consumed output ")(
-                    spentOutpoint.str())
+                LogTrace()(OT_PRETTY_CLASS(__func__))(
+                    "Delete index for proposal ")(proposalID.str())(
+                    " to consumed output ")(spentOutpoint.str())
                     .Flush();
             } else {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to delete index for proposal ")(proposalID.str())(
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to delete index for proposal ")(proposalID.str())(
                     " to consumed output ")(spentOutpoint.str())
                     .Flush();
 
@@ -2245,13 +2242,13 @@ private:
             rc = lmdb_.Delete(output_proposal_, spentOutpoint.Bytes(), tx);
 
             if (rc) {
-                LogTrace()(OT_METHOD)(__func__)(
-                    ": Deleted index for consumed outpoint ")(
+                LogTrace()(OT_PRETTY_CLASS(__func__))(
+                    "Deleted index for consumed outpoint ")(
                     spentOutpoint.str())(" to proposal ")(proposalID.str())
                     .Flush();
             } else {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to delete index for consumed outpoint ")(
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to delete index for consumed outpoint ")(
                     spentOutpoint.str())(" to proposal ")(proposalID.str())
                     .Flush();
 
@@ -2286,7 +2283,8 @@ private:
     {
         try {
             [[maybe_unused]] const auto& existing = find_output(lock, id);
-            LogError()(OT_METHOD)(__func__)(": Outpoint already exists in db")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Outpoint already exists in db")
                 .Flush();
 
             return false;
@@ -2307,8 +2305,8 @@ private:
                         return State::Immature;
                     }
                 } else {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Invalid state for generation transaction output")
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Invalid state for generation transaction output")
                         .Flush();
 
                     OT_FAIL;
@@ -2385,7 +2383,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }

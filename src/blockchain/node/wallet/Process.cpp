@@ -27,8 +27,6 @@
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::Process::"
-
 namespace opentxs::blockchain::node::wallet
 {
 Process::Process(SubchainStateData& parent, Progress& progress) noexcept
@@ -85,13 +83,13 @@ auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
                 const auto& [height, hash] = position;
 
                 if (job->IsReady()) {
-                    LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+                    LogVerbose()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
                         " ready to process block ")(hash->asHex())
                         .Flush();
 
                     return true;
                 } else {
-                    LogVerbose()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+                    LogVerbose()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
                         " waiting for block ")(hash->asHex())(" to download")
                         .Flush();
 
@@ -113,13 +111,13 @@ auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
         if (0u < hashes.size()) { parent_.block_index_.Forget(hashes); }
 
         download(lock);
-        LogInsane()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+        LogInsane()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
             " staged block count:      ")(pending_.size())
             .Flush();
-        LogInsane()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+        LogInsane()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
             " downloading block count: ")(downloading_.size())
             .Flush();
-        LogInsane()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+        LogInsane()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
             " downloaded block count:  ")(dest.size())
             .Flush();
 
@@ -199,7 +197,7 @@ auto Process::FinishBatches() noexcept -> bool
 
     for (auto i : cache_.Flush()) {
         auto& [id, batch] = *i;
-        LogTrace()(OT_METHOD)(__func__)(": ")(parent_.name_)(" batch ")(
+        LogTrace()(OT_PRETTY_CLASS(__func__))(parent_.name_)(" batch ")(
             id)(" finished ")
             .Flush();
         static constexpr auto job{"process batch"};

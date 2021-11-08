@@ -19,8 +19,6 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::Amount::"
-
 namespace be = boost::endian;
 
 namespace opentxs
@@ -387,7 +385,8 @@ auto Amount::SerializeBitcoin(const AllocateOutput dest) const noexcept -> bool
     try {
         amount = imp_->amount_.convert_to<std::int64_t>();
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(" Error serializing amount: ")(e.what())
+        LogError()(OT_PRETTY_CLASS(__func__))("Error serializing amount: ")(
+            e.what())
             .Flush();
         return false;
     }

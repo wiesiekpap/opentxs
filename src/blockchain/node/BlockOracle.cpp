@@ -28,8 +28,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::implementation::BlockOracle::"
-
 namespace opentxs::factory
 {
 auto BlockOracle(
@@ -140,7 +138,7 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -158,7 +156,7 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
     switch (task) {
         case Task::ProcessBlock: {
             if (2 > body.size()) {
-                LogError()(OT_METHOD)(__func__)(": No block").Flush();
+                LogError()(OT_PRETTY_CLASS(__func__))("No block").Flush();
 
                 OT_FAIL;
             }
@@ -173,7 +171,7 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
 
             OT_FAIL;
         }

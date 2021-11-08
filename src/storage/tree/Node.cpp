@@ -15,8 +15,6 @@
 #include "opentxs/storage/Driver.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::storage::Node::"
-
 namespace opentxs::storage
 {
 const std::string Node::BLANK_HASH = "blankblankblankblankblank";
@@ -116,7 +114,7 @@ auto Node::load_raw(
 
     if (!exists) {
         if (!checking) {
-            LogError()(OT_METHOD)(__func__)(": Error: item with id ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Error: item with id ")(
                 id)(" does not exist.")
                 .Flush();
         }
@@ -140,8 +138,8 @@ auto Node::Migrate(const Driver& to) const -> bool
 {
     if (std::string(BLANK_HASH) == root_) {
         if (0 < item_map_.size()) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Items present in object with blank root hash.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Items present in object with blank root hash.")
                 .Flush();
 
             OT_FAIL;
@@ -166,14 +164,16 @@ auto Node::normalize_hash(const std::string& hash) -> std::string
     if (hash.empty()) { return BLANK_HASH; }
 
     if (20 > hash.size()) {
-        LogError()(OT_METHOD)(__func__)(": Blanked out short hash ")(hash)(".")
+        LogError()(OT_PRETTY_STATIC(Node, __func__))("Blanked out short hash ")(
+            hash)(".")
             .Flush();
 
         return BLANK_HASH;
     }
 
     if (116 < hash.size()) {
-        LogError()(OT_METHOD)(__func__)(": Blanked out long hash ")(hash)(".")
+        LogError()(OT_PRETTY_STATIC(Node, __func__))("Blanked out long hash ")(
+            hash)(".")
             .Flush();
 
         return BLANK_HASH;
@@ -275,13 +275,13 @@ auto Node::UpgradeLevel() const -> VersionNumber { return original_version_; }
 auto Node::verify_write_lock(const Lock& lock) const -> bool
 {
     if (lock.mutex() != &write_lock_) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogError()(OT_METHOD)(__func__)(": Lock not owned.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Lock not owned.").Flush();
 
         return false;
     }

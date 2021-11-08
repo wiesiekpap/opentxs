@@ -26,7 +26,6 @@ extern "C" {
 #include "opentxs/util/WorkType.hpp"
 #include "util/LMDB.hpp"
 
-// #define OT_METHOD
 // "opentxs::blockchain::database::common::Configuration::"
 
 namespace opentxs::blockchain::database::common

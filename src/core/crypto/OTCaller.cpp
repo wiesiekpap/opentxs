@@ -10,8 +10,6 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/OTCallback.hpp"
 
-// #define OT_METHOD "opentxs::OTCaller"
-
 namespace opentxs
 {
 OTCaller::OTCaller()

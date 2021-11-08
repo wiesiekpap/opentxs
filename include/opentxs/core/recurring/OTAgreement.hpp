@@ -416,7 +416,7 @@ public:
 
      */
     auto SendNoticeToAllParties(
-        const api::Session& core,
+        const api::Session& api,
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
         const identifier::Server& theNotaryID,
@@ -431,7 +431,7 @@ public:
 
     // Nym receives an Item::acknowledgment or Item::rejection.
     static auto DropServerNoticeToNymbox(
-        const api::Session& core,
+        const api::Session& api,
         bool bSuccessMsg,
         const identity::Nym& theServerNym,
         const identifier::Server& NOTARY_ID,
@@ -465,13 +465,13 @@ public:
                    // is where the ledger saves its contents
 
 protected:
-    OTAgreement(const api::Session& core);
+    OTAgreement(const api::Session& api);
     OTAgreement(
-        const api::Session& core,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTAgreement(
-        const api::Session& core,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& SENDER_ACCT_ID,

@@ -26,8 +26,6 @@
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-// #define OT_METHOD "opentxs::ui::BlockchainDestinationValidator::"
-
 namespace opentxs::ui
 {
 #if OT_BLOCKCHAIN

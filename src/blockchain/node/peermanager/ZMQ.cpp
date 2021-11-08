@@ -44,10 +44,6 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::node::implementation::"                              \
-    "ZMQIncomingConnectionManager::"
-
 namespace opentxs::blockchain::node::implementation
 {
 class ZMQIncomingConnectionManager final
@@ -69,7 +65,7 @@ public:
     auto Listen(const p2p::Address& address) const noexcept -> bool final
     {
         if (p2p::Network::zmq != address.Type()) {
-            LogError()(OT_METHOD)(__func__)(": Invalid address").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid address").Flush();
 
             return false;
         }
@@ -135,7 +131,7 @@ private:
         const auto& header = message.Header();
 
         if (0 == header.size()) {
-            LogError()(OT_METHOD)(__func__)(": Invalid header").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid header").Flush();
 
             return;
         }
@@ -170,8 +166,8 @@ private:
                 true);
 
             if (false == internal_->Start(zmq)) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to listen to internal endpoint")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to listen to internal endpoint")
                     .Flush();
 
                 return;
@@ -180,7 +176,8 @@ private:
             const auto peerID = parent_.ConstructPeer(std::move(address));
 
             if (-1 == peerID) {
-                LogError()(OT_METHOD)(__func__)(": Failed to instantiate peer")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to instantiate peer")
                     .Flush();
 
                 return;

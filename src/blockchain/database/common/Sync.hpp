@@ -12,6 +12,7 @@
 #include <iosfwd>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
@@ -29,7 +30,6 @@
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
-#include "util/MappedFileStorage.hpp"
 
 namespace opentxs
 {
@@ -61,7 +61,7 @@ class LMDB;
 
 namespace opentxs::blockchain::database::common
 {
-class Sync final : private util::MappedFileStorage
+class Sync
 {
 public:
     using Chain = opentxs::blockchain::Type;
@@ -82,56 +82,11 @@ public:
         storage::lmdb::LMDB& lmdb,
         const std::string& path) noexcept(false);
 
+    ~Sync();
+
 private:
-    using Mutex = boost::upgrade_mutex;
-    using SharedLock = boost::upgrade_lock<Mutex>;
-    using ExclusiveLock = boost::unique_lock<Mutex>;
-    using Tips = std::map<Chain, Height>;
+    struct Imp;
 
-    struct Data {
-        util::IndexData index_;
-        std::uint64_t checksum_;
-
-        operator ReadView() const noexcept
-        {
-            return {reinterpret_cast<const char*>(this), sizeof(*this)};
-        }
-
-        auto WriteChecksum() noexcept
-        {
-            using Return = unsigned char;
-
-            return reinterpret_cast<Return*>(&checksum_);
-        }
-
-        Data() noexcept
-            : index_()
-            , checksum_()
-        {
-        }
-        Data(const ReadView in) noexcept(false)
-            : Data()
-        {
-            if (in.size() != sizeof(*this)) {
-                throw std::out_of_range("Invalid input data");
-            }
-
-            auto it = in.data();
-            std::memcpy(&index_, it, sizeof(index_));
-            std::advance(it, sizeof(index_));
-            std::memcpy(&checksum_, it, sizeof(checksum_));
-        }
-    };
-
-    static const std::array<unsigned char, 16> checksum_key_;
-
-    const api::Session& api_;
-    const int tip_table_;
-    mutable Mutex lock_;
-    mutable Tips tips_;
-
-    auto import_genesis(const Chain chain) noexcept -> void;
-    // WARNING make sure an exclusive lock is held
-    auto reorg(const Chain chain, const Height height) const noexcept -> bool;
+    std::unique_ptr<Imp> imp_;
 };
 }  // namespace opentxs::blockchain::database::common

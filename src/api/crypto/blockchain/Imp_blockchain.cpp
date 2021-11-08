@@ -53,8 +53,6 @@
 #include "util/Container.hpp"
 #include "util/Work.hpp"
 
-#define OT_METHOD "opentxs::api::crypto::implementation::BlockchainImp::"
-
 namespace opentxs::api::crypto::implementation
 {
 BlockchainImp::BlockchainImp(
@@ -117,7 +115,7 @@ auto BlockchainImp::ActivityDescription(
     auto data = proto::StorageThread{};
 
     if (false == api_.Storage().Load(nym.str(), thread.str(), data)) {
-        LogError()(OT_METHOD)(__func__)(": thread ")(thread.str())(
+        LogError()(OT_PRETTY_CLASS(__func__))("thread ")(thread.str())(
             " does not exist for nym ")(nym.str())
             .Flush();
 
@@ -132,8 +130,8 @@ auto BlockchainImp::ActivityDescription(
         const auto pTx = LoadTransactionBitcoin(txid);
 
         if (false == bool(pTx)) {
-            LogError()(OT_METHOD)(__func__)(": failed to load transaction ")(
-                txid->asHex())
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "failed to load transaction ")(txid->asHex())
                 .Flush();
 
             return {};
@@ -144,7 +142,8 @@ auto BlockchainImp::ActivityDescription(
         return this->ActivityDescription(nym, chain, tx);
     }
 
-    LogError()(OT_METHOD)(__func__)(": item ")(itemID)(" not found ").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("item ")(itemID)(" not found ")
+        .Flush();
 
     return {};
 }
@@ -217,7 +216,7 @@ auto BlockchainImp::AssignTransactionMemo(
     auto pTransaction = load_transaction(lock, id);
 
     if (false == bool(pTransaction)) {
-        LogError()(OT_METHOD)(__func__)(": transaction ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("transaction ")(
             label)(" does not exist")
             .Flush();
 
@@ -229,8 +228,8 @@ auto BlockchainImp::AssignTransactionMemo(
     const auto& db = api_.Network().Blockchain().Internal().Database();
 
     if (false == db.StoreTransaction(transaction)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": failed to save updated transaction ")(id)
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "failed to save updated transaction ")(id)
             .Flush();
 
         return false;
@@ -394,8 +393,8 @@ auto BlockchainImp::ProcessTransaction(
         tx->Internal().MergeMetadata(parent_, chain, in.Internal());
 
         if (false == db.StoreTransaction(*tx)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": failed to save updated transaction ")(id.asHex())
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "failed to save updated transaction ")(id.asHex())
                 .Flush();
 
             return false;
@@ -404,8 +403,8 @@ auto BlockchainImp::ProcessTransaction(
         copy.swap(tx);
     } else {
         if (false == db.StoreTransaction(in)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": failed to save new transaction ")(id.asHex())
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "failed to save new transaction ")(id.asHex())
                 .Flush();
 
             return false;
@@ -413,8 +412,8 @@ auto BlockchainImp::ProcessTransaction(
     }
 
     if (false == db.AssociateTransaction(id, copy->Internal().GetPatterns())) {
-        LogError()(OT_METHOD)(__func__)(
-            ": associate patterns for transaction ")(id.asHex())
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "associate patterns for transaction ")(id.asHex())
             .Flush();
 
         return false;
@@ -486,8 +485,8 @@ auto BlockchainImp::Unconfirm(
         const auto& db = api_.Network().Blockchain().Internal().Database();
 
         if (false == db.StoreTransaction(*tx)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": failed to save updated transaction ")(txid.asHex())
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "failed to save updated transaction ")(txid.asHex())
                 .Flush();
 
             return false;
@@ -519,7 +518,7 @@ auto BlockchainImp::UpdateElement(std::vector<ReadView>& hashes) const noexcept
     std::for_each(std::begin(hashes), std::end(hashes), [&](const auto& bytes) {
         patterns.emplace_back(IndexItem(bytes));
     });
-    LogTrace()(OT_METHOD)(__func__)(": ")(patterns.size())(
+    LogTrace()(OT_PRETTY_CLASS(__func__))(patterns.size())(
         " pubkey hashes have changed:")
         .Flush();
     auto transactions = std::vector<pTxid>{};

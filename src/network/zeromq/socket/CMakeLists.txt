@@ -3,37 +3,38 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-network-zeromq-socket OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/network/zeromq/socket/Socket.hpp"
-  "Bidirectional.hpp"
-  "Bidirectional.tpp"
-  "Dealer.cpp"
-  "Dealer.hpp"
-  "Pair.cpp"
-  "Pair.hpp"
-  "Pipeline.cpp"
-  "Pipeline.hpp"
-  "Publish.cpp"
-  "Publish.hpp"
-  "Pull.cpp"
-  "Pull.hpp"
-  "Push.cpp"
-  "Push.hpp"
-  "Receiver.hpp"
-  "Receiver.tpp"
-  "Reply.cpp"
-  "Reply.hpp"
-  "Request.cpp"
-  "Request.hpp"
-  "Router.cpp"
-  "Router.hpp"
-  "Sender.hpp"
-  "Sender.tpp"
-  "Socket.cpp"
-  "Socket.hpp"
-  "Subscribe.cpp"
-  "Subscribe.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/network/zeromq/socket/Socket.hpp"
+    "Bidirectional.hpp"
+    "Bidirectional.tpp"
+    "Dealer.cpp"
+    "Dealer.hpp"
+    "Pair.cpp"
+    "Pair.hpp"
+    "Pipeline.cpp"
+    "Pipeline.hpp"
+    "Publish.cpp"
+    "Publish.hpp"
+    "Pull.cpp"
+    "Pull.hpp"
+    "Push.cpp"
+    "Push.hpp"
+    "Receiver.hpp"
+    "Receiver.tpp"
+    "Reply.cpp"
+    "Reply.hpp"
+    "Request.cpp"
+    "Request.hpp"
+    "Router.cpp"
+    "Router.hpp"
+    "Sender.hpp"
+    "Sender.tpp"
+    "Socket.cpp"
+    "Socket.hpp"
+    "Subscribe.cpp"
+    "Subscribe.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Dealer.hpp"
@@ -50,13 +51,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Socket.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Subscribe.hpp"
 )
-target_link_libraries(
-  opentxs-network-zeromq-socket PRIVATE opentxs::messages "${OT_ZMQ_TARGET}"
-)
+target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")
 target_link_libraries(opentxs PRIVATE "${OT_ZMQ_TARGET}")
-target_sources(opentxs-network-zeromq-socket PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-network-zeromq-socket>)
-add_dependencies(opentxs-network-zeromq-socket generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(
