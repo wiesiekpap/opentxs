@@ -19,7 +19,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -46,11 +46,11 @@ public:
     }
 
     Filterload(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const blockchain::BloomFilter& filter) noexcept;
     Filterload(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const blockchain::BloomFilter& filter) noexcept;
 

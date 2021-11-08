@@ -30,9 +30,13 @@ namespace opentxs::blockchain::node::implementation
 class PeerManager::IncomingConnectionManager
 {
 public:
-    static auto TCP(const api::Core& api, PeerManager::Peers& parent) noexcept
+    static auto TCP(
+        const api::Session& api,
+        PeerManager::Peers& parent) noexcept
         -> std::unique_ptr<IncomingConnectionManager>;
-    static auto ZMQ(const api::Core& api, PeerManager::Peers& parent) noexcept
+    static auto ZMQ(
+        const api::Session& api,
+        PeerManager::Peers& parent) noexcept
         -> std::unique_ptr<IncomingConnectionManager>;
 
     virtual auto Disconnect(const int peer) const noexcept -> void = 0;

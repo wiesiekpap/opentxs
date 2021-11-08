@@ -11,7 +11,7 @@
 #include <map>
 #include <optional>
 
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {

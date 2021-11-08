@@ -6,16 +6,15 @@
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
 
-#ifndef OPENTXS_NETWORK_BLOCKCHAIN_SYNC_BLOCK_HPP
-#define OPENTXS_NETWORK_BLOCKCHAIN_SYNC_BLOCK_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -74,4 +73,3 @@ private:
 }  // namespace blockchain
 }  // namespace network
 }  // namespace opentxs
-#endif

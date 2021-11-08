@@ -473,179 +473,183 @@ auto response_code_map() noexcept -> ResponseCodeMap
 
     return map;
 }
+}  // namespace opentxs::rpc
 
-auto translate(AccountEventType type) noexcept -> proto::AccountEventType
+namespace opentxs
+{
+auto translate(rpc::AccountEventType type) noexcept -> proto::AccountEventType
 {
     try {
 
-        return account_event_map().at(type);
+        return rpc::account_event_map().at(type);
     } catch (...) {
 
         return proto::ACCOUNTEVENT_ERROR;
     }
 }
-auto translate(AccountType type) noexcept -> proto::AccountType
+auto translate(rpc::AccountType type) noexcept -> proto::AccountType
 {
     try {
 
-        return account_map().at(type);
+        return rpc::account_map().at(type);
     } catch (...) {
 
         return proto::ACCOUNTTYPE_ERROR;
     }
 }
-auto translate(CommandType type) noexcept -> proto::RPCCommandType
+auto translate(rpc::CommandType type) noexcept -> proto::RPCCommandType
 {
     try {
 
-        return command_map().at(type);
+        return rpc::command_map().at(type);
     } catch (...) {
 
         return proto::RPCCOMMAND_ERROR;
     }
 }
-auto translate(ContactEventType type) noexcept -> proto::ContactEventType
+auto translate(rpc::ContactEventType type) noexcept -> proto::ContactEventType
 {
     try {
 
-        return contact_event_map().at(type);
+        return rpc::contact_event_map().at(type);
     } catch (...) {
 
         return proto::CONTACTEVENT_ERROR;
     }
 }
-auto translate(PaymentType type) noexcept -> proto::RPCPaymentType
+auto translate(rpc::PaymentType type) noexcept -> proto::RPCPaymentType
 {
     try {
 
-        return payment_map().at(type);
+        return rpc::payment_map().at(type);
     } catch (...) {
 
         return proto::RPCPAYMENTTYPE_ERROR;
     }
 }
-auto translate(PushType type) noexcept -> proto::RPCPushType
+auto translate(rpc::PushType type) noexcept -> proto::RPCPushType
 {
     try {
 
-        return push_map().at(type);
+        return rpc::push_map().at(type);
     } catch (...) {
 
         return proto::RPCPUSH_ERROR;
     }
 }
-auto translate(ResponseCode type) noexcept -> proto::RPCResponseCode
+auto translate(rpc::ResponseCode type) noexcept -> proto::RPCResponseCode
 {
     try {
 
-        return response_code_map().at(type);
+        return rpc::response_code_map().at(type);
     } catch (...) {
 
         return proto::RPCRESPONSE_INVALID;
     }
 }
-auto translate(proto::AccountEventType type) noexcept -> AccountEventType
+auto translate(proto::AccountEventType type) noexcept -> rpc::AccountEventType
 {
     static const auto map = reverse_arbitrary_map<
-        AccountEventType,
+        rpc::AccountEventType,
         proto::AccountEventType,
-        AccountEventReverseMap>(account_event_map());
+        rpc::AccountEventReverseMap>(rpc::account_event_map());
 
     try {
 
         return map.at(type);
     } catch (...) {
 
-        return AccountEventType::error;
+        return rpc::AccountEventType::error;
     }
 }
-auto translate(proto::AccountType type) noexcept -> AccountType
+auto translate(proto::AccountType type) noexcept -> rpc::AccountType
 {
     static const auto map = reverse_arbitrary_map<
-        AccountType,
+        rpc::AccountType,
         proto::AccountType,
-        AccountReverseMap>(account_map());
+        rpc::AccountReverseMap>(rpc::account_map());
 
     try {
 
         return map.at(type);
     } catch (...) {
 
-        return AccountType::error;
+        return rpc::AccountType::error;
     }
 }
-auto translate(proto::ContactEventType type) noexcept -> ContactEventType
+auto translate(proto::ContactEventType type) noexcept -> rpc::ContactEventType
 {
     static const auto map = reverse_arbitrary_map<
-        ContactEventType,
+        rpc::ContactEventType,
         proto::ContactEventType,
-        ContactEventReverseMap>(contact_event_map());
+        rpc::ContactEventReverseMap>(rpc::contact_event_map());
 
     try {
 
         return map.at(type);
     } catch (...) {
 
-        return ContactEventType::error;
+        return rpc::ContactEventType::error;
     }
 }
-auto translate(proto::RPCCommandType type) noexcept -> CommandType
+auto translate(proto::RPCCommandType type) noexcept -> rpc::CommandType
 {
     static const auto map = reverse_arbitrary_map<
-        CommandType,
+        rpc::CommandType,
         proto::RPCCommandType,
-        CommandReverseMap>(command_map());
+        rpc::CommandReverseMap>(rpc::command_map());
 
     try {
 
         return map.at(type);
     } catch (...) {
 
-        return CommandType::error;
+        return rpc::CommandType::error;
     }
 }
-auto translate(proto::RPCPaymentType type) noexcept -> PaymentType
+auto translate(proto::RPCPaymentType type) noexcept -> rpc::PaymentType
 {
     static const auto map = reverse_arbitrary_map<
-        PaymentType,
+        rpc::PaymentType,
         proto::RPCPaymentType,
-        PaymentReverseMap>(payment_map());
+        rpc::PaymentReverseMap>(rpc::payment_map());
 
     try {
 
         return map.at(type);
     } catch (...) {
 
-        return PaymentType::error;
+        return rpc::PaymentType::error;
     }
 }
-auto translate(proto::RPCPushType type) noexcept -> PushType
-{
-    static const auto map =
-        reverse_arbitrary_map<PushType, proto::RPCPushType, PushReverseMap>(
-            push_map());
-
-    try {
-
-        return map.at(type);
-    } catch (...) {
-
-        return PushType::error;
-    }
-}
-auto translate(proto::RPCResponseCode type) noexcept -> ResponseCode
+auto translate(proto::RPCPushType type) noexcept -> rpc::PushType
 {
     static const auto map = reverse_arbitrary_map<
-        ResponseCode,
-        proto::RPCResponseCode,
-        ResponseCodeReverseMap>(response_code_map());
+        rpc::PushType,
+        proto::RPCPushType,
+        rpc::PushReverseMap>(rpc::push_map());
 
     try {
 
         return map.at(type);
     } catch (...) {
 
-        return ResponseCode::invalid;
+        return rpc::PushType::error;
     }
 }
-}  // namespace opentxs::rpc
+auto translate(proto::RPCResponseCode type) noexcept -> rpc::ResponseCode
+{
+    static const auto map = reverse_arbitrary_map<
+        rpc::ResponseCode,
+        proto::RPCResponseCode,
+        rpc::ResponseCodeReverseMap>(rpc::response_code_map());
+
+    try {
+
+        return map.at(type);
+    } catch (...) {
+
+        return rpc::ResponseCode::invalid;
+    }
+}
+}  // namespace opentxs

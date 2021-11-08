@@ -10,8 +10,8 @@
 #include <cstring>
 
 #include "internal/network/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::Frame>;
 

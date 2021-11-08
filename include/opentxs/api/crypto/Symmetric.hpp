@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_CRYPTO_SYMMETRIC_HPP
-#define OPENTXS_API_CRYPTO_SYMMETRIC_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -16,10 +15,16 @@
 
 namespace opentxs
 {
-namespace proto
+namespace api
 {
-class SymmetricKey;
-}  // namespace proto
+namespace crypto
+{
+namespace internal
+{
+class Symmetric;
+}  // namespace internal
+}  // namespace crypto
+}  // namespace api
 
 class Secret;
 }  // namespace opentxs
@@ -33,16 +38,14 @@ namespace crypto
 class OPENTXS_EXPORT Symmetric
 {
 public:
+    OPENTXS_NO_EXPORT virtual auto InternalSymmetric() const noexcept
+        -> const internal::Symmetric& = 0;
     virtual auto IvSize(const opentxs::crypto::key::symmetric::Algorithm mode)
         const -> std::size_t = 0;
     virtual auto Key(
         const PasswordPrompt& password,
         const opentxs::crypto::key::symmetric::Algorithm mode =
             opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305) const
-        -> OTSymmetricKey = 0;
-    OPENTXS_NO_EXPORT virtual auto Key(
-        const proto::SymmetricKey& serialized,
-        const opentxs::crypto::key::symmetric::Algorithm mode) const
         -> OTSymmetricKey = 0;
     virtual auto Key(
         const ReadView& serializedCiphertext,
@@ -67,6 +70,9 @@ public:
         const opentxs::crypto::key::symmetric::Source type) const
         -> OTSymmetricKey = 0;
 
+    OPENTXS_NO_EXPORT virtual auto InternalSymmetric() noexcept
+        -> internal::Symmetric& = 0;
+
     OPENTXS_NO_EXPORT virtual ~Symmetric() = default;
 
 protected:
@@ -81,4 +87,3 @@ private:
 }  // namespace crypto
 }  // namespace api
 }  // namespace opentxs
-#endif

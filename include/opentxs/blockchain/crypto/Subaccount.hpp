@@ -5,8 +5,7 @@
 
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 
-#ifndef OPENTXS_BLOCKCHAIN_CRYPTO_SUBACCOUNT_HPP
-#define OPENTXS_BLOCKCHAIN_CRYPTO_SUBACCOUNT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -75,4 +74,3 @@ private:
 }  // namespace crypto
 }  // namespace blockchain
 }  // namespace opentxs
-#endif  // OPENTXS_BLOCKCHAIN_CRYPTO_BALANCENODE_HPP

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_UI_MESSAGABLELISTQT_HPP
-#define OPENTXS_UI_MESSAGABLELISTQT_HPP
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -52,4 +51,3 @@ private:
     MessagableListQt& operator=(const MessagableListQt&) = delete;
     MessagableListQt& operator=(MessagableListQt&&) = delete;
 };
-#endif

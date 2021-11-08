@@ -13,11 +13,11 @@
 
 #include "internal/api/network/Network.hpp"
 #include "internal/storage/drivers/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
 #include "storage/Config.hpp"
 
 // #define OT_METHOD "opentxs::storage::driver::filesystem::GarbageCollected::"
@@ -27,7 +27,7 @@ namespace opentxs::factory
 auto StorageFSGC(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& parent,
+    const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket) noexcept -> std::unique_ptr<storage::Plugin>
 {
@@ -42,7 +42,7 @@ namespace opentxs::storage::driver::filesystem
 GarbageCollected::GarbageCollected(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& storage,
+    const api::session::Storage& storage,
     const storage::Config& config,
     const Flag& bucket)
     : ot_super(crypto, asio, storage, config, config.path_, bucket)

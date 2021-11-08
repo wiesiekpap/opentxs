@@ -12,18 +12,18 @@
 #include <string_view>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/crypto/Bip39.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
 class Crypto;
+class Session;
 }  // namespace api
 
 class OTPassword;
@@ -46,7 +46,7 @@ public:
     auto SeedToWords(const Secret& seed, Secret& words, const Language lang)
         const noexcept -> bool final;
     auto WordsToSeed(
-        const api::Core& api,
+        const api::Session& api,
         const SeedStyle type,
         const Language lang,
         const Secret& words,
@@ -86,7 +86,7 @@ private:
         Secret& bip32RootNode,
         const Secret& passphrase) const noexcept -> bool;
     auto words_to_root_pkt(
-        const api::Core& api,
+        const api::Session& api,
         const Language lang,
         const Secret& words,
         Secret& bip32RootNode,

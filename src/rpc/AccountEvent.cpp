@@ -17,6 +17,7 @@
 #include "opentxs/protobuf/AccountEvent.pb.h"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/rpc/AccountEventType.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs::rpc
 {

@@ -18,9 +18,10 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/protobuf/StorageNym.pb.h"

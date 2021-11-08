@@ -20,24 +20,25 @@
 
 #include "internal/contact/Contact.hpp"
 #include "internal/ui/UI.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
-#include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/Attribute.hpp"
+#include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
+#include "opentxs/util/Log.hpp"
 #include "ui/base/List.hpp"
 
 template struct std::pair<int, std::string>;
@@ -47,7 +48,7 @@ template struct std::pair<int, std::string>;
 namespace opentxs::factory
 {
 auto ProfileModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept -> std::unique_ptr<ui::internal::Profile>
 {
@@ -68,7 +69,7 @@ const std::map<contact::SectionType, int> Profile::sort_keys_{
     {contact::SectionType::Profile, 1}};
 
 Profile::Profile(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : ProfileList(api, nymID, cb, false)
@@ -127,11 +128,11 @@ auto Profile::AddClaim(
         case contact::SectionType::Contract: {
 
             return nym.AddContract(
-                value, core::translate(type), primary, active, reason);
+                value, ClaimToUnit(type), primary, active, reason);
         }
         case contact::SectionType::Procedure: {
             return nym.AddPaymentCode(
-                value, core::translate(type), primary, active, reason);
+                value, ClaimToUnit(type), primary, active, reason);
         }
         default: {
         }
@@ -141,20 +142,16 @@ auto Profile::AddClaim(
     auto& [id, claimSection, claimType, claimValue, start, end, attributes] =
         claim;
     id = "";
-    claimSection = contact::internal::translate(section);
-    claimType = contact::internal::translate(type);
+    claimSection = translate(section);
+    claimType = translate(type);
     claimValue = value;
     start = 0;
     end = 0;
 
-    if (primary) {
-        attributes.emplace(
-            contact::internal::translate(contact::Attribute::Primary));
-    }
+    if (primary) { attributes.emplace(translate(contact::Attribute::Primary)); }
 
     if (primary || active) {
-        attributes.emplace(
-            contact::internal::translate(contact::Attribute::Active));
+        attributes.emplace(translate(contact::Attribute::Active));
     }
 
     return nym.AddClaim(claim, reason);
@@ -174,9 +171,7 @@ auto Profile::AllowedSections(const std::string& lang) const noexcept
 
     for (const auto& type : allowed_types_) {
         output.emplace_back(
-            type,
-            proto::TranslateSectionName(
-                contact::internal::translate(type), lang));
+            type, proto::TranslateSectionName(translate(type), lang));
     }
 
     return output;
@@ -223,7 +218,7 @@ auto Profile::DisplayName() const noexcept -> std::string
 }
 
 auto Profile::nym_name(
-    const api::Wallet& wallet,
+    const api::session::Wallet& wallet,
     const identifier::Nym& nymID) noexcept -> std::string
 {
     for (const auto& [id, name] : wallet.NymList()) {
@@ -365,7 +360,7 @@ auto Profile::sort_key(const contact::SectionType type) noexcept -> int
 
 void Profile::startup() noexcept
 {
-    LogVerbose(OT_METHOD)(__func__)(": Loading nym ")(primary_id_).Flush();
+    LogVerbose()(OT_METHOD)(__func__)(": Loading nym ")(primary_id_).Flush();
     const auto nym = api_.Wallet().Nym(primary_id_);
 
     OT_ASSERT(nym)

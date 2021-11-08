@@ -18,7 +18,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -41,11 +41,11 @@ public:
     auto BlockTransactions() const noexcept -> OTData final { return payload_; }
 
     Blocktxn(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const Data& raw_Blocktxn) noexcept;
     Blocktxn(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const Data& raw_Blocktxn) noexcept;
 

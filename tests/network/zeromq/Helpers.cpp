@@ -13,9 +13,9 @@
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {

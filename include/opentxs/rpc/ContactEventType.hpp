@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_RPC_CONTACT_EVENT_TYPE_HPP
-#define OPENTXS_RPC_CONTACT_EVENT_TYPE_HPP
+#pragma once
 
 #include "opentxs/rpc/Types.hpp"  // IWYU pragma: associated
 
@@ -23,4 +22,3 @@ enum class ContactEventType : TypeEnum {
 };
 }  // namespace rpc
 }  // namespace opentxs
-#endif

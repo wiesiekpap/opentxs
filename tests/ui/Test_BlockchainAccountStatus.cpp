@@ -12,13 +12,13 @@
 
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
@@ -31,6 +31,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
 #include "ui/Helpers.hpp"
 
@@ -67,7 +68,7 @@ public:
     {
         hd_acct_[user.nym_id_].emplace(
             type,
-            user.api_->Blockchain().NewHDSubaccount(
+            user.api_->Crypto().Blockchain().NewHDSubaccount(
                 user.nym_id_, type, chain_, user.Reason()));
     }
     auto make_pc_account(const User& local, const User& remote) noexcept -> void
@@ -81,7 +82,7 @@ public:
         }();
         pc_acct_[local.payment_code_].emplace(
             remote.payment_code_,
-            api.Blockchain().NewPaymentCodeSubaccount(
+            api.Crypto().Blockchain().NewPaymentCodeSubaccount(
                 local.nym_id_,
                 api.Factory().PaymentCode(local.payment_code_),
                 api.Factory().PaymentCode(remote.payment_code_),
@@ -95,7 +96,7 @@ public:
             if (false == alice_s_.has_value()) {
                 const auto& v = GetVectors3().alice_;
                 alice_s_.emplace(v.words_, "Alice");
-                alice_s_->init(ot::Context().StartClient(0));
+                alice_s_->init(ot::Context().StartClientSession(0));
             }
 
             return alice_s_.value();
@@ -104,7 +105,7 @@ public:
             if (false == bob_s_.has_value()) {
                 const auto& v = GetVectors3().bob_;
                 bob_s_.emplace(v.words_, "Bob");
-                bob_s_->init(ot::Context().StartClient(1));
+                bob_s_->init(ot::Context().StartClientSession(1));
             }
 
             return bob_s_.value();
@@ -113,7 +114,7 @@ public:
             if (false == chris_s_.has_value()) {
                 chris_s_.emplace(pkt_words_, "Chris", pkt_passphrase_);
                 chris_s_->init(
-                    ot::Context().StartClient(1),
+                    ot::Context().StartClientSession(1),
                     ot::contact::ClaimType::Individual,
                     0,
                     ot::crypto::SeedStyle::PKT);

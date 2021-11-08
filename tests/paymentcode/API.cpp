@@ -9,17 +9,16 @@
 #include <vector>
 
 #include "VectorsV3.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
@@ -31,6 +30,8 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -39,12 +40,12 @@ namespace ottest
 class Test_PaymentCodeAPI : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& alice_;
-    const ot::api::client::Manager& bob_;
+    const ot::api::session::Client& alice_;
+    const ot::api::session::Client& bob_;
 
     Test_PaymentCodeAPI()
-        : alice_(ot::Context().StartClient(0))
-        , bob_(ot::Context().StartClient(1))
+        : alice_(ot::Context().StartClientSession(0))
+        , bob_(ot::Context().StartClientSession(1))
     {
     }
 };
@@ -62,7 +63,7 @@ TEST_F(Test_PaymentCodeAPI, alice)
         const auto words = alice_.Factory().SecretFromText(vector.words_);
         const auto phrase = alice_.Factory().Secret(0);
 
-        return alice_.Seeds().ImportSeed(
+        return alice_.Crypto().Seed().ImportSeed(
             words,
             phrase,
             ot::crypto::SeedStyle::BIP39,
@@ -90,18 +91,18 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
         return out;
     }();
-    const auto id1 = alice_.Blockchain().NewPaymentCodeSubaccount(
+    const auto id1 = alice_.Crypto().Blockchain().NewPaymentCodeSubaccount(
         nym.ID(), localPC, remotePC, ot::reader(path), receiveChain, reason);
-    const auto id2 = alice_.Blockchain().NewPaymentCodeSubaccount(
+    const auto id2 = alice_.Crypto().Blockchain().NewPaymentCodeSubaccount(
         nym.ID(), localPC, remotePC, ot::reader(path), sendChain, reason);
 
     ASSERT_FALSE(id1->empty());
     ASSERT_FALSE(id2->empty());
 
     const auto& account1 =
-        alice_.Blockchain().PaymentCodeSubaccount(nym.ID(), id1);
+        alice_.Crypto().Blockchain().PaymentCodeSubaccount(nym.ID(), id1);
     const auto& account2 =
-        alice_.Blockchain().PaymentCodeSubaccount(nym.ID(), id2);
+        alice_.Crypto().Blockchain().PaymentCodeSubaccount(nym.ID(), id2);
     using Subchain = ot::blockchain::crypto::Subchain;
     const auto populate = [&](const auto& account, const auto& target) {
         const auto generate = [&](const auto subchain) {
@@ -130,7 +131,8 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
         EXPECT_EQ(expected->Bytes(), key.PublicKey());
 
-        const auto& element2 = alice_.Blockchain().GetKey(element.KeyID());
+        const auto& element2 =
+            alice_.Crypto().Blockchain().GetKey(element.KeyID());
 
         EXPECT_EQ(element.KeyID(), element2.KeyID());
     }
@@ -147,7 +149,8 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
         EXPECT_EQ(expected->Bytes(), key.PublicKey());
 
-        const auto& element2 = alice_.Blockchain().GetKey(element.KeyID());
+        const auto& element2 =
+            alice_.Crypto().Blockchain().GetKey(element.KeyID());
 
         EXPECT_EQ(element.KeyID(), element2.KeyID());
     }
@@ -164,7 +167,7 @@ TEST_F(Test_PaymentCodeAPI, bob)
         const auto words = bob_.Factory().SecretFromText(vector.words_);
         const auto phrase = bob_.Factory().Secret(0);
 
-        return bob_.Seeds().ImportSeed(
+        return bob_.Crypto().Seed().ImportSeed(
             words,
             phrase,
             ot::crypto::SeedStyle::BIP39,
@@ -192,18 +195,18 @@ TEST_F(Test_PaymentCodeAPI, bob)
 
         return out;
     }();
-    const auto id1 = bob_.Blockchain().NewPaymentCodeSubaccount(
+    const auto id1 = bob_.Crypto().Blockchain().NewPaymentCodeSubaccount(
         nym.ID(), localPC, remotePC, ot::reader(path), receiveChain, reason);
-    const auto id2 = bob_.Blockchain().NewPaymentCodeSubaccount(
+    const auto id2 = bob_.Crypto().Blockchain().NewPaymentCodeSubaccount(
         nym.ID(), localPC, remotePC, ot::reader(path), sendChain, reason);
 
     ASSERT_FALSE(id1->empty());
     ASSERT_FALSE(id2->empty());
 
     const auto& account1 =
-        bob_.Blockchain().PaymentCodeSubaccount(nym.ID(), id1);
+        bob_.Crypto().Blockchain().PaymentCodeSubaccount(nym.ID(), id1);
     const auto& account2 =
-        bob_.Blockchain().PaymentCodeSubaccount(nym.ID(), id2);
+        bob_.Crypto().Blockchain().PaymentCodeSubaccount(nym.ID(), id2);
     using Subchain = ot::blockchain::crypto::Subchain;
     const auto populate = [&](const auto& account, const auto& target) {
         const auto generate = [&](const auto subchain) {
@@ -232,7 +235,8 @@ TEST_F(Test_PaymentCodeAPI, bob)
 
         EXPECT_EQ(expected->Bytes(), key.PublicKey());
 
-        const auto& element2 = bob_.Blockchain().GetKey(element.KeyID());
+        const auto& element2 =
+            bob_.Crypto().Blockchain().GetKey(element.KeyID());
 
         EXPECT_EQ(element.KeyID(), element2.KeyID());
     }
@@ -249,7 +253,8 @@ TEST_F(Test_PaymentCodeAPI, bob)
 
         EXPECT_EQ(expected->Bytes(), key.PublicKey());
 
-        const auto& element2 = bob_.Blockchain().GetKey(element.KeyID());
+        const auto& element2 =
+            bob_.Crypto().Blockchain().GetKey(element.KeyID());
 
         EXPECT_EQ(element.KeyID(), element2.KeyID());
     }

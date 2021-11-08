@@ -13,15 +13,15 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/ContactData.pb.h"
 #include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/ContactSection.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::ContactSection::"
 
@@ -53,7 +53,7 @@ static auto create_group(
 }
 
 static auto extract_groups(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const proto::ContactSection& serialized) -> ContactSection::GroupMap
@@ -68,13 +68,13 @@ static auto extract_groups(
             api,
             nym,
             check_version(serialized.version(), parentVersion),
-            contact::internal::translate(section),
+            translate(section),
             item);
 
         OT_ASSERT(instantiated);
 
         const auto& itemID = instantiated->ID();
-        auto& itemMap = itemMaps[contact::internal::translate(itemType)];
+        auto& itemMap = itemMaps[translate(itemType)];
         itemMap.emplace(itemID, instantiated);
     }
 
@@ -82,15 +82,14 @@ static auto extract_groups(
         const auto& type = itemMap.first;
         const auto& map = itemMap.second;
         auto& group = groupMap[type];
-        group.reset(new ContactGroup(
-            nym, contact::internal::translate(section), type, map));
+        group.reset(new ContactGroup(nym, translate(section), type, map));
     }
 
     return groupMap;
 }
 
 struct ContactSection::Imp {
-    const api::Core& api_;
+    const api::Session& api_;
     const VersionNumber version_;
     const std::string nym_;
     const contact::SectionType section_;
@@ -122,14 +121,12 @@ struct ContactSection::Imp {
         groups[groupID].reset(new ContactGroup(nym_, section_, scope));
 
         auto version = proto::RequiredVersion(
-            contact::internal::translate(section_),
-            contact::internal::translate(item->Type()),
-            version_);
+            translate(section_), translate(item->Type()), version_);
 
         return ContactSection(api_, nym_, version, version, section_, groups);
     }
 
-    Imp(const api::Core& api,
+    Imp(const api::Session& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
@@ -163,7 +160,7 @@ struct ContactSection::Imp {
 };
 
 ContactSection::ContactSection(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
@@ -187,7 +184,7 @@ ContactSection::ContactSection(ContactSection&& rhs) noexcept
 }
 
 ContactSection::ContactSection(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
@@ -202,14 +199,14 @@ ContactSection::ContactSection(
           create_group(nym, section, item))
 {
     if (0 == version) {
-        LogOutput(OT_METHOD)(__func__)(": Warning: malformed version. "
-                                       "Setting to ")(parentVersion)(".")
+        LogError()(OT_METHOD)(__func__)(": Warning: malformed version. "
+                                        "Setting to ")(parentVersion)(".")
             .Flush();
     }
 }
 
 ContactSection::ContactSection(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const proto::ContactSection& serialized)
@@ -218,13 +215,13 @@ ContactSection::ContactSection(
           nym,
           serialized.version(),
           parentVersion,
-          contact::internal::translate(serialized.name()),
+          translate(serialized.name()),
           extract_groups(api, nym, parentVersion, serialized))
 {
 }
 
 ContactSection::ContactSection(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const ReadView& serialized)
@@ -297,9 +294,7 @@ auto ContactSection::AddItem(const std::shared_ptr<ContactItem>& item) const
     }
 
     auto version = proto::RequiredVersion(
-        contact::internal::translate(imp_->section_),
-        contact::internal::translate(item->Type()),
-        imp_->version_);
+        translate(imp_->section_), translate(item->Type()), imp_->version_);
 
     return ContactSection(
         imp_->api_, imp_->nym_, version, version, imp_->section_, map);
@@ -386,7 +381,7 @@ auto ContactSection::Serialize(AllocateOutput destination, const bool withIDs)
 {
     proto::ContactData data;
     if (false == SerializeTo(data, withIDs) || data.section_size() != 1) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to serialize the contactsection.")
             .Flush();
         return false;
@@ -406,7 +401,7 @@ auto ContactSection::SerializeTo(
     bool output = true;
     auto& serialized = *section.add_section();
     serialized.set_version(imp_->version_);
-    serialized.set_name(contact::internal::translate(imp_->section_));
+    serialized.set_name(translate(imp_->section_));
 
     for (const auto& it : imp_->groups_) {
         const auto& group = it.second;

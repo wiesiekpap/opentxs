@@ -3,24 +3,23 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CRYPTO_KEY_SYMMETRIC_HPP
-#define OPENTXS_CRYPTO_KEY_SYMMETRIC_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace crypto
@@ -57,7 +56,7 @@ public:
 
     virtual operator bool() const = 0;
 
-    virtual auto api() const -> const api::Core& = 0;
+    virtual auto api() const -> const api::Session& = 0;
 
     /** Decrypt ciphertext using the symmetric key
      *
@@ -126,4 +125,3 @@ private:
 }  // namespace key
 }  // namespace crypto
 }  // namespace opentxs
-#endif

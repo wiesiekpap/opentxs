@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -22,12 +21,14 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -66,10 +67,12 @@ public:
         const ReadView plaintext,
         const PasswordPrompt& reason) noexcept -> bool final;
 
-    Envelope(const api::Core& api) noexcept;
-    Envelope(const api::Core& api, const SerializedType& serialized) noexcept(
+    Envelope(const api::Session& api) noexcept;
+    Envelope(
+        const api::Session& api,
+        const SerializedType& serialized) noexcept(false);
+    Envelope(const api::Session& api, const ReadView& serialized) noexcept(
         false);
-    Envelope(const api::Core& api, const ReadView& serialized) noexcept(false);
 
     ~Envelope() final = default;
 
@@ -99,7 +102,7 @@ private:
     static const WeightMap key_weights_;
     static const Solutions solutions_;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const VersionNumber version_;
     DHMap dh_keys_;
     SessionKeys session_keys_;
@@ -114,14 +117,14 @@ private:
     static auto find_solution(const Nyms& recipients, Solution& map) noexcept
         -> SupportedKeys;
     static auto read_dh(
-        const api::Core& api,
+        const api::Session& api,
         const SerializedType& rhs) noexcept -> DHMap;
     static auto read_sk(
-        const api::Core& api,
+        const api::Session& api,
         const SerializedType& rhs) noexcept -> SessionKeys;
     static auto read_ct(const SerializedType& rhs) noexcept -> Ciphertext;
     static auto set_default_password(
-        const api::Core& api,
+        const api::Session& api,
         PasswordPrompt& password) noexcept -> bool;
     static auto test_solution(
         const SupportedKeys& solution,

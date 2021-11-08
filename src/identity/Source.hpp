@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "Proto.hpp"
+#include "internal/util/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
@@ -19,12 +20,16 @@
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 class Factory;
+}  // namespace session
 }  // namespace api
 
 namespace identity
@@ -75,7 +80,7 @@ private:
 
     static const VersionConversionMap key_to_source_version_;
 
-    const api::Factory& factory_;
+    const api::session::Factory& factory_;
 
     identity::SourceType type_;
     OTAsymmetricKey pubkey_;
@@ -83,11 +88,11 @@ private:
     VersionNumber version_;
 
     static auto deserialize_pubkey(
-        const api::Factory& factory,
+        const api::session::Factory& factory,
         const identity::SourceType type,
         const proto::NymIDSource& serialized) -> OTAsymmetricKey;
     static auto deserialize_paymentcode(
-        const api::Factory& factory,
+        const api::session::Factory& factory,
         const identity::SourceType type,
         const proto::NymIDSource& serialized) -> OTPaymentCode;
     static auto extract_key(
@@ -102,12 +107,14 @@ private:
     auto asData() const -> OTData;
 
     Source(
-        const api::Factory& factory,
+        const api::session::Factory& factory,
         const proto::NymIDSource& serializedSource) noexcept;
     Source(
-        const api::Factory& factory,
+        const api::session::Factory& factory,
         const NymParameters& nymParameters) noexcept(false);
-    Source(const api::Factory& factory, const PaymentCode& source) noexcept;
+    Source(
+        const api::session::Factory& factory,
+        const PaymentCode& source) noexcept;
     Source(const Source& rhs) noexcept;
     Source() = delete;
     Source(Source&&) = delete;

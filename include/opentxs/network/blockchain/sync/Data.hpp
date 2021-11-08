@@ -3,25 +3,24 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_NETWORK_BLOCKCHAIN_SYNC_DATA_HPP
-#define OPENTXS_NETWORK_BLOCKCHAIN_SYNC_DATA_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -51,7 +50,7 @@ public:
     using Position = opentxs::blockchain::block::Position;
 
     auto Blocks() const noexcept -> const SyncData&;
-    auto LastPosition(const api::Core& api) const noexcept -> Position;
+    auto LastPosition(const api::Session& api) const noexcept -> Position;
     auto PreviousCfheader() const noexcept -> ReadView;
     auto State() const noexcept -> const sync::State&;
 
@@ -76,4 +75,3 @@ private:
 }  // namespace blockchain
 }  // namespace network
 }  // namespace opentxs
-#endif

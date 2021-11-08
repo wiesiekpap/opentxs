@@ -3,11 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_CLIENT_UI_HPP
-#define OPENTXS_API_CLIENT_UI_HPP
+#pragma once
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 // IWYU pragma: no_include "opentxs/ui/Blockchains.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -241,4 +241,3 @@ private:
 }  // namespace client
 }  // namespace api
 }  // namespace opentxs
-#endif

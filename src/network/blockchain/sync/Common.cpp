@@ -12,7 +12,6 @@
 #include <boost/move/algo/detail/set_difference.hpp>
 #include <boost/move/algo/move.hpp>
 #include <functional>
-#include <memory>
 
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
 

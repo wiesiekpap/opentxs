@@ -15,7 +15,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -62,7 +62,7 @@ public:
         -> std::shared_future<std::string>;
 
     MailCache(
-        const api::Core& api,
+        const api::Session& api,
         const opentxs::network::zeromq::socket::Publish&
             messageLoaded) noexcept;
 

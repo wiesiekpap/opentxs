@@ -88,4 +88,7 @@ else()
   target_sources(opentxs-ui-qt PRIVATE "no-Qt.cpp")
 endif()
 
+target_include_directories(
+  opentxs-ui-qt SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-qt>)

@@ -11,8 +11,8 @@
 #include <cctype>
 #include <string>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
 #include "ui/qt/DestinationValidator.hpp"
 
 // #define OT_METHOD "opentxs::ui::DestinationValidator::"
@@ -32,7 +32,7 @@ auto DestinationValidator::Imp::strip_invalid(
 }
 
 DestinationValidator::DestinationValidator(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     std::int8_t type,
     const Identifier& account,
     implementation::AccountActivity& parent) noexcept

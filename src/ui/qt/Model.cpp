@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <iterator>
 #include <map>
@@ -23,10 +24,10 @@
 #include <vector>
 
 #include "internal/ui/UI.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::ui::qt::internal::Model::Imp::"
 
@@ -104,7 +105,7 @@ struct Model::Imp {
 
             return const_cast<ui::internal::Row*>(child.pointer_.get());
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return nullptr;
         }
@@ -138,7 +139,7 @@ struct Model::Imp {
 
             return {!root, row, 0, child.pointer_.get()};
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return {};
         }
@@ -157,7 +158,7 @@ struct Model::Imp {
 
             return GetIndex(parent);
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return {};
         }
@@ -180,7 +181,7 @@ struct Model::Imp {
 
             return static_cast<int>(map_.at(ID(row)).children_.size());
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return invalid_index_;
         }
@@ -222,7 +223,7 @@ struct Model::Imp {
         try {
             map_.at(ID(parent)).column_count_ = count;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
         }
     }
     auto SetParent(qt::Model& parent) noexcept -> void
@@ -299,7 +300,7 @@ private:
                 }
             }
 
-            LogOutput(OT_METHOD)("RowData::")(__func__)(
+            LogError()(OT_METHOD)("RowData::")(__func__)(
                 ": insert position for row ")(ID(before))(" not found")
                 .Flush();
             pos = static_cast<std::ptrdiff_t>(children_.size());
@@ -354,9 +355,9 @@ private:
             auto& parent = map_.at(ID(child.parent_));
             parent.Remove(item);
             map_.erase(id);
-            LogTrace(OT_METHOD)(__func__)(": row ")(id)(" deleted").Flush();
+            LogTrace()(OT_METHOD)(__func__)(": row ")(id)(" deleted").Flush();
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what())(" in model ")(
+            LogError()(OT_METHOD)(__func__)(": ")(e.what())(" in model ")(
                 reinterpret_cast<std::uintptr_t>(this))
                 .Flush();
         }
@@ -385,17 +386,17 @@ private:
 
             it->second.pointer_->InitAfterAdd(lock);
             const auto pos = ancestor.AddAfter(after, ptr);
-            LogTrace(OT_METHOD)(__func__)(": row ")(id)(" with parent ")(
+            LogTrace()(OT_METHOD)(__func__)(": row ")(id)(" with parent ")(
                 parentID)(" added to ")(reinterpret_cast<std::uintptr_t>(this))(
                 " at position ")(pos)
                 .Flush();
         } catch (const std::out_of_range&) {
-            LogOutput(OT_METHOD)(__func__)(": parent ")(
+            LogError()(OT_METHOD)(__func__)(": parent ")(
                 parentID)(" does not exist in ")(
                 reinterpret_cast<std::uintptr_t>(this))
                 .Flush();
         } catch (const std::runtime_error& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what())(" in model ")(
+            LogError()(OT_METHOD)(__func__)(": ")(e.what())(" in model ")(
                 reinterpret_cast<std::uintptr_t>(this))
                 .Flush();
         }
@@ -414,7 +415,7 @@ private:
             to.AddAfter(newBefore, row);
             child.parent_ = newParent;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what())(" in model ")(
+            LogError()(OT_METHOD)(__func__)(": ")(e.what())(" in model ")(
                 reinterpret_cast<std::uintptr_t>(this))
                 .Flush();
         }
@@ -437,7 +438,7 @@ private:
 
             return get_column_count(lock, child.parent_);
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return invalid_index_;
         }
@@ -464,8 +465,8 @@ Model::Model(QObject* parent) noexcept
 {
     static const auto wrapperType = qRegisterMetaType<RowWrapper>();
     static const auto pointerType = qRegisterMetaType<ui::internal::Row*>();
-    LogInsane(OT_METHOD)(__func__)(": wrapperType: ")(wrapperType).Flush();
-    LogInsane(OT_METHOD)(__func__)(": pointerType: ")(pointerType).Flush();
+    LogInsane()(OT_METHOD)(__func__)(": wrapperType: ")(wrapperType).Flush();
+    LogInsane()(OT_METHOD)(__func__)(": pointerType: ")(pointerType).Flush();
 }
 
 auto Model::ChangeRow(
@@ -888,7 +889,7 @@ Model::~Model()
 
 namespace opentxs::ui::internal
 {
-auto List::MakeQT(const api::Core& api) noexcept -> ui::qt::internal::Model*
+auto List::MakeQT(const api::Session& api) noexcept -> ui::qt::internal::Model*
 {
     return std::make_unique<ui::qt::internal::Model>(api.QtRootObject())
         .release();

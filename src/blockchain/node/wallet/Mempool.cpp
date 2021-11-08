@@ -14,9 +14,9 @@
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/core/Log.hpp"
 
 namespace opentxs::blockchain::node::wallet
 {

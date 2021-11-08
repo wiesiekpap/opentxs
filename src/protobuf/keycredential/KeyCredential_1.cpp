@@ -13,7 +13,7 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/KeyCredential.pb.h"
-#include "opentxs/protobuf/verify/AsymmetricKey.hpp"
+#include "opentxs/protobuf/verify/AsymmetricKey.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyCredentials.hpp"
 #include "protobuf/Check.hpp"
 

@@ -3,10 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CLIENT_NYMDATA_HPP
-#define OPENTXS_CLIENT_NYMDATA_HPP
+#pragma once
 
 // IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -20,21 +20,25 @@
 #include <string>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Factory;
-
+namespace session
+{
 namespace implementation
 {
 class Wallet;
 }  // namespace implementation
+
+class Factory;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -141,12 +145,12 @@ public:
     ~NymData();
 
 private:
-    friend api::implementation::Wallet;
+    friend api::session::implementation::Wallet;
 
     using Lock = std::unique_lock<std::mutex>;
     using LockedSave = std::function<void(NymData*, Lock&)>;
 
-    const api::Factory& factory_;
+    const api::session::Factory& factory_;
     std::unique_ptr<Lock> object_lock_;
     std::unique_ptr<LockedSave> locked_save_callback_;
 
@@ -160,7 +164,7 @@ private:
     void release();
 
     NymData(
-        const api::Factory& factory,
+        const api::session::Factory& factory,
         std::mutex& objectMutex,
         const std::shared_ptr<identity::Nym>& nym,
         LockedSave save);
@@ -169,4 +173,3 @@ private:
     auto operator=(NymData&&) -> NymData& = delete;
 };
 }  // namespace opentxs
-#endif

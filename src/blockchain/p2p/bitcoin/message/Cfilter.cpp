@@ -20,20 +20,19 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD "opentxs::blockchain::p2p::bitcoin::message::Cfilter::"
 
 namespace opentxs::factory
 {
 auto BitcoinP2PCfilter(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -44,7 +43,7 @@ auto BitcoinP2PCfilter(
     using ReturnType = bitcoin::message::implementation::Cfilter;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -54,7 +53,8 @@ auto BitcoinP2PCfilter(
     auto expectedSize = sizeof(raw);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(": Payload too short (begin)")
+        LogError()("opentxs::factory::")(__func__)(
+            ": Payload too short (begin)")
             .Flush();
 
         return nullptr;
@@ -66,7 +66,7 @@ auto BitcoinP2PCfilter(
     expectedSize += 1;
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Payload too short (compactsize)")
             .Flush();
 
@@ -78,13 +78,13 @@ auto BitcoinP2PCfilter(
         it, expectedSize, size, filterSize);
 
     if (false == haveSize) {
-        LogOutput(__func__)(": CompactSize incomplete").Flush();
+        LogError()(__func__)(": CompactSize incomplete").Flush();
 
         return nullptr;
     }
 
     if ((expectedSize + filterSize) > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Payload too short (filter)")
             .Flush();
 
@@ -109,14 +109,14 @@ auto BitcoinP2PCfilter(
             elementCount,
             Space{start, end});
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
 auto BitcoinP2PCfilter(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const blockchain::filter::Type type,
     const blockchain::block::Hash& hash,
@@ -134,7 +134,7 @@ auto BitcoinP2PCfilter(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Cfilter::Cfilter(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const filter::Type type,
     const block::Hash& hash,
@@ -151,7 +151,7 @@ Cfilter::Cfilter(
 }
 
 Cfilter::Cfilter(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const filter::Type type,
     const block::Hash& hash,

@@ -11,17 +11,15 @@
 
 #include "2_Factory.hpp"
 #include "internal/identity/Identity.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Options.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
@@ -34,6 +32,9 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/SourceType.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Options.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -42,15 +43,15 @@ namespace
 class Test_Nym : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& client_;
+    const ot::api::session::Client& client_;
 #if OT_STORAGE_FS
-    const ot::api::client::Manager& client_fs_;
+    const ot::api::session::Client& client_fs_;
 #endif  // OT_STORAGE_FS
 #if OT_STORAGE_SQLITE
-    const ot::api::client::Manager& client_sqlite_;
+    const ot::api::session::Client& client_sqlite_;
 #endif  // OT_STORAGE_SQLITE
 #if OT_STORAGE_LMDB
-    const ot::api::client::Manager& client_lmdb_;
+    const ot::api::session::Client& client_lmdb_;
 #endif  // OT_STORAGE_LMDB
     const ot::OTPasswordPrompt reason_;
 
@@ -114,7 +115,7 @@ public:
         return true;
     }
 
-    bool test_storage(const ot::api::client::Manager& api)
+    bool test_storage(const ot::api::session::Client& api)
     {
         const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto alias = std::string{"alias"};
@@ -175,23 +176,23 @@ public:
     }
 
     Test_Nym()
-        : client_(dynamic_cast<const ot::api::client::Manager&>(
-              ot::Context().StartClient(0)))
+        : client_(dynamic_cast<const ot::api::session::Client&>(
+              ot::Context().StartClientSession(0)))
 #if OT_STORAGE_FS
-        , client_fs_(dynamic_cast<const ot::api::client::Manager&>(
-              ot::Context().StartClient(
+        , client_fs_(dynamic_cast<const ot::api::session::Client&>(
+              ot::Context().StartClientSession(
                   ot::Options{}.SetStoragePlugin("fs"),
                   1)))
 #endif  // OT_STORAGE_FS
 #if OT_STORAGE_SQLITE
-        , client_sqlite_(dynamic_cast<const ot::api::client::Manager&>(
-              ot::Context().StartClient(
+        , client_sqlite_(dynamic_cast<const ot::api::session::Client&>(
+              ot::Context().StartClientSession(
                   ot::Options{}.SetStoragePlugin("sqlite"),
                   2)))
 #endif  // OT_STORAGE_SQLITE
 #if OT_STORAGE_LMDB
-        , client_lmdb_(dynamic_cast<const ot::api::client::Manager&>(
-              ot::Context().StartClient(
+        , client_lmdb_(dynamic_cast<const ot::api::session::Client&>(
+              ot::Context().StartClientSession(
                   ot::Options{}.SetStoragePlugin("lmdb"),
                   3)))
 #endif  // OT_STORAGE_LMDB

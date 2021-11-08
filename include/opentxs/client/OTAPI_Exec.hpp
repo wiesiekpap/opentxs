@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CLIENT_OTAPI_EXEC_HPP
-#define OPENTXS_CLIENT_OTAPI_EXEC_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -19,6 +18,8 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
@@ -28,11 +29,6 @@ namespace client
 {
 class Activity;
 class Contacts;
-
-namespace implementation
-{
-class Manager;
-}  // namespace implementation
 }  // namespace client
 
 namespace network
@@ -40,7 +36,15 @@ namespace network
 class ZMQ;
 }  // namespace network
 
-class Core;
+namespace session
+{
+namespace implementation
+{
+class Client;
+}  // namespace implementation
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 class OT_API;
@@ -822,9 +826,9 @@ public:
     OPENTXS_NO_EXPORT ~OTAPI_Exec() override = default;
 
 private:
-    friend api::client::implementation::Manager;
+    friend api::session::implementation::Client;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const api::client::Activity& activity_;
     const api::client::Contacts& contacts_;
     const api::network::ZMQ& zeromq_;
@@ -832,7 +836,7 @@ private:
     ContextLockCallback lock_callback_;
 
     OTAPI_Exec(
-        const api::Core& api,
+        const api::Session& api,
         const api::client::Activity& activity,
         const api::client::Contacts& contacts,
         const api::network::ZMQ& zeromq,
@@ -845,4 +849,3 @@ private:
     auto operator=(OTAPI_Exec&&) -> OTAPI_Exec = delete;
 };
 }  // namespace opentxs
-#endif

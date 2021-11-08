@@ -15,21 +15,21 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::Contact::"
@@ -37,7 +37,7 @@
 namespace opentxs::factory
 {
 auto ContactModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactPrimaryID& contactID,
     const SimpleCallback& cb) noexcept -> std::unique_ptr<ui::internal::Contact>
 {
@@ -58,7 +58,7 @@ const std::map<contact::SectionType, int> Contact::sort_keys_{
     {contact::SectionType::Profile, 1}};
 
 Contact::Contact(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const Identifier& contactID,
     const SimpleCallback& cb) noexcept
     : ContactType(api, contactID, cb, false)
@@ -206,7 +206,8 @@ auto Contact::sort_key(const contact::SectionType type) noexcept -> int
 
 auto Contact::startup() noexcept -> void
 {
-    LogVerbose(OT_METHOD)(__func__)(": Loading contact ")(primary_id_).Flush();
+    LogVerbose()(OT_METHOD)(__func__)(": Loading contact ")(primary_id_)
+        .Flush();
     const auto contact = api_.Contacts().Contact(primary_id_);
 
     OT_ASSERT(contact)

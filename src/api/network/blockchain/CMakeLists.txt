@@ -24,7 +24,7 @@ endif()
 target_link_libraries(
   opentxs-api-network-blockchain
   PRIVATE
-    opentxs::messages
+    opentxs-common
     "${OT_ZMQ_TARGET}"
     Boost::headers
 )
@@ -38,5 +38,14 @@ target_link_libraries(
 target_include_directories(
   opentxs-api-network-blockchain SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
+
+if(NOT OT_IWYU)
+  target_precompile_headers(
+    opentxs-api-network-blockchain
+    REUSE_FROM
+    opentxs-common
+  )
+endif()
+
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-network-blockchain>)
 add_dependencies(opentxs-api-network-blockchain generated_code)

@@ -3,19 +3,29 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_CRYPTO_HASH_HPP
-#define OPENTXS_API_CRYPTO_HASH_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
+namespace api
+{
+namespace crypto
+{
+namespace internal
+{
+class Hash;
+}  // namespace internal
+}  // namespace crypto
+}  // namespace api
+
 namespace network
 {
 namespace zeromq
@@ -54,10 +64,12 @@ public:
         const ReadView key,
         const ReadView& data,
         const AllocateOutput digest) const noexcept -> bool = 0;
-    virtual void MurmurHash3_32(
+    OPENTXS_NO_EXPORT virtual auto InternalHash() const noexcept
+        -> const internal::Hash& = 0;
+    virtual auto MurmurHash3_32(
         const std::uint32_t& key,
         const Data& data,
-        std::uint32_t& output) const noexcept = 0;
+        std::uint32_t& output) const noexcept -> void = 0;
     virtual auto PKCS5_PBKDF2_HMAC(
         const Data& input,
         const Data& salt,
@@ -88,6 +100,9 @@ public:
         const std::size_t bytes,
         AllocateOutput writer) const noexcept -> bool = 0;
 
+    OPENTXS_NO_EXPORT virtual auto InternalHash() noexcept
+        -> internal::Hash& = 0;
+
     OPENTXS_NO_EXPORT virtual ~Hash() = default;
 
 protected:
@@ -102,4 +117,3 @@ private:
 }  // namespace crypto
 }  // namespace api
 }  // namespace opentxs
-#endif

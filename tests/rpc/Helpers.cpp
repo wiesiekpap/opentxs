@@ -14,24 +14,21 @@
 #include <utility>
 
 #include "integration/Helpers.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Primitives.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/UI.hpp"
-#include "opentxs/api/server/Manager.hpp"
-#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
@@ -57,6 +54,10 @@
 #include "opentxs/rpc/response/GetAccountActivity.hpp"
 #include "opentxs/rpc/response/GetAccountBalance.hpp"
 #include "opentxs/rpc/response/ListAccounts.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/Helpers.hpp"
 
 namespace ottest
@@ -333,7 +334,7 @@ auto RPC_fixture::Cleanup() noexcept -> void
 }
 
 auto RPC_fixture::CreateNym(
-    const ot::api::Core& api,
+    const ot::api::Session& api,
     const std::string& name,
     const std::string& seed,
     int index) const noexcept -> std::string
@@ -351,8 +352,8 @@ auto RPC_fixture::CreateNym(
 }
 
 auto RPC_fixture::DepositCheques(
-    const ot::api::client::Manager& api,
-    const ot::api::server::Manager& server,
+    const ot::api::session::Client& api,
+    const ot::api::session::Notary& server,
     const std::string& nym) const noexcept -> std::size_t
 {
     const auto nymID = api.Factory().NymID(nym);
@@ -367,14 +368,14 @@ auto RPC_fixture::DepositCheques(
 }
 
 auto RPC_fixture::ImportBip39(
-    const ot::api::Core& api,
+    const ot::api::Session& api,
     const std::string& words) const noexcept -> std::string
 {
     using SeedLang = ot::crypto::Language;
     using SeedStyle = ot::crypto::SeedStyle;
     auto& seeds = seed_map_[api.Instance()];
     const auto reason = api.Factory().PasswordPrompt(__func__);
-    const auto [it, added] = seeds.emplace(api.Seeds().ImportSeed(
+    const auto [it, added] = seeds.emplace(api.Crypto().Seed().ImportSeed(
         ot_.Factory().SecretFromText(words),
         ot_.Factory().SecretFromText(""),
         SeedStyle::BIP39,
@@ -385,8 +386,8 @@ auto RPC_fixture::ImportBip39(
 }
 
 auto RPC_fixture::ImportServerContract(
-    const ot::api::server::Manager& from,
-    const ot::api::client::Manager& to) const noexcept -> bool
+    const ot::api::session::Notary& from,
+    const ot::api::session::Client& to) const noexcept -> bool
 {
     const auto& id = from.ID();
     const auto server = from.Wallet().Server(id);
@@ -409,7 +410,7 @@ auto RPC_fixture::init_maps(int instance) const noexcept -> void
 }
 
 auto RPC_fixture::InitAccountActivityCounter(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const std::string& nym,
     const std::string& account,
     void* counter) const noexcept -> void
@@ -423,8 +424,8 @@ auto RPC_fixture::InitAccountActivityCounter(
 }
 
 auto RPC_fixture::IssueUnit(
-    const ot::api::client::Manager& api,
-    const ot::api::server::Manager& server,
+    const ot::api::session::Client& api,
+    const ot::api::session::Notary& server,
     const std::string& issuer,
     const std::string& shortname,
     const std::string& name,
@@ -474,7 +475,7 @@ auto RPC_fixture::IssueUnit(
 }
 
 auto RPC_fixture::RefreshAccount(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const ot::identifier::Nym& nym,
     const ot::identifier::Server& server) const noexcept -> void
 {
@@ -483,7 +484,7 @@ auto RPC_fixture::RefreshAccount(
 }
 
 auto RPC_fixture::RefreshAccount(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const std::vector<std::string> nyms,
     const ot::identifier::Server& server) const noexcept -> void
 {
@@ -495,8 +496,8 @@ auto RPC_fixture::RefreshAccount(
 }
 
 auto RPC_fixture::RegisterAccount(
-    const ot::api::client::Manager& api,
-    const ot::api::server::Manager& server,
+    const ot::api::session::Client& api,
+    const ot::api::session::Notary& server,
     const std::string& nym,
     const std::string& unit,
     const std::string& label) const noexcept -> std::string
@@ -521,8 +522,8 @@ auto RPC_fixture::RegisterAccount(
 }
 
 auto RPC_fixture::RegisterNym(
-    const ot::api::client::Manager& api,
-    const ot::api::server::Manager& server,
+    const ot::api::session::Client& api,
+    const ot::api::session::Notary& server,
     const std::string& nym) const noexcept -> bool
 {
     const auto nymID = api.Factory().NymID(nym);
@@ -541,8 +542,8 @@ auto RPC_fixture::RegisterNym(
 }
 
 auto RPC_fixture::SendCheque(
-    const ot::api::client::Manager& api,
-    const ot::api::server::Manager& server,
+    const ot::api::session::Client& api,
+    const ot::api::session::Notary& server,
     const std::string& nym,
     const std::string& account,
     const std::string& contact,
@@ -568,8 +569,8 @@ auto RPC_fixture::SendCheque(
 }
 
 auto RPC_fixture::SendTransfer(
-    const ot::api::client::Manager& api,
-    const ot::api::server::Manager& server,
+    const ot::api::session::Client& api,
+    const ot::api::session::Notary& server,
     const std::string& sender,
     const std::string& fromAccount,
     const std::string& toAccount,
@@ -595,8 +596,8 @@ auto RPC_fixture::SendTransfer(
 }
 
 auto RPC_fixture::SetIntroductionServer(
-    const ot::api::client::Manager& on,
-    const ot::api::server::Manager& to) const noexcept -> bool
+    const ot::api::session::Client& on,
+    const ot::api::session::Notary& to) const noexcept -> bool
 {
     const auto& id = to.ID();
 
@@ -609,18 +610,18 @@ auto RPC_fixture::SetIntroductionServer(
 }
 
 auto RPC_fixture::StartClient(int index) const noexcept
-    -> const ot::api::client::Manager&
+    -> const ot::api::session::Client&
 {
-    const auto& out = ot_.StartClient(index);
+    const auto& out = ot_.StartClientSession(index);
     init_maps(out.Instance());
 
     return out;
 }
 
-auto RPC_fixture::StartServer(int index) const noexcept
-    -> const ot::api::server::Manager&
+auto RPC_fixture::StartNotarySession(int index) const noexcept
+    -> const ot::api::session::Notary&
 {
-    const auto& out = ot_.StartServer(index);
+    const auto& out = ot_.StartNotarySession(index);
     const auto instance = out.Instance();
     init_maps(instance);
     auto& nyms = local_nym_map_.at(instance);
@@ -632,7 +633,7 @@ auto RPC_fixture::StartServer(int index) const noexcept
         std::inserter(nyms, nyms.end()),
         [](const auto& in) { return in->str(); });
     auto& seeds = seed_map_.at(instance);
-    seeds.emplace(out.Seeds().DefaultSeed());
+    seeds.emplace(out.Crypto().Seed().DefaultSeed());
 
     return out;
 }

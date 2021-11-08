@@ -14,14 +14,14 @@
 #include <stdexcept>
 
 #include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Subscribe>;
 
@@ -76,15 +76,15 @@ void Subscribe::process_incoming(const Lock& lock, Message& message) noexcept
     try {
         callback_.Process(message);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": Callback exception: ")(e.what())
+        LogError()(OT_METHOD)(__func__)(": Callback exception: ")(e.what())
             .Flush();
 
         for (const auto& endpoint : endpoints_) {
-            LogOutput(OT_METHOD)(__func__)(": connected endpoint: ")(endpoint)
+            LogError()(OT_METHOD)(__func__)(": connected endpoint: ")(endpoint)
                 .Flush();
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Callback exception").Flush();
+        LogError()(OT_METHOD)(__func__)(": Callback exception").Flush();
     }
 }
 

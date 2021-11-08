@@ -33,12 +33,14 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/protobuf/BlockchainDeterministicAccountData.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -123,7 +125,7 @@ protected:
         auto Get(Subchain type) noexcept(false) -> AddressData&;
 
         ChainData(
-            const api::Core& api,
+            const api::Session& api,
             Subchain internalType,
             bool internalContact,
             Subchain externalType,
@@ -180,7 +182,7 @@ protected:
     auto init(const PasswordPrompt& reason) noexcept(false) -> void;
 
     Deterministic(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         const SubaccountType type,
         OTIdentifier&& id,
@@ -188,7 +190,7 @@ protected:
         ChainData&& data,
         Identifier& out) noexcept;
     Deterministic(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         const SubaccountType type,
         const SerializedType& serialized,

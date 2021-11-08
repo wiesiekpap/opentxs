@@ -7,6 +7,11 @@
 
 #ifdef __APPLE__
 #include "TargetConditionals.h"
+
+#ifdef TARGET_OS_MAC
+#include <limits.h>
+#include <mach-o/dyld.h>
+#endif
 #endif
 
 #ifdef _WIN32
@@ -21,58 +26,23 @@
 #include <xstring>
 #endif
 
-#ifdef TARGET_OS_MAC
-#include <limits.h>
-#include <mach-o/dyld.h>
-#endif
-
-#include <cstdint>
-#include <memory>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-using BYTE = std::uint8_t;
-using USHORT = uint16_t;
-
-#ifdef __cplusplus
-}
-#endif
-
-// NOTE: Turns out moneypunct kind of sucks.
-// As a result, for internationalization purposes,
-// these values have to be set here before compilation.
-//
-#define OT_THOUSANDS_SEP ","
-#define OT_DECIMAL_POINT "."
-
-#ifdef _WIN32
-#ifndef NO_OT_PCH
-#else
-#undef NO_OT_PCH
-#endif
-#endif
-
-#ifndef CHAISCRIPT_NO_THREADS
-#define CHAISCRIPT_NO_THREADS
-#define CHAISCRIPT_NO_THREADS_WARNING
-#endif
-
 #ifndef OT_USE_CHAI_STDLIB
 #define OT_USE_CHAI_STDLIB
 #endif
 
-#ifndef OPENTXS_PASSWORD_LEN
-#define OPENTXS_PASSWORD_LEN 128
+#ifndef CHAISCRIPT_NO_THREADS
+#ifndef CHAISCRIPT_NO_THREADS
+#define CHAISCRIPT_NO_THREADS
 #endif
 
-#if defined(unix) || defined(__unix__) || defined(__unix) ||                   \
-    defined(__APPLE__) || defined(linux) || defined(__linux) ||                \
-    defined(__linux__)
-#define PREDEF_PLATFORM_UNIX 1
+#ifndef CHAISCRIPT_NO_THREADS_WARNING
+#define CHAISCRIPT_NO_THREADS_WARNING
+#endif
 #endif
 
-#if defined(debug) || defined(_DEBUG) || defined(DEBUG)
-#define PREDEF_MODE_DEBUG 1
+#if defined(BOOST_ALL_NO_LIB)
+// NOTE some versions of clang in some build configurations will emit a "macro
+// is not used" warning regarding BOOST_ALL_NO_LIB if a target is linked against
+// Boost::headers but some of the translation units in the target do not
+// actually include any boost headers
 #endif

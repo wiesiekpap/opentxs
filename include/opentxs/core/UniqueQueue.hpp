@@ -3,17 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_UNIQUEQUEUE_HPP
-#define OPENTXS_CORE_UNIQUEQUEUE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cassert>
 #include <deque>
 #include <mutex>
 #include <set>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
@@ -44,7 +44,7 @@ public:
             }
         }
 
-        OT_ASSERT(set_.size() == queue_.size())
+        assert(set_.size() == queue_.size());
     }
 
     void CancelByKey(const Key& in) const
@@ -65,7 +65,7 @@ public:
             }
         }
 
-        OT_ASSERT(set_.size() == queue_.size())
+        assert(set_.size() == queue_.size());
     }
 
     auto Copy() const -> std::map<T, Key>
@@ -94,7 +94,7 @@ public:
 
     auto Push(const Key key, const T& in) const -> bool
     {
-        OT_ASSERT(0 < key)
+        assert(0 < key);
 
         Lock lock(lock_);
 
@@ -102,7 +102,7 @@ public:
             queue_.push_front({key, in});
             set_.emplace(in);
 
-            OT_ASSERT(set_.size() == queue_.size())
+            assert(set_.size() == queue_.size());
 
             return true;
         }
@@ -126,7 +126,7 @@ public:
         key = outKey;
         queue_.pop_back();
 
-        OT_ASSERT(set_.size() == queue_.size())
+        assert(set_.size() == queue_.size());
 
         return true;
     }
@@ -156,4 +156,3 @@ private:
     auto operator=(UniqueQueue&&) -> UniqueQueue& = delete;
 };
 }  // namespace opentxs
-#endif

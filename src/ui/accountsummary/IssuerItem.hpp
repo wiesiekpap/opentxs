@@ -16,13 +16,14 @@
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Issuer.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/RowType.hpp"
@@ -34,10 +35,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -66,7 +67,7 @@ struct make_blank;
 
 template <>
 struct make_blank<ui::implementation::IssuerItemRowID> {
-    static auto value(const api::Core& api)
+    static auto value(const api::Session& api)
         -> ui::implementation::IssuerItemRowID
     {
         return {api.Factory().Identifier(), core::UnitType::Error};
@@ -104,7 +105,7 @@ public:
 
     IssuerItem(
         const AccountSummaryInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const AccountSummaryRowID& rowID,
         const AccountSummarySortKey& sortKey,
         CustomData& custom,

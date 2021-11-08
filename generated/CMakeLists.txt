@@ -9,6 +9,12 @@ configure_file(
   @ONLY
 )
 
+configure_file(
+  "Version.cpp.in"
+  "${opentxs_BINARY_DIR}/src/Version.cpp"
+  @ONLY
+)
+
 if(OT_QT_EXPORT)
   file(
     READ

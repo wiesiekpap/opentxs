@@ -15,16 +15,17 @@
 #include <vector>
 
 #include "internal/core/Core.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/request/ListAccounts.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/ListAccounts.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "rpc/RPC.hpp"
 
 namespace opentxs::rpc::implementation
@@ -67,7 +68,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
         };
         const auto byNymBlockchain = [&] {
             auto out = std::set<std::string>{};
-            const auto ids = session.Blockchain().AccountList(nym);
+            const auto ids = session.Crypto().Blockchain().AccountList(nym);
             std::transform(
                 ids.begin(),
                 ids.end(),
@@ -97,7 +98,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
         const auto byServerBlockchain = [&] {
             auto out = std::set<std::string>{};
             const auto chain = blockchain::Chain(session, notary);
-            const auto ids = session.Blockchain().AccountList(chain);
+            const auto ids = session.Crypto().Blockchain().AccountList(chain);
             std::transform(
                 ids.begin(),
                 ids.end(),
@@ -127,7 +128,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
         const auto byUnitBlockchain = [&] {
             auto out = std::set<std::string>{};
             const auto chain = blockchain::Chain(session, unitID);
-            const auto ids = session.Blockchain().AccountList(chain);
+            const auto ids = session.Crypto().Blockchain().AccountList(chain);
             std::transform(
                 ids.begin(),
                 ids.end(),
@@ -199,7 +200,7 @@ auto RPC::list_accounts(const request::Base& base) const noexcept
             std::move(data.begin(), data.end(), std::back_inserter(ids));
         } else {
             const auto otx = session.Storage().AccountList();
-            const auto bc = session.Blockchain().AccountList();
+            const auto bc = session.Crypto().Blockchain().AccountList();
             std::transform(
                 otx.begin(),
                 otx.end(),

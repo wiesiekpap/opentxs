@@ -5,10 +5,10 @@
 
 #include "blockchain/crypto/Account.hpp"  // IWYU pragma: associated
 
-#include "internal/api/Api.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -27,7 +27,7 @@ namespace opentxs::blockchain::crypto::implementation
 template <>
 struct Account::Factory<crypto::HD, proto::HDPath, HDProtocol, PasswordPrompt> {
     static auto get(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         Identifier& id,
         const proto::HDPath& data,
@@ -41,7 +41,7 @@ struct Account::Factory<crypto::HD, proto::HDPath, HDProtocol, PasswordPrompt> {
 template <>
 struct Account::Factory<crypto::HD, proto::HDAccount> {
     static auto get(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         Identifier& id,
         const proto::HDAccount& data) noexcept -> std::unique_ptr<crypto::HD>
@@ -58,7 +58,7 @@ struct Account::Factory<
     proto::HDPath,
     PasswordPrompt> {
     static auto get(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         Identifier& id,
         const api::client::Contacts& contacts,
@@ -84,7 +84,7 @@ struct Account::Factory<
     opentxs::blockchain::block::Txid,
     PasswordPrompt> {
     static auto get(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         Identifier& id,
         const api::client::Contacts& contacts,
@@ -103,7 +103,7 @@ template <>
 struct Account::
     Factory<crypto::PaymentCode, api::client::Contacts, proto::Bip47Channel> {
     static auto get(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         Identifier& id,
         const api::client::Contacts& contacts,
@@ -121,16 +121,16 @@ auto Account::NodeGroup<InterfaceType, PayloadType>::add(
     std::unique_ptr<PayloadType> node) noexcept -> bool
 {
     if (false == bool(node)) {
-        LogOutput("opentxs::blockchain::crypto::implementation::"
-                  "Account::NodeGroup::")(__func__)(": Invalid node")
+        LogError()("opentxs::blockchain::crypto::implementation::"
+                   "Account::NodeGroup::")(__func__)(": Invalid node")
             .Flush();
 
         return false;
     }
 
     if (0 < index_.count(id)) {
-        LogOutput("opentxs::blockchain::crypto::implementation::"
-                  "Account::NodeGroup::")(__func__)(": Index already exists")
+        LogError()("opentxs::blockchain::crypto::implementation::"
+                   "Account::NodeGroup::")(__func__)(": Index already exists")
             .Flush();
 
         return false;

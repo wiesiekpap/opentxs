@@ -10,16 +10,17 @@
 #include <utility>
 
 #include "internal/api/client/Client.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/protobuf/ConsensusEnums.pb.h"
 #include "opentxs/protobuf/RPCEnums.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::rpc::implementation::RPC::"
 
@@ -72,7 +73,7 @@ void RPC::evaluate_register_nym(
 
 template <typename T>
 void RPC::evaluate_transaction_reply(
-    const api::client::Manager& client,
+    const api::session::Client& client,
     const Message& reply,
     T& output,
     const proto::RPCResponseCode code) const

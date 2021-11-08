@@ -15,6 +15,7 @@ extern "C" {
 #include <boost/filesystem.hpp>
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
@@ -35,15 +36,15 @@ extern "C" {
 #include "blockchain/database/common/Sync.hpp"
 #endif  // OPENTXS_BLOCK_STORAGE_ENABLED
 #include "blockchain/database/common/Wallet.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Legacy.hpp"
-#include "opentxs/api/Options.hpp"
+#include "internal/api/Legacy.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/GCS.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 // #define OT_METHOD
@@ -65,7 +66,7 @@ struct Database::Imp {
 
     static const storage::lmdb::TableNames table_names_;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const api::Legacy& legacy_;
     const OTString blockchain_path_;
     const OTString common_path_;
@@ -214,17 +215,17 @@ struct Database::Imp {
 
         if (haveBase) {
             if (haveV1) {
-                LogVerbose(
+                LogVerbose()(
                     "Existing blockchain data directory already updated to v1")
                     .Flush();
             } else {
-                LogOutput("Existing blockchain data directory is v0 and must "
-                          "be purged")
+                LogError()("Existing blockchain data directory is v0 and must "
+                           "be purged")
                     .Flush();
                 fs::remove_all(base);
             }
         } else {
-            LogOutput("Initializing new blockchain data directory").Flush();
+            LogError()("Initializing new blockchain data directory").Flush();
         }
 
         if (false == legacy.BuildFolderPath(output)) {
@@ -279,8 +280,8 @@ struct Database::Imp {
             ->Get();
     }
 
-    Imp(const api::Core& api,
-        const api::client::Blockchain& blockchain,
+    Imp(const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const api::Legacy& legacy,
         const std::string& dataFolder,
         const Options& args) noexcept(false)
@@ -388,8 +389,8 @@ const storage::lmdb::TableNames Database::Imp::table_names_ = [] {
 }();
 
 Database::Database(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const api::Legacy& legacy,
     const std::string& dataFolder,
     const Options& args) noexcept(false)

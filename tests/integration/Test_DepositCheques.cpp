@@ -9,29 +9,29 @@
 #include <string>
 #include <utility>
 
-#include "opentxs/Bytes.hpp"
+#include "internal/api/session/Client.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Shared.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
-#include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -41,6 +41,10 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 using namespace opentxs;
 
@@ -83,8 +87,8 @@ public:
     static OTIdentifier contact_id_issuer_alice_;
     static OTIdentifier contact_id_issuer_bob_;
 
-    static const ot::api::client::Manager* alice_;
-    static const ot::api::client::Manager* bob_;
+    static const ot::api::session::Client* alice_;
+    static const ot::api::session::Client* bob_;
 
     static std::string alice_payment_code_;
     static std::string bob_payment_code_;
@@ -94,17 +98,17 @@ public:
     static OTIdentifier alice_account_id_;
     static OTIdentifier issuer_account_id_;
 
-    const ot::api::client::Manager& alice_client_;
-    const ot::api::client::Manager& bob_client_;
-    const ot::api::server::Manager& server_1_;
-    const ot::api::client::Manager& issuer_client_;
+    const ot::api::session::Client& alice_client_;
+    const ot::api::session::Client& bob_client_;
+    const ot::api::session::Notary& server_1_;
+    const ot::api::session::Client& issuer_client_;
     const OTServerContract server_contract_;
 
     Test_DepositCheques()
-        : alice_client_(Context().StartClient(0))
-        , bob_client_(Context().StartClient(1))
-        , server_1_(Context().StartServer(0))
-        , issuer_client_(Context().StartClient(2))
+        : alice_client_(Context().StartClientSession(0))
+        , bob_client_(Context().StartClientSession(1))
+        , server_1_(Context().StartNotarySession(0))
+        , issuer_client_(Context().StartClientSession(2))
         , server_contract_(server_1_.Wallet().Server(server_1_.ID()))
     {
         if (false == init_) { init(); }
@@ -112,7 +116,7 @@ public:
 
     void import_server_contract(
         const contract::Server& contract,
-        const ot::api::client::Manager& client)
+        const ot::api::session::Client& client)
     {
         auto reason = client.Factory().PasswordPrompt(__func__);
         auto bytes = ot::Space{};
@@ -125,17 +129,18 @@ public:
     void init()
     {
         const_cast<std::string&>(SeedA_) =
-            alice_client_.Exec().Wallet_ImportSeed(
+            alice_client_.InternalClient().Exec().Wallet_ImportSeed(
                 "spike nominee miss inquiry fee nothing belt list other "
                 "daughter leave valley twelve gossip paper",
                 "");
-        const_cast<std::string&>(SeedB_) = bob_client_.Exec().Wallet_ImportSeed(
-            "trim thunder unveil reduce crop cradle zone inquiry "
-            "anchor skate property fringe obey butter text tank drama "
-            "palm guilt pudding laundry stay axis prosper",
-            "");
+        const_cast<std::string&>(SeedB_) =
+            bob_client_.InternalClient().Exec().Wallet_ImportSeed(
+                "trim thunder unveil reduce crop cradle zone inquiry "
+                "anchor skate property fringe obey butter text tank drama "
+                "palm guilt pudding laundry stay axis prosper",
+                "");
         const_cast<std::string&>(SeedC_) =
-            issuer_client_.Exec().Wallet_ImportSeed(
+            issuer_client_.InternalClient().Exec().Wallet_ImportSeed(
                 "abandon abandon abandon abandon abandon abandon abandon "
                 "abandon abandon abandon abandon about",
                 "");
@@ -174,8 +179,8 @@ OTIdentifier Test_DepositCheques::contact_id_bob_issuer_{Identifier::Factory()};
 OTIdentifier Test_DepositCheques::contact_id_issuer_alice_{
     Identifier::Factory()};
 OTIdentifier Test_DepositCheques::contact_id_issuer_bob_{Identifier::Factory()};
-const ot::api::client::Manager* Test_DepositCheques::alice_{nullptr};
-const ot::api::client::Manager* Test_DepositCheques::bob_{nullptr};
+const ot::api::session::Client* Test_DepositCheques::alice_{nullptr};
+const ot::api::session::Client* Test_DepositCheques::bob_{nullptr};
 std::string Test_DepositCheques::alice_payment_code_;
 std::string Test_DepositCheques::bob_payment_code_;
 std::string Test_DepositCheques::issuer_payment_code_;
@@ -412,7 +417,8 @@ TEST_F(Test_DepositCheques, process_inbox_issuer)
     EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, status);
     ASSERT_TRUE(message);
 
-    const auto account = issuer_client_.Wallet().Account(issuer_account_id_);
+    const auto account =
+        issuer_client_.Wallet().Internal().Account(issuer_account_id_);
 
     EXPECT_EQ(-1 * CHEQUE_AMOUNT_1, account.get().GetBalance());
 }

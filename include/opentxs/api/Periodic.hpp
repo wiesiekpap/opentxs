@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_PERIODIC_HPP
-#define OPENTXS_API_PERIODIC_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -32,7 +31,7 @@ public:
         const std::chrono::seconds& last = std::chrono::seconds(0)) const
         -> int = 0;
 
-    virtual ~Periodic() = default;
+    OPENTXS_NO_EXPORT virtual ~Periodic() = default;
 
 protected:
     Periodic() = default;
@@ -45,4 +44,3 @@ private:
 };
 }  // namespace api
 }  // namespace opentxs
-#endif

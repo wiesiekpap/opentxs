@@ -7,6 +7,8 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "blockchain/p2p/peer/Peer.hpp"  // IWYU pragma: associated
 
+#include "internal/util/LogMacros.hpp"
+
 namespace opentxs::blockchain::p2p::implementation
 {
 Peer::Address::Address(std::unique_ptr<internal::Address> address) noexcept

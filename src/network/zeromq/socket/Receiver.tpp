@@ -12,11 +12,13 @@
 #include <mutex>
 #include <thread>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs::network::zeromq::socket::implementation
 {

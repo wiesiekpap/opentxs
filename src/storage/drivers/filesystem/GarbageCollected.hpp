@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "storage/drivers/filesystem/Common.hpp"
 
 namespace opentxs
@@ -22,10 +22,10 @@ namespace network
 class Asio;
 }  // namespace network
 
-namespace storage
+namespace session
 {
 class Storage;
-}  // namespace storage
+}  // namespace session
 
 class Crypto;
 }  // namespace api
@@ -36,7 +36,6 @@ class Config;
 class Plugin;
 }  // namespace storage
 
-class Factory;
 class Flag;
 }  // namespace opentxs
 
@@ -56,15 +55,13 @@ public:
     GarbageCollected(
         const api::Crypto& crypto,
         const api::network::Asio& asio,
-        const api::storage::Storage& storage,
+        const api::session::Storage& storage,
         const storage::Config& config,
         const Flag& bucket);
 
     ~GarbageCollected() final;
 
 private:
-    friend Factory;
-
     auto bucket_name(const bool bucket) const -> std::string;
     auto calculate_path(
         const std::string& key,

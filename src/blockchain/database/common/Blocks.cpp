@@ -13,10 +13,9 @@
 
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
@@ -58,7 +57,7 @@ auto Blocks::Load(const Hash& block) const noexcept -> BlockReader
     lmdb_.Load(table_, block.Bytes(), cb);
 
     if (0 == index.size_) {
-        LogTrace(OT_METHOD)(__func__)(": Block ")(block.asHex())(
+        LogTrace()(OT_METHOD)(__func__)(": Block ")(block.asHex())(
             " not found in index")
             .Flush();
 
@@ -74,7 +73,7 @@ auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
     auto lock = Lock{lock_};
 
     if (0 == bytes) {
-        LogOutput(OT_METHOD)(__func__)(": Block ")(block.asHex())(
+        LogError()(OT_METHOD)(__func__)(": Block ")(block.asHex())(
             " invalid block size")
             .Flush();
 
@@ -96,7 +95,7 @@ auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
         const auto result = lmdb_.Store(table_, block.Bytes(), tsv(index), tx);
 
         if (false == result.first) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed to update index for block ")(block.asHex())
                 .Flush();
 
@@ -109,7 +108,7 @@ auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
     auto view = bulk_.WriteView(tx, index, std::move(cb), bytes);
 
     if (false == view.valid()) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to get write position for block ")(block.asHex())
             .Flush();
 
@@ -117,7 +116,7 @@ auto Blocks::Store(const Hash& block, const std::size_t bytes) const noexcept
     }
 
     if (false == tx.Finalize(true)) {
-        LogOutput(OT_METHOD)(__func__)(": Database error").Flush();
+        LogError()(OT_METHOD)(__func__)(": Database error").Flush();
 
         return {};
     }

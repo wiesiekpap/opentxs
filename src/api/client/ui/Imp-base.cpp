@@ -11,16 +11,16 @@
 #include <memory>
 #include <tuple>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/ui/UI.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/Blockchains.hpp"
 
@@ -29,8 +29,8 @@
 namespace opentxs::api::client
 {
 UI::Imp::Imp(
-    const api::client::Manager& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::session::Client& api,
+    const api::crypto::Blockchain& blockchain,
     const Flag& running) noexcept
     : api_(api)
     , blockchain_(blockchain)

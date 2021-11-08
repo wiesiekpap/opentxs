@@ -29,7 +29,6 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -45,21 +44,19 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -119,8 +116,8 @@ public:
     using Subchain = WalletDatabase::Subchain;
     using SubchainIndex = WalletDatabase::pSubchainIndex;
 
-    const api::Core& api_;
-    const api::client::internal::Blockchain& crypto_;
+    const api::Session& api_;
+    const api::crypto::Blockchain& crypto_;
     const node::internal::Network& node_;
     Accounts& parent_;
     const WalletDatabase& db_;
@@ -201,8 +198,8 @@ protected:
     auto init() noexcept -> void;
 
     SubchainStateData(
-        const api::Core& api,
-        const api::client::internal::Blockchain& crypto,
+        const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         Accounts& parent,
         const WalletDatabase& db,

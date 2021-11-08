@@ -5,17 +5,28 @@
 
 add_library(
   opentxs-util OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/util/Log.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/util/LogMacros.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/util/Exclusive.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/util/Shared.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/util/Types.hpp"
   "Allocator.hpp"
   "AsyncValue.hpp"
   "Backoff.hpp"
   "Blank.hpp"
+  "Bytes.cpp"
   "Container.hpp"
+  "Exclusive.tpp"
   "Gatekeeper.cpp"
   "Gatekeeper.hpp"
   "HDIndex.hpp"
   "JobCounter.cpp"
   "JobCounter.hpp"
   "Latest.hpp"
+  "Log.cpp"
+  "Log.hpp"
+  "Options.cpp"
+  "Options.hpp"
   "Polarity.hpp"
   "Random.cpp"
   "Random.hpp"
@@ -24,12 +35,20 @@ add_library(
   "Signals.cpp"
   "Sodium.cpp"
   "Sodium.hpp"
-  "Thread.hpp"
   "Thread.cpp"
+  "Thread.hpp"
+  "Time.cpp"
   "Work.hpp"
 )
 set(cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Bytes.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Log.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Numbers.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Options.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Pimpl.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/SharedPimpl.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Signals.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Time.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/WorkType.hpp"
 )
 
@@ -53,8 +72,9 @@ target_link_libraries(
 target_link_libraries(
   opentxs
   PUBLIC
-    Boost::iostreams
     Boost::filesystem
+    Boost::iostreams
+    Boost::program_options
     unofficial-sodium::sodium
 )
 

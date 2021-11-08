@@ -13,9 +13,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include "internal/util/LogMacros.hpp"
 #include "network/blockchain/sync/Base.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"
 #include "opentxs/protobuf/BlockchainP2PSync.pb.h"
+#include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::network::blockchain::sync::Base::"
@@ -168,7 +168,7 @@ auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
 auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
 {
     if (MessageType::error == type_) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid type").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid type").Flush();
 
         return false;
     }
@@ -178,7 +178,7 @@ auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
     } else if (0u != out.at(out.size() - 1u).size()) {
         // NOTE supplied message should either be empty or else have header
         // frames followed by an empty delimiter frame.
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         return false;
     }

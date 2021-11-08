@@ -11,10 +11,10 @@
 #include <string>
 
 #include "internal/api/crypto/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #ifdef __APPLE__
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

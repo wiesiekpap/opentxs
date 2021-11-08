@@ -16,25 +16,25 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/BlockchainBlockLocalData.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD "opentxs::blockchain::block::Header::"
 
 namespace opentxs::factory
 {
 auto GenesisBlockHeader(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type type) noexcept
     -> std::unique_ptr<blockchain::block::Header>
 {
@@ -58,7 +58,7 @@ auto GenesisBlockHeader(
         case blockchain::Type::Ethereum_frontier:
         case blockchain::Type::Ethereum_ropsten:
         default: {
-            LogOutput("opentxs::factory::")(__func__)(": Unsupported type (")(
+            LogError()("opentxs::factory::")(__func__)(": Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")
                 .Flush();
 
@@ -71,7 +71,7 @@ auto GenesisBlockHeader(
 namespace opentxs::blockchain::block::implementation
 {
 Header::Header(
-    const api::Core& api,
+    const api::Session& api,
     const VersionNumber version,
     const blockchain::Type type,
     block::pHash&& hash,

@@ -12,11 +12,12 @@
 #endif  // OT_QT
 #include <gtest/gtest.h>
 #include <atomic>
+#include <string>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/ui/BlockchainSelection.hpp"
@@ -37,13 +38,13 @@ class Test_BlockchainSelector : public ::testing::Test
 public:
     using Type = ot::blockchain::Type;
 
-    const ot::api::client::Manager& client_;
+    const ot::api::session::Client& client_;
     const ot::ui::BlockchainSelection& full_;
     const ot::ui::BlockchainSelection& main_;
     const ot::ui::BlockchainSelection& test_;
 
     Test_BlockchainSelector()
-        : client_(ot::Context().StartClient(0))
+        : client_(ot::Context().StartClientSession(0))
         , full_([&]() -> auto& {
             static std::atomic_bool init{true};
             static auto cb =

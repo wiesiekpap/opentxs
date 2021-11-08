@@ -20,7 +20,6 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/Api.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -37,11 +36,10 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
@@ -52,7 +50,7 @@ namespace client
 class Contacts;
 }  // namespace client
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -166,7 +164,7 @@ public:
     }
 
     Account(
-        const api::Core& api,
+        const api::Session& api,
         const api::client::Contacts& contacts,
         const crypto::Wallet& parent,
         const AccountIndex& index,
@@ -249,7 +247,7 @@ private:
         }
 
         NodeGroup(
-            const api::Core& api,
+            const api::Session& api,
             const SubaccountType type,
             Account& parent) noexcept
             : api_(api)
@@ -262,7 +260,7 @@ private:
         }
 
     private:
-        const api::Core& api_;
+        const api::Session& api_;
         const SubaccountType type_;
         Account& parent_;
         mutable std::mutex lock_;
@@ -285,7 +283,8 @@ private:
             if (false == bool(node)) { return false; }
 
             if (0 < index_.count(id)) {
-                LogOutput("Blockchain account ")(id)(" already exists").Flush();
+                LogError()("Blockchain account ")(id)(" already exists")
+                    .Flush();
 
                 return false;
             }
@@ -297,7 +296,7 @@ private:
     template <typename ReturnType, typename... Args>
     struct Factory {
         static auto get(
-            const api::Core& api,
+            const api::Session& api,
             const Account& parent,
             Identifier& id,
             const Args&... args) noexcept -> std::unique_ptr<ReturnType>;
@@ -324,7 +323,7 @@ private:
     using PaymentCodeNodes =
         NodeGroup<PaymentCodeAccounts, crypto::PaymentCode>;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const api::client::Contacts& contacts_;
     const crypto::Wallet& parent_;
     const AccountIndex& account_index_;

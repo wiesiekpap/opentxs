@@ -26,7 +26,7 @@ namespace opentxs
 using ReturnType = contract::unit::implementation::Security;
 
 auto Factory::SecurityContract(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -58,7 +58,7 @@ auto Factory::SecurityContract(
 }
 
 auto Factory::SecurityContract(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::unit::Security>
@@ -85,7 +85,7 @@ auto Factory::SecurityContract(
 namespace opentxs::contract::unit::implementation
 {
 Security::Security(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -100,7 +100,7 @@ Security::Security(
 }
 
 Security::Security(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized)
     : Unit(api, nym, serialized)
@@ -117,7 +117,7 @@ Security::Security(const Security& rhs)
 auto Security::IDVersion(const Lock& lock) const -> proto::UnitDefinition
 {
     auto contract = Unit::IDVersion(lock);
-    contract.set_type(contract::internal::translate(Type()));
+    contract.set_type(translate(Type()));
     auto& security = *contract.mutable_security();
     security.set_version(1);
     security.set_type(proto::EQUITYTYPE_SHARES);

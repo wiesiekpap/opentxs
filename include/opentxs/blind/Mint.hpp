@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLIND_MINT_HPP
-#define OPENTXS_BLIND_MINT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -13,12 +12,16 @@
 
 #if OT_CASH
 #include "opentxs/core/Contract.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 class Wallet;
+}  // namespace session
 }  // namespace api
 
 namespace blind
@@ -66,7 +69,7 @@ public:
         const std::size_t keySize,
         const PasswordPrompt& reason) -> bool = 0;
     virtual void GenerateNewMint(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const std::int32_t nSeries,
         const Time VALID_FROM,
         const Time VALID_TO,
@@ -117,4 +120,3 @@ private:
 }  // namespace blind
 }  // namespace opentxs
 #endif  // OT_CASH
-#endif

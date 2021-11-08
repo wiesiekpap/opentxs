@@ -30,8 +30,6 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -48,21 +46,20 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -220,15 +217,15 @@ public:
         const block::Position& position) const noexcept -> bool;
 
     Wallet(
-        const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const common::Database& common,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain,
         const blockchain::filter::Type filter) noexcept;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     const common::Database& common_;
     const storage::lmdb::LMDB& lmdb_;
     mutable wallet::SubchainData subchains_;

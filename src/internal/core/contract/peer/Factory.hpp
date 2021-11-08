@@ -19,49 +19,49 @@ class Contacts;
 namespace opentxs::factory
 {
 auto PeerObject(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& senderNym,
     const std::string& message) noexcept
     -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerObject(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& senderNym,
     const std::string& payment,
     const bool isPayment) noexcept -> std::unique_ptr<opentxs::PeerObject>;
 #if OT_CASH
 auto PeerObject(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& senderNym,
     const std::shared_ptr<blind::Purse> purse) noexcept
     -> std::unique_ptr<opentxs::PeerObject>;
 #endif
 auto PeerObject(
-    const api::Core& api,
+    const api::Session& api,
     const OTPeerRequest request,
     const OTPeerReply reply,
     const VersionNumber version) noexcept
     -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerObject(
-    const api::Core& api,
+    const api::Session& api,
     const OTPeerRequest request,
     const VersionNumber version) noexcept
     -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerObject(
     const api::client::Contacts& contacts,
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& signerNym,
     const proto::PeerObject& serialized) noexcept
     -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerObject(
     const api::client::Contacts& contacts,
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& recipientNym,
     const opentxs::Armored& encrypted,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<opentxs::PeerObject>;
-auto PeerReply(const api::Core& api) noexcept
+auto PeerReply(const api::Session& api) noexcept
     -> std::unique_ptr<contract::peer::Reply>;
 
-auto PeerRequest(const api::Core& api) noexcept
+auto PeerRequest(const api::Session& api) noexcept
     -> std::unique_ptr<contract::peer::Request>;
 }  // namespace opentxs::factory

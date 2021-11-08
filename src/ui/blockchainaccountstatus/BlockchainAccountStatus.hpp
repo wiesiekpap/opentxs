@@ -16,15 +16,15 @@
 
 #include "core/Worker.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
@@ -34,10 +34,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace blockchain
@@ -78,7 +78,7 @@ public:
     }
 
     BlockchainAccountStatus(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const BlockchainAccountStatusPrimaryID& id,
         const blockchain::Type chain,
         const SimpleCallback& cb) noexcept;

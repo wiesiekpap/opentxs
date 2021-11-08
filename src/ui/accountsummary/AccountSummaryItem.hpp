@@ -11,14 +11,15 @@
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/ui/AccountSummaryItem.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/Row.hpp"
 
 class QVariant;
@@ -27,12 +28,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -74,7 +75,7 @@ public:
 
     AccountSummaryItem(
         const IssuerItemInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const IssuerItemRowID& rowID,
         const IssuerItemSortKey& sortKey,
         CustomData& custom) noexcept;
@@ -88,7 +89,7 @@ private:
     IssuerItemSortKey name_;
     mutable OTUnitDefinition contract_;
 
-    static auto load_unit(const api::Core& api, const Identifier& id)
+    static auto load_unit(const api::Session& api, const Identifier& id)
         -> OTUnitDefinition;
 
     auto qt_data(const int column, const int role, QVariant& out) const noexcept

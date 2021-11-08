@@ -25,7 +25,7 @@ namespace network
 class Blockchain;
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -47,7 +47,7 @@ struct SyncClient {
 
     auto Init(const Blockchain& parent) noexcept -> void;
 
-    SyncClient(const api::Core& api) noexcept;
+    SyncClient(const api::Session& api) noexcept;
 
     ~SyncClient();
 

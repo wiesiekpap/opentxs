@@ -21,20 +21,21 @@
 #include <vector>
 
 #include "2_Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Allocator.hpp"
 #include "util/ByteLiterals.hpp"
 #include "util/Container.hpp"
@@ -88,7 +89,7 @@ auto Bip39::entropy_to_words(
         case 32:
             break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Invalid entropy size: ")(
+            LogError()(OT_METHOD)(__func__)(": Invalid entropy size: ")(
                 bytes.size())
                 .Flush();
 
@@ -103,7 +104,7 @@ auto Bip39::entropy_to_words(
     const auto wordCount = std::size_t{entropyPlusCheckBits / BitsPerWord};
 
     if (0 != (wordCount % ValidMnemonicWordMultiple)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": (0 != (wordCount % ValidMnemonicWordMultiple))")
             .Flush();
 
@@ -111,7 +112,7 @@ auto Bip39::entropy_to_words(
     }
 
     if (0 != (entropyPlusCheckBits % BitsPerWord)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": (0 != (entropyPlusCheckBits % BitsPerWord))")
             .Flush();
 
@@ -125,7 +126,7 @@ auto Bip39::entropy_to_words(
                      opentxs::crypto::HashType::Sha256,
                      bytes,
                      digestOutput->WriteInto())) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Digest(opentxs::crypto::HashType::Sha256...) failed.")
             .Flush();
 
@@ -152,7 +153,7 @@ auto Bip39::entropy_to_words(
                 reinterpret_cast<std::uint8_t&>(indexed_byte), byteIndex);
 
             if (!bExtracted) {
-                LogOutput(OT_METHOD)(__func__)(": (!bExtracted) -- returning")
+                LogError()(OT_METHOD)(__func__)(": (!bExtracted) -- returning")
                     .Flush();
 
                 return false;
@@ -171,14 +172,14 @@ auto Bip39::entropy_to_words(
             const auto& theString = dictionary.at(indexDict);
             mnemonicWords.push_back(theString);
         } catch (...) {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported language").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unsupported language").Flush();
 
             return false;
         }
     }
 
     if (mnemonicWords.size() != ((bitIndex + 1) / BitsPerWord)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": (mnemonicWords.size() != ((bitIndex + 1) / BitsPerWord))")
             .Flush();
 
@@ -330,7 +331,7 @@ auto Bip39::words_to_root_bip39(
 }
 
 auto Bip39::words_to_root_pkt(
-    const api::Core& api,
+    const api::Session& api,
     const Language lang,
     const Secret& words,
     Secret& bip32RootNode,
@@ -339,7 +340,7 @@ auto Bip39::words_to_root_pkt(
     const auto indices = tokenize(lang, words.Bytes());
 
     if (const auto size{indices.size()}; 15u != size) {
-        LogOutput(OT_METHOD)(__func__)(": incorrect number of words: ")(size)
+        LogError()(OT_METHOD)(__func__)(": incorrect number of words: ")(size)
             .Flush();
 
         return false;
@@ -381,7 +382,7 @@ auto Bip39::words_to_root_pkt(
     const auto version = (ent[0] >> 1) & 0x0f;
 
     if (0 != version) {
-        LogOutput(OT_METHOD)(__func__)(": unsupported version: ")(version)
+        LogError()(OT_METHOD)(__func__)(": unsupported version: ")(version)
             .Flush();
 
         return false;
@@ -411,7 +412,7 @@ auto Bip39::words_to_root_pkt(
                 throw std::runtime_error{"checksum failure"};
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -419,7 +420,7 @@ auto Bip39::words_to_root_pkt(
 
     if (encrypted) {
         if (0 == passphrase.size()) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": passphrase required but not provided")
                 .Flush();
 
@@ -429,7 +430,7 @@ auto Bip39::words_to_root_pkt(
         static const auto salt = std::string{"pktwallet seed 0"};
         static constexpr auto keyBytes = std::size_t{19u};
         const auto key = [&] {
-            const auto sKey = api.Symmetric().Key(
+            const auto sKey = api.Crypto().Symmetric().Key(
                 passphrase,
                 salt,
                 32,
@@ -463,7 +464,7 @@ auto Bip39::words_to_root_pkt(
 }
 
 auto Bip39::WordsToSeed(
-    const api::Core& api,
+    const api::Session& api,
     const SeedStyle type,
     const Language lang,
     const Secret& words,
@@ -480,7 +481,7 @@ auto Bip39::WordsToSeed(
             return words_to_root_pkt(api, lang, words, seed, passphrase);
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(": unsupported type").Flush();
+            LogError()(OT_METHOD)(__func__)(": unsupported type").Flush();
 
             return false;
         }

@@ -16,15 +16,14 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 // #define OT_METHOD
 // "opentxs::blockchain::p2p::bitcoin::message::implementation::Getcfilters::"
 namespace opentxs::factory
 {
 auto BitcoinP2PGetcfilters(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -35,7 +34,7 @@ auto BitcoinP2PGetcfilters(
     using ReturnType = bitcoin::message::implementation::Getcfilters;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -45,7 +44,7 @@ auto BitcoinP2PGetcfilters(
     auto expectedSize = sizeof(raw);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(": Payload too short")
+        LogError()("opentxs::factory::")(__func__)(": Payload too short")
             .Flush();
 
         return nullptr;
@@ -64,7 +63,7 @@ auto BitcoinP2PGetcfilters(
 }
 
 auto BitcoinP2PGetcfilters(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const blockchain::filter::Type type,
     const blockchain::block::Height start,
@@ -81,7 +80,7 @@ auto BitcoinP2PGetcfilters(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Getcfilters::Getcfilters(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const filter::Type type,
     const block::Height start,
@@ -95,7 +94,7 @@ Getcfilters::Getcfilters(
 }
 
 Getcfilters::Getcfilters(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const filter::Type type,
     const block::Height start,

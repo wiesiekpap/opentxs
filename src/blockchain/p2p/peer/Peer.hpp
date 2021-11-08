@@ -28,21 +28,24 @@
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Peer.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace boost
 {
@@ -56,7 +59,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -91,7 +94,7 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::blockchain::p2p::implementation
 {
-class Peer : virtual public internal::Peer, public Worker<Peer, api::Core>
+class Peer : virtual public internal::Peer, public Worker<Peer, api::Session>
 {
 public:
     using SendStatus = std::future<bool>;
@@ -125,14 +128,14 @@ public:
         using EndpointData = std::pair<std::string, std::uint16_t>;
 
         static auto TCP(
-            const api::Core& api,
+            const api::Session& api,
             Peer& parent,
             const Flag& running,
             const Address& address,
             const std::size_t headerSize) noexcept
             -> std::unique_ptr<ConnectionManager>;
         static auto TCPIncoming(
-            const api::Core& api,
+            const api::Session& api,
             Peer& parent,
             const Flag& running,
             const Address& address,
@@ -140,14 +143,14 @@ public:
             opentxs::network::asio::Socket&& socket) noexcept
             -> std::unique_ptr<ConnectionManager>;
         static auto ZMQ(
-            const api::Core& api,
+            const api::Session& api,
             Peer& parent,
             const Flag& running,
             const Address& address,
             const std::size_t headerSize) noexcept
             -> std::unique_ptr<ConnectionManager>;
         static auto ZMQIncoming(
-            const api::Core& api,
+            const api::Session& api,
             Peer& parent,
             const Flag& running,
             const Address& address,
@@ -270,7 +273,7 @@ protected:
             }
 
             if (disconnect) {
-                LogVerbose("State transition timeout exceeded.").Flush();
+                LogVerbose()("State transition timeout exceeded.").Flush();
             }
 
             return disconnect;
@@ -359,7 +362,7 @@ protected:
     }
 
     Peer(
-        const api::Core& api,
+        const api::Session& api,
         const node::internal::Config& config,
         const node::internal::Mempool& mempool,
         const node::internal::Network& network,
@@ -373,7 +376,7 @@ protected:
         std::unique_ptr<internal::Address> address) noexcept;
 
 private:
-    friend Worker<Peer, api::Core>;
+    friend Worker<Peer, api::Session>;
 
     struct Activity {
         auto get() const noexcept -> Time;
@@ -410,7 +413,7 @@ private:
     std::shared_future<void> init_;
 
     static auto init_connection_manager(
-        const api::Core& api,
+        const api::Session& api,
         const int id,
         const node::internal::PeerManager& manager,
         Peer& parent,

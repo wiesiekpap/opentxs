@@ -14,19 +14,19 @@
 #include <string>
 
 #include "internal/core/Core.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -112,7 +112,7 @@ public:
 private:
     friend opentxs::Factory;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const Nym_p target_nym_{nullptr};
     const Nym_p signer_nym_{nullptr};
     std::int64_t m_lUsageCredits{-1};
@@ -173,7 +173,7 @@ private:
         const std::string& str_id,
         const Identifier& theInput) -> bool;
 
-    NymFile(const api::Core& core, Nym_p targetNym, Nym_p signerNym);
+    NymFile(const api::Session& core, Nym_p targetNym, Nym_p signerNym);
     NymFile() = delete;
     NymFile(const NymFile&) = delete;
     NymFile(NymFile&&) = delete;

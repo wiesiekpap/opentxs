@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_IDENTITY_TYPES_HPP
-#define OPENTXS_IDENTITY_TYPES_HPP
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -19,4 +18,3 @@ enum class SourceProofType : std::uint8_t;
 enum class SourceType : std::uint8_t;
 }  // namespace identity
 }  // namespace opentxs
-#endif

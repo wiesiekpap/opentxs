@@ -11,29 +11,25 @@
 
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/UI.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/ui/ContactList.hpp"
-#include "opentxs/ui/ContactListItem.hpp"
-#include "opentxs/ui/MessagableList.hpp"
 #include "ui/Helpers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace server
+namespace session
 {
-class Manager;
-}  // namespace server
+class Notary;
+}  // namespace session
 }  // namespace api
 }  // namespace opentxs
 
@@ -47,16 +43,16 @@ Counter contact_list_chris_{};
 Counter messagable_list_chris_{};
 
 struct Test_AddContact : public IntegrationFixture {
-    const ot::api::client::Manager& api_alex_;
-    const ot::api::client::Manager& api_bob_;
-    const ot::api::client::Manager& api_chris_;
-    const ot::api::server::Manager& api_server_1_;
+    const ot::api::session::Client& api_alex_;
+    const ot::api::session::Client& api_bob_;
+    const ot::api::session::Client& api_chris_;
+    const ot::api::session::Notary& api_server_1_;
 
     Test_AddContact()
-        : api_alex_(ot::Context().StartClient(0))
-        , api_bob_(ot::Context().StartClient(1))
-        , api_chris_(ot::Context().StartClient(2))
-        , api_server_1_(ot::Context().StartServer(0))
+        : api_alex_(ot::Context().StartClientSession(0))
+        , api_bob_(ot::Context().StartClientSession(1))
+        , api_chris_(ot::Context().StartClientSession(2))
+        , api_server_1_(ot::Context().StartNotarySession(0))
     {
         const_cast<Server&>(server_1_).init(api_server_1_);
         const_cast<User&>(alex_).init(api_alex_, server_1_);

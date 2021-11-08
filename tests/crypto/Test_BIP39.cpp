@@ -17,14 +17,14 @@
 
 #include "crypto/Bip39.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
@@ -40,6 +40,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -52,54 +53,54 @@ public:
     static constexpr auto lang_{ot::crypto::Language::en};
     static std::set<std::string> generated_seeds_;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;
+    using Languages = std::map<ot::crypto::Language, std::string>;
+    using Strengths = std::map<ot::crypto::SeedStrength, std::string>;
+    using Types = std::map<ot::crypto::SeedStyle, std::string>;
 
-    static auto expected_seed_languages() noexcept -> const
-        std::map<ot::crypto::SeedStyle, ot::api::HDSeed::SupportedLanguages>&
+    static auto expected_seed_languages() noexcept
+        -> const std::map<ot::crypto::SeedStyle, Languages>&
     {
         using Language = ot::crypto::Language;
-        static const auto data = std::
-            map<ot::crypto::SeedStyle, ot::api::HDSeed::SupportedLanguages>{
-                {ot::crypto::SeedStyle::BIP39,
-                 {
-                     {Language::en, "English"},
-                 }},
-                {ot::crypto::SeedStyle::PKT,
-                 {
-                     {Language::en, "English"},
-                 }},
-            };
+        static const auto data = std::map<ot::crypto::SeedStyle, Languages>{
+            {ot::crypto::SeedStyle::BIP39,
+             {
+                 {Language::en, "English"},
+             }},
+            {ot::crypto::SeedStyle::PKT,
+             {
+                 {Language::en, "English"},
+             }},
+        };
 
         return data;
     }
-    static auto expected_seed_strength() noexcept -> const
-        std::map<ot::crypto::SeedStyle, ot::api::HDSeed::SupportedStrengths>&
+    static auto expected_seed_strength() noexcept
+        -> const std::map<ot::crypto::SeedStyle, Strengths>&
     {
         using Style = ot::crypto::SeedStyle;
         using Strength = ot::crypto::SeedStrength;
-        static const auto data = std::
-            map<ot::crypto::SeedStyle, ot::api::HDSeed::SupportedStrengths>{
-                {Style::BIP39,
-                 {
-                     {Strength::Twelve, "12"},
-                     {Strength::Fifteen, "15"},
-                     {Strength::Eighteen, "18"},
-                     {Strength::TwentyOne, "21"},
-                     {Strength::TwentyFour, "24"},
-                 }},
-                {Style::PKT,
-                 {
-                     {Strength::Fifteen, "15"},
-                 }},
-            };
+        static const auto data = std::map<ot::crypto::SeedStyle, Strengths>{
+            {Style::BIP39,
+             {
+                 {Strength::Twelve, "12"},
+                 {Strength::Fifteen, "15"},
+                 {Strength::Eighteen, "18"},
+                 {Strength::TwentyOne, "21"},
+                 {Strength::TwentyFour, "24"},
+             }},
+            {Style::PKT,
+             {
+                 {Strength::Fifteen, "15"},
+             }},
+        };
 
         return data;
     }
-    static auto expected_seed_types() noexcept
-        -> const ot::api::HDSeed::SupportedSeeds&
+    static auto expected_seed_types() noexcept -> const Types&
     {
-        static const auto data = ot::api::HDSeed::SupportedSeeds{
+        static const auto data = Types{
             {ot::crypto::SeedStyle::BIP39, "BIP-39"},
             {ot::crypto::SeedStyle::PKT, "Legacy pktwallet"},
         };
@@ -138,7 +139,7 @@ public:
         -> std::size_t
     {
         const auto fingerprint =
-            api_.Seeds().NewSeed(type_, lang_, count, reason_);
+            api_.Crypto().Seed().NewSeed(type_, lang_, count, reason_);
 
         EXPECT_EQ(generated_seeds_.count(fingerprint), 0);
 
@@ -146,13 +147,13 @@ public:
 
         generated_seeds_.insert(fingerprint);
 
-        const auto words = api_.Seeds().Words(fingerprint, reason_);
+        const auto words = api_.Crypto().Seed().Words(fingerprint, reason_);
 
         return word_count(words);
     }
 
     Test_BIP39()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
         , reason_(api_.Factory().PasswordPrompt(__func__))
     {
     }
@@ -163,7 +164,7 @@ std::set<std::string> Test_BIP39::generated_seeds_{};
 TEST_F(Test_BIP39, seed_types)
 {
     const auto& expected = expected_seed_types();
-    const auto test = api_.Seeds().AllowedSeedTypes();
+    const auto test = api_.Crypto().Seed().AllowedSeedTypes();
 
     EXPECT_EQ(test.size(), expected.size());
 
@@ -179,7 +180,7 @@ TEST_F(Test_BIP39, seed_types)
 TEST_F(Test_BIP39, seed_languages)
 {
     for (const auto& [type, expected] : expected_seed_languages()) {
-        const auto test = api_.Seeds().AllowedLanguages(type);
+        const auto test = api_.Crypto().Seed().AllowedLanguages(type);
 
         EXPECT_EQ(test.size(), expected.size());
 
@@ -196,7 +197,7 @@ TEST_F(Test_BIP39, seed_languages)
 TEST_F(Test_BIP39, seed_strength)
 {
     for (const auto& [type, expected] : expected_seed_strength()) {
-        const auto test = api_.Seeds().AllowedSeedStrength(type);
+        const auto test = api_.Crypto().Seed().AllowedSeedStrength(type);
 
         EXPECT_EQ(test.size(), expected.size());
 
@@ -235,12 +236,12 @@ TEST_F(Test_BIP39, word_count)
 
 TEST_F(Test_BIP39, longest_en)
 {
-    EXPECT_EQ(api_.Seeds().LongestWord(type_, lang_), 8);
+    EXPECT_EQ(api_.Crypto().Seed().LongestWord(type_, lang_), 8);
 }
 
 TEST_F(Test_BIP39, twelve_words)
 {
-    const auto& api = api_.Seeds();
+    const auto& api = api_.Crypto().Seed();
     constexpr auto strength{ot::crypto::SeedStrength::Twelve};
     constexpr auto words{12};
 
@@ -250,7 +251,7 @@ TEST_F(Test_BIP39, twelve_words)
 
 TEST_F(Test_BIP39, fifteen_words)
 {
-    const auto& api = api_.Seeds();
+    const auto& api = api_.Crypto().Seed();
     constexpr auto strength{ot::crypto::SeedStrength::Fifteen};
     constexpr auto words{15};
 
@@ -260,7 +261,7 @@ TEST_F(Test_BIP39, fifteen_words)
 
 TEST_F(Test_BIP39, eighteen_words)
 {
-    const auto& api = api_.Seeds();
+    const auto& api = api_.Crypto().Seed();
     constexpr auto strength{ot::crypto::SeedStrength::Eighteen};
     constexpr auto words{18};
 
@@ -270,7 +271,7 @@ TEST_F(Test_BIP39, eighteen_words)
 
 TEST_F(Test_BIP39, twentyone_words)
 {
-    const auto& api = api_.Seeds();
+    const auto& api = api_.Crypto().Seed();
     constexpr auto strength{ot::crypto::SeedStrength::TwentyOne};
     constexpr auto words{21};
 
@@ -280,7 +281,7 @@ TEST_F(Test_BIP39, twentyone_words)
 
 TEST_F(Test_BIP39, twentyfour_words)
 {
-    const auto& api = api_.Seeds();
+    const auto& api = api_.Crypto().Seed();
     constexpr auto strength{ot::crypto::SeedStrength::TwentyFour};
     constexpr auto words{24};
 
@@ -316,7 +317,8 @@ TEST_F(Test_BIP39, match_a)
         "average", "avocado",  "avoid",    "awake",    "aware",    "away",
         "awesome", "awful",    "awkward",  "axis",
     };
-    const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
+    const auto suggestions =
+        api_.Crypto().Seed().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
 }
@@ -343,7 +345,8 @@ TEST_F(Test_BIP39, match_ar)
         "artefact",
         "artist",
         "artwork"};
-    const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
+    const auto suggestions =
+        api_.Crypto().Seed().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
 }
@@ -353,7 +356,8 @@ TEST_F(Test_BIP39, match_arr)
     const auto test = std::string{"arr"};
     const auto expected =
         std::vector<std::string>{"arrange", "arrest", "arrive", "arrow"};
-    const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
+    const auto suggestions =
+        api_.Crypto().Seed().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
 }
@@ -362,7 +366,8 @@ TEST_F(Test_BIP39, match_arri)
 {
     const auto test = std::string{"arri"};
     const auto expected = std::vector<std::string>{"arrive"};
-    const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
+    const auto suggestions =
+        api_.Crypto().Seed().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
 }
@@ -371,7 +376,8 @@ TEST_F(Test_BIP39, match_arrive)
 {
     const auto test = std::string{"arrive"};
     const auto expected = std::vector<std::string>{"arrive"};
-    const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
+    const auto suggestions =
+        api_.Crypto().Seed().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
 }
@@ -380,7 +386,8 @@ TEST_F(Test_BIP39, match_arrived)
 {
     const auto test = std::string{"arrived"};
     const auto expected = std::vector<std::string>{};
-    const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
+    const auto suggestions =
+        api_.Crypto().Seed().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
 }
@@ -389,7 +396,8 @@ TEST_F(Test_BIP39, match_axe)
 {
     const auto test = std::string{"axe"};
     const auto expected = std::vector<std::string>{};
-    const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
+    const auto suggestions =
+        api_.Crypto().Seed().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
 }
@@ -398,7 +406,8 @@ TEST_F(Test_BIP39, match_empty_string)
 {
     const auto test = std::string{""};
     const auto expected = std::vector<std::string>{};
-    const auto suggestions = api_.Seeds().ValidateWord(type_, lang_, test);
+    const auto suggestions =
+        api_.Crypto().Seed().ValidateWord(type_, lang_, test);
 
     EXPECT_EQ(suggestions, expected);
 }
@@ -408,7 +417,8 @@ TEST_F(Test_BIP39, validate_en_list)
     using Bip39 = opentxs::crypto::implementation::Bip39;
 
     for (const auto* word : Bip39::words_.at(lang_)) {
-        const auto matches = api_.Seeds().ValidateWord(type_, lang_, word);
+        const auto matches =
+            api_.Crypto().Seed().ValidateWord(type_, lang_, word);
 
         EXPECT_EQ(matches.size(), 1);
     }
@@ -434,7 +444,7 @@ TEST_F(Test_BIP39, pkt_seed_import)
         "0ba52306295a4af4548aeea16b2d3422a14f81fefc3a08b77a267e2d4296e83b",
         "ea0ef4bd3597ab55cec5243180d65b9272014241ea6e2a7c895feec147ddef92",
     };
-    const auto seed = api_.Seeds().ImportSeed(
+    const auto seed = api_.Crypto().Seed().ImportSeed(
         api_.Factory().SecretFromText(phrase),
         api_.Factory().SecretFromText(password),
         ot::crypto::SeedStyle::PKT,
@@ -443,7 +453,7 @@ TEST_F(Test_BIP39, pkt_seed_import)
 
     ASSERT_FALSE(seed.empty());
 
-    const auto entropy = api_.Seeds().Bip32Root(seed, reason_);
+    const auto entropy = api_.Crypto().Seed().Bip32Root(seed, reason_);
 
     EXPECT_EQ(entropy, expected_seed_bytes_);
 
@@ -453,7 +463,7 @@ TEST_F(Test_BIP39, pkt_seed_import)
     ASSERT_TRUE(pNym);
 
     const auto& nym = *pNym;
-    const auto accountID = api_.Blockchain().NewHDSubaccount(
+    const auto accountID = api_.Crypto().Blockchain().NewHDSubaccount(
         nym.ID(),
         ot::blockchain::crypto::HDProtocol::BIP_84,
         ot::blockchain::Type::Bitcoin,
@@ -462,7 +472,8 @@ TEST_F(Test_BIP39, pkt_seed_import)
 
     ASSERT_FALSE(accountID->empty());
 
-    const auto& account = api_.Blockchain().HDSubaccount(nym.ID(), accountID);
+    const auto& account =
+        api_.Crypto().Blockchain().HDSubaccount(nym.ID(), accountID);
 
     EXPECT_EQ(account.Standard(), ot::blockchain::crypto::HDProtocol::BIP_84);
 

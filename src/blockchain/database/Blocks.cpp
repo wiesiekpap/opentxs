@@ -17,16 +17,15 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Blocks::"
@@ -40,7 +39,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 }
 
 Blocks::Blocks(
-    const api::Core& api,
+    const api::Session& api,
     const common::Database& common,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::Type type) noexcept
@@ -68,7 +67,7 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
         const auto data = api_.Factory().Data(hex, StringStyle::Hex);
 
         if (data->empty()) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid genesis hex").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid genesis hex").Flush();
 
             return {};
         }
@@ -78,7 +77,7 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
         const auto bytes = common_.BlockLoad(block);
 
         if (false == bytes.valid()) {
-            LogDebug(OT_METHOD)(__func__)(": block ")(block.asHex())(
+            LogDebug()(OT_METHOD)(__func__)(": block ")(block.asHex())(
                 " not found.")
                 .Flush();
 
@@ -105,7 +104,8 @@ auto Blocks::Store(const block::Block& block) const noexcept -> bool
     auto writer = common_.BlockStore(block.ID(), size);
 
     if (false == writer.get().valid(size)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate storage for block")
+        LogError()(OT_METHOD)(__func__)(
+            ": Failed to allocate storage for block")
             .Flush();
 
         return false;
@@ -113,7 +113,7 @@ auto Blocks::Store(const block::Block& block) const noexcept -> bool
 
     if (false ==
         block.Serialize(preallocated(writer.size(), writer.get().data()))) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize block").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize block").Flush();
 
         return false;
     }

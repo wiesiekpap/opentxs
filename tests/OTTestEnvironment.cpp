@@ -7,7 +7,7 @@
 
 #include "Basic.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/api/Options.hpp"
+#include "opentxs/util/Options.hpp"
 
 namespace ottest
 {

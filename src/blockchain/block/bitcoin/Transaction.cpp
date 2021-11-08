@@ -21,15 +21,14 @@
 #include <utility>
 
 #include "core/Amount.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/node/Node.hpp"
-#include "internal/core/Core.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/contact/Contact.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -37,16 +36,17 @@
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
-#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionInput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
+#include "opentxs/protobuf/ContactEnums.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 namespace be = boost::endian;
@@ -59,8 +59,8 @@ namespace opentxs::factory
 using ReturnType = blockchain::block::bitcoin::implementation::Transaction;
 
 auto BitcoinTransaction(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const Time& time,
     const boost::endian::little_int32_buf_t& version,
@@ -112,7 +112,7 @@ auto BitcoinTransaction(
             out.value_ =
                 output.Value().Internal().amount_.convert_to<std::int64_t>();
         } catch (const std::exception& e) {
-            LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+            LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
             return {};
         }
@@ -140,15 +140,15 @@ auto BitcoinTransaction(
             std::vector<blockchain::Type>{chain},
             make_blank<blockchain::block::Position>::value(api));
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto BitcoinTransaction(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const std::size_t position,
     const Time& time,
@@ -256,15 +256,15 @@ auto BitcoinTransaction(
                 }
             }());
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto BitcoinTransaction(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const proto::BlockchainTransaction& in) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>
 {
@@ -273,12 +273,13 @@ auto BitcoinTransaction(
         std::begin(in.chain()),
         std::end(in.chain()),
         std::back_inserter(chains),
-        [](const auto& type) -> auto {
-            return Translate(static_cast<core::UnitType>(type));
+        [](const auto type) -> auto {
+            return UnitToBlockchain(ClaimToUnit(
+                translate(static_cast<proto::ContactItemType>(type))));
         });
 
     if (0 == chains.size()) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid chains").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid chains").Flush();
 
         return {};
     }
@@ -365,7 +366,7 @@ auto BitcoinTransaction(
                     return out;
                 }()});
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -377,7 +378,7 @@ namespace opentxs::blockchain::block::bitcoin::implementation
 const VersionNumber Transaction::default_version_{1};
 
 Transaction::Transaction(
-    const api::Core& api,
+    const api::Session& api,
     const VersionNumber serializeVersion,
     const bool isGeneration,
     const std::int32_t version,
@@ -430,7 +431,7 @@ Transaction::Transaction(const Transaction& rhs) noexcept
 {
 }
 
-auto Transaction::AssociatedLocalNyms(const api::client::Blockchain& blockchain)
+auto Transaction::AssociatedLocalNyms(const api::crypto::Blockchain& blockchain)
     const noexcept -> std::vector<OTNymID>
 {
     auto output = std::vector<OTNymID>{};
@@ -442,7 +443,7 @@ auto Transaction::AssociatedLocalNyms(const api::client::Blockchain& blockchain)
 }
 
 auto Transaction::AssociatedRemoteContacts(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     const api::client::Contacts& contacts,
     const identifier::Nym& nym) const noexcept -> std::vector<OTIdentifier>
 {
@@ -520,11 +521,11 @@ auto Transaction::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = inputs_->ExtractElements(style);
-    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(
+    LogTrace()(OT_METHOD)(__func__)(": extracted ")(output.size())(
         " input elements")
         .Flush();
     auto temp = outputs_->ExtractElements(style);
-    LogTrace(OT_METHOD)(__func__)(": extracted ")(temp.size())(
+    LogTrace()(OT_METHOD)(__func__)(": extracted ")(temp.size())(
         " output elements")
         .Flush();
     output.insert(
@@ -537,7 +538,7 @@ auto Transaction::ExtractElements(const filter::Type style) const noexcept
         output.emplace_back(data, data + txid_->size());
     }
 
-    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(
+    LogTrace()(OT_METHOD)(__func__)(": extracted ")(output.size())(
         " total elements")
         .Flush();
     std::sort(output.begin(), output.end());
@@ -550,13 +551,13 @@ auto Transaction::FindMatches(
     const Patterns& txos,
     const ParsedPatterns& elements) const noexcept -> Matches
 {
-    LogTrace(OT_METHOD)(__func__)(": Verifying ")(
+    LogTrace()(OT_METHOD)(__func__)(": Verifying ")(
         elements.data_.size() + txos.size())(" potential matches in ")(
         inputs_->size())(" inputs for transaction ")(txid_->asHex())
         .Flush();
     auto output = inputs_->FindMatches(txid_->Bytes(), style, txos, elements);
     auto& [inputs, outputs] = output;
-    LogTrace(OT_METHOD)(__func__)(": Verifying ")(
+    LogTrace()(OT_METHOD)(__func__)(": Verifying ")(
         elements.data_.size() + txos.size())(" potential matches in ")(
         inputs_->size())(" output for transaction ")(txid_->asHex())
         .Flush();
@@ -590,7 +591,7 @@ auto Transaction::GetPreimageBTC(
 {
     if (SigHash::All != hashType.Type()) {
         // TODO
-        LogOutput(OT_METHOD)(__func__)(": Mode not supported").Flush();
+        LogError()(OT_METHOD)(__func__)(": Mode not supported").Flush();
 
         return {};
     }
@@ -599,14 +600,14 @@ auto Transaction::GetPreimageBTC(
     copy.cache_.reset_size();
 
     if (false == copy.inputs_->ReplaceScript(index)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to initialize input script")
+        LogError()(OT_METHOD)(__func__)(": Failed to initialize input script")
             .Flush();
 
         return {};
     }
 
     if (hashType.AnyoneCanPay() && (!copy.inputs_->AnyoneCanPay(index))) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to apply AnyoneCanPay flag")
+        LogError()(OT_METHOD)(__func__)(": Failed to apply AnyoneCanPay flag")
             .Flush();
 
         return {};
@@ -628,7 +629,7 @@ auto Transaction::Keys() const noexcept -> std::vector<crypto::Key>
     return out;
 }
 
-auto Transaction::Memo(const api::client::Blockchain& blockchain) const noexcept
+auto Transaction::Memo(const api::crypto::Blockchain& blockchain) const noexcept
     -> std::string
 {
     if (auto memo = cache_.memo(); false == memo.empty()) { return memo; }
@@ -643,24 +644,24 @@ auto Transaction::Memo(const api::client::Blockchain& blockchain) const noexcept
 }
 
 auto Transaction::MergeMetadata(
-    const api::client::Blockchain& api,
+    const api::crypto::Blockchain& api,
     const blockchain::Type chain,
     const internal::Transaction& rhs) noexcept -> void
 {
     if (txid_ != rhs.ID()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong transaction").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong transaction").Flush();
 
         return;
     }
 
     if (false == inputs_->MergeMetadata(api, rhs.Inputs().Internal())) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to merge inputs").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to merge inputs").Flush();
 
         return;
     }
 
     if (false == outputs_->MergeMetadata(rhs.Outputs().Internal())) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to merge outputs").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to merge outputs").Flush();
 
         return;
     }
@@ -669,7 +670,7 @@ auto Transaction::MergeMetadata(
 }
 
 auto Transaction::NetBalanceChange(
-    const api::client::Blockchain& blockchain,
+    const api::crypto::Blockchain& blockchain,
     const identifier::Nym& nym) const noexcept -> opentxs::Amount
 {
     return inputs_->NetBalanceChange(blockchain, nym) +
@@ -708,7 +709,7 @@ auto Transaction::serialize(
     const bool normalize) const noexcept -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return std::nullopt;
     }
@@ -717,7 +718,7 @@ auto Transaction::serialize(
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output bytes")
+        LogError()(OT_METHOD)(__func__)(": Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -729,7 +730,7 @@ auto Transaction::serialize(
     auto it = static_cast<std::byte*>(output.data());
 
     if (remaining < sizeof(version)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to serialize version. Need at least ")(sizeof(version))(
             " bytes but only have ")(remaining)
             .Flush();
@@ -745,7 +746,7 @@ auto Transaction::serialize(
 
     if (isSegwit) {
         if (remaining < sizeof(std::byte)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed to serialize marker byte. Need at least ")(
                 sizeof(std::byte))(" bytes but only have ")(remaining)
                 .Flush();
@@ -758,7 +759,7 @@ auto Transaction::serialize(
         remaining -= sizeof(std::byte);
 
         if (remaining < sizeof(segwit_flag_)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed to serialize segwit flag. Need at least ")(
                 sizeof(segwit_flag_))(" bytes but only have ")(remaining)
                 .Flush();
@@ -779,7 +780,7 @@ auto Transaction::serialize(
         std::advance(it, inputs.value());
         remaining -= inputs.value();
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize inputs").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize inputs").Flush();
 
         return std::nullopt;
     }
@@ -790,7 +791,8 @@ auto Transaction::serialize(
         std::advance(it, outputs.value());
         remaining -= outputs.value();
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize outputs").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize outputs")
+            .Flush();
 
         return std::nullopt;
     }
@@ -802,7 +804,7 @@ auto Transaction::serialize(
                 blockchain::bitcoin::CompactSize{witness.size()};
 
             if (false == pushCount.Encode(preallocated(remaining, it))) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Failed to serialize push count")
                     .Flush();
 
@@ -817,7 +819,7 @@ auto Transaction::serialize(
                     blockchain::bitcoin::CompactSize{push.size()};
 
                 if (false == pushSize.Encode(preallocated(remaining, it))) {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Failed to serialize push size")
                         .Flush();
 
@@ -828,7 +830,7 @@ auto Transaction::serialize(
                 remaining -= pushSize.Size();
 
                 if (remaining < push.size()) {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Failed to serialize witness push. Need at least ")(
                         push.size())(" bytes but only have ")(remaining)
                         .Flush();
@@ -847,7 +849,7 @@ auto Transaction::serialize(
     }
 
     if (remaining != sizeof(lockTime)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to serialize lock time. Need exactly ")(sizeof(lockTime))(
             " bytes but have ")(remaining)
             .Flush();
@@ -868,14 +870,14 @@ auto Transaction::Serialize(const AllocateOutput destination) const noexcept
     return serialize(destination, false);
 }
 
-auto Transaction::Serialize(const api::client::Blockchain& blockchain)
+auto Transaction::Serialize(const api::crypto::Blockchain& blockchain)
     const noexcept -> std::optional<SerializeType>
 {
     auto output = SerializeType{};
     output.set_version(std::max(default_version_, serialize_version_));
 
     for (const auto chain : cache_.chains()) {
-        output.add_chain(core::internal::translate(Translate(chain)));
+        output.add_chain(translate(UnitToClaim(BlockchainToUnit(chain))));
     }
 
     output.set_txid(txid_->str());

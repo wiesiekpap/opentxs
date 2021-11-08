@@ -10,14 +10,13 @@
 #include <irrxml/irrXML.hpp>
 #include <memory>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/util/Tag.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::TransactionStatement::"
 
@@ -72,7 +71,7 @@ TransactionStatement::TransactionStatement(const String& serialized)
                         Contract::LoadEncodedTextField(raw, list);
 
                     if (notary_.empty() || !loaded) {
-                        LogOutput(OT_METHOD)(__func__)(
+                        LogError()(OT_METHOD)(__func__)(
                             ": Error: transactionNums field without value.")
                             .Flush();
                         break;
@@ -87,7 +86,8 @@ TransactionStatement::TransactionStatement(const String& serialized)
                     while (numlist.Peek(number)) {
                         numlist.Pop();
 
-                        LogDebug(OT_METHOD)(__func__)(": Transaction Number ")(
+                        LogDebug()(OT_METHOD)(__func__)(
+                            ": Transaction Number ")(
                             number)(" ready-to-use for NotaryID: ")(notary_)
                             .Flush();
                         available_.insert(number);
@@ -99,7 +99,7 @@ TransactionStatement::TransactionStatement(const String& serialized)
                         Contract::LoadEncodedTextField(raw, list);
 
                     if (notary_.empty() || !loaded) {
-                        LogOutput(OT_METHOD)(__func__)(
+                        LogError()(OT_METHOD)(__func__)(
                             ": Error: issuedNums field without value.")
                             .Flush();
                         break;
@@ -114,20 +114,20 @@ TransactionStatement::TransactionStatement(const String& serialized)
                     while (numlist.Peek(number)) {
                         numlist.Pop();
 
-                        LogDebug(OT_METHOD)(__func__)(
+                        LogDebug()(OT_METHOD)(__func__)(
                             ": Currently liable for issued trans# ")(
                             number)(" at NotaryID: ")(notary_)
                             .Flush();
                         issued_.insert(number);
                     }
                 } else {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Unknown element type in: ")(nodeName)(".")
                         .Flush();
                 }
             } break;
             default: {
-                LogInsane(OT_METHOD)(__func__)(": Unknown XML type in ")(
+                LogInsane()(OT_METHOD)(__func__)(": Unknown XML type in ")(
                     nodeName)
                     .Flush();
                 break;

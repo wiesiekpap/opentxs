@@ -13,6 +13,7 @@
 #include <tuple>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
@@ -75,7 +76,7 @@ auto Credentials::check_existing(const bool incoming, Metadata& metadata) const
 
         isPrivate =
             (crypto::key::asymmetric::Mode::Private ==
-             opentxs::crypto::key::internal::translate(existing->mode()));
+             translate(existing->mode()));
     }
 
     return !isPrivate;
@@ -130,8 +131,7 @@ auto Credentials::Load(
     if (!loaded) { return false; }
 
     isPrivate =
-        (crypto::key::asymmetric::Mode::Private ==
-         opentxs::crypto::key::internal::translate(cred->mode()));
+        (crypto::key::asymmetric::Mode::Private == translate(cred->mode()));
 
     return true;
 }

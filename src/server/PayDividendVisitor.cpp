@@ -10,22 +10,24 @@
 #include <chrono>
 #include <memory>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/AccountVisitor.hpp"
 #include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "server/Server.hpp"
 #include "server/Transactor.hpp"
 
@@ -72,7 +74,7 @@ auto PayDividendVisitor::Trigger(
 
     if (lPayoutAmount <= 0) {
         {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": Nothing to pay, "
                 "since this account owns no shares. (Returning "
                 "true.")
@@ -119,8 +121,8 @@ auto PayDividendVisitor::Trigger(
     // 180 days (6 months).
     // Todo hardcoding.
     TransactionNumber lNewTransactionNumber = 0;
-    auto context =
-        server_.API().Wallet().mutable_ClientContext(theServerNym.ID(), reason);
+    auto context = server_.API().Wallet().Internal().mutable_ClientContext(
+        theServerNym.ID(), reason);
     bool bGotNextTransNum =
         server_.GetTransactor().issueNextTransactionNumberToNym(
             context.get(), lNewTransactionNumber);  // We save the transaction
@@ -190,7 +192,7 @@ auto PayDividendVisitor::Trigger(
         } else {
             const auto strPayoutUnitTypeId = String::Factory(payoutUnitTypeId),
                        strRecipientNymID = String::Factory(RECIPIENT_ID);
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": ERROR failed issuing "
                 "voucher (to send to dividend payout recipient). WAS "
                 "TRYING TO PAY ")(lPayoutAmount.str())(
@@ -260,7 +262,7 @@ auto PayDividendVisitor::Trigger(
                 const auto strPayoutUnitTypeId =
                                String::Factory(payoutUnitTypeId),
                            strSenderNymID = String::Factory(theSenderNymID);
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": ERROR! Failed issuing voucher (to return back to "
                     "the dividend payout initiator, after a failed "
                     "payment attempt to the originally intended "
@@ -275,7 +277,7 @@ auto PayDividendVisitor::Trigger(
     {
         const auto strPayoutUnitTypeId = String::Factory(payoutUnitTypeId),
                    strRecipientNymID = String::Factory(RECIPIENT_ID);
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": ERROR! Failed issuing next transaction number while "
             "trying to send a voucher (while paying dividends). "
             "WAS TRYING TO PAY ")(lPayoutAmount.str())(

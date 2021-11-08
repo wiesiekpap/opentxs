@@ -10,19 +10,20 @@
 #include <memory>
 #include <vector>
 
-#include "internal/api/Api.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
 #include "opentxs/identity/wot/verification/Nym.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -42,7 +43,7 @@ class Nym final : public internal::Nym
 public:
     operator SerializedType() const noexcept final;
 
-    auto API() const noexcept -> const api::Core& final
+    auto API() const noexcept -> const api::Session& final
     {
         return parent_.API();
     }

@@ -13,14 +13,15 @@
 
 #include "integration/Helpers.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/blockchain/FilterType.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -45,13 +46,14 @@
 #include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
 #include "rpc/Helpers.hpp"
 #include "ui/Helpers.hpp"
@@ -388,7 +390,8 @@ TEST_F(Regtest_payment_code, send_to_bob)
     ASSERT_FALSE(txid->empty());
 
     {
-        const auto pTX = client_1_.Blockchain().LoadTransactionBitcoin(txid);
+        const auto pTX =
+            client_1_.Crypto().Blockchain().LoadTransactionBitcoin(txid);
 
         ASSERT_TRUE(pTX);
 
@@ -427,7 +430,7 @@ TEST_F(Regtest_payment_code, send_to_bob)
 TEST_F(Regtest_payment_code, first_outgoing_transaction)
 {
     const auto& api = client_1_;
-    const auto& blockchain = api.Blockchain();
+    const auto& blockchain = api.Crypto().Blockchain();
     const auto& chain = api.Network().Blockchain().GetChain(test_chain_);
     const auto& contact = api.Contacts();
     const auto& me = alice_.nym_id_;
@@ -753,8 +756,8 @@ TEST_F(Regtest_payment_code, bob_txodb_first_unconfirmed_incoming)
     {
         // NOTE normally this would be done when the transaction was first sent
         // but the subaccount returned by ReceivePC() did not exist yet.
-        const auto pTX =
-            client_1_.Blockchain().LoadTransactionBitcoin(transactions_.at(1));
+        const auto pTX = client_1_.Crypto().Blockchain().LoadTransactionBitcoin(
+            transactions_.at(1));
 
         ASSERT_TRUE(pTX);
 
@@ -783,7 +786,7 @@ TEST_F(Regtest_payment_code, confirm_send)
     const auto extra = [&] {
         auto output = std::vector<Transaction>{};
         const auto pTX = output.emplace_back(
-            client_1_.Blockchain().LoadTransactionBitcoin(txid));
+            client_1_.Crypto().Blockchain().LoadTransactionBitcoin(txid));
 
         OT_ASSERT(pTX);
 
@@ -961,7 +964,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
 
     const auto& tree =
-        client_1_.Blockchain().Account(alice_.nym_id_, test_chain_);
+        client_1_.Crypto().Blockchain().Account(alice_.nym_id_, test_chain_);
     const auto& pc = tree.GetPaymentCode();
 
     ASSERT_EQ(pc.size(), 1);
@@ -1078,7 +1081,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_spend_confirmed)
     EXPECT_TRUE(check_account_activity_rpc(bob_, id, expected));
 
     const auto& tree =
-        client_2_.Blockchain().Account(bob_.nym_id_, test_chain_);
+        client_2_.Crypto().Blockchain().Account(bob_.nym_id_, test_chain_);
     const auto& pc = tree.GetPaymentCode();
 
     ASSERT_EQ(pc.size(), 1);
@@ -1146,7 +1149,7 @@ TEST_F(Regtest_payment_code, bob_account_list_first_spend_confirmed)
 TEST_F(Regtest_payment_code, bob_first_incoming_transaction)
 {
     const auto& api = client_2_;
-    const auto& blockchain = api.Blockchain();
+    const auto& blockchain = api.Crypto().Blockchain();
     const auto& contact = api.Contacts();
     const auto& me = bob_.nym_id_;
     const auto self = contact.ContactID(me);
@@ -1230,7 +1233,8 @@ TEST_F(Regtest_payment_code, send_to_bob_again)
     ASSERT_FALSE(txid->empty());
 
     {
-        const auto pTX = client_1_.Blockchain().LoadTransactionBitcoin(txid);
+        const auto pTX =
+            client_1_.Crypto().Blockchain().LoadTransactionBitcoin(txid);
 
         ASSERT_TRUE(pTX);
 
@@ -1337,7 +1341,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
     EXPECT_TRUE(check_account_activity_rpc(alice_, id, expected));
 
     const auto& tree =
-        client_1_.Blockchain().Account(alice_.nym_id_, test_chain_);
+        client_1_.Crypto().Blockchain().Account(alice_.nym_id_, test_chain_);
     const auto& pc = tree.GetPaymentCode();
 
     ASSERT_EQ(pc.size(), 1);
@@ -1452,7 +1456,7 @@ TEST_F(Regtest_payment_code, alice_activity_thread_second_spend_unconfirmed)
 TEST_F(Regtest_payment_code, alice_second_outgoing_transaction)
 {
     const auto& api = client_1_;
-    const auto& blockchain = api.Blockchain();
+    const auto& blockchain = api.Crypto().Blockchain();
     const auto& contact = api.Contacts();
     const auto& me = alice_.nym_id_;
     const auto self = contact.ContactID(me);
@@ -1582,7 +1586,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
     EXPECT_TRUE(check_account_activity_rpc(bob_, id, expected));
 
     const auto& tree =
-        client_2_.Blockchain().Account(bob_.nym_id_, test_chain_);
+        client_2_.Crypto().Blockchain().Account(bob_.nym_id_, test_chain_);
     const auto& pc = tree.GetPaymentCode();
 
     ASSERT_EQ(pc.size(), 1);
@@ -1947,7 +1951,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
     EXPECT_TRUE(check_account_activity_rpc(bob_, id, expected));
 
     const auto& tree =
-        client_2_.Blockchain().Account(bob_.nym_id_, test_chain_);
+        client_2_.Crypto().Blockchain().Account(bob_.nym_id_, test_chain_);
     const auto& pc = tree.GetPaymentCode();
 
     ASSERT_EQ(pc.size(), 1);

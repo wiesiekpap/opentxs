@@ -12,16 +12,16 @@
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/ui/UnitList.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -29,10 +29,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -72,7 +72,7 @@ class UnitList final : public UnitListList
 {
 public:
     UnitList(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
 

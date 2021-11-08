@@ -41,10 +41,8 @@
 
 #include "Basic.hpp"
 #include "integration/Helpers.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Options.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -57,25 +55,24 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Options.hpp"
 #include "ui/Helpers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
-
-namespace server
-{
-class Manager;
-}  // namespace server
+class Client;
+class Notary;
+}  // namespace session
 
 class Context;
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -168,9 +165,9 @@ public:
 
     PeerListener(
         const int clientCount,
-        const ot::api::client::Manager& miner,
-        const ot::api::client::Manager& client1,
-        const ot::api::client::Manager& client2);
+        const ot::api::session::Client& miner,
+        const ot::api::session::Client& client1,
+        const ot::api::session::Client& client2);
 
     ~PeerListener();
 
@@ -189,7 +186,7 @@ public:
 
     auto GetFuture(const Height height) noexcept;
 
-    BlockListener(const ot::api::Core& api) noexcept;
+    BlockListener(const ot::api::Session& api) noexcept;
 
     ~BlockListener();
 
@@ -234,7 +231,7 @@ struct SyncRequestor {
     auto wait(const bool hard = true) noexcept -> bool;
 
     SyncRequestor(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const MinedBlocks& cache) noexcept;
 
     ~SyncRequestor();
@@ -255,7 +252,7 @@ struct SyncSubscriber {
     auto wait(const bool hard = true) noexcept -> bool;
 
     SyncSubscriber(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const MinedBlocks& cache);
 
     ~SyncSubscriber();
@@ -274,7 +271,7 @@ public:
 
     auto GetFuture(const Height height) noexcept -> Future;
 
-    WalletListener(const ot::api::Core& api) noexcept;
+    WalletListener(const ot::api::Session& api) noexcept;
 
     ~WalletListener();
 
@@ -298,7 +295,7 @@ struct ScanListener {
         Subchain subchain,
         Height target) noexcept -> Future;
 
-    ScanListener(const ot::api::Core& api) noexcept;
+    ScanListener(const ot::api::Session& api) noexcept;
 
     ~ScanListener();
 
@@ -383,7 +380,7 @@ public:
 
 protected:
     using Height = b::block::Height;
-    using Transaction = ot::api::Factory::Transaction_p;
+    using Transaction = ot::api::session::Factory::Transaction_p;
     using Transactions = std::deque<ot::blockchain::block::pTxid>;
     using Generator = std::function<Transaction(Height)>;
     using Outpoint = ot::blockchain::block::Outpoint;
@@ -403,9 +400,9 @@ protected:
     const ot::api::Context& ot_;
     const ot::Options client_args_;
     const int client_count_;
-    const ot::api::client::Manager& miner_;
-    const ot::api::client::Manager& client_1_;
-    const ot::api::client::Manager& client_2_;
+    const ot::api::session::Client& miner_;
+    const ot::api::session::Client& client_1_;
+    const ot::api::session::Client& client_2_;
     const b::p2p::Address& address_;
     const PeerListener& connection_;
     const Generator default_;
@@ -425,7 +422,7 @@ protected:
         const std::vector<Transaction>& extra = {}) noexcept -> bool;
     auto TestUTXOs(const Expected& expected, const std::vector<UTXO>& utxos)
         const noexcept -> bool;
-    auto TestWallet(const ot::api::client::Manager& api, const TXOState& state)
+    auto TestWallet(const ot::api::session::Client& api, const TXOState& state)
         const noexcept -> bool;
 
     virtual auto Shutdown() noexcept -> void;
@@ -450,19 +447,21 @@ private:
 
     static auto get_bytes(const Script& script) noexcept
         -> std::optional<ot::ReadView>;
-    static auto init_address(const ot::api::Core& api) noexcept
+    static auto init_address(const ot::api::Session& api) noexcept
         -> const b::p2p::Address&;
-    static auto init_block(const int index, const ot::api::Core& api) noexcept
-        -> BlockListener&;
+    static auto init_block(
+        const int index,
+        const ot::api::Session& api) noexcept -> BlockListener&;
     static auto init_mined() noexcept -> MinedBlocks&;
     static auto init_peer(
         const int clientCount,
-        const ot::api::client::Manager& miner,
-        const ot::api::client::Manager& client1,
-        const ot::api::client::Manager& client2) noexcept
+        const ot::api::session::Client& miner,
+        const ot::api::session::Client& client1,
+        const ot::api::session::Client& client2) noexcept
         -> const PeerListener&;
-    static auto init_wallet(const int index, const ot::api::Core& api) noexcept
-        -> WalletListener&;
+    static auto init_wallet(
+        const int index,
+        const ot::api::Session& api) noexcept -> WalletListener&;
 
     auto compare_outpoints(
         const ot::blockchain::node::Wallet& wallet,
@@ -529,7 +528,7 @@ protected:
     static std::unique_ptr<ScanListener> listener_alice_p_;
     static std::unique_ptr<ScanListener> listener_bob_p_;
 
-    const ot::api::server::Manager& api_server_1_;
+    const ot::api::session::Notary& api_server_1_;
     const ot::identifier::Server& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
     const std::string expected_display_unit_;

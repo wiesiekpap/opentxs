@@ -27,6 +27,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
@@ -45,9 +46,13 @@ namespace api
 namespace client
 {
 class Issuer;
-class Manager;
 class Pair;
 }  // namespace client
+
+namespace session
+{
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -106,7 +111,7 @@ public:
 
     void init() noexcept final;
 
-    Pair(const Flag& running, const api::client::Manager& client);
+    Pair(const Flag& running, const api::session::Client& client);
 
     ~Pair() final { cleanup().get(); }
 
@@ -174,17 +179,17 @@ private:
             const identifier::Nym& localNymID,
             const bool onlyTrusted) const noexcept -> std::set<OTNymID>;
 
-        State(std::mutex& lock, const api::client::Manager& client) noexcept;
+        State(std::mutex& lock, const api::session::Client& client) noexcept;
 
     private:
         std::mutex& lock_;
-        const api::client::Manager& client_;
+        const api::session::Client& client_;
         mutable StateMap state_;
         std::set<OTNymID> issuers_;
     };
 
     const Flag& running_;
-    const api::client::Manager& client_;
+    const api::session::Client& client_;
     mutable State state_;
     std::promise<void> startup_promise_;
     std::shared_future<void> startup_;

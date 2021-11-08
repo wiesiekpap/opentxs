@@ -3,23 +3,22 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_OTX_REQUEST_HPP
-#define OPENTXS_OTX_REQUEST_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace otx
@@ -46,16 +45,16 @@ public:
     static const VersionNumber MaxVersion;
 
     static auto Factory(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p signer,
         const identifier::Server& server,
         const otx::ServerRequestType type,
         const RequestNumber number,
         const PasswordPrompt& reason) -> Pimpl<opentxs::otx::Request>;
     OPENTXS_NO_EXPORT static auto Factory(
-        const api::Core& api,
+        const api::Session& api,
         const proto::ServerRequest serialized) -> Pimpl<opentxs::otx::Request>;
-    static auto Factory(const api::Core& api, const ReadView& view)
+    static auto Factory(const api::Session& api, const ReadView& view)
         -> Pimpl<opentxs::otx::Request>;
 
     virtual auto Initiator() const -> const identifier::Nym& = 0;
@@ -89,4 +88,3 @@ private:
 };
 }  // namespace otx
 }  // namespace opentxs
-#endif

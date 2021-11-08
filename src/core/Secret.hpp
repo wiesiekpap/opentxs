@@ -16,10 +16,9 @@ extern "C" {
 #include <optional>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/Allocator.hpp"
 
 namespace opentxs::implementation

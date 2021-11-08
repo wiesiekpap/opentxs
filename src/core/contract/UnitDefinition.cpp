@@ -12,33 +12,32 @@
 #include <cmath>  // IWYU pragma: keep
 #include <cstdint>
 #include <deque>
-#include <fstream>
 #include <iomanip>
 #include <iterator>
 #include <list>
 #include <memory>
 #include <set>
+#include <sstream>  // IWYU pragma: keep
 #include <utility>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "core/OTStorage.hpp"
-#include "internal/api/Api.hpp"
+#include "internal/api/Legacy.hpp"
+#include "internal/api/session/Session.hpp"
+#include "internal/api/session/Wallet.hpp"
 #include "internal/contact/Contact.hpp"
-#include "internal/core/Core.hpp"
 #include "internal/core/contract/Contract.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Shared.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Legacy.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "internal/util/Shared.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/contact/SectionType.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/AccountVisitor.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -51,6 +50,11 @@
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/protobuf/verify/UnitDefinition.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+
+#define OT_THOUSANDS_SEP ","
+#define OT_DECIMAL_POINT "."
 
 #define OT_METHOD "opentxs::contract::implementation::Unit::"
 
@@ -71,19 +75,19 @@ inline auto separateThousands(
 
 namespace opentxs
 {
-auto Factory::UnitDefinition(const api::Core& api) noexcept
+auto Factory::UnitDefinition(const api::Session& api) noexcept
     -> std::shared_ptr<contract::Unit>
 {
     return std::make_shared<contract::blank::Unit>(api);
 }
 
 auto Factory::UnitDefinition(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::Unit>
 {
-    switch (contract::internal::translate(serialized.type())) {
+    switch (translate(serialized.type())) {
         case contract::UnitType::Currency: {
 
             return CurrencyContract(api, nym, serialized);
@@ -289,7 +293,7 @@ auto Unit::ValidUnits(const VersionNumber version) noexcept
     try {
         auto validunits = proto::AllowedItemTypes().at(
             {implementation::Unit::unit_of_account_version_map_.at(version),
-             contact::internal::translate(contact::SectionType::Contract)});
+             translate(contact::SectionType::Contract)});
 
         std::set<core::UnitType> output;
         std::transform(
@@ -297,7 +301,7 @@ auto Unit::ValidUnits(const VersionNumber version) noexcept
             validunits.end(),
             std::inserter(output, output.end()),
             [](proto::ContactItemType itemtype) -> core::UnitType {
-                return core::internal::translate(itemtype);
+                return ClaimToUnit(translate(itemtype));
             });
 
         return output;
@@ -315,7 +319,7 @@ const std::map<VersionNumber, VersionNumber> Unit::unit_of_account_version_map_{
 const Unit::Locale Unit::locale_{};
 
 Unit::Unit(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -339,7 +343,7 @@ Unit::Unit(
 }
 
 Unit::Unit(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const SerializedType serialized)
     : Signable(
@@ -354,7 +358,7 @@ Unit::Unit(
                     serialized.signature())}
               : Signatures{})
     , primary_unit_symbol_(serialized.symbol())
-    , unit_of_account_(core::internal::translate(serialized.unitofaccount()))
+    , unit_of_account_(ClaimToUnit(translate(serialized.unitofaccount())))
     , primary_unit_name_(serialized.name())
     , short_name_(serialized.shortname())
 {
@@ -376,7 +380,7 @@ auto Unit::AddAccountRecord(
     Lock lock(lock_);
 
     if (theAccount.GetInstrumentDefinitionID() != id_) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Error: theAccount doesn't have the same asset "
             "type ID as *this does.")
             .Flush();
@@ -422,7 +426,7 @@ auto Unit::AddAccountRecord(
     // It exists.
     //
     if (nullptr == pMap) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Error: Failed trying to load or create the account records "
             "file for instrument definition: ")(strInstrumentDefinitionID)(".")
             .Flush();
@@ -453,7 +457,7 @@ auto Unit::AddAccountRecord(
                                                                // never
         // happen.
         {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error: wrong instrument definition found in "
                 "account records "
                 "file. For instrument definition: ")(
@@ -484,7 +488,7 @@ auto Unit::AddAccountRecord(
             strAcctRecordFile->Get(),
             "",
             "")) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed trying to StoreObject, while saving updated "
             "account records file for instrument definition: ")(
             strInstrumentDefinitionID)(" to contain account ID: ")(
@@ -583,7 +587,7 @@ auto Unit::EraseAccountRecord(
     // It exists.
     //
     if (nullptr == pMap) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Error: Failed trying to load or create the account records "
             "file for instrument definition: ")(strInstrumentDefinitionID)(".")
             .Flush();
@@ -616,7 +620,7 @@ auto Unit::EraseAccountRecord(
             strAcctRecordFile->Get(),
             "",
             "")) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed trying to StoreObject, while saving updated "
             "account records file for instrument definition: ")(
             strInstrumentDefinitionID)(" to erase account ID: ")(strAcctID)(".")
@@ -733,7 +737,7 @@ auto Unit::GetID(const Lock& lock) const -> OTIdentifier
     return GetID(api_, IDVersion(lock));
 }
 
-auto Unit::GetID(const api::Core& api, const SerializedType& contract)
+auto Unit::GetID(const api::Session& api, const SerializedType& contract)
     -> OTIdentifier
 {
     return api.Factory().Identifier(contract);
@@ -759,10 +763,10 @@ auto Unit::IDVersion(const Lock& lock) const -> SerializedType
     contract.set_terms(conditions_);
     contract.set_name(primary_unit_name_);
     contract.set_symbol(primary_unit_symbol_);
-    contract.set_type(contract::internal::translate(Type()));
+    contract.set_type(translate(Type()));
 
     if (version_ > 1) {
-        contract.set_unitofaccount(core::internal::translate(unit_of_account_));
+        contract.set_unitofaccount(translate(UnitToClaim(unit_of_account_)));
     }
 
     return contract;
@@ -779,7 +783,8 @@ auto Unit::Serialize(AllocateOutput destination, bool includeNym) const -> bool
 {
     auto serialized = proto::UnitDefinition{};
     if (false == Serialize(serialized, includeNym)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize unit definition.")
+        LogError()(OT_METHOD)(__func__)(
+            ": Failed to serialize unit definition.")
             .Flush();
         return false;
     }
@@ -875,7 +880,8 @@ auto Unit::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to create signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to create signature.")
+            .Flush();
     }
 
     return success;
@@ -890,7 +896,7 @@ auto Unit::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE, true);
 
     if (1 > signatures_.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Missing signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing signature.").Flush();
 
         return false;
     }
@@ -965,26 +971,26 @@ auto Unit::VisitAccountRecords(
 
             if (!strInstrumentDefinitionID->Compare(
                     str_instrument_definition_id.c_str())) {
-                LogOutput(OT_METHOD)(__func__)(": Error: wrong "
-                                               "instrument definition ID (")(
+                LogError()(OT_METHOD)(__func__)(": Error: wrong "
+                                                "instrument definition ID (")(
                     str_instrument_definition_id)(") when expecting: ")(
                     strInstrumentDefinitionID)(".")
                     .Flush();
             } else {
                 const auto& wallet = api_.Wallet();
                 const auto accountID = Identifier::Factory(str_acct_id);
-                auto account = wallet.Account(accountID);
+                auto account = wallet.Internal().Account(accountID);
 
                 if (false == bool(account)) {
-                    LogOutput(OT_METHOD)(__func__)(": Unable to load account ")(
-                        str_acct_id)(".")
+                    LogError()(OT_METHOD)(__func__)(
+                        ": Unable to load account ")(str_acct_id)(".")
                         .Flush();
 
                     continue;
                 }
 
                 if (false == visitor.Trigger(account.get(), reason)) {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Error: Trigger failed for account ")(str_acct_id)
                         .Flush();
                 }

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_OUTPUT_HPP
-#define OPENTXS_BLOCKCHAIN_BLOCK_BITCOIN_OUTPUT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -19,10 +18,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 }  // namespace api
 
 namespace blockchain
@@ -62,7 +61,7 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Output& = 0;
-    virtual auto Note(const api::client::Blockchain& blockchain) const noexcept
+    virtual auto Note(const api::crypto::Blockchain& blockchain) const noexcept
         -> std::string = 0;
     virtual auto Keys() const noexcept -> std::vector<crypto::Key> = 0;
     virtual auto Payee() const noexcept -> ContactID = 0;
@@ -88,4 +87,3 @@ private:
 }  // namespace block
 }  // namespace blockchain
 }  // namespace opentxs
-#endif

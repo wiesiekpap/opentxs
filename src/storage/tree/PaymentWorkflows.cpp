@@ -10,11 +10,11 @@
 #include <tuple>
 #include <type_traits>
 
+#include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/InstrumentRevision.pb.h"
 #include "opentxs/protobuf/PaymentWorkflow.pb.h"
@@ -25,6 +25,7 @@
 #include "opentxs/protobuf/verify/PaymentWorkflow.hpp"
 #include "opentxs/protobuf/verify/StoragePaymentWorkflows.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -122,7 +123,7 @@ void PaymentWorkflows::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to load workflow index file.")
+        LogError()(OT_METHOD)(__func__)(": Failed to load workflow index file.")
             .Flush();
         OT_FAIL
     }
@@ -154,11 +155,7 @@ void PaymentWorkflows::init(const std::string& hash)
         const auto& workflowID = it.workflow();
         const auto& type = it.type();
         const auto& state = it.state();
-        add_state_index(
-            lock,
-            workflowID,
-            api::client::internal::translate(type),
-            api::client::internal::translate(state));
+        add_state_index(lock, workflowID, translate(type), translate(state));
     }
 }
 
@@ -246,7 +243,7 @@ void PaymentWorkflows::reindex(
 auto PaymentWorkflows::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL
     }
 
@@ -320,8 +317,8 @@ auto PaymentWorkflows::serialize() const -> proto::StoragePaymentWorkflows
         auto& newIndex = *serialized.add_types();
         newIndex.set_version(TYPE_VERSION);
         newIndex.set_workflow(workflow);
-        newIndex.set_type(api::client::internal::translate(type));
-        newIndex.set_state(api::client::internal::translate(state));
+        newIndex.set_type(translate(type));
+        newIndex.set_state(translate(state));
     }
 
     for (const auto& archived : archived_) {
@@ -350,18 +347,10 @@ auto PaymentWorkflows::Store(
 
     if (workflow_state_map_.end() == it) {
         add_state_index(
-            lock,
-            id,
-            api::client::internal::translate(data.type()),
-            api::client::internal::translate(data.state()));
+            lock, id, translate(data.type()), translate(data.state()));
     } else {
         auto& [type, state] = it->second;
-        reindex(
-            lock,
-            id,
-            type,
-            api::client::internal::translate(data.state()),
-            state);
+        reindex(lock, id, type, translate(data.state()), state);
     }
 
     for (const auto& account : data.account()) {

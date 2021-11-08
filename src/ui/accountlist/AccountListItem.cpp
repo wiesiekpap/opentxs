@@ -10,11 +10,11 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -26,7 +26,7 @@ namespace opentxs::factory
 {
 auto AccountListItem(
     const ui::implementation::AccountListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::AccountListRowID& rowID,
     const ui::implementation::AccountListSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -42,7 +42,7 @@ namespace opentxs::ui::implementation
 {
 AccountListItem::AccountListItem(
     const AccountListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const AccountListRowID& rowID,
     const AccountListSortKey& sortKey,
     CustomData& custom) noexcept
@@ -75,7 +75,7 @@ auto AccountListItem::DisplayBalance() const noexcept -> std::string
 }
 
 auto AccountListItem::load_server(
-    const api::Core& api,
+    const api::Session& api,
     const identifier::Server& id) -> OTServerContract
 {
     try {
@@ -88,7 +88,7 @@ auto AccountListItem::load_server(
 }
 
 auto AccountListItem::load_unit(
-    const api::Core& api,
+    const api::Session& api,
     const identifier::UnitDefinition& id) -> OTUnitDefinition
 {
     try {

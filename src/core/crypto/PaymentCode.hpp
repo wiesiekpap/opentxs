@@ -15,7 +15,6 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -25,12 +24,14 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace crypto
@@ -327,7 +328,7 @@ public:
         const PasswordPrompt& reason) noexcept -> bool final;
 
     PaymentCode(
-        const api::Core& api,
+        const api::Session& api,
         const std::uint8_t version,
         const bool hasBitmessage,
         const ReadView pubkey,
@@ -347,7 +348,7 @@ private:
     using VersionType = std::uint8_t;
     using Mask = std::array<std::byte, 64>;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const VersionType version_;
     const bool hasBitmessage_;
     const OTData pubkey_;
@@ -362,7 +363,7 @@ private:
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
     static auto calculate_id(
-        const api::Core& api,
+        const api::Session& api,
         const ReadView pubkey,
         const ReadView chaincode) noexcept -> OTNymID;
     static auto effective_version(

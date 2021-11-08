@@ -3,47 +3,45 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-if(OPENSSL_EXPORT)
-  add_subdirectory(openssl)
-endif()
+add_library(opentxs-crypto-library OBJECT "")
+
+add_subdirectory(openssl)
 
 if(PACKETCRYPT_EXPORT)
   add_subdirectory(packetcrypt)
 endif()
 
-if(LIBSECP256K1_EXPORT)
-  add_subdirectory(secp256k1)
-endif()
-
+add_subdirectory(secp256k1)
 add_subdirectory(sodium)
 
-add_library(
-  opentxs-crypto-library OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/crypto/library/Factory.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/crypto/library/Pbkdf2.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/crypto/library/Ripemd160.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/crypto/library/Scrypt.hpp"
-  "trezor/hmac.c"
-  "trezor/hmac.h"
-  "trezor/memzero.c"
-  "trezor/memzero.h"
-  "trezor/options.h"
-  "trezor/pbkdf2.c"
-  "trezor/pbkdf2.h"
-  "trezor/ripemd160.c"
-  "trezor/ripemd160.h"
-  "trezor/sha2.c"
-  "trezor/sha2.h"
-  "AsymmetricProvider.cpp"
-  "AsymmetricProvider.hpp"
-  "AsymmetricProviderNull.hpp"
-  "EcdsaProvider.cpp"
-  "EcdsaProvider.hpp"
-  "HashingProvider.cpp"
-  "Pbkdf2.cpp"
-  "Pbkdf2.hpp"
-  "Ripemd160.cpp"
-  "Ripemd160.hpp"
+target_sources(
+  opentxs-crypto-library
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/library/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/library/Null.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/library/Pbkdf2.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/library/Ripemd160.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/crypto/library/Scrypt.hpp"
+    "trezor/hmac.c"
+    "trezor/hmac.h"
+    "trezor/memzero.c"
+    "trezor/memzero.h"
+    "trezor/options.h"
+    "trezor/pbkdf2.c"
+    "trezor/pbkdf2.h"
+    "trezor/ripemd160.c"
+    "trezor/ripemd160.h"
+    "trezor/sha2.c"
+    "trezor/sha2.h"
+    "AsymmetricProvider.cpp"
+    "AsymmetricProvider.hpp"
+    "EcdsaProvider.cpp"
+    "EcdsaProvider.hpp"
+    "HashingProvider.cpp"
+    "Pbkdf2.cpp"
+    "Pbkdf2.hpp"
+    "Ripemd160.cpp"
+    "Ripemd160.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/library/AsymmetricProvider.hpp"

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <atomic>
+#include <functional>
 #include <future>
 #include <map>
 #include <memory>
@@ -13,6 +14,8 @@
 #include <set>
 #include <string>
 #include <thread>
+#include <thread>
+#include <tuple>
 #include <vector>
 
 #include "api/network/Blockchain.hpp"
@@ -33,13 +36,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
 namespace network
 {
@@ -52,9 +52,13 @@ struct SyncServer;
 class Blockchain;
 }  // namespace network
 
-class Core;
+namespace session
+{
 class Endpoints;
+}  // namespace session
+
 class Legacy;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -156,15 +160,15 @@ struct BlockchainImp final : public Blockchain::Imp {
         const std::string& address) const noexcept -> void final;
 
     auto Init(
-        const api::client::internal::Blockchain& crypto,
+        const api::crypto::Blockchain& crypto,
         const api::Legacy& legacy,
         const std::string& dataFolder,
         const Options& args) noexcept -> void final;
     auto Shutdown() noexcept -> void final;
 
     BlockchainImp(
-        const api::Core& api,
-        const api::Endpoints& endpoints,
+        const api::Session& api,
+        const api::session::Endpoints& endpoints,
         const opentxs::network::zeromq::Context& zmq) noexcept;
 
     ~BlockchainImp() final;
@@ -174,8 +178,8 @@ private:
     using pNode = std::unique_ptr<opentxs::blockchain::node::internal::Network>;
     using Chains = std::vector<Chain>;
 
-    const api::Core& api_;
-    const api::client::internal::Blockchain* crypto_;
+    const api::Session& api_;
+    const api::crypto::Blockchain* crypto_;
     std::unique_ptr<opentxs::blockchain::database::common::Database> db_;
     OTZMQPublishSocket active_peer_updates_;
     OTZMQPublishSocket block_available_;

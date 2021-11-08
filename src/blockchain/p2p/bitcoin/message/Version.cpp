@@ -16,10 +16,10 @@
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 //#define OT_METHOD "
 // opentxs::blockchain::p2p::bitcoin::message::implementation::Version::"
@@ -27,7 +27,7 @@
 namespace opentxs::factory
 {
 auto BitcoinP2PVersion(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion,
     const void* payload,
@@ -38,7 +38,7 @@ auto BitcoinP2PVersion(
     using ReturnType = bitcoin::message::implementation::Version;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -47,7 +47,7 @@ auto BitcoinP2PVersion(
     auto expectedSize = sizeof(ReturnType::BitcoinFormat_1);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for version 1")
             .Flush();
 
@@ -75,7 +75,7 @@ auto BitcoinP2PVersion(
         expectedSize += (1 + sizeof(ReturnType::BitcoinFormat_106));
 
         if (expectedSize > size) {
-            LogOutput("opentxs::factory::")(__func__)(
+            LogError()("opentxs::factory::")(__func__)(
                 ": Size below minimum for version 106")
                 .Flush();
 
@@ -99,7 +99,7 @@ auto BitcoinP2PVersion(
             expectedSize += csBytes;
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__func__)(
+                LogError()("opentxs::factory::")(__func__)(
                     ": CompactSize incomplete")
                     .Flush();
 
@@ -119,7 +119,7 @@ auto BitcoinP2PVersion(
             expectedSize += uaSize;
 
             if (expectedSize > size) {
-                LogOutput("opentxs::factory::")(__func__)(
+                LogError()("opentxs::factory::")(__func__)(
                     ": User agent string incomplete")
                     .Flush();
 
@@ -135,7 +135,7 @@ auto BitcoinP2PVersion(
         expectedSize += sizeof(ReturnType::BitcoinFormat_209);
 
         if (expectedSize > size) {
-            LogOutput("opentxs::factory::")(__func__)(
+            LogError()("opentxs::factory::")(__func__)(
                 ": Required height field is missing")
                 .Flush();
 
@@ -177,7 +177,7 @@ auto BitcoinP2PVersion(
 }
 
 auto BitcoinP2PVersion(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const blockchain::p2p::Network style,
     const std::int32_t version,
@@ -206,7 +206,7 @@ auto BitcoinP2PVersion(
         try {
             local = tcp::endpoint(ip::make_address_v6(localAddress), localPort);
         } catch (...) {
-            LogOutput("opentxs::factory::")(__func__)(
+            LogError()("opentxs::factory::")(__func__)(
                 ": Invalid local address: ")(localAddress)
                 .Flush();
 
@@ -217,7 +217,7 @@ auto BitcoinP2PVersion(
             remote =
                 tcp::endpoint(ip::make_address_v6(remoteAddress), remotePort);
         } catch (...) {
-            LogOutput("opentxs::factory::")(__func__)(
+            LogError()("opentxs::factory::")(__func__)(
                 ": Invalid remote address: ")(remoteAddress)
                 .Flush();
 
@@ -244,7 +244,7 @@ auto BitcoinP2PVersion(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Version::Version(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const bitcoin::ProtocolVersion version,
     const tcp::endpoint localAddress,
@@ -274,7 +274,7 @@ Version::Version(
 }
 
 Version::Version(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const bitcoin::ProtocolVersion version,
     const tcp::endpoint localAddress,

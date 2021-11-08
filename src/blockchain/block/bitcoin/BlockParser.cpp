@@ -17,15 +17,15 @@
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
 auto parse_header(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     const ReadView in,
     ByteIterator& it,
@@ -58,8 +58,8 @@ auto parse_header(
 }
 
 auto parse_transactions(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in,
     const blockchain::block::bitcoin::Header& header,

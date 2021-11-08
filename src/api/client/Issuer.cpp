@@ -11,28 +11,27 @@
 #include <ctime>
 #include <iosfwd>
 #include <memory>
-#include <ostream>
+#include <sstream>  // IWYU pragma: keep
 #include <type_traits>
 
 #include "internal/api/client/Factory.hpp"
-#include "internal/core/Core.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/contact/Contact.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Issuer.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactSection.hpp"  // IWYU pragma: keep
 #include "opentxs/contact/SectionType.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -47,6 +46,8 @@
 #include "opentxs/protobuf/UnitAccountMap.pb.h"
 #include "opentxs/protobuf/verify/Issuer.hpp"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define CURRENT_VERSION 1
 
@@ -55,7 +56,7 @@
 namespace opentxs::factory
 {
 auto Issuer(
-    const api::Wallet& wallet,
+    const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const proto::Issuer& serialized) -> api::client::Issuer*
 {
@@ -63,7 +64,7 @@ auto Issuer(
 }
 
 auto Issuer(
-    const api::Wallet& wallet,
+    const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const identifier::Nym& issuerID) -> api::client::Issuer*
 {
@@ -74,7 +75,7 @@ auto Issuer(
 namespace opentxs::api::client::implementation
 {
 Issuer::Issuer(
-    const api::Wallet& wallet,
+    const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const identifier::Nym& issuerID)
     : wallet_(wallet)
@@ -89,7 +90,7 @@ Issuer::Issuer(
 }
 
 Issuer::Issuer(
-    const api::Wallet& wallet,
+    const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const proto::Issuer& serialized)
     : wallet_(wallet)
@@ -107,7 +108,7 @@ Issuer::Issuer(
         const auto& type = it.type();
         const auto& unitID = it.unitdefinitionid();
         const auto& accountID = it.accountid();
-        account_map_[core::internal::translate(type)].emplace(
+        account_map_[ClaimToUnit(translate(type))].emplace(
             identifier::UnitDefinition::Factory(unitID),
             Identifier::Factory(accountID));
     }
@@ -116,7 +117,7 @@ Issuer::Issuer(
         const auto& type = history.type();
 
         for (const auto& workflow : history.workflow()) {
-            peer_requests_[contract::peer::internal::translate(type)].emplace(
+            peer_requests_[translate(type)].emplace(
                 Identifier::Factory(workflow.requestid()),
                 std::pair<OTIdentifier, bool>(
                     Identifier::Factory(workflow.replyid()), workflow.used()));
@@ -183,7 +184,7 @@ auto Issuer::toString() const -> std::string
                    << proto::TranslateItemType(
                           static_cast<std::uint32_t>(claim.Type()))
                    << ": " << claim.Value() << "\n";
-            const auto accountSet = account_map_.find(core::translate(type));
+            const auto accountSet = account_map_.find(ClaimToUnit(type));
 
             if (account_map_.end() == accountSet) { continue; }
 
@@ -286,7 +287,7 @@ auto Issuer::add_request(
     const auto& notUsed [[maybe_unused]] = it;
 
     if (found) {
-        LogOutput(OT_METHOD)(__func__)(": Request ")(
+        LogError()(OT_METHOD)(__func__)(": Request ")(
             requestID)(" already exists.")
             .Flush();
 
@@ -309,7 +310,7 @@ auto Issuer::AddReply(
     auto& [reply, used] = it->second;
 
     if (false == found) {
-        LogDetail(OT_METHOD)(__func__)(": Request ")(requestID)(" not found.")
+        LogDetail()(OT_METHOD)(__func__)(": Request ")(requestID)(" not found.")
             .Flush();
 
         return add_request(lock, type, requestID, replyID);
@@ -335,7 +336,7 @@ auto Issuer::AddRequest(
 auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
     -> bool
 {
-    LogVerbose(OT_METHOD)(__func__)(
+    LogVerbose()(OT_METHOD)(__func__)(
         ": Searching for initiated bailment requests for unit ")(unitID)
         .Flush();
     Lock lock(lock_);
@@ -344,7 +345,7 @@ auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
         lock,
         contract::peer::PeerRequestType::Bailment,
         RequestStatus::Requested);
-    LogVerbose(OT_METHOD)(__func__)(": Have ")(requests.size())(
+    LogVerbose()(OT_METHOD)(__func__)(": Have ")(requests.size())(
         " initiated requests.")
         .Flush();
 
@@ -353,10 +354,10 @@ auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
         const auto& isUsed [[maybe_unused]] = b;
         std::time_t notUsed{0};
         auto request = proto::PeerRequest{};
-        auto loaded = wallet_.PeerRequest(
+        auto loaded = wallet_.Internal().PeerRequest(
             nym_id_, requestID, StorageBox::SENTPEERREQUEST, notUsed, request);
         if (false == loaded) {
-            loaded = wallet_.PeerRequest(
+            loaded = wallet_.Internal().PeerRequest(
                 nym_id_,
                 requestID,
                 StorageBox::FINISHEDPEERREQUEST,
@@ -371,14 +372,14 @@ auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
             if (unitID == requestType) {
                 ++count;
             } else {
-                LogVerbose(OT_METHOD)(__func__)(": Request ")(
+                LogVerbose()(OT_METHOD)(__func__)(": Request ")(
                     requestID)(" is wrong type (")(request.bailment().unitid())(
                     ")")
                     .Flush();
             }
         } else {
-            LogVerbose(OT_METHOD)(__func__)(": Failed to serialize request: ")(
-                requestID)
+            LogVerbose()(OT_METHOD)(__func__)(
+                ": Failed to serialize request: ")(requestID)
                 .Flush();
         }
     }
@@ -387,7 +388,7 @@ auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
 }
 
 auto Issuer::BailmentInstructions(
-    const api::Core& client,
+    const api::Session& client,
     const identifier::UnitDefinition& unitID,
     const bool onlyUnused) const -> std::vector<Issuer::BailmentDetails>
 {
@@ -402,7 +403,7 @@ auto Issuer::BailmentInstructions(
         std::time_t notUsed{0};
         const auto& notUsed2 [[maybe_unused]] = isUsed;
         auto request = proto::PeerRequest{};
-        auto loaded = wallet_.PeerRequest(
+        auto loaded = wallet_.Internal().PeerRequest(
             nym_id_,
             requestID,
             StorageBox::FINISHEDPEERREQUEST,
@@ -410,7 +411,7 @@ auto Issuer::BailmentInstructions(
             request);
 
         if (false == loaded) {
-            loaded = wallet_.PeerRequest(
+            loaded = wallet_.Internal().PeerRequest(
                 nym_id_,
                 requestID,
                 StorageBox::SENTPEERREQUEST,
@@ -422,17 +423,17 @@ auto Issuer::BailmentInstructions(
             if (request.bailment().unitid() != unitID.str()) { continue; }
 
             auto reply = proto::PeerReply{};
-            auto loadedreply = wallet_.PeerReply(
+            auto loadedreply = wallet_.Internal().PeerReply(
                 nym_id_, replyID, StorageBox::PROCESSEDPEERREPLY, reply);
 
             if (false == loadedreply) {
                 reply = proto::PeerReply{};
-                loaded = wallet_.PeerReply(
+                loaded = wallet_.Internal().PeerReply(
                     nym_id_, replyID, StorageBox::INCOMINGPEERREPLY, reply);
             }
 
             if (false == loadedreply) {
-                LogVerbose(OT_METHOD)(__func__)(
+                LogVerbose()(OT_METHOD)(__func__)(
                     ": Failed to serialize reply: ")(replyID)
                     .Flush();
             } else {
@@ -441,8 +442,8 @@ auto Issuer::BailmentInstructions(
                 output.emplace_back(requestID, bailmentreply);
             }
         } else {
-            LogVerbose(OT_METHOD)(__func__)(": Failed to serialize request: ")(
-                requestID)
+            LogVerbose()(OT_METHOD)(__func__)(
+                ": Failed to serialize request: ")(requestID)
                 .Flush();
         }
     }
@@ -451,11 +452,11 @@ auto Issuer::BailmentInstructions(
 }
 
 auto Issuer::ConnectionInfo(
-    const api::Core& client,
+    const api::Session& client,
     const contract::peer::ConnectionInfoType type) const
     -> std::vector<Issuer::ConnectionDetails>
 {
-    LogVerbose(OT_METHOD)(__func__)(": Searching for type ")(
+    LogVerbose()(OT_METHOD)(__func__)(": Searching for type ")(
         static_cast<std::uint32_t>(type))(
         " connection info requests (which have replies).")
         .Flush();
@@ -465,7 +466,7 @@ auto Issuer::ConnectionInfo(
         lock,
         contract::peer::PeerRequestType::ConnectionInfo,
         RequestStatus::Replied);
-    LogVerbose(OT_METHOD)(__func__)(": Have ")(replies.size())(
+    LogVerbose()(OT_METHOD)(__func__)(": Have ")(replies.size())(
         " total requests.")
         .Flush();
 
@@ -473,7 +474,7 @@ auto Issuer::ConnectionInfo(
         std::time_t notUsed{0};
         const auto& notUsed2 [[maybe_unused]] = isUsed;
         auto request = proto::PeerRequest{};
-        auto loaded = wallet_.PeerRequest(
+        auto loaded = wallet_.Internal().PeerRequest(
             nym_id_,
             requestID,
             StorageBox::FINISHEDPEERREQUEST,
@@ -481,7 +482,7 @@ auto Issuer::ConnectionInfo(
             request);
 
         if (false == loaded) {
-            loaded = wallet_.PeerRequest(
+            loaded = wallet_.Internal().PeerRequest(
                 nym_id_,
                 requestID,
                 StorageBox::SENTPEERREQUEST,
@@ -490,9 +491,8 @@ auto Issuer::ConnectionInfo(
         }
 
         if (loaded) {
-            if (type != contract::peer::internal::translate(
-                            request.connectioninfo().type())) {
-                LogVerbose(OT_METHOD)(__func__)(": Request ")(
+            if (type != translate(request.connectioninfo().type())) {
+                LogVerbose()(OT_METHOD)(__func__)(": Request ")(
                     requestID)(" is wrong type (")(
                     request.connectioninfo().type())(")")
                     .Flush();
@@ -501,12 +501,12 @@ auto Issuer::ConnectionInfo(
             }
 
             auto reply = proto::PeerReply{};
-            auto loadedreply = wallet_.PeerReply(
+            auto loadedreply = wallet_.Internal().PeerReply(
                 nym_id_, replyID, StorageBox::PROCESSEDPEERREPLY, reply);
 
             if (false == loadedreply) {
                 reply = proto::PeerReply{};
-                loadedreply = wallet_.PeerReply(
+                loadedreply = wallet_.Internal().PeerReply(
                     nym_id_, replyID, StorageBox::INCOMINGPEERREPLY, reply);
             }
 
@@ -516,13 +516,13 @@ auto Issuer::ConnectionInfo(
                     client.Factory().ConnectionReply(nym, reply);
                 output.emplace_back(requestID, connectionreply);
             } else {
-                LogVerbose(OT_METHOD)(__func__)(
+                LogVerbose()(OT_METHOD)(__func__)(
                     ": Failed to serialize reply: ")(replyID)
                     .Flush();
             }
         } else {
-            LogVerbose(OT_METHOD)(__func__)(": Failed to serialize request: ")(
-                requestID)
+            LogVerbose()(OT_METHOD)(__func__)(
+                ": Failed to serialize request: ")(requestID)
                 .Flush();
         }
     }
@@ -533,7 +533,7 @@ auto Issuer::ConnectionInfo(
 auto Issuer::ConnectionInfoInitiated(
     const contract::peer::ConnectionInfoType type) const -> bool
 {
-    LogVerbose(OT_METHOD)(__func__)(": Searching for all type ")(
+    LogVerbose()(OT_METHOD)(__func__)(": Searching for all type ")(
         static_cast<std::uint32_t>(type))(" connection info requests.")
         .Flush();
     Lock lock(lock_);
@@ -542,7 +542,7 @@ auto Issuer::ConnectionInfoInitiated(
         lock,
         contract::peer::PeerRequestType::ConnectionInfo,
         RequestStatus::All);
-    LogVerbose(OT_METHOD)(__func__)(": Have ")(requests.size())(
+    LogVerbose()(OT_METHOD)(__func__)(": Have ")(requests.size())(
         " total requests.")
         .Flush();
 
@@ -551,11 +551,11 @@ auto Issuer::ConnectionInfoInitiated(
         const auto& isUsed [[maybe_unused]] = b;
         std::time_t notUsed{0};
         auto request = proto::PeerRequest{};
-        auto loaded = wallet_.PeerRequest(
+        auto loaded = wallet_.Internal().PeerRequest(
             nym_id_, requestID, StorageBox::SENTPEERREQUEST, notUsed, request);
 
         if (false == loaded) {
-            loaded = wallet_.PeerRequest(
+            loaded = wallet_.Internal().PeerRequest(
                 nym_id_,
                 requestID,
                 StorageBox::FINISHEDPEERREQUEST,
@@ -565,18 +565,17 @@ auto Issuer::ConnectionInfoInitiated(
 
         if (loaded) {
 
-            if (type == contract::peer::internal::translate(
-                            request.connectioninfo().type())) {
+            if (type == translate(request.connectioninfo().type())) {
                 ++count;
             } else {
-                LogVerbose(OT_METHOD)(__func__)(": Request ")(
+                LogVerbose()(OT_METHOD)(__func__)(": Request ")(
                     requestID)(" is wrong type (")(
                     request.connectioninfo().type())(")")
                     .Flush();
             }
         } else {
-            LogVerbose(OT_METHOD)(__func__)(": Failed to serialize request: ")(
-                requestID);
+            LogVerbose()(OT_METHOD)(__func__)(
+                ": Failed to serialize request: ")(requestID);
         }
     }
 
@@ -715,7 +714,7 @@ auto Issuer::Serialize(proto::Issuer& output) const -> bool
         for (const auto& [unitID, accountID] : accountSet) {
             auto& map = *output.add_accounts();
             map.set_version(version_);
-            map.set_type(core::internal::translate(type));
+            map.set_type(translate(UnitToClaim(type)));
             map.set_unitdefinitionid(unitID->str());
             map.set_accountid(accountID->str());
         }
@@ -724,7 +723,7 @@ auto Issuer::Serialize(proto::Issuer& output) const -> bool
     for (const auto& [type, work] : peer_requests_) {
         auto& history = *output.add_peerrequests();
         history.set_version(version_);
-        history.set_type(contract::peer::internal::translate(type));
+        history.set_type(translate(type));
 
         for (const auto& [request, data] : work) {
             const auto& [reply, isUsed] = data;

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CONTACT_CONTACTGROUP_HPP
-#define OPENTXS_CONTACT_CONTACTGROUP_HPP
+#pragma once
 
 // IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/contact/SectionType.hpp"
@@ -80,4 +79,3 @@ private:
     auto operator=(ContactGroup&&) -> ContactGroup& = delete;
 };
 }  // namespace opentxs
-#endif

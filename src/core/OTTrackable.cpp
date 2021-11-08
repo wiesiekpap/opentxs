@@ -9,8 +9,8 @@
 
 #include <cstdint>
 
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Instrument.hpp"
 #include "opentxs/core/NumList.hpp"
@@ -18,7 +18,7 @@
 
 namespace opentxs
 {
-OTTrackable::OTTrackable(const api::Core& core)
+OTTrackable::OTTrackable(const api::Session& core)
     : Instrument(core)
     , m_lTransactionNum(0)
     , m_SENDER_ACCT_ID(api_.Factory().Identifier())
@@ -28,7 +28,7 @@ OTTrackable::OTTrackable(const api::Core& core)
 }
 
 OTTrackable::OTTrackable(
-    const api::Core& core,
+    const api::Session& core,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
     : Instrument(core, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
@@ -40,7 +40,7 @@ OTTrackable::OTTrackable(
 }
 
 OTTrackable::OTTrackable(
-    const api::Core& core,
+    const api::Session& core,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const Identifier& ACCT_ID,

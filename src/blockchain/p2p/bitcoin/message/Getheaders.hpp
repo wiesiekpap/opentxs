@@ -23,7 +23,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -65,13 +65,13 @@ public:
     }
 
     Getheaders(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const bitcoin::ProtocolVersionUnsigned version,
         std::vector<block::pHash>&& hashes,
         block::pHash&& stop) noexcept;
     Getheaders(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const bitcoin::ProtocolVersionUnsigned version,
         std::vector<block::pHash>&& hashes,

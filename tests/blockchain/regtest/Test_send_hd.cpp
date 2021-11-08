@@ -12,13 +12,14 @@
 #include <utility>
 
 #include "integration/Helpers.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
@@ -37,13 +38,14 @@
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "rpc/Helpers.hpp"
 #include "ui/Helpers.hpp"
 
@@ -574,7 +576,8 @@ TEST_F(Regtest_fixture_hd, spend)
         std::forward_as_tuple(txid->Bytes(), 0),
         std::forward_as_tuple(
             element.PubkeyHash(), amount, Pattern::PayToPubkeyHash));
-    const auto pTX = client_1_.Blockchain().LoadTransactionBitcoin(txid);
+    const auto pTX =
+        client_1_.Crypto().Blockchain().LoadTransactionBitcoin(txid);
 
     ASSERT_TRUE(pTX);
 
@@ -686,7 +689,7 @@ TEST_F(Regtest_fixture_hd, confirm)
     const auto extra = [&] {
         auto output = std::vector<Transaction>{};
         const auto& pTX = output.emplace_back(
-            client_1_.Blockchain().LoadTransactionBitcoin(txid));
+            client_1_.Crypto().Blockchain().LoadTransactionBitcoin(txid));
 
         OT_ASSERT(pTX);
 
@@ -705,8 +708,8 @@ TEST_F(Regtest_fixture_hd, confirm)
 
 TEST_F(Regtest_fixture_hd, outgoing_transaction)
 {
-    const auto pTX =
-        client_1_.Blockchain().LoadTransactionBitcoin(transactions_.at(1));
+    const auto pTX = client_1_.Crypto().Blockchain().LoadTransactionBitcoin(
+        transactions_.at(1));
 
     ASSERT_TRUE(pTX);
 

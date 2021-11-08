@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_UTIL_WORKTYPE_HPP
-#define OPENTXS_UTIL_WORKTYPE_HPP
+#pragma once
 
 #include <cstdint>
 
@@ -131,7 +130,7 @@ constexpr auto value(const WorkType in) noexcept
  *       * Additional frames:
  *          1: chain type as blockchain::Type
  *          2: account owner as identifier::Nym (encoded as byte sequence)
- *          3: account type as api::client::Blockchain::AccountType
+ *          3: account type as api::crypto::Blockchain::AccountType
  *          4: account id as Identifier (encoded as byte sequence)
  *
  *   BlockchainBalance: request and response messages for blockchain balance
@@ -191,7 +190,7 @@ constexpr auto value(const WorkType in) noexcept
  *       * Additional frames:
  *          1: chain type as blockchain::Type
  *          2: account owner as identifier::Nym (encoded as byte sequence)
- *          3: account type as api::client::Blockchain::AccountType
+ *          3: account type as api::crypto::Blockchain::AccountType
  *          4: account id as Identifier (encoded as byte sequence)
  *          5: subchain type as blockchain::crypto::Subchain
  *          6: last scan height as blockchain::block::Height
@@ -315,4 +314,3 @@ constexpr auto value(const WorkType in) noexcept
  *          1: the remote endpoint (encoded as ascii)
  */
 }  // namespace opentxs
-#endif

@@ -12,17 +12,17 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -77,7 +77,7 @@ public:
         const std::vector<FilterData>& filters) const noexcept -> bool;
 
     BlockFilter(
-        const api::Core& api,
+        const api::Session& api,
         storage::lmdb::LMDB& lmdb,
         Bulk& bulk) noexcept;
 
@@ -87,7 +87,7 @@ private:
     static const std::uint32_t blockchain_filter_version_{1};
     static const std::uint32_t blockchain_filters_version_{1};
 
-    const api::Core& api_;
+    const api::Session& api_;
     storage::lmdb::LMDB& lmdb_;
     Bulk& bulk_;
 

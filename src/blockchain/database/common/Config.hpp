@@ -19,23 +19,23 @@
 #include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -70,10 +70,10 @@ public:
     auto DeleteSyncServer(const std::string& endpoint) const noexcept -> bool;
     auto GetSyncServers() const noexcept -> Endpoints;
 
-    Configuration(const api::Core& api, storage::lmdb::LMDB& lmdb) noexcept;
+    Configuration(const api::Session& api, storage::lmdb::LMDB& lmdb) noexcept;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     storage::lmdb::LMDB& lmdb_;
     const int config_table_;
     const OTZMQPublishSocket socket_;

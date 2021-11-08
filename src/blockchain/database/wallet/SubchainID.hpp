@@ -8,17 +8,18 @@
 #include <mutex>
 #include <optional>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -30,7 +31,8 @@ public:
     const Space data_;
 
     auto FilterType() const noexcept -> filter::Type;
-    auto SubaccountID(const api::Core& api) const noexcept -> const Identifier&;
+    auto SubaccountID(const api::Session& api) const noexcept
+        -> const Identifier&;
     auto Type() const noexcept -> crypto::Subchain;
     auto Version() const noexcept -> VersionNumber;
 

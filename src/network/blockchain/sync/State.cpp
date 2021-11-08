@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                             // IWYU pragma: associated
 #include "opentxs/network/blockchain/sync/State.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <memory>
 #include <set>
 #include <stdexcept>
@@ -14,12 +15,12 @@
 #include <string_view>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::network::blockchain::sync
 {
@@ -48,7 +49,7 @@ private:
 };
 
 State::State(
-    const api::Core& api,
+    const api::Session& api,
     const proto::BlockchainP2PChainState& in) noexcept(false)
     : State(
           static_cast<opentxs::blockchain::Type>(in.chain()),

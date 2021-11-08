@@ -15,7 +15,20 @@
 #include "opentxs/protobuf/Enums.pb.h"
 #include "util/Container.hpp"
 
-namespace opentxs::identity::credential::internal
+namespace opentxs::identity::credential
+{
+using CredentialRoleMap = std::map<CredentialRole, proto::CredentialRole>;
+using CredentialRoleReverseMap =
+    std::map<proto::CredentialRole, CredentialRole>;
+using CredentialTypeMap = std::map<CredentialType, proto::CredentialType>;
+using CredentialTypeReverseMap =
+    std::map<proto::CredentialType, CredentialType>;
+
+auto credentialrole_map() noexcept -> const CredentialRoleMap&;
+auto credentialtype_map() noexcept -> const CredentialTypeMap&;
+}  // namespace opentxs::identity::credential
+
+namespace opentxs::identity::credential
 {
 auto credentialrole_map() noexcept -> const CredentialRoleMap&
 {
@@ -40,12 +53,15 @@ auto credentialtype_map() noexcept -> const CredentialTypeMap&
 
     return map;
 }
+}  // namespace opentxs::identity::credential
 
+namespace opentxs
+{
 auto translate(const identity::CredentialRole in) noexcept
     -> proto::CredentialRole
 {
     try {
-        return credentialrole_map().at(in);
+        return identity::credential::credentialrole_map().at(in);
     } catch (...) {
         return proto::CREDROLE_ERROR;
     }
@@ -55,7 +71,7 @@ auto translate(const identity::CredentialType in) noexcept
     -> proto::CredentialType
 {
     try {
-        return credentialtype_map().at(in);
+        return identity::credential::credentialtype_map().at(in);
     } catch (...) {
         return proto::CREDTYPE_ERROR;
     }
@@ -67,7 +83,8 @@ auto translate(const proto::CredentialRole in) noexcept
     static const auto map = reverse_arbitrary_map<
         identity::CredentialRole,
         proto::CredentialRole,
-        CredentialRoleReverseMap>(credentialrole_map());
+        identity::credential::CredentialRoleReverseMap>(
+        identity::credential::credentialrole_map());
 
     try {
         return map.at(in);
@@ -82,7 +99,8 @@ auto translate(const proto::CredentialType in) noexcept
     static const auto map = reverse_arbitrary_map<
         identity::CredentialType,
         proto::CredentialType,
-        CredentialTypeReverseMap>(credentialtype_map());
+        identity::credential::CredentialTypeReverseMap>(
+        identity::credential::credentialtype_map());
 
     try {
         return map.at(in);
@@ -90,5 +108,4 @@ auto translate(const proto::CredentialType in) noexcept
         return identity::CredentialType::Error;
     }
 }
-
-}  // namespace opentxs::identity::credential::internal
+}  // namespace opentxs

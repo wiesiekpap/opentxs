@@ -18,7 +18,6 @@ namespace client
 {
 namespace internal
 {
-struct Blockchain;
 struct Contacts;
 struct Pair;
 struct UI;
@@ -27,23 +26,31 @@ struct UI;
 class Activity;
 class Contacts;
 class Issuer;
-class Manager;
 class OTX;
 class ServerAction;
 class Workflow;
 }  // namespace client
 
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
 namespace internal
 {
-struct Context;
-struct Factory;
+class Context;
 }  // namespace internal
 
-class Core;
+namespace session
+{
+class Client;
+class Wallet;
+}  // namespace session
+
 class Crypto;
 class Legacy;
+class Session;
 class Settings;
-class Wallet;
 }  // namespace api
 
 namespace identifier
@@ -72,55 +79,35 @@ class Options;
 namespace opentxs::factory
 {
 auto ActivityAPI(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contact) noexcept
     -> std::unique_ptr<api::client::Activity>;
-auto BlockchainAPI(
-    const api::Core& api,
-    const api::client::Activity& activity,
-    const api::client::Contacts& contacts,
-    const api::Legacy& legacy,
-    const std::string& dataFolder,
-    const Options& args) noexcept
-    -> std::shared_ptr<api::client::internal::Blockchain>;
-auto ClientManager(
-    const api::internal::Context& parent,
-    Flag& running,
-    Options&& args,
-    const api::Settings& config,
-    const api::Crypto& crypto,
-    const network::zeromq::Context& context,
-    const std::string& dataFolder,
-    const int instance) noexcept -> std::unique_ptr<api::client::Manager>;
-auto ContactAPI(const api::client::Manager& api) noexcept
+auto ContactAPI(const api::session::Client& api) noexcept
     -> std::unique_ptr<api::client::internal::Contacts>;
-auto FactoryAPIClient(const api::client::Manager& api)
-    -> api::internal::Factory*;
 auto Issuer(
-    const api::Wallet& wallet,
+    const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const proto::Issuer& serialized) -> api::client::Issuer*;
 auto Issuer(
-    const api::Wallet& wallet,
+    const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const identifier::Nym& issuerID) -> api::client::Issuer*;
 auto OTX(
     const Flag& running,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     OTClient& otclient,
     const ContextLockCallback& lockCallback) -> api::client::OTX*;
-auto PairAPI(const Flag& running, const api::client::Manager& client)
+auto PairAPI(const Flag& running, const api::session::Client& client)
     -> api::client::internal::Pair*;
 auto ServerAction(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ContextLockCallback& lockCallback) -> api::client::ServerAction*;
 auto UI(
-    const api::client::Manager& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::session::Client& api,
+    const api::crypto::Blockchain& blockchain,
     const Flag& running) noexcept -> std::unique_ptr<api::client::internal::UI>;
-auto Wallet(const api::client::Manager& client) -> api::Wallet*;
 auto Workflow(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Activity& activity,
     const api::client::Contacts& contact) -> api::client::Workflow*;
 }  // namespace opentxs::factory

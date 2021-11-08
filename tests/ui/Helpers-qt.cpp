@@ -21,8 +21,8 @@
 
 #include "Basic.hpp"
 #include "integration/Helpers.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/qt/AccountActivity.hpp"
@@ -288,7 +288,7 @@ auto check_blockchain_account_status_qt(
 }
 
 auto check_blockchain_selection_qt(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const ot::ui::Blockchains type,
     const BlockchainSelectionData& expected) noexcept -> bool
 {

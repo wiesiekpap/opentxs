@@ -16,7 +16,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blind
@@ -60,13 +60,13 @@ public:
 private:
     friend opentxs::Factory;
 
-    Lucre(const api::Core& core);
+    Lucre(const api::Session& core);
     Lucre(
-        const api::Core& core,
+        const api::Session& core,
         const String& strNotaryID,
         const String& strInstrumentDefinitionID);
     Lucre(
-        const api::Core& core,
+        const api::Session& core,
         const String& strNotaryID,
         const String& strServerNymID,
         const String& strInstrumentDefinitionID);

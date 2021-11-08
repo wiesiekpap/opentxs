@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_CLIENT_OTX_HPP
-#define OPENTXS_API_CLIENT_OTX_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -20,6 +19,7 @@
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/util/Time.hpp"
 
 #define OT_CHEQUE_DAYS 30
 #define OT_CHEQUE_HOURS 24 * OT_CHEQUE_DAYS
@@ -304,4 +304,3 @@ private:
 }  // namespace client
 }  // namespace api
 }  // namespace opentxs
-#endif

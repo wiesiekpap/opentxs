@@ -16,16 +16,14 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/contact/Contact.hpp"
-#include "internal/core/Core.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/contact/ContactGroup.hpp"
-#include "opentxs/contact/ContactItem.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/ContactGroup.hpp"
+#include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/protobuf/Contact.hpp"
@@ -33,6 +31,8 @@
 #include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/ContactSection.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::ContactData::"
 
@@ -49,7 +49,7 @@ static auto check_version(
 }
 
 static auto extract_sections(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber targetVersion,
     const proto::ContactData& serialized) -> ContactData::SectionMap
@@ -58,12 +58,11 @@ static auto extract_sections(
 
     for (const auto& it : serialized.section()) {
         if ((0 != it.version()) && (it.item_size() > 0)) {
-            sectionMap[contact::internal::translate(it.name())].reset(
-                new ContactSection(
-                    api,
-                    nym,
-                    check_version(serialized.version(), targetVersion),
-                    it));
+            sectionMap[translate(it.name())].reset(new ContactSection(
+                api,
+                nym,
+                check_version(serialized.version(), targetVersion),
+                it));
         }
     }
 
@@ -74,12 +73,12 @@ struct ContactData::Imp {
     using Scope =
         std::pair<contact::ClaimType, std::shared_ptr<const ContactGroup>>;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const VersionNumber version_{0};
     const std::string nym_{};
     const SectionMap sections_{};
 
-    Imp(const api::Core& api,
+    Imp(const api::Session& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber targetVersion,
@@ -90,8 +89,8 @@ struct ContactData::Imp {
         , sections_(sections)
     {
         if (0 == version) {
-            LogOutput(OT_METHOD)(__func__)(": Warning: malformed version. "
-                                           "Setting to ")(targetVersion)(".")
+            LogError()(OT_METHOD)(__func__)(": Warning: malformed version. "
+                                            "Setting to ")(targetVersion)(".")
                 .Flush();
         }
     }
@@ -125,7 +124,7 @@ struct ContactData::Imp {
 };
 
 ContactData::ContactData(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber targetVersion,
@@ -142,7 +141,7 @@ ContactData::ContactData(const ContactData& rhs)
 }
 
 ContactData::ContactData(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber targetVersion,
     const proto::ContactData& serialized)
@@ -156,7 +155,7 @@ ContactData::ContactData(
 }
 
 ContactData::ContactData(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber targetVersion,
     const ReadView& serialized)
@@ -221,7 +220,7 @@ auto ContactData::AddContract(
 {
     bool needPrimary{true};
     const contact::SectionType section{contact::SectionType::Contract};
-    auto group = Group(section, translate(currency));
+    auto group = Group(section, UnitToClaim(currency));
 
     if (group) { needPrimary = group->Primary().empty(); }
 
@@ -234,9 +233,7 @@ auto ContactData::AddContract(
     if (primary || needPrimary) { attrib.emplace(contact::Attribute::Primary); }
 
     auto version = proto::RequiredVersion(
-        contact::internal::translate(section),
-        core::internal::translate(currency),
-        imp_->version_);
+        translate(section), translate(UnitToClaim(currency)), imp_->version_);
 
     auto item = std::make_shared<ContactItem>(
         imp_->api_,
@@ -244,7 +241,7 @@ auto ContactData::AddContract(
         version,
         version,
         section,
-        translate(currency),
+        UnitToClaim(currency),
         instrumentDefinitionID,
         attrib,
         NULL_START,
@@ -277,9 +274,7 @@ auto ContactData::AddEmail(
     if (primary || needPrimary) { attrib.emplace(contact::Attribute::Primary); }
 
     auto version = proto::RequiredVersion(
-        contact::internal::translate(section),
-        contact::internal::translate(type),
-        imp_->version_);
+        translate(section), translate(type), imp_->version_);
 
     auto item = std::make_shared<ContactItem>(
         imp_->api_,
@@ -302,10 +297,8 @@ auto ContactData::AddEmail(
 auto ContactData::AddItem(const ClaimTuple& claim) const -> ContactData
 {
     auto version = proto::RequiredVersion(
-        contact::internal::translate(
-            static_cast<contact::SectionType>(std::get<1>(claim))),
-        contact::internal::translate(
-            static_cast<contact::ClaimType>(std::get<2>(claim))),
+        translate(static_cast<contact::SectionType>(std::get<1>(claim))),
+        translate(static_cast<contact::ClaimType>(std::get<2>(claim))),
         imp_->version_);
 
     auto item = std::make_shared<ContactItem>(
@@ -324,9 +317,7 @@ auto ContactData::AddItem(const std::shared_ptr<ContactItem>& item) const
     auto it = map.find(sectionID);
 
     auto version = proto::RequiredVersion(
-        contact::internal::translate(sectionID),
-        contact::internal::translate(item->Type()),
-        imp_->version_);
+        translate(sectionID), translate(item->Type()), imp_->version_);
 
     if (map.end() == it) {
         auto& section = map[sectionID];
@@ -355,7 +346,7 @@ auto ContactData::AddPaymentCode(
 {
     auto needPrimary{true};
     static constexpr auto section{contact::SectionType::Procedure};
-    auto group = Group(section, translate(currency));
+    auto group = Group(section, UnitToClaim(currency));
 
     if (group) { needPrimary = group->Primary().empty(); }
 
@@ -373,12 +364,10 @@ auto ContactData::AddPaymentCode(
         return out;
     }();
     const auto version = proto::RequiredVersion(
-        contact::internal::translate(section),
-        core::internal::translate(currency),
-        imp_->version_);
+        translate(section), translate(UnitToClaim(currency)), imp_->version_);
 
     if (0 == version) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": This currency is not allowed to set a procedure")
             .Flush();
 
@@ -391,7 +380,7 @@ auto ContactData::AddPaymentCode(
         version,
         version,
         section,
-        translate(currency),
+        UnitToClaim(currency),
         code,
         attrib,
         NULL_START,
@@ -424,9 +413,7 @@ auto ContactData::AddPhoneNumber(
     if (primary || needPrimary) { attrib.emplace(contact::Attribute::Primary); }
 
     auto version = proto::RequiredVersion(
-        contact::internal::translate(section),
-        contact::internal::translate(type),
-        imp_->version_);
+        translate(section), translate(type), imp_->version_);
 
     auto item = std::make_shared<ContactItem>(
         imp_->api_,
@@ -461,9 +448,7 @@ auto ContactData::AddPreferredOTServer(const Identifier& id, const bool primary)
     if (primary || needPrimary) { attrib.emplace(contact::Attribute::Primary); }
 
     auto version = proto::RequiredVersion(
-        contact::internal::translate(section),
-        contact::internal::translate(type),
-        imp_->version_);
+        translate(section), translate(type), imp_->version_);
 
     auto item = std::make_shared<ContactItem>(
         imp_->api_,
@@ -509,8 +494,8 @@ auto ContactData::AddSocialMediaProfile(
     if (primary || needPrimary) { attrib.emplace(contact::Attribute::Primary); }
 
     auto version = proto::RequiredVersion(
-        contact::internal::translate(contact::SectionType::Profile),
-        contact::internal::translate(type),
+        translate(contact::SectionType::Profile),
+        translate(type),
         imp_->version_);
 
     auto item = std::make_shared<ContactItem>(
@@ -545,9 +530,8 @@ auto ContactData::AddSocialMediaProfile(
     // Add the item to the communication section.
     auto commSectionTypes =
         proto::AllowedItemTypes().at(proto::ContactSectionVersion(
-            version,
-            contact::internal::translate(contact::SectionType::Communication)));
-    if (commSectionTypes.count(contact::internal::translate(type))) {
+            version, translate(contact::SectionType::Communication)));
+    if (commSectionTypes.count(translate(type))) {
         auto& commSection = map[contact::SectionType::Communication];
 
         if (commSection) {
@@ -599,9 +583,8 @@ auto ContactData::AddSocialMediaProfile(
     // Add the item to the identifier section.
     auto identifierSectionTypes =
         proto::AllowedItemTypes().at(proto::ContactSectionVersion(
-            version,
-            contact::internal::translate(contact::SectionType::Identifier)));
-    if (identifierSectionTypes.count(contact::internal::translate(type))) {
+            version, translate(contact::SectionType::Identifier)));
+    if (identifierSectionTypes.count(translate(type))) {
         auto& identifierSection = map[contact::SectionType::Identifier];
 
         if (identifierSection) {
@@ -728,7 +711,7 @@ auto ContactData::Contracts(
 {
     std::set<OTIdentifier> output{};
     const contact::SectionType section{contact::SectionType::Contract};
-    auto group = Group(section, translate(currency));
+    auto group = Group(section, UnitToClaim(currency));
 
     if (group) {
         for (const auto& it : *group) {
@@ -807,8 +790,8 @@ auto ContactData::end() const -> ContactData::SectionMap::const_iterator
 }
 
 auto ContactData::Group(
-    const contact::SectionType& section,
-    const contact::ClaimType& type) const -> std::shared_ptr<ContactGroup>
+    const contact::SectionType section,
+    const contact::ClaimType type) const -> std::shared_ptr<ContactGroup>
 {
     const auto it = imp_->sections_.find(section);
 
@@ -831,8 +814,8 @@ auto ContactData::HaveClaim(const Identifier& item) const -> bool
 }
 
 auto ContactData::HaveClaim(
-    const contact::SectionType& section,
-    const contact::ClaimType& type,
+    const contact::SectionType section,
+    const contact::ClaimType type,
     const std::string& value) const -> bool
 {
     auto group = Group(section, type);
@@ -923,9 +906,8 @@ auto ContactData::PrintContactData(const proto::ContactData& data)
                    << "--- Attributes: ";
 
             for (const auto& attribute : item.attribute()) {
-                output << proto::TranslateItemAttributes(
-                              contact::internal::translate(
-                                  static_cast<contact::Attribute>(attribute)))
+                output << proto::TranslateItemAttributes(translate(
+                              static_cast<contact::Attribute>(attribute)))
                        << " ";
             }
 
@@ -936,7 +918,7 @@ auto ContactData::PrintContactData(const proto::ContactData& data)
     return output.str();
 }
 
-auto ContactData::Section(const contact::SectionType& section) const
+auto ContactData::Section(const contact::SectionType section) const
     -> std::shared_ptr<ContactSection>
 {
     const auto it = imp_->sections_.find(section);
@@ -1018,9 +1000,7 @@ auto ContactData::SetScope(
             contact::Attribute::Active, contact::Attribute::Primary};
 
         auto version = proto::RequiredVersion(
-            contact::internal::translate(section),
-            contact::internal::translate(type),
-            imp_->version_);
+            translate(section), translate(type), imp_->version_);
 
         auto item = std::make_shared<ContactItem>(
             imp_->api_,
@@ -1046,7 +1026,7 @@ auto ContactData::SetScope(
 
         return ContactData(imp_->api_, imp_->nym_, version, version, mapCopy);
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Scope already set.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Scope already set.").Flush();
 
         return *this;
     }
@@ -1121,7 +1101,7 @@ auto ContactData::SocialMediaProfileTypes() const
             profiletypes.end(),
             std::inserter(output, output.end()),
             [](proto::ContactItemType itemtype) -> contact::ClaimType {
-                return contact::internal::translate(itemtype);
+                return translate(itemtype);
             });
 
         return output;

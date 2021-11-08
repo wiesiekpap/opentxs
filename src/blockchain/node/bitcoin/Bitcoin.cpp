@@ -11,9 +11,9 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/api/Core.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 
@@ -22,8 +22,8 @@
 namespace opentxs::factory
 {
 auto BlockchainNetworkBitcoin(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const api::network::internal::Blockchain& network,
     const blockchain::Type type,
     const blockchain::node::internal::Config& config,
@@ -38,8 +38,8 @@ auto BlockchainNetworkBitcoin(
 }
 
 auto BlockchainNetworkBitcoin(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const blockchain::Type type,
     const blockchain::node::internal::Config& config,
     const std::string& seednode,
@@ -60,8 +60,8 @@ auto BlockchainNetworkBitcoin(
 namespace opentxs::blockchain::node::base
 {
 Bitcoin::Bitcoin(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const api::network::internal::Blockchain& network,
     const Type type,
     const internal::Config& config,

@@ -21,16 +21,15 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
+#include "internal/api/crypto/Symmetric.hpp"
 #include "internal/crypto/key/Key.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
@@ -44,9 +43,10 @@
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Envelope.pb.h"
 #include "opentxs/protobuf/TaggedKey.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Envelope::"
 
@@ -54,14 +54,14 @@ namespace opentxs
 {
 using ReturnType = crypto::implementation::Envelope;
 
-auto Factory::Envelope(const api::Core& api) noexcept
+auto Factory::Envelope(const api::Session& api) noexcept
     -> std::unique_ptr<crypto::Envelope>
 {
     return std::make_unique<ReturnType>(api);
 }
 
 auto Factory::Envelope(
-    const api::Core& api,
+    const api::Session& api,
     const proto::Envelope& serialized) noexcept(false)
     -> std::unique_ptr<crypto::Envelope>
 {
@@ -69,7 +69,7 @@ auto Factory::Envelope(
 }
 
 auto Factory::Envelope(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView& serialized) noexcept(false)
     -> std::unique_ptr<crypto::Envelope>
 {
@@ -102,7 +102,7 @@ const Envelope::WeightMap Envelope::key_weights_{
 };
 const Envelope::Solutions Envelope::solutions_{calculate_solutions()};
 
-Envelope::Envelope(const api::Core& api) noexcept
+Envelope::Envelope(const api::Session& api) noexcept
     : api_(api)
     , version_(default_version_)
     , dh_keys_()
@@ -111,7 +111,7 @@ Envelope::Envelope(const api::Core& api) noexcept
 {
 }
 
-Envelope::Envelope(const api::Core& api, const SerializedType& in) noexcept(
+Envelope::Envelope(const api::Session& api, const SerializedType& in) noexcept(
     false)
     : api_(api)
     , version_(in.version())
@@ -121,7 +121,7 @@ Envelope::Envelope(const api::Core& api, const SerializedType& in) noexcept(
 {
 }
 
-Envelope::Envelope(const api::Core& api, const ReadView& in) noexcept(false)
+Envelope::Envelope(const api::Session& api, const ReadView& in) noexcept(false)
     : Envelope(api, proto::Factory<proto::Envelope>(in))
 {
 }
@@ -150,7 +150,7 @@ auto Envelope::attach_session_keys(
     const key::Symmetric& masterKey,
     const PasswordPrompt& reason) noexcept -> bool
 {
-    LogVerbose(OT_METHOD)(__func__)(": Recipient ")(nym.ID())(" has ")(
+    LogVerbose()(OT_METHOD)(__func__)(": Recipient ")(nym.ID())(" has ")(
         nym.size())(" master credentials")
         .Flush();
 
@@ -163,7 +163,7 @@ auto Envelope::attach_session_keys(
             dhKey.CalculateTag(authority, type, reason, tag, password);
 
         if (false == haveTag) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed to calculate session password")
                 .Flush();
 
@@ -176,7 +176,7 @@ auto Envelope::attach_session_keys(
         const auto locked = key.ChangePassword(previousPassword, password);
 
         if (false == locked) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to lock session key")
+            LogError()(OT_METHOD)(__func__)(": Failed to lock session key")
                 .Flush();
 
             return false;
@@ -195,7 +195,7 @@ auto Envelope::calculate_requirements(const Nyms& recipients) noexcept(false)
         const auto& targets = output.emplace_back(nym->EncryptionTargets());
 
         if (targets.second.empty()) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid recipient nym ")(
+            LogError()(OT_METHOD)(__func__)(": Invalid recipient nym ")(
                 nym->ID())
                 .Flush();
 
@@ -315,7 +315,7 @@ auto Envelope::Open(
     const PasswordPrompt& reason) const noexcept -> bool
 {
     if (false == bool(ciphertext_)) {
-        LogOutput(OT_METHOD)(__func__)(": Nothing to decrypt").Flush();
+        LogError()(OT_METHOD)(__func__)(": Nothing to decrypt").Flush();
 
         return false;
     }
@@ -329,37 +329,38 @@ auto Envelope::Open(
 
         return key.Decrypt(ciphertext, password, plaintext);
     } catch (...) {
-        LogVerbose(OT_METHOD)(__func__)(": No session keys for this nym")
+        LogVerbose()(OT_METHOD)(__func__)(": No session keys for this nym")
             .Flush();
 
         return false;
     }
 }
 
-auto Envelope::read_dh(const api::Core& api, const SerializedType& rhs) noexcept
-    -> DHMap
+auto Envelope::read_dh(
+    const api::Session& api,
+    const SerializedType& rhs) noexcept -> DHMap
 {
     auto output = DHMap{};
 
     for (const auto& key : rhs.dhkey()) {
-        auto& set =
-            output[opentxs::crypto::key::internal::translate(key.type())];
+        auto& set = output[translate(key.type())];
         set.emplace_back(api.Factory().AsymmetricKey(key));
     }
 
     return output;
 }
 
-auto Envelope::read_sk(const api::Core& api, const SerializedType& rhs) noexcept
-    -> SessionKeys
+auto Envelope::read_sk(
+    const api::Session& api,
+    const SerializedType& rhs) noexcept -> SessionKeys
 {
     auto output = SessionKeys{};
 
     for (const auto& tagged : rhs.sessionkey()) {
         output.emplace_back(SessionKey{
             tagged.tag(),
-            opentxs::crypto::key::internal::translate(tagged.type()),
-            api.Symmetric().Key(
+            translate(tagged.type()),
+            api.Crypto().Symmetric().InternalSymmetric().Key(
                 tagged.key(),
                 opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305)});
     }
@@ -427,18 +428,18 @@ auto Envelope::seal(
     };
 
     if (ciphertext_) {
-        LogOutput(OT_METHOD)(__func__)(": Envelope has already been sealed")
+        LogError()(OT_METHOD)(__func__)(": Envelope has already been sealed")
             .Flush();
 
         return false;
     }
 
     if (0 == recipients.size()) {
-        LogVerbose(OT_METHOD)(__func__)(": No recipients").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": No recipients").Flush();
 
         return false;
     } else {
-        LogVerbose(OT_METHOD)(__func__)(": ")(recipients.size())(
+        LogVerbose()(OT_METHOD)(__func__)(": ")(recipients.size())(
             " recipient(s)")
             .Flush();
     }
@@ -447,13 +448,13 @@ auto Envelope::seal(
     const auto dhkeys = find_solution(recipients, solution);
 
     if (0 == dhkeys.size()) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": A recipient requires an unsupported key type")
             .Flush();
 
         return false;
     } else {
-        LogVerbose(OT_METHOD)(__func__)(": ")(dhkeys.size())(
+        LogVerbose()(OT_METHOD)(__func__)(": ")(dhkeys.size())(
             " dhkeys will be created")
             .Flush();
     }
@@ -478,7 +479,7 @@ auto Envelope::seal(
                     opentxs::crypto::key::asymmetric::Role::Encrypt);
             }
         } catch (...) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to generate DH key")
+            LogError()(OT_METHOD)(__func__)(": Failed to generate DH key")
                 .Flush();
 
             return false;
@@ -487,7 +488,7 @@ auto Envelope::seal(
 
     auto password = OTPasswordPrompt{reason};
     set_default_password(api_, password);
-    auto masterKey = api_.Symmetric().Key(password);
+    auto masterKey = api_.Crypto().Symmetric().Key(password);
     ciphertext_ = std::make_unique<proto::Ciphertext>();
 
     OT_ASSERT(ciphertext_);
@@ -496,7 +497,8 @@ auto Envelope::seal(
         masterKey->Encrypt(plaintext, password, *ciphertext_, false);
 
     if (false == encrypted) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to encrypt plaintext").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to encrypt plaintext")
+            .Flush();
 
         return false;
     }
@@ -514,7 +516,7 @@ auto Envelope::seal(
 }
 
 auto Envelope::set_default_password(
-    const api::Core& api,
+    const api::Session& api,
     PasswordPrompt& password) noexcept -> bool
 {
     return password.SetPassword(api.Factory().SecretFromText("opentxs"));
@@ -546,7 +548,7 @@ auto Envelope::Serialize(SerializedType& output) const noexcept -> bool
         auto& tagged = *output.add_sessionkey();
         tagged.set_version(tagged_key_version_);
         tagged.set_tag(tag);
-        tagged.set_type(opentxs::crypto::key::internal::translate(type));
+        tagged.set_type(translate(type));
         if (false == key->Serialize(*tagged.mutable_key())) { return false; }
     }
 

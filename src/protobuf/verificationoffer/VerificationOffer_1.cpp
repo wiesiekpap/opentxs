@@ -12,10 +12,10 @@
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Claim.pb.h"
-#include "opentxs/protobuf/Verification.pb.h"
+#include "opentxs/protobuf/Verification.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/VerificationOffer.pb.h"
-#include "opentxs/protobuf/verify/Claim.hpp"
-#include "opentxs/protobuf/verify/Verification.hpp"
+#include "opentxs/protobuf/verify/Claim.hpp"         // IWYU pragma: keep
+#include "opentxs/protobuf/verify/Verification.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
 

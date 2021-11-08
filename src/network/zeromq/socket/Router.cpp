@@ -10,17 +10,17 @@
 #include <memory>
 
 #include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Bidirectional.tpp"
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Sender.tpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Router>;
 
@@ -67,7 +67,7 @@ void Router::process_incoming(const Lock& lock, Message& message) noexcept
 {
     OT_ASSERT(verify_lock(lock))
 
-    LogTrace(OT_METHOD)(__func__)(
+    LogTrace()(OT_METHOD)(__func__)(
         ": Incoming messaged received. Triggering callback.")
         .Flush();
     // Router prepends an identity frame to the message.  This makes sure
@@ -75,7 +75,7 @@ void Router::process_incoming(const Lock& lock, Message& message) noexcept
     // make up the rest of the message.
     message.EnsureDelimiter();
     callback_.Process(message);
-    LogTrace(OT_METHOD)(__func__)(": Done.").Flush();
+    LogTrace()(OT_METHOD)(__func__)(": Done.").Flush();
 }
 
 Router::~Router() SHUTDOWN

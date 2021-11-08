@@ -9,23 +9,27 @@
 #include <string>
 #include <type_traits>
 
-#include "opentxs/Bytes.hpp"
+#include "internal/api/session/Client.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/key/Secp256k1.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 using namespace opentxs;
 
@@ -36,7 +40,7 @@ namespace ottest
 class Test_PaymentCode : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& client_;
+    const ot::api::session::Client& client_;
     OTPasswordPrompt reason_;
     std::string seed, fingerprint, nymID_0, paycode_0, nymID_1, paycode_1,
         nymID_2, paycode_2, nymID_3, paycode_3;
@@ -46,12 +50,13 @@ public:
 
     /* Is evaluated every test, therefore indexes are fixed to 0,1,2,3 */
     Test_PaymentCode()
-        : client_(ot::Context().StartClient(0))
+        : client_(ot::Context().StartClientSession(0))
         , reason_(client_.Factory().PasswordPrompt(__func__))
         , seed("trim thunder unveil reduce crop cradle zone inquiry anchor "
                "skate property fringe obey butter text tank drama palm guilt "
                "pudding laundry stay axis prosper")
-        , fingerprint(client_.Exec().Wallet_ImportSeed(seed, ""))
+        , fingerprint(
+              client_.InternalClient().Exec().Wallet_ImportSeed(seed, ""))
         , nymID_0(client_.Wallet()
                       .Nym(reason_, "PaycodeNym", {fingerprint, 0, 1})
                       ->ID()
@@ -282,7 +287,7 @@ TEST_F(Test_PaymentCode, factory)
  */
 TEST_F(Test_PaymentCode, factory_seed_nym)
 {
-    std::string seed = client_.Seeds().DefaultSeed();
+    std::string seed = client_.Crypto().Seed().DefaultSeed();
     [[maybe_unused]] std::uint32_t nym_idx = 0;
     [[maybe_unused]] std::uint8_t version = 1;
     [[maybe_unused]] bool bitmessage = false;
@@ -294,8 +299,8 @@ TEST_F(Test_PaymentCode, factory_seed_nym)
     EXPECT_TRUE(nym.get()->HasPath());
 
     auto fingerprint{nym.get()->PathRoot()};
-    auto privatekey =
-        client_.Seeds().GetPaymentCode(fingerprint, 10, version, reason_);
+    auto privatekey = client_.Crypto().Seed().GetPaymentCode(
+        fingerprint, 10, version, reason_);
 
     ASSERT_TRUE(privatekey);
 }

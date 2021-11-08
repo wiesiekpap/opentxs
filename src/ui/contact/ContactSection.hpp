@@ -16,14 +16,14 @@
 #include "Proto.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/RowType.hpp"
@@ -32,10 +32,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -81,14 +81,13 @@ public:
     }
     auto Name(const std::string& lang) const noexcept -> std::string final
     {
-        return proto::TranslateSectionName(
-            contact::internal::translate(row_id_), lang);
+        return proto::TranslateSectionName(translate(row_id_), lang);
     }
     auto Type() const noexcept -> contact::SectionType final { return row_id_; }
 
     ContactSection(
         const ContactInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const ContactRowID& rowID,
         const ContactSortKey& key,
         CustomData& custom) noexcept;

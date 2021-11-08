@@ -17,18 +17,19 @@
 #include <type_traits>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/UniqueQueue.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/Widget.hpp"
 
 #define GET_TEXT_MILLISECONDS 10
@@ -39,7 +40,7 @@ namespace opentxs::factory
 {
 auto ActivitySummaryItem(
     const ui::implementation::ActivitySummaryInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivitySummaryRowID& rowID,
     const ui::implementation::ActivitySummarySortKey& sortKey,
@@ -65,7 +66,7 @@ namespace opentxs::ui::implementation
 {
 ActivitySummaryItem::ActivitySummaryItem(
     const ActivitySummaryInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ActivitySummaryRowID& rowID,
     const ActivitySummarySortKey& sortKey,
@@ -125,12 +126,12 @@ auto ActivitySummaryItem::find_text(
 
                 return *text;
             } else {
-                LogOutput(OT_METHOD)(__func__)(": Cheque item does not exist.")
+                LogError()(OT_METHOD)(__func__)(": Cheque item does not exist.")
                     .Flush();
             }
         } break;
         case StorageBox::BLOCKCHAIN: {
-            return api_.Blockchain().ActivityDescription(
+            return api_.Crypto().Blockchain().ActivityDescription(
                 nym_id_, thread, itemID);
         }
         default: {
@@ -172,7 +173,7 @@ auto ActivitySummaryItem::ImageURI() const noexcept -> std::string
 }
 
 auto ActivitySummaryItem::LoadItemText(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nym,
     const CustomData& custom) noexcept -> std::string
 {
@@ -181,7 +182,8 @@ auto ActivitySummaryItem::LoadItemText(
     const auto& itemID = *static_cast<const std::string*>(custom.at(0));
 
     if (StorageBox::BLOCKCHAIN == box) {
-        return api.Blockchain().ActivityDescription(nym, thread, itemID);
+        return api.Crypto().Blockchain().ActivityDescription(
+            nym, thread, itemID);
     }
 
     return {};

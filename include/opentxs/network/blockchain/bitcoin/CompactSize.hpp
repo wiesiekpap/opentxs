@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_NETWORK_BLOCKCHAIN_BITCOIN_COMPACTSIZE_HPP
-#define OPENTXS_NETWORK_BLOCKCHAIN_BITCOIN_COMPACTSIZE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -14,7 +13,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -114,4 +113,3 @@ OPENTXS_EXPORT auto DecodeSize(
 }  // namespace blockchain
 }  // namespace network
 }  // namespace opentxs
-#endif

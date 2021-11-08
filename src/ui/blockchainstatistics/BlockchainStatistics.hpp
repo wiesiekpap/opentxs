@@ -19,10 +19,9 @@
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -30,6 +29,7 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/ui/BlockchainStatistics.hpp"
 #include "opentxs/ui/Blockchains.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
@@ -39,15 +39,15 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Manager;
-}  // namespace client
-
 namespace network
 {
 class Blockchain;
 }  // namespace network
+
+namespace session
+{
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -67,8 +67,6 @@ class Publish;
 class Message;
 }  // namespace zeromq
 }  // namespace network
-
-class Factory;
 }  // namespace opentxs
 
 namespace opentxs::ui::implementation
@@ -88,7 +86,7 @@ class BlockchainStatistics final : public BlockchainStatisticsList,
 {
 public:
     BlockchainStatistics(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const SimpleCallback& cb) noexcept;
 
     ~BlockchainStatistics() final;

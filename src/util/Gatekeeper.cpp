@@ -9,7 +9,7 @@
 
 #include <atomic>
 
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 
 namespace opentxs
 {

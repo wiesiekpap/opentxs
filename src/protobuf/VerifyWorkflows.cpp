@@ -5,9 +5,6 @@
 
 #include "opentxs/protobuf/verify/VerifyWorkflows.hpp"  // IWYU pragma: associated
 
-#include <set>
-#include <utility>
-
 #include "opentxs/protobuf/Basic.hpp"
 
 namespace opentxs::proto

@@ -8,8 +8,8 @@
 #include <gtest/gtest.h>
 
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Notary.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"
@@ -26,7 +26,7 @@ namespace ottest
 TEST_F(RPC_fixture, preconditions)
 {
     {
-        const auto& session = StartServer(0);
+        const auto& session = StartNotarySession(0);
         const auto instance = session.Instance();
         const auto& seeds = seed_map_.at(instance);
         const auto& nyms = local_nym_map_.at(instance);

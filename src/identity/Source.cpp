@@ -12,14 +12,13 @@
 #include <string>
 
 #include "2_Factory.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "Proto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -38,6 +37,8 @@
 #include "opentxs/protobuf/MasterCredentialParameters.pb.h"
 #include "opentxs/protobuf/NymIDSource.pb.h"
 #include "opentxs/protobuf/SourceProof.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::identity::Source::"
@@ -45,7 +46,7 @@
 namespace opentxs
 {
 auto Factory::NymIDSource(
-    const api::Core& api,
+    const api::Session& api,
     NymParameters& params,
     const opentxs::PasswordPrompt& reason) -> identity::Source*
 {
@@ -62,7 +63,7 @@ auto Factory::NymIDSource(
 
             return new ReturnType{api.Factory(), paymentCode};
 #else
-            LogOutput("opentxs::Factory::")(__func__)(
+            LogError()("opentxs::Factory::")(__func__)(
                 ": opentxs was build without bip47 support")
                 .Flush();
 
@@ -106,7 +107,7 @@ auto Factory::NymIDSource(
             }
 
             if (false == bool(params.Keypair().get())) {
-                LogOutput("opentxs::Factory::")(__func__)(
+                LogError()("opentxs::Factory::")(__func__)(
                     ": Failed to generate signing keypair")
                     .Flush();
 
@@ -116,7 +117,7 @@ auto Factory::NymIDSource(
             return new ReturnType{api.Factory(), params};
         case identity::SourceType::Error:
         default: {
-            LogOutput("opentxs::Factory::")(__func__)(
+            LogError()("opentxs::Factory::")(__func__)(
                 ": Unsupported source type.")
                 .Flush();
 
@@ -126,7 +127,7 @@ auto Factory::NymIDSource(
 }
 
 auto Factory::NymIDSource(
-    const api::Core& api,
+    const api::Session& api,
     const proto::NymIDSource& serialized) -> identity::Source*
 {
     using ReturnType = identity::implementation::Source;
@@ -144,7 +145,7 @@ const VersionConversionMap Source::key_to_source_version_{
 };
 
 Source::Source(
-    const api::Factory& factory,
+    const api::session::Factory& factory,
     const proto::NymIDSource& serialized) noexcept
     : factory_(factory)
     , type_(translate(serialized.type()))
@@ -155,7 +156,7 @@ Source::Source(
 }
 
 Source::Source(
-    const api::Factory& factory,
+    const api::session::Factory& factory,
     const NymParameters& nymParameters) noexcept(false)
     : factory_{factory}
     , type_(nymParameters.SourceType())
@@ -169,7 +170,9 @@ Source::Source(
     }
 }
 
-Source::Source(const api::Factory& factory, const PaymentCode& source) noexcept
+Source::Source(
+    const api::session::Factory& factory,
+    const PaymentCode& source) noexcept
     : factory_{factory}
     , type_(identity::SourceType::Bip47)
     , pubkey_(crypto::key::Asymmetric::Factory())
@@ -196,7 +199,7 @@ auto Source::asData() const -> OTData
 }
 
 auto Source::deserialize_paymentcode(
-    const api::Factory& factory,
+    const api::session::Factory& factory,
     const identity::SourceType type,
     const proto::NymIDSource& serialized) -> OTPaymentCode
 {
@@ -210,7 +213,7 @@ auto Source::deserialize_paymentcode(
 }
 
 auto Source::deserialize_pubkey(
-    const api::Factory& factory,
+    const api::session::Factory& factory,
     const identity::SourceType type,
     const proto::NymIDSource& serialized) -> OTAsymmetricKey
 {
@@ -358,7 +361,7 @@ auto Source::Verify(
             signingKey = extract_key(master, proto::KEYROLE_SIGN);
 
             if (!signingKey) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Failed to extract signing key.")
                     .Flush();
 
@@ -367,7 +370,7 @@ auto Source::Verify(
 
             auto sourceKey = proto::AsymmetricKey{};
             if (false == pubkey_->Serialize(sourceKey)) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to serialize key")
+                LogError()(OT_METHOD)(__func__)(": Failed to serialize key")
                     .Flush();
 
                 return false;
@@ -375,8 +378,8 @@ auto Source::Verify(
             sameSource = (sourceKey.key() == signingKey->key());
 
             if (!sameSource) {
-                LogOutput(OT_METHOD)(__func__)(": Master credential was not"
-                                               " derived from this source.")
+                LogError()(OT_METHOD)(__func__)(": Master credential was not"
+                                                " derived from this source.")
                     .Flush();
 
                 return false;
@@ -386,7 +389,7 @@ auto Source::Verify(
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         {
             if (!payment_code_->Verify(master, sourceSignature)) {
-                LogOutput(OT_METHOD)(__func__)(": Invalid source signature.")
+                LogError()(OT_METHOD)(__func__)(": Invalid source signature.")
                     .Flush();
 
                 return false;
@@ -394,7 +397,7 @@ auto Source::Verify(
         } break;
 #else
         {
-            LogOutput(OT_METHOD)(__func__)(": Missing support for secp256k1")
+            LogError()(OT_METHOD)(__func__)(": Missing support for secp256k1")
                 .Flush();
 
             return false;
@@ -424,7 +427,7 @@ auto Source::Sign(
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
             goodsig = payment_code_->Sign(credential, sig, reason);
 #else
-            LogOutput(OT_METHOD)(__func__)(": Missing support for secp256k1")
+            LogError()(OT_METHOD)(__func__)(": Missing support for secp256k1")
                 .Flush();
 #endif
         } break;

@@ -9,11 +9,15 @@
 #include <boost/thread/thread.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <future>
 #include <map>
 #include <shared_mutex>
 #include <string>
 #include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "api/network/asio/Acceptors.hpp"
@@ -21,11 +25,11 @@
 #include "api/network/asio/Context.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/network/Network.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace boost

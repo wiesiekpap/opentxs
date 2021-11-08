@@ -13,42 +13,21 @@ namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
 namespace internal
 {
-struct Asymmetric;
+class Context;
+class Log;
 }  // namespace internal
 
-class Symmetric;
-}  // namespace crypto
-
-namespace internal
-{
-struct Context;
-struct Log;
-}  // namespace internal
-
-namespace storage
+namespace session
 {
 class Storage;
-}  // namespace storage
+}  // namespace session
 
-class Core;
 class Crypto;
-class Endpoints;
-class Factory;
-class HDSeed;
 class Legacy;
-class Primitives;
 class Settings;
 }  // namespace api
-
-namespace crypto
-{
-class Bip32;
-class Bip39;
-}  // namespace crypto
 
 namespace network
 {
@@ -71,23 +50,13 @@ auto Context(
     const Options& args,
     OTCaller* externalPasswordCallback = nullptr) noexcept
     -> std::unique_ptr<api::internal::Context>;
-auto Endpoints(const network::zeromq::Context& zmq, const int instance) noexcept
-    -> std::unique_ptr<api::Endpoints>;
-auto HDSeed(
-    const api::Core& api,
-    const api::Factory& factory,
-    const api::crypto::internal::Asymmetric& asymmetric,
-    const api::crypto::Symmetric& symmetric,
-    const api::storage::Storage& storage,
-    const crypto::Bip32& bip32,
-    const crypto::Bip39& bip39) noexcept -> std::unique_ptr<api::HDSeed>;
 auto Legacy(const std::string& home) noexcept -> std::unique_ptr<api::Legacy>;
 auto Log(
     const network::zeromq::Context& zmq,
     const std::string& endpoint) noexcept
     -> std::unique_ptr<api::internal::Log>;
-auto Primitives(const api::Crypto& crypto) noexcept
-    -> std::unique_ptr<api::Primitives>;
+auto FactoryAPI(const api::Crypto& crypto) noexcept
+    -> std::unique_ptr<api::Factory>;
 auto Settings(const api::Legacy& legacy, const String& path) noexcept
     -> std::unique_ptr<api::Settings>;
 }  // namespace opentxs::factory

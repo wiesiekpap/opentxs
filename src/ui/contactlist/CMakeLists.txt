@@ -15,6 +15,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactListItem.hpp"
 )
 target_link_libraries(opentxs-ui-contactlist PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-ui-contactlist SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-ui-contactlist PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-contactlist>)
 add_dependencies(opentxs-ui-contactlist generated_code)

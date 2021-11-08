@@ -13,10 +13,9 @@
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Cmpctblock::"
 
@@ -24,7 +23,7 @@ namespace opentxs::factory
 {
 // We have a header and a raw payload. Parse it.
 auto BitcoinP2PCmpctblock(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -34,7 +33,7 @@ auto BitcoinP2PCmpctblock(
     using ReturnType = bitcoin::message::Cmpctblock;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -44,7 +43,8 @@ auto BitcoinP2PCmpctblock(
     try {
         return new ReturnType(api, std::move(pHeader), raw_cmpctblock);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Checksum failure")
+            .Flush();
 
         return nullptr;
     }
@@ -52,7 +52,7 @@ auto BitcoinP2PCmpctblock(
 
 // We have all the data members to create the message from scratch (for sending)
 auto BitcoinP2PCmpctblock(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const Data& raw_cmpctblock)
     -> blockchain::p2p::bitcoin::message::Cmpctblock*
@@ -77,7 +77,7 @@ auto Cmpctblock::payload() const noexcept -> OTData
 
 // We have all the data members to create the message from scratch (for sending)
 Cmpctblock::Cmpctblock(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const Data& raw_cmpctblock) noexcept
     : Message(api, network, bitcoin::Command::cmpctblock)
@@ -89,7 +89,7 @@ Cmpctblock::Cmpctblock(
 // We have a header and the data members. They've been parsed, so now we are
 // instantiating the message from them.
 Cmpctblock::Cmpctblock(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const Data& raw_cmpctblock) noexcept(false)
     : Message(api, std::move(header))

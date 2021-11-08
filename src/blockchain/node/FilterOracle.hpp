@@ -25,19 +25,22 @@
 #include "1_Internal.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/JobCounter.hpp"
 #include "util/Work.hpp"
@@ -54,7 +57,7 @@ struct Blockchain;
 }  // namespace internal
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -170,7 +173,7 @@ public:
     auto Start() noexcept -> void final;
 
     FilterOracle(
-        const api::Core& api,
+        const api::Session& api,
         const api::network::internal::Blockchain& crypto,
         const internal::Config& config,
         const internal::Network& node,
@@ -184,7 +187,7 @@ public:
     ~FilterOracle() final;
 
 private:
-    friend Worker<FilterOracle, api::Core>;
+    friend Worker<FilterOracle, api::Session>;
     friend internal::FilterOracle;
 
     using FilterHeaderHex = std::string;
@@ -195,7 +198,7 @@ private:
 
     static const CheckpointMap filter_checkpoints_;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const internal::Network& node_;
     const internal::HeaderOracle& header_;
     const internal::FilterDatabase& database_;

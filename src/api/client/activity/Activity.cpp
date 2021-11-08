@@ -21,7 +21,7 @@
 namespace opentxs::factory
 {
 auto ActivityAPI(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contact) noexcept
     -> std::unique_ptr<api::client::Activity>
 {
@@ -34,14 +34,14 @@ auto ActivityAPI(
 namespace opentxs::api::client
 {
 Activity::Activity(
-    const api::Core& api,
+    const api::Session& api,
     const client::Contacts& contact) noexcept
     : imp_(std::make_unique<Imp>(api, contact))
 {
 }
 
 auto Activity::AddBlockchainTransaction(
-    const Blockchain& api,
+    const crypto::Blockchain& api,
     const BlockchainTransaction& transaction) const noexcept -> bool
 {
     return imp_->AddBlockchainTransaction(api, transaction);

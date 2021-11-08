@@ -10,10 +10,10 @@
 #include <memory>
 #include <utility>
 
-#include "internal/core/Core.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "Proto.hpp"
+#include "internal/contact/Contact.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/StorageAccountIndex.pb.h"
@@ -23,6 +23,8 @@
 #include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/protobuf/verify/StorageAccounts.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -177,7 +179,7 @@ auto Accounts::add_set_index(
         mapID->SetString(argID.str());
     } else {
         if (mapID != argID) {
-            LogOutput(OT_METHOD)(__func__)(": Provided index id (")(
+            LogError()(OT_METHOD)(__func__)(": Provided index id (")(
                 argID)(") for account ")(
                 accountID)(" does not match existing index id ")(mapID)
                 .Flush();
@@ -207,37 +209,37 @@ auto Accounts::check_update_account(
     const core::UnitType unit) -> bool
 {
     if (accountID->empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid account ID.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid account ID.").Flush();
 
         return false;
     }
 
     if (ownerNym.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid owner nym ID.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid owner nym ID.").Flush();
 
         return false;
     }
 
     if (signerNym.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid signer nym ID.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid signer nym ID.").Flush();
 
         return false;
     }
 
     if (issuerNym.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid issuer nym ID.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid issuer nym ID.").Flush();
 
         return false;
     }
 
     if (server.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid server ID.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid server ID.").Flush();
 
         return false;
     }
 
     if (contract.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid unit ID.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid unit ID.").Flush();
 
         return false;
     }
@@ -333,7 +335,7 @@ void Accounts::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to load account index file.")
+        LogError()(OT_METHOD)(__func__)(": Failed to load account index file.")
             .Flush();
         OT_FAIL;
     }
@@ -354,14 +356,14 @@ void Accounts::init(const std::string& hash)
 
     for (const auto& it : serialized->index()) {
         const auto unit = it.type();
-        auto& map = unit_index_[core::internal::translate(unit)];
+        const auto type = ClaimToUnit(translate(unit));
+        auto& map = unit_index_[type];
 
         for (const auto& account : it.account()) {
             const auto accountID = Identifier::Factory(account);
 
             map.emplace(accountID);
-            std::get<5>(get_account_data(lock, accountID)) =
-                core::internal::translate(unit);
+            std::get<5>(get_account_data(lock, accountID)) = type;
         }
     }
 }
@@ -378,7 +380,7 @@ auto Accounts::Load(
 auto Accounts::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL;
     }
 
@@ -418,7 +420,7 @@ auto Accounts::serialize() const -> proto::StorageAccounts
     for (const auto& [type, accounts] : unit_index_) {
         auto& listProto = *serialized.add_index();
         listProto.set_version(INDEX_VERSION);
-        listProto.set_type(core::internal::translate(type));
+        listProto.set_type(translate(UnitToClaim(type)));
 
         for (const auto& accountID : accounts) {
             if (accountID->empty()) { continue; }

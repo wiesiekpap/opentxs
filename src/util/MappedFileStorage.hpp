@@ -10,8 +10,8 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::util

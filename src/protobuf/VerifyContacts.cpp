@@ -5,6 +5,13 @@
 
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
+#include <iterator>
+#include <map>
+#include <set>
+#include <stdexcept>
+#include <utility>
+
 #include "opentxs/protobuf/verify/VerifyCredentials.hpp"
 
 namespace opentxs

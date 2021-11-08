@@ -5,6 +5,8 @@
 
 #include "opentxs/protobuf/verify/VerifyConsensus.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
+
 namespace opentxs::proto
 {
 auto ContextAllowedServer() noexcept -> const VersionMap&

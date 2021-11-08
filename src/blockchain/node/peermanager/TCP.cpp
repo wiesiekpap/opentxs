@@ -14,20 +14,19 @@
 #include <vector>
 
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::blockchain::node::implementation::"                              \
@@ -87,7 +86,7 @@ public:
 
             return output;
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -121,7 +120,7 @@ public:
     }
 
     TCPIncomingConnectionManager(
-        const api::Core& api,
+        const api::Session& api,
         PeerManager::Peers& parent) noexcept
         : IncomingConnectionManager(parent)
         , api_(api)
@@ -134,7 +133,7 @@ public:
     ~TCPIncomingConnectionManager() final { Shutdown(); }
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     mutable std::mutex lock_;
     mutable std::vector<opentxs::network::asio::Endpoint> listeners_;
     mutable std::map<int, opentxs::network::asio::Socket> sockets_;
@@ -159,7 +158,7 @@ private:
         const auto peerID = parent_.ConstructPeer(std::move(address));
 
         if (-1 == peerID) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to instantiate peer")
+            LogError()(OT_METHOD)(__func__)(": Failed to instantiate peer")
                 .Flush();
 
             return;
@@ -178,7 +177,7 @@ private:
 };
 
 auto PeerManager::IncomingConnectionManager::TCP(
-    const api::Core& api,
+    const api::Session& api,
     PeerManager::Peers& parent) noexcept
     -> std::unique_ptr<IncomingConnectionManager>
 {

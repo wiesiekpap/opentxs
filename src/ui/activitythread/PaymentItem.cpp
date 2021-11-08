@@ -11,20 +11,20 @@
 #include <type_traits>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/otx/client/OTPayment.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/ext/OTPayment.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/activitythread/ActivityThreadItem.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -34,7 +34,7 @@ namespace opentxs::factory
 {
 auto PaymentItem(
     const ui::implementation::ActivityThreadInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ui::implementation::ActivityThreadRowID& rowID,
     const ui::implementation::ActivityThreadSortKey& sortKey,
@@ -63,7 +63,7 @@ namespace opentxs::ui::implementation
 {
 PaymentItem::PaymentItem(
     const ActivityThreadInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const ActivityThreadRowID& rowID,
     const ActivityThreadSortKey& sortKey,
@@ -117,7 +117,7 @@ auto PaymentItem::Deposit() const noexcept -> bool
     auto lock = sLock{shared_lock_};
 
     if (false == bool(payment_)) {
-        LogOutput(OT_METHOD)(__func__)(": Payment not loaded.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Payment not loaded.").Flush();
 
         return false;
     }
@@ -125,7 +125,7 @@ auto PaymentItem::Deposit() const noexcept -> bool
     auto task = api_.OTX().DepositPayment(nym_id_, payment_);
 
     if (0 == task.first) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to queue deposit.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to queue deposit.").Flush();
 
         return false;
     }
@@ -141,7 +141,7 @@ auto PaymentItem::DisplayAmount() const noexcept -> std::string
 }
 
 auto PaymentItem::extract(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nym,
     const ActivityThreadRowID& row,
     CustomData& custom) noexcept

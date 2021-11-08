@@ -13,12 +13,11 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/core/Core.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "Proto.hpp"
+#include "internal/contact/Contact.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
-#include "opentxs/core/Types.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/protobuf/Bip47Channel.pb.h"
 #include "opentxs/protobuf/BlockchainAccountData.pb.h"
@@ -30,6 +29,8 @@
 #include "opentxs/protobuf/verify/Bip47Channel.hpp"
 #include "opentxs/protobuf/verify/StorageBip47Contexts.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -107,7 +108,7 @@ auto Bip47Channels::index(
 {
     const auto& common = data.deterministic().common();
     auto& chain = channel_data_[id];
-    chain = core::internal::translate(common.chain());
+    chain = ClaimToUnit(translate(common.chain()));
     chain_index_[chain].emplace(id);
 }
 
@@ -117,7 +118,7 @@ auto Bip47Channels::init(const std::string& hash) -> void
     driver_.LoadProto(hash, proto);
 
     if (!proto) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to load bip47 channel index file.")
             .Flush();
         OT_FAIL
@@ -136,7 +137,7 @@ auto Bip47Channels::init(const std::string& hash) -> void
         for (const auto& index : proto->index()) {
             auto id = Identifier::Factory(index.channelid());
             auto& chain = channel_data_[id];
-            chain = core::internal::translate(index.chain());
+            chain = ClaimToUnit(translate(index.chain()));
             chain_index_[chain].emplace(std::move(id));
         }
     }
@@ -178,7 +179,7 @@ auto Bip47Channels::repair_indices() noexcept -> void
 auto Bip47Channels::save(const std::unique_lock<std::mutex>& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure.").Flush();
         OT_FAIL
     }
 
@@ -212,7 +213,7 @@ auto Bip47Channels::serialize() const -> proto::StorageBip47Contexts
         auto& index = *serialized.add_index();
         index.set_version(CHANNEL_INDEX_VERSION);
         index.set_channelid(id->str());
-        index.set_chain(core::internal::translate(chain));
+        index.set_chain(translate(UnitToClaim(chain)));
     }
 
     return serialized;

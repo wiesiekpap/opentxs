@@ -20,7 +20,7 @@ add_library(
 target_link_libraries(
   opentxs-api-network-asio
   PRIVATE
-    opentxs::messages
+    opentxs-common
     Boost::headers
     OpenSSL::SSL
 )
@@ -34,5 +34,14 @@ target_link_libraries(
 target_include_directories(
   opentxs-api-network-asio SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
+
+if(NOT OT_IWYU)
+  target_precompile_headers(
+    opentxs-api-network-asio
+    REUSE_FROM
+    opentxs-common
+  )
+endif()
+
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-network-asio>)
 add_dependencies(opentxs-api-network-asio generated_code)

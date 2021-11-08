@@ -5,7 +5,6 @@
 
 #include "opentxs/protobuf/verify/PurseExchange.hpp"  // IWYU pragma: associated
 
-#include <cstdint>
 #include <string>
 
 #include "opentxs/protobuf/Basic.hpp"

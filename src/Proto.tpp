@@ -10,15 +10,16 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cassert>
+#include <cstddef>
 #include <iostream>
 #include <limits>
 #include <memory>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {

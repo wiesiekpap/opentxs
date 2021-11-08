@@ -14,12 +14,12 @@
 #include <string>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::blockchain::block::bitcoin::implementation::Output::Cache::"
@@ -27,7 +27,7 @@
 namespace opentxs::blockchain::block::bitcoin::implementation
 {
 Output::Cache::Cache(
-    const api::Core& api,
+    const api::Session& api,
     std::optional<std::size_t>&& size,
     boost::container::flat_set<crypto::Key>&& keys,
     block::Position&& minedPosition,
@@ -113,7 +113,7 @@ auto Output::Cache::merge(const internal::Output& rhs) noexcept -> bool
         const auto& [account, subchain, index] = key;
 
         if (crypto::Subchain::Outgoing == subchain) {
-            LogOutput(OT_METHOD)(__func__)(": discarding invalid key").Flush();
+            LogError()(OT_METHOD)(__func__)(": discarding invalid key").Flush();
         } else {
             add(std::move(key));
         }

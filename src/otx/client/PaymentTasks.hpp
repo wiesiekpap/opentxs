@@ -11,10 +11,10 @@
 #include "core/StateMachine.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/otx/client/Client.hpp"
+#include "internal/otx/client/OTPayment.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/ext/OTPayment.hpp"
 #include "otx/client/DepositPayment.hpp"
 
 namespace opentxs::otx::client::implementation

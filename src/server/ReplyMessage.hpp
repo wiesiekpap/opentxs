@@ -10,16 +10,20 @@
 #include <set>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 class Wallet;
+}  // namespace session
 }  // namespace api
 
 namespace identity
@@ -55,7 +59,7 @@ class ReplyMessage
 public:
     ReplyMessage(
         const UserCommandProcessor& parent,
-        const opentxs::api::Wallet& wallet,
+        const opentxs::api::session::Wallet& wallet,
         const identifier::Server& notaryID,
         const identity::Nym& signer,
         const Message& input,
@@ -98,7 +102,7 @@ public:
 
 private:
     const UserCommandProcessor& parent_;
-    const opentxs::api::Wallet& wallet_;
+    const opentxs::api::session::Wallet& wallet_;
     const identity::Nym& signer_;
     const Message& original_;
     const PasswordPrompt& reason_;

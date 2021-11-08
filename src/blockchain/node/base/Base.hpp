@@ -19,14 +19,13 @@
 #include "blockchain/node/Mempool.hpp"
 #include "core/Shutdown.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -36,13 +35,15 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
@@ -50,13 +51,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
 namespace network
 {
@@ -66,7 +64,7 @@ struct Blockchain;
 }  // namespace internal
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -131,7 +129,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::blockchain::node::implementation
 {
 class Base : virtual public node::internal::Network,
-             public Worker<Base, api::Core>
+             public Worker<Base, api::Session>
 {
 public:
     enum class Work : OTZMQWorkType {
@@ -141,7 +139,7 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    const api::client::internal::Blockchain& crypto_;
+    const api::crypto::Blockchain& crypto_;
     const api::network::internal::Blockchain& network_;
     const Type chain_;
 
@@ -280,8 +278,8 @@ protected:
     auto init() noexcept -> void;
 
     Base(
-        const api::Core& api,
-        const api::client::internal::Blockchain& crypto,
+        const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const api::network::internal::Blockchain& network,
         const Type type,
         const node::internal::Config& config,
@@ -289,7 +287,7 @@ protected:
         const std::string& syncEndpoint) noexcept;
 
 private:
-    friend Worker<Base, api::Core>;
+    friend Worker<Base, api::Session>;
 
     enum class State : int {
         UpdatingHeaders,

@@ -30,8 +30,9 @@
 #include "blockchain/block/bitcoin/BlockParser.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
@@ -39,9 +40,8 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::blockchain::block::bitcoin::implementation::Block::"
@@ -51,7 +51,7 @@ namespace be = boost::endian;
 namespace opentxs::factory
 {
 auto BitcoinBlock(
-    const api::Core& api,
+    const api::Session& api,
     const opentxs::blockchain::block::Header& previous,
     const Transaction_p pGen,
     const std::uint32_t nBits,
@@ -140,7 +140,7 @@ auto BitcoinBlock(
             case blockchain::Type::Ethereum_frontier:
             case blockchain::Type::Ethereum_ropsten:
             default: {
-                LogOutput(OT_METHOD)(__func__)(": Unsupported type (")(
+                LogError()(OT_METHOD)(__func__)(": Unsupported type (")(
                     static_cast<std::uint32_t>(chain))(")")
                     .Flush();
 
@@ -148,14 +148,14 @@ auto BitcoinBlock(
             }
         }
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 auto BitcoinBlock(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept
     -> std::shared_ptr<blockchain::block::bitcoin::Block>
@@ -179,7 +179,7 @@ auto BitcoinBlock(
             case blockchain::Type::Ethereum_frontier:
             case blockchain::Type::Ethereum_ropsten:
             default: {
-                LogOutput(OT_METHOD)(__func__)(": Unsupported type (")(
+                LogError()(OT_METHOD)(__func__)(": Unsupported type (")(
                     static_cast<std::uint32_t>(chain))(")")
                     .Flush();
 
@@ -187,15 +187,15 @@ auto BitcoinBlock(
             }
         }
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto parse_normal_block(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept(false)
     -> std::shared_ptr<blockchain::block::bitcoin::Block>
@@ -232,7 +232,7 @@ const std::size_t Block::header_bytes_{80};
 const Block::value_type Block::null_tx_{};
 
 Block::Block(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type chain,
     std::unique_ptr<const internal::Header> header,
     TxidIndex&& index,
@@ -269,7 +269,7 @@ auto Block::at(const std::size_t index) const noexcept -> const value_type&
 
         return at(reader(index_.at(index)));
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return null_tx_;
     }
@@ -281,7 +281,7 @@ auto Block::at(const ReadView txid) const noexcept -> const value_type&
 
         return transactions_.at(txid);
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": transaction ")(
+        LogError()(OT_METHOD)(__func__)(": transaction ")(
             api_.Factory().Data(txid)->asHex())(" not found in block ")(
             header_.Hash().asHex())
             .Flush();
@@ -292,7 +292,7 @@ auto Block::at(const ReadView txid) const noexcept -> const value_type&
 
 template <typename HashType>
 auto Block::calculate_merkle_hash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const HashType& lhs,
     const HashType& rhs,
@@ -322,7 +322,7 @@ auto Block::calculate_merkle_hash(
 
 template <typename InputContainer, typename OutputContainer>
 auto Block::calculate_merkle_row(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const InputContainer& in,
     OutputContainer& out) -> bool
@@ -347,7 +347,7 @@ auto Block::calculate_merkle_row(
 }
 
 auto Block::calculate_merkle_value(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const TxidIndex& txids) -> block::pHash
 {
@@ -401,7 +401,7 @@ auto Block::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
-    LogTrace(OT_METHOD)(__func__)(": processing ")(transactions_.size())(
+    LogTrace()(OT_METHOD)(__func__)(": processing ")(transactions_.size())(
         " transactions")
         .Flush();
 
@@ -413,7 +413,7 @@ auto Block::ExtractElements(const filter::Type style) const noexcept
             std::make_move_iterator(temp.end()));
     }
 
-    LogTrace(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
+    LogTrace()(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -427,7 +427,7 @@ auto Block::FindMatches(
 {
     if (0 == (outpoints.size() + patterns.size())) { return {}; }
 
-    LogTrace(OT_METHOD)(__func__)(": Verifying ")(
+    LogTrace()(OT_METHOD)(__func__)(": Verifying ")(
         patterns.size() + outpoints.size())(" potential matches in ")(
         transactions_.size())(" transactions")
         .Flush();
@@ -481,7 +481,7 @@ auto Block::Print() const noexcept -> std::string
 auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
 {
     if (false == bool(bytes)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -490,19 +490,19 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
     const auto out = bytes(size);
 
     if (false == out.valid(size)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
 
         return false;
     }
 
-    LogInsane(OT_METHOD)(__func__)(": Serializing ")(txCount.Value())(
+    LogInsane()(OT_METHOD)(__func__)(": Serializing ")(txCount.Value())(
         " transactions into ")(size)(" bytes.")
         .Flush();
     auto remaining = std::size_t{size};
     auto it = static_cast<std::byte*>(out.data());
 
     if (false == header_.Serialize(preallocated(remaining, it))) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize header").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize header").Flush();
 
         return false;
     }
@@ -511,14 +511,14 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
     std::advance(it, header_bytes_);
 
     if (false == serialize_post_header(it, remaining)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to extra data (post header)")
+        LogError()(OT_METHOD)(__func__)(": Failed to extra data (post header)")
             .Flush();
 
         return false;
     }
 
     if (false == txCount.Encode(preallocated(remaining, it))) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to serialize transaction count")
             .Flush();
 
@@ -539,7 +539,7 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
                 tx.Internal().Serialize(preallocated(remaining, it));
 
             if (false == encoded.has_value()) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": failed to serialize transaction ")(tx.ID().asHex())
                     .Flush();
 
@@ -549,14 +549,14 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
             remaining -= encoded.value();
             std::advance(it, encoded.value());
         } catch (...) {
-            LogOutput(OT_METHOD)(__func__)(": missing transaction").Flush();
+            LogError()(OT_METHOD)(__func__)(": missing transaction").Flush();
 
             return false;
         }
     }
 
     if (0 != remaining) {
-        LogOutput(OT_METHOD)(__func__)(": Extra bytes: ")(remaining).Flush();
+        LogError()(OT_METHOD)(__func__)(": Extra bytes: ")(remaining).Flush();
 
         return false;
     }

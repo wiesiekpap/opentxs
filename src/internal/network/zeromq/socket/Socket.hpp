@@ -11,7 +11,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -61,7 +61,7 @@ auto PairSocket(
     const std::string& endpoint)
     -> std::unique_ptr<network::zeromq::socket::Pair>;
 auto Pipeline(
-    const api::Core& api,
+    const api::Session& api,
     const network::zeromq::Context& context,
     std::function<void(network::zeromq::Message&)> callback)
     -> std::unique_ptr<opentxs::network::zeromq::Pipeline>;

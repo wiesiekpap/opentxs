@@ -11,22 +11,23 @@
 #include <cstring>
 #include <functional>
 #include <iterator>
-#include <memory>
 #include <stdexcept>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Primitives.hpp"
+#include "internal/api/Crypto.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/HDIndex.hpp"
 
 #define OT_METHOD "opentxs::crypto::Bip32::Imp::"
@@ -94,7 +95,7 @@ auto Bip32::Imp::derive_private(
         preallocated(hash.size(), hash.data()));
 
     if (false == success) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to calculate hash").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to calculate hash").Flush();
 
         return false;
     }
@@ -105,7 +106,7 @@ auto Bip32::Imp::derive_private(
             node.ParentPrivate(), {hash.as<char>(), 32}, node.ChildPrivate());
 
         if (false == success) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid scalar").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid scalar").Flush();
 
             return false;
         }
@@ -114,13 +115,13 @@ auto Bip32::Imp::derive_private(
             reader(node.ChildPrivate()(32)), node.ChildPublic());
 
         if (false == success) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to calculate public key")
+            LogError()(OT_METHOD)(__func__)(": Failed to calculate public key")
                 .Flush();
 
             return false;
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -144,7 +145,7 @@ auto Bip32::Imp::derive_public(
     auto i = be::big_uint32_buf_t{child};
 
     if (IsHard(child)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Hardened public derivation is not possible")
             .Flush();
 
@@ -160,7 +161,7 @@ auto Bip32::Imp::derive_public(
         preallocated(hash.size(), hash.data()));
 
     if (false == success) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to calculate hash").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to calculate hash").Flush();
 
         return false;
     }
@@ -171,13 +172,13 @@ auto Bip32::Imp::derive_public(
             node.ParentPublic(), {hash.as<char>(), 32}, node.ChildPublic());
 
         if (false == success) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to calculate public key")
+            LogError()(OT_METHOD)(__func__)(": Failed to calculate public key")
                 .Flush();
 
             return false;
         }
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -203,7 +204,7 @@ auto Bip32::Imp::DeserializePrivate(
     const auto size = input->size();
 
     if (78 != size) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid input size (")(size)(")")
+        LogError()(OT_METHOD)(__func__)(": Invalid input size (")(size)(")")
             .Flush();
 
         return {};
@@ -212,7 +213,7 @@ auto Bip32::Imp::DeserializePrivate(
     bool output = extract(input, network, depth, parent, index, chainCode);
 
     if (std::byte(0) != input->at(45)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid padding bit").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid padding bit").Flush();
 
         return {};
     }
@@ -235,7 +236,7 @@ auto Bip32::Imp::DeserializePublic(
     const auto size = input->size();
 
     if (78 != size) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid input size (")(size)(")")
+        LogError()(OT_METHOD)(__func__)(": Invalid input size (")(size)(")")
             .Flush();
 
         return {};
@@ -265,7 +266,7 @@ auto Bip32::Imp::extract(
     return output;
 }
 
-auto Bip32::Imp::Init(const api::Primitives& factory) noexcept -> void
+auto Bip32::Imp::Init(const api::Factory& factory) noexcept -> void
 {
     auto& blank = const_cast<std::optional<Key>&>(blank_);
     blank.emplace(
@@ -279,22 +280,23 @@ auto Bip32::Imp::IsHard(const Bip32Index index) noexcept -> bool
     return index >= hard;
 }
 
-auto Bip32::Imp::provider(const EcdsaCurve& curve) const noexcept(false)
+auto Bip32::Imp::provider(const EcdsaCurve& curve) const noexcept
     -> const crypto::EcdsaProvider&
 {
+    using Key = key::asymmetric::Algorithm;
+
     switch (curve) {
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
         case EcdsaCurve::ed25519: {
-            return crypto_.ED25519();
+
+            return crypto_.Internal().EllipticProvider(Key::ED25519);
         }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         case EcdsaCurve::secp256k1: {
-            return crypto_.SECP256K1();
+
+            return crypto_.Internal().EllipticProvider(Key::Secp256k1);
         }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         default: {
-            throw std::out_of_range("No support for specified curve");
+
+            return crypto_.Internal().EllipticProvider(Key::Error);
         }
     }
 }
@@ -318,7 +320,7 @@ auto Bip32::Imp::SerializePrivate(
     const auto size = key.size();
 
     if (32 != size) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid key size (")(size)(")")
+        LogError()(OT_METHOD)(__func__)(": Invalid key size (")(size)(")")
             .Flush();
 
         return {};
@@ -347,7 +349,7 @@ auto Bip32::Imp::SerializePublic(
     auto size = key.size();
 
     if (33 != size) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid key size (")(size)(")")
+        LogError()(OT_METHOD)(__func__)(": Invalid key size (")(size)(")")
             .Flush();
 
         return {};
@@ -356,7 +358,8 @@ auto Bip32::Imp::SerializePublic(
     size = chainCode.size();
 
     if (32 != size) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid chain code size (")(size)(")")
+        LogError()(OT_METHOD)(__func__)(": Invalid chain code size (")(
+            size)(")")
             .Flush();
 
         return {};

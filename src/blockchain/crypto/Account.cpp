@@ -20,12 +20,12 @@
 #include "blockchain/crypto/AccountIndex.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
@@ -42,6 +42,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/protobuf/Bip47Channel.pb.h"
 #include "opentxs/protobuf/HDAccount.pb.h"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::blockchain::crypto::implementation::BalanceTree::"
@@ -49,7 +50,7 @@
 namespace opentxs::factory
 {
 auto BlockchainAccountKeys(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contacts,
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
@@ -69,7 +70,7 @@ auto BlockchainAccountKeys(
 namespace opentxs::blockchain::crypto::implementation
 {
 Account::Account(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contacts,
     const crypto::Wallet& parent,
     const AccountIndex& index,
@@ -175,7 +176,7 @@ auto Account::AssociateTransaction(
         auto* pNode = node_index_.Find(accountID);
 
         if (nullptr == pNode) {
-            LogVerbose(OT_METHOD)(__func__)(": Account ")(
+            LogVerbose()(OT_METHOD)(__func__)(": Account ")(
                 accountID)(" not found")
                 .Flush();
 
@@ -201,7 +202,7 @@ auto Account::AssociateTransaction(
                     std::forward_as_tuple(key, amount));
             }
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Failed processing transaction")
+            LogError()(OT_METHOD)(__func__)(": Failed processing transaction")
                 .Flush();
 
             return false;

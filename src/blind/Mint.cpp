@@ -16,30 +16,30 @@
 #include <utility>
 
 #include "core/OTStorage.hpp"
-#include "internal/api/Api.hpp"
-#include "opentxs/Exclusive.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Legacy.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/api/Legacy.hpp"
+#include "internal/api/session/Session.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/Exclusive.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/util/Common.hpp"
 #include "opentxs/core/util/Tag.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blind::mint::implementation::Mint::"
 
 namespace opentxs::blind::mint::implementation
 {
 Mint::Mint(
-    const api::Core& api,
+    const api::Session& api,
     const String& strNotaryID,
     const String& strServerNymID,
     const String& strInstrumentDefinitionID)
@@ -60,14 +60,14 @@ Mint::Mint(
     m_strFilename->Format(
         "%s%s%s",
         strNotaryID.Get(),
-        PathSeparator(),
+        api::Legacy::PathSeparator(),
         strInstrumentDefinitionID.Get());
 
     InitMint();
 }
 
 Mint::Mint(
-    const api::Core& api,
+    const api::Session& api,
     const String& strNotaryID,
     const String& strInstrumentDefinitionID)
     : m_mapPrivate()
@@ -87,13 +87,13 @@ Mint::Mint(
     m_strFilename->Format(
         "%s%s%s",
         strNotaryID.Get(),
-        PathSeparator(),
+        api::Legacy::PathSeparator(),
         strInstrumentDefinitionID.Get());
 
     InitMint();
 }
 
-Mint::Mint(const api::Core& api)
+Mint::Mint(const api::Session& api)
     : m_mapPrivate()
     , m_mapPublic()
     , m_NotaryID(api.Factory().ServerID())
@@ -187,15 +187,15 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
             m_strFilename->Format(
                 "%s%s%s%s",
                 strNotaryID->Get(),
-                PathSeparator(),  // server appends ".1"
-                                  // or ".PUBLIC" here.
+                api::Legacy::PathSeparator(),  // server appends ".1"
+                                               // or ".PUBLIC" here.
                 strInstrumentDefinitionID->Get(),
                 szAppend);
         else
             m_strFilename->Format(
                 "%s%s%s",
                 strNotaryID->Get(),
-                PathSeparator(),
+                api::Legacy::PathSeparator(),
                 strInstrumentDefinitionID->Get());  // client uses only
                                                     // instrument definition
                                                     // id, no append.
@@ -224,9 +224,9 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
             szFolder2name,
             szFilename,
             "")) {
-        LogDetail(OT_METHOD)(__func__)(": File does not exist: ")(
-            szFolder1name)(PathSeparator())(szFolder2name)(PathSeparator())(
-            szFilename)
+        LogDetail()(OT_METHOD)(__func__)(": File does not exist: ")(
+            szFolder1name)(api::Legacy::PathSeparator())(
+            szFolder2name)(api::Legacy::PathSeparator())(szFilename)
             .Flush();
         return false;
     }
@@ -241,9 +241,9 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
                // DATA STORE.
 
     if (strFileContents.length() < 2) {
-        LogOutput(OT_METHOD)(__func__)(": Error reading file: ")(
-            szFolder1name)(PathSeparator())(szFolder2name)(PathSeparator())(
-            szFilename)(".")
+        LogError()(OT_METHOD)(__func__)(": Error reading file: ")(
+            szFolder1name)(api::Legacy::PathSeparator())(
+            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
         return false;
     }
@@ -273,14 +273,14 @@ auto Mint::SaveMint(const char* szAppend) -> bool
             m_strFilename->Format(
                 "%s%s%s%s",
                 strNotaryID->Get(),
-                PathSeparator(),  // server side
+                api::Legacy::PathSeparator(),  // server side
                 strInstrumentDefinitionID->Get(),
                 szAppend);
         else
             m_strFilename->Format(
                 "%s%s%s",
                 strNotaryID->Get(),
-                PathSeparator(),
+                api::Legacy::PathSeparator(),
                 strInstrumentDefinitionID->Get());  // client side
     }
 
@@ -297,9 +297,10 @@ auto Mint::SaveMint(const char* szAppend) -> bool
     auto strRawFile = String::Factory();
 
     if (!SaveContractRaw(strRawFile)) {
-        LogOutput(OT_METHOD)(__func__)(": Error saving Mintfile (to string): ")(
-            szFolder1name)(PathSeparator())(szFolder2name)(PathSeparator())(
-            szFilename)(".")
+        LogError()(OT_METHOD)(__func__)(
+            ": Error saving Mintfile (to string): ")(
+            szFolder1name)(api::Legacy::PathSeparator())(
+            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
         return false;
     }
@@ -309,10 +310,10 @@ auto Mint::SaveMint(const char* szAppend) -> bool
 
     if (false ==
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Error saving mint (Failed writing armored "
-            "string): ")(szFolder1name)(PathSeparator())(
-            szFolder2name)(PathSeparator())(szFilename)(".")
+            "string): ")(szFolder1name)(api::Legacy::PathSeparator())(
+            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
         return false;
     }
@@ -327,14 +328,15 @@ auto Mint::SaveMint(const char* szAppend) -> bool
         "");  // <=== SAVING TO LOCAL DATA STORE.
     if (!bSaved) {
         if (nullptr != szAppend)
-            LogOutput(OT_METHOD)(__func__)(": Error writing to file: ")(
-                szFolder1name)(PathSeparator())(szFolder2name)(PathSeparator())(
+            LogError()(OT_METHOD)(__func__)(": Error writing to file: ")(
+                szFolder1name)(api::Legacy::PathSeparator())(
+                szFolder2name)(api::Legacy::PathSeparator())(
                 szFilename)(szAppend)(".")
                 .Flush();
         else
-            LogOutput(OT_METHOD)(__func__)(": Error writing to file: ")(
-                szFolder1name)(PathSeparator())(szFolder2name)(PathSeparator())(
-                szFilename)(".")
+            LogError()(OT_METHOD)(__func__)(": Error writing to file: ")(
+                szFolder1name)(api::Legacy::PathSeparator())(
+                szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
                 .Flush();
 
         return false;
@@ -350,21 +352,21 @@ auto Mint::VerifyMint(const identity::Nym& theOperator) -> bool
     // Make sure that the supposed Contract ID that was set is actually
     // a hash of the contract file, signatures and all.
     if (!VerifyContractID()) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Error comparing Mint ID to Asset Contract ID.")
             .Flush();
         return false;
     } else if (!VerifySignature(theOperator)) {
-        LogOutput(OT_METHOD)(__func__)(": Error verifying signature on mint.")
+        LogError()(OT_METHOD)(__func__)(": Error verifying signature on mint.")
             .Flush();
         return false;
     }
 
-    LogDebug(OT_METHOD)(__func__)(": We now know that...").Flush();
-    LogDebug(OT_METHOD)(__func__)(": 1. The Asset Contract ID matches the "
-                                  "Mint ID loaded from the Mint file.")
+    LogDebug()(OT_METHOD)(__func__)(": We now know that...").Flush();
+    LogDebug()(OT_METHOD)(__func__)(": 1. The Asset Contract ID matches the "
+                                    "Mint ID loaded from the Mint file.")
         .Flush();
-    LogDebug(OT_METHOD)(__func__)(": 2. The SIGNATURE VERIFIED.").Flush();
+    LogDebug()(OT_METHOD)(__func__)(": 2. The SIGNATURE VERIFIED.").Flush();
     return true;
 }
 
@@ -382,7 +384,7 @@ auto Mint::VerifyContractID() const -> bool
         auto str1 = String::Factory(m_ID),
              str2 = String::Factory(m_InstrumentDefinitionID);
 
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Mint ID does NOT match Instrument Definition. ")(str1)(" | ")(
             str2)(".")
             .Flush();
@@ -390,7 +392,7 @@ auto Mint::VerifyContractID() const -> bool
         return false;
     } else {
         auto str1 = String::Factory(m_ID);
-        LogVerbose(OT_METHOD)(__func__)(
+        LogVerbose()(OT_METHOD)(__func__)(
             ": Mint ID *SUCCESSFUL* match to Asset Contract ID: ")(str1)
             .Flush();
         return true;
@@ -407,7 +409,7 @@ auto Mint::GetPrivate(Armored& theArmor, const Amount& lDenomination) const
 
         return true;
     } catch (...) {
-        LogTrace(OT_METHOD)(__func__)(": Denomination ")(lDenomination.str())(
+        LogTrace()(OT_METHOD)(__func__)(": Denomination ")(lDenomination.str())(
             " not found")
             .Flush();
 
@@ -425,7 +427,7 @@ auto Mint::GetPublic(Armored& theArmor, const Amount& lDenomination) const
 
         return true;
     } catch (...) {
-        LogTrace(OT_METHOD)(__func__)(": Denomination ")(lDenomination.str())(
+        LogTrace()(OT_METHOD)(__func__)(": Denomination ")(lDenomination.str())(
             " not found")
             .Flush();
 
@@ -564,7 +566,7 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_InstrumentDefinitionID->SetString(strInstrumentDefinitionID);
         m_CashAccountID->SetString(strCashAcctID);
 
-        LogDetail(OT_METHOD)(__func__)
+        LogDetail()(OT_METHOD)(__func__)
             //    "\n===> Loading XML for mint into memory structures..."
             (": Mint version: ")(m_strVersion)(" Notary ID: ")(
                 strNotaryID)(" Instrument Definition ID: ")(
@@ -582,13 +584,13 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         auto pArmor = Armored::Factory();
 
         if (!Contract::LoadEncodedTextField(xml, pArmor) || !pArmor->Exists()) {
-            LogOutput(OT_METHOD)(__func__)(": Error: mintPrivateInfo field "
-                                           "without value.")
+            LogError()(OT_METHOD)(__func__)(": Error: mintPrivateInfo field "
+                                            "without value.")
                 .Flush();
 
             return (-1);  // error condition
         } else {
-            LogTrace(OT_METHOD)(__func__)(
+            LogTrace()(OT_METHOD)(__func__)(
                 ": Loading private key for denomination ")(lDenomination.str())
                 .Flush();
             m_mapPrivate.emplace(lDenomination, std::move(pArmor));
@@ -601,13 +603,13 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         auto pArmor = Armored::Factory();
 
         if (!Contract::LoadEncodedTextField(xml, pArmor) || !pArmor->Exists()) {
-            LogOutput(OT_METHOD)(__func__)(": Error: mintPublicInfo field "
-                                           "without value.")
+            LogError()(OT_METHOD)(__func__)(": Error: mintPublicInfo field "
+                                            "without value.")
                 .Flush();
 
             return (-1);  // error condition
         } else {
-            LogTrace(OT_METHOD)(__func__)(
+            LogTrace()(OT_METHOD)(__func__)(
                 ": Loading public key for denomination ")(lDenomination.str())
                 .Flush();
             m_mapPublic.emplace(lDenomination, std::move(pArmor));
@@ -656,7 +658,7 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 // INSTRUMENT_DEFINITION_ID, m_nymServer,
 // 1, 5, 10, 20, 50, 100, 500, 1000, 10000, 100000);
 void Mint::GenerateNewMint(
-    const api::Wallet& wallet,
+    const api::session::Wallet& wallet,
     const std::int32_t nSeries,
     const Time VALID_FROM,
     const Time VALID_TO,
@@ -686,7 +688,7 @@ void Mint::GenerateNewMint(
     m_VALID_FROM = VALID_FROM;
     m_VALID_TO = VALID_TO;
     m_EXPIRATION = MINT_EXPIRATION;
-    auto account = wallet.CreateAccount(
+    auto account = wallet.Internal().CreateAccount(
         NOTARY_NYM_ID,
         theNotaryID,
         theInstrumentDefinitionID,
@@ -697,11 +699,11 @@ void Mint::GenerateNewMint(
 
     if (account) {
         account.get().GetIdentifier(m_CashAccountID);
-        LogDetail(OT_METHOD)(__func__)(
+        LogDetail()(OT_METHOD)(__func__)(
             ": Successfully created cash reserve account for new mint.")
             .Flush();
     } else {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": Error creating cash reserve account for new mint.")
             .Flush();
     }

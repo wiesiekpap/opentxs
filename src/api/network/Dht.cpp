@@ -16,22 +16,20 @@
 
 #include "Proto.tpp"
 #include "internal/api/network/Factory.hpp"
+#include "internal/api/session/Wallet.hpp"
 #include "internal/network/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/DhtConfig.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Options.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/network/Dht.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -45,6 +43,9 @@
 #include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::api::network::implementation::Dht::"
 
@@ -55,9 +56,9 @@ namespace opentxs::factory
 using ReturnType = api::network::implementation::Dht;
 
 auto DhtAPI(
-    const api::Core& api,
+    const api::Session& api,
     const opentxs::network::zeromq::Context& zeromq,
-    const api::Endpoints& endpoints,
+    const api::session::Endpoints& endpoints,
     const bool defaultEnable,
     std::int64_t& nymPublishInterval,
     std::int64_t& nymRefreshInterval,
@@ -138,9 +139,9 @@ auto DhtAPI(
 namespace opentxs::api::network::implementation
 {
 Dht::Dht(
-    const api::Core& api,
+    const api::Session& api,
     const opentxs::network::zeromq::Context& zeromq,
-    const api::Endpoints& endpoints,
+    const api::session::Endpoints& endpoints,
     opentxs::network::DhtConfig&& config) noexcept
     : api_(api)
     , callback_map_()
@@ -270,7 +271,7 @@ auto Dht::process_request(
 }
 
 auto Dht::ProcessPublicNym(
-    const api::Core& api,
+    const api::Session& api,
     const std::string key,
     const DhtResults& values,
     NotifyCB notifyCB) -> bool
@@ -305,25 +306,26 @@ auto Dht::ProcessPublicNym(
 
         foundValid = true;
 
-        LogDebug(OT_METHOD)(__func__)(": Saved nym: ")(key).Flush();
+        LogDebug()(OT_METHOD)(__func__)(": Saved nym: ")(key).Flush();
 
         if (notifyCB) { notifyCB(key); }
     }
 
     if (!foundValid) {
-        LogVerbose(OT_METHOD)(__func__)(": Found results, but none are valid.")
+        LogVerbose()(OT_METHOD)(__func__)(
+            ": Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogVerbose(OT_METHOD)(__func__)(": All results are empty.").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": All results are empty.").Flush();
     }
 
     return foundData;
 }
 
 auto Dht::ProcessServerContract(
-    const api::Core& api,
+    const api::Session& api,
     const std::string key,
     const DhtResults& values,
     NotifyCB notifyCB) -> bool
@@ -347,12 +349,12 @@ auto Dht::ProcessServerContract(
         if (key != contract.id()) { continue; }
 
         try {
-            auto saved = api.Wallet().Server(contract);
+            auto saved = api.Wallet().Internal().Server(contract);
         } catch (...) {
             continue;
         }
 
-        LogDebug(OT_METHOD)(__func__)(": Saved contract: ")(key).Flush();
+        LogDebug()(OT_METHOD)(__func__)(": Saved contract: ")(key).Flush();
         foundValid = true;
 
         if (notifyCB) { notifyCB(key); }
@@ -361,19 +363,19 @@ auto Dht::ProcessServerContract(
     }
 
     if (!foundValid) {
-        LogOutput(OT_METHOD)(__func__)(": Found results, but none are valid.")
+        LogError()(OT_METHOD)(__func__)(": Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogOutput(OT_METHOD)(__func__)(": All results are empty.").Flush();
+        LogError()(OT_METHOD)(__func__)(": All results are empty.").Flush();
     }
 
     return foundData;
 }
 
 auto Dht::ProcessUnitDefinition(
-    const api::Core& api,
+    const api::Session& api,
     const std::string key,
     const DhtResults& values,
     NotifyCB notifyCB) -> bool
@@ -397,13 +399,14 @@ auto Dht::ProcessUnitDefinition(
         if (key != contract.id()) { continue; }
 
         try {
-            api.Wallet().UnitDefinition(contract);
+            api.Wallet().Internal().UnitDefinition(contract);
         } catch (...) {
 
             continue;
         }
 
-        LogDebug(OT_METHOD)(__func__)(": Saved unit definition: ")(key).Flush();
+        LogDebug()(OT_METHOD)(__func__)(": Saved unit definition: ")(key)
+            .Flush();
         foundValid = true;
 
         if (notifyCB) { notifyCB(key); }
@@ -412,12 +415,12 @@ auto Dht::ProcessUnitDefinition(
     }
 
     if (!foundValid) {
-        LogOutput(OT_METHOD)(__func__)(": Found results, but none are valid.")
+        LogError()(OT_METHOD)(__func__)(": Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogOutput(OT_METHOD)(__func__)(": All results are empty.").Flush();
+        LogError()(OT_METHOD)(__func__)(": All results are empty.").Flush();
     }
 
     return foundData;

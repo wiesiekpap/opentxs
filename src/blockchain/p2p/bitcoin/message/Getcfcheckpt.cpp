@@ -16,8 +16,7 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 // #define OT_METHOD
 // "opentxs::blockchain::p2p::bitcoin::message::implemenetationGetcfcheckpt::"
@@ -25,7 +24,7 @@
 namespace opentxs::factory
 {
 auto BitcoinP2PGetcfcheckpt(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -36,7 +35,7 @@ auto BitcoinP2PGetcfcheckpt(
     using ReturnType = bitcoin::message::implementation::Getcfcheckpt;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -46,7 +45,7 @@ auto BitcoinP2PGetcfcheckpt(
     auto expectedSize = sizeof(raw);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(": Payload too short")
+        LogError()("opentxs::factory::")(__func__)(": Payload too short")
             .Flush();
 
         return nullptr;
@@ -61,7 +60,7 @@ auto BitcoinP2PGetcfcheckpt(
 }
 
 auto BitcoinP2PGetcfcheckpt(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const blockchain::filter::Type type,
     const blockchain::filter::Hash& stop)
@@ -77,7 +76,7 @@ auto BitcoinP2PGetcfcheckpt(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Getcfcheckpt::Getcfcheckpt(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const filter::Type type,
     const filter::Hash& stop) noexcept
@@ -89,7 +88,7 @@ Getcfcheckpt::Getcfcheckpt(
 }
 
 Getcfcheckpt::Getcfcheckpt(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const filter::Type type,
     const filter::Hash& stop) noexcept

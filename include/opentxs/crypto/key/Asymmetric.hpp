@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CRYPTO_KEY_ASYMMETRIC_HPP
-#define OPENTXS_CRYPTO_KEY_ASYMMETRIC_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -13,13 +12,13 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
@@ -143,4 +142,3 @@ private:
 }  // namespace key
 }  // namespace crypto
 }  // namespace opentxs
-#endif

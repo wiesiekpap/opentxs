@@ -10,11 +10,10 @@
 #include <iterator>
 #include <string_view>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -23,6 +22,8 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
@@ -32,7 +33,7 @@
 namespace opentxs::blockchain::p2p::implementation
 {
 struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
-    const api::Core& api_;
+    const api::Session& api_;
     Peer& parent_;
     const Flag& running_;
     EndpointData endpoint_;
@@ -58,7 +59,7 @@ struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
 
     auto connect() noexcept -> void override
     {
-        LogVerbose(OT_METHOD)(__func__)(": Connecting to ")(zmq_).Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Connecting to ")(zmq_).Flush();
         dealer_->Start(zmq_);
         parent_.on_connect();
     }
@@ -94,7 +95,7 @@ struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
     }
 
     ZMQConnectionManager(
-        const api::Core& api,
+        const api::Session& api,
         Peer& parent,
         const Flag& running,
         const Peer::Address& address,
@@ -204,7 +205,7 @@ struct ZMQIncomingConnectionManager final : public ZMQConnectionManager {
     }
 
     ZMQIncomingConnectionManager(
-        const api::Core& api,
+        const api::Session& api,
         Peer& parent,
         const Flag& running,
         const Peer::Address& address,
@@ -236,7 +237,7 @@ private:
 };
 
 auto Peer::ConnectionManager::ZMQ(
-    const api::Core& api,
+    const api::Session& api,
     Peer& parent,
     const Flag& running,
     const Peer::Address& address,
@@ -247,7 +248,7 @@ auto Peer::ConnectionManager::ZMQ(
 }
 
 auto Peer::ConnectionManager::ZMQIncoming(
-    const api::Core& api,
+    const api::Session& api,
     Peer& parent,
     const Flag& running,
     const Peer::Address& address,

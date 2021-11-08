@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_CLIENT_ISSUER_HPP
-#define OPENTXS_API_CLIENT_ISSUER_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -24,7 +23,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -68,11 +67,11 @@ public:
     virtual auto BailmentInitiated(
         const identifier::UnitDefinition& unitID) const -> bool = 0;
     virtual auto BailmentInstructions(
-        const api::Core& client,
+        const api::Session& client,
         const identifier::UnitDefinition& unitID,
         const bool onlyUnused = true) const -> std::vector<BailmentDetails> = 0;
     virtual auto ConnectionInfo(
-        const api::Core& client,
+        const api::Session& client,
         const contract::peer::ConnectionInfoType type) const
         -> std::vector<ConnectionDetails> = 0;
     virtual auto ConnectionInfoInitiated(
@@ -128,4 +127,3 @@ private:
 }  // namespace client
 }  // namespace api
 }  // namespace opentxs
-#endif

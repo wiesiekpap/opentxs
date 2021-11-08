@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "api/client/ui/Imp-qt.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <tuple>
@@ -14,9 +15,9 @@
 
 #include "internal/api/client/Client.hpp"  // IWYU pragma: keep
 #include "internal/ui/UI.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/ui/qt/BlockchainSelection.hpp"
@@ -28,8 +29,8 @@
 namespace opentxs::api::client::ui
 {
 ImpQt::ImpQt(
-    const api::client::Manager& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::session::Client& api,
+    const api::crypto::Blockchain& blockchain,
     const Flag& running) noexcept
     : Imp(api, blockchain, running)
     , blank_()

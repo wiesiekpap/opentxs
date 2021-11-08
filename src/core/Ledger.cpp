@@ -17,20 +17,20 @@
 #include <utility>
 
 #include "core/OTStorage.hpp"
-#include "internal/api/Api.hpp"
-#include "opentxs/Shared.hpp"
+#include "internal/api/Legacy.hpp"
+#include "internal/api/session/Session.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "internal/util/Shared.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Legacy.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
@@ -43,6 +43,8 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 
 #define OT_METHOD "opentxs::Ledger::"
 
@@ -72,7 +74,7 @@ char const* const __TypeStringsLedger[] = {
 // Since a ledger is normally used as an inbox for a specific account, in a
 // specific file, then I've decided to restrict ledgers to a single account.
 Ledger::Ledger(
-    const api::Core& core,
+    const api::Session& core,
     const identifier::Nym& theNymID,
     const Identifier& theAccountID,
     const identifier::Server& theNotaryID)
@@ -90,7 +92,7 @@ Ledger::Ledger(
 // their user ID. So you call this function to get it loaded up, and the NymID
 // will hopefully be loaded up with the rest of it.
 Ledger::Ledger(
-    const api::Core& core,
+    const api::Session& core,
     const Identifier& theAccountID,
     const identifier::Server& theNotaryID)
     : OTTransactionType(core)
@@ -104,7 +106,7 @@ Ledger::Ledger(
 }
 
 // This is private now and hopefully will stay that way.
-Ledger::Ledger(const api::Core& core)
+Ledger::Ledger(const api::Session& core)
     : OTTransactionType(core)
     , m_Type(ledgerType::message)
     , m_bLoadedLegacyData(false)
@@ -113,7 +115,7 @@ Ledger::Ledger(const api::Core& core)
     InitLedger();
 }
 
-auto Ledger::_GetTypeString(ledgerType theType) -> char const*
+auto Ledger::GetTypeString(ledgerType theType) -> char const*
 {
     auto nType = static_cast<std::int32_t>(theType);
     return __TypeStringsLedger[nType];
@@ -152,7 +154,7 @@ auto Ledger::VerifyAccount(const identity::Nym& theNym) -> bool
             const auto strNymID = String::Factory(theNymID);
             auto strAccountID = String::Factory();
             GetIdentifier(strAccountID);
-            LogOutput(OT_METHOD)(__func__)(": Failure: Bad ledger type: ")(
+            LogError()(OT_METHOD)(__func__)(": Failure: Bad ledger type: ")(
                 nLedgerType)(", NymID: ")(strNymID)(", AcctID: ")(
                 strAccountID)(".")
                 .Flush();
@@ -185,8 +187,8 @@ auto Ledger::SaveBoxReceipts()
             bRetVal = pTransaction->SaveBoxReceipt(*this);
 
         if (!bRetVal) {
-            LogOutput(OT_METHOD)(__func__)(": Failed calling SaveBoxReceipt "
-                                           "on transaction: ")(number)(".")
+            LogError()(OT_METHOD)(__func__)(": Failed calling SaveBoxReceipt "
+                                            "on transaction: ")(number)(".")
                 .Flush();
             break;
         }
@@ -202,7 +204,7 @@ auto Ledger::SaveBoxReceipt(const std::int64_t& lTransactionNum) -> bool
     auto pTransaction = GetTransaction(lTransactionNum);
 
     if (false == bool(pTransaction)) {
-        LogNormal(OT_METHOD)(__func__)(": Unable to save box receipt ")(
+        LogConsole()(OT_METHOD)(__func__)(": Unable to save box receipt ")(
             lTransactionNum)(": "
                              "couldn't find the transaction on this ledger.")
             .Flush();
@@ -220,8 +222,8 @@ auto Ledger::DeleteBoxReceipt(const std::int64_t& lTransactionNum) -> bool
     auto pTransaction = GetTransaction(lTransactionNum);
 
     if (false == bool(pTransaction)) {
-        LogNormal(OT_METHOD)(__func__)(": Unable to delete (overwrite) box "
-                                       "receipt ")(
+        LogConsole()(OT_METHOD)(__func__)(": Unable to delete (overwrite) box "
+                                          "receipt ")(
             lTransactionNum)(": couldn't find the transaction on this ledger.")
             .Flush();
         return false;
@@ -269,7 +271,7 @@ auto Ledger::LoadBoxReceipts(std::set<std::int64_t>* psetUnloaded) -> bool
             // is bad if success on LoadBoxReceipt() call.
             //
             bRetVal = false;
-            auto& log = (nullptr != psetUnloaded) ? LogDebug : LogNormal;
+            auto& log = (nullptr != psetUnloaded) ? LogDebug() : LogConsole();
 
             if (nullptr != psetUnloaded) { psetUnloaded->insert(lSetNum); }
 
@@ -323,7 +325,7 @@ auto Ledger::LoadBoxReceipt(const std::int64_t& lTransactionNum) -> bool
     auto pTransaction = GetTransaction(lTransactionNum);
 
     if (false == bool(pTransaction)) {
-        LogNormal(OT_METHOD)(__func__)(": Unable to load box receipt ")(
+        LogConsole()(OT_METHOD)(__func__)(": Unable to load box receipt ")(
             lTransactionNum)(": couldn't find abbreviated version already on "
                              "this ledger.")
             .Flush();
@@ -474,10 +476,10 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
     const auto [valid, path1, path2, path3] = make_filename(theType);
 
     if (false == valid) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to set filename").Flush();
-        LogOutput(OT_METHOD)(__func__)(": Path1: ")(path1).Flush();
-        LogOutput(OT_METHOD)(__func__)(": Path2: ")(path2).Flush();
-        LogOutput(OT_METHOD)(__func__)(": Path3: ")(path2).Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to set filename").Flush();
+        LogError()(OT_METHOD)(__func__)(": Path1: ")(path1).Flush();
+        LogError()(OT_METHOD)(__func__)(": Path2: ")(path2).Flush();
+        LogError()(OT_METHOD)(__func__)(": Path3: ")(path2).Flush();
 
         return false;
     }
@@ -488,8 +490,9 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
         strRawFile->Set(pString.Get());
     } else {  // Loading FROM A FILE.
         if (!OTDB::Exists(api_, api_.DataFolder(), path1, path2, path3, "")) {
-            LogDebug(OT_METHOD)(__func__)(": does not exist in OTLedger::Load")(
-                pszType)(": ")(path1)(PathSeparator())(m_strFilename)
+            LogDebug()(OT_METHOD)(__func__)(
+                ": does not exist in OTLedger::Load")(pszType)(": ")(
+                path1)(api::Legacy::PathSeparator())(m_strFilename)
                 .Flush();
             return false;
         }
@@ -504,8 +507,8 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
             ""));  // <=== LOADING FROM DATA STORE.
 
         if (strFileContents.length() < 2) {
-            LogOutput(OT_METHOD)(__func__)(": Error reading file: ")(
-                path1)(PathSeparator())(m_strFilename)
+            LogError()(OT_METHOD)(__func__)(": Error reading file: ")(
+                path1)(api::Legacy::PathSeparator())(m_strFilename)
                 .Flush();
             return false;
         }
@@ -516,8 +519,9 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
     // NOTE: No need to deal with OT ARMORED INBOX file format here, since
     //       LoadContractFromString already handles that automatically.
     if (!strRawFile->Exists()) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to load box (")(
-            path1)(PathSeparator())(m_strFilename)(") from empty string.")
+        LogError()(OT_METHOD)(__func__)(": Unable to load box (")(
+            path1)(api::Legacy::PathSeparator())(
+            m_strFilename)(") from empty string.")
             .Flush();
         return false;
     }
@@ -525,17 +529,17 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
     bool bSuccess = LoadContractFromString(strRawFile);
 
     if (!bSuccess) {
-        LogOutput(OT_METHOD)(__func__)(": Failed loading ")(pszType)(" ")(
+        LogError()(OT_METHOD)(__func__)(": Failed loading ")(pszType)(" ")(
             (pString.Exists()) ? "from string"
                                : "from file")(" in OTLedger::Load")(
-            pszType)(": ")(path1)(PathSeparator())(m_strFilename)
+            pszType)(": ")(path1)(api::Legacy::PathSeparator())(m_strFilename)
             .Flush();
         return false;
     } else {
-        LogVerbose(OT_METHOD)(__func__)("Successfully loaded ")(pszType)(" ")(
+        LogVerbose()(OT_METHOD)(__func__)("Successfully loaded ")(pszType)(" ")(
             (pString.Exists()) ? "from string"
                                : "from file")(" in OTLedger::Load")(
-            pszType)(": ")(path1)(PathSeparator())(m_strFilename)
+            pszType)(": ")(path1)(api::Legacy::PathSeparator())(m_strFilename)
             .Flush();
     }
 
@@ -548,10 +552,10 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
     const auto [valid, path1, path2, path3] = make_filename(theType);
 
     if (false == valid) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to set filename").Flush();
-        LogOutput(OT_METHOD)(__func__)(": Path1: ")(path1).Flush();
-        LogOutput(OT_METHOD)(__func__)(": Path2: ")(path2).Flush();
-        LogOutput(OT_METHOD)(__func__)(": Path3: ")(path2).Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to set filename").Flush();
+        LogError()(OT_METHOD)(__func__)(": Path1: ")(path1).Flush();
+        LogError()(OT_METHOD)(__func__)(": Path2: ")(path2).Flush();
+        LogError()(OT_METHOD)(__func__)(": Path3: ")(path2).Flush();
 
         return false;
     }
@@ -559,7 +563,7 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
     auto strRawFile = String::Factory();
 
     if (!SaveContractRaw(strRawFile)) {
-        LogOutput(OT_METHOD)(__func__)(": Error saving ")(
+        LogError()(OT_METHOD)(__func__)(": Error saving ")(
             pszType)(m_strFilename)
             .Flush();
         return false;
@@ -570,9 +574,9 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
 
     if (false ==
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
-        LogOutput(OT_METHOD)(__func__)(": Error saving ")(
+        LogError()(OT_METHOD)(__func__)(": Error saving ")(
             pszType)(" (failed writing armored string): ")(
-            path1)(PathSeparator())(m_strFilename)
+            path1)(api::Legacy::PathSeparator())(m_strFilename)
             .Flush();
         return false;
     }
@@ -586,13 +590,14 @@ auto Ledger::SaveGeneric(ledgerType theType) -> bool
         path3,
         "");  // <=== SAVING TO DATA STORE.
     if (!bSaved) {
-        LogOutput(OT_METHOD)(__func__)(": Error writing ")(
-            pszType)(" to file: ")(path1)(PathSeparator())(m_strFilename)
+        LogError()(OT_METHOD)(__func__)(": Error writing ")(
+            pszType)(" to file: ")(path1)(api::Legacy::PathSeparator())(
+            m_strFilename)
             .Flush();
         return false;
     } else
-        LogVerbose(OT_METHOD)(__func__)("Successfully saved ")(pszType)(": ")(
-            path1)(PathSeparator())(m_strFilename)
+        LogVerbose()(OT_METHOD)(__func__)("Successfully saved ")(pszType)(": ")(
+            path1)(api::Legacy::PathSeparator())(m_strFilename)
             .Flush();
 
     return bSaved;
@@ -612,7 +617,7 @@ auto Ledger::CalculateHash(Identifier& theOutput) const -> bool
 
     if (false == bCalcDigest) {
         theOutput.Release();
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed trying to calculate hash (for a ")(GetTypeString())(").")
             .Flush();
     }
@@ -623,7 +628,7 @@ auto Ledger::CalculateHash(Identifier& theOutput) const -> bool
 auto Ledger::CalculateInboxHash(Identifier& theOutput) const -> bool
 {
     if (m_Type != ledgerType::inbox) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong type.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong type.").Flush();
 
         return false;
     }
@@ -634,7 +639,7 @@ auto Ledger::CalculateInboxHash(Identifier& theOutput) const -> bool
 auto Ledger::CalculateOutboxHash(Identifier& theOutput) const -> bool
 {
     if (m_Type != ledgerType::outbox) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong type.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong type.").Flush();
 
         return false;
     }
@@ -645,7 +650,7 @@ auto Ledger::CalculateOutboxHash(Identifier& theOutput) const -> bool
 auto Ledger::CalculateNymboxHash(Identifier& theOutput) const -> bool
 {
     if (m_Type != ledgerType::nymbox) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong type.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong type.").Flush();
 
         return false;
     }
@@ -682,7 +687,7 @@ auto Ledger::make_filename(const ledgerType theType)
             pszFolder = api_.Internal().Legacy().ExpiredBox();
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error: unknown box type. (This should never happen).")
                 .Flush();
 
@@ -694,7 +699,7 @@ auto Ledger::make_filename(const ledgerType theType)
     one = m_strFoldername->Get();
 
     if (GetRealNotaryID().empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Notary ID not set").Flush();
+        LogError()(OT_METHOD)(__func__)(": Notary ID not set").Flush();
 
         return output;
     }
@@ -704,7 +709,7 @@ auto Ledger::make_filename(const ledgerType theType)
     GetIdentifier(ledgerID);
 
     if (ledgerID->empty()) {
-        LogOutput(OT_METHOD)(__func__)(": ID not set").Flush();
+        LogError()(OT_METHOD)(__func__)(": ID not set").Flush();
 
         return output;
     }
@@ -713,7 +718,7 @@ auto Ledger::make_filename(const ledgerType theType)
 
     if (false == m_strFilename->Exists()) {
         m_strFilename->Format(
-            "%s%s%s", two.c_str(), PathSeparator(), three.c_str());
+            "%s%s%s", two.c_str(), api::Legacy::PathSeparator(), three.c_str());
     }
 
     if (2 > one.size()) { return output; }
@@ -735,7 +740,7 @@ auto Ledger::save_box(
     OT_ASSERT(nullptr != calc)
 
     if (m_Type != type) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong type.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong type.").Flush();
 
         return false;
     }
@@ -746,7 +751,7 @@ auto Ledger::save_box(
         hash.Release();
 
         if (false == (this->*calc)(hash)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed trying to calculate box hash.")
                 .Flush();
         }
@@ -801,7 +806,7 @@ auto Ledger::SaveOutbox(Identifier& hash) -> bool
 auto Ledger::SavePaymentInbox() -> bool
 {
     if (m_Type != ledgerType::paymentInbox) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong ledger type passed.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong ledger type passed.").Flush();
         return false;
     }
 
@@ -812,7 +817,7 @@ auto Ledger::SavePaymentInbox() -> bool
 auto Ledger::SaveRecordBox() -> bool
 {
     if (m_Type != ledgerType::recordBox) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong ledger type passed.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong ledger type passed.").Flush();
         return false;
     }
 
@@ -823,7 +828,7 @@ auto Ledger::SaveRecordBox() -> bool
 auto Ledger::SaveExpiredBox() -> bool
 {
     if (m_Type != ledgerType::expiredBox) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong ledger type passed.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong ledger type passed.").Flush();
         return false;
     }
 
@@ -847,40 +852,58 @@ auto Ledger::generate_ledger(
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().Nymbox());
             m_strFilename->Format(
-                "%s%s%s", strNotaryID->Get(), PathSeparator(), strID->Get());
+                "%s%s%s",
+                strNotaryID->Get(),
+                api::Legacy::PathSeparator(),
+                strID->Get());
             break;
         case ledgerType::inbox:  // stored by AcctID ONLY.
             m_strFoldername = String::Factory(api_.Internal().Legacy().Inbox());
             m_strFilename->Format(
-                "%s%s%s", strNotaryID->Get(), PathSeparator(), strID->Get());
+                "%s%s%s",
+                strNotaryID->Get(),
+                api::Legacy::PathSeparator(),
+                strID->Get());
             break;
         case ledgerType::outbox:  // stored by AcctID ONLY.
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().Outbox());
             m_strFilename->Format(
-                "%s%s%s", strNotaryID->Get(), PathSeparator(), strID->Get());
+                "%s%s%s",
+                strNotaryID->Get(),
+                api::Legacy::PathSeparator(),
+                strID->Get());
             break;
         case ledgerType::paymentInbox:  // stored by NymID ONLY.
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().PaymentInbox());
             m_strFilename->Format(
-                "%s%s%s", strNotaryID->Get(), PathSeparator(), strID->Get());
+                "%s%s%s",
+                strNotaryID->Get(),
+                api::Legacy::PathSeparator(),
+                strID->Get());
             break;
         case ledgerType::recordBox:  // stored by Acct ID *and* Nym ID
                                      // (depending on the box.)
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().RecordBox());
             m_strFilename->Format(
-                "%s%s%s", strNotaryID->Get(), PathSeparator(), strID->Get());
+                "%s%s%s",
+                strNotaryID->Get(),
+                api::Legacy::PathSeparator(),
+                strID->Get());
             break;
         case ledgerType::expiredBox:  // stored by Nym ID only.
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().ExpiredBox());
             m_strFilename->Format(
-                "%s%s%s", strNotaryID->Get(), PathSeparator(), strID->Get());
+                "%s%s%s",
+                strNotaryID->Get(),
+                api::Legacy::PathSeparator(),
+                strID->Get());
             break;
         case ledgerType::message:
-            LogTrace(OT_METHOD)(__func__)("Generating message ledger...")
+            LogTrace()(OT_METHOD)(__func__)("Generating message ledger...")
                 .Flush();
             SetRealAccountID(theAcctID);
             SetPurportedAccountID(theAcctID);  // It's safe to set these the
@@ -926,18 +949,18 @@ auto Ledger::generate_ledger(
                 szFolder2name,
                 szFilename,
                 "")) {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": ERROR: trying to generate ledger that already exists: ")(
-                szFolder1name)(PathSeparator())(szFolder2name)(PathSeparator())(
-                szFilename)(".")
+                szFolder1name)(api::Legacy::PathSeparator())(
+                szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
                 .Flush();
             return false;
         }
 
         // Okay, it doesn't already exist. Let's generate it.
-        LogDetail(OT_METHOD)(__func__)(": Generating ")(
-            szFolder1name)(PathSeparator())(szFolder2name)(PathSeparator())(
-            szFilename)(".")
+        LogDetail()(OT_METHOD)(__func__)(": Generating ")(
+            szFolder1name)(api::Legacy::PathSeparator())(
+            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
     }
 
@@ -966,19 +989,19 @@ auto Ledger::GenerateLedger(
     if ((ledgerType::inbox == theType) || (ledgerType::outbox == theType)) {
         // Have to look up the NymID here. No way around it. We need that ID.
         // Plus it helps verify things.
-        auto account = api_.Wallet().Account(theAcctID);
+        auto account = api_.Wallet().Internal().Account(theAcctID);
 
         if (account) {
             nymID = account.get().GetNymID();
         } else {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed in OTAccount::LoadExistingAccount().")
                 .Flush();
             return false;
         }
     } else if (ledgerType::recordBox == theType) {
         // RecordBox COULD be by NymID OR AcctID. So we TRY to lookup the acct.
-        auto account = api_.Wallet().Account(theAcctID);
+        auto account = api_.Wallet().Internal().Account(theAcctID);
 
         if (account) {
             nymID = account.get().GetNymID();
@@ -1034,7 +1057,7 @@ auto Ledger::GetTransactionMap() const -> const mapOfTransactions&
 auto Ledger::RemoveTransaction(const TransactionNumber number) -> bool
 {
     if (0 == m_mapTransactions.erase(number)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Attempt to remove Transaction from ledger, when "
             "not already there: ")(number)(".")
             .Flush();
@@ -1052,7 +1075,7 @@ auto Ledger::AddTransaction(std::shared_ptr<OTTransaction> theTransaction)
     const auto [it, added] = m_mapTransactions.emplace(number, theTransaction);
 
     if (false == added) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Attempt to add Transaction to ledger when already there for "
             "that number: ")(number)
             .Flush();
@@ -1200,7 +1223,7 @@ auto Ledger::GetTransferReceipt(std::int64_t lNumberOfOrigin)
             OT_ASSERT(pOriginalItem);
 
             if (pOriginalItem->GetType() != itemType::acceptPending) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Wrong item type attached to transferReceipt!")
                     .Flush();
                 return nullptr;
@@ -1277,7 +1300,7 @@ auto Ledger::GetChequeReceipt(std::int64_t lChequeNum)
             pCurrentReceipt->GetReferenceToNum())};
 
         if (false == bool(pOriginalItem)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Expected original depositCheque request item to be "
                 "inside the chequeReceipt "
                 "(but failed to load it...).")
@@ -1285,7 +1308,7 @@ auto Ledger::GetChequeReceipt(std::int64_t lChequeNum)
         } else if (itemType::depositCheque != pOriginalItem->GetType()) {
             auto strItemType = String::Factory();
             pOriginalItem->GetTypeString(strItemType);
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Expected original depositCheque request item to be "
                 "inside the chequeReceipt, "
                 "but somehow what we found instead was a ")(strItemType)("...")
@@ -1301,7 +1324,7 @@ auto Ledger::GetChequeReceipt(std::int64_t lChequeNum)
 
             if (!((strCheque->GetLength() > 2) &&
                   pCheque->LoadContractFromString(strCheque))) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Error loading cheque from string: ")(strCheque)(".")
                     .Flush();
             }
@@ -1405,7 +1428,7 @@ auto Ledger::GenerateBalanceStatement(
     std::set<TransactionNumber> removing = without;
 
     if (ledgerType::inbox != GetType()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong ledger type.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong ledger type.").Flush();
 
         return nullptr;
     }
@@ -1413,7 +1436,7 @@ auto Ledger::GenerateBalanceStatement(
     if ((theAccount.GetPurportedAccountID() != GetPurportedAccountID()) ||
         (theAccount.GetPurportedNotaryID() != GetPurportedNotaryID()) ||
         (theAccount.GetNymID() != GetNymID())) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong Account passed in.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong Account passed in.").Flush();
 
         return nullptr;
     }
@@ -1421,13 +1444,13 @@ auto Ledger::GenerateBalanceStatement(
     if ((theOutbox.GetPurportedAccountID() != GetPurportedAccountID()) ||
         (theOutbox.GetPurportedNotaryID() != GetPurportedNotaryID()) ||
         (theOutbox.GetNymID() != GetNymID())) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong Outbox passed in.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong Outbox passed in.").Flush();
 
         return nullptr;
     }
 
     if ((context.Nym()->ID() != GetNymID())) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong Nym passed in.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong Nym passed in.").Flush();
 
         return nullptr;
     }
@@ -1456,42 +1479,42 @@ auto Ledger::GenerateBalanceStatement(
         // server.
         case transactionType::processInbox: {
             itemType = "processInbox";
-            LogDetail(OT_METHOD)(__func__)(": Removing number ")(
+            LogDetail()(OT_METHOD)(__func__)(": Removing number ")(
                 number)(" for ")(itemType)
                 .Flush();
             removing.insert(number);
         } break;
         case transactionType::withdrawal: {
             itemType = "withdrawal";
-            LogDetail(OT_METHOD)(__func__)(": Removing number ")(
+            LogDetail()(OT_METHOD)(__func__)(": Removing number ")(
                 number)(" for ")(itemType)
                 .Flush();
             removing.insert(number);
         } break;
         case transactionType::deposit: {
             itemType = "deposit";
-            LogDetail(OT_METHOD)(__func__)(": Removing number ")(
+            LogDetail()(OT_METHOD)(__func__)(": Removing number ")(
                 number)(" for ")(itemType)
                 .Flush();
             removing.insert(number);
         } break;
         case transactionType::cancelCronItem: {
             itemType = "cancelCronItem";
-            LogDetail(OT_METHOD)(__func__)(": Removing number ")(
+            LogDetail()(OT_METHOD)(__func__)(": Removing number ")(
                 number)(" for ")(itemType)
                 .Flush();
             removing.insert(number);
         } break;
         case transactionType::exchangeBasket: {
             itemType = "exchangeBasket";
-            LogDetail(OT_METHOD)(__func__)(": Removing number ")(
+            LogDetail()(OT_METHOD)(__func__)(": Removing number ")(
                 number)(" for ")(itemType)
                 .Flush();
             removing.insert(number);
         } break;
         case transactionType::payDividend: {
             itemType = "payDividend";
-            LogDetail(OT_METHOD)(__func__)(": Removing number ")(
+            LogDetail()(OT_METHOD)(__func__)(": Removing number ")(
                 number)(" for ")(itemType)
                 .Flush();
             removing.insert(number);
@@ -1510,7 +1533,7 @@ auto Ledger::GenerateBalanceStatement(
             // it (vs the cases above, which do.)
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Wrong owner transaction type: ")(
+            LogError()(OT_METHOD)(__func__)(": Wrong owner transaction type: ")(
                 theOwner.GetTypeString())(".")
                 .Flush();
         } break;
@@ -1532,7 +1555,7 @@ auto Ledger::GenerateBalanceStatement(
     // inbox, therefore added to the balance item. (So the balance item contains
     // a complete report on the receipts in this inbox.)
 
-    LogVerbose(OT_METHOD)(__func__)(
+    LogVerbose()(OT_METHOD)(__func__)(
         "About to loop through the inbox items and produce a report for ")(
         "each one... ")
         .Flush();
@@ -1542,7 +1565,7 @@ auto Ledger::GenerateBalanceStatement(
 
         OT_ASSERT(pTransaction);
 
-        LogVerbose(OT_METHOD)(__func__)("Producing a report... ").Flush();
+        LogVerbose()(OT_METHOD)(__func__)("Producing a report... ").Flush();
         // This function adds a receipt sub-item to pBalanceItem, where
         // appropriate for INBOX items.
         pTransaction->ProduceInboxReportItem(*pBalanceItem, reason);
@@ -1565,8 +1588,8 @@ auto Ledger::GetTotalPendingValue(const PasswordPrompt& reason) -> Amount
     Amount lTotalPendingValue = 0;
 
     if (ledgerType::inbox != GetType()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong ledger type (expected "
-                                       "inbox).")
+        LogError()(OT_METHOD)(__func__)(": Wrong ledger type (expected "
+                                        "inbox).")
             .Flush();
         return 0;
     }
@@ -1594,7 +1617,7 @@ void Ledger::ProduceOutboxReport(
     const PasswordPrompt& reason)
 {
     if (ledgerType::outbox != GetType()) {
-        LogOutput(OT_METHOD)(__func__)(": Wrong ledger type.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Wrong ledger type.").Flush();
         return;
     }
 
@@ -1665,7 +1688,7 @@ void Ledger::UpdateContents(const PasswordPrompt& reason)  // Before
         case ledgerType::expiredBox:
             break;
         default:
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error: unexpected box type (1st "
                 "block). (This should never happen).")
                 .Flush();
@@ -1760,7 +1783,7 @@ void Ledger::UpdateContents(const PasswordPrompt& reason)  // Before
 
                 default:  // todo: possibly change this to an OT_ASSERT.
                           // security.
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Error: unexpected box "
                         "type (2nd block). (This should never happen. "
                         "Skipping).")
@@ -1836,7 +1859,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         if (!strLedgerAcctID->Exists() || !strLedgerAcctNotaryID->Exists() ||
             !strNymID->Exists()) {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": Failure: missing strLedgerAcctID (")(
                 strLedgerAcctID)(") or strLedgerAcctNotaryID (")(
                 strLedgerAcctNotaryID)(") or strNymID (")(
@@ -1894,7 +1917,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             /* --- BREAK --- */
             case ledgerType::message:
                 if (nPartialRecordCount > 0) {
-                    LogOutput(OT_METHOD)(__func__)(": Error: There are ")(
+                    LogError()(OT_METHOD)(__func__)(": Error: There are ")(
                         nPartialRecordCount)(" unexpected abbreviated records "
                                              "in an "
                                              "OTLedger::message type ledger. "
@@ -1907,7 +1930,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
                 break;
             default:
-                LogOutput(OT_METHOD)(__func__)(": Unexpected ledger type (")(
+                LogError()(OT_METHOD)(__func__)(": Unexpected ledger type (")(
                     strType)("). (Failed loading "
                              "ledger for account: ")(strLedgerAcctID)(").")
                     .Flush();
@@ -1925,7 +1948,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             while (nPartialRecordCount-- > 0) {
                 //                xml->read(); // <==================
                 if (!SkipToElement(xml)) {
-                    LogNormal(OT_METHOD)(__func__)(
+                    LogConsole()(OT_METHOD)(__func__)(
                         ": Failure: Unable to find element when "
                         "one was expected (")(
                         strExpected)(") for abbreviated record of receipt in ")(
@@ -1998,7 +2021,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                     if (false != bool(pExistingTrans))  // Uh-oh, it's already
                                                         // there!
                     {
-                        LogNormal(OT_METHOD)(__func__)(
+                        LogConsole()(OT_METHOD)(__func__)(
                             ": Error loading transaction ")(number)(" (")(
                             strExpected)("), since one was already there, in "
                                          "box for "
@@ -2087,7 +2110,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                             transaction;
                         transaction->SetParent(*this);
                     } else {
-                        LogOutput(OT_METHOD)(__func__)(
+                        LogError()(OT_METHOD)(__func__)(
                             ": ERROR: verifying contract ID on "
                             "abbreviated transaction ")(
                             pTransaction->GetTransactionNum())(".")
@@ -2099,7 +2122,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                     //
                     // Update: Nope.
                 } else {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Expected abbreviated record element.")
                         .Flush();
                     return (-1);  // error condition
@@ -2107,7 +2130,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             }  // while
         }      // if (number of partial records > 0)
 
-        LogTrace(OT_METHOD)(__func__)(": Loading account ledger of type \"")(
+        LogTrace()(OT_METHOD)(__func__)(": Loading account ledger of type \"")(
             strType)("\", version: ")(m_strVersion)
             .Flush();
 
@@ -2155,7 +2178,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         // go to the next node and read the text.
         //        xml->read(); // <==================
         if (!SkipToTextField(xml)) {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": Failure: Unable to find expected text field "
                 "containing receipt transaction in box.")
                 .Flush();
@@ -2176,7 +2199,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             // object from that string.
             if (!ascTransaction->Exists() ||
                 !ascTransaction->GetString(strTransaction)) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": ERROR: Missing expected transaction contents. "
                     "Ledger contents: ")(m_strRawFile)(".")
                     .Flush();
@@ -2235,7 +2258,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                 {
                     const auto strPurportedAcctID =
                         String::Factory(GetPurportedAccountID());
-                    LogNormal(OT_METHOD)(__func__)(
+                    LogConsole()(OT_METHOD)(__func__)(
                         ": Error loading full transaction ")(
                         pTransaction->GetTransactionNum())(
                         ", since one was already there, in box for account: ")(
@@ -2265,7 +2288,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         // receipt here,
                         // and re-save that box receipt if it doesn't exist.
                         //
-                        LogNormal(OT_METHOD)(__func__)(
+                        LogConsole()(OT_METHOD)(__func__)(
                             ": --- Apparently this is old data (the "
                             "transaction "
                             "is still stored inside the ledger itself)... ")
@@ -2295,7 +2318,7 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                         {
                             // Okay then, let's create it...
                             //
-                            LogNormal(OT_METHOD)(__func__)(
+                            LogConsole()(OT_METHOD)(__func__)(
                                 ": --- The BoxReceipt doesn't exist "
                                 "separately "
                                 "(yet). Creating it in local storage...")
@@ -2307,14 +2330,14 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                             if (false == transaction->SaveBoxReceipt(
                                              lBoxType))  //  <======== SAVE BOX
                                                          //  RECEIPT
-                                LogOutput(OT_METHOD)(__func__)(
+                                LogError()(OT_METHOD)(__func__)(
                                     "--- FAILED trying to save BoxReceipt "
                                     "from legacy data to local storage!")
                                     .Flush();
                         }
                     } break;
                     default:
-                        LogOutput(OT_METHOD)(__func__)(
+                        LogError()(OT_METHOD)(__func__)(
                             ": Unknown ledger type while loading "
                             "transaction!"
                             " (Should never happen).")
@@ -2327,13 +2350,13 @@ auto Ledger::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
             }  // if transaction loads and verifies.
             else {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Error loading or verifying transaction.")
                     .Flush();
                 return (-1);
             }
         } else {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error: Transaction without value.")
                 .Flush();
             return (-1);  // error condition

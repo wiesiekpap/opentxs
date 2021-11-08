@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CHEQUE_HPP
-#define OPENTXS_CORE_CHEQUE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -18,17 +17,21 @@
 #include "opentxs/core/OTTrackable.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -122,17 +125,16 @@ protected:
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t override;
 
 private:  // Private prevents erroneous use by other classes.
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
     using ot_super = OTTrackable;
 
-    Cheque(const api::Core& core);
+    Cheque(const api::Session& core);
     Cheque(
-        const api::Core& core,
+        const api::Session& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
 
     Cheque() = delete;
 };
 }  // namespace opentxs
-#endif

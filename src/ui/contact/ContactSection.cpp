@@ -15,11 +15,11 @@
 #include <type_traits>
 #include <utility>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/protobuf/ContactEnums.pb.h"
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
@@ -30,7 +30,7 @@ namespace opentxs::factory
 {
 auto ContactSectionWidget(
     const ui::implementation::ContactInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactRowID& rowID,
     const ui::implementation::ContactSortKey& key,
     ui::implementation::CustomData& custom) noexcept
@@ -123,7 +123,7 @@ const std::map<contact::SectionType, std::map<proto::ContactItemType, int>>
 
 ContactSection::ContactSection(
     const ContactInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ContactRowID& rowID,
     const ContactSortKey& key,
     CustomData& custom) noexcept
@@ -146,8 +146,7 @@ ContactSection::ContactSection(
 auto ContactSection::check_type(const ContactSectionRowID type) noexcept -> bool
 {
     try {
-        return 1 == allowed_types_.at(type.first)
-                        .count(contact::internal::translate(type.second));
+        return 1 == allowed_types_.at(type.first).count(translate(type.second));
     } catch (const std::out_of_range&) {
     }
 
@@ -197,8 +196,7 @@ auto ContactSection::reindex(
 
 auto ContactSection::sort_key(const ContactSectionRowID type) noexcept -> int
 {
-    return sort_keys_.at(type.first)
-        .at(contact::internal::translate(type.second));
+    return sort_keys_.at(type.first).at(translate(type.second));
 }
 
 void ContactSection::startup(const opentxs::ContactSection section) noexcept

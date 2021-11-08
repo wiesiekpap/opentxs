@@ -6,8 +6,7 @@
 // IWYU pragma: no_include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 // IWYU pragma: no_include "opentxs/core/Message.hpp"
 
-#ifndef OPENTXS_API_CLIENT_ACTIVITY_HPP
-#define OPENTXS_API_CLIENT_ACTIVITY_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -19,9 +18,12 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Cheque.hpp"
+#include "opentxs/core/Item.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
@@ -29,11 +31,15 @@ namespace api
 {
 namespace client
 {
-class Blockchain;
 class Contacts;
 }  // namespace client
 
-class Core;
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -82,7 +88,7 @@ public:
         opentxs::blockchain::block::bitcoin::Transaction;
 
     auto AddBlockchainTransaction(
-        const Blockchain& api,
+        const crypto::Blockchain& api,
         const BlockchainTransaction& transaction) const noexcept -> bool;
     auto AddPaymentEvent(
         const identifier::Nym& nymID,
@@ -255,7 +261,7 @@ public:
         -> std::string;
 
     OPENTXS_NO_EXPORT Activity(
-        const api::Core& api,
+        const api::Session& api,
         const client::Contacts& contact) noexcept;
 
     OPENTXS_NO_EXPORT ~Activity();
@@ -274,4 +280,3 @@ private:
 }  // namespace client
 }  // namespace api
 }  // namespace opentxs
-#endif

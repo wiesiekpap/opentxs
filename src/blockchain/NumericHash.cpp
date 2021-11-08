@@ -17,17 +17,16 @@
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::implementation::NumericHash::"
 
@@ -54,7 +53,7 @@ auto NumericHashNBits(const std::uint32_t input) noexcept
             target = MantissaType{mantissa} << (8 * (3 - exponent));
         }
     } catch (...) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Failed to calculate target")
             .Flush();
 
@@ -75,7 +74,7 @@ auto NumericHash(const blockchain::block::Hash& hash) noexcept
         // Interpret hash as little endian
         bmp::import_bits(value, hash.begin(), hash.end(), 8, false);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__func__)(": Failed to decode hash")
+        LogError()("opentxs::factory::")(__func__)(": Failed to decode hash")
             .Flush();
 
         return std::make_unique<ReturnType>();
@@ -118,7 +117,7 @@ auto operator<=(
 
 namespace opentxs::blockchain
 {
-auto HashToNumber(const api::Core& api, ReadView hex) noexcept -> std::string
+auto HashToNumber(const api::Session& api, ReadView hex) noexcept -> std::string
 {
     return HashToNumber(api.Factory().Data(std::string{hex}, StringStyle::Hex));
 }
@@ -142,7 +141,7 @@ auto NumericHash::MaxTarget(const blockchain::Type chain) noexcept
     }
 }
 
-auto NumberToHash(const api::Core& api, ReadView hex) noexcept -> pHash
+auto NumberToHash(const api::Session& api, ReadView hex) noexcept -> pHash
 {
     const auto hash = api.Factory().Data(std::string{hex}, StringStyle::Hex);
     auto out = api.Factory().Data();
@@ -214,7 +213,7 @@ auto NumericHash::asHex(const std::size_t minimumBytes) const noexcept
         // Export as big endian
         bmp::export_bits(data_, std::back_inserter(bytes), 8, true);
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to encode number").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to encode number").Flush();
 
         return {};
     }

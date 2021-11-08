@@ -7,16 +7,16 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "storage/drivers/sqlite/Sqlite3.hpp"  // IWYU pragma: associated
 
-#include <iostream>
 #include <limits>
 #include <memory>
+#include <sstream>  // IWYU pragma: keep
 #include <string>
 #include <vector>
 
 #include "internal/storage/drivers/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/Config.hpp"
 
 #define OT_METHOD "opentxs::storage::driver::Sqlite3::"
@@ -26,7 +26,7 @@ namespace opentxs::factory
 auto StorageSqlite3(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& parent,
+    const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket) noexcept -> std::unique_ptr<storage::Plugin>
 {
@@ -41,7 +41,7 @@ namespace opentxs::storage::driver
 Sqlite3::Sqlite3(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& storage,
+    const api::session::Storage& storage,
     const storage::Config& config,
     const Flag& bucket)
     : ot_super(crypto, asio, storage, config, bucket)
@@ -94,7 +94,7 @@ auto Sqlite3::commit_transaction(const std::string& rootHash) const -> bool
     set_root(rootHash, sql);
     commit(sql);
     pending_.clear();
-    LogVerbose(OT_METHOD)(__func__)(sql.str()).Flush();
+    LogVerbose()(OT_METHOD)(__func__)(sql.str()).Flush();
 
     return (
         SQLITE_OK ==
@@ -147,7 +147,7 @@ void Sqlite3::Init_Sqlite3()
         Create(config_.sqlite3_secondary_bucket_);
         Create(config_.sqlite3_control_table_);
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to initialize database.")
+        LogError()(OT_METHOD)(__func__)(": Failed to initialize database.")
             .Flush();
 
         OT_FAIL
@@ -197,7 +197,7 @@ auto Sqlite3::Select(
         "SELECT v FROM '" + tablename + "' WHERE k GLOB ?1;";
     const auto sql = bind_key(query, key, 1);
     sqlite3_prepare_v2(db_, sql.c_str(), -1, &statement, nullptr);
-    LogVerbose(OT_METHOD)(__func__)(sql).Flush();
+    LogVerbose()(OT_METHOD)(__func__)(sql).Flush();
     auto result = sqlite3_step(statement);
     bool success = false;
     std::size_t retry{3};
@@ -216,12 +216,12 @@ auto Sqlite3::Select(
                 }
             } break;
             case SQLITE_BUSY: {
-                LogOutput(OT_METHOD)(__func__)(": Busy.").Flush();
+                LogError()(OT_METHOD)(__func__)(": Busy.").Flush();
                 result = sqlite3_step(statement);
                 --retry;
             } break;
             default: {
-                LogOutput(OT_METHOD)(__func__)(": Unknown error (")(
+                LogError()(OT_METHOD)(__func__)(": Unknown error (")(
                     result)(").")
                     .Flush();
                 result = sqlite3_step(statement);
@@ -382,7 +382,7 @@ auto Sqlite3::Upsert(
         value.c_str(),
         static_cast<int>(value.size()),
         SQLITE_STATIC);
-    LogVerbose(OT_METHOD)(__func__)(expand_sql(statement)).Flush();
+    LogVerbose()(OT_METHOD)(__func__)(expand_sql(statement)).Flush();
     const auto result = sqlite3_step(statement);
     sqlite3_finalize(statement);
 

@@ -14,22 +14,22 @@
 #include <type_traits>
 
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::ContactList::"
@@ -37,7 +37,7 @@
 namespace opentxs::factory
 {
 auto ContactListModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::ContactList>
@@ -51,7 +51,7 @@ auto ContactListModel(
 namespace opentxs::ui::implementation
 {
 ContactList::ContactList(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : ContactListList(api, nymID, cb, false)
@@ -66,7 +66,7 @@ ContactList::ContactList(
 }
 
 ContactList::ParsedArgs::ParsedArgs(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& purportedID,
     const std::string& purportedPaymentCode) noexcept
     : nym_id_(extract_nymid(api, purportedID, purportedPaymentCode))
@@ -75,7 +75,7 @@ ContactList::ParsedArgs::ParsedArgs(
 }
 
 auto ContactList::ParsedArgs::extract_nymid(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& purportedID,
     const std::string& purportedPaymentCode) noexcept -> OTNymID
 {
@@ -111,7 +111,7 @@ auto ContactList::ParsedArgs::extract_nymid(
 }
 
 auto ContactList::ParsedArgs::extract_paymentcode(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& purportedID,
     const std::string& purportedPaymentCode) noexcept -> OTPaymentCode
 {
@@ -163,7 +163,7 @@ auto ContactList::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -193,7 +193,7 @@ auto ContactList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -229,7 +229,8 @@ auto ContactList::process_contact(const Identifier& contactID) noexcept -> void
 auto ContactList::startup() noexcept -> void
 {
     const auto contacts = Widget::api_.Contacts().ContactList();
-    LogVerbose(OT_METHOD)(__func__)(": Loading ")(contacts.size())(" contacts.")
+    LogVerbose()(OT_METHOD)(__func__)(": Loading ")(contacts.size())(
+        " contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {

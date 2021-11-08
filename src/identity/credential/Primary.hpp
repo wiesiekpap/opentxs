@@ -13,18 +13,20 @@
 #include "identity/credential/Base.hpp"
 #include "identity/credential/Key.hpp"
 #include "internal/identity/credential/Credential.hpp"
+#include "internal/util/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/SourceProof.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -100,14 +102,14 @@ private:
         const PasswordPrompt& reason) noexcept(false) final;
 
     Primary(
-        const api::Core& api,
+        const api::Session& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const NymParameters& nymParameters,
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     Primary(
-        const api::Core& api,
+        const api::Session& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const proto::Credential& serializedCred) noexcept(false);

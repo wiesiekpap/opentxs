@@ -3,24 +3,23 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CRYPTO_LIBRARY_ASYMMETRICPROVIDER_HPP
-#define OPENTXS_CRYPTO_LIBRARY_ASYMMETRICPROVIDER_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <optional>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -58,7 +57,7 @@ public:
         const crypto::HashType hash,
         const AllocateOutput signature) const -> bool = 0;
     virtual auto SignContract(
-        const api::Core& api,
+        const api::Session& api,
         const String& contract,
         const ReadView key,
         const crypto::HashType hashType,
@@ -69,7 +68,7 @@ public:
         const ReadView signature,
         const crypto::HashType hashType) const -> bool = 0;
     virtual auto VerifyContractSignature(
-        const api::Core& api,
+        const api::Session& api,
         const String& strContractToVerify,
         const ReadView key,
         const Signature& theSignature,
@@ -88,4 +87,3 @@ private:
 };
 }  // namespace crypto
 }  // namespace opentxs
-#endif

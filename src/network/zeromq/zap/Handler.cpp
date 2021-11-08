@@ -7,19 +7,17 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "network/zeromq/zap/Handler.hpp"  // IWYU pragma: associated
 
-#include <memory>
-
+#include "internal/util/LogMacros.hpp"
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/zap/Callback.hpp"
 #include "opentxs/network/zeromq/zap/Handler.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -70,7 +68,7 @@ void Handler::init() noexcept
 
     OT_ASSERT(running);
 
-    LogDetail(OT_METHOD)(__func__)(": Listening on ")(ZAP_ENDPOINT).Flush();
+    LogDetail()(OT_METHOD)(__func__)(": Listening on ")(ZAP_ENDPOINT).Flush();
 }
 
 void Handler::process_incoming(const Lock& lock, zap::Request& message) noexcept

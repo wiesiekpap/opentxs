@@ -9,8 +9,8 @@
 #include <cstdint>
 
 #include "Basic.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 
@@ -34,7 +34,7 @@ auto some_moron_wrote_the_bytes_backwards(const std::string& in) -> std::string
 }
 
 auto parse_hex(
-    const ot::api::Core& api,
+    const ot::api::Session& api,
     const std::string& hex,
     const bool reverse = false) noexcept -> ot::OTData
 {
@@ -53,29 +53,30 @@ struct Bip158Vector {
     std::string filter_header_;
     std::string notes_;
 
-    [[maybe_unused]] auto Block(const ot::api::Core& api) const noexcept
+    [[maybe_unused]] auto Block(const ot::api::Session& api) const noexcept
     {
         return parse_hex(api, block_);
     }
-    [[maybe_unused]] auto BlockHash(const ot::api::Core& api) const noexcept
+    [[maybe_unused]] auto BlockHash(const ot::api::Session& api) const noexcept
     {
         return parse_hex(api, block_hash_, true);
     }
-    [[maybe_unused]] auto Filter(const ot::api::Core& api) const noexcept
+    [[maybe_unused]] auto Filter(const ot::api::Session& api) const noexcept
     {
         return parse_hex(api, filter_);
     }
-    [[maybe_unused]] auto FilterHeader(const ot::api::Core& api) const noexcept
+    [[maybe_unused]] auto FilterHeader(
+        const ot::api::Session& api) const noexcept
     {
         return parse_hex(api, filter_header_, true);
     }
     [[maybe_unused]] auto PreviousFilterHeader(
-        const ot::api::Core& api) const noexcept
+        const ot::api::Session& api) const noexcept
     {
         return parse_hex(api, previous_filter_header_, true);
     }
     [[maybe_unused]] auto PreviousOutputs(
-        const ot::api::Core& api) const noexcept
+        const ot::api::Session& api) const noexcept
     {
         auto output = std::vector<ot::OTData>{};
 

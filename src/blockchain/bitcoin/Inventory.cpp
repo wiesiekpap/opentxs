@@ -9,11 +9,10 @@
 
 #include <cstddef>
 #include <cstring>
-#include <memory>
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
 // #define OT_METHOD "opentxs::blockchain::bitcoin::CompactSize::"

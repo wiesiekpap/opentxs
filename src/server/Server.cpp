@@ -18,27 +18,26 @@
 
 #include "Proto.tpp"
 #include "core/OTStorage.hpp"
-#include "opentxs/SharedPimpl.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Options.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/otx/client/OTPayment.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -51,7 +50,6 @@
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
@@ -61,6 +59,9 @@
 #include "opentxs/protobuf/OTXEnums.pb.h"
 #include "opentxs/protobuf/OTXPush.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "server/ConfigLoader.hpp"
 #include "server/MainFile.hpp"
 #include "server/Transactor.hpp"
@@ -79,7 +80,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::server
 {
 Server::Server(
-    const opentxs::api::server::Manager& manager,
+    const opentxs::api::session::Notary& manager,
     const PasswordPrompt& reason)
     : manager_(manager)
     , reason_(reason)
@@ -106,9 +107,9 @@ Server::Server(
 void Server::ActivateCron()
 {
     if (m_Cron->ActivateCron()) {
-        LogVerbose(OT_METHOD)(__func__)(": Activate Cron. (STARTED)").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Activate Cron. (STARTED)").Flush();
     } else {
-        LogNormal(OT_METHOD)(__func__)(": Activate Cron. (FAILED)").Flush();
+        LogConsole()(OT_METHOD)(__func__)(": Activate Cron. (FAILED)").Flush();
     }
 }
 
@@ -186,12 +187,12 @@ void Server::CreateMainFile(bool& mainFileExists)
     std::string seed{};
 
     if (false == backup.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Seed backup found. Restoring.")
+        LogError()(OT_METHOD)(__func__)(": Seed backup found. Restoring.")
             .Flush();
         auto parsed = parse_seed_backup(backup);
         auto phrase = manager_.Factory().SecretFromText(parsed.first);
         auto words = manager_.Factory().SecretFromText(parsed.second);
-        seed = manager_.Seeds().ImportSeed(
+        seed = manager_.Crypto().Seed().ImportSeed(
             words,
             phrase,
             crypto::SeedStyle::BIP39,
@@ -199,10 +200,10 @@ void Server::CreateMainFile(bool& mainFileExists)
             reason_);
 
         if (seed.empty()) {
-            LogOutput(OT_METHOD)(__func__)(": Seed restoration failed.")
+            LogError()(OT_METHOD)(__func__)(": Seed restoration failed.")
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Seed ")(seed)(" restored.")
+            LogError()(OT_METHOD)(__func__)(": Seed ")(seed)(" restored.")
                 .Flush();
         }
     }
@@ -224,7 +225,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         reason_, name, nymParameters, contact::ClaimType::Server);
 
     if (false == bool(m_nymServer)) {
-        LogOutput(OT_METHOD)(__func__)(": Error: Failed to create server nym.")
+        LogError()(OT_METHOD)(__func__)(": Error: Failed to create server nym.")
             .Flush();
         OT_FAIL;
     }
@@ -274,7 +275,8 @@ void Server::CreateMainFile(bool& mainFileExists)
     const auto inproc = args.NotaryInproc();
 
     if (inproc) {
-        LogNormal("Creating inproc contract for instance ")(manager_.Instance())
+        LogConsole()("Creating inproc contract for instance ")(
+            manager_.Instance())
             .Flush();
         endpoints.emplace_back(
             core::AddressType::Inproc,
@@ -283,12 +285,12 @@ void Server::CreateMainFile(bool& mainFileExists)
             publicPort,
             2);
     } else {
-        LogNormal("Creating standard contract on port ")(publicPort).Flush();
+        LogConsole()("Creating standard contract on port ")(publicPort).Flush();
 
         for (const auto& hostname : args.NotaryPublicIPv4()) {
             if (5 > hostname.size()) { continue; }
 
-            LogNormal("* Adding ipv4 endpoint: ")(hostname).Flush();
+            LogConsole()("* Adding ipv4 endpoint: ")(hostname).Flush();
             endpoints.emplace_back(
                 core::AddressType::IPV4,
                 contract::ProtocolVersion::Legacy,
@@ -300,7 +302,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         for (const auto& hostname : args.NotaryPublicIPv6()) {
             if (5 > hostname.size()) { continue; }
 
-            LogNormal("* Adding ipv6 endpoint: ")(hostname).Flush();
+            LogConsole()("* Adding ipv6 endpoint: ")(hostname).Flush();
             endpoints.emplace_back(
                 core::AddressType::IPV6,
                 contract::ProtocolVersion::Legacy,
@@ -312,7 +314,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         for (const auto& hostname : args.NotaryPublicOnion()) {
             if (5 > hostname.size()) { continue; }
 
-            LogNormal("* Adding onion endpoint: ")(hostname).Flush();
+            LogConsole()("* Adding onion endpoint: ")(hostname).Flush();
             endpoints.emplace_back(
                 core::AddressType::Onion,
                 contract::ProtocolVersion::Legacy,
@@ -324,7 +326,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         for (const auto& hostname : args.NotaryPublicEEP()) {
             if (5 > hostname.size()) { continue; }
 
-            LogNormal("* Adding eep endpoint: ")(hostname).Flush();
+            LogConsole()("* Adding eep endpoint: ")(hostname).Flush();
             endpoints.emplace_back(
                 core::AddressType::EEP,
                 contract::ProtocolVersion::Legacy,
@@ -334,7 +336,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         }
 
         if (0 == endpoints.size()) {
-            LogNormal("* Adding default endpoint: ")(DEFAULT_EXTERNAL_IP)
+            LogConsole()("* Adding default endpoint: ")(DEFAULT_EXTERNAL_IP)
                 .Flush();
             endpoints.emplace_back(
                 core::AddressType::IPV4,
@@ -352,7 +354,7 @@ void Server::CreateMainFile(bool& mainFileExists)
             .data());
 
     if (false == existing->empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Existing contract found. Restoring.")
+        LogError()(OT_METHOD)(__func__)(": Existing contract found. Restoring.")
             .Flush();
     }
 
@@ -370,14 +372,14 @@ void Server::CreateMainFile(bool& mainFileExists)
                   reason_,
                   (inproc) ? std::max(2u, contract::Server::DefaultVersion)
                            : contract::Server::DefaultVersion)
-            : wallet.Server(serialized);
+            : wallet.Internal().Server(serialized);
     std::string strNotaryID{};
     std::string strHostname{};
     std::uint32_t nPort{0};
     core::AddressType type{};
 
     if (!contract->ConnectInfo(strHostname, nPort, type, type)) {
-        LogNormal(OT_METHOD)(__func__)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(__func__)(
             ": Unable to retrieve connection info from this "
             "contract.")
             .Flush();
@@ -403,7 +405,7 @@ void Server::CreateMainFile(bool& mainFileExists)
 
     auto proto = proto::ServerContract{};
     if (false == contract->Serialize(proto, true)) {
-        LogNormal(OT_METHOD)(__func__)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(__func__)(
             ": Failed to serialize server contract.")
             .Flush();
 
@@ -422,14 +424,15 @@ void Server::CreateMainFile(bool& mainFileExists)
         "",
         "");
 
-    LogNormal("Your new server contract has been saved as ")(
+    LogConsole()("Your new server contract has been saved as ")(
         SERVER_CONTRACT_FILE)(" in the server data directory.")
         .Flush();
 
 #if OT_CRYPTO_WITH_BIP32
     const auto seedID = manager_.Storage().DefaultSeed();
-    const auto words = manager_.Seeds().Words(seedID, reason_);
-    const auto passphrase = manager_.Seeds().Passphrase(seedID, reason_);
+    const auto words = manager_.Crypto().Seed().Words(seedID, reason_);
+    const auto passphrase =
+        manager_.Crypto().Seed().Passphrase(seedID, reason_);
 #else
     const std::string words;
     const std::string passphrase;
@@ -456,7 +459,8 @@ void Server::Init(bool readOnly)
     m_bReadOnly = readOnly;
 
     if (!ConfigLoader::load(manager_, manager_.Config(), WalletFilename())) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to Load Config File!").Flush();
+        LogError()(OT_METHOD)(__func__)(": Unable to Load Config File!")
+            .Flush();
         OT_FAIL;
     }
 
@@ -475,7 +479,7 @@ void Server::Init(bool readOnly)
 
     if (false == mainFileExists) {
         if (readOnly) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error: Main file non-existent "
                 "(")(WalletFilename().Get())("). Plus, unable to "
                                              "create, since read-only "
@@ -489,7 +493,7 @@ void Server::Init(bool readOnly)
 
     if (mainFileExists) {
         if (false == mainFile_.LoadMainFile(readOnly)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Error in Loading Main File, re-creating.")
                 .Flush();
             OTDB::EraseValueByKey(
@@ -528,7 +532,7 @@ auto Server::LoadServerNym(const identifier::Nym& nymID) -> bool
     auto nym = manager_.Wallet().Nym(nymID);
 
     if (false == bool(nym)) {
-        LogOutput(OT_METHOD)(__func__)(": Server nym does not exist.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Server nym does not exist.").Flush();
 
         return false;
     }
@@ -561,7 +565,7 @@ auto Server::SendInstrumentToNym(
     const bool bGotPaymentContents = pPayment.GetPaymentContents(strPayment);
 
     if (!bGotPaymentContents) {
-        LogOutput(OT_METHOD)(__func__)(": Error GetPaymentContents Failed!")
+        LogError()(OT_METHOD)(__func__)(": Error GetPaymentContents Failed!")
             .Flush();
     }
 
@@ -685,7 +689,7 @@ auto Server::DropMessageToNymbox(
         transactor_.issueNextTransactionNumber(lTransNum);
 
     if (!bGotNextTransNum) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Error: Failed trying to get next transaction number.")
             .Flush();
         return false;
@@ -696,7 +700,7 @@ auto Server::DropMessageToNymbox(
         case transactionType::instrumentNotice:
             break;
         default:
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Unexpected transactionType passed here (Expected message "
                 "or instrumentNotice).")
                 .Flush();
@@ -760,7 +764,7 @@ auto Server::DropMessageToNymbox(
             theMsgAngel->SignContract(*m_nymServer, reason_);
             theMsgAngel->SaveContract();
         } else {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed trying to seal envelope containing theMsgAngel "
                 "(or while grabbing the base64-encoded result).")
                 .Flush();
@@ -857,14 +861,14 @@ auto Server::DropMessageToNymbox(
         } else  // should never happen
         {
             const auto strRecipientNymID = String::Factory(RECIPIENT_NYM_ID);
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed while trying to generate transaction in order to "
                 "add a message to Nymbox: ")(strRecipientNymID->Get())(".")
                 .Flush();
         }
     } else {
         const auto strRecipientNymID = String::Factory(RECIPIENT_NYM_ID);
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed while trying to load or verify "
             "Nymbox: ")(strRecipientNymID->Get())(".")
             .Flush();

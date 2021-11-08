@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLIND_CASHTYPE_HPP
-#define OPENTXS_BLIND_CASHTYPE_HPP
+#pragma once
 
 #include "opentxs/crypto/Types.hpp"  // IWYU pragma: associated
 
@@ -20,4 +19,3 @@ enum class CashType : std::uint8_t {
 };
 }  // namespace blind
 }  // namespace opentxs
-#endif

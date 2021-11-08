@@ -13,15 +13,15 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerReply.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/NoticeAcknowledgement.pb.h"
 #include "opentxs/protobuf/PeerReply.pb.h"
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/verify/PeerReply.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define CURRENT_VERSION 4
 
@@ -31,7 +31,7 @@ using ParentType = contract::peer::implementation::Reply;
 using ReturnType = contract::peer::reply::implementation::Acknowledgement;
 
 auto Factory::NoticeAcknowledgement(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const Identifier& request,
@@ -64,20 +64,21 @@ auto Factory::NoticeAcknowledgement(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::NoticeAcknowledgement(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::PeerReply& serialized) noexcept
     -> std::shared_ptr<contract::peer::reply::Acknowledgement>
 {
     if (false == proto::Validate(serialized, VERBOSE)) {
-        LogOutput("opentxs::Factory::")(__func__)(": Invalid serialized reply.")
+        LogError()("opentxs::Factory::")(__func__)(
+            ": Invalid serialized reply.")
             .Flush();
 
         return {};
@@ -92,7 +93,7 @@ auto Factory::NoticeAcknowledgement(
         Lock lock(contract.lock_);
 
         if (false == contract.validate(lock)) {
-            LogOutput("opentxs::Factory::")(__func__)(": Invalid reply.")
+            LogError()("opentxs::Factory::")(__func__)(": Invalid reply.")
                 .Flush();
 
             return {};
@@ -100,7 +101,7 @@ auto Factory::NoticeAcknowledgement(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -110,7 +111,7 @@ auto Factory::NoticeAcknowledgement(
 namespace opentxs::contract::peer::reply::implementation
 {
 Acknowledgement::Acknowledgement(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const Identifier& request,
@@ -125,7 +126,7 @@ Acknowledgement::Acknowledgement(
 }
 
 Acknowledgement::Acknowledgement(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const SerializedType& serialized)
     : Reply(api, nym, serialized)

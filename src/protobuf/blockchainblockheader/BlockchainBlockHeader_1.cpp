@@ -5,6 +5,7 @@
 
 #include "opentxs/protobuf/verify/BlockchainBlockHeader.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <limits>
 #include <string>
 

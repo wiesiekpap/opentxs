@@ -15,15 +15,15 @@
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/Profile.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -31,12 +31,11 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
-
+class Client;
 class Wallet;
+}  // namespace session
 }  // namespace api
 
 namespace identity
@@ -113,7 +112,7 @@ public:
     auto SetCallbacks(Callbacks&& cb) noexcept -> void final;
 
     Profile(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;
     ~Profile() final;
@@ -135,7 +134,7 @@ private:
     static auto sort_key(const contact::SectionType type) noexcept -> int;
     static auto check_type(const contact::SectionType type) noexcept -> bool;
     static auto nym_name(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const identifier::Nym& nymID) noexcept -> std::string;
 
     auto construct_row(

@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "network/zeromq/ListenCallback.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Pimpl.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::ListenCallback>;
 

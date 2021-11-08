@@ -11,26 +11,27 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <ostream>
 #include <set>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Activity.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::ActivitySummary::"
@@ -38,7 +39,7 @@
 namespace opentxs::factory
 {
 auto ActivitySummaryModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const Flag& running,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
@@ -53,7 +54,7 @@ auto ActivitySummaryModel(
 namespace opentxs::ui::implementation
 {
 ActivitySummary::ActivitySummary(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const Flag& running,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
@@ -178,7 +179,7 @@ void ActivitySummary::process_thread(const Message& message) noexcept
 void ActivitySummary::startup() noexcept
 {
     const auto threads = api_.Activity().Threads(primary_id_, false);
-    LogDetail(OT_METHOD)(__func__)(": Loading ")(threads.size())(" threads.")
+    LogDetail()(OT_METHOD)(__func__)(": Loading ")(threads.size())(" threads.")
         .Flush();
     for (const auto& [id, alias] : threads) {
         [[maybe_unused]] const auto& notUsed = alias;

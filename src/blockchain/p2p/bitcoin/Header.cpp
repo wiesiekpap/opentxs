@@ -19,11 +19,11 @@
 
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define HEADER_SIZE 24
 
@@ -31,8 +31,9 @@
 
 namespace opentxs::factory
 {
-auto BitcoinP2PHeader(const api::Core& api, const network::zeromq::Frame& bytes)
-    -> blockchain::p2p::bitcoin::Header*
+auto BitcoinP2PHeader(
+    const api::Session& api,
+    const network::zeromq::Frame& bytes) -> blockchain::p2p::bitcoin::Header*
 {
     using ReturnType = opentxs::blockchain::p2p::bitcoin::Header;
     const ReturnType::BitcoinFormat raw{bytes};
@@ -45,7 +46,7 @@ auto BitcoinP2PHeader(const api::Core& api, const network::zeromq::Frame& bytes)
 namespace opentxs::blockchain::p2p::bitcoin
 {
 Header::Header(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const bitcoin::Command command,
     const std::size_t payload,
@@ -58,7 +59,7 @@ Header::Header(
 }
 
 Header::Header(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const bitcoin::Command command) noexcept
     : Header(api, network, command, 0, Data::Factory())

@@ -5,30 +5,29 @@
 
 #pragma once
 
+#include <functional>
 #include <set>
 #include <stdexcept>
 #include <string>
 
 #include "internal/api/network/Network.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
 class Legacy;
 }  // namespace api
@@ -188,7 +187,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     }
 
     auto Init(
-        [[maybe_unused]] const api::client::internal::Blockchain& crypto,
+        [[maybe_unused]] const api::crypto::Blockchain& crypto,
         [[maybe_unused]] const api::Legacy& legacy,
         [[maybe_unused]] const std::string& dataFolder,
         [[maybe_unused]] const Options& args) noexcept -> void override

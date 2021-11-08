@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <iterator>
 #include <utility>
 
@@ -20,18 +21,19 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Options.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Options.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::api::network::BlockchainImp::"
@@ -39,8 +41,8 @@
 namespace opentxs::api::network
 {
 BlockchainImp::BlockchainImp(
-    const api::Core& api,
-    const api::Endpoints& endpoints,
+    const api::Session& api,
+    const api::session::Endpoints& endpoints,
     const opentxs::network::zeromq::Context& zmq) noexcept
     : api_(api)
     , crypto_(nullptr)
@@ -163,7 +165,7 @@ auto BlockchainImp::disable(const Lock& lock, const Chain type) const noexcept
     -> bool
 {
     if (0 == opentxs::blockchain::SupportedChains().count(type)) {
-        LogOutput(OT_METHOD)(__func__)(": Unsupported chain").Flush();
+        LogError()(OT_METHOD)(__func__)(": Unsupported chain").Flush();
 
         return false;
     }
@@ -172,7 +174,7 @@ auto BlockchainImp::disable(const Lock& lock, const Chain type) const noexcept
 
     if (db_->Disable(type)) { return true; }
 
-    LogOutput(OT_METHOD)(__func__)(": Database update failure").Flush();
+    LogError()(OT_METHOD)(__func__)(": Database update failure").Flush();
 
     return false;
 }
@@ -191,7 +193,7 @@ auto BlockchainImp::enable(
     const std::string& seednode) const noexcept -> bool
 {
     if (0 == opentxs::blockchain::SupportedChains().count(type)) {
-        LogOutput(OT_METHOD)(__func__)(": Unsupported chain").Flush();
+        LogError()(OT_METHOD)(__func__)(": Unsupported chain").Flush();
 
         return false;
     }
@@ -199,7 +201,7 @@ auto BlockchainImp::enable(
     init_.get();
 
     if (false == db_->Enable(type, seednode)) {
-        LogOutput(OT_METHOD)(__func__)(": Database error").Flush();
+        LogError()(OT_METHOD)(__func__)(": Database error").Flush();
 
         return false;
     }
@@ -293,7 +295,7 @@ auto BlockchainImp::hello(const Lock&, const Chains& chains) const noexcept
 }
 
 auto BlockchainImp::Init(
-    const api::client::internal::Blockchain& crypto,
+    const api::crypto::Blockchain& crypto,
     const api::Legacy& legacy,
     const std::string& dataFolder,
     const Options& options) noexcept -> void
@@ -423,7 +425,7 @@ auto BlockchainImp::Shutdown() noexcept -> void
     if (running_.exchange(false)) {
         if (heartbeat_.joinable()) { heartbeat_.join(); }
 
-        LogVerbose("Shutting down ")(networks_.size())(" blockchain clients")
+        LogVerbose()("Shutting down ")(networks_.size())(" blockchain clients")
             .Flush();
 
         for (auto& [chain, network] : networks_) { network->Shutdown().get(); }
@@ -451,14 +453,14 @@ auto BlockchainImp::start(
 
     if (Chain::UnitTest != type) {
         if (0 == opentxs::blockchain::SupportedChains().count(type)) {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported chain").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unsupported chain").Flush();
 
             return false;
         }
     }
 
     if (0 != networks_.count(type)) {
-        LogVerbose(OT_METHOD)(__func__)(": Chain already running").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Chain already running").Flush();
 
         return true;
     }
@@ -493,7 +495,7 @@ auto BlockchainImp::start(
                 type,
                 factory::BlockchainNetworkBitcoin(
                     api_, *crypto_, *this, type, config, seednode, endpoint));
-            LogVerbose(OT_METHOD)(__func__)(": started chain ")(
+            LogVerbose()(OT_METHOD)(__func__)(": started chain ")(
                 static_cast<std::uint32_t>(type))
                 .Flush();
             publish_chain_state(type, true);
@@ -521,8 +523,9 @@ auto BlockchainImp::StartSyncServer(
         return sync_server_->Start(sync, publicSync, update, publicUpdate);
     }
 
-    LogNormal("Blockchain sync server must be enabled at library "
-              "initialization time by using Options::SetBlockchainSyncEnabled.")
+    LogConsole()(
+        "Blockchain sync server must be enabled at library "
+        "initialization time by using Options::SetBlockchainSyncEnabled.")
         .Flush();
 
     return false;
@@ -548,7 +551,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
 
     it->second->Shutdown().get();
     networks_.erase(it);
-    LogVerbose(OT_METHOD)(__func__)(": stopped chain ")(opentxs::print(type))
+    LogVerbose()(OT_METHOD)(__func__)(": stopped chain ")(opentxs::print(type))
         .Flush();
     publish_chain_state(type, false);
 

@@ -12,19 +12,19 @@
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -57,14 +57,14 @@ public:
     auto Type() const noexcept -> filter::Type final { return type_; }
 
     Cfilter(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const filter::Type type,
         const block::Hash& hash,
         const std::uint32_t count,
         const Space& compressed) noexcept;
     Cfilter(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const filter::Type type,
         const block::Hash& hash,

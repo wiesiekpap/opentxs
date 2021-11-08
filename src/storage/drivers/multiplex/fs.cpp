@@ -11,10 +11,9 @@
 #include <vector>
 
 #include "internal/storage/drivers/Factory.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/storage/Plugin.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::storage::driver::Multiplex::"
 
@@ -22,7 +21,8 @@ namespace opentxs::storage::driver
 {
 auto Multiplex::init_fs(std::unique_ptr<storage::Plugin>& plugin) -> void
 {
-    LogVerbose(OT_METHOD)(__func__)(": Initializing primary filesystem plugin.")
+    LogVerbose()(OT_METHOD)(__func__)(
+        ": Initializing primary filesystem plugin.")
         .Flush();
     plugin = factory::StorageFSGC(
         crypto_, asio_, storage_, config_, primary_bucket_);

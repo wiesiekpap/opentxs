@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CRYPTO_NYMPARAMETERS_HPP
-#define OPENTXS_CORE_CRYPTO_NYMPARAMETERS_HPP
+#pragma once
 
 // IWYU pragma: no_include "opentxs/crypto/Language.hpp"
 // IWYU pragma: no_include "opentxs/crypto/SeedStrength.hpp"
@@ -18,7 +17,6 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -29,6 +27,7 @@
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/identity/credential/Base.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -178,4 +177,3 @@ private:
     std::unique_ptr<Imp> imp_;
 };
 }  // namespace opentxs
-#endif

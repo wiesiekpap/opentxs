@@ -10,18 +10,19 @@
 
 #include "crypto/Bip32Vectors.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -31,9 +32,9 @@ class Test_BIP32 : public ::testing::Test
 {
 protected:
     using EcdsaCurve = ot::EcdsaCurve;
-    using Path = ot::api::HDSeed::Path;
+    using Path = std::vector<ot::Bip32Index>;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;
 
     auto make_path(const Child::Path& path) const noexcept -> Path
@@ -54,7 +55,7 @@ protected:
     }
 
     Test_BIP32()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
         , reason_(api_.Factory().PasswordPrompt(__func__))
     {
     }
@@ -70,7 +71,7 @@ TEST_F(Test_BIP32, cases)
                 api_.Factory().Data(item.seed_, ot::StringStyle::Hex);
             const auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
 
-            return api_.Seeds().ImportRaw(seed, reason_);
+            return api_.Crypto().Seed().ImportRaw(seed, reason_);
         }();
 
         ASSERT_FALSE(seedID.empty());
@@ -78,7 +79,7 @@ TEST_F(Test_BIP32, cases)
         auto id{seedID};
 
         for (const auto& child : item.children_) {
-            const auto pKey = api_.Seeds().GetHDKey(
+            const auto pKey = api_.Crypto().Seed().GetHDKey(
                 id, EcdsaCurve::secp256k1, make_path(child.path_), reason_);
             const auto& key = *pKey;
 
@@ -99,14 +100,14 @@ TEST_F(Test_BIP32, stress)
             api_.Factory().Data(item.seed_, ot::StringStyle::Hex);
         const auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
 
-        return api_.Seeds().ImportRaw(seed, reason_);
+        return api_.Crypto().Seed().ImportRaw(seed, reason_);
     }();
 
     ASSERT_FALSE(seedID.empty());
 
     for (auto i{0}; i < 1000; ++i) {
         auto id{seedID};
-        const auto pKey = api_.Seeds().GetHDKey(
+        const auto pKey = api_.Crypto().Seed().GetHDKey(
             id, EcdsaCurve::secp256k1, make_path(child.path_), reason_);
         const auto& key = *pKey;
 

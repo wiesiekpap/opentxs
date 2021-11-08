@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLIND_TOKEN_HPP
-#define OPENTXS_BLIND_TOKEN_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -12,10 +11,10 @@
 #include <cstdint>
 
 #if OT_CASH
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blind/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -96,4 +95,3 @@ private:
 }  // namespace blind
 }  // namespace opentxs
 #endif  // OT_CASH
-#endif

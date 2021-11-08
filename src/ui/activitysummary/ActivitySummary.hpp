@@ -12,14 +12,14 @@
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/ui/ActivitySummary.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -27,10 +27,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -77,7 +77,7 @@ class ActivitySummary final : public ActivitySummaryList
 {
 public:
     ActivitySummary(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const Flag& running,
         const identifier::Nym& nymID,
         const SimpleCallback& cb) noexcept;

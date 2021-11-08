@@ -5,8 +5,7 @@
 
 // IWYU pragma: no_include "internal/api/network/Network.hpp"
 
-#ifndef OPENTXS_NETWORK_ASIO_SOCKET_HPP
-#define OPENTXS_NETWORK_ASIO_SOCKET_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -15,7 +14,7 @@
 #include <iosfwd>
 #include <memory>
 
-#include "opentxs/Bytes.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace opentxs
@@ -79,4 +78,3 @@ private:
 }  // namespace asio
 }  // namespace network
 }  // namespace opentxs
-#endif

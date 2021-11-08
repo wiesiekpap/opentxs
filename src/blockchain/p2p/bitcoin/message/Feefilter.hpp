@@ -22,7 +22,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -45,11 +45,11 @@ public:
     auto feeRate() const noexcept -> std::uint64_t { return fee_rate_; }
 
     Feefilter(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const std::uint64_t fee_rate) noexcept;
     Feefilter(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const std::uint64_t fee_rate) noexcept(false);
 

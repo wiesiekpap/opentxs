@@ -16,7 +16,6 @@
 #include "internal/blockchain/Params.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -31,7 +31,7 @@ using BlockDM = download::Manager<
     BlockOracle::BlockDownloader,
     std::shared_ptr<const block::bitcoin::Block>,
     int>;
-using BlockWorker = Worker<BlockOracle::BlockDownloader, api::Core>;
+using BlockWorker = Worker<BlockOracle::BlockDownloader, api::Session>;
 
 class BlockOracle::BlockDownloader : public BlockDM, public BlockWorker
 {
@@ -39,7 +39,7 @@ public:
     auto NextBatch() noexcept { return allocate_batch(0); }
 
     BlockDownloader(
-        const api::Core& api,
+        const api::Session& api,
         const internal::BlockDatabase& db,
         const internal::HeaderOracle& header,
         const internal::Network& node,
@@ -120,7 +120,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogDetail(DisplayString(chain_))(" block chain updated to height ")(
+        LogDetail()(DisplayString(chain_))(" block chain updated to height ")(
             position.first)
             .Flush();
         auto work = MakeWork(OT_ZMQ_NEW_FULL_BLOCK_SIGNAL);

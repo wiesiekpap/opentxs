@@ -13,13 +13,11 @@
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -29,12 +27,14 @@
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/verify/PeerRequest.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::contract::peer::implementation::Request::"
 
 namespace opentxs::factory
 {
-auto PeerRequest(const api::Core& api) noexcept
+auto PeerRequest(const api::Session& api) noexcept
     -> std::unique_ptr<contract::peer::Request>
 {
     return std::make_unique<contract::peer::blank::Request>(api);
@@ -44,7 +44,7 @@ auto PeerRequest(const api::Core& api) noexcept
 namespace opentxs::contract::peer::implementation
 {
 Request::Request(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const VersionNumber version,
     const identifier::Nym& recipient,
@@ -61,7 +61,7 @@ Request::Request(
 }
 
 Request::Request(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const SerializedType& serialized,
     const std::string& conditions)
@@ -80,7 +80,7 @@ Request::Request(
     , recipient_(api.Factory().NymID(serialized.recipient()))
     , server_(api.Factory().ServerID(serialized.server()))
     , cookie_(Identifier::Factory(serialized.cookie()))
-    , type_(internal::translate(serialized.type()))
+    , type_(translate(serialized.type()))
 {
 }
 
@@ -156,7 +156,7 @@ auto Request::Finish(Request& contract, const PasswordPrompt& reason) -> bool
 
         return true;
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to finalize contract.")
+        LogError()(OT_METHOD)(__func__)(": Failed to finalize contract.")
             .Flush();
 
         return false;
@@ -168,7 +168,7 @@ auto Request::GetID(const Lock& lock) const -> OTIdentifier
     return GetID(api_, IDVersion(lock));
 }
 
-auto Request::GetID(const api::Core& api, const SerializedType& contract)
+auto Request::GetID(const api::Session& api, const SerializedType& contract)
     -> OTIdentifier
 {
     return api.Factory().Identifier(contract);
@@ -189,7 +189,7 @@ auto Request::IDVersion(const Lock& lock) const -> SerializedType
     contract.clear_id();  // reinforcing that this field must be blank.
     contract.set_initiator(String::Factory(initiator_)->Get());
     contract.set_recipient(String::Factory(recipient_)->Get());
-    contract.set_type(internal::translate(type_));
+    contract.set_type(translate(type_));
     contract.set_cookie(String::Factory(cookie_)->Get());
     contract.set_server(String::Factory(server_)->Get());
     contract.clear_signature();  // reinforcing that this field must be blank.
@@ -236,7 +236,8 @@ auto Request::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to create signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to create signature.")
+            .Flush();
     }
 
     return success;
@@ -249,17 +250,17 @@ auto Request::validate(const Lock& lock) const -> bool
     if (nym_) {
         validNym = nym_->VerifyPseudonym();
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Invalid nym.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid nym.").Flush();
     }
 
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
     }
 
     if (1 > signatures_.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Missing signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing signature.").Flush();
 
         return false;
     }
@@ -270,7 +271,7 @@ auto Request::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid signature.").Flush();
     }
 
     return (validNym && validSyntax && validSig);

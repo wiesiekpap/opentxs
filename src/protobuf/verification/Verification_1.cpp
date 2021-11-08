@@ -12,9 +12,9 @@
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
+#include "opentxs/protobuf/Signature.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Verification.pb.h"
-#include "opentxs/protobuf/verify/Signature.hpp"
+#include "opentxs/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
 

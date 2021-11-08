@@ -12,16 +12,16 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/contract/basket/BasketItem.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/util/Tag.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::Basket"
 
@@ -70,7 +70,7 @@
 namespace opentxs
 {
 Basket::Basket(
-    const api::Core& core,
+    const api::Session& core,
     std::int32_t nCount,
     const Amount& lMinimumTransferAmount)
     : Contract(core)
@@ -85,7 +85,7 @@ Basket::Basket(
 {
 }
 
-Basket::Basket(const api::Core& core)
+Basket::Basket(const api::Session& core)
     : Basket(core, 0, 0)
 {
 }
@@ -218,7 +218,8 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_nSubCount = atoi(strSubCount->Get());
         m_lMinimumTransfer = Amount(strMinTrans->Get());
 
-        LogDetail(OT_METHOD)(__func__)(": Loading currency basket...").Flush();
+        LogDetail()(OT_METHOD)(__func__)(": Loading currency basket...")
+            .Flush();
 
         return 1;
     } else if (strNodeName->Compare("requestExchange")) {
@@ -240,7 +241,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             m_bExchangingIn = strDirection->Compare("in");
         if (strTemp->Exists()) SetClosingNum(strTemp->ToLong());
 
-        LogVerbose(OT_METHOD)(__func__)("Basket Transfer multiple is ")(
+        LogVerbose()(OT_METHOD)(__func__)("Basket Transfer multiple is ")(
             m_nTransferMultiple)(". Direction is ")(
             strDirection)(". Closing number is ")(
             m_lClosingTransactionNo)(". Target account is: ")(
@@ -273,7 +274,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         m_dequeItems.push_back(pItem);
 
-        LogVerbose(OT_METHOD)(__func__)("Loaded basket item. ").Flush();
+        LogVerbose()(OT_METHOD)(__func__)("Loaded basket item. ").Flush();
 
         return 1;
     }

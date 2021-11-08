@@ -208,7 +208,9 @@ if(${CMAKE_CXX_COMPILER_ID}
    MATCHES
    Clang
 )
-  target_compile_options(messages PRIVATE -Wno-suggest-destructor-override)
+  target_compile_options(
+    messages PRIVATE -Wno-suggest-destructor-override -Wno-reserved-identifier
+  )
 endif()
 
 set_target_properties(

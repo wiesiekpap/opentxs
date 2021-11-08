@@ -10,20 +10,20 @@
 #include <memory>
 
 #include "2_Factory.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Secret.hpp"
 
 namespace opentxs
 {
-auto Factory::PasswordPrompt(const api::Core& api, const std::string& text)
+auto Factory::PasswordPrompt(const api::Session& api, const std::string& text)
     -> opentxs::PasswordPrompt*
 {
     return new opentxs::PasswordPrompt(api, text);
 }
 
 PasswordPrompt::PasswordPrompt(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& display) noexcept
     : api_(api)
     , display_(display)

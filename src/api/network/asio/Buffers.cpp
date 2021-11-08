@@ -15,8 +15,8 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::api::network::asio
 {

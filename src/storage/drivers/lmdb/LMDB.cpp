@@ -12,8 +12,7 @@
 #include <utility>
 
 #include "internal/storage/drivers/Factory.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/Config.hpp"
 #include "util/LMDB.hpp"
 
@@ -24,7 +23,7 @@ namespace opentxs::factory
 auto StorageLMDB(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& parent,
+    const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket) noexcept -> std::unique_ptr<storage::Plugin>
 {
@@ -39,7 +38,7 @@ namespace opentxs::storage::driver
 LMDB::LMDB(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& storage,
+    const api::session::Storage& storage,
     const storage::Config& config,
     const Flag& bucket)
     : ot_super(crypto, asio, storage, config, bucket)
@@ -57,7 +56,7 @@ LMDB::LMDB(
               {Table::B, 0},
           })
 {
-    LogVerbose(OT_METHOD)(__func__)(": Using ")(config_.path_).Flush();
+    LogVerbose()(OT_METHOD)(__func__)(": Using ")(config_.path_).Flush();
     Init_LMDB();
 }
 
@@ -77,7 +76,7 @@ auto LMDB::get_table(const bool bucket) const -> LMDB::Table
 
 void LMDB::Init_LMDB()
 {
-    LogVerbose(OT_METHOD)(__func__)(": Database initialized.").Flush();
+    LogVerbose()(OT_METHOD)(__func__)(": Database initialized.").Flush();
 }
 
 auto LMDB::LoadFromBucket(

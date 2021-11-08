@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_LEDGER_HPP
-#define OPENTXS_CORE_LEDGER_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -16,24 +15,28 @@
 #include <string>
 #include <tuple>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -247,8 +250,8 @@ public:
         ledgerType theType,
         bool bCreateFile = false) -> bool;
 
-    static auto _GetTypeString(ledgerType theType) -> char const*;
-    auto GetTypeString() const -> char const* { return _GetTypeString(m_Type); }
+    static auto GetTypeString(ledgerType theType) -> char const*;
+    auto GetTypeString() const -> char const* { return GetTypeString(m_Type); }
 
     ~Ledger() override;
 
@@ -265,7 +268,7 @@ protected:
                    // ledger saves its contents
 
 private:  // Private prevents erroneous use by other classes.
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
     using ot_super = OTTransactionType;
 
@@ -286,17 +289,16 @@ private:  // Private prevents erroneous use by other classes.
         Identifier& hash,
         bool (Ledger::*calc)(Identifier&) const) -> bool;
 
-    Ledger(const api::Core& api);
+    Ledger(const api::Session& api);
     Ledger(
-        const api::Core& api,
+        const api::Session& api,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID);
     Ledger(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID);
     Ledger() = delete;
 };
 }  // namespace opentxs
-#endif

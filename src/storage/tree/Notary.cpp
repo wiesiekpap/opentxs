@@ -10,10 +10,9 @@
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
+#include "Proto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/protobuf/BlindedSeriesList.pb.h"
 #include "opentxs/protobuf/Check.hpp"
@@ -24,6 +23,8 @@
 #include "opentxs/protobuf/verify/SpentTokenList.hpp"
 #include "opentxs/protobuf/verify/StorageNotary.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -67,14 +68,14 @@ auto Notary::CheckSpent(
 
     for (const auto& spent : list.spent()) {
         if (spent == key) {
-            LogTrace(OT_METHOD)(__func__)("Token ")(key)(" is already spent.")
+            LogTrace()(OT_METHOD)(__func__)("Token ")(key)(" is already spent.")
                 .Flush();
 
             return true;
         }
     }
 
-    LogTrace(OT_METHOD)(__func__)("Token ")(key)(" has never been spent.")
+    LogTrace()(OT_METHOD)(__func__)("Token ")(key)(" has never been spent.")
         .Flush();
 
     return false;
@@ -135,7 +136,7 @@ void Notary::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to load index file").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to load index file").Flush();
 
         OT_FAIL;
     }
@@ -162,7 +163,7 @@ auto Notary::MarkSpent(
     const std::string& key) -> bool
 {
     if (key.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid key ").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid key ").Flush();
 
         return false;
     }
@@ -174,7 +175,8 @@ auto Notary::MarkSpent(
     OT_ASSERT(proto::Validate(list, VERBOSE));
 
     auto& hash = mint_map_[unit.str()][series];
-    LogTrace(OT_METHOD)(__func__)(": Token ")(key)(" marked as spent.").Flush();
+    LogTrace()(OT_METHOD)(__func__)(": Token ")(key)(" marked as spent.")
+        .Flush();
 
     return driver_.StoreProto(list, hash);
 }
@@ -183,7 +185,7 @@ auto Notary::MarkSpent(
 auto Notary::save(const Lock& lock) const -> bool
 {
     if (false == verify_write_lock(lock)) {
-        LogOutput(OT_METHOD)(__func__)(": Lock failure").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock failure").Flush();
 
         OT_FAIL;
     }

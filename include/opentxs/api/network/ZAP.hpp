@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_NETWORK_ZAP_HPP
-#define OPENTXS_API_NETWORK_ZAP_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -47,7 +46,7 @@ public:
      */
     virtual auto SetDefaultPolicy(const Policy policy) const -> bool = 0;
 
-    virtual ~ZAP() = default;
+    OPENTXS_NO_EXPORT virtual ~ZAP() = default;
 
 protected:
     ZAP() = default;
@@ -61,4 +60,3 @@ private:
 }  // namespace network
 }  // namespace api
 }  // namespace opentxs
-#endif

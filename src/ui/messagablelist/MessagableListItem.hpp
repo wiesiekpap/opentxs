@@ -10,19 +10,19 @@
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/contactlist/ContactListItem.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -49,7 +49,7 @@ class MessagableListItem final : public implementation::ContactListItem
 public:
     MessagableListItem(
         const ContactListInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const ContactListRowID& rowID,
         const ContactListSortKey& key) noexcept;
     ~MessagableListItem() final = default;

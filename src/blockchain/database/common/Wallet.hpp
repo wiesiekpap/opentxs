@@ -13,22 +13,22 @@
 #include <string>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -87,8 +87,8 @@ public:
         const noexcept -> std::vector<pTxid>;
 
     Wallet(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         storage::lmdb::LMDB& lmdb,
         Bulk& bulk) noexcept(false);
 
@@ -100,8 +100,8 @@ private:
     using TransactionToPattern = std::map<pTxid, std::set<PatternID>>;
     using PatternToTransaction = std::map<PatternID, std::set<pTxid>>;
 
-    const api::Core& api_;
-    const api::client::Blockchain& blockchain_;
+    const api::Session& api_;
+    const api::crypto::Blockchain& blockchain_;
     storage::lmdb::LMDB& lmdb_;
     Bulk& bulk_;
     const int transaction_table_;

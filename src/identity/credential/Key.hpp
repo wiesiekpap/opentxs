@@ -13,7 +13,7 @@
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/identity/credential/Credential.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/util/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
@@ -24,12 +24,14 @@
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -117,7 +119,7 @@ protected:
         const identity::credential::internal::Primary& master,
         const PasswordPrompt& reason) noexcept(false) override;
 
-    Key(const api::Core& api,
+    Key(const api::Session& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const NymParameters& nymParameters,
@@ -126,7 +128,7 @@ protected:
         const PasswordPrompt& reason,
         const std::string& masterID,
         const bool useProvidedSigningKey = false) noexcept(false);
-    Key(const api::Core& api,
+    Key(const api::Session& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const proto::Credential& serializedCred,
@@ -137,18 +139,18 @@ private:
     static const VersionConversionMap subversion_to_key_version_;
 
     static auto deserialize_key(
-        const api::Core& api,
+        const api::Session& api,
         const int index,
         const proto::Credential& credential) -> OTKeypair;
     static auto new_key(
-        const api::Core& api,
+        const api::Session& api,
         const proto::KeyRole role,
         const NymParameters& nymParameters,
         const VersionNumber version,
         const PasswordPrompt& reason,
         const ReadView dh = {}) noexcept(false) -> OTKeypair;
     static auto signing_key(
-        const api::Core& api,
+        const api::Session& api,
         const NymParameters& params,
         const VersionNumber subversion,
         const bool useProvided,

@@ -11,9 +11,9 @@
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -40,13 +40,13 @@ class Test_ContactList : public ::testing::Test
 public:
     static const User alice_;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     ot::OTPasswordPrompt reason_;
     const ot::OTPaymentCode bob_payment_code_;
     const ot::OTPaymentCode chris_payment_code_;
 
     Test_ContactList()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
         , reason_(api_.Factory().PasswordPrompt(__func__))
         , bob_payment_code_(
               api_.Factory().PaymentCode(std::string{payment_code_1_}))

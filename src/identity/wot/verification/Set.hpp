@@ -16,12 +16,14 @@
 #include "opentxs/identity/wot/verification/Group.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
 #include "opentxs/identity/wot/verification/Set.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -40,7 +42,7 @@ class Set final : public internal::Set
 public:
     operator SerializedType() const noexcept final;
 
-    auto API() const noexcept -> const api::Core& final { return api_; }
+    auto API() const noexcept -> const api::Session& final { return api_; }
     auto External() const noexcept -> const Group& final { return *external_; }
     auto Internal() const noexcept -> const Group& final { return *internal_; }
     auto NymID() const noexcept -> const identifier::Nym& final
@@ -77,7 +79,7 @@ private:
     using GroupPointer = std::unique_ptr<internal::Group>;
     using ChildType = verification::Group::SerializedType;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const VersionNumber version_;
     const OTNymID nym_id_;
     GroupPointer internal_;
@@ -89,10 +91,10 @@ private:
         const ChildType& serialized,
         bool external) noexcept -> GroupPointer;
 
-    Set(const api::Core& api,
+    Set(const api::Session& api,
         const identifier::Nym& nym,
         const VersionNumber version = DefaultVersion) noexcept(false);
-    Set(const api::Core& api,
+    Set(const api::Session& api,
         const identifier::Nym& nym,
         const SerializedType& serialized) noexcept(false);
     Set() = delete;

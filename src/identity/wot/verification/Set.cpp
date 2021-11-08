@@ -14,19 +14,19 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/VerificationGroup.pb.h"
 #include "opentxs/protobuf/VerificationSet.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::identity::wot::verification::implementation::Set::"
 
 namespace opentxs
 {
 auto Factory::VerificationSet(
-    const api::Core& api,
+    const api::Session& api,
     const identifier::Nym& nym,
     const VersionNumber version) -> identity::wot::verification::internal::Set*
 {
@@ -37,7 +37,7 @@ auto Factory::VerificationSet(
 
         return new ReturnType(api, nym, version);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -46,7 +46,7 @@ auto Factory::VerificationSet(
 }
 
 auto Factory::VerificationSet(
-    const api::Core& api,
+    const api::Session& api,
     const identifier::Nym& nym,
     const proto::VerificationSet& serialized)
     -> identity::wot::verification::internal::Set*
@@ -58,7 +58,7 @@ auto Factory::VerificationSet(
 
         return new ReturnType(api, nym, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -75,7 +75,7 @@ const VersionNumber Set::DefaultVersion{1};
 namespace opentxs::identity::wot::verification::implementation
 {
 Set::Set(
-    const api::Core& api,
+    const api::Session& api,
     const identifier::Nym& nym,
     const VersionNumber version) noexcept(false)
     : api_(api)
@@ -95,7 +95,7 @@ Set::Set(
 }
 
 Set::Set(
-    const api::Core& api,
+    const api::Session& api,
     const identifier::Nym& nym,
     const SerializedType& in) noexcept(false)
     : api_(api)
@@ -204,7 +204,7 @@ auto Set::UpgradeGroupVersion(const VersionNumber groupVersion) noexcept -> bool
                 proto::VerificationSetAllowedGroup().at(nymVersion);
 
             if (groupVersion < min) {
-                LogOutput(OT_METHOD)(__func__)(": Version ")(
+                LogError()(OT_METHOD)(__func__)(": Version ")(
                     groupVersion)(" too old")
                     .Flush();
 
@@ -219,7 +219,7 @@ auto Set::UpgradeGroupVersion(const VersionNumber groupVersion) noexcept -> bool
             }
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": No support for version ")(
+        LogError()(OT_METHOD)(__func__)(": No support for version ")(
             groupVersion)(" groups")
             .Flush();
 

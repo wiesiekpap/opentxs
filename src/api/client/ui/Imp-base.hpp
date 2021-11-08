@@ -27,6 +27,7 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -52,15 +53,15 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
+class Blockchain;
+}  // namespace crypto
 
-class Manager;
-}  // namespace client
+namespace session
+{
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -299,8 +300,8 @@ public:
     auto Init() noexcept -> void {}
     auto Shutdown() noexcept -> void;
 
-    Imp(const api::client::Manager& api,
-        const api::client::internal::Blockchain& blockchain,
+    Imp(const api::session::Client& api,
+        const api::crypto::Blockchain& blockchain,
         const Flag& running) noexcept;
 
     ~Imp() override;
@@ -369,8 +370,8 @@ protected:
     using ProfileMap = std::map<ProfileKey, ProfilePointer>;
     using UnitListMap = std::map<UnitListKey, UnitListPointer>;
 
-    const api::client::Manager& api_;
-    const api::client::internal::Blockchain& blockchain_;
+    const api::session::Client& api_;
+    const api::crypto::Blockchain& blockchain_;
     const Flag& running_;
     mutable AccountActivityMap accounts_;
     mutable AccountListMap account_lists_;

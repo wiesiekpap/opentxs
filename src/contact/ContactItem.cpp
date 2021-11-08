@@ -14,14 +14,14 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/contact/Contact.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/Attribute.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/protobuf/ContactItem.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::ContactItem::"
 
@@ -52,7 +52,7 @@ static auto extract_attributes(const Claim& claim)
 }
 
 struct ContactItem::Imp {
-    const api::Core& api_;
+    const api::Session& api_;
     const VersionNumber version_;
     const std::string nym_;
     const contact::SectionType section_;
@@ -74,7 +74,7 @@ struct ContactItem::Imp {
         return in;
     }
 
-    Imp(const api::Core& api,
+    Imp(const api::Session& api,
         const std::string& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
@@ -100,8 +100,8 @@ struct ContactItem::Imp {
         , subtype_(subtype)
     {
         if (0 == version) {
-            LogOutput(OT_METHOD)(__func__)(": Warning: malformed version. "
-                                           "Setting to ")(parentVersion)(".")
+            LogError()(OT_METHOD)(__func__)(": Warning: malformed version. "
+                                            "Setting to ")(parentVersion)(".")
                 .Flush();
         }
     }
@@ -168,7 +168,7 @@ struct ContactItem::Imp {
 };
 
 ContactItem::ContactItem(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
@@ -208,7 +208,7 @@ ContactItem::ContactItem(ContactItem&& rhs) noexcept
 }
 
 ContactItem::ContactItem(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
@@ -229,7 +229,7 @@ ContactItem::ContactItem(
 }
 
 ContactItem::ContactItem(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const contact::SectionType section,
@@ -240,7 +240,7 @@ ContactItem::ContactItem(
           data.version(),
           parentVersion,
           section,
-          contact::internal::translate(data.type()),
+          translate(data.type()),
           data.value(),
           extract_attributes(data),
           data.start(),
@@ -250,7 +250,7 @@ ContactItem::ContactItem(
 }
 
 ContactItem::ContactItem(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& nym,
     const VersionNumber parentVersion,
     const contact::SectionType section,
@@ -331,13 +331,13 @@ auto ContactItem::Serialize(proto::ContactItem& output, const bool withID) const
 
     if (withID) { output.set_id(String::Factory(imp_->id_)->Get()); }
 
-    output.set_type(contact::internal::translate(imp_->type_));
+    output.set_type(translate(imp_->type_));
     output.set_value(imp_->value_);
     output.set_start(imp_->start_);
     output.set_end(imp_->end_);
 
     for (const auto& attribute : imp_->attributes_) {
-        output.add_attribute(contact::internal::translate(attribute));
+        output.add_attribute(translate(attribute));
     }
 
     return true;

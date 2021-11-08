@@ -9,10 +9,10 @@
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/ui/ContactListItem.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/Row.hpp"
 
 class QVariant;
@@ -21,10 +21,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -59,7 +59,7 @@ public:
 
     ContactListItem(
         const ContactListInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const ContactListRowID& rowID,
         const ContactListSortKey& key) noexcept;
     ~ContactListItem() override = default;

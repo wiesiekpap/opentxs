@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_OTX_OPERATION_TYPE_HPP
-#define OPENTXS_OTX_OPERATION_TYPE_HPP
+#pragma once
 
 #include "opentxs/otx/Types.hpp"  // IWYU pragma: associated
 
@@ -41,4 +40,3 @@ enum class OperationType : std::uint16_t {
 };
 }  // namespace otx
 }  // namespace opentxs
-#endif

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_ACCOUNTVISITOR_HPP
-#define OPENTXS_CORE_ACCOUNTVISITOR_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -17,7 +16,10 @@ namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 class Wallet;
+}  // namespace session
 }  // namespace api
 
 class Account;
@@ -33,17 +35,17 @@ public:
     virtual auto Trigger(const Account& account, const PasswordPrompt& reason)
         -> bool = 0;
 
-    auto Wallet() const -> const api::Wallet& { return wallet_; }
+    auto Wallet() const -> const api::session::Wallet& { return wallet_; }
 
     virtual ~AccountVisitor() = default;
 
 protected:
-    const api::Wallet& wallet_;
+    const api::session::Wallet& wallet_;
     const OTServerID notaryID_;
     mapOfAccounts* loadedAccounts_;
 
     AccountVisitor(
-        const api::Wallet& wallet,
+        const api::session::Wallet& wallet,
         const identifier::Server& notaryID);
 
 private:
@@ -54,4 +56,3 @@ private:
     auto operator=(AccountVisitor&&) -> AccountVisitor& = delete;
 };
 }  // namespace opentxs
-#endif

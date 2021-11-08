@@ -13,11 +13,11 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/blockchain/database/Database.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
 
 #define OT_METHOD "opentxs::blockchain::database::Proposal::"
@@ -77,7 +77,7 @@ struct Proposal::Imp {
             }();
 
             if (lmdb_.Store(table_, id.Bytes(), reader(bytes)).first) {
-                LogVerbose(OT_METHOD)(__func__)(": proposal ")(id)(" added ")
+                LogVerbose()(OT_METHOD)(__func__)(": proposal ")(id)(" added ")
                     .Flush();
 
                 return true;
@@ -85,7 +85,7 @@ struct Proposal::Imp {
                 throw std::runtime_error{"failed to store proposal"};
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return false;
         }
@@ -93,12 +93,12 @@ struct Proposal::Imp {
     auto CancelProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool
     {
         if (lmdb_.Delete(table_, id.Bytes(), tx)) {
-            LogVerbose(OT_METHOD)(__func__)(": proposal ")(id)(" cancelled ")
+            LogVerbose()(OT_METHOD)(__func__)(": proposal ")(id)(" cancelled ")
                 .Flush();
 
             return true;
         } else {
-            LogOutput(OT_METHOD)(__func__)(": failed to cancel proposal ")(id)
+            LogError()(OT_METHOD)(__func__)(": failed to cancel proposal ")(id)
                 .Flush();
 
             return false;

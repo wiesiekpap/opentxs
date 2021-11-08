@@ -9,28 +9,39 @@
 #include <functional>
 #include <future>
 
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
 
 namespace opentxs
 {
+namespace api
+{
+namespace session
+{
+class Client;
+}  // namespace session
+}  // namespace api
+}  // namespace opentxs
+
+namespace opentxs
+{
 template <typename Enum>
-auto MakeWork(const api::Core& api, const Enum type) noexcept -> OTZMQMessage
+auto MakeWork(const api::Session& api, const Enum type) noexcept -> OTZMQMessage
 {
     return api.Network().ZeroMQ().TaggedMessage(type);
 }
 
-template <typename Child, typename API = api::client::Manager>
+template <typename Child, typename API = api::session::Client>
 class Worker
 {
 public:

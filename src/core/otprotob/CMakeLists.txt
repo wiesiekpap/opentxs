@@ -30,8 +30,11 @@ if(${CMAKE_CXX_COMPILER_ID}
    Clang
 )
   target_compile_options(
-    opentxs-core-otprotob PRIVATE -Wno-extra-semi
-                                  -Wno-suggest-destructor-override
+    opentxs-core-otprotob
+    PRIVATE
+      -Wno-extra-semi
+      -Wno-suggest-destructor-override
+      -Wno-reserved-identifier
   )
 endif()
 

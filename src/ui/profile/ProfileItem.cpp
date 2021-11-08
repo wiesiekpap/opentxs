@@ -14,20 +14,20 @@
 
 #include "internal/contact/Contact.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
-#include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/Attribute.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/contact/ContactItem.hpp"
 #include "ui/base/Widget.hpp"
 
 namespace opentxs::factory
 {
 auto ProfileItemWidget(
     const ui::implementation::ProfileSubsectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ProfileSubsectionRowID& rowID,
     const ui::implementation::ProfileSubsectionSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -43,7 +43,7 @@ namespace opentxs::ui::implementation
 {
 ProfileItem::ProfileItem(
     const ProfileSubsectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ProfileSubsectionRowID& rowID,
     const ProfileSubsectionSortKey& sortKey,
     CustomData& custom) noexcept
@@ -68,20 +68,18 @@ auto ProfileItem::as_claim() const noexcept -> Claim
     Claim output{};
     auto& [id, section, type, value, start, end, attributes] = output;
     id = "";
-    section = contact::internal::translate(parent_.Section());
-    type = contact::internal::translate(parent_.Type());
+    section = translate(parent_.Section());
+    type = translate(parent_.Type());
     value = item_->Value();
     start = item_->Start();
     end = item_->End();
 
     if (item_->isPrimary()) {
-        attributes.emplace(
-            contact::internal::translate(contact::Attribute::Primary));
+        attributes.emplace(translate(contact::Attribute::Primary));
     }
 
     if (item_->isPrimary() || item_->isActive()) {
-        attributes.emplace(
-            contact::internal::translate(contact::Attribute::Active));
+        attributes.emplace(translate(contact::Attribute::Active));
     }
 
     return output;
@@ -115,13 +113,10 @@ auto ProfileItem::SetActive(const bool& active) const noexcept -> bool
     auto& attributes = std::get<6>(claim);
 
     if (active) {
-        attributes.emplace(
-            contact::internal::translate(contact::Attribute::Active));
+        attributes.emplace(translate(contact::Attribute::Active));
     } else {
-        attributes.erase(
-            contact::internal::translate(contact::Attribute::Active));
-        attributes.erase(
-            contact::internal::translate(contact::Attribute::Primary));
+        attributes.erase(translate(contact::Attribute::Active));
+        attributes.erase(translate(contact::Attribute::Primary));
     }
 
     return add_claim(claim);
@@ -133,13 +128,10 @@ auto ProfileItem::SetPrimary(const bool& primary) const noexcept -> bool
     auto& attributes = std::get<6>(claim);
 
     if (primary) {
-        attributes.emplace(
-            contact::internal::translate(contact::Attribute::Primary));
-        attributes.emplace(
-            contact::internal::translate(contact::Attribute::Active));
+        attributes.emplace(translate(contact::Attribute::Primary));
+        attributes.emplace(translate(contact::Attribute::Active));
     } else {
-        attributes.erase(
-            contact::internal::translate(contact::Attribute::Primary));
+        attributes.erase(translate(contact::Attribute::Primary));
     }
 
     return add_claim(claim);

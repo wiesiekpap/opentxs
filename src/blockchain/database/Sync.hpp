@@ -23,8 +23,6 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -34,13 +32,15 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -92,13 +92,13 @@ public:
     auto Tip() const noexcept -> block::Position;
 
     Sync(
-        const api::Core& api,
+        const api::Session& api,
         const common::Database& common,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type type) noexcept;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     const common::Database& common_;
     const storage::lmdb::LMDB& lmdb_;
     const block::Position blank_position_;

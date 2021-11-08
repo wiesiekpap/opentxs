@@ -10,8 +10,7 @@
 #include <Processthreadsapi.h>
 #include <map>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
@@ -31,7 +30,7 @@ auto SetThisThreadsPriority(ThreadPriority priority) noexcept -> void
     const auto rc = SetThreadPriority(handle, value);
 
     if (false == rc) {
-        LogOutput(__func__)(": failed to set thread priority to ")(
+        LogError()(__func__)(": failed to set thread priority to ")(
             opentxs::print(priority))
             .Flush();
     }

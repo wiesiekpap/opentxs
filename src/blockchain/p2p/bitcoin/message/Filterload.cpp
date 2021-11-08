@@ -14,11 +14,10 @@
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/blockchain/BloomFilter.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD
 // "opentxs::blockchain::p2p::bitcoin::message::implementation::Filterload::"
@@ -26,7 +25,7 @@
 namespace opentxs::factory
 {
 auto BitcoinP2PFilterload(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -37,7 +36,7 @@ auto BitcoinP2PFilterload(
     using ReturnType = bitcoin::message::implementation::Filterload;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -46,7 +45,7 @@ auto BitcoinP2PFilterload(
         factory::BloomFilter(api, Data::Factory(payload, size))};
 
     if (false == bool(pFilter)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid filter").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid filter").Flush();
 
         return nullptr;
     }
@@ -55,7 +54,7 @@ auto BitcoinP2PFilterload(
 }
 
 auto BitcoinP2PFilterload(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const blockchain::BloomFilter& filter)
     -> blockchain::p2p::bitcoin::message::internal::Filterload*
@@ -70,7 +69,7 @@ auto BitcoinP2PFilterload(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Filterload::Filterload(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const blockchain::BloomFilter& filter) noexcept
     : Message(api, network, bitcoin::Command::filterload)
@@ -80,7 +79,7 @@ Filterload::Filterload(
 }
 
 Filterload::Filterload(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const blockchain::BloomFilter& filter) noexcept
     : Message(api, std::move(header))

@@ -22,8 +22,7 @@ extern "C" {
 #include <memory>
 #include <vector>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define PATH_SEPERATOR "/"
 
@@ -32,7 +31,7 @@ extern "C" {
 namespace opentxs::storage::driver::filesystem
 {
 Filesystem::Common(
-    const api::storage::Storage& storage,
+    const api::session::Storage& storage,
     const storage::Config& config,
     const Digest& hash,
     const Random& random,
@@ -183,7 +182,7 @@ auto Filesystem::sync(const std::string& path) const -> bool
     FileDescriptor fd(path);
 
     if (!fd) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to open ")(path)(".").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to open ")(path)(".").Flush();
 
         return false;
     }
@@ -218,13 +217,13 @@ auto Filesystem::write_file(
             file.write(data.c_str(), data.size());
 
             if (false == sync(file)) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to sync file ")(
+                LogError()(OT_METHOD)(__func__)(": Failed to sync file ")(
                     filename)(".")
                     .Flush();
             }
 
             if (false == sync(directory)) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to sync directory ")(
+                LogError()(OT_METHOD)(__func__)(": Failed to sync directory ")(
                     directory)(".")
                     .Flush();
             }
@@ -233,10 +232,10 @@ auto Filesystem::write_file(
 
             return true;
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Failed to write file.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Failed to write file.").Flush();
         }
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to write empty filename.")
+        LogError()(OT_METHOD)(__func__)(": Failed to write empty filename.")
             .Flush();
     }
 

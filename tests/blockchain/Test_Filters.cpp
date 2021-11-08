@@ -18,17 +18,14 @@
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Util.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/BloomFilter.hpp"
@@ -38,6 +35,8 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -64,7 +63,7 @@ public:
 
     static const TestMap gcs_;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
 
     auto TestGCSBlock(const ot::blockchain::block::Height height) const -> bool
     {
@@ -103,7 +102,7 @@ public:
     }
 
     Test_Filters()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
     {
     }
 };

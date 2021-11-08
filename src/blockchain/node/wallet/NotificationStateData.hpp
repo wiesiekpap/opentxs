@@ -48,14 +48,14 @@ namespace blockchain
 {
 class Deterministic;
 }  // namespace blockchain
-
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
 }  // namespace client
 
-class Core;
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -112,13 +112,13 @@ class NotificationStateData final : public SubchainStateData
 {
 public:
     static auto calculate_id(
-        const api::Core& api,
+        const api::Session& api,
         const Type chain,
         const PaymentCode& code) noexcept -> OTIdentifier;
 
     NotificationStateData(
-        const api::Core& api,
-        const api::client::internal::Blockchain& crypto,
+        const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         Accounts& parent,
         const WalletDatabase& db,

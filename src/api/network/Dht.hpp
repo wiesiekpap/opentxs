@@ -7,6 +7,8 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
+#include <utility>
 
 #include "network/DhtConfig.hpp"
 #include "opentxs/Types.hpp"
@@ -22,8 +24,12 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+namespace session
+{
 class Endpoints;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace network
@@ -57,15 +63,15 @@ public:
     auto OpenDHT() const -> const opentxs::network::OpenDHT& final;
     void RegisterCallbacks(const CallbackMap& callbacks) const final;
 
-    Dht(const api::Core& api,
+    Dht(const api::Session& api,
         const opentxs::network::zeromq::Context& zeromq,
-        const api::Endpoints& endpoints,
+        const api::session::Endpoints& endpoints,
         opentxs::network::DhtConfig&& config) noexcept;
 
     ~Dht() final = default;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     mutable CallbackMap callback_map_;
     const opentxs::network::DhtConfig config_;
     std::unique_ptr<opentxs::network::OpenDHT> node_;
@@ -77,17 +83,17 @@ private:
     OTZMQReplySocket request_unit_socket_;
 
     static auto ProcessPublicNym(
-        const api::Core& api,
+        const api::Session& api,
         const std::string key,
         const DhtResults& values,
         NotifyCB notifyCB) -> bool;
     static auto ProcessServerContract(
-        const api::Core& api,
+        const api::Session& api,
         const std::string key,
         const DhtResults& values,
         NotifyCB notifyCB) -> bool;
     static auto ProcessUnitDefinition(
-        const api::Core& api,
+        const api::Session& api,
         const std::string key,
         const DhtResults& values,
         NotifyCB notifyCB) -> bool;

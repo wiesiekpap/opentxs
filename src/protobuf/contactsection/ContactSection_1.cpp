@@ -9,13 +9,12 @@
 #include <stdexcept>
 #include <utility>
 
-#include "Proto.hpp"
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Contact.hpp"
 #include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/protobuf/ContactSection.pb.h"
-#include "opentxs/protobuf/verify/ContactItem.hpp"
+#include "opentxs/protobuf/verify/ContactItem.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
 

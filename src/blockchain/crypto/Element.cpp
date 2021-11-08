@@ -16,30 +16,32 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "Proto.hpp"
+#include "internal/api/crypto/Asymmetric.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
-#include "opentxs/protobuf/BlockchainActivity.pb.h"
 #include "opentxs/protobuf/BlockchainAddress.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::crypto::implementation::Element::"
 
 namespace opentxs::blockchain::crypto::implementation
 {
 Element::Element(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const crypto::Subaccount& parent,
     const opentxs::blockchain::Type chain,
     const VersionNumber version,
@@ -82,8 +84,8 @@ Element::Element(
 }
 
 Element::Element(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const crypto::Subaccount& parent,
     const opentxs::blockchain::Type chain,
     const crypto::Subchain subchain,
@@ -108,8 +110,8 @@ Element::Element(
 }
 
 Element::Element(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const crypto::Subaccount& parent,
     const opentxs::blockchain::Type chain,
     const crypto::Subchain subchain,
@@ -150,8 +152,8 @@ Element::Element(
 }
 
 Element::Element(
-    const api::Core& api,
-    const api::client::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const crypto::Subaccount& parent,
     const opentxs::blockchain::Type chain,
     const crypto::Subchain subchain,
@@ -232,11 +234,12 @@ auto Element::IncomingTransactions() const noexcept -> std::set<std::string>
 }
 
 auto Element::instantiate(
-    const api::Core& api,
+    const api::Session& api,
     const proto::AsymmetricKey& serialized) noexcept(false)
     -> std::unique_ptr<opentxs::crypto::key::EllipticCurve>
 {
-    auto output = api.Asymmetric().InstantiateECKey(serialized);
+    auto output =
+        api.Crypto().Asymmetric().Internal().InstantiateECKey(serialized);
 
     if (false == bool(output)) {
         throw std::runtime_error("Failed to construct key");
@@ -324,7 +327,7 @@ auto Element::PrivateKey(const PasswordPrompt& reason) const noexcept -> ECKey
         auto key = parent_.Internal().PrivateKey(subchain_, index_, reason);
 
         if (!key) {
-            LogOutput(OT_METHOD)(__func__)(": error deriving private key")
+            LogError()(OT_METHOD)(__func__)(": error deriving private key")
                 .Flush();
 
             return {};
@@ -458,7 +461,7 @@ auto Element::Unreserve() noexcept -> bool
     auto lock = rLock{lock_};
 
     if ((0u < confirmed_.size()) || (0u < confirmed_.size())) {
-        LogVerbose(OT_METHOD)(__func__)(
+        LogVerbose()(OT_METHOD)(__func__)(
             ": element is already associated with transactions")
             .Flush();
 

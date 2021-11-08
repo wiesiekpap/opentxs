@@ -8,15 +8,15 @@
 #include <memory>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -43,13 +43,13 @@ public:
     Script script_;
 
     ScriptForm(
-        const api::Core& api,
+        const api::Session& api,
         const crypto::Element& input,
         blockchain::Type chain,
         Type primary,
         Type secondary) noexcept;
     ScriptForm(
-        const api::Core& api,
+        const api::Session& api,
         const crypto::Element& input,
         blockchain::Type chain,
         Type primary) noexcept;

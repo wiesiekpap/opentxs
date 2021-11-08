@@ -10,22 +10,22 @@
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/ui/ProfileItem.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/Row.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -88,7 +88,7 @@ public:
 
     ProfileItem(
         const ProfileSubsectionInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const ProfileSubsectionRowID& rowID,
         const ProfileSubsectionSortKey& sortKey,
         CustomData& custom) noexcept;

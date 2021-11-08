@@ -1,5 +1,6 @@
 [
 { "include": ["@<google/protobuf/.*>", "private", "\"Proto.hpp\"", "public"] },
+{ "include": ["<google/protobuf/repeated_field.h>", "private", "\"Proto.hpp\"", "public"] },
 { "include": ["@<boost/algorithm/string/.*>", "private", "<boost/algorithm/string.hpp>", "public"] },
 { "include": ["@<boost/asio/.*>", "private", "<boost/asio.hpp>", "public"] },
 { "include": ["@<boost/beast/core/.*>", "private", "<boost/beast/core.hpp>", "public"] },
@@ -40,8 +41,12 @@
 { "include": ["<qvariant.h>", "private", "<QVariant>", "public"] },
 { "include": ["<qvector.h>", "private", "<QVector>", "public"] },
 { "include": ["<bits/exception.h>", "private", "<stdexcept>", "public"] },
+{ "include": ["<bits/std_thread.h>", "private", "<thread>", "public"] },
+{ "include": ["<bits/this_thread_sleep.h>", "private", "<thread>", "public"] },
 { "include": ["<ext/alloc_traits.h>", "private", "<memory>", "public"] },
 { "include": ["<ext/new_allocator.h>", "private", "<new>", "public"] },
 { "include": ["<ext/type_traits.h>", "private", "<type_traits>", "public"] },
-{ "symbol": ["__forced_unwind", "private", "<stdexcept>", "public"] }
+{ "symbol": ["__forced_unwind", "private", "<stdexcept>", "public"] },
+{ "symbol": ["int8_t", "private", "<cstdint>", "public"] },
+{ "symbol": ["uint8_t", "private", "<cstdint>", "public"] }
 ]

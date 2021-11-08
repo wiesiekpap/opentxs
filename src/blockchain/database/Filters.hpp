@@ -23,8 +23,6 @@
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -33,13 +31,15 @@
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -104,13 +104,13 @@ public:
         const std::vector<Header> headers) const noexcept -> bool;
 
     Filters(
-        const api::Core& api,
+        const api::Session& api,
         const common::Database& common,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain) noexcept;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     const common::Database& common_;
     const storage::lmdb::LMDB& lmdb_;
     const block::Position blank_position_;

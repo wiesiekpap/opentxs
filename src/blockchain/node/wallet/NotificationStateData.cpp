@@ -19,13 +19,15 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
@@ -37,20 +39,20 @@
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::NotificationStateData::"
 
 namespace opentxs::blockchain::node::wallet
 {
 NotificationStateData::NotificationStateData(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     Accounts& parent,
     const WalletDatabase& db,
@@ -82,7 +84,7 @@ NotificationStateData::NotificationStateData(
     auto reason =
         api_.Factory().PasswordPrompt("Verifying / updating contact data");
     auto mNym = api_.Wallet().mutable_Nym(nym, reason);
-    const auto type = Translate(chain);
+    const auto type = BlockchainToUnit(chain);
     const auto existing = mNym.PaymentCode(type);
     const auto expected = code_.asBase58();
 
@@ -92,7 +94,7 @@ NotificationStateData::NotificationStateData(
 }
 
 auto NotificationStateData::calculate_id(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const PaymentCode& code) noexcept -> OTIdentifier
 {
@@ -110,7 +112,7 @@ auto NotificationStateData::handle_confirmed_matches(
     const block::Matches& confirmed) noexcept -> void
 {
     const auto& [utxo, general] = confirmed;
-    LogVerbose(OT_METHOD)(__func__)(": ")(general.size())(
+    LogVerbose()(OT_METHOD)(__func__)(": ")(general.size())(
         " confirmed matches for ")(code_.asBase58())(" on ")(
         DisplayString(node_.Chain()))
         .Flush();
@@ -122,7 +124,7 @@ auto NotificationStateData::handle_confirmed_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        LogVerbose(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
+        LogVerbose()(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
             " transaction ")(txid->asHex())(" contains a version ")(
             version)(" notification for ")(code_.asBase58())
             .Flush();
@@ -147,7 +149,7 @@ auto NotificationStateData::handle_mempool_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        LogVerbose(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
+        LogVerbose()(OT_METHOD)(__func__)(": ")(DisplayString(node_.Chain()))(
             " mempool transaction ")(txid->asHex())(" contains a version ")(
             version)(" notification for ")(code_.asBase58())
             .Flush();
@@ -211,13 +213,13 @@ auto NotificationStateData::process(
             if (!pSender) { continue; }
 
             const auto& sender = *pSender;
-            LogVerbose(OT_METHOD)(__func__)(": decoded incoming notification "
-                                            "from ")(sender.asBase58())(" on ")(
-                DisplayString(node_.Chain()))(" for ")(code_.asBase58())
+            LogVerbose()(OT_METHOD)(__func__)(": decoded incoming notification "
+                                              "from ")(sender.asBase58())(
+                " on ")(DisplayString(node_.Chain()))(" for ")(code_.asBase58())
                 .Flush();
-            const auto& account = crypto_.PaymentCodeSubaccount(
+            const auto& account = crypto_.Internal().PaymentCodeSubaccount(
                 owner_, code_, sender, path_, node_.Chain(), reason);
-            LogVerbose(OT_METHOD)(__func__)(": Created new account ")(
+            LogVerbose()(OT_METHOD)(__func__)(": Created new account ")(
                 account.ID())
                 .Flush();
         }

@@ -12,16 +12,16 @@
 #include <stdexcept>
 
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/BlockchainPeerAddress.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 
 // #define OT_METHOD "opentxs::blockchain::p2p::implementation::Address::"
 
@@ -30,7 +30,7 @@ namespace opentxs::factory
 using ReturnType = blockchain::p2p::implementation::Address;
 
 auto BlockchainAddress(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::p2p::Protocol protocol,
     const blockchain::p2p::Network network,
     const Data& bytes,
@@ -54,14 +54,14 @@ auto BlockchainAddress(
             services,
             incoming);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto BlockchainAddress(
-    const api::Core& api,
+    const api::Session& api,
     const proto::BlockchainPeerAddress serialized) noexcept
     -> std::unique_ptr<blockchain::p2p::internal::Address>
 {
@@ -78,7 +78,7 @@ auto BlockchainAddress(
             ReturnType::instantiate_services(serialized),
             false);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
@@ -90,7 +90,7 @@ namespace opentxs::blockchain::p2p::implementation
 const VersionNumber Address::DefaultVersion{1};
 
 Address::Address(
-    const api::Core& api,
+    const api::Session& api,
     const VersionNumber version,
     const Protocol protocol,
     const Network network,
@@ -169,7 +169,7 @@ Address::Address(const Address& rhs) noexcept
 }
 
 auto Address::calculate_id(
-    const api::Core& api,
+    const api::Session& api,
     const VersionNumber version,
     const Protocol protocol,
     const Network network,

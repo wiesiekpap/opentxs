@@ -25,18 +25,16 @@
 #include <vector>
 
 #include "Proto.tpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
@@ -50,6 +48,9 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 #define OT_METHOD "opentxs::api::network::blockchain::SyncClient::Imp::"
 
@@ -68,7 +69,7 @@ struct SyncClient::Imp {
         thread_ = std::thread{&Imp::thread, this};
     }
 
-    Imp(const api::Core& api) noexcept
+    Imp(const api::Session& api) noexcept
         : api_(api)
         , endpoint_(OTSocket::random_inproc_endpoint())
         , monitor_endpoint_(OTSocket::random_inproc_endpoint())
@@ -132,7 +133,7 @@ struct SyncClient::Imp {
 
             OT_ASSERT(0 == rc);
 
-            LogTrace(OT_METHOD)(__func__)(": internal router bound to ")(
+            LogTrace()(OT_METHOD)(__func__)(": internal router bound to ")(
                 endpoint_)
                 .Flush();
 
@@ -255,7 +256,7 @@ private:
     static constexpr int handover_{1};
     static constexpr int handshake_{ZMQ_EVENT_HANDSHAKE_SUCCEEDED};
 
-    const api::Core& api_;
+    const api::Session& api_;
     const std::string endpoint_;
     const std::string monitor_endpoint_;
     Socket external_router_;
@@ -324,7 +325,7 @@ private:
         }();
 
         if (0 == msg->size()) {
-            LogOutput(OT_METHOD)(__func__)(": Dropping empty message").Flush();
+            LogError()(OT_METHOD)(__func__)(": Dropping empty message").Flush();
 
             return;
         }
@@ -400,11 +401,11 @@ private:
                         if (0 ==
                             ::zmq_connect(external_sub_.get(), ep.c_str())) {
                             server.publisher_ = ep;
-                            LogDetail("Subscribed to ")(ep)(
-                                " for new block notifications")
+                            LogDetail()("Subscribed to ")(
+                                ep)(" for new block notifications")
                                 .Flush();
                         } else {
-                            LogOutput(OT_METHOD)(__func__)(
+                            LogError()(OT_METHOD)(__func__)(
                                 ": failed to connect external subscriber to ")(
                                 ep)
                                 .Flush();
@@ -417,7 +418,7 @@ private:
                         auto& providers = providers_[chain];
                         providers.emplace(endpoint);
                         active_.at(chain).store(providers.size());
-                        LogVerbose(endpoint)(" provides sync support for ")(
+                        LogVerbose()(endpoint)(" provides sync support for ")(
                             DisplayString(chain))
                             .Flush();
                         const auto& client = get_chain(chain);
@@ -480,7 +481,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return;
         }
@@ -523,7 +524,7 @@ private:
                 const auto chain = body.at(1).as<Chain>();
                 clients_[chain] = identity;
                 const auto& providers = providers_[chain];
-                LogVerbose(OT_METHOD)(__func__)(": querying ")(
+                LogVerbose()(OT_METHOD)(__func__)(": querying ")(
                     providers.size())(" providers for ")(DisplayString(chain))
                     .Flush();
 
@@ -539,7 +540,7 @@ private:
                 const auto provider = get_provider(chain);
 
                 if (provider.empty()) {
-                    LogOutput(OT_METHOD)(__func__)(": no provider for ")(
+                    LogError()(OT_METHOD)(__func__)(": no provider for ")(
                         DisplayString(chain))
                         .Flush();
 
@@ -577,7 +578,7 @@ private:
             case Task::Push:
             case Task::Processed:
             default: {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Unsupported message type on internal socket: ")(
                     static_cast<OTZMQWorkType>(type))
                     .Flush();
@@ -604,11 +605,11 @@ private:
         switch (event) {
             case handshake_: {
                 const auto endpoint = std::string{msg.at(1).Bytes()};
-                LogDetail("Connected to sync server at ")(endpoint).Flush();
+                LogDetail()("Connected to sync server at ")(endpoint).Flush();
                 servers_.at(endpoint).connected_ = true;
             } break;
             default: {
-                LogOutput(OT_METHOD)(__func__)(": Unexpected event type: ")(
+                LogError()(OT_METHOD)(__func__)(": Unexpected event type: ")(
                     event)
                     .Flush();
 
@@ -619,13 +620,14 @@ private:
     auto process_server(const std::string& ep) noexcept -> void
     {
         if (0 != ::zmq_connect(external_router_.get(), ep.c_str())) {
-            LogOutput(OT_METHOD)(__func__)(": failed to connect router to ")(ep)
+            LogError()(OT_METHOD)(__func__)(": failed to connect router to ")(
+                ep)
                 .Flush();
 
             return;
         } else {
             servers_.try_emplace(ep);
-            LogDetail("Connecting to sync server at ")(ep).Flush();
+            LogDetail()("Connecting to sync server at ")(ep).Flush();
         }
     }
     auto state_machine() noexcept -> void
@@ -712,7 +714,7 @@ private:
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogOutput(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
+                LogError()(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
                     .Flush();
 
                 continue;
@@ -738,7 +740,7 @@ private:
     auto operator=(Imp&&) -> Imp& = delete;
 };
 
-SyncClient::SyncClient(const api::Core& api) noexcept
+SyncClient::SyncClient(const api::Session& api) noexcept
     : imp_p_(std::make_unique<Imp>(api))
     , imp_(*imp_p_)
 {

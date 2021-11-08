@@ -13,10 +13,10 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
-#include "opentxs/api/Storage.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/protobuf/StoragePaymentWorkflows.pb.h"
 #include "storage/tree/Node.hpp"

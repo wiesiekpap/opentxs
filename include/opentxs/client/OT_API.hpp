@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CLIENT_OT_API_HPP
-#define OPENTXS_CLIENT_OT_API_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -17,12 +16,12 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Item.hpp"
+#include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/String.hpp"
@@ -30,6 +29,9 @@
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
@@ -40,11 +42,6 @@ namespace client
 class Activity;
 class Contacts;
 class Workflow;
-
-namespace implementation
-{
-class Manager;
-}  // namespace implementation
 }  // namespace client
 
 namespace network
@@ -52,7 +49,15 @@ namespace network
 class ZMQ;
 }  // namespace network
 
-class Core;
+namespace session
+{
+namespace implementation
+{
+class Client;
+}  // namespace implementation
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -610,9 +615,9 @@ public:
     OPENTXS_NO_EXPORT ~OT_API() override;  // calls Cleanup();
 
 private:
-    friend api::client::implementation::Manager;
+    friend api::session::implementation::Client;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const api::client::Activity& activity_;
     const api::client::Contacts& contacts_;
     const api::client::Workflow& workflow_;
@@ -677,7 +682,7 @@ private:
     auto LoadConfigFile() -> bool;
 
     OT_API(
-        const api::Core& api,
+        const api::Session& api,
         const api::client::Activity& activity,
         const api::client::Contacts& contacts,
         const api::client::Workflow& workflow,
@@ -690,4 +695,3 @@ private:
     auto operator=(OT_API&&) -> OT_API = delete;
 };
 }  // namespace opentxs
-#endif

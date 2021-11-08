@@ -11,21 +11,21 @@
 #include <list>
 #include <memory>
 
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::MessagableList::"
@@ -33,7 +33,7 @@
 namespace opentxs::factory
 {
 auto MessagableListModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::MessagableList>
@@ -47,7 +47,7 @@ auto MessagableListModel(
 namespace opentxs::ui::implementation
 {
 MessagableList::MessagableList(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const SimpleCallback& cb) noexcept
     : MessagableListList(api, nymID, cb, false)
@@ -74,7 +74,7 @@ auto MessagableList::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -107,7 +107,7 @@ auto MessagableList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -119,13 +119,13 @@ auto MessagableList::process_contact(
     const MessagableListSortKey& key) noexcept -> void
 {
     if (owner_contact_id_ == id) {
-        LogDetail(OT_METHOD)(__func__)(": Skipping owner contact ")(id)(" (")(
+        LogDetail()(OT_METHOD)(__func__)(": Skipping owner contact ")(id)(" (")(
             key.second)(")")
             .Flush();
 
         return;
     } else {
-        LogDetail(OT_METHOD)(__func__)(": Incoming contact ")(id)(" (")(
+        LogDetail()(OT_METHOD)(__func__)(": Incoming contact ")(id)(" (")(
             key.second)(") is not owner contact: (")(owner_contact_id_)(")")
             .Flush();
     }
@@ -134,7 +134,7 @@ auto MessagableList::process_contact(
         case Messagability::READY:
         case Messagability::MISSING_RECIPIENT:
         case Messagability::UNREGISTERED: {
-            LogDetail(OT_METHOD)(__func__)(": Messagable contact ")(id)(" (")(
+            LogDetail()(OT_METHOD)(__func__)(": Messagable contact ")(id)(" (")(
                 key.second)(")")
                 .Flush();
             auto custom = CustomData{};
@@ -146,7 +146,7 @@ auto MessagableList::process_contact(
         case Messagability::CONTACT_LACKS_NYM:
         case Messagability::MISSING_CONTACT:
         default: {
-            LogDetail(OT_METHOD)(__func__)(
+            LogDetail()(OT_METHOD)(__func__)(
                 ": Skipping non-messagable contact ")(id)(" (")(key.second)(")")
                 .Flush();
             delete_item(id);
@@ -190,7 +190,8 @@ auto MessagableList::process_nym(const Message& message) noexcept -> void
 auto MessagableList::startup() noexcept -> void
 {
     const auto contacts = Widget::api_.Contacts().ContactList();
-    LogDetail(OT_METHOD)(__func__)(": Loading ")(contacts.size())(" contacts.")
+    LogDetail()(OT_METHOD)(__func__)(": Loading ")(contacts.size())(
+        " contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {

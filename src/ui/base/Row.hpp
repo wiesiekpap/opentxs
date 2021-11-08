@@ -9,6 +9,17 @@
 #include "ui/base/RowType.hpp"
 #include "ui/base/Widget.hpp"
 
+namespace opentxs
+{
+namespace api
+{
+namespace session
+{
+class Client;
+}  // namespace session
+}  // namespace api
+}  // namespace opentxs
+
 namespace opentxs::ui::implementation
 {
 template <typename InterfaceType, typename ParentType, typename IdentifierType>
@@ -23,7 +34,7 @@ public:
 
 protected:
     Row(const ParentType& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const IdentifierType id,
         const bool valid) noexcept
         : RowType<InterfaceType, ParentType, IdentifierType>(parent, id, valid)

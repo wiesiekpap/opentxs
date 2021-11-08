@@ -15,11 +15,10 @@
 #include <utility>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
 #include "core/contract/UnitDefinition.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
@@ -29,6 +28,7 @@
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/protobuf/verify/UnitDefinition.hpp"
+#include "opentxs/util/Log.hpp"
 
 using ReturnType = opentxs::contract::unit::implementation::Basket;
 
@@ -38,7 +38,7 @@ namespace opentxs
 // valid contract. This is used on the client side to produce a template for
 // the server, which then finalizes the contract.
 auto Factory::BasketContract(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -62,7 +62,7 @@ auto Factory::BasketContract(
 }
 
 auto Factory::BasketContract(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::unit::Basket>
@@ -89,7 +89,7 @@ auto Factory::BasketContract(
 namespace opentxs::contract::unit
 {
 auto Basket::CalculateBasketID(
-    const api::Core& api,
+    const api::Session& api,
     const proto::UnitDefinition& serialized) -> OTIdentifier
 {
     auto contract(serialized);
@@ -105,7 +105,7 @@ auto Basket::CalculateBasketID(
 }
 
 auto Basket::FinalizeTemplate(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     proto::UnitDefinition& serialized,
     const PasswordPrompt& reason) -> bool
@@ -119,7 +119,8 @@ auto Basket::FinalizeTemplate(
     try {
         contract->first_time_init(lock);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::contract::unit::Basket::")(__func__)(": ")(e.what())
+        LogError()("opentxs::contract::unit::Basket::")(__func__)(": ")(
+            e.what())
             .Flush();
     }
 
@@ -130,7 +131,7 @@ auto Basket::FinalizeTemplate(
         if (contract->update_signature(lock, reason)) {
             lock.unlock();
             if (false == contract->Serialize(serialized, true)) {
-                LogOutput("Failed to serialize unit definition.")(__func__)
+                LogError()("Failed to serialize unit definition.")(__func__)
                     .Flush();
                 return false;
                 ;
@@ -147,7 +148,7 @@ auto Basket::FinalizeTemplate(
 namespace opentxs::contract::unit::implementation
 {
 Basket::Basket(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -163,7 +164,7 @@ Basket::Basket(
 }
 
 Basket::Basket(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized)
     : Unit(api, nym, serialized)
@@ -200,8 +201,7 @@ auto Basket::BasketID() const -> OTIdentifier
 auto Basket::IDVersion(const Lock& lock) const -> SerializedType
 {
     auto contract = Unit::IDVersion(lock);
-    contract.set_type(
-        contract::internal::translate(contract::UnitType::Basket));
+    contract.set_type(translate(contract::UnitType::Basket));
     auto basket = contract.mutable_basket();
     basket->set_version(1);
     basket->set_weight(weight_);

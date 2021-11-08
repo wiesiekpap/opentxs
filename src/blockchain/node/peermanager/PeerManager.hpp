@@ -26,20 +26,23 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
@@ -55,7 +58,7 @@ struct Blockchain;
 }  // namespace internal
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -117,7 +120,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::blockchain::node::implementation
 {
 class PeerManager final : virtual public node::internal::PeerManager,
-                          public Worker<PeerManager, api::Core>
+                          public Worker<PeerManager, api::Session>
 {
 public:
     class IncomingConnectionManager;
@@ -147,7 +150,7 @@ public:
         auto Shutdown() noexcept -> void;
 
         Peers(
-            const api::Core& api,
+            const api::Session& api,
             const api::network::internal::Blockchain& network,
             const node::internal::Config& config,
             const node::internal::Mempool& mempool,
@@ -171,7 +174,7 @@ public:
         using Resolver = boost::asio::ip::tcp::resolver;
         using Addresses = boost::container::flat_set<OTIdentifier>;
 
-        const api::Core& api_;
+        const api::Session& api_;
         const node::internal::Config& config_;
         const node::internal::Mempool& mempool_;
         const node::internal::Network& node_;
@@ -279,7 +282,7 @@ public:
     auto init() noexcept -> void final;
 
     PeerManager(
-        const api::Core& api,
+        const api::Session& api,
         const api::network::internal::Blockchain& network,
         const node::internal::Config& config,
         const node::internal::Mempool& mempool,
@@ -296,7 +299,7 @@ public:
     ~PeerManager() final;
 
 private:
-    friend Worker<PeerManager, api::Core>;
+    friend Worker<PeerManager, api::Session>;
 
     struct Jobs {
         auto Endpoint(const Task type) const noexcept -> std::string;
@@ -307,7 +310,7 @@ private:
         auto Dispatch(zmq::Message& work) noexcept -> void;
         auto Shutdown() noexcept -> void;
 
-        Jobs(const api::Core& api) noexcept;
+        Jobs(const api::Session& api) noexcept;
 
     private:
         using EndpointMap = std::map<Task, std::string>;

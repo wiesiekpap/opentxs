@@ -8,6 +8,7 @@
 #include "blockchain/crypto/HD.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <set>
@@ -16,24 +17,27 @@
 #include <tuple>
 #include <utility>
 
+#include "Proto.hpp"
 #include "blockchain/crypto/Deterministic.hpp"
 #include "blockchain/crypto/Element.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/crypto/Seed.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Storage.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
@@ -42,6 +46,7 @@
 #include "opentxs/protobuf/BlockchainHDAccountData.pb.h"
 #include "opentxs/protobuf/HDAccount.pb.h"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Log.hpp"
 #include "util/HDIndex.hpp"
 
 #define OT_METHOD "opentxs::blockchain::crypto::implementation::HD::"
@@ -51,7 +56,7 @@ namespace opentxs::factory
 using ReturnType = blockchain::crypto::implementation::HD;
 
 auto BlockchainHDSubaccount(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::crypto::Account& parent,
     const proto::HDPath& path,
     const blockchain::crypto::HDProtocol standard,
@@ -62,14 +67,14 @@ auto BlockchainHDSubaccount(
         return std::make_unique<ReturnType>(
             api, parent, path, standard, reason, id);
     } catch (const std::exception& e) {
-        LogVerbose("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
+        LogVerbose()("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
 }
 
 auto BlockchainHDSubaccount(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::crypto::Account& parent,
     const proto::HDAccount& serialized,
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>
@@ -79,7 +84,7 @@ auto BlockchainHDSubaccount(
     try {
         return std::make_unique<ReturnType>(api, parent, serialized, id);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
+        LogError()("opentxs::Factory::")(__func__)(": ")(e.what()).Flush();
 
         return nullptr;
     }
@@ -92,7 +97,7 @@ constexpr auto internalType{Subchain::Internal};
 constexpr auto externalType{Subchain::External};
 
 HD::HD(
-    const api::Core& api,
+    const api::Session& api,
     const Account& parent,
     const proto::HDPath& path,
     const HDProtocol standard,
@@ -102,7 +107,9 @@ HD::HD(
           api,
           parent,
           SubaccountType::HD,
-          Identifier::Factory(translate(Translate(parent.Chain())), path),
+          Identifier::Factory(
+              UnitToClaim(BlockchainToUnit(parent.Chain())),
+              path),
           path,
           {api, internalType, false, externalType, true},
           id)
@@ -116,7 +123,7 @@ HD::HD(
 }
 
 HD::HD(
-    const api::Core& api,
+    const api::Session& api,
     const Account& parent,
     const SerializedType& serialized,
     Identifier& id) noexcept(false)
@@ -204,7 +211,7 @@ HD::HD(
 auto HD::account_already_exists(const rLock&) const noexcept -> bool
 {
     const auto existing = api_.Storage().BlockchainAccountList(
-        parent_.NymID().str(), Translate(chain_));
+        parent_.NymID().str(), BlockchainToUnit(chain_));
 
     return 0 < existing.count(id_->str());
 }
@@ -240,7 +247,7 @@ auto HD::PrivateKey(
             OT_FAIL;
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Invalid subchain (")(
+            LogError()(OT_METHOD)(__func__)(": Invalid subchain (")(
                 opentxs::print(type))("). Only ")(opentxs::print(internalType))(
                 " and ")(opentxs::print(externalType))(
                 " are valid for this account.")
@@ -257,10 +264,11 @@ auto HD::PrivateKey(
     auto lock = rLock{lock_};
 
     if (!pKey) {
-        pKey = api_.Seeds().AccountKey(path_, change, reason);
+        pKey =
+            api_.Crypto().Seed().Internal().AccountKey(path_, change, reason);
 
         if (!pKey) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to derive account key")
+            LogError()(OT_METHOD)(__func__)(": Failed to derive account key")
                 .Flush();
 
             return {};
@@ -280,7 +288,7 @@ auto HD::PrivateKey(
 
 auto HD::save(const rLock& lock) const noexcept -> bool
 {
-    const auto type = Translate(chain_);
+    const auto type = BlockchainToUnit(chain_);
     auto serialized = SerializedType{};
     serialized.set_version(version_);
     serialize_deterministic(lock, *serialized.mutable_deterministic());
@@ -300,10 +308,10 @@ auto HD::save(const rLock& lock) const noexcept -> bool
     }
 
     const bool saved = api_.Storage().Store(
-        parent_.NymID().str(), translate(type), serialized);
+        parent_.NymID().str(), UnitToClaim(type), serialized);
 
     if (false == saved) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to save HD account.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to save HD account.").Flush();
 
         return false;
     }

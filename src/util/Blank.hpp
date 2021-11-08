@@ -9,7 +9,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -17,6 +17,6 @@ namespace opentxs
 {
 template <typename T>
 struct make_blank {
-    static auto value(const api::Core&) -> T { return T{}; }
+    static auto value(const api::Session&) -> T { return T{}; }
 };
 }  // namespace opentxs

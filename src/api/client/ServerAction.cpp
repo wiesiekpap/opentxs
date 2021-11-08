@@ -9,21 +9,22 @@
 
 #include "client/OTAPI_Func.hpp"
 #include "internal/api/client/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Shared.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/Shared.hpp"
 #include "opentxs/api/client/ServerAction.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 //#define OT_METHOD "opentxs::api::client::implementation::ServerAction::"
 
 namespace opentxs::factory
 {
 auto ServerAction(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ContextLockCallback& lockCallback) -> api::client::ServerAction*
 {
     return new api::client::implementation::ServerAction(api, lockCallback);
@@ -33,7 +34,7 @@ auto ServerAction(
 namespace opentxs::api::client::implementation
 {
 ServerAction::ServerAction(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ContextLockCallback& lockCallback)
     : api_(api)
     , lock_callback_(lockCallback)
@@ -117,7 +118,7 @@ auto ServerAction::CreateMarketOffer(
 {
     auto notaryID = identifier::Server::Factory();
     auto nymID = identifier::Nym::Factory();
-    const auto assetAccount = api_.Wallet().Account(assetAccountID);
+    const auto assetAccount = api_.Wallet().Internal().Account(assetAccountID);
 
     if (assetAccount) {
         nymID = assetAccount.get().GetNymID();
@@ -237,7 +238,7 @@ auto ServerAction::ExchangeBasketCurrency(
         basketID,
         accountID,
         direction,
-        api_.OTAPI().GetBasketMemberCount(basketID)*/));
+        api_.InternalClient().OTAPI().GetBasketMemberCount(basketID)*/));
 }
 
 auto ServerAction::IssueBasketCurrency(

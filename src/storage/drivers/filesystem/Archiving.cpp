@@ -13,15 +13,15 @@
 
 #include "Proto.tpp"
 #include "internal/storage/drivers/Factory.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "storage/Config.hpp"
 
 #define ROOT_FILE_EXTENSION ".hash"
@@ -33,7 +33,7 @@ namespace opentxs::factory
 auto StorageFSArchive(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& parent,
+    const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket,
     const std::string& folder,
@@ -51,7 +51,7 @@ namespace opentxs::storage::driver::filesystem
 Archiving::Archiving(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& storage,
+    const api::session::Storage& storage,
     const storage::Config& config,
     const Flag& bucket,
     const std::string& folder,
@@ -88,14 +88,14 @@ auto Archiving::calculate_path(
 
     if (8 < key.size()) {
         if (false == sync(level2)) {
-            LogOutput(OT_METHOD)(__func__)(": Unable to sync directory ")(
+            LogError()(OT_METHOD)(__func__)(": Unable to sync directory ")(
                 level2)(".")
                 .Flush();
         }
     }
 
     if (false == sync(level1)) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to sync directory ")(
+        LogError()(OT_METHOD)(__func__)(": Unable to sync directory ")(
             level1)(".")
             .Flush();
     }
@@ -138,7 +138,7 @@ auto Archiving::prepare_read(const std::string& input) const -> std::string
         encryption_key_.api().Factory().PasswordPrompt("Storage read");
 
     if (false == encryption_key_.Decrypt(ciphertext, reason, writer(output))) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to decrypt value.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to decrypt value.").Flush();
     }
 
     return output;
@@ -157,7 +157,7 @@ auto Archiving::prepare_write(const std::string& plaintext) const -> std::string
         encryption_key_.Encrypt(plaintext, reason, ciphertext, false);
 
     if (false == encrypted) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to encrypt value.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to encrypt value.").Flush();
     }
 
     return proto::ToString(ciphertext);

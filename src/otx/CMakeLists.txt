@@ -5,9 +5,13 @@
 
 add_subdirectory(client)
 add_subdirectory(consensus)
+add_subdirectory(smartcontract)
 
 add_library(
   opentxs-otx OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/otx/AccountList.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/otx/OTX.hpp"
+  "AccountList.cpp"
   "OTX.cpp"
   "Reply.cpp"
   "Reply.hpp"

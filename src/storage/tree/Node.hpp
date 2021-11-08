@@ -17,11 +17,13 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/StorageEnums.pb.h"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "storage/Plugin.hpp"
 
 namespace opentxs
@@ -170,7 +172,8 @@ protected:
             std::shared_ptr<T> existing{nullptr};
 
             if (false == driver_.LoadProto(hash, existing, false)) {
-                LogOutput(method)(__func__)(": Unable to load object.").Flush();
+                LogError()(method)(__func__)(": Unable to load object.")
+                    .Flush();
 
                 abort();
             }
@@ -229,7 +232,7 @@ protected:
 
         // Upgrade version
         if (version > original_version_) {
-            LogOutput("opentxs::storage::Node::")(__func__)(
+            LogError()("opentxs::storage::Node::")(__func__)(
                 ": Upgrading to version ")(version)
                 .Flush();
             version_ = version;

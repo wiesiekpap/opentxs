@@ -14,6 +14,7 @@
 #include <QString>
 #include <QStringList>
 #include <algorithm>
+#include <cstdint>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -22,11 +23,11 @@
 
 #include "core/Worker.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/qt/AmountValidator.hpp"
 #include "opentxs/ui/qt/DestinationValidator.hpp"

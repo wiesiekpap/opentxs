@@ -11,9 +11,9 @@
 
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/VerificationGroup.pb.h"
+#include "opentxs/protobuf/VerificationGroup.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/VerificationSet.pb.h"
-#include "opentxs/protobuf/verify/VerificationGroup.hpp"
+#include "opentxs/protobuf/verify/VerificationGroup.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
 

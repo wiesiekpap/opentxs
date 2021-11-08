@@ -14,7 +14,6 @@
 
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -25,15 +24,16 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 }  // namespace api
 
 namespace proto
@@ -50,10 +50,10 @@ public:
     using OutputList = std::vector<std::unique_ptr<internal::Output>>;
 
     auto AssociatedLocalNyms(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         std::vector<OTNymID>& output) const noexcept -> void final;
     auto AssociatedRemoteContacts(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void final;
     auto at(const std::size_t position) const noexcept(false)
         -> const value_type& final
@@ -88,12 +88,12 @@ public:
         return *this;
     }
     auto NetBalanceChange(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
     auto Serialize(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         proto::BlockchainTransaction& destination) const noexcept -> bool final;
     auto SetKeyData(const KeyData& data) noexcept -> void final;
     auto size() const noexcept -> std::size_t final { return outputs_.size(); }

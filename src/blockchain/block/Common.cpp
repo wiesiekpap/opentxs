@@ -11,8 +11,8 @@
 #include <iterator>
 #include <string_view>
 
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 
 namespace opentxs::blockchain::block
 {
@@ -35,7 +35,7 @@ ParsedPatterns::ParsedPatterns(const Patterns& in) noexcept
 namespace opentxs::blockchain::block::internal
 {
 auto SetIntersection(
-    const api::Core& api,
+    const api::Session& api,
     const ReadView txid,
     const ParsedPatterns& parsed,
     const std::vector<Space>& compare) noexcept -> Matches

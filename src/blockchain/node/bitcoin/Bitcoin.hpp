@@ -9,22 +9,19 @@
 #include <string>
 
 #include "blockchain/node/base/Base.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
 namespace network
 {
@@ -34,7 +31,7 @@ struct Blockchain;
 }  // namespace internal
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -72,8 +69,8 @@ public:
         -> std::unique_ptr<block::Header> final;
 
     Bitcoin(
-        const api::Core& api,
-        const api::client::internal::Blockchain& crypto,
+        const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const api::network::internal::Blockchain& network,
         const Type type,
         const internal::Config& config,

@@ -12,7 +12,6 @@
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/GCS.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -20,6 +19,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -28,7 +28,7 @@ using FilterDM = download::Manager<
     std::unique_ptr<const GCS>,
     filter::pHeader,
     filter::Type>;
-using FilterWorker = Worker<FilterOracle::FilterDownloader, api::Core>;
+using FilterWorker = Worker<FilterOracle::FilterDownloader, api::Session>;
 
 class FilterOracle::FilterDownloader : public FilterDM, public FilterWorker
 {
@@ -62,7 +62,7 @@ public:
     }
 
     FilterDownloader(
-        const api::Core& api,
+        const api::Session& api,
         const internal::FilterDatabase& db,
         const internal::HeaderOracle& header,
         const internal::Network& node,
@@ -136,7 +136,7 @@ private:
 
         OT_ASSERT(saved);
 
-        LogDetail(DisplayString(chain_))(" cfilter chain updated to height ")(
+        LogDetail()(DisplayString(chain_))(" cfilter chain updated to height ")(
             position.first)
             .Flush();
         notify_(type_, position);
@@ -209,8 +209,9 @@ private:
                 task->process(gcs->Header(prior->Bytes()));
                 filters.emplace_back(block, gcs.release());
             } else {
-                LogOutput("Filter for block ")(task->position_.second->asHex())(
-                    " at height ")(task->position_.first)(
+                LogError()("Filter for block ")(
+                    task->position_.second->asHex())(" at height ")(
+                    task->position_.first)(
                     " does not match header. Received: ")(gcs->Hash()->asHex())(
                     " expected: ")(expected->asHex())
                     .Flush();

@@ -16,16 +16,16 @@
 #include <string>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Block.hpp"           // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"   // IWYU pragma: keep
@@ -41,13 +41,15 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
 #include "ui/Helpers.hpp"
 
@@ -95,7 +97,8 @@ protected:
         auto output = std::vector<std::string>{};
         output.reserve(tx_per_block_);
         const auto reason = client_2_.Factory().PasswordPrompt(__func__);
-        const auto& bob = client_2_.Blockchain()
+        const auto& bob = client_2_.Crypto()
+                              .Blockchain()
                               .Account(bob_.ID(), test_chain_)
                               .GetHD()
                               .at(0);
@@ -138,7 +141,7 @@ protected:
                         client_1_.Factory().SecretFromText(vector.words_);
                     const auto phrase = client_1_.Factory().Secret(0);
 
-                    return client_1_.Seeds().ImportSeed(
+                    return client_1_.Crypto().Seed().ImportSeed(
                         words,
                         phrase,
                         ot::crypto::SeedStyle::BIP39,
@@ -151,7 +154,7 @@ protected:
                 OT_ASSERT(alice_p_)
                 OT_ASSERT(alice_p_->PaymentCode() == vector.payment_code_)
 
-                client_1_.Blockchain().NewHDSubaccount(
+                client_1_.Crypto().Blockchain().NewHDSubaccount(
                     alice_p_->ID(),
                     ot::blockchain::crypto::HDProtocol::BIP_44,
                     test_chain_,
@@ -172,7 +175,7 @@ protected:
                         client_2_.Factory().SecretFromText(vector.words_);
                     const auto phrase = client_2_.Factory().Secret(0);
 
-                    return client_2_.Seeds().ImportSeed(
+                    return client_2_.Crypto().Seed().ImportSeed(
                         words,
                         phrase,
                         ot::crypto::SeedStyle::BIP39,
@@ -184,7 +187,7 @@ protected:
 
                 OT_ASSERT(bob_p_)
 
-                client_2_.Blockchain().NewHDSubaccount(
+                client_2_.Crypto().Blockchain().NewHDSubaccount(
                     bob_p_->ID(),
                     ot::blockchain::crypto::HDProtocol::BIP_44,
                     test_chain_,
@@ -195,11 +198,13 @@ protected:
 
             return *bob_p_;
         }())
-        , alice_account_(client_1_.Blockchain()
+        , alice_account_(client_1_.Crypto()
+                             .Blockchain()
                              .Account(alice_.ID(), test_chain_)
                              .GetHD()
                              .at(0))
-        , bob_account_(client_2_.Blockchain()
+        , bob_account_(client_2_.Crypto()
+                           .Blockchain()
                            .Account(bob_.ID(), test_chain_)
                            .GetHD()
                            .at(0))
@@ -214,7 +219,7 @@ protected:
         , expected_account_type_(ot::AccountType::Blockchain)
         , expected_unit_type_(ot::core::UnitType::Regtest)
         , mine_to_alice_([&](Height height) -> Transaction {
-            using OutputBuilder = ot::api::Factory::OutputBuilder;
+            using OutputBuilder = ot::api::session::Factory::OutputBuilder;
 
             auto output = miner_.Factory().BitcoinGenerationTransaction(
                 test_chain_,
@@ -476,7 +481,8 @@ TEST_F(Regtest_stress, generate_transactions)
 
             for (const auto& txid : transactions) {
                 const auto& pTX = output.emplace_back(
-                    client_1_.Blockchain().LoadTransactionBitcoin(txid));
+                    client_1_.Crypto().Blockchain().LoadTransactionBitcoin(
+                        txid));
 
                 OT_ASSERT(pTX);
             }

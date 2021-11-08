@@ -11,43 +11,20 @@
 
 #pragma once
 
-#include <map>
-
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/protobuf/ConsensusEnums.pb.h"
 #include "opentxs/protobuf/OTXEnums.pb.h"
 
-namespace opentxs::otx::internal
+namespace opentxs
 {
-using ConsensusTypeMap = std::map<ConsensusType, proto::ConsensusType>;
-using ConsensusTypeReverseMap = std::map<proto::ConsensusType, ConsensusType>;
-using LastReplyStatusMap = std::map<LastReplyStatus, proto::LastReplyStatus>;
-using LastReplyStatusReverseMap =
-    std::map<proto::LastReplyStatus, LastReplyStatus>;
-using OTXPushTypeMap = std::map<OTXPushType, proto::OTXPushType>;
-using OTXPushTypeReverseMap = std::map<proto::OTXPushType, OTXPushType>;
-using ServerReplyTypeMap = std::map<ServerReplyType, proto::ServerReplyType>;
-using ServerReplyTypeReverseMap =
-    std::map<proto::ServerReplyType, ServerReplyType>;
-using ServerRequestTypeMap =
-    std::map<ServerRequestType, proto::ServerRequestType>;
-using ServerRequestTypeReverseMap =
-    std::map<proto::ServerRequestType, ServerRequestType>;
-
-auto consensustype_map() noexcept -> const ConsensusTypeMap&;
-auto lastreplystatus_map() noexcept -> const LastReplyStatusMap&;
-auto otxpushtype_map() noexcept -> const OTXPushTypeMap&;
-auto serverreplytype_map() noexcept -> const ServerReplyTypeMap&;
-auto serverrequesttype_map() noexcept -> const ServerRequestTypeMap&;
-auto translate(ConsensusType in) noexcept -> proto::ConsensusType;
-auto translate(LastReplyStatus in) noexcept -> proto::LastReplyStatus;
-auto translate(OTXPushType in) noexcept -> proto::OTXPushType;
-auto translate(ServerReplyType in) noexcept -> proto::ServerReplyType;
-auto translate(ServerRequestType in) noexcept -> proto::ServerRequestType;
-auto translate(proto::ConsensusType in) noexcept -> ConsensusType;
-auto translate(proto::LastReplyStatus in) noexcept -> LastReplyStatus;
-auto translate(proto::OTXPushType in) noexcept -> OTXPushType;
-auto translate(proto::ServerReplyType in) noexcept -> ServerReplyType;
-auto translate(proto::ServerRequestType in) noexcept -> ServerRequestType;
-
-}  // namespace opentxs::otx::internal
+auto translate(otx::ConsensusType in) noexcept -> proto::ConsensusType;
+auto translate(otx::LastReplyStatus in) noexcept -> proto::LastReplyStatus;
+auto translate(otx::OTXPushType in) noexcept -> proto::OTXPushType;
+auto translate(otx::ServerReplyType in) noexcept -> proto::ServerReplyType;
+auto translate(otx::ServerRequestType in) noexcept -> proto::ServerRequestType;
+auto translate(proto::ConsensusType in) noexcept -> otx::ConsensusType;
+auto translate(proto::LastReplyStatus in) noexcept -> otx::LastReplyStatus;
+auto translate(proto::OTXPushType in) noexcept -> otx::OTXPushType;
+auto translate(proto::ServerReplyType in) noexcept -> otx::ServerReplyType;
+auto translate(proto::ServerRequestType in) noexcept -> otx::ServerRequestType;
+}  // namespace opentxs

@@ -8,14 +8,14 @@
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/protobuf/AsymmetricKey.pb.h"
+#include "opentxs/protobuf/AsymmetricKey.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/NymIDSource.pb.h"
-#include "opentxs/protobuf/PaymentCode.pb.h"
-#include "opentxs/protobuf/verify/AsymmetricKey.hpp"
-#include "opentxs/protobuf/verify/PaymentCode.hpp"
+#include "opentxs/protobuf/PaymentCode.pb.h"          // IWYU pragma: keep
+#include "opentxs/protobuf/verify/AsymmetricKey.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/PaymentCode.hpp"    // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyCredentials.hpp"
 #include "protobuf/Check.hpp"
 

@@ -20,28 +20,21 @@ extern "C" {
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 
 #include "crypto/library/AsymmetricProvider.hpp"
 #include "crypto/library/EcdsaProvider.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/library/Factory.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/Primitives.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
-#include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
-#include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
-#include "util/Sodium.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Sodium::"
 
@@ -59,10 +52,8 @@ auto Sodium(const api::Crypto& crypto) noexcept
 namespace opentxs::crypto::implementation
 {
 Sodium::Sodium(const api::Crypto& crypto) noexcept
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
     : AsymmetricProvider()
     , EcdsaProvider(crypto)
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 {
     const auto result = ::sodium_init();
 
@@ -87,15 +78,14 @@ auto Sodium::Decrypt(
     const auto& mac = ciphertext.tag();
     const auto& mode = ciphertext.mode();
 
-    if (KeySize(opentxs::crypto::key::internal::translate(mode)) != keySize) {
-        LogOutput(OT_METHOD)(__func__)(": Incorrect key size.").Flush();
+    if (KeySize(translate(mode)) != keySize) {
+        LogError()(OT_METHOD)(__func__)(": Incorrect key size.").Flush();
 
         return false;
     }
 
-    if (IvSize(opentxs::crypto::key::internal::translate(mode)) !=
-        nonce.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Incorrect nonce size.").Flush();
+    if (IvSize(translate(mode)) != nonce.size()) {
+        LogError()(OT_METHOD)(__func__)(": Incorrect nonce size.").Flush();
 
         return false;
     }
@@ -115,7 +105,7 @@ auto Sodium::Decrypt(
                          key));
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
                 mode)(").")
                 .Flush();
         }
@@ -281,7 +271,7 @@ auto Sodium::Derive(
 
         return true;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -319,7 +309,7 @@ auto Sodium::Digest(
         }
     }
 
-    LogOutput(OT_METHOD)(__func__)(": Unsupported hash function.").Flush();
+    LogError()(OT_METHOD)(__func__)(": Unsupported hash function.").Flush();
 
     return false;
 }
@@ -334,8 +324,7 @@ auto Sodium::Encrypt(
     OT_ASSERT(nullptr != input);
     OT_ASSERT(nullptr != key);
 
-    const auto& mode =
-        opentxs::crypto::key::internal::translate(ciphertext.mode());
+    const auto& mode = translate(ciphertext.mode());
     const auto& nonce = ciphertext.iv();
     auto& tag = *ciphertext.mutable_tag();
     auto& output = *ciphertext.mutable_data();
@@ -343,19 +332,19 @@ auto Sodium::Encrypt(
     bool result = false;
 
     if (mode == opentxs::crypto::key::symmetric::Algorithm::Error) {
-        LogOutput(OT_METHOD)(__func__)(": Incorrect mode.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Incorrect mode.").Flush();
 
         return result;
     }
 
     if (KeySize(mode) != keySize) {
-        LogOutput(OT_METHOD)(__func__)(": Incorrect key size.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Incorrect key size.").Flush();
 
         return result;
     }
 
     if (IvSize(mode) != nonce.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Incorrect nonce size.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Incorrect nonce size.").Flush();
 
         return result;
     }
@@ -383,7 +372,7 @@ auto Sodium::Encrypt(
                          key));
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
                 value(mode))(").")
                 .Flush();
         }
@@ -402,13 +391,13 @@ auto Sodium::Generate(
     AllocateOutput writer) const noexcept -> bool
 {
     if (false == bool(writer)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid writer").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid writer").Flush();
 
         return false;
     }
 
     if (bytes < crypto_pwhash_scryptsalsa208sha256_BYTES_MIN) {
-        LogOutput(OT_METHOD)(__func__)(": Too few bytes requested: ")(
+        LogError()(OT_METHOD)(__func__)(": Too few bytes requested: ")(
             bytes)(" vs "
                    "minimum:"
                    " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MIN)
@@ -418,7 +407,7 @@ auto Sodium::Generate(
     }
 
     if (bytes > crypto_pwhash_scryptsalsa208sha256_BYTES_MAX) {
-        LogOutput(OT_METHOD)(__func__)(": Too many bytes requested: ")(
+        LogError()(OT_METHOD)(__func__)(": Too many bytes requested: ")(
             bytes)(" vs "
                    "maximum:"
                    " ")(crypto_pwhash_scryptsalsa208sha256_BYTES_MAX)
@@ -430,7 +419,7 @@ auto Sodium::Generate(
     auto output = writer(bytes);
 
     if (false == output.valid(bytes)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocated requested ")(
+        LogError()(OT_METHOD)(__func__)(": Failed to allocated requested ")(
             bytes)(" bytes")
             .Flush();
 
@@ -476,7 +465,7 @@ auto Sodium::HMAC(
             success = (0 == crypto_auth_hmacsha256_init(&state, key, keySize));
 
             if (false == success) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to initialize hash")
+                LogError()(OT_METHOD)(__func__)(": Failed to initialize hash")
                     .Flush();
 
                 return false;
@@ -486,7 +475,7 @@ auto Sodium::HMAC(
                 (0 == crypto_auth_hmacsha256_update(&state, input, inputSize));
 
             if (false == success) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to update hash")
+                LogError()(OT_METHOD)(__func__)(": Failed to update hash")
                     .Flush();
 
                 return false;
@@ -500,7 +489,7 @@ auto Sodium::HMAC(
             success = (0 == crypto_auth_hmacsha512_init(&state, key, keySize));
 
             if (false == success) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to initialize hash")
+                LogError()(OT_METHOD)(__func__)(": Failed to initialize hash")
                     .Flush();
 
                 return false;
@@ -510,7 +499,7 @@ auto Sodium::HMAC(
                 (0 == crypto_auth_hmacsha512_update(&state, input, inputSize));
 
             if (false == success) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to update hash")
+                LogError()(OT_METHOD)(__func__)(": Failed to update hash")
                     .Flush();
 
                 return false;
@@ -520,7 +509,7 @@ auto Sodium::HMAC(
         }
         case (crypto::HashType::SipHash24): {
             if (crypto_shorthash_KEYBYTES < keySize) {
-                LogOutput(OT_METHOD)(__func__)(": Incorrect key size: ")(
+                LogError()(OT_METHOD)(__func__)(": Incorrect key size: ")(
                     keySize)(" vs "
                              "expected"
                              " ")(crypto_shorthash_KEYBYTES)
@@ -539,7 +528,7 @@ auto Sodium::HMAC(
         }
     }
 
-    LogOutput(OT_METHOD)(__func__)(": Unsupported hash function.").Flush();
+    LogError()(OT_METHOD)(__func__)(": Unsupported hash function.").Flush();
 
     return false;
 }
@@ -552,7 +541,7 @@ auto Sodium::IvSize(const opentxs::crypto::key::symmetric::Algorithm mode) const
             return crypto_aead_chacha20poly1305_IETF_NPUBBYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
                 value(mode))(").")
                 .Flush();
         }
@@ -568,38 +557,13 @@ auto Sodium::KeySize(
             return crypto_aead_chacha20poly1305_IETF_KEYBYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
                 value(mode))(").")
                 .Flush();
         }
     }
     return 0;
 }
-
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-auto Sodium::PubkeyAdd(
-    [[maybe_unused]] const ReadView pubkey,
-    [[maybe_unused]] const ReadView scalar,
-    [[maybe_unused]] const AllocateOutput result) const noexcept -> bool
-{
-    LogOutput(OT_METHOD)(__func__)(": Not implemented").Flush();
-
-    return false;
-}
-
-auto Sodium::RandomKeypair(
-    const AllocateOutput privateKey,
-    const AllocateOutput publicKey,
-    const opentxs::crypto::key::asymmetric::Role,
-    const NymParameters&,
-    const AllocateOutput) const noexcept -> bool
-{
-    auto seed = Context().Factory().Secret(0);
-    seed->Randomize(crypto_sign_SEEDBYTES);
-
-    return sodium::ExpandSeed(seed->Bytes(), privateKey, publicKey);
-}
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 
 auto Sodium::RandomizeMemory(void* destination, const std::size_t size) const
     -> bool
@@ -619,7 +583,7 @@ auto Sodium::SaltSize(const crypto::key::symmetric::Source type) const
             return crypto_pwhash_SALTBYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported key type (")(
+            LogError()(OT_METHOD)(__func__)(": Unsupported key type (")(
                 value(type))(").")
                 .Flush();
         }
@@ -627,152 +591,6 @@ auto Sodium::SaltSize(const crypto::key::symmetric::Source type) const
 
     return 0;
 }
-
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-auto Sodium::ScalarAdd(
-    const ReadView lhs,
-    const ReadView rhs,
-    const AllocateOutput result) const noexcept -> bool
-{
-    if (false == bool(result)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
-
-        return false;
-    }
-
-    if (crypto_core_ed25519_SCALARBYTES != lhs.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid lhs scalar").Flush();
-
-        return false;
-    }
-
-    if (crypto_core_ed25519_SCALARBYTES != rhs.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid rhs scalar").Flush();
-
-        return false;
-    }
-
-    auto key = result(crypto_core_ed25519_SCALARBYTES);
-
-    if (false == key.valid(crypto_core_ed25519_SCALARBYTES)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate space for result")
-            .Flush();
-
-        return false;
-    }
-
-    ::crypto_core_ed25519_scalar_add(
-        key.as<unsigned char>(),
-        reinterpret_cast<const unsigned char*>(lhs.data()),
-        reinterpret_cast<const unsigned char*>(rhs.data()));
-
-    return true;
-}
-
-auto Sodium::ScalarMultiplyBase(
-    const ReadView scalar,
-    const AllocateOutput result) const noexcept -> bool
-{
-    if (false == bool(result)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
-
-        return false;
-    }
-
-    if (crypto_scalarmult_ed25519_SCALARBYTES != scalar.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid scalar").Flush();
-
-        return false;
-    }
-
-    auto pub = result(crypto_scalarmult_ed25519_BYTES);
-
-    if (false == pub.valid(crypto_scalarmult_ed25519_BYTES)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Failed to allocate space for public key")
-            .Flush();
-
-        return false;
-    }
-
-    return 0 == ::crypto_scalarmult_ed25519_base(
-                    pub.as<unsigned char>(),
-                    reinterpret_cast<const unsigned char*>(scalar.data()));
-}
-
-auto Sodium::SharedSecret(
-    const ReadView pub,
-    const ReadView prv,
-    const SecretStyle style,
-    Secret& secret) const noexcept -> bool
-{
-    if (SecretStyle::Default != style) {
-        LogOutput(OT_METHOD)(__func__)(": Unsupported secret style").Flush();
-
-        return false;
-    }
-
-    if (crypto_sign_PUBLICKEYBYTES != pub.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid public key ").Flush();
-        LogOutput(OT_METHOD)(__func__)(": Expected: ")(
-            crypto_sign_PUBLICKEYBYTES)
-            .Flush();
-        LogOutput(OT_METHOD)(__func__)(": Actual:   ")(pub.size()).Flush();
-
-        return false;
-    }
-
-    if (crypto_sign_SECRETKEYBYTES != prv.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid private key").Flush();
-        LogOutput(OT_METHOD)(__func__)(": Expected: ")(
-            crypto_sign_SECRETKEYBYTES)
-            .Flush();
-        LogOutput(OT_METHOD)(__func__)(": Actual:   ")(prv.size()).Flush();
-
-        return false;
-    }
-
-    auto privateEd = Context().Factory().Secret(0);
-    auto privateBytes = privateEd->WriteInto(Secret::Mode::Mem)(
-        crypto_scalarmult_curve25519_BYTES);
-    auto secretBytes =
-        secret.WriteInto(Secret::Mode::Mem)(crypto_scalarmult_curve25519_BYTES);
-    auto publicEd =
-        std::array<unsigned char, crypto_scalarmult_curve25519_BYTES>{};
-
-    OT_ASSERT(privateBytes.valid(crypto_scalarmult_curve25519_BYTES));
-    OT_ASSERT(secretBytes.valid(crypto_scalarmult_curve25519_BYTES));
-
-    if (0 != ::crypto_sign_ed25519_pk_to_curve25519(
-                 publicEd.data(),
-                 reinterpret_cast<const unsigned char*>(pub.data()))) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": crypto_sign_ed25519_pk_to_curve25519 error")
-            .Flush();
-
-        return false;
-    }
-
-    if (0 != ::crypto_sign_ed25519_sk_to_curve25519(
-                 reinterpret_cast<unsigned char*>(privateBytes.data()),
-                 reinterpret_cast<const unsigned char*>(prv.data()))) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": crypto_sign_ed25519_sk_to_curve25519 error")
-            .Flush();
-
-        return false;
-    }
-
-    OT_ASSERT(crypto_scalarmult_SCALARBYTES == privateEd->size());
-    OT_ASSERT(crypto_scalarmult_BYTES == publicEd.size());
-    OT_ASSERT(crypto_scalarmult_BYTES == secret.size());
-
-    return 0 == ::crypto_scalarmult(
-                    static_cast<unsigned char*>(secretBytes.data()),
-                    static_cast<const unsigned char*>(privateBytes.data()),
-                    publicEd.data());
-}
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 
 auto Sodium::sha1(
     const std::uint8_t* input,
@@ -792,75 +610,6 @@ auto Sodium::sha1(
     return true;
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-auto Sodium::Sign(
-    const ReadView plaintext,
-    const ReadView priv,
-    const crypto::HashType hash,
-    const AllocateOutput signature) const -> bool
-{
-    if (crypto::HashType::Blake2b256 != hash) {
-        LogVerbose(OT_METHOD)(__func__)(": Unsupported hash function: ")(
-            value(hash))
-            .Flush();
-
-        return false;
-    }
-
-    if (nullptr == priv.data() || 0 == priv.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Missing private key").Flush();
-
-        return false;
-    }
-
-    if (crypto_sign_SECRETKEYBYTES != priv.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid private key").Flush();
-        LogOutput(OT_METHOD)(__func__)(": Expected: ")(
-            crypto_sign_SECRETKEYBYTES)
-            .Flush();
-        LogOutput(OT_METHOD)(__func__)(": Actual:   ")(priv.size()).Flush();
-
-        return false;
-    }
-
-    if (priv == blank_private()) {
-        LogOutput(OT_METHOD)(__func__)(": Blank private key").Flush();
-
-        return false;
-    }
-
-    if (false == bool(signature)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
-
-        return false;
-    }
-
-    auto output = signature(crypto_sign_BYTES);
-
-    if (false == output.valid(crypto_sign_BYTES)) {
-        LogOutput(OT_METHOD)(__func__)(
-            ": Failed to allocate space for signature")
-            .Flush();
-
-        return false;
-    }
-
-    const auto success =
-        0 == ::crypto_sign_detached(
-                 output.as<unsigned char>(),
-                 nullptr,
-                 reinterpret_cast<const unsigned char*>(plaintext.data()),
-                 plaintext.size(),
-                 reinterpret_cast<const unsigned char*>(priv.data()));
-
-    if (false == success) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to sign plaintext.").Flush();
-    }
-
-    return success;
-}
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
-
 auto Sodium::TagSize(
     const opentxs::crypto::key::symmetric::Algorithm mode) const -> std::size_t
 {
@@ -869,63 +618,11 @@ auto Sodium::TagSize(
             return crypto_aead_chacha20poly1305_IETF_ABYTES;
         }
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
+            LogError()(OT_METHOD)(__func__)(": Unsupported encryption mode (")(
                 value(mode))(").")
                 .Flush();
         }
     }
     return 0;
 }
-
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-auto Sodium::Verify(
-    const ReadView plaintext,
-    const ReadView pub,
-    const ReadView signature,
-    const crypto::HashType type) const -> bool
-{
-    if (crypto::HashType::Blake2b256 != type) {
-        LogVerbose(OT_METHOD)(__func__)(": Unsupported hash function: ")(
-            value(type))
-            .Flush();
-
-        return false;
-    }
-
-    if (crypto_sign_BYTES != signature.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid signature").Flush();
-
-        return false;
-    }
-
-    if (nullptr == pub.data() || 0 == pub.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Missing public key").Flush();
-
-        return false;
-    }
-
-    if (crypto_sign_PUBLICKEYBYTES != pub.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid public key").Flush();
-        LogOutput(OT_METHOD)(__func__)(": Expected: ")(
-            crypto_sign_PUBLICKEYBYTES)
-            .Flush();
-        LogOutput(OT_METHOD)(__func__)(": Actual:   ")(pub.size()).Flush();
-
-        return false;
-    }
-
-    const auto success =
-        0 == ::crypto_sign_verify_detached(
-                 reinterpret_cast<const unsigned char*>(signature.data()),
-                 reinterpret_cast<const unsigned char*>(plaintext.data()),
-                 plaintext.size(),
-                 reinterpret_cast<const unsigned char*>(pub.data()));
-
-    if (false == success) {
-        LogVerbose(OT_METHOD)(__func__)(": Failed to verify signature").Flush();
-    }
-
-    return success;
-}
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 }  // namespace opentxs::crypto::implementation

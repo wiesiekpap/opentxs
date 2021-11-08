@@ -13,16 +13,16 @@
 #include <type_traits>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
@@ -35,6 +35,7 @@
 #include "opentxs/rpc/request/SendPayment.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/SendPayment.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "rpc/RPC.hpp"
 
 namespace opentxs::rpc::implementation
@@ -77,7 +78,7 @@ auto RPC::send_payment(const request::Base& base) const noexcept
 }
 
 auto RPC::send_payment_blockchain(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const request::SendPayment& in) const noexcept
     -> std::unique_ptr<response::Base>
 {
@@ -88,7 +89,7 @@ auto RPC::send_payment_blockchain(
     };
 
     const auto id = api.Factory().Identifier(in.SourceAccount());
-    const auto& blockchain = api.Blockchain();
+    const auto& blockchain = api.Crypto().Blockchain();
     const auto data = blockchain.LookupAccount(id);
     const auto& [chain, owner] = data;
 
@@ -128,7 +129,7 @@ auto RPC::send_payment_blockchain(
 }
 
 auto RPC::send_payment_custodial(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const request::SendPayment& in) const noexcept
     -> std::unique_ptr<response::Base>
 {

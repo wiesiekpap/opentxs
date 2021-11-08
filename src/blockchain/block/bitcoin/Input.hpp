@@ -26,11 +26,10 @@
 
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -41,22 +40,24 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/BlockchainTransactionInput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainWalletKey.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -74,10 +75,10 @@ public:
     static const VersionNumber default_version_;
 
     auto AssociatedLocalNyms(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         std::vector<OTNymID>& output) const noexcept -> void final;
     auto AssociatedRemoteContacts(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void final;
     auto CalculateSize(const bool normalized) const noexcept
         -> std::size_t final;
@@ -103,7 +104,7 @@ public:
         return cache_.keys();
     }
     auto NetBalanceChange(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         const identifier::Nym& nym) const noexcept -> opentxs::Amount final
     {
         return cache_.net_balance_change(blockchain, nym);
@@ -119,7 +120,7 @@ public:
     auto SerializeNormalized(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
     auto Serialize(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         const std::uint32_t index,
         SerializeType& destination) const noexcept -> bool final;
     auto SetKeyData(const KeyData& data) noexcept -> void final
@@ -148,17 +149,17 @@ public:
         -> bool final;
     auto AddSignatures(const Signatures& signatures) noexcept -> bool final;
     auto AssociatePreviousOutput(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         const internal::Output& output) noexcept -> bool final;
     auto Internal() noexcept -> internal::Input& final { return *this; }
     auto MergeMetadata(
-        const api::client::Blockchain& blockchain,
+        const api::crypto::Blockchain& blockchain,
         const internal::Input& rhs) noexcept -> bool final;
     auto ReplaceScript() noexcept -> bool final;
 
     Input(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t sequence,
         Outpoint&& previous,
@@ -167,8 +168,8 @@ public:
         const VersionNumber version,
         std::optional<std::size_t> size) noexcept(false);
     Input(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t sequence,
         Outpoint&& previous,
@@ -178,8 +179,8 @@ public:
         std::unique_ptr<const internal::Output> output,
         boost::container::flat_set<crypto::Key>&& keys) noexcept(false);
     Input(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t sequence,
         Outpoint&& previous,
@@ -189,8 +190,8 @@ public:
         std::unique_ptr<const internal::Output> output,
         std::optional<std::size_t> size = {}) noexcept(false);
     Input(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t sequence,
         Outpoint&& previous,
@@ -221,17 +222,17 @@ private:
         }
         auto keys() const noexcept -> std::vector<crypto::Key>;
         auto net_balance_change(
-            const api::client::Blockchain& blockchain,
+            const api::crypto::Blockchain& blockchain,
             const identifier::Nym& nym) const noexcept -> opentxs::Amount;
         auto payer() const noexcept -> OTIdentifier;
         auto spends() const noexcept(false) -> const internal::Output&;
 
         auto add(crypto::Key&& key) noexcept -> void;
         auto associate(
-            const api::client::Blockchain& blockchain,
+            const api::crypto::Blockchain& blockchain,
             const internal::Output& in) noexcept -> bool;
         auto merge(
-            const api::client::Blockchain& blockchain,
+            const api::crypto::Blockchain& blockchain,
             const internal::Input& rhs) noexcept -> bool;
         auto reset_size() noexcept -> void;
         auto set(const KeyData& data) noexcept -> void;
@@ -247,7 +248,7 @@ private:
         }
 
         Cache(
-            const api::Core& api,
+            const api::Session& api,
             std::unique_ptr<const internal::Output>&& output,
             std::optional<std::size_t>&& size,
             boost::container::flat_set<crypto::Key>&& keys) noexcept
@@ -303,7 +304,7 @@ private:
         P2SH_P2WPKH,
     };
 
-    const api::Core& api_;
+    const api::Session& api_;
     const blockchain::Type chain_;
     const VersionNumber serialize_version_;
     const Outpoint previous_;
@@ -321,7 +322,7 @@ private:
     auto serialize(const AllocateOutput destination, const bool normalized)
         const noexcept -> std::optional<std::size_t>;
 
-    auto index_elements(const api::client::Blockchain& blockchain) noexcept
+    auto index_elements(const api::crypto::Blockchain& blockchain) noexcept
         -> void;
 
     Input() = delete;

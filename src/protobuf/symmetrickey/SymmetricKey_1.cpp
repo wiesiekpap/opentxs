@@ -12,7 +12,7 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/verify/Ciphertext.hpp"
+#include "opentxs/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyCredentials.hpp"
 #include "protobuf/Check.hpp"
 

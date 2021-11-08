@@ -22,13 +22,13 @@ namespace crypto
 class Symmetric;
 }  // namespace crypto
 
-namespace storage
+namespace session
 {
-class Storage;
-}  // namespace storage
-
-class Core;
 class Factory;
+class Storage;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace crypto
@@ -67,18 +67,18 @@ public:
         const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
-        const api::Factory& factory,
-        const api::storage::Storage& storage,
+        const api::session::Factory& factory,
+        const api::session::Storage& storage,
         const Language lang,
         const SeedStrength strength,
         const PasswordPrompt& reason) noexcept(false);
     Seed(
-        const api::Core& api,
+        const api::Session& api,
         const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
-        const api::Factory& factory,
-        const api::storage::Storage& storage,
+        const api::session::Factory& factory,
+        const api::session::Storage& storage,
         const SeedStyle type,
         const Language lang,
         const Secret& words,
@@ -88,16 +88,16 @@ public:
         const opentxs::crypto::Bip32& bip32,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
-        const api::Factory& factory,
-        const api::storage::Storage& storage,
+        const api::session::Factory& factory,
+        const api::session::Storage& storage,
         const Secret& entropy,
         const PasswordPrompt& reason) noexcept(false);
     Seed(
-        const api::Core& api,
+        const api::Session& api,
         const opentxs::crypto::Bip39& bip39,
         const api::crypto::Symmetric& symmetric,
-        const api::Factory& factory,
-        const api::storage::Storage& storage,
+        const api::session::Factory& factory,
+        const api::session::Storage& storage,
         const proto::Seed& proto,
         const PasswordPrompt& reason) noexcept(false);
     Seed(Seed&&) noexcept;

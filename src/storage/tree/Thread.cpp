@@ -10,14 +10,15 @@
 #include <memory>
 #include <utility>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "Proto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/StorageThread.pb.h"
 #include "opentxs/protobuf/StorageThreadItem.pb.h"
 #include "opentxs/protobuf/verify/StorageThread.hpp"
 #include "opentxs/protobuf/verify/StorageThreadItem.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Mailbox.hpp"
 #include "storage/tree/Node.hpp"
@@ -102,12 +103,12 @@ auto Thread::Add(
         case StorageBox::INCOMINGTRANSFER: {
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Warning: unknown box.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Warning: unknown box.").Flush();
         }
     }
 
     if (false == saved) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to save item.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Unable to save item.").Flush();
 
         return false;
     }
@@ -156,7 +157,7 @@ void Thread::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to load thread index file.")
+        LogError()(OT_METHOD)(__func__)(": Failed to load thread index file.")
             .Flush();
         OT_FAIL;
     }
@@ -206,7 +207,7 @@ auto Thread::Read(const std::string& id, const bool unread) -> bool
     auto it = items_.find(id);
 
     if (items_.end() == it) {
-        LogOutput(OT_METHOD)(__func__)(": Item does not exist.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Item does not exist.").Flush();
 
         return false;
     }
@@ -240,7 +241,7 @@ auto Thread::Remove(const std::string& id) -> bool
         case StorageBox::BLOCKCHAIN: {
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Warning: unknown box.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Warning: unknown box.").Flush();
         }
     }
 

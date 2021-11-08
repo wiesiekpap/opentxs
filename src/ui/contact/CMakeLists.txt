@@ -21,6 +21,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactSubsection.hpp"
 )
 target_link_libraries(opentxs-ui-contact PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-ui-contact SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-ui-contact PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-contact>)
 add_dependencies(opentxs-ui-contact generated_code)

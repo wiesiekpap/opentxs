@@ -11,16 +11,15 @@
 #include <list>
 #include <memory>
 
+#include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -31,12 +30,14 @@
 #include "opentxs/protobuf/PeerReply.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/verify/PeerReply.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::contract::peer::implementation::Reply::"
 
 namespace opentxs::factory
 {
-auto PeerReply(const api::Core& api) noexcept
+auto PeerReply(const api::Session& api) noexcept
     -> std::unique_ptr<contract::peer::Reply>
 {
     return std::make_unique<contract::peer::blank::Reply>(api);
@@ -46,7 +47,7 @@ auto PeerReply(const api::Core& api) noexcept
 namespace opentxs::contract::peer::implementation
 {
 Reply::Reply(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const VersionNumber version,
     const identifier::Nym& initiator,
@@ -64,7 +65,7 @@ Reply::Reply(
 }
 
 Reply::Reply(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const SerializedType& serialized,
     const std::string& conditions)
@@ -83,7 +84,7 @@ Reply::Reply(
     , recipient_(identifier::Nym::Factory(serialized.recipient()))
     , server_(identifier::Server::Factory(serialized.server()))
     , cookie_(Identifier::Factory(serialized.cookie()))
-    , type_(internal::translate(serialized.type()))
+    , type_(translate(serialized.type()))
 {
 }
 
@@ -152,7 +153,7 @@ auto Reply::Finish(Reply& contract, const PasswordPrompt& reason) -> bool
 
         return true;
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to finalize contract.")
+        LogError()(OT_METHOD)(__func__)(": Failed to finalize contract.")
             .Flush();
 
         return false;
@@ -164,7 +165,7 @@ auto Reply::GetID(const Lock& lock) const -> OTIdentifier
     return GetID(api_, IDVersion(lock));
 }
 
-auto Reply::GetID(const api::Core& api, const SerializedType& contract)
+auto Reply::GetID(const api::Session& api, const SerializedType& contract)
     -> OTIdentifier
 {
     return api.Factory().Identifier(contract);
@@ -185,7 +186,7 @@ auto Reply::IDVersion(const Lock& lock) const -> SerializedType
     contract.clear_id();  // reinforcing that this field must be blank.
     contract.set_initiator(String::Factory(initiator_)->Get());
     contract.set_recipient(String::Factory(recipient_)->Get());
-    contract.set_type(internal::translate(type_));
+    contract.set_type(translate(type_));
     contract.set_cookie(String::Factory(cookie_)->Get());
     contract.clear_signature();  // reinforcing that this field must be blank.
     contract.set_server(String::Factory(server_)->Get());
@@ -194,18 +195,18 @@ auto Reply::IDVersion(const Lock& lock) const -> SerializedType
 }
 
 auto Reply::LoadRequest(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const Identifier& requestID,
     proto::PeerRequest& output) -> bool
 {
     std::time_t notUsed = 0;
 
-    auto loaded = api.Wallet().PeerRequest(
+    auto loaded = api.Wallet().Internal().PeerRequest(
         nym->ID(), requestID, StorageBox::INCOMINGPEERREQUEST, notUsed, output);
 
     if (false == loaded) {
-        loaded = api.Wallet().PeerRequest(
+        loaded = api.Wallet().Internal().PeerRequest(
             nym->ID(),
             requestID,
             StorageBox::PROCESSEDPEERREQUEST,
@@ -213,11 +214,12 @@ auto Reply::LoadRequest(
             output);
 
         if (loaded) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Request has already been processed.")
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Request does not exist.").Flush();
+            LogError()(OT_METHOD)(__func__)(": Request does not exist.")
+                .Flush();
         }
     }
 
@@ -263,7 +265,8 @@ auto Reply::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to create signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to create signature.")
+            .Flush();
     }
 
     return success;
@@ -276,13 +279,13 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (nym_) {
         validNym = nym_->VerifyPseudonym();
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Missing nym.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing nym.").Flush();
 
         return false;
     }
 
     if (false == validNym) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid nym.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid nym.").Flush();
 
         return false;
     }
@@ -290,13 +293,13 @@ auto Reply::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 > signatures_.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Missing signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing signature.").Flush();
 
         return false;
     }
@@ -307,7 +310,7 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid signature.").Flush();
     }
 
     return (validNym && validSyntax && validSig);

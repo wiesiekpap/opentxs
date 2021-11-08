@@ -15,10 +15,10 @@
 
 #include "1_Internal.hpp"
 #include "display/Definition.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/qt/AmountValidator.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Log.hpp"
 #include "ui/accountactivity/AccountActivity.hpp"
 
 namespace opentxs
@@ -52,7 +52,7 @@ struct AmountValidator::Imp {
             return fix(input, static_cast<Index>(std::max(previous, 0)))
                 .c_str();
         } catch (const std::exception& e) {
-            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return {};
         }
@@ -85,7 +85,7 @@ struct AmountValidator::Imp {
 
             return State::Acceptable;
         } catch (const std::exception& e) {
-            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             return State::Invalid;
         }

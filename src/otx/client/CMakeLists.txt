@@ -5,8 +5,12 @@
 
 add_library(
   opentxs-otx-client OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/otx/client/Client.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/otx/client/Helpers.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/otx/client/OTPayment.hpp"
   "DepositPayment.cpp"
   "DepositPayment.hpp"
+  "OTPayment.cpp"
   "Operation.cpp"
   "Operation.hpp"
   "PaymentTasks.cpp"
@@ -14,7 +18,6 @@ add_library(
   "StateMachine.cpp"
   "StateMachine.hpp"
   "StateMachine.tpp"
-  "${opentxs_SOURCE_DIR}/src/internal/otx/client/Client.hpp"
 )
 target_link_libraries(opentxs-otx-client PRIVATE opentxs::messages)
 target_include_directories(

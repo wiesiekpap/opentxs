@@ -5,8 +5,7 @@
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 
-#ifndef OPENTXS_NETWORK_BLOCKCHAIN_SYNC_STATE_HPP
-#define OPENTXS_NETWORK_BLOCKCHAIN_SYNC_STATE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -17,7 +16,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -44,7 +43,7 @@ public:
         proto::BlockchainP2PChainState& dest) const noexcept -> bool;
 
     OPENTXS_NO_EXPORT State(
-        const api::Core& api,
+        const api::Session& api,
         const proto::BlockchainP2PChainState& serialized) noexcept(false);
     State(
         opentxs::blockchain::Type chain,
@@ -67,4 +66,3 @@ private:
 }  // namespace blockchain
 }  // namespace network
 }  // namespace opentxs
-#endif

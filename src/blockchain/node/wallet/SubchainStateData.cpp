@@ -15,22 +15,23 @@
 
 #include "blockchain/node/wallet/Index.hpp"
 #include "blockchain/node/wallet/ScriptForm.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 
@@ -39,8 +40,8 @@
 namespace opentxs::blockchain::node::wallet
 {
 SubchainStateData::SubchainStateData(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     Accounts& parent,
     const WalletDatabase& db,
@@ -227,7 +228,7 @@ auto SubchainStateData::index_element(
     const Bip32Index index,
     WalletDatabase::ElementMap& output) const noexcept -> void
 {
-    LogVerbose(OT_METHOD)(__func__)(": ")(name_)(" element ")(
+    LogVerbose()(OT_METHOD)(__func__)(": ")(name_)(" element ")(
         index)(" extracting filter matching patterns")
         .Flush();
     auto& list = output[index];
@@ -272,21 +273,21 @@ auto SubchainStateData::ProcessBlockAvailable(const block::Hash& block) noexcept
     -> void
 {
     if (block_index_.Query(block)) {
-        LogInsane(OT_METHOD)(__func__)(": ")(name_).Flush();
+        LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
         process_.Run();
     }
 }
 
 auto SubchainStateData::ProcessKey() noexcept -> void
 {
-    LogInsane(OT_METHOD)(__func__)(": ")(name_).Flush();
+    LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
     get_index().Run();
 }
 
 auto SubchainStateData::ProcessMempool(
     std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
 {
-    LogInsane(OT_METHOD)(__func__)(": ")(name_).Flush();
+    LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
 
     if (mempool_.Queue(tx)) { mempool_.Run(); }
 }
@@ -294,7 +295,7 @@ auto SubchainStateData::ProcessMempool(
 auto SubchainStateData::ProcessNewFilter(const block::Position& tip) noexcept
     -> void
 {
-    LogInsane(OT_METHOD)(__func__)(": ")(name_).Flush();
+    LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
     rescan_.UpdateTip(tip);
     scan_.Run(tip);
 }
@@ -304,7 +305,7 @@ auto SubchainStateData::ProcessReorg(
     std::atomic_int& errors,
     const block::Position& ancestor) noexcept -> bool
 {
-    LogInsane(OT_METHOD)(__func__)(": ")(name_).Flush();
+    LogInsane()(OT_METHOD)(__func__)(": ")(name_).Flush();
     ++job_counter_;
     const auto queued =
         api_.Network().Asio().Internal().Post(ThreadPool::General, [&] {
@@ -314,9 +315,11 @@ auto SubchainStateData::ProcessReorg(
         });
 
     if (queued) {
-        LogDebug(OT_METHOD)(__func__)(": ")(name_)(" reorg job queued").Flush();
+        LogDebug()(OT_METHOD)(__func__)(": ")(name_)(" reorg job queued")
+            .Flush();
     } else {
-        LogDebug(OT_METHOD)(__func__)(": ")(name_)(" failed to queue reorg job")
+        LogDebug()(OT_METHOD)(__func__)(": ")(
+            name_)(" failed to queue reorg job")
             .Flush();
         --job_counter_;
         ++errors;
@@ -345,7 +348,7 @@ auto SubchainStateData::ProcessTaskComplete(
     bool enabled) noexcept -> void
 {
     if (id == db_key_) {
-        LogInsane(OT_METHOD)(__func__)(": ")(type)(" ")(name_)(" complete")
+        LogInsane()(OT_METHOD)(__func__)(": ")(type)(" ")(name_)(" complete")
             .Flush();
         ProcessStateMachine(enabled);
     }
@@ -424,7 +427,7 @@ auto SubchainStateData::update_scan(const block::Position& pos, bool reorg)
 {
     if (false == reorg) { db_.SubchainSetLastScanned(db_key_, pos); }
 
-    crypto_.ReportScan(
+    crypto_.Internal().ReportScan(
         node_.Chain(), owner_, account_type_, id_, subchain_, pos);
 }
 

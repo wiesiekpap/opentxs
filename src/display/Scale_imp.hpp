@@ -17,8 +17,9 @@
 #include <utility>
 
 #include "core/Amount.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace bmp = boost::multiprecision;
 
@@ -115,7 +116,7 @@ struct Scale::Imp {
                 output.convert_to<Amount::Imp::Backend>();
             return amount;
         } catch (const std::exception& e) {
-            LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
             throw std::current_exception();
         }

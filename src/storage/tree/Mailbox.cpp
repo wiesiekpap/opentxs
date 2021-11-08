@@ -14,6 +14,7 @@
 #include <tuple>
 #include <utility>
 
+#include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/StorageEnums.pb.h"

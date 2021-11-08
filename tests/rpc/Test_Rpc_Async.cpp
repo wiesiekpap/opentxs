@@ -19,25 +19,22 @@
 
 #include "Basic.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
@@ -66,6 +63,9 @@
 #include "opentxs/protobuf/TaskComplete.pb.h"
 #include "opentxs/protobuf/verify/RPCPush.hpp"
 #include "opentxs/protobuf/verify/RPCResponse.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 #define COMMAND_VERSION 3
 #define RESPONSE_VERSION 3
@@ -128,7 +128,7 @@ protected:
     }
     static void cleanup();
     static std::size_t get_index(const std::int32_t instance);
-    static const api::Core& get_session(const std::int32_t instance);
+    static const api::Session& get_session(const std::int32_t instance);
     static void process_notification(const network::zeromq::Message& incoming);
     static bool default_push_callback(const ot::proto::RPCPush& push);
     static void setup();
@@ -196,14 +196,15 @@ std::size_t Test_Rpc_Async::get_index(const std::int32_t instance)
     return (instance - (instance % 2)) / 2;
 }
 
-const api::Core& Test_Rpc_Async::get_session(const std::int32_t instance)
+const api::Session& Test_Rpc_Async::get_session(const std::int32_t instance)
 {
     auto is_server = instance % 2;
 
     if (is_server) {
         return ot::Context().Server(static_cast<int>(get_index(instance)));
     } else {
-        return ot::Context().Client(static_cast<int>(get_index(instance)));
+        return ot::Context().ClientSession(
+            static_cast<int>(get_index(instance)));
     }
 }
 
@@ -254,10 +255,10 @@ void Test_Rpc_Async::setup()
 {
     const api::Context& ot = ot::Context();
 
-    auto& intro_server =
-        ot.StartServer(ArgList(), static_cast<int>(ot.Servers()), true);
-    auto& server =
-        ot.StartServer(ArgList(), static_cast<int>(ot.Servers()), true);
+    auto& intro_server = ot.StartNotarySession(
+        ArgList(), static_cast<int>(ot.NotarySessionCount()), true);
+    auto& server = ot.StartNotarySession(
+        ArgList(), static_cast<int>(ot.NotarySessionCount()), true);
     auto reasonServer = server.Factory().PasswordPrompt(__func__);
 #if OT_CASH
     intro_server.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
@@ -440,7 +441,8 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Contact)
 
 TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Account_Owner)
 {
-    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
+    auto& client_a =
+        ot_.ClientSession(static_cast<int>(get_index(sender_session_)));
     auto command = init(proto::RPCCOMMAND_SENDPAYMENT);
     command.set_session(sender_session_);
 
@@ -480,7 +482,8 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Account_Owner)
 
 TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Path)
 {
-    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
+    auto& client_a =
+        ot_.ClientSession(static_cast<int>(get_index(sender_session_)));
     auto command = init(proto::RPCCOMMAND_SENDPAYMENT);
     command.set_session(sender_session_);
 
@@ -520,7 +523,8 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Path)
 
 TEST_F(Test_Rpc_Async, Send_Payment_Cheque)
 {
-    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
+    auto& client_a =
+        ot_.ClientSession(static_cast<int>(get_index(sender_session_)));
     auto command = init(proto::RPCCOMMAND_SENDPAYMENT);
     command.set_session(sender_session_);
     auto& client_b = get_session(receiver_session_);
@@ -588,7 +592,8 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque)
 
 TEST_F(Test_Rpc_Async, Get_Pending_Payments)
 {
-    auto& client_b = ot_.Client(static_cast<int>(get_index(receiver_session_)));
+    auto& client_b =
+        ot_.ClientSession(static_cast<int>(get_index(receiver_session_)));
 
     // Make sure the workflows on the client are up-to-date.
     client_b.OTX().Refresh();
@@ -760,11 +765,12 @@ TEST_F(Test_Rpc_Async, Accept_Pending_Payments)
 TEST_F(Test_Rpc_Async, Get_Account_Activity)
 {
     const auto& client =
-        ot_.Client(static_cast<int>(get_index(receiver_session_)));
+        ot_.ClientSession(static_cast<int>(get_index(receiver_session_)));
     client.OTX().Refresh();
     client.OTX().ContextIdle(receiver_nym_id_, server_id_).get();
 
-    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
+    auto& client_a =
+        ot_.ClientSession(static_cast<int>(get_index(sender_session_)));
 
     const auto& workflow = client_a.Workflow();
     std::set<OTIdentifier> workflows;
@@ -829,7 +835,8 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
 
     // Destination account.
 
-    auto& client_b = ot_.Client(static_cast<int>(get_index(receiver_session_)));
+    auto& client_b =
+        ot_.ClientSession(static_cast<int>(get_index(receiver_session_)));
     client_b.OTX().ContextIdle(receiver_nym_id_, server_id_).get();
 
     const auto& receiverworkflow = client_b.Workflow();
@@ -894,10 +901,12 @@ TEST_F(Test_Rpc_Async, Accept_2_Pending_Payments)
 {
     // Send 1 payment
 
-    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
+    auto& client_a =
+        ot_.ClientSession(static_cast<int>(get_index(sender_session_)));
     auto command = init(proto::RPCCOMMAND_SENDPAYMENT);
     command.set_session(sender_session_);
-    auto& client_b = ot_.Client(static_cast<int>(get_index(receiver_session_)));
+    auto& client_b =
+        ot_.ClientSession(static_cast<int>(get_index(receiver_session_)));
 
     ASSERT_FALSE(receiver_nym_id_->empty());
 
@@ -1079,7 +1088,8 @@ TEST_F(Test_Rpc_Async, Create_Account)
     auto command = init(proto::RPCCOMMAND_CREATEACCOUNT);
     command.set_session(sender_session_);
 
-    auto& client_a = ot_.Client(static_cast<int>(get_index(sender_session_)));
+    auto& client_a =
+        ot_.ClientSession(static_cast<int>(get_index(sender_session_)));
     auto reason = client_a.Factory().PasswordPrompt(__func__);
     auto nym_id = client_a.Wallet().Nym(reason, TEST_NYM_6)->ID().str();
 

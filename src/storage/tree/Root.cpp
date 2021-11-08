@@ -11,12 +11,12 @@
 #include <memory>
 #include <stdexcept>
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/StorageRoot.pb.h"
 #include "opentxs/protobuf/verify/StorageRoot.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 #include "storage/tree/Tree.hpp"
@@ -63,7 +63,7 @@ void Root::init(const std::string& hash)
     auto data = std::shared_ptr<proto::StorageRoot>{};
 
     if (!driver_.LoadProto(hash, data)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to load root object file.")
+        LogError()(OT_METHOD)(__func__)(": Failed to load root object file.")
             .Flush();
         OT_FAIL;
     }
@@ -113,7 +113,7 @@ auto Root::Migrate(const Driver& to) const -> bool
             driver_.StoreRoot(true, root_);
         });
     } catch (const std::exception& e) {
-        LogTrace(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }

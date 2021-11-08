@@ -5,6 +5,7 @@
 
 #include "opentxs/protobuf/verify/BasketParams.hpp"  // IWYU pragma: associated
 
+#include <map>
 #include <stdexcept>
 #include <utility>
 

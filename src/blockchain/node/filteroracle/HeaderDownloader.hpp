@@ -13,7 +13,6 @@
 
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -29,7 +29,7 @@ using HeaderDM = download::Manager<
     filter::pHash,
     filter::pHeader,
     filter::Type>;
-using HeaderWorker = Worker<FilterOracle::HeaderDownloader, api::Core>;
+using HeaderWorker = Worker<FilterOracle::HeaderDownloader, api::Session>;
 
 class FilterOracle::HeaderDownloader : public HeaderDM, public HeaderWorker
 {
@@ -40,7 +40,7 @@ public:
     auto NextBatch() noexcept { return allocate_batch(type_); }
 
     HeaderDownloader(
-        const api::Core& api,
+        const api::Session& api,
         const internal::FilterDatabase& db,
         const internal::HeaderOracle& header,
         const internal::Network& node,
@@ -119,8 +119,8 @@ private:
 
         OT_ASSERT(saved);
 
-        LogDetail(DisplayString(chain_))(" cfheader chain updated to height ")(
-            position.first)
+        LogDetail()(DisplayString(chain_))(
+            " cfheader chain updated to height ")(position.first)
             .Flush();
         filter_.UpdatePosition(position);
     }

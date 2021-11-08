@@ -7,17 +7,17 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "ui/qt/DestinationValidator.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD "opentxs::ui::CustodialDestionationValidator::"
 
 namespace opentxs::ui
 {
 struct CustodialDestionationValidator final : public DestinationValidator::Imp {
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
 
     auto fixup(QString& input) const -> void final
     {
@@ -38,7 +38,7 @@ struct CustodialDestionationValidator final : public DestinationValidator::Imp {
     }
 
     CustodialDestionationValidator(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         Parent& parent) noexcept
         : api_(api)
     {
@@ -48,7 +48,7 @@ struct CustodialDestionationValidator final : public DestinationValidator::Imp {
 };
 
 auto DestinationValidator::Imp::Custodial(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     Parent& parent) noexcept -> std::unique_ptr<Imp>
 {
     return std::make_unique<CustodialDestionationValidator>(api, parent);

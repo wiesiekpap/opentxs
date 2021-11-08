@@ -23,17 +23,18 @@
 #include "Proto.hpp"
 #include "core/Worker.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
@@ -44,12 +45,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -110,7 +111,7 @@ namespace opentxs
 {
 template <>
 struct make_blank<ui::implementation::ActivityThreadRowID> {
-    static auto value(const api::Core& api)
+    static auto value(const api::Session& api)
         -> ui::implementation::ActivityThreadRowID
     {
         return {api.Factory().Identifier(), {}, api.Factory().Identifier()};
@@ -123,7 +124,7 @@ using DraftTask = std::pair<
 
 template <>
 struct make_blank<DraftTask> {
-    static auto value(const api::Core& api) -> DraftTask
+    static auto value(const api::Session& api) -> DraftTask
     {
         return {
             make_blank<ui::implementation::ActivityThreadRowID>::value(api),
@@ -171,7 +172,7 @@ public:
     auto SetCallbacks(Callbacks&&) noexcept -> void final;
 
     ActivityThread(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const identifier::Nym& nymID,
         const Identifier& threadID,
         const SimpleCallback& cb) noexcept;

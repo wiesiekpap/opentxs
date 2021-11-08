@@ -13,19 +13,19 @@
 #include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -81,8 +81,8 @@ public:
     auto Heartbeat() noexcept -> void final;
 
     Mempool(
-        const api::Core& api,
-        const api::client::Blockchain& crypto,
+        const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const internal::WalletDatabase& wallet,
         const network::zeromq::socket::Publish& socket,
         const Type chain) noexcept;

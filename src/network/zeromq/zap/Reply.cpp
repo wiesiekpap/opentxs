@@ -8,19 +8,18 @@
 #include "network/zeromq/zap/Reply.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "network/zeromq/Message.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameIterator.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::zap::Reply>;
 

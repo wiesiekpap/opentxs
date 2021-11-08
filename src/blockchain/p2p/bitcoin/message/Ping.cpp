@@ -16,8 +16,7 @@
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 //#define OT_METHOD "
 // opentxs::blockchain::p2p::bitcoin::message::implementation::Ping::"
@@ -25,7 +24,7 @@
 namespace opentxs::factory
 {
 auto BitcoinP2PPing(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -36,7 +35,7 @@ auto BitcoinP2PPing(
     using ReturnType = bitcoin::message::implementation::Ping;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -66,7 +65,7 @@ auto BitcoinP2PPing(
 }
 
 auto BitcoinP2PPing(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const std::uint64_t nonce)
     -> blockchain::p2p::bitcoin::message::internal::Ping*
@@ -81,7 +80,7 @@ auto BitcoinP2PPing(
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Ping::Ping(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const bitcoin::Nonce nonce) noexcept
     : Message(api, network, bitcoin::Command::ping)
@@ -91,7 +90,7 @@ Ping::Ping(
 }
 
 Ping::Ping(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const bitcoin::Nonce nonce) noexcept
     : Message(api, std::move(header))

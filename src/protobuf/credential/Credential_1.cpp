@@ -14,19 +14,19 @@
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/ChildCredentialParameters.pb.h"
-#include "opentxs/protobuf/ContactData.pb.h"
+#include "opentxs/protobuf/ContactData.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Credential.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/KeyCredential.pb.h"
-#include "opentxs/protobuf/MasterCredentialParameters.pb.h"
+#include "opentxs/protobuf/KeyCredential.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/MasterCredentialParameters.pb.h"  // IWYU pragma: keep
 #include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/VerificationSet.pb.h"
-#include "opentxs/protobuf/verify/ChildCredentialParameters.hpp"
-#include "opentxs/protobuf/verify/ContactData.hpp"
-#include "opentxs/protobuf/verify/KeyCredential.hpp"
-#include "opentxs/protobuf/verify/MasterCredentialParameters.hpp"
-#include "opentxs/protobuf/verify/Signature.hpp"
-#include "opentxs/protobuf/verify/VerificationSet.hpp"
+#include "opentxs/protobuf/VerificationSet.pb.h"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/ChildCredentialParameters.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/ContactData.hpp"    // IWYU pragma: keep
+#include "opentxs/protobuf/verify/KeyCredential.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/MasterCredentialParameters.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/Signature.hpp"        // IWYU pragma: keep
+#include "opentxs/protobuf/verify/VerificationSet.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/protobuf/verify/VerifyCredentials.hpp"
 #include "protobuf/Check.hpp"

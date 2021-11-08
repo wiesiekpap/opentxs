@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -21,17 +20,18 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 class PaymentCode;
@@ -55,7 +55,7 @@ public:
         return elements_.at(position);
     }
     auto begin() const noexcept -> const_iterator final { return cbegin(); }
-    auto CalculateHash160(const api::Core& api, const AllocateOutput output)
+    auto CalculateHash160(const api::Session& api, const AllocateOutput output)
         const noexcept -> bool final;
     auto CalculateSize() const noexcept -> std::size_t final;
     auto cbegin() const noexcept -> const_iterator final
@@ -70,13 +70,13 @@ public:
     auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> final;
     auto ExtractPatterns(
-        const api::Core& api,
-        const api::client::Blockchain& blockchain) const noexcept
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain) const noexcept
         -> std::vector<PatternID> final;
     auto IsNotification(
         const std::uint8_t version,
         const PaymentCode& recipient) const noexcept -> bool final;
-    auto LikelyPubkeyHashes(const api::Core& api) const noexcept
+    auto LikelyPubkeyHashes(const api::Session& api) const noexcept
         -> std::vector<OTData> final;
     auto M() const noexcept -> std::optional<std::uint8_t> final;
     auto MultisigPubkey(const std::size_t position) const noexcept

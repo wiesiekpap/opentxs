@@ -3,12 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_PROTO_HPP
-#define OPENTXS_PROTO_HPP
+#pragma once
 
 #include <google/protobuf/message_lite.h>
 
-#include "opentxs/Bytes.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -22,4 +21,3 @@ namespace proto
 auto write(const ProtobufType& in, const AllocateOutput out) noexcept -> bool;
 }  // namespace proto
 }  // namespace opentxs
-#endif

@@ -39,7 +39,6 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -58,6 +57,7 @@
 #include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/JobCounter.hpp"
 #include "util/Work.hpp"
@@ -66,15 +66,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -109,7 +106,7 @@ class Identifier;
 namespace opentxs::blockchain::node::implementation
 {
 class Wallet final : virtual public node::internal::Wallet,
-                     Worker<Wallet, api::Core>
+                     Worker<Wallet, api::Session>
 {
 public:
     auto ConstructTransaction(
@@ -146,8 +143,8 @@ public:
     }
 
     Wallet(
-        const api::Core& api,
-        const api::client::internal::Blockchain& crypto,
+        const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const node::internal::Network& parent,
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
@@ -157,7 +154,7 @@ public:
     ~Wallet() final;
 
 private:
-    friend Worker<Wallet, api::Core>;
+    friend Worker<Wallet, api::Session>;
 
     enum class Work : OTZMQWorkType {
         shutdown = value(WorkType::Shutdown),
@@ -178,7 +175,7 @@ private:
     const node::internal::Network& parent_;
     const node::internal::WalletDatabase& db_;
     const node::internal::Mempool& mempool_;
-    const api::client::internal::Blockchain& crypto_;
+    const api::crypto::Blockchain& crypto_;
     const Type chain_;
     const TaskCallback task_finished_;
     std::atomic_bool enabled_;

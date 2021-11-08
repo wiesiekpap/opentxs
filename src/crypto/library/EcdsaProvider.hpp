@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {

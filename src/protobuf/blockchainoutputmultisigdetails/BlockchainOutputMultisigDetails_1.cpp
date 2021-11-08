@@ -5,7 +5,8 @@
 
 #include "opentxs/protobuf/verify/BlockchainOutputMultisigDetails.hpp"  // IWYU pragma: associated
 
-#include "opentxs/protobuf/Basic.hpp"
+#include <cstddef>
+
 #include "opentxs/protobuf/BlockchainOutputMultisigDetails.pb.h"
 #include "protobuf/Check.hpp"
 

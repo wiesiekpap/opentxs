@@ -15,7 +15,7 @@ namespace opentxs::factory
 {
 auto UnitListItem(
     const ui::implementation::UnitListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::UnitListRowID& rowID,
     const ui::implementation::UnitListSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -31,7 +31,7 @@ namespace opentxs::ui::implementation
 {
 UnitListItem::UnitListItem(
     const UnitListInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const UnitListRowID& rowID,
     const UnitListSortKey& sortKey,
     [[maybe_unused]] CustomData& custom) noexcept

@@ -8,6 +8,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {

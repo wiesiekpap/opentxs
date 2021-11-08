@@ -24,18 +24,18 @@
 #include "blockchain/p2p/bitcoin/message/Sendcmpct.hpp"
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::p2p::bitcoin::Message::"
 
 namespace opentxs::factory
 {
 auto BitcoinP2PMessage(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -45,7 +45,7 @@ auto BitcoinP2PMessage(
     using ReturnType = bitcoin::Message;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -183,7 +183,7 @@ auto BitcoinP2PMessage(
         case bitcoin::Command::submitorder:
         case bitcoin::Command::unknown:
         default: {
-            LogOutput("opentxs::factory::")(__func__)(
+            LogError()("opentxs::factory::")(__func__)(
                 ": Unsupported message type")
                 .Flush();
             return nullptr;
@@ -209,7 +209,7 @@ auto Message::MaxPayload() -> std::size_t
 namespace opentxs::blockchain::p2p::bitcoin::message::implementation
 {
 Message::Message(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const bitcoin::Command command) noexcept
     : api_(api)
@@ -218,7 +218,9 @@ Message::Message(
     OT_ASSERT(header_);
 }
 
-Message::Message(const api::Core& api, std::unique_ptr<Header> header) noexcept
+Message::Message(
+    const api::Session& api,
+    std::unique_ptr<Header> header) noexcept
     : api_(api)
     , header_(std::move(header))
 {
@@ -255,10 +257,10 @@ auto Message::verify_checksum() const noexcept(false) -> void
     const auto& header = header_->Checksum();
 
     if (header != calculated) {
-        LogOutput(OT_METHOD)(__func__)(": Checksum failure").Flush();
-        LogOutput("*  Calculated Payload:  ")(payload()->asHex()).Flush();
-        LogOutput("*  Calculated Checksum: ")(calculated->asHex()).Flush();
-        LogOutput("*  Provided Checksum:   ")(header.asHex()).Flush();
+        LogError()(OT_METHOD)(__func__)(": Checksum failure").Flush();
+        LogError()("*  Calculated Payload:  ")(payload()->asHex()).Flush();
+        LogError()("*  Calculated Checksum: ")(calculated->asHex()).Flush();
+        LogError()("*  Provided Checksum:   ")(header.asHex()).Flush();
 
         throw std::runtime_error("checksum failure");
     }

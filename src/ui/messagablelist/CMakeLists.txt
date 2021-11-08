@@ -14,6 +14,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/MessagableList.hpp"
 )
 target_link_libraries(opentxs-ui-messagablelist PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-ui-messagablelist SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-ui-messagablelist PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-messagablelist>)
 add_dependencies(opentxs-ui-messagablelist generated_code)

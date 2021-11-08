@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_TRADE_OTOFFER_HPP
-#define OPENTXS_CORE_TRADE_OTOFFER_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -17,17 +16,21 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Instrument.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -220,7 +223,7 @@ protected:
     }
 
 private:
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
     using ot_super = Instrument;
 
@@ -228,11 +231,11 @@ private:
 
     auto isPowerOfTen(const std::int64_t& x) -> bool;
 
-    OTOffer(const api::Core& core);  // The constructor contains
-                                     // the 3 variables needed to
-                                     // identify any market.
+    OTOffer(const api::Session& core);  // The constructor contains
+                                        // the 3 variables needed to
+                                        // identify any market.
     OTOffer(
-        const api::Core& core,
+        const api::Session& core,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,
@@ -245,4 +248,3 @@ private:
     OTOffer() = delete;
 };
 }  // namespace opentxs
-#endif

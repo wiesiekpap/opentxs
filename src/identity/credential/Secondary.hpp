@@ -11,12 +11,13 @@
 #include "identity/credential/Key.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identity
@@ -57,7 +58,7 @@ private:
         -> std::shared_ptr<Base::SerializedType> override;
 
     Secondary(
-        const api::Core& api,
+        const api::Session& api,
         const identity::internal::Authority& other,
         const identity::Source& source,
         const internal::Primary& master,
@@ -65,7 +66,7 @@ private:
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     Secondary(
-        const api::Core& api,
+        const api::Session& api,
         const identity::internal::Authority& other,
         const identity::Source& source,
         const internal::Primary& master,

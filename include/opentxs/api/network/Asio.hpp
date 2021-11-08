@@ -6,8 +6,7 @@
 // IWYU pragma: no_include "opentxs/network/asio/Endpoint.hpp"
 // IWYU pragma: no_include "opentxs/network/asio/Socket.hpp"
 
-#ifndef OPENTXS_API_NETWORK_ASIO_HPP
-#define OPENTXS_API_NETWORK_ASIO_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -95,4 +94,3 @@ private:
 }  // namespace network
 }  // namespace api
 }  // namespace opentxs
-#endif

@@ -20,11 +20,11 @@ extern "C" {
 #include <utility>
 
 #include "internal/api/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Legacy.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/api/Legacy.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define CLIENT_CONFIG_KEY "client"
 #define OPENTXS_CONFIG_KEY "opentxs"
@@ -49,6 +49,8 @@ namespace opentxs
 {
 namespace api
 {
+auto Legacy::PathSeparator() noexcept -> const char* { return "/"; }
+
 auto Legacy::SuggestFolder(const std::string& app) noexcept -> std::string
 {
     const auto path =
@@ -220,7 +222,7 @@ auto Legacy::get_home_directory() noexcept -> fs::path
     }
 #endif
 
-    LogNormal("Unable to determine home directory.").Flush();
+    LogConsole()("Unable to determine home directory.").Flush();
 
     OT_FAIL;
 }

@@ -16,8 +16,7 @@
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 //#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Feefilter::"
 
@@ -26,7 +25,7 @@ using FeeRateField = be::little_uint64_buf_t;
 namespace opentxs::factory
 {
 auto BitcoinP2PFeefilter(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -37,7 +36,7 @@ auto BitcoinP2PFeefilter(
     using ReturnType = bitcoin::message::Feefilter;
 
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -45,7 +44,7 @@ auto BitcoinP2PFeefilter(
     auto expectedSize = sizeof(FeeRateField);
 
     if (expectedSize > size) {
-        LogOutput("opentxs::factory::")(__func__)(
+        LogError()("opentxs::factory::")(__func__)(
             ": Size below minimum for Feefilter 1")
             .Flush();
 
@@ -62,14 +61,15 @@ auto BitcoinP2PFeefilter(
     try {
         return new ReturnType(api, std::move(pHeader), fee_rate);
     } catch (...) {
-        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Checksum failure")
+            .Flush();
 
         return nullptr;
     }
 }
 
 auto BitcoinP2PFeefilter(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const std::uint64_t fee_rate)
     -> blockchain::p2p::bitcoin::message::Feefilter*
@@ -84,7 +84,7 @@ auto BitcoinP2PFeefilter(
 namespace opentxs::blockchain::p2p::bitcoin::message
 {
 Feefilter::Feefilter(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const std::uint64_t fee_rate) noexcept
     : Message(api, network, bitcoin::Command::feefilter)
@@ -94,7 +94,7 @@ Feefilter::Feefilter(
 }
 
 Feefilter::Feefilter(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const std::uint64_t fee_rate) noexcept(false)
     : Message(api, std::move(header))

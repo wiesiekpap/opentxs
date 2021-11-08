@@ -19,19 +19,19 @@
 #include <vector>
 
 #include "internal/blockchain/Blockchain.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BloomFilter.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
 auto BloomFilter(
-    const api::Core& api,
+    const api::Session& api,
     const std::uint32_t tweak,
     const blockchain::BloomUpdateFlag update,
     const std::size_t targets,
@@ -42,14 +42,14 @@ auto BloomFilter(
     return new ReturnType(api, tweak, update, targets, fpRate);
 }
 
-auto BloomFilter(const api::Core& api, const Data& serialized)
+auto BloomFilter(const api::Session& api, const Data& serialized)
     -> blockchain::BloomFilter*
 {
     using ReturnType = blockchain::implementation::BloomFilter;
     blockchain::internal::SerializedBloomFilter raw{};
 
     if (sizeof(raw) > serialized.size()) {
-        LogOutput("opentxs::factory::")(__func__)(": Input too short").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Input too short").Flush();
 
         return nullptr;
     }
@@ -79,7 +79,7 @@ const std::size_t BloomFilter::max_hash_function_count_ = 50;
 const std::uint32_t BloomFilter::seed_{4221880213};  // 0xFBA4C795
 
 BloomFilter::BloomFilter(
-    const api::Core& api,
+    const api::Session& api,
     const Tweak tweak,
     const BloomUpdateFlag update,
     const std::size_t functionCount,
@@ -94,7 +94,7 @@ BloomFilter::BloomFilter(
 }
 
 BloomFilter::BloomFilter(
-    const api::Core& api,
+    const api::Session& api,
     const Tweak tweak,
     const BloomUpdateFlag update,
     const std::size_t targets,
@@ -126,7 +126,7 @@ BloomFilter::BloomFilter(
 }
 
 BloomFilter::BloomFilter(
-    const api::Core& api,
+    const api::Session& api,
     const Tweak tweak,
     const BloomUpdateFlag update,
     const std::size_t functionCount,

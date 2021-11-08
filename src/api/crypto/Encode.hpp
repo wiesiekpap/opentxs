@@ -10,6 +10,7 @@
 #include <iosfwd>
 #include <string>
 
+#include "internal/api/crypto/Encode.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/core/Data.hpp"
@@ -19,6 +20,11 @@ namespace opentxs
 {
 namespace api
 {
+namespace crypto
+{
+class Encode;
+}  // namespace crypto
+
 class Crypto;
 }  // namespace api
 
@@ -28,7 +34,7 @@ class Secret;
 
 namespace opentxs::api::crypto::implementation
 {
-class Encode final : virtual public api::crypto::Encode
+class Encode final : public internal::Encode
 {
 public:
     auto DataEncode(const std::string& input) const -> std::string final;

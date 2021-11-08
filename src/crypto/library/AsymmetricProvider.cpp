@@ -15,20 +15,20 @@ extern "C" {
 #include <cstring>
 #include <vector>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Core.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Primitives.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Sodium.hpp"
 
 #define OT_METHOD "opentxs::crypto::AsymmetricProvider::"
@@ -102,13 +102,13 @@ auto AsymmetricProvider::SeedToCurveKey(
                      seed,
                      edPrivate->WriteInto(Secret::Mode::Mem),
                      edPublic->WriteInto())) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to expand seed.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to expand seed.").Flush();
 
         return false;
     }
 
     if (false == bool(privateKey) || false == bool(publicKey)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -118,7 +118,7 @@ auto AsymmetricProvider::SeedToCurveKey(
 }
 
 auto AsymmetricProvider::SignContract(
-    const api::Core& api,
+    const api::Session& api,
     const String& contract,
     const ReadView theKey,
     const crypto::HashType hashType,
@@ -139,14 +139,14 @@ auto AsymmetricProvider::SignContract(
                                       // b64-encoded output, please."
 
     if (false == success) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to sign contract").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to sign contract").Flush();
     }
 
     return success;
 }
 
 auto AsymmetricProvider::VerifyContractSignature(
-    const api::Core& api,
+    const api::Session& api,
     const String& contract,
     const ReadView key,
     const Signature& theSignature,

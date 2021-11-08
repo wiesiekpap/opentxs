@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CONTRACT_SERVERCONTRACT_HPP
-#define OPENTXS_CORE_CONTRACT_SERVERCONTRACT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -13,11 +12,11 @@
 #include <string>
 #include <tuple>
 
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/contract/Types.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
 {
@@ -90,4 +89,3 @@ private:
 };
 }  // namespace contract
 }  // namespace opentxs
-#endif

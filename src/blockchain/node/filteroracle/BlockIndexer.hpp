@@ -33,7 +33,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -76,7 +76,7 @@ using BlockDM = download::Manager<
     std::shared_ptr<const block::bitcoin::Block>,
     filter::pHeader,
     filter::Type>;
-using BlockWorker = Worker<FilterOracle::BlockIndexer, api::Core>;
+using BlockWorker = Worker<FilterOracle::BlockIndexer, api::Session>;
 
 class FilterOracle::BlockIndexer : public BlockDM, public BlockWorker
 {
@@ -84,7 +84,7 @@ public:
     auto NextBatch() noexcept { return allocate_batch(type_); }
 
     BlockIndexer(
-        const api::Core& api,
+        const api::Session& api,
         const internal::FilterDatabase& db,
         const internal::HeaderOracle& header,
         const internal::BlockOracle& block,

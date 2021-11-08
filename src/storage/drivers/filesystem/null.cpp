@@ -14,7 +14,7 @@ namespace opentxs::factory
 auto StorageFSArchive(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& parent,
+    const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket,
     const std::string& folder,
@@ -26,7 +26,7 @@ auto StorageFSArchive(
 auto StorageFSGC(
     const api::Crypto& crypto,
     const api::network::Asio& asio,
-    const api::storage::Storage& parent,
+    const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket) noexcept -> std::unique_ptr<storage::Plugin>
 {

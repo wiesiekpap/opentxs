@@ -12,18 +12,18 @@
 
 #include "Basic.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace ottest
 {
@@ -33,7 +33,7 @@ std::string server_id_{};
 TEST(ClientSession, create)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& client = otx.StartClient(0);
+    const auto& client = otx.StartClientSession(0);
     const auto reason = client.Factory().PasswordPrompt(__func__);
     const auto nym = client.Wallet().Nym(reason);
 
@@ -49,7 +49,7 @@ TEST(ClientSession, create)
 TEST(ClientSession, restart)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& client = otx.StartClient(0);
+    const auto& client = otx.StartClientSession(0);
     const auto reason = client.Factory().PasswordPrompt(__func__);
     const auto nym = client.Wallet().Nym(client.Factory().NymID(nym_id_));
 
@@ -62,8 +62,8 @@ TEST(ClientSession, restart)
 TEST(ClientSession, introduction_server)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& server = otx.StartServer(0);
-    const auto& client = otx.StartClient(0);
+    const auto& server = otx.StartNotarySession(0);
+    const auto& client = otx.StartClientSession(0);
     const auto reasonS = server.Factory().PasswordPrompt(__func__);
     const auto reasonC = client.Factory().PasswordPrompt(__func__);
     const auto& serverID = server.ID();
@@ -101,8 +101,8 @@ TEST(ClientSession, introduction_server)
 TEST(ClientSession, restart_after_registering)
 {
     const auto& otx = ot::InitContext(Args(true));
-    const auto& server = otx.StartServer(0);
-    const auto& client = otx.StartClient(0);
+    const auto& server = otx.StartNotarySession(0);
+    const auto& client = otx.StartClientSession(0);
     const auto& serverID = server.ID();
     const auto nymID = client.Factory().NymID(nym_id_);
     client.OTX().DownloadNymbox(nymID, serverID);

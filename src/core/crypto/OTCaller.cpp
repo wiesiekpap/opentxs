@@ -6,7 +6,7 @@
 #include "0_stdafx.hpp"                      // IWYU pragma: associated
 #include "opentxs/core/crypto/OTCaller.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/crypto/OTCallback.hpp"
 

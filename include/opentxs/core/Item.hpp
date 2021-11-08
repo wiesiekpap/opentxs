@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_ITEM_HPP
-#define OPENTXS_CORE_ITEM_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -22,17 +21,21 @@
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
+namespace session
+{
 namespace implementation
 {
 class Factory;
 }  // namespace implementation
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -245,7 +248,7 @@ protected:
     void UpdateContents(const PasswordPrompt& reason) override;
 
 private:  // Private prevents erroneous use by other classes.
-    friend api::implementation::Factory;
+    friend api::session::implementation::Factory;
 
     using ot_super = OTTransactionType;
 
@@ -256,19 +259,19 @@ private:  // Private prevents erroneous use by other classes.
     // related. Every transaction has a list of items, and these perform the
     // transaction. A transaction trying to TRANSFER would have these items:
     // transfer, serverfee, balance, and possibly outboxhash.
-    Item(const api::Core& api);
+    Item(const api::Session& api);
     Item(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& theNymID,
         const Item& theOwner);  // From owner we can get acct ID, server ID,
                                 // and transaction Num
     Item(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& theNymID,
         const OTTransaction& theOwner);  // From owner we can get acct ID,
                                          // server ID, and transaction Num
     Item(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& theNymID,
         const OTTransaction& theOwner,
         itemType theType,
@@ -277,4 +280,3 @@ private:  // Private prevents erroneous use by other classes.
     Item() = delete;
 };
 }  // namespace opentxs
-#endif

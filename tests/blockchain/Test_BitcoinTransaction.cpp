@@ -13,16 +13,13 @@
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
@@ -33,6 +30,10 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace ot = opentxs;
 
@@ -99,7 +100,7 @@ const auto in_hex_3_ = std::string{
     "12b250f13fad473e5cab6dcceaa2d53cf2c82e8e03d95a0e70836b"};
 
 struct Test_BitcoinTransaction : public ::testing::Test {
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const ot::OTData tx_id_;
     const ot::OTData tx_bytes_;
     const ot::OTData mutated_bytes_;
@@ -114,7 +115,7 @@ struct Test_BitcoinTransaction : public ::testing::Test {
     using Position = ot::blockchain::block::bitcoin::Script::Position;
 
     Test_BitcoinTransaction()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
         , tx_id_(api_.Factory().Data(txid_hex_, ot::StringStyle::Hex))
         , tx_bytes_(api_.Factory().Data(transaction_hex_, ot::StringStyle::Hex))
         , mutated_bytes_(api_.Factory().Data(
@@ -137,7 +138,7 @@ TEST_F(Test_BitcoinTransaction, serialization)
 {
     const auto transaction = ot::factory::BitcoinTransaction(
         api_,
-        api_.Blockchain(),
+        api_.Crypto().Blockchain(),
         ot::blockchain::Type::Bitcoin,
         std::numeric_limits<std::size_t>::max(),
         ot::Clock::now(),
@@ -408,7 +409,7 @@ TEST_F(Test_BitcoinTransaction, normalized_id)
 {
     const auto transaction1 = ot::factory::BitcoinTransaction(
         api_,
-        api_.Blockchain(),
+        api_.Crypto().Blockchain(),
         ot::blockchain::Type::Bitcoin,
         std::numeric_limits<std::size_t>::max(),
         ot::Clock::now(),
@@ -416,7 +417,7 @@ TEST_F(Test_BitcoinTransaction, normalized_id)
             api_, ot::blockchain::Type::Bitcoin, tx_bytes_->Bytes()));
     const auto transaction2 = ot::factory::BitcoinTransaction(
         api_,
-        api_.Blockchain(),
+        api_.Crypto().Blockchain(),
         ot::blockchain::Type::Bitcoin,
         std::numeric_limits<std::size_t>::max(),
         ot::Clock::now(),

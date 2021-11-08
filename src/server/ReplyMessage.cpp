@@ -10,12 +10,11 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/String.hpp"
@@ -23,6 +22,8 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "server/UserCommandProcessor.hpp"
 
 #define OT_METHOD "opentxs::ReplyMessage::"
@@ -31,7 +32,7 @@ namespace opentxs::server
 {
 ReplyMessage::ReplyMessage(
     const UserCommandProcessor& parent,
-    const opentxs::api::Wallet& wallet,
+    const opentxs::api::session::Wallet& wallet,
     const identifier::Server& notaryID,
     const identity::Nym& signer,
     const Message& input,
@@ -100,7 +101,7 @@ void ReplyMessage::attach_request()
         case MessageType::getMarketList:
         case MessageType::requestAdmin:
         case MessageType::addClaim: {
-            LogVerbose(OT_METHOD)(__func__)(": Attaching original ")(
+            LogVerbose()(OT_METHOD)(__func__)(": Attaching original ")(
                 command)(" message.")
                 .Flush();
             message_.m_ascInReferenceTo->SetString(String::Factory(original_));
@@ -126,7 +127,7 @@ void ReplyMessage::clear_request()
         case MessageType::getAccountData:
         case MessageType::getInstrumentDefinition:
         case MessageType::getMint: {
-            LogVerbose(OT_METHOD)(__func__)(": Clearing original ")(
+            LogVerbose()(OT_METHOD)(__func__)(": Clearing original ")(
                 command)(" message.")
                 .Flush();
             message_.m_ascInReferenceTo->Release();
@@ -215,7 +216,7 @@ auto ReplyMessage::init_nym() -> bool
 auto ReplyMessage::LoadContext(const PasswordPrompt& reason) -> bool
 {
     if (false == init_nym()) {
-        LogOutput(OT_METHOD)(__func__)(": Nym (")(original_.m_strNymID)(
+        LogError()(OT_METHOD)(__func__)(": Nym (")(original_.m_strNymID)(
             ") does not exist")
             .Flush();
 
@@ -223,7 +224,7 @@ auto ReplyMessage::LoadContext(const PasswordPrompt& reason) -> bool
     }
 
     context_ = std::make_unique<Editor<otx::context::Client>>(
-        wallet_.mutable_ClientContext(sender_nym_->ID(), reason));
+        wallet_.Internal().mutable_ClientContext(sender_nym_->ID(), reason));
 
     return bool(context_);
 }

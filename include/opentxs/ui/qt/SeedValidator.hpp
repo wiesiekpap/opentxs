@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_UI_SEEDVALIDATOR_HPP
-#define OPENTXS_UI_SEEDVALIDATOR_HPP
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -21,10 +20,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace ui
@@ -48,7 +47,7 @@ public:
     State validate(QString& input, int& pos) const final;
 
     SeedValidator(
-        const api::client::Manager&,
+        const api::session::Client&,
         std::uint8_t,
         std::uint8_t) noexcept;
 
@@ -65,4 +64,3 @@ private:
     SeedValidator& operator=(const SeedValidator&) = delete;
     SeedValidator& operator=(SeedValidator&&) = delete;
 };
-#endif

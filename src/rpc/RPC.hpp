@@ -43,18 +43,14 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
-
-namespace server
-{
-class Manager;
-}  // namespace server
+class Client;
+class Notary;
+}  // namespace session
 
 class Context;
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -89,7 +85,6 @@ class SendPayment;
 class AccountData;
 }  // namespace rpc
 
-class Factory;
 class Identifier;
 class Options;
 }  // namespace opentxs
@@ -106,11 +101,11 @@ public:
     auto Process(const request::Base& command) const
         -> std::unique_ptr<response::Base> final;
 
+    RPC(const api::Context& native);
+
     ~RPC() final;
 
 private:
-    friend opentxs::Factory;
-
     using Args = const ::google::protobuf::RepeatedPtrField<
         ::opentxs::proto::APIArgument>;
     using TaskID = std::string;
@@ -160,7 +155,7 @@ private:
     auto add_contact(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto client_session(const request::Base& command) const noexcept(false)
-        -> const api::client::Manager&;
+        -> const api::session::Client&;
     auto create_account(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto create_compatible_account(const proto::RPCCommand& command) const
@@ -174,11 +169,11 @@ private:
     auto delete_claim(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     void evaluate_deposit_payment(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const api::client::OTX::Result& result,
         proto::TaskComplete& output) const;
     void evaluate_move_funds(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const api::client::OTX::Result& result,
         proto::RPCResponse& output) const;
     template <typename T>
@@ -193,20 +188,20 @@ private:
         const api::client::OTX::Result& result,
         proto::TaskComplete& output) const noexcept -> void;
     auto evaluate_send_payment_transfer(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const api::client::OTX::Result& result,
         proto::TaskComplete& output) const noexcept -> void;
     auto evaluate_transaction_reply(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const Message& reply) const noexcept -> bool;
     template <typename T>
     void evaluate_transaction_reply(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const Message& reply,
         T& output,
         const proto::RPCResponseCode code =
             proto::RPCRESPONSE_TRANSACTION_FAILED) const;
-    auto get_client(std::int32_t instance) const -> const api::client::Manager*;
+    auto get_client(std::int32_t instance) const -> const api::session::Client*;
     auto get_account_activity(const request::Base& command) const
         -> std::unique_ptr<response::Base>;
     auto get_account_balance(const request::Base& command) const noexcept
@@ -218,7 +213,7 @@ private:
         std::vector<AccountData>& balances,
         response::Base::Responses& codes) const noexcept -> void;
     auto get_account_balance_custodial(
-        const api::Core& api,
+        const api::Session& api,
         const std::size_t index,
         const Identifier& accountID,
         std::vector<AccountData>& balances,
@@ -230,14 +225,14 @@ private:
         -> proto::RPCResponse;
     auto get_seeds(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
-    auto get_server(std::int32_t instance) const -> const api::server::Manager*;
+    auto get_server(std::int32_t instance) const -> const api::session::Notary*;
     auto get_server_admin_nym(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto get_server_contracts(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto get_server_password(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
-    auto get_session(std::int32_t instance) const -> const api::Core&;
+    auto get_session(std::int32_t instance) const -> const api::Session&;
     auto get_transaction_data(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto get_unit_definitions(const proto::RPCCommand& command) const
@@ -245,16 +240,16 @@ private:
     auto get_workflow(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto immediate_create_account(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const identifier::Nym& owner,
         const identifier::Server& notary,
         const identifier::UnitDefinition& unit) const -> bool;
     auto immediate_register_issuer_account(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const identifier::Nym& owner,
         const identifier::Server& notary) const -> bool;
     auto immediate_register_nym(
-        const api::client::Manager& client,
+        const api::session::Client& client,
         const identifier::Server& notary) const -> bool;
     auto import_seed(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
@@ -292,7 +287,7 @@ private:
         Future&& future,
         proto::RPCResponse& output) const -> void;
     auto queue_task(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Nym& nymID,
         const std::string taskID,
         Finish&& finish,
@@ -304,15 +299,15 @@ private:
     auto send_payment(const request::Base& command) const noexcept
         -> std::unique_ptr<response::Base>;
     auto send_payment_blockchain(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const request::SendPayment& command) const noexcept
         -> std::unique_ptr<response::Base>;
     auto send_payment_custodial(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const request::SendPayment& command) const noexcept
         -> std::unique_ptr<response::Base>;
     auto session(const request::Base& command) const noexcept(false)
-        -> const api::Core&;
+        -> const api::Session&;
     auto start_client(const proto::RPCCommand& command) const
         -> proto::RPCResponse;
     auto start_server(const proto::RPCCommand& command) const
@@ -322,7 +317,6 @@ private:
 
     void task_handler(const zmq::Message& message);
 
-    RPC(const api::Context& native);
     RPC() = delete;
     RPC(const RPC&) = delete;
     RPC(RPC&&) = delete;

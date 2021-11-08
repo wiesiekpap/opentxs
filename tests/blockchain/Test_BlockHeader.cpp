@@ -10,19 +10,19 @@
 
 #include "Helpers.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace b = ot::blockchain;
 namespace bb = b::block;
@@ -33,10 +33,10 @@ namespace ottest
 class Test_BlockHeader : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
 
     Test_BlockHeader()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
     {
     }
 };

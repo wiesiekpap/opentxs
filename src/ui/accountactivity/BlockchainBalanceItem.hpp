@@ -13,23 +13,23 @@
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/accountactivity/BalanceItem.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -79,7 +79,7 @@ public:
 
     BlockchainBalanceItem(
         const AccountActivityInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const AccountActivityRowID& rowID,
         const AccountActivitySortKey& sortKey,
         CustomData& custom,

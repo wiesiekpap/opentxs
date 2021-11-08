@@ -13,20 +13,20 @@
 #include <utility>
 
 #include "2_Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Endpoints.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/AddressType.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define CLIENT_SEND_TIMEOUT_SECONDS 20
 #if OT_VALGRIND
@@ -45,7 +45,7 @@ template class opentxs::Pimpl<opentxs::network::ServerConnection>;
 
 namespace opentxs
 {
-auto Factory::ZMQ(const api::Core& api, const Flag& running)
+auto Factory::ZMQ(const api::Session& api, const Flag& running)
     -> api::network::ZMQ*
 {
     return new api::network::implementation::ZMQ(api, running);
@@ -54,7 +54,7 @@ auto Factory::ZMQ(const api::Core& api, const Flag& running)
 
 namespace opentxs::api::network::implementation
 {
-ZMQ::ZMQ(const api::Core& api, const Flag& running)
+ZMQ::ZMQ(const api::Session& api, const Flag& running)
     : api_(api)
     , running_(running)
     , linger_(std::chrono::seconds(CLIENT_SOCKET_LINGER_SECONDS))
@@ -213,13 +213,13 @@ auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
         notUsed);
 
     if (false == set) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to set socks proxy.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Unable to set socks proxy.").Flush();
 
         return false;
     }
 
     if (false == api_.Config().Save()) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to set save config.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Unable to set save config.").Flush();
 
         return false;
     }
@@ -238,7 +238,8 @@ auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
     }
 
     if (false == set) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to reset connection.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Unable to reset connection.")
+            .Flush();
     }
 
     return set;
@@ -283,13 +284,13 @@ auto ZMQ::Status(const std::string& server) const -> ConnectionState
 auto ZMQ::verify_lock(const Lock& lock) const -> bool
 {
     if (lock.mutex() != &lock_) {
-        LogOutput(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogOutput(OT_METHOD)(__func__)(": Lock not owned.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Lock not owned.").Flush();
 
         return false;
     }

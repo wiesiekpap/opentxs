@@ -11,15 +11,16 @@
 #include <stdexcept>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Key.hpp"
 #include "internal/crypto/key/Key.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/identity/credential/Credential.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
@@ -37,6 +38,7 @@
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/SourceProof.pb.h"
 #include "opentxs/protobuf/verify/Credential.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
 #define OT_METHOD "opentxs::identity::credential::implementation::Primary::"
@@ -46,7 +48,7 @@ namespace opentxs
 using ReturnType = identity::credential::implementation::Primary;
 
 auto Factory::PrimaryCredential(
-    const api::Core& api,
+    const api::Session& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const NymParameters& parameters,
@@ -58,7 +60,7 @@ auto Factory::PrimaryCredential(
 
         return new ReturnType(api, parent, source, parameters, version, reason);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Failed to create credential: ")(e.what())
             .Flush();
 
@@ -67,7 +69,7 @@ auto Factory::PrimaryCredential(
 }
 
 auto Factory::PrimaryCredential(
-    const api::Core& api,
+    const api::Session& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
     const proto::Credential& serialized)
@@ -77,7 +79,7 @@ auto Factory::PrimaryCredential(
 
         return new ReturnType(api, parent, source, serialized);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             ": Failed to deserialize credential: ")(e.what())
             .Flush();
 
@@ -98,7 +100,7 @@ const VersionConversionMap Primary::credential_to_master_params_{
 };
 
 Primary::Primary(
-    const api::Core& api,
+    const api::Session& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const NymParameters& params,
@@ -125,7 +127,7 @@ Primary::Primary(
 }
 
 Primary::Primary(
-    const api::Core& api,
+    const api::Session& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const proto::Credential& serialized) noexcept(false)
@@ -158,7 +160,7 @@ auto Primary::Path(proto::HDPath& output) const -> bool
 
         return found;
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": No private key.").Flush();
+        LogError()(OT_METHOD)(__func__)(": No private key.").Flush();
 
         return false;
     }
@@ -180,8 +182,8 @@ auto Primary::serialize(
     OT_ASSERT(output);
 
     auto& serialized = *output;
-    serialized.set_role(opentxs::identity::credential::internal::translate(
-        identity::CredentialRole::MasterKey));
+    serialized.set_role(
+        opentxs::translate(identity::CredentialRole::MasterKey));
     auto& masterData = *serialized.mutable_masterdata();
     masterData.set_version(credential_to_master_params_.at(version_));
     if (false == source_.Serialize(*masterData.mutable_source())) {
@@ -267,11 +269,10 @@ auto Primary::Verify(
     if (!proto::Validate<proto::Credential>(
             credential,
             VERBOSE,
-            opentxs::crypto::key::internal::translate(
-                crypto::key::asymmetric::Mode::Public),
-            opentxs::identity::credential::internal::translate(role),
+            opentxs::translate(crypto::key::asymmetric::Mode::Public),
+            opentxs::translate(role),
             false)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid credential syntax.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid credential syntax.").Flush();
 
         return false;
     }
@@ -279,7 +280,7 @@ auto Primary::Verify(
     bool sameMaster = (id_ == masterID);
 
     if (!sameMaster) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Credential does not designate this credential as its master.")
             .Flush();
 
@@ -314,7 +315,7 @@ auto Primary::verify_against_source(const Lock& lock) const -> bool
     }
 
     if (false == bool(pSerialized)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize credentials")
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize credentials")
             .Flush();
 
         return false;
@@ -324,7 +325,7 @@ auto Primary::verify_against_source(const Lock& lock) const -> bool
     const auto pSig = hasSourceSignature ? SourceSignature() : SelfSignature();
 
     if (false == bool(pSig)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Master credential not signed by its source.")
             .Flush();
 
@@ -343,7 +344,7 @@ auto Primary::verify_internally(const Lock& lock) const -> bool
 
     // Check that the source validates this credential
     if (!verify_against_source(lock)) {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": Failed verifying master credential against "
             "nym id source.")
             .Flush();

@@ -15,7 +15,7 @@ extern "C" {
 #include <string>
 
 #include "internal/blockchain/node/Factory.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "util/LMDB.hpp"
 
 // #define OT_METHOD "opentxs::blockchain::implementation::Database::"
@@ -23,8 +23,8 @@ extern "C" {
 namespace opentxs::factory
 {
 auto BlockchainDatabase(
-    const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const blockchain::node::internal::Network& network,
     const blockchain::database::common::Database& common,
     const blockchain::Type chain,
@@ -77,8 +77,8 @@ const storage::lmdb::TableNames Database::table_names_{
 };
 
 Database::Database(
-    const api::Core& api,
-    const api::client::internal::Blockchain& blockchain,
+    const api::Session& api,
+    const api::crypto::Blockchain& blockchain,
     const node::internal::Network& network,
     const database::common::Database& common,
     const blockchain::Type chain,

@@ -15,11 +15,12 @@
 #include <string>
 
 #include "internal/ui/UI.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/activitythread/ActivityThreadItem.hpp"
 #include "ui/qt/DraftValidator.hpp"
 #include "util/Polarity.hpp"  // IWYU pragma: keep

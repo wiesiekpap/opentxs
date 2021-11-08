@@ -15,7 +15,7 @@
 #include <limits>
 #include <stdexcept>
 
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 
 namespace be = boost::endian;
 

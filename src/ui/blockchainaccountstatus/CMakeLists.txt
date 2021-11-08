@@ -23,6 +23,10 @@ set(cxx-install-headers
 target_link_libraries(
   opentxs-ui-blockchainaccountstatus PRIVATE opentxs::messages
 )
+target_include_directories(
+  opentxs-ui-blockchainaccountstatus SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(
   opentxs-ui-blockchainaccountstatus PRIVATE ${cxx-install-headers}
 )

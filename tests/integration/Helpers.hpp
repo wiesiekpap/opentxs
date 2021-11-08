@@ -17,12 +17,12 @@
 
 #include "Basic.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/server/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
@@ -41,15 +41,11 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
-
-namespace server
-{
-class Manager;
-}  // namespace server
+class Client;
+class Notary;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -93,7 +89,7 @@ using StateMap =
     std::map<std::string, std::map<Widget, std::map<int, WidgetCallback>>>;
 
 struct Server {
-    const ot::api::server::Manager* api_{nullptr};
+    const ot::api::session::Notary* api_{nullptr};
     bool init_{false};
     const ot::OTServerID id_{ot::identifier::Server::Factory()};
     const std::string password_;
@@ -101,7 +97,7 @@ struct Server {
     auto Contract() const noexcept -> ot::OTServerContract;
     auto Reason() const noexcept -> ot::OTPasswordPrompt;
 
-    auto init(const ot::api::server::Manager& api) noexcept -> void;
+    auto init(const ot::api::session::Notary& api) noexcept -> void;
 };
 
 struct User {
@@ -109,7 +105,7 @@ struct User {
     const std::string passphrase_;
     const std::string name_;
     const std::string name_lower_;
-    const ot::api::client::Manager* api_;
+    const ot::api::session::Client* api_;
     bool init_;
     std::string seed_id_;
     std::uint32_t index_;
@@ -133,20 +129,20 @@ struct User {
         const noexcept -> bool;
 
     auto init(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> bool;
     auto init(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const Server& server,
         const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> bool;
     auto init_custom(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const Server& server,
         const std::function<void(User&)> custom,
         const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
@@ -154,7 +150,7 @@ struct User {
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> void;
     auto init_custom(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const std::function<void(User&)> custom,
         const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
         const std::uint32_t index = 0,
@@ -172,7 +168,7 @@ private:
     mutable std::map<std::string, ot::OTIdentifier> accounts_;
 
     auto init_basic(
-        const ot::api::client::Manager& api,
+        const ot::api::session::Client& api,
         const ot::contact::ClaimType type,
         const std::uint32_t index,
         const ot::crypto::SeedStyle seed) noexcept -> bool;
@@ -239,7 +235,7 @@ public:
 };
 
 auto set_introduction_server(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const Server& server) noexcept -> void;
 auto test_future(
     std::future<bool>& future,

@@ -12,22 +12,23 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Primitives.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -617,12 +618,12 @@ TEST_F(Test_Hash, argon2i)
 {
     static constexpr auto bytes{32u};
     const auto& ot = ot::Context();
-    const auto& api = ot.StartClient(0);
+    const auto& api = ot.StartClientSession(0);
     const auto reason = api.Factory().PasswordPrompt(__func__);
 
     for (const auto& [iterations, memory, threads, input, salt, hex] :
          argon_2i_) {
-        const auto key = api.Symmetric().Key(
+        const auto key = api.Crypto().Symmetric().Key(
             ot.Factory().SecretFromText(input),
             salt,
             iterations,
@@ -645,12 +646,12 @@ TEST_F(Test_Hash, argon2id)
 {
     static constexpr auto bytes{32u};
     const auto& ot = ot::Context();
-    const auto& api = ot.StartClient(0);
+    const auto& api = ot.StartClientSession(0);
     const auto reason = api.Factory().PasswordPrompt(__func__);
 
     for (const auto& [iterations, memory, threads, input, salt, hex] :
          argon_2id_) {
-        const auto key = api.Symmetric().Key(
+        const auto key = api.Crypto().Symmetric().Key(
             ot.Factory().SecretFromText(input),
             salt,
             iterations,

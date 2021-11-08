@@ -24,15 +24,13 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -44,11 +42,13 @@
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {
 struct Test_BitcoinBlock : public ::testing::Test {
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
 
     auto CompareElements(
         const std::vector<ot::OTData>& input,
@@ -198,7 +198,7 @@ struct Test_BitcoinBlock : public ::testing::Test {
     }
 
     Test_BitcoinBlock()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
     {
     }
 };

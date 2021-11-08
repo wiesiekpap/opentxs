@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CRYPTO_OTSIGNATUREMETADATA_HPP
-#define OPENTXS_CORE_CRYPTO_OTSIGNATUREMETADATA_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -12,7 +11,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 class OPENTXS_EXPORT OTSignatureMetadata
@@ -47,11 +46,11 @@ public:
         return metaChildCredID_;
     }
 
-    OTSignatureMetadata(const api::Core& api);
+    OTSignatureMetadata(const api::Session& api);
     auto operator=(const OTSignatureMetadata& rhs) -> OTSignatureMetadata&;
 
 private:
-    const api::Core& api_;
+    const api::Session& api_;
     // Defaults to false. Is set true by calling SetMetadata
     bool hasMetadata_{false};
     // Can be A, E, or S (authentication, encryption, or signing.
@@ -69,4 +68,3 @@ private:
     char metaChildCredID_{0x0};
 };
 }  // namespace opentxs
-#endif

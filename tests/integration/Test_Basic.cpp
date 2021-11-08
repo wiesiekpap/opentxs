@@ -14,22 +14,22 @@
 #include <vector>
 
 #include "integration/Helpers.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Shared.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
@@ -38,6 +38,7 @@
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -66,16 +67,18 @@
 #include "opentxs/ui/PayableListItem.hpp"
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/Helpers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace server
+namespace session
 {
-class Manager;
-}  // namespace server
+class Notary;
+}  // namespace session
 }  // namespace api
 }  // namespace opentxs
 
@@ -130,10 +133,10 @@ public:
     static std::map<int, std::string> message_;
     static ot::OTUnitID unit_id_;
 
-    const ot::api::client::Manager& api_alex_;
-    const ot::api::client::Manager& api_bob_;
-    const ot::api::client::Manager& api_issuer_;
-    const ot::api::server::Manager& api_server_1_;
+    const ot::api::session::Client& api_alex_;
+    const ot::api::session::Client& api_bob_;
+    const ot::api::session::Client& api_issuer_;
+    const ot::api::session::Notary& api_server_1_;
 
     auto idle() const noexcept -> void
     {
@@ -143,10 +146,10 @@ public:
     }
 
     Integration()
-        : api_alex_(ot::Context().StartClient(0))
-        , api_bob_(ot::Context().StartClient(1))
-        , api_issuer_(ot::Context().StartClient(2))
-        , api_server_1_(ot::Context().StartServer(0))
+        : api_alex_(ot::Context().StartClientSession(0))
+        , api_bob_(ot::Context().StartClientSession(1))
+        , api_issuer_(ot::Context().StartClientSession(2))
+        , api_server_1_(ot::Context().StartNotarySession(0))
     {
         const_cast<Server&>(server_1_).init(api_server_1_);
         const_cast<User&>(alex_).init(api_alex_, server_1_);
@@ -1545,8 +1548,8 @@ TEST_F(Integration, process_inbox_issuer)
     EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, status);
     ASSERT_TRUE(message);
 
-    const auto account =
-        api_issuer_.Wallet().Account(issuer_.Account(UNIT_DEFINITION_TLA));
+    const auto account = api_issuer_.Wallet().Internal().Account(
+        issuer_.Account(UNIT_DEFINITION_TLA));
 
     EXPECT_EQ(-1 * CHEQUE_AMOUNT_1, account.get().GetBalance());
 }

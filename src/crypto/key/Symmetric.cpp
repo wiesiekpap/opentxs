@@ -18,16 +18,15 @@
 #include <vector>
 
 #include "Proto.tpp"
-#include "crypto/key/SymmetricNull.hpp"
-#include "internal/api/Api.hpp"
+#include "internal/api/session/Session.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/crypto/key/Null.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
@@ -36,6 +35,8 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/protobuf/verify/SymmetricKey.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
 template class opentxs::Pimpl<opentxs::crypto::key::Symmetric>;
@@ -50,13 +51,13 @@ namespace opentxs::factory
 {
 auto SymmetricKey() noexcept -> std::unique_ptr<crypto::key::Symmetric>
 {
-    return std::make_unique<crypto::key::implementation::SymmetricNull>();
+    return std::make_unique<crypto::key::blank::Symmetric>();
 }
 
 using ReturnType = crypto::key::implementation::Symmetric;
 
 auto SymmetricKey(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::SymmetricProvider& engine,
     const opentxs::PasswordPrompt& reason,
     const opentxs::crypto::key::symmetric::Algorithm mode) noexcept
@@ -87,7 +88,7 @@ auto SymmetricKey(
 }
 
 auto SymmetricKey(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::SymmetricProvider& engine,
     const proto::SymmetricKey serialized) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>
@@ -101,7 +102,7 @@ auto SymmetricKey(
 }
 
 auto SymmetricKey(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::SymmetricProvider& engine,
     const Secret& seed,
     const std::uint64_t operations,
@@ -118,7 +119,7 @@ auto SymmetricKey(
 }
 
 auto SymmetricKey(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::SymmetricProvider& engine,
     const Secret& seed,
     const ReadView salt,
@@ -141,7 +142,7 @@ auto SymmetricKey(
 }
 
 auto SymmetricKey(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::SymmetricProvider& engine,
     const Secret& raw,
     const opentxs::PasswordPrompt& reason) noexcept
@@ -163,14 +164,14 @@ namespace opentxs::crypto::key
 {
 auto Symmetric::Factory() -> OTSymmetricKey
 {
-    return OTSymmetricKey{new implementation::SymmetricNull};
+    return OTSymmetricKey{new blank::Symmetric};
 }
 }  // namespace opentxs::crypto::key
 
 namespace opentxs::crypto::key::implementation
 {
 Symmetric::Symmetric(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::SymmetricProvider& engine,
     const VersionNumber version,
     const crypto::key::symmetric::Source type,
@@ -204,7 +205,7 @@ Symmetric::Symmetric(
 }
 
 Symmetric::Symmetric(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::SymmetricProvider& engine)
     : Symmetric(
           api,
@@ -222,14 +223,14 @@ Symmetric::Symmetric(
 }
 
 Symmetric::Symmetric(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::SymmetricProvider& engine,
     const proto::SymmetricKey serialized)
     : Symmetric(
           api,
           engine,
           std::max(serialized.version(), default_version_),
-          opentxs::crypto::key::internal::translate(serialized.type()),
+          translate(serialized.type()),
           serialized.size(),
           serialized.salt(),
           serialized.operations(),
@@ -241,7 +242,7 @@ Symmetric::Symmetric(
 }
 
 Symmetric::Symmetric(
-    const api::Core& api,
+    const api::Session& api,
     const crypto::SymmetricProvider& engine,
     const Secret& seed,
     const ReadView salt,
@@ -337,7 +338,7 @@ auto Symmetric::Allocate(const std::size_t size, String& container) -> bool
 }
 
 auto Symmetric::Allocate(
-    const api::Core& api,
+    const api::Session& api,
     const std::size_t size,
     Space& container,
     const bool random) -> bool
@@ -377,7 +378,7 @@ auto Symmetric::ChangePassword(
         return encrypt_key(lock, plain.value(), copy);
     }
 
-    LogOutput(OT_METHOD)(__func__)(": Unable to unlock master key.").Flush();
+    LogError()(OT_METHOD)(__func__)(": Unable to unlock master key.").Flush();
 
     return false;
 }
@@ -394,7 +395,7 @@ auto Symmetric::decrypt(
 
     if (false == plain.has_value()) {
         if (false == unlock(lock, reason)) {
-            LogOutput(OT_METHOD)(__func__)(": Unable to unlock master key.")
+            LogError()(OT_METHOD)(__func__)(": Unable to unlock master key.")
                 .Flush();
 
             return false;
@@ -410,7 +411,7 @@ auto Symmetric::decrypt(
         plaintext);
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to decrypt key.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Unable to decrypt key.").Flush();
 
         return false;
     }
@@ -426,7 +427,7 @@ auto Symmetric::Decrypt(
     auto lock = Lock{lock_};
 
     if (false == bool(plaintext)) {
-        LogOutput(OT_METHOD)(__func__)(": Missing output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing output allocator").Flush();
 
         return false;
     }
@@ -434,7 +435,7 @@ auto Symmetric::Decrypt(
     auto output = plaintext(ciphertext.data().size());
 
     if (false == output.valid(ciphertext.data().size())) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Unable to allocate space for decryption.")
             .Flush();
 
@@ -465,7 +466,7 @@ auto Symmetric::encrypt(
     const bool text) const -> bool
 {
     if (nullptr == input) {
-        LogOutput(OT_METHOD)(__func__)(": Null input.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Null input.").Flush();
 
         return false;
     }
@@ -474,7 +475,7 @@ auto Symmetric::encrypt(
 
     if (false == plain.has_value()) {
         if (false == unlock(lock, reason)) {
-            LogOutput(OT_METHOD)(__func__)(": Unable to unlock master key.")
+            LogError()(OT_METHOD)(__func__)(": Unable to unlock master key.")
                 .Flush();
 
             return false;
@@ -486,17 +487,15 @@ auto Symmetric::encrypt(
     ciphertext.set_version(1);
 
     if (opentxs::crypto::key::symmetric::Algorithm::Error == mode) {
-        ciphertext.set_mode(
-            opentxs::crypto::key::internal::translate(engine_.DefaultMode()));
+        ciphertext.set_mode(translate(engine_.DefaultMode()));
     } else {
-        ciphertext.set_mode(opentxs::crypto::key::internal::translate(mode));
+        ciphertext.set_mode(translate(mode));
     }
 
     if ((0u == ivSize) || (nullptr == iv)) {
         const auto random = [&] {
             auto out = api_.Factory().Secret(0);
-            const auto size = engine_.IvSize(
-                opentxs::crypto::key::internal::translate(ciphertext.mode()));
+            const auto size = engine_.IvSize(translate(ciphertext.mode()));
             out->Randomize(size);
 
             OT_ASSERT(out->size() == size);
@@ -559,7 +558,7 @@ auto Symmetric::Encrypt(
     auto serialized = proto::Ciphertext{};
 
     if (false == Encrypt(plaintext, reason, serialized, attachKey, mode, iv)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to encrypt data.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to encrypt data.").Flush();
 
         return false;
     }
@@ -567,7 +566,7 @@ auto Symmetric::Encrypt(
     auto view = ciphertext(serialized.ByteSizeLong());
     if (false == serialized.SerializeToArray(
                      view.data(), static_cast<int>(view.size()))) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize encrypted data.")
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize encrypted data.")
             .Flush();
 
         return false;
@@ -587,11 +586,9 @@ auto Symmetric::encrypt_key(
 
     OT_ASSERT(encrypted);
 
-    encrypted->set_mode(
-        opentxs::crypto::key::internal::translate(engine_.DefaultMode()));
+    encrypted->set_mode(translate(engine_.DefaultMode()));
     auto blankIV = api_.Factory().Secret(0);
-    blankIV->Randomize(engine_.IvSize(
-        opentxs::crypto::key::internal::translate(encrypted->mode())));
+    blankIV->Randomize(engine_.IvSize(translate(encrypted->mode())));
     encrypted->set_iv(blankIV->data(), blankIV->size());
     encrypted->set_text(false);
     auto key = api_.Factory().Secret(0);
@@ -607,8 +604,7 @@ auto Symmetric::encrypt_key(
         engine_,
         key,
         reader(salt_),
-        engine_.KeySize(
-            opentxs::crypto::key::internal::translate(encrypted->mode())),
+        engine_.KeySize(translate(encrypted->mode())),
         OT_SYMMETRIC_KEY_DEFAULT_OPERATIONS,
         OT_SYMMETRIC_KEY_DEFAULT_DIFFICULTY,
         OT_SYMMETRIC_KEY_DEFAULT_THREADS};
@@ -661,7 +657,8 @@ auto Symmetric::get_password(
             password.Assign(bytes.data(), static_cast<std::size_t>(length));
             result = true;
         } else {
-            LogOutput(OT_METHOD)(__func__)(": Failed to obtain master password")
+            LogError()(OT_METHOD)(__func__)(
+                ": Failed to obtain master password")
                 .Flush();
         }
 
@@ -682,7 +679,7 @@ auto Symmetric::ID(const opentxs::PasswordPrompt& reason) const -> OTIdentifier
 
     if (false == plain.has_value()) {
         if (false == unlock(lock, reason)) {
-            LogOutput(OT_METHOD)(__func__)(": Unable to unlock master key.")
+            LogError()(OT_METHOD)(__func__)(": Unable to unlock master key.")
                 .Flush();
 
             return api_.Factory().Identifier();
@@ -702,7 +699,7 @@ auto Symmetric::RawKey(const opentxs::PasswordPrompt& reason, Secret& output)
 
     if (false == plain.has_value()) {
         if (false == unlock(lock, reason)) {
-            LogOutput(OT_METHOD)(__func__)(": Unable to unlock master key.")
+            LogError()(OT_METHOD)(__func__)(": Unable to unlock master key.")
                 .Flush();
 
             return false;
@@ -726,7 +723,7 @@ auto Symmetric::serialize(const Lock& lock, proto::SymmetricKey& output) const
     OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= key_size_);
 
     output.set_version(version_);
-    output.set_type(opentxs::crypto::key::internal::translate(type_));
+    output.set_type(translate(type_));
     output.set_size(static_cast<std::uint32_t>(key_size_));
     *output.mutable_key() = *encrypted;
 
@@ -761,14 +758,14 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
     }};
 
     if (false == bool(encrypted)) {
-        LogOutput(OT_METHOD)(__func__)(": Master key not loaded.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Master key not loaded.").Flush();
 
         return output;
     }
 
     if (plain.has_value()) {
         if (0 < plain.value()->Bytes().size()) {
-            LogDetail(OT_METHOD)(__func__)(": Already unlocked").Flush();
+            LogDetail()(OT_METHOD)(__func__)(": Already unlocked").Flush();
             output = true;
 
             return output;
@@ -780,7 +777,7 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
 
         // Allocate space for plaintext (same size as ciphertext)
         if (!allocate(lock, encrypted->data().size(), plain.value())) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Unable to allocate space for plaintext master key.")
                 .Flush();
 
@@ -793,7 +790,7 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
     auto key = api_.Factory().Secret(0);
 
     if (false == get_password(lock, reason, key)) {
-        LogOutput(OT_METHOD)(__func__)(": Unable to obtain master password.")
+        LogError()(OT_METHOD)(__func__)(": Unable to obtain master password.")
             .Flush();
 
         return output;
@@ -804,8 +801,7 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
         engine_,
         key,
         reader(salt_),
-        engine_.KeySize(
-            opentxs::crypto::key::internal::translate(encrypted->mode())),
+        engine_.KeySize(translate(encrypted->mode())),
         OT_SYMMETRIC_KEY_DEFAULT_OPERATIONS,
         OT_SYMMETRIC_KEY_DEFAULT_DIFFICULTY,
         OT_SYMMETRIC_KEY_DEFAULT_THREADS};
@@ -820,9 +816,9 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
         reinterpret_cast<std::uint8_t*>(plain.value()->data()));
 
     if (output) {
-        LogDetail(OT_METHOD)(__func__)(": Key unlocked").Flush();
+        LogDetail()(OT_METHOD)(__func__)(": Key unlocked").Flush();
     } else {
-        LogDetail(OT_METHOD)(__func__)(": Failed to unlock key").Flush();
+        LogDetail()(OT_METHOD)(__func__)(": Failed to unlock key").Flush();
     }
 
     return output;

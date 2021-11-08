@@ -19,13 +19,11 @@
 #include "core/contract/Signable.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/contract/Contract.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Types.hpp"
@@ -38,6 +36,8 @@
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/protobuf/verify/ServerContract.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::contract::implementation::Server::"
 
@@ -45,14 +45,14 @@ namespace opentxs
 {
 using ReturnType = contract::implementation::Server;
 
-auto Factory::ServerContract(const api::Core& api) noexcept
+auto Factory::ServerContract(const api::Session& api) noexcept
     -> std::unique_ptr<contract::Server>
 {
     return std::make_unique<contract::blank::Server>(api);
 }
 
 auto Factory::ServerContract(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const std::list<Endpoint>& endpoints,
     const std::string& terms,
@@ -92,27 +92,28 @@ auto Factory::ServerContract(
         Lock lock(contract.lock_);
 
         if (false == contract.update_signature(lock, reason)) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to sign contract").Flush();
+            LogError()(OT_METHOD)(__func__)(": Failed to sign contract")
+                .Flush();
 
             return nullptr;
         }
 
         if (!contract.validate(lock)) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid contract").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid contract").Flush();
 
             return nullptr;
         }
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return {};
     }
 }
 
 auto Factory::ServerContract(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::ServerContract& serialized) noexcept
     -> std::unique_ptr<contract::Server>
@@ -143,7 +144,7 @@ const VersionNumber Server::DefaultVersion{2};
 namespace opentxs::contract::implementation
 {
 Server::Server(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const VersionNumber version,
     const std::string& terms,
@@ -169,7 +170,7 @@ Server::Server(
 }
 
 Server::Server(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::ServerContract& serialized)
     : Server(
@@ -221,8 +222,8 @@ auto Server::extract_endpoints(const proto::ServerContract& serialized) noexcept
         // WARNING: preserve the order of this list, or signature verfication
         // will fail!
         output.emplace_back(contract::Server::Endpoint{
-            core::internal::translate(listen.type()),
-            contract::internal::translate(listen.protocol()),
+            translate(listen.type()),
+            translate(listen.protocol()),
             listen.host(),
             listen.port(),
             listen.version()});
@@ -308,8 +309,8 @@ auto Server::IDVersion(const Lock& lock) const -> proto::ServerContract
         const auto& url = std::get<2>(endpoint);
         const auto& port = std::get<3>(endpoint);
         addr.set_version(version);
-        addr.set_type(core::internal::translate(type));
-        addr.set_protocol(contract::internal::translate(protocol));
+        addr.set_type(translate(type));
+        addr.set_protocol(translate(protocol));
         addr.set_host(url);
         addr.set_port(port);
     }
@@ -347,7 +348,8 @@ auto Server::Serialize(AllocateOutput destination, bool includeNym) const
 {
     auto serialized = proto::ServerContract{};
     if (false == Serialize(serialized, includeNym)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize server.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize server.")
+            .Flush();
         return false;
     }
 
@@ -414,7 +416,8 @@ auto Server::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogOutput(OT_METHOD)(__func__)(": failed to create signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": failed to create signature.")
+            .Flush();
     }
 
     return success;
@@ -427,7 +430,7 @@ auto Server::validate(const Lock& lock) const -> bool
     if (nym_) { validNym = nym_->VerifyPseudonym(); }
 
     if (!validNym) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid nym.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid nym.").Flush();
 
         return false;
     }
@@ -435,13 +438,13 @@ auto Server::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 > signatures_.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Missing signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing signature.").Flush();
 
         return false;
     }
@@ -452,7 +455,7 @@ auto Server::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid signature.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid signature.").Flush();
 
         return false;
     }

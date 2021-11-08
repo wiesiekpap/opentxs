@@ -14,15 +14,17 @@
 #include <string>
 
 #include "core/Amount.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "internal/api/session/Client.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/otx/client/OTPayment.hpp"
+#include "internal/otx/smartcontract/OTSmartContract.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
@@ -30,9 +32,9 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/recurring/OTPaymentPlan.hpp"
-#include "opentxs/core/script/OTSmartContract.hpp"
-#include "opentxs/ext/OTPayment.hpp"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::OTAPI_Func::"
 
@@ -87,7 +89,7 @@ const std::map<OTAPI_Func_Type, bool> OTAPI_Func::type_type_{
 OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     std::recursive_mutex& apiLock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const OTAPI_Func_Type type)
@@ -129,8 +131,10 @@ OTAPI_Func::OTAPI_Func(
     , nRequestNum_(-1)
     , nTransNumsNeeded_(0)
     , api_(api)
-    , context_editor_(
-          api_.Wallet().mutable_ServerContext(nymID, serverID, reason))
+    , context_editor_(api_.Wallet().Internal().mutable_ServerContext(
+          nymID,
+          serverID,
+          reason))
     , context_(context_editor_.get())
     , last_attempt_()
     , is_transaction_(type_type_.at(type))
@@ -151,7 +155,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
@@ -169,7 +173,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const proto::UnitDefinition& unitDefinition,
@@ -182,7 +186,7 @@ OTAPI_Func::OTAPI_Func(
             label_ = label;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -194,7 +198,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const identifier::Nym& nymID2)
@@ -208,7 +212,7 @@ OTAPI_Func::OTAPI_Func(
             accountID_ = nymID2;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -220,7 +224,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const Identifier& recipientID,
@@ -237,7 +241,7 @@ OTAPI_Func::OTAPI_Func(
             paymentPlan_.reset(paymentPlan.release());
         } break;
         default: {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -249,7 +253,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const identifier::Nym& nymID2,
@@ -273,14 +277,14 @@ OTAPI_Func::OTAPI_Func(
                 transactionNumber_ =
                     int64val.Internal().amount_.convert_to<std::int64_t>();
             } catch (const std::exception& e) {
-                LogNormal(OT_METHOD)(__func__)(
+                LogConsole()(OT_METHOD)(__func__)(
                     ": Error setting transaction number. ")(e.what())
                     .Flush();
                 OT_FAIL
             }
         } break;
         default: {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -292,7 +296,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const TransactionNumber& transactionNumber,
@@ -304,11 +308,11 @@ OTAPI_Func::OTAPI_Func(
         "Warning: Empty std::string passed to OTAPI_Func.OTAPI_Func() as: ";
 
     if (!VerifyStringVal(clause)) {
-        LogOutput(OT_METHOD)(__func__)(": clause.").Flush();
+        LogError()(OT_METHOD)(__func__)(": clause.").Flush();
     }
 
     if (!VerifyStringVal(parameter)) {
-        LogOutput(OT_METHOD)(__func__)(": parameter.").Flush();
+        LogError()(OT_METHOD)(__func__)(": parameter.").Flush();
     }
 
     nTransNumsNeeded_ = 1;
@@ -318,7 +322,7 @@ OTAPI_Func::OTAPI_Func(
         clause_ = clause;
         parameter_ = parameter;
     } else {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
             "ERROR!!!!!!")
             .Flush();
@@ -330,7 +334,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const Identifier& accountID,
@@ -342,7 +346,7 @@ OTAPI_Func::OTAPI_Func(
         "Warning: Empty std::string passed to OTAPI_Func.OTAPI_Func() as: ";
 
     if (!VerifyStringVal(agentName)) {
-        LogOutput(OT_METHOD)(__func__)(": agentName.").Flush();
+        LogError()(OT_METHOD)(__func__)(": agentName.").Flush();
     }
 
     nTransNumsNeeded_ = 1;
@@ -355,12 +359,13 @@ OTAPI_Func::OTAPI_Func(
                                  // on the contract.;
         contract_.reset(contract.release());  // the smart contract itself.;
 
-        std::int32_t nNumsNeeded = api_.Exec().SmartContract_CountNumsNeeded(
-            String::Factory(*contract_)->Get(), agentName_);
+        std::int32_t nNumsNeeded =
+            api_.InternalClient().Exec().SmartContract_CountNumsNeeded(
+                String::Factory(*contract_)->Get(), agentName_);
 
         if (nNumsNeeded > 0) { nTransNumsNeeded_ = nNumsNeeded; }
     } else {
-        LogNormal(OT_METHOD)(__func__)(
+        LogConsole()(OT_METHOD)(__func__)(
             ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
             "ERROR!!!!!!")
             .Flush();
@@ -372,7 +377,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const identifier::Nym& nymID2,
@@ -395,7 +400,7 @@ OTAPI_Func::OTAPI_Func(
             recipientID_ = nymID2;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
                 "ERROR!!!!!!")
                 .Flush();
@@ -408,7 +413,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const identifier::UnitDefinition& instrumentDefinitionID,
@@ -434,7 +439,7 @@ OTAPI_Func::OTAPI_Func(
     const PasswordPrompt& reason,
     OTAPI_Func_Type theType,
     std::recursive_mutex& apilock,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const identifier::Server& serverID,
     const Identifier& assetAccountID,
@@ -465,7 +470,7 @@ OTAPI_Func::OTAPI_Func(
             activationPrice_ = activationPrice;
         } break;
         default: {
-            LogNormal(OT_METHOD)(__func__)(
+            LogConsole()(OT_METHOD)(__func__)(
                 ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
@@ -475,7 +480,7 @@ OTAPI_Func::OTAPI_Func(
 
 auto OTAPI_Func::Run(const std::size_t) -> std::string
 {
-    LogNormal(OT_METHOD)(__func__)(": Not implemented").Flush();
+    LogConsole()(OT_METHOD)(__func__)(": Not implemented").Flush();
 
     return {};
 }
@@ -494,23 +499,19 @@ void OTAPI_Func::run()
 
         switch (type_) {
             case DELETE_NYM: {
-                last_attempt_ = api_.OTAPI().unregisterNym(context_);
-            } break;
-            case GET_NYM_MARKET_OFFERS: {
-                last_attempt_ = api_.OTAPI().getNymMarketOffers(context_);
-            } break;
-            case DELETE_ASSET_ACCT: {
                 last_attempt_ =
-                    api_.OTAPI().deleteAssetAccount(context_, accountID_);
-            } break;
-            case ACTIVATE_SMART_CONTRACT: {
+       api_.InternalClient().OTAPI().unregisterNym(context_); } break; case
+       GET_NYM_MARKET_OFFERS: { last_attempt_ =
+       api_.InternalClient().OTAPI().getNymMarketOffers(context_); } break; case
+       DELETE_ASSET_ACCT: { last_attempt_ =
+                    api_.InternalClient().OTAPI().deleteAssetAccount(context_,
+       accountID_); } break; case ACTIVATE_SMART_CONTRACT: {
                 OT_ASSERT(contract_)
 
-                last_attempt_ = api_.OTAPI().activateSmartContract(
-                    context_, String::Factory(*contract_));
-            } break;
-            case TRIGGER_CLAUSE: {
-                last_attempt_ = api_.OTAPI().triggerClause(
+                last_attempt_ =
+       api_.InternalClient().OTAPI().activateSmartContract( context_,
+       String::Factory(*contract_)); } break; case TRIGGER_CLAUSE: {
+                last_attempt_ = api_.InternalClient().OTAPI().triggerClause(
                     context_,
                     transactionNumber_,
                     String::Factory(clause_.c_str()),
@@ -518,7 +519,7 @@ void OTAPI_Func::run()
                                                : String::Factory());
             } break;
             case EXCHANGE_BASKET: {
-                last_attempt_ = api_.OTAPI().exchangeBasket(
+                last_attempt_ = api_.InternalClient().OTAPI().exchangeBasket(
                     context_,
                     instrumentDefinitionID_,
                     String::Factory(basketID_),
@@ -526,24 +527,22 @@ void OTAPI_Func::run()
             } break;
             case ISSUE_BASKET: {
                 last_attempt_ =
-                    api_.OTAPI().issueBasket(context_, unitDefinition_, label_);
-            } break;
-            case KILL_MARKET_OFFER: {
-                last_attempt_ = api_.OTAPI().cancelCronItem(
+                    api_.InternalClient().OTAPI().issueBasket(context_,
+       unitDefinition_, label_); } break; case KILL_MARKET_OFFER: {
+                last_attempt_ = api_.InternalClient().OTAPI().cancelCronItem(
                     context_, accountID_, transactionNumber_);
             } break;
             case KILL_PAYMENT_PLAN: {
-                last_attempt_ = api_.OTAPI().cancelCronItem(
+                last_attempt_ = api_.InternalClient().OTAPI().cancelCronItem(
                     context_, accountID_, transactionNumber_);
             } break;
             case DEPOSIT_PAYMENT_PLAN: {
                 OT_ASSERT(paymentPlan_)
 
-                last_attempt_ = api_.OTAPI().depositPaymentPlan(
-                    context_, String::Factory(*paymentPlan_));
-            } break;
-            case WITHDRAW_VOUCHER: {
-                last_attempt_ = api_.OTAPI().withdrawVoucher(
+                last_attempt_ =
+       api_.InternalClient().OTAPI().depositPaymentPlan( context_,
+       String::Factory(*paymentPlan_)); } break; case WITHDRAW_VOUCHER: {
+                last_attempt_ = api_.InternalClient().OTAPI().withdrawVoucher(
                     context_,
                     accountID_,
                     recipientID_,
@@ -551,7 +550,7 @@ void OTAPI_Func::run()
                     amount_);
             } break;
             case PAY_DIVIDEND: {
-                last_attempt_ = api_.OTAPI().payDividend(
+                last_attempt_ = api_.InternalClient().OTAPI().payDividend(
                     context_,
                     accountID_,
                     instrumentDefinitionID_,
@@ -559,19 +558,15 @@ void OTAPI_Func::run()
                     amount_);
             } break;
             case GET_MARKET_LIST: {
-                last_attempt_ = api_.OTAPI().getMarketList(context_);
-            } break;
-            case GET_MARKET_OFFERS: {
                 last_attempt_ =
-                    api_.OTAPI().getMarketOffers(context_, marketID_, depth_);
-            } break;
-            case GET_MARKET_RECENT_TRADES: {
+       api_.InternalClient().OTAPI().getMarketList(context_); } break; case
+       GET_MARKET_OFFERS: { last_attempt_ =
+                    api_.InternalClient().OTAPI().getMarketOffers(context_,
+       marketID_, depth_); } break; case GET_MARKET_RECENT_TRADES: {
                 last_attempt_ =
-                    api_.OTAPI().getMarketRecentTrades(context_, marketID_);
-            } break;
-            case CREATE_MARKET_OFFER: {
-                const auto ASSET_ACCT_ID = Identifier::Factory(accountID_);
-                const auto CURRENCY_ACCT_ID =
+                    api_.InternalClient().OTAPI().getMarketRecentTrades(context_,
+       marketID_); } break; case CREATE_MARKET_OFFER: { const auto ASSET_ACCT_ID
+       = Identifier::Factory(accountID_); const auto CURRENCY_ACCT_ID =
                     Identifier::Factory(currencyAccountID_);
                 const std::int64_t MARKET_SCALE = scale_;
                 const std::int64_t MINIMUM_INCREMENT = increment_;
@@ -592,7 +587,7 @@ void OTAPI_Func::run()
                 if (!STOP_SIGN.empty() &&
                     ((ACTIVATION_PRICE == 0) ||
                      ((cStopSign != '<') && (cStopSign != '>')))) {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": If STOP_SIGN is provided, it must be < "
                         "or >, and in that case ACTIVATION_PRICE "
                         "must be non-zero.")
@@ -602,18 +597,18 @@ void OTAPI_Func::run()
                 }
 
                 const auto str_asset_notary_id =
-                    api_.Exec().GetAccountWallet_NotaryID(accountID_->str());
+                    api_.InternalClient().Exec().GetAccountWallet_NotaryID(accountID_->str());
                 const auto str_currency_notary_id =
-                    api_.Exec().GetAccountWallet_NotaryID(
+                    api_.InternalClient().Exec().GetAccountWallet_NotaryID(
                         currencyAccountID_->str());
                 const auto str_asset_nym_id =
-                    api_.Exec().GetAccountWallet_NymID(accountID_->str());
+                    api_.InternalClient().Exec().GetAccountWallet_NymID(accountID_->str());
                 const auto str_currency_nym_id =
-                    api_.Exec().GetAccountWallet_NymID(currencyAccountID_->str());
+                    api_.InternalClient().Exec().GetAccountWallet_NymID(currencyAccountID_->str());
 
                 if (str_asset_notary_id.empty() ||
        str_currency_notary_id.empty() || str_asset_nym_id.empty() ||
-       str_currency_nym_id.empty()) { LogOutput(OT_METHOD)(__func__)(
+       str_currency_nym_id.empty()) { LogError()(OT_METHOD)(__func__)(
                         ": Failed determining server or nym ID for "
                         "either asset or currency account.")
                         .Flush();
@@ -621,7 +616,7 @@ void OTAPI_Func::run()
                     return;
                 }
 
-                last_attempt_ = api_.OTAPI().issueMarketOffer(
+                last_attempt_ = api_.InternalClient().OTAPI().issueMarketOffer(
                     context_,
                     ASSET_ACCT_ID,
                     CURRENCY_ACCT_ID,
@@ -636,10 +631,9 @@ void OTAPI_Func::run()
             } break;
             case ADJUST_USAGE_CREDITS: {
                 last_attempt_ =
-                    api_.OTAPI().usageCredits(context_, targetID_, adjustment_);
-            } break;
-            default: {
-                LogOutput(OT_METHOD)(__func__)(": Error: unhandled function
+                    api_.InternalClient().OTAPI().usageCredits(context_,
+       targetID_, adjustment_); } break; default: {
+                LogError()(OT_METHOD)(__func__)(": Error: unhandled function
        " "type: ")(type_)(".") .Flush();
 
                 OT_FAIL;

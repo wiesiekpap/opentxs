@@ -19,10 +19,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace identifier
@@ -65,7 +65,7 @@ public:
 
     TransferBalanceItem(
         const AccountActivityInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const AccountActivityRowID& rowID,
         const AccountActivitySortKey& sortKey,
         CustomData& custom,

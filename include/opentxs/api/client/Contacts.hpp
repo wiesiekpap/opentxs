@@ -6,16 +6,15 @@
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/ClaimType.hpp"
 
-#ifndef OPENTXS_API_CLIENT_CONTACTS_HPP
-#define OPENTXS_API_CLIENT_CONTACTS_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Types.hpp"
 
 namespace opentxs
@@ -93,4 +92,3 @@ private:
 }  // namespace client
 }  // namespace api
 }  // namespace opentxs
-#endif

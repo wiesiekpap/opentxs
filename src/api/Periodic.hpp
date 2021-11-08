@@ -7,13 +7,16 @@
 
 #include <atomic>
 #include <chrono>
+#include <functional>
 #include <map>
 #include <mutex>
+#include <thread>
 #include <thread>
 #include <tuple>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Periodic.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {

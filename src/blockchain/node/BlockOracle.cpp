@@ -16,23 +16,24 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::implementation::BlockOracle::"
 
 namespace opentxs::factory
 {
 auto BlockOracle(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Network& node,
     const blockchain::node::internal::HeaderOracle& header,
@@ -51,7 +52,7 @@ auto BlockOracle(
 namespace opentxs::blockchain::node::implementation
 {
 BlockOracle::BlockOracle(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::internal::Blockchain& network,
     const internal::Network& node,
     const internal::HeaderOracle& header,
@@ -139,7 +140,7 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -157,7 +158,7 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
     switch (task) {
         case Task::ProcessBlock: {
             if (2 > body.size()) {
-                LogOutput(OT_METHOD)(__func__)(": No block").Flush();
+                LogError()(OT_METHOD)(__func__)(": No block").Flush();
 
                 OT_FAIL;
             }
@@ -172,7 +173,7 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }

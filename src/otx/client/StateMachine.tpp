@@ -7,7 +7,7 @@
 
 #include "StateMachine.hpp"  // IWYU pragma: associated
 
-#include "opentxs/api/Wallet.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 
 namespace opentxs::otx::client::implementation
 {

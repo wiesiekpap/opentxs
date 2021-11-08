@@ -21,24 +21,24 @@
 #include <vector>
 
 #include "Helpers.hpp"
-#include "internal/api/client/Client.hpp"
-#include "opentxs/SharedPimpl.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/contact/Contact.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
@@ -59,6 +59,8 @@
 #include "opentxs/ui/qt/BlockchainSelection.hpp"
 #endif  // OT_BLOCKCHAIN
 #endif  // OT_QT
+#include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/Helpers.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
@@ -414,7 +416,7 @@ TEST_F(Test_BlockchainActivity, setup_blockchain_account)
     EXPECT_FALSE(account_1_id().empty());
 
     const auto& account =
-        api_.Blockchain().HDSubaccount(nym_1_id(), account_1_id());
+        api_.Crypto().Blockchain().HDSubaccount(nym_1_id(), account_1_id());
     const auto indexOne =
         account.Reserve(Subchain::External, reason_, contact_5_id());
     const auto indexTwo = account.Reserve(Subchain::External, reason_);
@@ -662,7 +664,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned)
     activity_thread_2_.expected_ += 1;
     activity_thread_3_.expected_ += 0;
     const auto& account =
-        api_.Blockchain().HDSubaccount(nym_1_id(), account_1_id());
+        api_.Crypto().Blockchain().HDSubaccount(nym_1_id(), account_1_id());
     const auto& keyOne =
         account.BalanceElement(Subchain::External, first_index_);
     const auto& keyTwo =
@@ -681,9 +683,9 @@ TEST_F(Test_BlockchainActivity, receive_assigned)
     txid_1_ = tx1->ID().asHex();
     txid_2_ = tx2->ID().asHex();
 
-    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
+    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx1, reason_));
-    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
+    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx2, reason_));
 }
 
@@ -975,7 +977,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_activity_thread_2)
 //    activity_thread_3_.expected_ += 1;
 //
 //    const auto& account =
-//        api_.Blockchain().HDSubaccount(nym_1_id(), account_1_id());
+//        api_.Crypto().Blockchain().HDSubaccount(nym_1_id(), account_1_id());
 //    const auto& keyOne = account.BalanceElement(
 //        Subchain::External, first_index_);  // 0.0033045 ₿
 //    const auto& keyTwo = account.BalanceElement(
@@ -984,8 +986,9 @@ TEST_F(Test_BlockchainActivity, receive_assigned_activity_thread_2)
 //        Subchain::External, third_index_);  // 0.0033045 ₿
 //    const auto& keyFour =
 //        account.BalanceElement(Subchain::External, fourth_index_);
-//    const auto tx1 = api_.Blockchain().LoadTransactionBitcoin(txid_1_);
-//    const auto tx2 = api_.Blockchain().LoadTransactionBitcoin(txid_2_);
+//    const auto tx1 =
+//    api_.Crypto().Blockchain().LoadTransactionBitcoin(txid_1_); const auto tx2
+//    = api_.Crypto().Blockchain().LoadTransactionBitcoin(txid_2_);
 //
 //    ASSERT_TRUE(tx1);
 //    ASSERT_TRUE(tx2);
@@ -994,15 +997,18 @@ TEST_F(Test_BlockchainActivity, receive_assigned_activity_thread_2)
 //    auto input2 = ot::proto::BlockchainTransactionOutput{};
 //    auto input3 = ot::proto::BlockchainTransactionOutput{};
 //
-//    ASSERT_TRUE(tx1->Outputs().at(1).Serialize(api_.Blockchain(), input1));
-//    ASSERT_TRUE(tx1->Outputs().at(0).Serialize(api_.Blockchain(), input2));
-//    ASSERT_TRUE(tx2->Outputs().at(0).Serialize(api_.Blockchain(), input3));
+//    ASSERT_TRUE(tx1->Outputs().at(1).Serialize(api_.Crypto().Blockchain(),
+//    input1));
+//    ASSERT_TRUE(tx1->Outputs().at(0).Serialize(api_.Crypto().Blockchain(),
+//    input2));
+//    ASSERT_TRUE(tx2->Outputs().at(0).Serialize(api_.Crypto().Blockchain(),
+//    input3));
 //
 //    input2.set_index(18);
 //    input3.set_index(27);
 //
 //    const auto address =
-//        api_.Blockchain().DecodeAddress("17VZNX1SN5NtKa8UQFxwQbFeFc3iqRYhem");
+//        api_.Crypto().Blockchain().DecodeAddress("17VZNX1SN5NtKa8UQFxwQbFeFc3iqRYhem");
 //    const auto tx3 = get_test_transaction(
 //        keyTwo,
 //        keyOne,
@@ -1018,7 +1024,7 @@ TEST_F(Test_BlockchainActivity, receive_assigned_activity_thread_2)
 //
 //    txid_3_ = tx3->ID().asHex();
 //
-//    ASSERT_TRUE(api_.Blockchain().ProcessTransaction(
+//    ASSERT_TRUE(api_.Crypto().Blockchain().ProcessTransaction(
 //        ot::blockchain::Type::Bitcoin, *tx3, reason_));
 //}
 
@@ -1334,7 +1340,7 @@ TEST_F(Test_BlockchainActivity, receive_unassigned)
     activity_thread_2_.expected_ += 0;
     activity_thread_3_.expected_ += 0;
     const auto& account =
-        api_.Blockchain().HDSubaccount(nym_1_id(), account_1_id());
+        api_.Crypto().Blockchain().HDSubaccount(nym_1_id(), account_1_id());
     const auto& keyFive =
         account.BalanceElement(Subchain::External, fifth_index_);
     const auto& keySix =
@@ -1346,7 +1352,7 @@ TEST_F(Test_BlockchainActivity, receive_unassigned)
 
     txid_4_ = tx->ID().asHex();
 
-    ASSERT_TRUE(api_.Blockchain().Internal().ProcessTransaction(
+    ASSERT_TRUE(api_.Crypto().Blockchain().Internal().ProcessTransaction(
         ot::blockchain::Type::Bitcoin, *tx, reason_));
 }
 

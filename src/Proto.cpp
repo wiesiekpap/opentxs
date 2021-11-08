@@ -5,15 +5,18 @@
 
 #include "Proto.tpp"  // IWYU pragma: associated
 
-#include <google/protobuf/repeated_field.h>
+#include <google/protobuf/repeated_field.h>  // IWYU pragma: keep
 #include <limits>
+
+#include "Proto.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 template class google::protobuf::RepeatedField<unsigned int>;
 template class google::protobuf::RepeatedField<int>;
 template class google::protobuf::RepeatedField<unsigned long>;
 
 // TODO I have no idea why those lines above are necessary to fix linking errors
-// but they are.
+// on Windows but they are.
 
 namespace opentxs
 {

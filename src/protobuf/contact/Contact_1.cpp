@@ -12,8 +12,8 @@
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Contact.pb.h"
-#include "opentxs/protobuf/ContactData.pb.h"
-#include "opentxs/protobuf/verify/ContactData.hpp"
+#include "opentxs/protobuf/ContactData.pb.h"        // IWYU pragma: keep
+#include "opentxs/protobuf/verify/ContactData.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "protobuf/Check.hpp"
 

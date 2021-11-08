@@ -19,18 +19,16 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -41,6 +39,8 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
 
@@ -69,7 +69,7 @@ public:
     auto Listen(const p2p::Address& address) const noexcept -> bool final
     {
         if (p2p::Network::zmq != address.Type()) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid address").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid address").Flush();
 
             return false;
         }
@@ -86,7 +86,7 @@ public:
     auto Shutdown() noexcept -> void final {}
 
     ZMQIncomingConnectionManager(
-        const api::Core& api,
+        const api::Session& api,
         PeerManager::Peers& parent) noexcept
         : IncomingConnectionManager(parent)
         , api_(api)
@@ -114,7 +114,7 @@ private:
     using Peers = std::map<int, PeerData>;
     using PeerIndex = std::map<ConnectionID, int>;
 
-    const api::Core& api_;
+    const api::Session& api_;
     mutable std::mutex lock_;
     mutable Peers peers_;
     mutable PeerIndex external_index_;
@@ -135,7 +135,7 @@ private:
         const auto& header = message.Header();
 
         if (0 == header.size()) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid header").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid header").Flush();
 
             return;
         }
@@ -170,7 +170,7 @@ private:
                 true);
 
             if (false == internal_->Start(zmq)) {
-                LogOutput(OT_METHOD)(__func__)(
+                LogError()(OT_METHOD)(__func__)(
                     ": Failed to listen to internal endpoint")
                     .Flush();
 
@@ -180,7 +180,7 @@ private:
             const auto peerID = parent_.ConstructPeer(std::move(address));
 
             if (-1 == peerID) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to instantiate peer")
+                LogError()(OT_METHOD)(__func__)(": Failed to instantiate peer")
                     .Flush();
 
                 return;
@@ -291,7 +291,7 @@ private:
 };
 
 auto PeerManager::IncomingConnectionManager::ZMQ(
-    const api::Core& api,
+    const api::Session& api,
     PeerManager::Peers& parent) noexcept
     -> std::unique_ptr<IncomingConnectionManager>
 {

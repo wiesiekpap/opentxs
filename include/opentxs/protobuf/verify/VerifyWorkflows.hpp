@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_PROTOBUF_VERIFYWORKFLOWS_HPP
-#define OPENTXS_PROTOBUF_VERIFYWORKFLOWS_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -23,7 +22,9 @@
 
 #include <cstdint>
 #include <map>
+#include <set>
 #include <tuple>
+#include <utility>
 
 namespace opentxs
 {
@@ -46,4 +47,3 @@ auto PaymentWorkflowAllowedPaymentEvent() noexcept -> const VersionMap&;
 auto PaymentWorkflowAllowedState() noexcept -> const WorkflowStateMap&;
 }  // namespace proto
 }  // namespace opentxs
-#endif  // OPENTXS_PROTOBUF_VERIFYWORKFLOWS_HPP

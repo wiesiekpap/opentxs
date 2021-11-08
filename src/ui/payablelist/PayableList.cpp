@@ -12,20 +12,20 @@
 #include <memory>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/List.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::PayableList::"
@@ -33,7 +33,7 @@
 namespace opentxs::factory
 {
 auto PayableListModel(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const core::UnitType& currency,
     const SimpleCallback& cb) noexcept
@@ -48,7 +48,7 @@ auto PayableListModel(
 namespace opentxs::ui::implementation
 {
 PayableList::PayableList(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const core::UnitType& currency,
     const SimpleCallback& cb) noexcept
@@ -83,7 +83,7 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -116,7 +116,7 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogOutput(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -132,7 +132,7 @@ auto PayableList::process_contact(
     const auto contact = Widget::api_.Contacts().Contact(id);
 
     if (false == bool(contact)) {
-        LogOutput(OT_METHOD)(__func__)(": Error: Contact ")(
+        LogError()(OT_METHOD)(__func__)(": Error: Contact ")(
             id)(" can not be loaded.")
             .Flush();
 
@@ -150,7 +150,7 @@ auto PayableList::process_contact(
         auto custom = CustomData{paymentCode.release()};
         add_item(id, key, custom);
     } else {
-        LogDetail(OT_METHOD)(__func__)(": Skipping unpayable contact ")(id)
+        LogDetail()(OT_METHOD)(__func__)(": Skipping unpayable contact ")(id)
             .Flush();
     }
 }
@@ -191,7 +191,8 @@ auto PayableList::process_nym(const Message& message) noexcept -> void
 auto PayableList::startup() noexcept -> void
 {
     const auto contacts = Widget::api_.Contacts().ContactList();
-    LogDetail(OT_METHOD)(__func__)(": Loading ")(contacts.size())(" contacts.")
+    LogDetail()(OT_METHOD)(__func__)(": Loading ")(contacts.size())(
+        " contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {

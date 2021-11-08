@@ -5,7 +5,6 @@
 
 #include "opentxs/protobuf/verify/AddClaim.hpp"  // IWYU pragma: associated
 
-#include "Proto.hpp"
 #include "opentxs/protobuf/AddClaim.pb.h"
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Contact.hpp"

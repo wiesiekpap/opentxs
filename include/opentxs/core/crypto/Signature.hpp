@@ -3,19 +3,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_CRYPTO_SIGNATURE_HPP
-#define OPENTXS_CORE_CRYPTO_SIGNATURE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 class OTSignatureMetadata;
@@ -29,7 +28,7 @@ namespace opentxs
 class OPENTXS_EXPORT Signature : virtual public Armored
 {
 public:
-    static auto Factory(const api::Core& api) -> Pimpl<opentxs::Signature>;
+    static auto Factory(const api::Session& api) -> Pimpl<opentxs::Signature>;
 
     virtual auto getMetaData() const -> const OTSignatureMetadata& = 0;
 
@@ -47,4 +46,3 @@ private:
     auto operator=(Signature&&) -> Signature& = delete;
 };
 }  // namespace opentxs
-#endif

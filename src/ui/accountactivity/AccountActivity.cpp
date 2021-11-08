@@ -8,17 +8,16 @@
 #include "ui/accountactivity/AccountActivity.hpp"  // IWYU pragma: associated
 
 #include <future>
-#include <memory>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Work.hpp"
 
 // #define OT_METHOD "opentxs::ui::implementation::AccountActivity::"
@@ -26,7 +25,7 @@
 namespace opentxs::ui::implementation
 {
 AccountActivity::AccountActivity(
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const AccountType type,

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "internal/api/session/Wallet.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Cheque.hpp"
@@ -19,10 +20,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace server
+namespace session
 {
-class Manager;
-}  // namespace server
+class Notary;
+}  // namespace session
 }  // namespace api
 
 namespace blind
@@ -110,7 +111,7 @@ private:
 
     Server& server_;
     const PasswordPrompt& reason_;
-    const opentxs::api::server::Manager& manager_;
+    const opentxs::api::session::Notary& manager_;
     OTZMQPushSocket notification_socket_;
 
     void AddHashesToTransaction(
@@ -297,7 +298,7 @@ private:
     Notary(
         Server& server,
         const PasswordPrompt& reason,
-        const opentxs::api::server::Manager& manager);
+        const opentxs::api::session::Notary& manager);
     Notary() = delete;
     Notary(const Notary&) = delete;
     Notary(Notary&&) = delete;

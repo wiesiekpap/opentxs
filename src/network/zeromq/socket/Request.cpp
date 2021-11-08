@@ -14,13 +14,14 @@
 #include <thread>
 
 #include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Request>;
 
@@ -64,13 +65,13 @@ auto Request::send_request(zeromq::Message& request) const noexcept
     auto& reply = output.second;
 
     if (false == send_message(lock, request)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to deliver message.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to deliver message.").Flush();
 
         return output;
     }
 
     if (false == wait(lock)) {
-        LogVerbose(OT_METHOD)(__func__)(": Receive timeout.").Flush();
+        LogVerbose()(OT_METHOD)(__func__)(": Receive timeout.").Flush();
         status = opentxs::SendResult::TIMEOUT;
 
         return output;
@@ -79,7 +80,7 @@ auto Request::send_request(zeromq::Message& request) const noexcept
     if (receive_message(lock, reply)) {
         status = opentxs::SendResult::VALID_REPLY;
     } else {
-        LogOutput(OT_METHOD)(__func__)(": Failed to receive reply.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Failed to receive reply.").Flush();
     }
 
     return output;
@@ -104,7 +105,7 @@ auto Request::wait(const Lock& lock) const noexcept -> bool
         const auto events = zmq_poll(poll, 1, POLL_MILLISECONDS);
 
         if (0 == events) {
-            LogVerbose(OT_METHOD)(__func__)(": No messages.").Flush();
+            LogVerbose()(OT_METHOD)(__func__)(": No messages.").Flush();
 
             const auto now = Clock::now();
 
@@ -118,7 +119,7 @@ auto Request::wait(const Lock& lock) const noexcept -> bool
 
         if (0 > events) {
             const auto error = zmq_errno();
-            LogOutput(OT_METHOD)(__func__)(": Poll error: ")(
+            LogError()(OT_METHOD)(__func__)(": Poll error: ")(
                 zmq_strerror(error))(".")
                 .Flush();
 

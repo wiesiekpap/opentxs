@@ -14,10 +14,13 @@
 #include <string>
 #include <vector>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs::blockchain::download
 {
@@ -62,7 +65,7 @@ public:
         auto expect{State::Downloading};
 
         if (false == state_.compare_exchange_strong(expect, State::Update)) {
-            LogVerbose(log_)(" download job ")(id_)(" for block ")(
+            LogVerbose()(log_)(" download job ")(id_)(" for block ")(
                 position_.second->asHex())(" at height ")(position_.first)(
                 " failed state check")
                 .Flush();
@@ -71,7 +74,7 @@ public:
         }
 
         if (check.has_value() && (check.value() != extra_)) {
-            LogVerbose(log_)(" download job ")(id_)(" for block ")(
+            LogVerbose()(log_)(" download job ")(id_)(" for block ")(
                 position_.second->asHex())(" at height ")(position_.first)(
                 " failed metadata check")
                 .Flush();
@@ -83,12 +86,12 @@ public:
         try {
             download_.set_value(std::move(data));
             state_.store(State::Downloaded);
-            LogTrace(log_)(" download job ")(id_)(" for block ")(
+            LogTrace()(log_)(" download job ")(id_)(" for block ")(
                 position_.second->asHex())(" at height ")(position_.first)(
                 " completed")
                 .Flush();
         } catch (const std::exception& e) {
-            LogOutput(log_)(" download job ")(id_)(" for block ")(
+            LogError()(log_)(" download job ")(id_)(" for block ")(
                 position_.second->asHex())(" at height ")(position_.first)(
                 " failed: ")(e.what())
                 .Flush();
@@ -109,12 +112,12 @@ public:
         try {
             process_.set_value(std::move(data));
             state_.store(State::Processed);
-            LogTrace(log_)(" process job ")(id_)(" for block ")(
+            LogTrace()(log_)(" process job ")(id_)(" for block ")(
                 position_.second->asHex())(" at height ")(position_.first)(
                 " completed")
                 .Flush();
         } catch (const std::exception& e) {
-            LogOutput(log_)(" process job ")(id_)(" for block ")(
+            LogError()(log_)(" process job ")(id_)(" for block ")(
                 position_.second->asHex())(" at height ")(position_.first)(
                 " failed: ")(e.what())
                 .Flush();
@@ -130,7 +133,7 @@ public:
             return;
         }
 
-        LogVerbose("Redownloading ")(log_)(" job ")(id_)(" for block ")(
+        LogVerbose()("Redownloading ")(log_)(" job ")(id_)(" for block ")(
             position_.second->asHex())(" at height ")(position_.first)
             .Flush();
         {
@@ -159,7 +162,7 @@ public:
             return;
         }
 
-        LogVerbose("Redownloading ")(log_)(" job ")(id_)(" for block ")(
+        LogVerbose()("Redownloading ")(log_)(" job ")(id_)(" for block ")(
             position_.second->asHex())(" at height ")(position_.first)
             .Flush();
         auto promise = std::promise<DownloadType>{};

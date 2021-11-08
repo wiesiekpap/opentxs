@@ -18,12 +18,13 @@
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Token.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blind
@@ -92,7 +93,7 @@ public:
 protected:
     static const opentxs::crypto::key::symmetric::Algorithm mode_;
 
-    const api::Core& api_;
+    const api::Session& api_;
     Purse& purse_;
     blind::TokenState state_;
     const OTServerID notary_;
@@ -111,9 +112,12 @@ protected:
 
     auto Serialize(proto::Token& out) const noexcept -> bool override;
 
-    Token(const api::Core& api, Purse& purse, const proto::Token& serialized);
     Token(
-        const api::Core& api,
+        const api::Session& api,
+        Purse& purse,
+        const proto::Token& serialized);
+    Token(
+        const api::Session& api,
         Purse& purse,
         const VersionNumber version,
         const blind::TokenState state,
@@ -132,7 +136,7 @@ private:
     virtual auto clone() const noexcept -> Token* override = 0;
 
     Token(
-        const api::Core& api,
+        const api::Session& api,
         Purse& purse,
         const blind::TokenState state,
         const blind::CashType type,

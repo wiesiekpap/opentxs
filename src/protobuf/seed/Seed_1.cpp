@@ -6,6 +6,7 @@
 #include "opentxs/protobuf/verify/Seed.hpp"  // IWYU pragma: associated
 
 #include "opentxs/protobuf/Basic.hpp"
+#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Seed.pb.h"
 #include "opentxs/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyCredentials.hpp"

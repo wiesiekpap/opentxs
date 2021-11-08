@@ -13,23 +13,23 @@
 #include <utility>
 
 #include "blockchain/crypto/AccountIndex.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
 auto BlockchainWalletKeys(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contacts,
-    const api::client::Blockchain& parent,
+    const api::crypto::Blockchain& parent,
     const blockchain::crypto::AccountIndex& index,
     const blockchain::Type chain) noexcept
     -> std::unique_ptr<blockchain::crypto::Wallet>
@@ -43,9 +43,9 @@ auto BlockchainWalletKeys(
 namespace opentxs::blockchain::crypto::implementation
 {
 Wallet::Wallet(
-    const api::Core& api,
+    const api::Session& api,
     const api::client::Contacts& contacts,
-    const api::client::Blockchain& parent,
+    const api::crypto::Blockchain& parent,
     const AccountIndex& index,
     const opentxs::blockchain::Type chain) noexcept
     : parent_(parent)
@@ -152,8 +152,8 @@ void Wallet::init() noexcept
         const auto nymID = api_.Factory().NymID(id);
         const auto hdAccounts = [&] {
             auto out = Accounts{};
-            const auto list =
-                api_.Storage().BlockchainAccountList(id, Translate(chain_));
+            const auto list = api_.Storage().BlockchainAccountList(
+                id, BlockchainToUnit(chain_));
             std::transform(
                 list.begin(),
                 list.end(),
@@ -162,8 +162,8 @@ void Wallet::init() noexcept
 
             return out;
         }();
-        const auto pcAccounts =
-            api_.Storage().Bip47ChannelsByChain(nymID, Translate(chain_));
+        const auto pcAccounts = api_.Storage().Bip47ChannelsByChain(
+            nymID, BlockchainToUnit(chain_));
 
         add(lock, nymID, factory(nymID, hdAccounts, pcAccounts));
     }

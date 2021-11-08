@@ -32,7 +32,7 @@ set(cxx-install-headers
 target_link_libraries(
   opentxs-api-network
   PRIVATE
-    opentxs::messages
+    opentxs-common
     Boost::headers
     OpenSSL::SSL
 )
@@ -47,6 +47,15 @@ target_include_directories(
   opentxs-api-network SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
 target_sources(opentxs-api-network PRIVATE ${cxx-install-headers})
+
+if(NOT OT_IWYU)
+  target_precompile_headers(
+    opentxs-api-network
+    REUSE_FROM
+    opentxs-common
+  )
+endif()
+
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-api-network>)
 add_dependencies(opentxs-api-network generated_code)
 

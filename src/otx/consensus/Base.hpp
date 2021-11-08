@@ -15,23 +15,23 @@
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
-#include "internal/api/Api.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/protobuf/Context.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -158,13 +158,13 @@ protected:
         const -> bool;
 
     Base(
-        const api::Core& api,
+        const api::Session& api,
         const VersionNumber targetVersion,
         const Nym_p& local,
         const Nym_p& remote,
         const identifier::Server& server);
     Base(
-        const api::Core& api,
+        const api::Session& api,
         const VersionNumber targetVersion,
         const proto::Context& serialized,
         const Nym_p& local,
@@ -177,7 +177,7 @@ private:
     const VersionNumber target_version_;
 
     static auto calculate_id(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& client,
         const Nym_p& server) noexcept(false) -> OTIdentifier;
 

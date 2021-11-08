@@ -11,15 +11,18 @@
 #include <string>
 #include <vector>
 
+#include "internal/api/session/Client.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
@@ -27,8 +30,8 @@
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {
@@ -63,7 +66,7 @@ const std::string Test_BlockchainActivity::contact_6_name_{"Frank"};
 const std::string Test_BlockchainActivity::contact_7_name_{"Gabe"};
 
 Test_BlockchainActivity::Test_BlockchainActivity()
-    : api_(ot::Context().StartClient(0))
+    : api_(ot::Context().StartClientSession(0))
     , reason_(api_.Factory().PasswordPrompt(__func__))
 {
 }
@@ -71,7 +74,7 @@ Test_BlockchainActivity::Test_BlockchainActivity()
 auto Test_BlockchainActivity::account_1_id() const noexcept
     -> const ot::Identifier&
 {
-    static const auto output = api_.Blockchain().NewHDSubaccount(
+    static const auto output = api_.Crypto().Blockchain().NewHDSubaccount(
         nym_1_id(),
         ot::blockchain::crypto::HDProtocol::BIP_44,
         ot::blockchain::Type::Bitcoin,
@@ -83,7 +86,7 @@ auto Test_BlockchainActivity::account_1_id() const noexcept
 auto Test_BlockchainActivity::account_2_id() const noexcept
     -> const ot::Identifier&
 {
-    static const auto output = api_.Blockchain().NewHDSubaccount(
+    static const auto output = api_.Crypto().Blockchain().NewHDSubaccount(
         nym_2_id(),
         ot::blockchain::crypto::HDProtocol::BIP_44,
         ot::blockchain::Type::Bitcoin,
@@ -238,7 +241,8 @@ auto Test_BlockchainActivity::nym_2_id() const noexcept
 
 auto Test_BlockchainActivity::seed() const noexcept -> const std::string&
 {
-    static const auto output = api_.Exec().Wallet_ImportSeed(words(), "");
+    static const auto output =
+        api_.InternalClient().Exec().Wallet_ImportSeed(words(), "");
 
     return output;
 }

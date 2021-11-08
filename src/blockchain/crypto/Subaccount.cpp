@@ -15,13 +15,15 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
-#include "internal/core/Core.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
+#include "Proto.hpp"
+#include "internal/api/crypto/Blockchain.hpp"
+#include "internal/contact/Contact.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
@@ -34,7 +36,7 @@
 namespace opentxs::blockchain::crypto::implementation
 {
 Subaccount::AddressData::AddressData(
-    const api::Core& api,
+    const api::Session& api,
     Subchain type,
     bool contact) noexcept
     : type_(type)
@@ -45,7 +47,7 @@ Subaccount::AddressData::AddressData(
 }
 
 Subaccount::Subaccount(
-    const api::Core& api,
+    const api::Session& api,
     const Account& parent,
     const SubaccountType type,
     OTIdentifier&& id,
@@ -67,7 +69,7 @@ Subaccount::Subaccount(
 }
 
 Subaccount::Subaccount(
-    const api::Core& api,
+    const api::Session& api,
     const Account& parent,
     const SubaccountType type,
     OTIdentifier&& id,
@@ -77,7 +79,7 @@ Subaccount::Subaccount(
 }
 
 Subaccount::Subaccount(
-    const api::Core& api,
+    const api::Session& api,
     const Account& parent,
     const SubaccountType type,
     const SerializedType& serialized,
@@ -92,7 +94,8 @@ Subaccount::Subaccount(
           convert(serialized.spent()),
           out)
 {
-    if (Translate(core::internal::translate(serialized.chain())) != chain_) {
+    if (UnitToBlockchain(ClaimToUnit(translate(serialized.chain()))) !=
+        chain_) {
         throw std::runtime_error("Wrong account type");
     }
 }
@@ -285,7 +288,7 @@ auto Subaccount::serialize_common(
     out.set_version(BlockchainAccountDataVersion);
     out.set_id(id_->str());
     out.set_revision(revision_.load());
-    out.set_chain(core::internal::translate(Translate(chain_)));
+    out.set_chain(translate(UnitToClaim(BlockchainToUnit(chain_))));
 
     for (const auto& [coin, data] : unspent_) {
         auto converted = Activity{coin, data.first, data.second};

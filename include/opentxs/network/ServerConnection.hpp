@@ -3,17 +3,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_NETWORK_SERVERCONNECTION_HPP
-#define OPENTXS_NETWORK_SERVERCONNECTION_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -24,7 +23,7 @@ namespace network
 class ZMQ;
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -66,7 +65,7 @@ public:
     };
 
     static auto Factory(
-        const api::Core& api,
+        const api::Session& api,
         const api::network::ZMQ& zmq,
         const zeromq::socket::Publish& updates,
         const OTServerContract& contract) -> OTServerConnection;
@@ -99,4 +98,3 @@ private:
 };
 }  // namespace network
 }  // namespace opentxs
-#endif

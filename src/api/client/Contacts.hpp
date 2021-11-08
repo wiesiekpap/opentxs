@@ -9,33 +9,36 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/Editor.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-class Manager;
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
-namespace storage
+namespace session
 {
+class Client;
 class Storage;
-}  // namespace storage
+}  // namespace session
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -96,7 +99,7 @@ public:
     auto Update(const identity::Nym& nym) const
         -> std::shared_ptr<const opentxs::Contact> final;
 
-    Contacts(const api::client::Manager& api);
+    Contacts(const api::session::Client& api);
 
     ~Contacts() final = default;
 
@@ -107,11 +110,9 @@ private:
     using ContactMap = std::map<OTIdentifier, ContactLock>;
     using ContactNameMap = std::map<OTIdentifier, std::string>;
 
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
     mutable std::recursive_mutex lock_{};
-#if OT_BLOCKCHAIN
-    std::weak_ptr<const internal::Blockchain> blockchain_;
-#endif  // OT_BLOCKCHAIN
+    std::weak_ptr<const crypto::Blockchain> blockchain_;
     mutable ContactMap contact_map_{};
     mutable ContactNameMap contact_name_map_;
     OTZMQPublishSocket publisher_;
@@ -132,10 +133,8 @@ private:
     auto contact(const rLock& lock, const Identifier& id) const
         -> std::shared_ptr<const opentxs::Contact>;
     void import_contacts(const rLock& lock);
-#if OT_BLOCKCHAIN
-    auto init(const std::shared_ptr<const internal::Blockchain>& blockchain)
+    auto init(const std::shared_ptr<const crypto::Blockchain>& blockchain)
         -> void final;
-#endif  // OT_BLOCKCHAIN
     void init_nym_map(const rLock& lock);
     auto load_contact(const rLock& lock, const Identifier& id) const
         -> ContactMap::iterator;
@@ -149,9 +148,7 @@ private:
         const identifier::Nym& nymID,
         const PaymentCode& paymentCode) const
         -> std::shared_ptr<const opentxs::Contact>;
-#if OT_BLOCKCHAIN
     void prepare_shutdown() final { blockchain_.reset(); }
-#endif  // OT_BLOCKCHAIN
     void refresh_indices(const rLock& lock, opentxs::Contact& contact) const;
     void save(opentxs::Contact* contact) const;
     void start() final;

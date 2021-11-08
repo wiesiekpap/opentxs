@@ -7,22 +7,29 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "internal/api/client/Client.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
-#include <boost/container/vector.hpp>
 #include <map>
-#include <type_traits>
 
-#include "internal/blockchain/Params.hpp"
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/core/UnitType.hpp"
 #include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
 
-namespace opentxs
+namespace opentxs::api::client
 {
-namespace api::client::internal
+using PaymentWorkflowStateMap =
+    std::map<api::client::PaymentWorkflowState, proto::PaymentWorkflowState>;
+using PaymentWorkflowStateReverseMap =
+    std::map<proto::PaymentWorkflowState, api::client::PaymentWorkflowState>;
+using PaymentWorkflowTypeMap =
+    std::map<api::client::PaymentWorkflowType, proto::PaymentWorkflowType>;
+using PaymentWorkflowTypeReverseMap =
+    std::map<proto::PaymentWorkflowType, api::client::PaymentWorkflowType>;
+
+auto paymentworkflowstate_map() noexcept -> const PaymentWorkflowStateMap&;
+auto paymentworkflowtype_map() noexcept -> const PaymentWorkflowTypeMap&;
+}  // namespace opentxs::api::client
+
+namespace opentxs::api::client
 {
 auto paymentworkflowstate_map() noexcept -> const PaymentWorkflowStateMap&
 {
@@ -73,87 +80,59 @@ auto paymentworkflowtype_map() noexcept -> const PaymentWorkflowTypeMap&
 
     return map;
 }
+}  // namespace opentxs::api::client
 
-auto translate(const PaymentWorkflowState in) noexcept
+namespace opentxs
+{
+auto translate(const api::client::PaymentWorkflowState in) noexcept
     -> proto::PaymentWorkflowState
 {
     try {
-        return paymentworkflowstate_map().at(in);
+        return api::client::paymentworkflowstate_map().at(in);
     } catch (...) {
         return proto::PAYMENTWORKFLOWSTATE_ERROR;
     }
 }
 
-auto translate(const PaymentWorkflowType in) noexcept
+auto translate(const api::client::PaymentWorkflowType in) noexcept
     -> proto::PaymentWorkflowType
 {
     try {
-        return paymentworkflowtype_map().at(in);
+        return api::client::paymentworkflowtype_map().at(in);
     } catch (...) {
         return proto::PAYMENTWORKFLOWTYPE_ERROR;
     }
 }
 
 auto translate(const proto::PaymentWorkflowState in) noexcept
-    -> PaymentWorkflowState
+    -> api::client::PaymentWorkflowState
 {
     static const auto map = reverse_arbitrary_map<
-        PaymentWorkflowState,
+        api::client::PaymentWorkflowState,
         proto::PaymentWorkflowState,
-        PaymentWorkflowStateReverseMap>(paymentworkflowstate_map());
+        api::client::PaymentWorkflowStateReverseMap>(
+        api::client::paymentworkflowstate_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return PaymentWorkflowState::Error;
+        return api::client::PaymentWorkflowState::Error;
     }
 }
 
 auto translate(const proto::PaymentWorkflowType in) noexcept
-    -> PaymentWorkflowType
+    -> api::client::PaymentWorkflowType
 {
     static const auto map = reverse_arbitrary_map<
-        PaymentWorkflowType,
+        api::client::PaymentWorkflowType,
         proto::PaymentWorkflowType,
-        PaymentWorkflowTypeReverseMap>(paymentworkflowtype_map());
+        api::client::PaymentWorkflowTypeReverseMap>(
+        api::client::paymentworkflowtype_map());
 
     try {
         return map.at(in);
     } catch (...) {
-        return PaymentWorkflowType::Error;
-    }
-}
-}  // namespace api::client::internal
-
-auto Translate(const blockchain::Type type) noexcept -> core::UnitType
-{
-    try {
-        return blockchain::params::Data::Chains().at(type).itemtype_;
-    } catch (...) {
-        return core::UnitType::Unknown;
-    }
-}
-
-auto Translate(const core::UnitType type) noexcept -> blockchain::Type
-{
-    using Map = std::map<opentxs::core::UnitType, opentxs::blockchain::Type>;
-
-    static const auto build = []() -> auto
-    {
-        auto output = Map{};
-
-        for (const auto& [chain, data] : blockchain::params::Data::Chains()) {
-            output.emplace(data.itemtype_, chain);
-        }
-
-        return output;
-    };
-    static const auto map{build()};
-
-    try {
-        return map.at(type);
-    } catch (...) {
-        return blockchain::Type::Unknown;
+        return api::client::PaymentWorkflowType::Error;
     }
 }
 }  // namespace opentxs

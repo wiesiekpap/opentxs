@@ -17,13 +17,12 @@ extern "C" {
 #include <cstring>
 #include <iomanip>
 #include <limits>
-#include <memory>
 #include <sstream>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::Data>;
 

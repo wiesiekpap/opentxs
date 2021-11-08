@@ -9,14 +9,14 @@ namespace opentxs
 {
 namespace api
 {
-class Primitives;
+class Factory;
 }  // namespace api
 }  // namespace opentxs
 
 namespace opentxs::crypto::internal
 {
 struct Bip32 {
-    virtual auto Init(const api::Primitives& factory) noexcept -> void = 0;
+    virtual auto Init(const api::Factory& factory) noexcept -> void = 0;
 
     virtual ~Bip32() = default;
 };

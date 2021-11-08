@@ -13,7 +13,7 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Credential.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/verify/Credential.hpp"
+#include "opentxs/protobuf/verify/Credential.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyCredentials.hpp"
 #include "protobuf/Check.hpp"
 

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_UI_BLOCKCHAINSTATISTICSQT_HPP
-#define OPENTXS_UI_BLOCKCHAINSTATISTICSQT_HPP
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -78,4 +77,3 @@ private:
     BlockchainStatisticsQt& operator=(const BlockchainStatisticsQt&) = delete;
     BlockchainStatisticsQt& operator=(BlockchainStatisticsQt&&) = delete;
 };
-#endif

@@ -3,12 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_HELPERS_HPP
-#define OPENTXS_CORE_HELPERS_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Log.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace
 {
@@ -33,8 +32,8 @@ auto TranslateAccountTypeStringToEnum(const opentxs::String& acctTypeString)
     else if (acctTypeString.Compare("stash"))
         acctType = opentxs::Account::stash;
     else
-        opentxs::LogOutput(": Error: Unknown account type: ")(acctTypeString)(
-            ".")
+        opentxs::LogError()(": Error: Unknown account type: ")(
+            acctTypeString)(".")
             .Flush();
 
     return acctType;
@@ -72,5 +71,3 @@ void TranslateAccountTypeToString(
     }
 }
 }  // namespace
-
-#endif

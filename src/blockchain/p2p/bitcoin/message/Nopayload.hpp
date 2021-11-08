@@ -20,7 +20,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -43,14 +43,14 @@ class Nopayload final : virtual public InterfaceType,
 {
 public:
     Nopayload(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const bitcoin::Command command) noexcept
         : Message(api, network, command)
     {
         Message::init_hash();
     }
-    Nopayload(const api::Core& api, std::unique_ptr<Header> header) noexcept
+    Nopayload(const api::Session& api, std::unique_ptr<Header> header) noexcept
         : Message(api, std::move(header))
     {
     }

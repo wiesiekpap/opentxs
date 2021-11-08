@@ -17,10 +17,15 @@ target_link_libraries(
     unofficial-sodium::sodium
 )
 target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
-
 target_include_directories(
   opentxs-crypto-library-sodium SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps"
 )
+
+if(ED25519_EXPORT)
+  target_sources(opentxs-crypto-library-sodium PRIVATE "Ed25519.cpp")
+else()
+  target_sources(opentxs-crypto-library-sodium PRIVATE "noEd25519.cpp")
+endif()
 
 if(WIN32 AND OT_STATIC_DEPENDENCIES)
   target_compile_definitions(

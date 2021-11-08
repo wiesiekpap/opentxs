@@ -7,6 +7,8 @@
 
 #include <cstdint>
 #include <memory>
+#include <tuple>
+#include <utility>
 
 #include "api/network/Dht.hpp"
 #include "internal/api/network/Factory.hpp"
@@ -24,8 +26,12 @@ class Asio;
 class Dht;
 }  // namespace network
 
-class Core;
+namespace session
+{
 class Endpoints;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace network
@@ -45,10 +51,10 @@ struct Network::Imp {
     std::unique_ptr<Dht> dht_;
     network::Blockchain blockchain_;
 
-    Imp(const api::Core& api,
+    Imp(const api::Session& api,
         const network::Asio& asio,
         const opentxs::network::zeromq::Context& zmq,
-        const api::Endpoints& endpoints,
+        const api::session::Endpoints& endpoints,
         api::network::Blockchain::Imp* blockchain,
         const bool dhtDefault,
         std::int64_t& nymPublishInterval,

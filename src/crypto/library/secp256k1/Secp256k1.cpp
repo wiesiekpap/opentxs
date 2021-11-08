@@ -23,15 +23,15 @@ extern "C" {
 
 #include "crypto/library/EcdsaProvider.hpp"
 #include "internal/crypto/library/Factory.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Util.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::crypto::implementation::Secp256k1::"
 
@@ -93,19 +93,19 @@ auto Secp256k1::PubkeyAdd(
     const AllocateOutput result) const noexcept -> bool
 {
     if (false == bool(result)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
 
     if ((0 == pubkey.size()) || (nullptr == pubkey.data())) {
-        LogOutput(OT_METHOD)(__func__)(": Missing pubkey").Flush();
+        LogError()(OT_METHOD)(__func__)(": Missing pubkey").Flush();
 
         return false;
     }
 
     if ((PrivateKeySize != scalar.size()) || (nullptr == scalar.data())) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid scalar").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid scalar").Flush();
 
         return false;
     }
@@ -118,7 +118,7 @@ auto Secp256k1::PubkeyAdd(
                        pubkey.size());
 
     if (false == rc) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid public key").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid public key").Flush();
 
         return false;
     }
@@ -129,7 +129,7 @@ auto Secp256k1::PubkeyAdd(
                   reinterpret_cast<const unsigned char*>(scalar.data()));
 
     if (false == rc) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to add scalar to public key")
+        LogError()(OT_METHOD)(__func__)(": Failed to add scalar to public key")
             .Flush();
 
         return false;
@@ -138,7 +138,7 @@ auto Secp256k1::PubkeyAdd(
     auto out = result(PublicKeySize);
 
     if (false == out.valid(PublicKeySize)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate space for result")
+        LogError()(OT_METHOD)(__func__)(": Failed to allocate space for result")
             .Flush();
 
         return false;
@@ -153,7 +153,7 @@ auto Secp256k1::PubkeyAdd(
         SECP256K1_EC_COMPRESSED);
 
     if (false == rc) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to serialize public key")
+        LogError()(OT_METHOD)(__func__)(": Failed to serialize public key")
             .Flush();
 
         return false;
@@ -172,7 +172,7 @@ auto Secp256k1::RandomKeypair(
     if (nullptr == context_) { return false; }
 
     if (false == bool(privateKey)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
@@ -180,7 +180,7 @@ auto Secp256k1::RandomKeypair(
     auto output = privateKey(PrivateKeySize);
 
     if (false == output.valid(PrivateKeySize)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to allocate space for private key")
             .Flush();
 
@@ -207,19 +207,19 @@ auto Secp256k1::ScalarAdd(
     const AllocateOutput result) const noexcept -> bool
 {
     if (false == bool(result)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
 
     if (PrivateKeySize != lhs.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid lhs scalar").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid lhs scalar").Flush();
 
         return false;
     }
 
     if (PrivateKeySize != rhs.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid rhs scalar").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid rhs scalar").Flush();
 
         return false;
     }
@@ -227,7 +227,7 @@ auto Secp256k1::ScalarAdd(
     auto key = result(PrivateKeySize);
 
     if (false == key.valid(PrivateKeySize)) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to allocate space for result")
+        LogError()(OT_METHOD)(__func__)(": Failed to allocate space for result")
             .Flush();
 
         return false;
@@ -246,13 +246,13 @@ auto Secp256k1::ScalarMultiplyBase(
     const AllocateOutput result) const noexcept -> bool
 {
     if (false == bool(result)) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
 
         return false;
     }
 
     if (PrivateKeySize != scalar.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid scalar").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid scalar").Flush();
 
         return false;
     }
@@ -269,7 +269,7 @@ auto Secp256k1::ScalarMultiplyBase(
     auto pub = result(PublicKeySize);
 
     if (false == pub.valid(PublicKeySize)) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Failed to allocate space for public key")
             .Flush();
 
@@ -293,7 +293,7 @@ auto Secp256k1::SharedSecret(
     Secret& secret) const noexcept -> bool
 {
     if (PrivateKeySize != prv.size()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid private key").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid private key").Flush();
 
         return false;
     }
@@ -305,7 +305,7 @@ auto Secp256k1::SharedSecret(
                  &key,
                  reinterpret_cast<const unsigned char*>(pub.data()),
                  pub.size())) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid public key").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid public key").Flush();
 
         return false;
     }
@@ -347,25 +347,25 @@ auto Secp256k1::Sign(
         const auto digest = hash(type, plaintext);
 
         if (nullptr == priv.data() || 0 == priv.size()) {
-            LogOutput(OT_METHOD)(__func__)(": Missing private key").Flush();
+            LogError()(OT_METHOD)(__func__)(": Missing private key").Flush();
 
             return false;
         }
 
         if (PrivateKeySize != priv.size()) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid private key").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid private key").Flush();
 
             return false;
         }
 
         if (priv == blank_private()) {
-            LogOutput(OT_METHOD)(__func__)(": Blank private key").Flush();
+            LogError()(OT_METHOD)(__func__)(": Blank private key").Flush();
 
             return false;
         }
 
         if (false == bool(signature)) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid output allocator")
+            LogError()(OT_METHOD)(__func__)(": Invalid output allocator")
                 .Flush();
 
             return false;
@@ -375,7 +375,7 @@ auto Secp256k1::Sign(
         auto output = signature(size);
 
         if (false == output.valid(size)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed to allocate space for signature")
                 .Flush();
 
@@ -391,7 +391,7 @@ auto Secp256k1::Sign(
             nullptr);
 
         if (false == signatureCreated) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Call to secp256k1_ecdsa_sign() failed.")
                 .Flush();
 
@@ -400,7 +400,7 @@ auto Secp256k1::Sign(
 
         return true;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -416,19 +416,19 @@ auto Secp256k1::SignDER(
         const auto digest = hash(type, plaintext);
 
         if (nullptr == priv.data() || 0 == priv.size()) {
-            LogOutput(OT_METHOD)(__func__)(": Missing private key").Flush();
+            LogError()(OT_METHOD)(__func__)(": Missing private key").Flush();
 
             return false;
         }
 
         if (PrivateKeySize != priv.size()) {
-            LogOutput(OT_METHOD)(__func__)(": Invalid private key").Flush();
+            LogError()(OT_METHOD)(__func__)(": Invalid private key").Flush();
 
             return false;
         }
 
         if (priv == blank_private()) {
-            LogOutput(OT_METHOD)(__func__)(": Blank private key").Flush();
+            LogError()(OT_METHOD)(__func__)(": Blank private key").Flush();
 
             return false;
         }
@@ -444,7 +444,7 @@ auto Secp256k1::SignDER(
             nullptr);
 
         if (false == signatureCreated) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Call to secp256k1_ecdsa_sign() failed.")
                 .Flush();
 
@@ -460,7 +460,7 @@ auto Secp256k1::SignDER(
             &sig);
 
         if (1 != wrote) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Call to secp256k1_ecdsa_signature_serialize_der() "
                 "failed.")
                 .Flush();
@@ -472,7 +472,7 @@ auto Secp256k1::SignDER(
 
         return true;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -495,7 +495,7 @@ auto Secp256k1::Verify(
                         reinterpret_cast<const unsigned char*>(digest->data()),
                         &parsed);
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }

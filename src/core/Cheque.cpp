@@ -9,23 +9,21 @@
 
 #include <cstdint>
 #include <cstring>
-#include <memory>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/util/Common.hpp"
 #include "opentxs/core/util/Tag.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::Cheque"
 
@@ -36,7 +34,7 @@ using namespace io;
 
 namespace opentxs
 {
-Cheque::Cheque(const api::Core& core)
+Cheque::Cheque(const api::Session& core)
     : ot_super(core)
     , m_lAmount(0)
     , m_strMemo(String::Factory())
@@ -50,7 +48,7 @@ Cheque::Cheque(const api::Core& core)
 }
 
 Cheque::Cheque(
-    const api::Core& core,
+    const api::Session& core,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
     : ot_super(core, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
@@ -192,7 +190,7 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
             m_REMITTER_ACCT_ID->Release();
         }
         {
-            LogVerbose(OT_METHOD)(__func__)(": Cheque Amount: ")(
+            LogVerbose()(OT_METHOD)(__func__)(": Cheque Amount: ")(
                 m_lAmount.str())(". Transaction Number: ")(
                 m_lTransactionNum)(" Valid From: ")(
                 str_valid_from)(" Valid To: ")(
@@ -212,8 +210,8 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         nReturnVal = 1;
     } else if (!strcmp("memo", xml->getNodeName())) {
         if (!Contract::LoadEncodedTextField(xml, m_strMemo)) {
-            LogOutput(OT_METHOD)(__func__)(": Error: Memo field without "
-                                           "value.")
+            LogError()(OT_METHOD)(__func__)(": Error: Memo field without "
+                                            "value.")
                 .Flush();
             return (-1);  // error condition
         }

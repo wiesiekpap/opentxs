@@ -14,15 +14,15 @@
 
 #include "2_Factory.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/verification/Nym.hpp"
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/VerificationGroup.pb.h"
 #include "opentxs/protobuf/VerificationIdentity.pb.h"
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::identity::wot::verification::implementation::Group::"
@@ -41,7 +41,7 @@ auto Factory::VerificationGroup(
 
         return new ReturnType(parent, external, version);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -61,7 +61,7 @@ auto Factory::VerificationGroup(
 
         return new ReturnType(parent, serialized, external);
     } catch (const std::exception& e) {
-        LogOutput("opentxs::Factory::")(__func__)(
+        LogError()("opentxs::Factory::")(__func__)(
             "Failed to construct verification nym: ")(e.what())
             .Flush();
 
@@ -127,7 +127,7 @@ auto Group::AddItem(
     const VersionNumber version) noexcept -> bool
 {
     if (external_) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid internal item").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid internal item").Flush();
 
         return false;
     }
@@ -141,13 +141,13 @@ auto Group::AddItem(
     const Item::SerializedType verification) noexcept -> bool
 {
     if (false == external_) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid external item").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid external item").Flush();
 
         return false;
     }
 
     if (verifier == parent_.NymID()) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Attempting to add internal claim to external section")
             .Flush();
 
@@ -231,7 +231,7 @@ auto Group::UpgradeNymVersion(const VersionNumber nymVersion) noexcept -> bool
                 proto::VerificationGroupAllowedIdentity().at(groupVersion);
 
             if (nymVersion < min) {
-                LogOutput(OT_METHOD)(__func__)(": Version ")(
+                LogError()(OT_METHOD)(__func__)(": Version ")(
                     nymVersion)(" too old")
                     .Flush();
 
@@ -249,7 +249,7 @@ auto Group::UpgradeNymVersion(const VersionNumber nymVersion) noexcept -> bool
             }
         }
     } catch (...) {
-        LogOutput(OT_METHOD)(__func__)(": No support for version ")(
+        LogError()(OT_METHOD)(__func__)(": No support for version ")(
             nymVersion)(" items")
             .Flush();
 

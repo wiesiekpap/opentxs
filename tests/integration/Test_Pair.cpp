@@ -14,31 +14,31 @@
 
 #include "integration/Helpers.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Issuer.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/Pair.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/contract/peer/BailmentRequest.hpp"
@@ -59,16 +59,17 @@
 #include "opentxs/ui/AccountSummary.hpp"
 #include "opentxs/ui/AccountSummaryItem.hpp"
 #include "opentxs/ui/IssuerItem.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/Helpers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace server
+namespace session
 {
-class Manager;
-}  // namespace server
+class Notary;
+}  // namespace session
 }  // namespace api
 }  // namespace opentxs
 
@@ -93,18 +94,18 @@ public:
     static Issuer issuer_data_;
     static ot::OTUnitID unit_id_;
 
-    const ot::api::client::Manager& api_issuer_;
-    const ot::api::client::Manager& api_chris_;
-    const ot::api::server::Manager& api_server_1_;
+    const ot::api::session::Client& api_issuer_;
+    const ot::api::session::Client& api_chris_;
+    const ot::api::session::Notary& api_server_1_;
     ot::OTZMQListenCallback issuer_peer_request_cb_;
     ot::OTZMQListenCallback chris_rename_notary_cb_;
     ot::OTZMQSubscribeSocket issuer_peer_request_listener_;
     ot::OTZMQSubscribeSocket chris_rename_notary_listener_;
 
     Test_Pair()
-        : api_issuer_(ot::Context().StartClient(0))
-        , api_chris_(ot::Context().StartClient(1))
-        , api_server_1_(ot::Context().StartServer(0))
+        : api_issuer_(ot::Context().StartClientSession(0))
+        , api_chris_(ot::Context().StartClientSession(1))
+        , api_server_1_(ot::Context().StartNotarySession(0))
         , issuer_peer_request_cb_(ot::network::zeromq::ListenCallback::Factory(
               [this](const auto& in) { issuer_peer_request(in); }))
         , chris_rename_notary_cb_(ot::network::zeromq::ListenCallback::Factory(

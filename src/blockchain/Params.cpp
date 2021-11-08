@@ -17,23 +17,56 @@
 #include <type_traits>
 
 #include "display/Scale.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
+auto BlockchainToUnit(const blockchain::Type type) noexcept -> core::UnitType
+{
+    try {
+        return blockchain::params::Data::Chains().at(type).itemtype_;
+    } catch (...) {
+        return core::UnitType::Unknown;
+    }
+}
+
+auto UnitToBlockchain(const core::UnitType type) noexcept -> blockchain::Type
+{
+    using Map = std::map<opentxs::core::UnitType, opentxs::blockchain::Type>;
+
+    static const auto build = []() -> auto
+    {
+        auto output = Map{};
+
+        for (const auto& [chain, data] : blockchain::params::Data::Chains()) {
+            output.emplace(data.itemtype_, chain);
+        }
+
+        return output;
+    };
+    static const auto map{build()};
+
+    try {
+        return map.at(type);
+    } catch (...) {
+        return blockchain::Type::Unknown;
+    }
+}
+
 using Code = blockchain::SendResult;
 
 auto print(Code code) noexcept -> std::string
@@ -77,7 +110,7 @@ auto print(blockchain::Type type) noexcept -> std::string
 namespace opentxs::blockchain
 {
 auto BlockHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool
@@ -129,7 +162,7 @@ auto DisplayString(const Type type) noexcept -> std::string
 }
 
 auto FilterHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool
@@ -176,7 +209,7 @@ auto IsTestnet(const Type type) noexcept -> bool
 }
 
 auto MerkleHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool
@@ -199,7 +232,7 @@ auto MerkleHash(
 }
 
 auto P2PMessageHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool
@@ -225,7 +258,7 @@ auto P2PMessageHash(
 }
 
 auto ProofOfWorkHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool
@@ -253,7 +286,7 @@ auto ProofOfWorkHash(
 }
 
 auto PubkeyHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool
@@ -279,7 +312,7 @@ auto PubkeyHash(
 }
 
 auto ScriptHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool
@@ -305,7 +338,7 @@ auto ScriptHash(
 }
 
 auto ScriptHashSegwit(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool
@@ -356,7 +389,7 @@ auto TickerSymbol(const Type type) noexcept -> std::string
     }
 }
 auto TransactionHash(
-    const api::Core& api,
+    const api::Session& api,
     const Type chain,
     const ReadView input,
     const AllocateOutput output) noexcept -> bool

@@ -19,7 +19,6 @@
 
 #include "Proto.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -33,17 +32,20 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/BlockchainAccountData.pb.h"
 #include "opentxs/protobuf/BlockchainActivity.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
 class Blockchain;
-}  // namespace client
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -148,10 +150,13 @@ protected:
         block::Position progress_;
         AddressMap map_;
 
-        AddressData(const api::Core& api, Subchain type, bool contact) noexcept;
+        AddressData(
+            const api::Session& api,
+            Subchain type,
+            bool contact) noexcept;
     };
 
-    const api::Core& api_;
+    const api::Session& api_;
     const Account& parent_;
     const opentxs::blockchain::Type chain_;
     const SubaccountType type_;
@@ -197,13 +202,13 @@ protected:
         const Bip32Index index) noexcept(false) -> Element& = 0;
 
     Subaccount(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         const SubaccountType type,
         OTIdentifier&& id,
         Identifier& out) noexcept;
     Subaccount(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         const SubaccountType type,
         const SerializedType& serialized,
@@ -233,7 +238,7 @@ private:
     }
 
     Subaccount(
-        const api::Core& api,
+        const api::Session& api,
         const Account& parent,
         const SubaccountType type,
         OTIdentifier&& id,

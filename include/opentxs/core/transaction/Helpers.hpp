@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_TRANSACTION_HELPERS_HPP
-#define OPENTXS_CORE_TRANSACTION_HELPERS_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -16,12 +15,13 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/OTTransaction.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -61,7 +61,7 @@ OPENTXS_EXPORT auto LoadAbbreviatedRecord(
     NumList* pNumList = nullptr) -> std::int32_t;
 
 OPENTXS_EXPORT auto VerifyBoxReceiptExists(
-    const api::Core& api,
+    const api::Session& api,
     const std::string& dataFolder,
     const identifier::Server& NOTARY_ID,
     const identifier::Nym& NYM_ID,
@@ -71,17 +71,17 @@ OPENTXS_EXPORT auto VerifyBoxReceiptExists(
     const std::int64_t& lTransactionNum) -> bool;
 
 OPENTXS_EXPORT auto LoadBoxReceipt(
-    const api::Core& api,
+    const api::Session& api,
     OTTransaction& theAbbrev,
     Ledger& theLedger) -> std::unique_ptr<OTTransaction>;
 
 OPENTXS_EXPORT auto LoadBoxReceipt(
-    const api::Core& api,
+    const api::Session& api,
     OTTransaction& theAbbrev,
     std::int64_t lLedgerType) -> std::unique_ptr<OTTransaction>;
 
 OPENTXS_EXPORT auto SetupBoxReceiptFilename(
-    const api::Core& api,
+    const api::Session& api,
     std::int64_t lLedgerType,
     OTTransaction& theTransaction,
     const char* szCaller,
@@ -91,7 +91,7 @@ OPENTXS_EXPORT auto SetupBoxReceiptFilename(
     String& strFilename) -> bool;
 
 OPENTXS_EXPORT auto SetupBoxReceiptFilename(
-    const api::Core& api,
+    const api::Session& api,
     Ledger& theLedger,
     OTTransaction& theTransaction,
     const char* szCaller,
@@ -101,7 +101,7 @@ OPENTXS_EXPORT auto SetupBoxReceiptFilename(
     String& strFilename) -> bool;
 
 OPENTXS_EXPORT auto SetupBoxReceiptFilename(
-    const api::Core& api,
+    const api::Session& api,
     std::int64_t lLedgerType,
     const String& strUserOrAcctID,
     const String& strNotaryID,
@@ -112,4 +112,3 @@ OPENTXS_EXPORT auto SetupBoxReceiptFilename(
     String& strFolder3name,
     String& strFilename) -> bool;
 }  // namespace opentxs
-#endif

@@ -16,9 +16,10 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Editor.hpp"
+#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/protobuf/StorageRoot.pb.h"
+#include "opentxs/util/Numbers.hpp"
 #include "storage/tree/Node.hpp"
 #include "storage/tree/Tree.hpp"
 
@@ -31,13 +32,13 @@ namespace network
 class Asio;
 }  // namespace network
 
-namespace storage
+namespace session
 {
 namespace implementation
 {
 class Storage;
 }  // namespace implementation
-}  // namespace storage
+}  // namespace session
 }  // namespace api
 
 namespace storage
@@ -75,7 +76,7 @@ public:
 private:
     using ot_super = Node;
     friend opentxs::storage::driver::Multiplex;
-    friend api::storage::implementation::Storage;
+    friend api::session::implementation::Storage;
 
     class GC
     {

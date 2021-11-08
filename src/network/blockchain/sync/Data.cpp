@@ -13,19 +13,19 @@
 #include <utility>
 
 #include "Proto.tpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/blockchain/sync/Base.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/verify/BlockchainP2PSync.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD "opentxs::network::blockchain::sync::Data::"
 
@@ -111,7 +111,7 @@ auto Data::Add(ReadView data) noexcept -> bool
             static_cast<opentxs::blockchain::block::Height>(proto.height());
 
         if (height != expected) {
-            LogOutput(OT_METHOD)(__func__)(": Non-contiguous sync data")
+            LogError()(OT_METHOD)(__func__)(": Non-contiguous sync data")
                 .Flush();
 
             return false;
@@ -123,7 +123,7 @@ auto Data::Add(ReadView data) noexcept -> bool
 
         return true;
     } catch (const std::exception& e) {
-        LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
 
         return false;
     }
@@ -131,7 +131,7 @@ auto Data::Add(ReadView data) noexcept -> bool
 
 auto Data::Blocks() const noexcept -> const SyncData& { return imp_->blocks_; }
 
-auto Data::LastPosition(const api::Core& api) const noexcept -> Position
+auto Data::LastPosition(const api::Session& api) const noexcept -> Position
 {
     static const auto blank = Position{-1, api.Factory().Data()};
 #if OT_BLOCKCHAIN

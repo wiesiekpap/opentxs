@@ -24,7 +24,7 @@ struct Blockchain;
 }  // namespace internal
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -36,7 +36,7 @@ public:
     auto Endpoint() const noexcept -> const std::string&;
 
     SyncClient(
-        const api::Core& api,
+        const api::Session& api,
         const api::network::internal::Blockchain& network,
         const Type chain) noexcept;
 

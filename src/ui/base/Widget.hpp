@@ -15,14 +15,15 @@
 
 #include "internal/api/client/Client.hpp"
 #include "internal/ui/UI.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/ui/Widget.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
@@ -34,9 +35,12 @@ namespace internal
 {
 struct UI;
 }  // namespace internal
-
-class Manager;
 }  // namespace client
+
+namespace session
+{
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -89,7 +93,7 @@ class Widget : virtual public opentxs::ui::Widget
 public:
     using Message = network::zeromq::Message;
 
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
 
     class MessageFunctor
     {
@@ -166,7 +170,7 @@ protected:
     }
 
     Widget(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const Identifier& id,
         const SimpleCallback& cb = {}) noexcept;
 

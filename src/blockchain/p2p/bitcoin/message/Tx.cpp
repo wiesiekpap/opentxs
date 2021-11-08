@@ -14,11 +14,10 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
 
 // #define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Tx::"
 
@@ -27,7 +26,7 @@ namespace opentxs::factory
 using ReturnType = blockchain::p2p::bitcoin::message::Tx;
 
 auto BitcoinP2PTx(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload,
@@ -35,7 +34,7 @@ auto BitcoinP2PTx(
     -> std::unique_ptr<blockchain::p2p::bitcoin::message::internal::Tx>
 {
     if (false == bool(pHeader)) {
-        LogOutput("opentxs::factory::")(__func__)(": Invalid header").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
         return nullptr;
     }
@@ -46,14 +45,15 @@ auto BitcoinP2PTx(
             std::move(pHeader),
             ReadView{static_cast<const char*>(payload), size});
     } catch (...) {
-        LogOutput("opentxs::factory::")(__func__)(": Checksum failure").Flush();
+        LogError()("opentxs::factory::")(__func__)(": Checksum failure")
+            .Flush();
 
         return nullptr;
     }
 }
 
 auto BitcoinP2PTx(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const ReadView transaction) noexcept
     -> std::unique_ptr<blockchain::p2p::bitcoin::message::internal::Tx>
@@ -65,7 +65,7 @@ auto BitcoinP2PTx(
 namespace opentxs::blockchain::p2p::bitcoin::message
 {
 Tx::Tx(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::Type network,
     const ReadView transaction) noexcept
     : Message(api, network, bitcoin::Command::tx)
@@ -75,7 +75,7 @@ Tx::Tx(
 }
 
 Tx::Tx(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<Header> header,
     const ReadView transaction) noexcept(false)
     : Message(api, std::move(header))

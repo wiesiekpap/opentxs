@@ -25,20 +25,20 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
 #include "opentxs/protobuf/BlockchainBlockLocalData.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/LMDB.hpp"
 
@@ -53,7 +53,7 @@ auto tsv(const Input& in) noexcept -> ReadView
 }
 
 Headers::Headers(
-    const api::Core& api,
+    const api::Session& api,
     const node::internal::Network& network,
     const common::Database& common,
     const storage::lmdb::LMDB& lmdb,
@@ -85,7 +85,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     -> bool
 {
     if (false == common_.StoreBlockHeaders(update.UpdatedHeaders())) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to save block headers")
+        LogError()(OT_METHOD)(__func__)(": Failed to save block headers")
             .Flush();
 
         return false;
@@ -104,7 +104,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                     tsv(static_cast<std::size_t>(update.Checkpoint().first)),
                     parentTxn)
                 .first) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to save checkpoint height")
+            LogError()(OT_METHOD)(__func__)(
+                ": Failed to save checkpoint height")
                 .Flush();
 
             return false;
@@ -117,7 +118,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              update.Checkpoint().second->Bytes(),
                              parentTxn)
                          .first) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to save checkpoint hash")
+            LogError()(OT_METHOD)(__func__)(": Failed to save checkpoint hash")
                 .Flush();
 
             return false;
@@ -132,7 +133,8 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              child->Bytes(),
                              parentTxn)
                          .first) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to save disconnected hash")
+            LogError()(OT_METHOD)(__func__)(
+                ": Failed to save disconnected hash")
                 .Flush();
 
             return false;
@@ -145,7 +147,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                          parent->Bytes(),
                          child->Bytes(),
                          parentTxn)) {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": Failed to delete disconnected hash")
                 .Flush();
 
@@ -161,7 +163,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              hash->Bytes(),
                              parentTxn)
                          .first) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to save sibling hash")
+            LogError()(OT_METHOD)(__func__)(": Failed to save sibling hash")
                 .Flush();
 
             return false;
@@ -186,7 +188,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             parentTxn);
 
         if (false == result.first) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to save block metadata")
+            LogError()(OT_METHOD)(__func__)(": Failed to save block metadata")
                 .Flush();
 
             return false;
@@ -196,7 +198,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     if (update.HaveReorg()) {
         for (auto i = initialHeight; i > update.ReorgParent().first; --i) {
             if (false == pop_best(i, parentTxn)) {
-                LogOutput(OT_METHOD)(__func__)(": Failed to delete best hash")
+                LogError()(OT_METHOD)(__func__)(": Failed to delete best hash")
                     .Flush();
 
                 return false;
@@ -218,7 +220,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              tsv(static_cast<std::size_t>(tip.first)),
                              parentTxn)
                          .first) {
-            LogOutput(OT_METHOD)(__func__)(": Failed to store best hash")
+            LogError()(OT_METHOD)(__func__)(": Failed to store best hash")
                 .Flush();
 
             return false;
@@ -226,7 +228,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     }
 
     if (false == parentTxn.Finalize(true)) {
-        LogOutput(OT_METHOD)(__func__)(": Database error").Flush();
+        LogError()(OT_METHOD)(__func__)(": Database error").Flush();
 
         return false;
     }
@@ -238,7 +240,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     if (update.HaveReorg()) {
         const auto [pHeight, pHash] = update.ReorgParent();
         const auto pBytes = pHash->Bytes();
-        LogNormal(DisplayString(network_.Chain()))(
+        LogConsole()(DisplayString(network_.Chain()))(
             " reorg detected. Last common ancestor is ")(pHash->asHex())(
             " at height ")(pHeight)
             .Flush();

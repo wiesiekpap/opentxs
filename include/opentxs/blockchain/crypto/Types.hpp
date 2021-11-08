@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_CRYPTO_TYPES_HPP
-#define OPENTXS_BLOCKCHAIN_CRYPTO_TYPES_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -60,4 +59,3 @@ auto print(blockchain::crypto::HDProtocol) noexcept -> std::string;
 auto print(blockchain::crypto::Subchain) noexcept -> std::string;
 auto print(const blockchain::crypto::Key&) noexcept -> std::string;
 }  // namespace opentxs
-#endif

@@ -9,7 +9,6 @@
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -21,12 +20,14 @@
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/protobuf/OTXEnums.pb.h"
 #include "opentxs/protobuf/ServerRequest.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -68,7 +69,7 @@ private:
     OTFlag include_nym_;
 
     static auto extract_nym(
-        const api::Core& api,
+        const api::Session& api,
         const proto::ServerRequest serialized) -> Nym_p;
 
     auto clone() const noexcept -> Request* final { return new Request(*this); }
@@ -87,13 +88,13 @@ private:
         const -> bool final;
 
     Request(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p signer,
         const identifier::Nym& initiator,
         const identifier::Server& server,
         const otx::ServerRequestType type,
         const RequestNumber number);
-    Request(const api::Core& api, const proto::ServerRequest serialized);
+    Request(const api::Session& api, const proto::ServerRequest serialized);
     Request() = delete;
     Request(const Request& rhs);
     Request(Request&& rhs) = delete;

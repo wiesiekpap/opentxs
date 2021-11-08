@@ -10,11 +10,11 @@
 
 #include "Helpers.hpp"
 #include "VectorsV1.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
@@ -22,6 +22,7 @@
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {
@@ -38,7 +39,7 @@ public:
     {
         constexpr auto style = ot::blockchain::crypto::AddressStyle::P2PKH;
 
-        return api_.Blockchain().CalculateAddress(
+        return api_.Crypto().Blockchain().CalculateAddress(
             chain_, style, api_.Factory().Data(key.PublicKey()));
     }
 

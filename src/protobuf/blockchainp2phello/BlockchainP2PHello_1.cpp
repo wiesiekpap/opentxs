@@ -5,8 +5,14 @@
 
 #include "opentxs/protobuf/verify/BlockchainP2PHello.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
+#include <cstdint>
+#include <map>
+
+#include "opentxs/protobuf/Basic.hpp"
+#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
 #include "opentxs/protobuf/BlockchainP2PHello.pb.h"  // IWYU pragma: keep
-#include "opentxs/protobuf/verify/BlockchainP2PChainState.hpp"
+#include "opentxs/protobuf/verify/BlockchainP2PChainState.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
 #include "protobuf/Check.hpp"
 

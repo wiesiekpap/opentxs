@@ -9,15 +9,15 @@
 
 #include <memory>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/core/Log.hpp"
 #include "ui/base/Widget.hpp"
 
 namespace opentxs::factory
 {
 auto ContactItemWidget(
     const ui::implementation::ContactSubsectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::ContactSubsectionRowID& rowID,
     const ui::implementation::ContactSubsectionSortKey& sortKey,
     ui::implementation::CustomData& custom) noexcept
@@ -33,7 +33,7 @@ namespace opentxs::ui::implementation
 {
 ContactItem::ContactItem(
     const ContactSubsectionInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ContactSubsectionRowID& rowID,
     const ContactSubsectionSortKey& sortKey,
     CustomData& custom) noexcept

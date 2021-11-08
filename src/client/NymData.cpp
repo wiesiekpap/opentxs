@@ -10,27 +10,27 @@
 #include <utility>
 
 #include "Proto.tpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/protobuf/ContactData.pb.h"
 #include "opentxs/protobuf/Nym.pb.h"  // IWYU pragma: keep
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::NymData::"
 
 namespace opentxs
 {
 NymData::NymData(
-    const api::Factory& factory,
+    const api::session::Factory& factory,
     std::mutex& objectMutex,
     const std::shared_ptr<identity::Nym>& nym,
     LockedSave save)
@@ -87,7 +87,7 @@ auto NymData::AddContract(
     auto id = factory_.UnitID(instrumentDefinitionID);
 
     if (id->empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid instrument definition id.")
+        LogError()(OT_METHOD)(__func__)(": Invalid instrument definition id.")
             .Flush();
 
         return false;
@@ -115,7 +115,7 @@ auto NymData::AddPaymentCode(
     auto paymentCode = factory_.PaymentCode(code);
 
     if (false == paymentCode->Valid()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid payment code.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid payment code.").Flush();
 
         return false;
     }
@@ -138,7 +138,7 @@ auto NymData::AddPreferredOTServer(
     const PasswordPrompt& reason) -> bool
 {
     if (id.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid server id.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid server id.").Flush();
 
         return false;
     }

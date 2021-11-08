@@ -20,15 +20,16 @@
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::blockchain::node::wallet::Work::"
@@ -62,7 +63,7 @@ auto Work::Do(SubchainStateData& parent) noexcept -> bool
     const auto pBlock = future.get();
 
     if (false == bool(pBlock)) {
-        LogVerbose(OT_METHOD)(__func__)(": ")(name)(" invalid block ")(
+        LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" invalid block ")(
             blockHash.asHex())
             .Flush();
 
@@ -101,8 +102,8 @@ auto Work::Do(SubchainStateData& parent) noexcept -> bool
     OT_ASSERT(position == header.Position());
 
     parent.handle_confirmed_matches(block, position, confirmed);
-    LogVerbose(OT_METHOD)(__func__)(": ")(name)(" block ")(block.ID().asHex())(
-        " at height ")(position.first)(" processed in ")(
+    LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" block ")(
+        block.ID().asHex())(" at height ")(position.first)(" processed in ")(
         std::chrono::duration_cast<std::chrono::milliseconds>(
             Clock::now() - start)
             .count())(" milliseconds. ")(match_count_)(" of ")(

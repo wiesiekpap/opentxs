@@ -34,8 +34,6 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -51,21 +49,21 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace crypto
 {
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace client
+class Blockchain;
+}  // namespace crypto
 
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -122,7 +120,6 @@ class BlockchainTransactionProposal;
 }  // namespace proto
 
 class Data;
-class Factory;
 class Identifier;
 }  // namespace opentxs
 
@@ -549,8 +546,8 @@ public:
     }
 
     Database(
-        const api::Core& api,
-        const api::client::internal::Blockchain& blockchain,
+        const api::Session& api,
+        const api::crypto::Blockchain& blockchain,
         const node::internal::Network& network,
         const database::common::Database& common,
         const blockchain::Type chain,
@@ -559,12 +556,10 @@ public:
     ~Database() final = default;
 
 private:
-    friend opentxs::Factory;
-
     static const VersionNumber db_version_;
     static const storage::lmdb::TableNames table_names_;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const blockchain::Type chain_;
     const database::common::Database& common_;
     storage::lmdb::LMDB lmdb_;

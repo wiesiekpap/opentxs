@@ -15,10 +15,10 @@
 #include "opentxs/protobuf/StorageContacts.pb.h"
 #include "opentxs/protobuf/StorageIDList.pb.h"
 #include "opentxs/protobuf/StorageItemHash.pb.h"
-#include "opentxs/protobuf/verify/StorageContactAddressIndex.hpp"
-#include "opentxs/protobuf/verify/StorageContactNymIndex.hpp"
-#include "opentxs/protobuf/verify/StorageIDList.hpp"
-#include "opentxs/protobuf/verify/StorageItemHash.hpp"
+#include "opentxs/protobuf/verify/StorageContactAddressIndex.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/StorageContactNymIndex.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/StorageIDList.hpp"    // IWYU pragma: keep
+#include "opentxs/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyStorage.hpp"
 #include "protobuf/Check.hpp"
 

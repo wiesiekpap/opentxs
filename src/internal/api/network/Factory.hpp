@@ -15,11 +15,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace implementation
-{
-class Scheduler;
-}  // namespace implementation
-
 namespace network
 {
 class Asio;
@@ -27,8 +22,13 @@ class Dht;
 class Network;
 }  // namespace network
 
-class Core;
+namespace session
+{
 class Endpoints;
+class Scheduler;
+}  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace network
@@ -43,15 +43,15 @@ class Context;
 namespace opentxs::factory
 {
 auto BlockchainNetworkAPI(
-    const api::Core& api,
-    const api::Endpoints& endpoints,
+    const api::Session& api,
+    const api::session::Endpoints& endpoints,
     const opentxs::network::zeromq::Context& zmq) noexcept
     -> api::network::Blockchain::Imp*;
 auto BlockchainNetworkAPINull() noexcept -> api::network::Blockchain::Imp*;
 auto DhtAPI(
-    const api::Core& api,
+    const api::Session& api,
     const network::zeromq::Context& zeromq,
-    const api::Endpoints& endpoints,
+    const api::session::Endpoints& endpoints,
     const bool defaultEnable,
     std::int64_t& nymPublishInterval,
     std::int64_t& nymRefreshInterval,
@@ -61,11 +61,11 @@ auto DhtAPI(
     std::int64_t& unitRefreshInterval) noexcept
     -> std::unique_ptr<api::network::Dht>;
 auto NetworkAPI(
-    const api::Core& api,
+    const api::Session& api,
     const api::network::Asio& asio,
     const network::zeromq::Context& zmq,
-    const api::Endpoints& endpoints,
+    const api::session::Endpoints& endpoints,
     api::network::Blockchain::Imp* blockchain,
-    api::implementation::Scheduler& config,
+    api::session::Scheduler& config,
     bool dhtDefault) noexcept -> api::network::Network::Imp*;
 }  // namespace opentxs::factory

@@ -14,7 +14,6 @@
 
 #include "1_Internal.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -22,6 +21,8 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "ui/base/Row.hpp"
 
 class QVariant;
@@ -30,10 +31,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -103,7 +104,7 @@ protected:
 
     BalanceItem(
         const AccountActivityInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const AccountActivityRowID& rowID,
         const AccountActivitySortKey& sortKey,
         CustomData& custom,
@@ -116,7 +117,7 @@ private:
     const std::vector<std::string> contacts_;
 
     static auto extract_contacts(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const proto::PaymentWorkflow& workflow) noexcept
         -> std::vector<std::string>;
 

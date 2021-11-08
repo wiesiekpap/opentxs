@@ -9,7 +9,7 @@
 
 #include <utility>
 
-#include "opentxs/core/Log.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 
 namespace opentxs::network::zeromq

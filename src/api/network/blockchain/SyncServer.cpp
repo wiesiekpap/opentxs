@@ -24,14 +24,12 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
@@ -41,6 +39,8 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
 #define OT_METHOD "opentxs::api::network::blockchain::SyncServer::Imp::"
@@ -52,7 +52,7 @@ struct SyncServer::Imp {
     using Map = std::map<Chain, std::tuple<std::string, bool, Socket>>;
     using OTSocket = opentxs::network::zeromq::socket::implementation::Socket;
 
-    const api::Core& api_;
+    const api::Session& api_;
     Blockchain& parent_;
     const int linger_;
     Socket sync_;
@@ -95,7 +95,7 @@ struct SyncServer::Imp {
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogOutput(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
+                LogError()(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
                     .Flush();
 
                 continue;
@@ -120,7 +120,7 @@ struct SyncServer::Imp {
         }
     }
 
-    Imp(const api::Core& api, Blockchain& parent) noexcept
+    Imp(const api::Session& api, Blockchain& parent) noexcept
         : api_(api)
         , parent_(parent)
         , linger_(0)
@@ -189,7 +189,7 @@ private:
                 case bcsync::MessageType::sync_request: {
                 } break;
                 default: {
-                    LogOutput(OT_METHOD)(__func__)(
+                    LogError()(OT_METHOD)(__func__)(
                         ": Unsupported message type ")(opentxs::print(type))
                         .Flush();
 
@@ -224,7 +224,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogOutput(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
         }
     }
     auto process_internal(const Lock& lock, void* socket) noexcept -> void
@@ -237,17 +237,18 @@ private:
         if ((0u == hSize) && (0u == bSize)) { return; }
 
         if (0u < hSize) {
-            LogTrace(OT_METHOD)(__func__)(": transmitting sync reply").Flush();
+            LogTrace()(OT_METHOD)(__func__)(": transmitting sync reply")
+                .Flush();
             OTSocket::send_message(lock, sync_.get(), incoming);
         } else {
-            LogTrace(OT_METHOD)(__func__)(": broadcasting push notification")
+            LogTrace()(OT_METHOD)(__func__)(": broadcasting push notification")
                 .Flush();
             OTSocket::send_message(lock, update_.get(), incoming);
         }
     }
 };
 
-SyncServer::SyncServer(const api::Core& api, Blockchain& parent) noexcept
+SyncServer::SyncServer(const api::Session& api, Blockchain& parent) noexcept
     : imp_p_(std::make_unique<Imp>(api, parent))
     , imp_(*imp_p_)
 {
@@ -289,7 +290,7 @@ auto SyncServer::Start(
     const std::string& publicUpdate) noexcept -> bool
 {
     if (sync.empty() || update.empty()) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid endpoint").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid endpoint").Flush();
 
         return false;
     }
@@ -314,11 +315,11 @@ auto SyncServer::Start(
                      ZMQ_ROUTING_ID,
                      publicSync.data(),
                      publicSync.size())) {
-            LogDebug("Sync socket identity set to public endpoint: ")(
+            LogDebug()("Sync socket identity set to public endpoint: ")(
                 publicSync)
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": failed to set sync socket identity")
                 .Flush();
 
@@ -326,10 +327,10 @@ auto SyncServer::Start(
         }
 
         if (0 == ::zmq_bind(imp_.sync_.get(), sync.c_str())) {
-            LogNormal("Blockchain sync server listener bound to ")(sync)
+            LogConsole()("Blockchain sync server listener bound to ")(sync)
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": failed to bind sync endpoint to ")(sync)
                 .Flush();
 
@@ -337,10 +338,10 @@ auto SyncServer::Start(
         }
 
         if (0 == ::zmq_bind(imp_.update_.get(), update.c_str())) {
-            LogNormal("Blockchain sync server publisher bound to ")(update)
+            LogConsole()("Blockchain sync server publisher bound to ")(update)
                 .Flush();
         } else {
-            LogOutput(OT_METHOD)(__func__)(
+            LogError()(OT_METHOD)(__func__)(
                 ": failed to bind update endpoint to ")(update)
                 .Flush();
 

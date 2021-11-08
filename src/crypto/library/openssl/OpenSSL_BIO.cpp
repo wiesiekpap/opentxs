@@ -12,13 +12,14 @@ extern "C" {
 }
 
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define READ_AMOUNT 256
 
@@ -78,7 +79,7 @@ auto OpenSSL_BIO::ToBytes() -> std::vector<std::byte>
     read_bio(READ_AMOUNT, read, total, output);
 
     if (0 == read) {
-        LogOutput(OT_METHOD)(__func__)(": Read failed").Flush();
+        LogError()(OT_METHOD)(__func__)(": Read failed").Flush();
 
         return {};
     }
@@ -86,7 +87,7 @@ auto OpenSSL_BIO::ToBytes() -> std::vector<std::byte>
     while (READ_AMOUNT == read) { read_bio(READ_AMOUNT, read, total, output); }
 
     output.resize(total);
-    LogInsane(OT_METHOD)(__func__)(": Read ")(total)(" bytes").Flush();
+    LogInsane()(OT_METHOD)(__func__)(": Read ")(total)(" bytes").Flush();
 
     return output;
 }

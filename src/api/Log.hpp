@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "internal/api/Api.hpp"
+#include "internal/api/Log.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"

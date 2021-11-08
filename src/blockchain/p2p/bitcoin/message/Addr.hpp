@@ -24,7 +24,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -88,12 +88,12 @@ public:
     auto size() const noexcept -> std::size_t final { return payload_.size(); }
 
     Addr(
-        const api::Core& api,
+        const api::Session& api,
         const blockchain::Type network,
         const ProtocolVersion version,
         AddressVector&& addresses) noexcept;
     Addr(
-        const api::Core& api,
+        const api::Session& api,
         std::unique_ptr<Header> header,
         const ProtocolVersion version,
         AddressVector&& addresses) noexcept;

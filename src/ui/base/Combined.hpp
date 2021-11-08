@@ -8,6 +8,17 @@
 #include "ui/base/List.hpp"
 #include "ui/base/RowType.hpp"
 
+namespace opentxs
+{
+namespace api
+{
+namespace session
+{
+class Client;
+}  // namespace session
+}  // namespace api
+}  // namespace opentxs
+
 namespace opentxs::ui::implementation
 {
 template <typename ListTemplate, typename RowTemplate, typename SortKey>
@@ -23,7 +34,7 @@ protected:
     SortKey key_;
 
     Combined(
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const typename ListTemplate::ListPrimaryID::interface_type& primaryID,
         const Identifier& widgetID,
         const typename RowTemplate::RowParentType& parent,

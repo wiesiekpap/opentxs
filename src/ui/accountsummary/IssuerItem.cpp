@@ -17,25 +17,26 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/Shared.hpp"
+#include "internal/api/session/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "internal/util/Shared.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/Wallet.hpp"
 #include "opentxs/api/client/Issuer.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "ui/base/Combined.hpp"
 
 #define OT_METHOD "opentxs::ui::implementation::IssuerItem::"
@@ -44,7 +45,7 @@ namespace opentxs::factory
 {
 auto IssuerItem(
     const ui::implementation::AccountSummaryInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const ui::implementation::AccountSummaryRowID& rowID,
     const ui::implementation::AccountSummarySortKey& sortKey,
     ui::implementation::CustomData& custom,
@@ -62,7 +63,7 @@ namespace opentxs::ui::implementation
 {
 IssuerItem::IssuerItem(
     const AccountSummaryInternalInterface& parent,
-    const api::client::Manager& api,
+    const api::session::Client& api,
     const AccountSummaryRowID& rowID,
     const AccountSummarySortKey& key,
     [[maybe_unused]] CustomData& custom,
@@ -114,7 +115,7 @@ auto IssuerItem::Name() const noexcept -> std::string
 
 void IssuerItem::process_account(const Identifier& accountID) noexcept
 {
-    const auto account = api_.Wallet().Account(accountID);
+    const auto account = api_.Wallet().Internal().Account(accountID);
 
     if (false == bool(account)) { return; }
 
@@ -150,7 +151,8 @@ void IssuerItem::refresh_accounts() noexcept
 {
     const auto blank = identifier::UnitDefinition::Factory();
     const auto accounts = issuer_->AccountList(currency_, blank);
-    LogDetail(OT_METHOD)(__func__)(": Loading ")(accounts.size())(" accounts.")
+    LogDetail()(OT_METHOD)(__func__)(": Loading ")(accounts.size())(
+        " accounts.")
         .Flush();
 
     for (const auto& id : accounts) { process_account(id); }

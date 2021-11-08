@@ -19,12 +19,14 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -54,7 +56,7 @@ struct Listener {
 
     auto get(std::size_t index) noexcept(false) -> const Message&;
 
-    Listener(const ot::api::Core& api, const std::string& endpoint);
+    Listener(const ot::api::Session& api, const std::string& endpoint);
 
     ~Listener();
 

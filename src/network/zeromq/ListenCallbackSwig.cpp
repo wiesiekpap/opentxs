@@ -7,9 +7,9 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "network/zeromq/ListenCallbackSwig.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/ListenCallbackSwig.hpp"
+#include "opentxs/util/Log.hpp"
 
 #define OT_METHOD                                                              \
     "opentxs::network::zeromq::implementation::ListenCallbackSwig::"
@@ -30,7 +30,7 @@ ListenCallbackSwig::ListenCallbackSwig(opentxs::ListenCallbackSwig* callback)
     : callback_(callback)
 {
     if (nullptr == callback_) {
-        LogOutput(OT_METHOD)(__func__)(": Invalid callback pointer.").Flush();
+        LogError()(OT_METHOD)(__func__)(": Invalid callback pointer.").Flush();
 
         OT_FAIL;
     }

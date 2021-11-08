@@ -19,7 +19,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -49,7 +49,7 @@ public:
         const identifier::Nym& owner,
         Chain chain) const noexcept -> void;
 
-    AccountIndex(const api::Core& api) noexcept;
+    AccountIndex(const api::Session& api) noexcept;
     ~AccountIndex();
 
 private:

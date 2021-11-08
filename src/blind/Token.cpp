@@ -16,16 +16,16 @@
 #include "blind/token/Lucre.hpp"
 #endif  // OT_CASH_USING_LUCRE
 #include "internal/blind/Blind.hpp"
-#include "opentxs/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Purse.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/protobuf/Token.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::blind::token::implementation::Token::"
 
@@ -49,12 +49,12 @@ auto Factory::Token(const blind::Token& token, blind::Purse& purse) noexcept
 }
 
 auto Factory::Token(
-    const api::Core& api,
+    const api::Session& api,
     blind::Purse& purse,
     const proto::Token& serialized) noexcept(false)
     -> std::unique_ptr<blind::Token>
 {
-    switch (blind::internal::translate(serialized.type())) {
+    switch (translate(serialized.type())) {
         case blind::CashType::Lucre: {
 
             return std::make_unique<ReturnType>(api, purse, serialized);
@@ -66,7 +66,7 @@ auto Factory::Token(
 }
 
 auto Factory::Token(
-    const api::Core& api,
+    const api::Session& api,
     const identity::Nym& owner,
     const blind::Mint& mint,
     const blind::Token::Denomination value,
@@ -92,7 +92,7 @@ const opentxs::crypto::key::symmetric::Algorithm Token::mode_{
     opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305};
 
 Token::Token(
-    const api::Core& api,
+    const api::Session& api,
     Purse& purse,
     const blind::TokenState state,
     const blind::CashType type,
@@ -133,12 +133,12 @@ Token::Token(const Token& rhs)
 {
 }
 
-Token::Token(const api::Core& api, Purse& purse, const proto::Token& in)
+Token::Token(const api::Session& api, Purse& purse, const proto::Token& in)
     : Token(
           api,
           purse,
-          internal::translate(in.state()),
-          internal::translate(in.type()),
+          translate(in.state()),
+          translate(in.type()),
           identifier::Server::Factory(in.notary()),
           identifier::UnitDefinition::Factory(in.mint()),
           in.series(),
@@ -150,7 +150,7 @@ Token::Token(const api::Core& api, Purse& purse, const proto::Token& in)
 }
 
 Token::Token(
-    const api::Core& api,
+    const api::Session& api,
     Purse& purse,
     const VersionNumber version,
     const blind::TokenState state,
@@ -185,7 +185,7 @@ auto Token::reencrypt(
         oldKey.Decrypt(ciphertext, oldPassword, plaintext->WriteInto());
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to decrypt ciphertext.")
+        LogError()(OT_METHOD)(__func__)(": Failed to decrypt ciphertext.")
             .Flush();
 
         return false;
@@ -199,7 +199,7 @@ auto Token::reencrypt(
         opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305);
 
     if (false == output) {
-        LogOutput(OT_METHOD)(__func__)(": Failed to encrypt ciphertext.")
+        LogError()(OT_METHOD)(__func__)(": Failed to encrypt ciphertext.")
             .Flush();
 
         return false;
@@ -211,8 +211,8 @@ auto Token::reencrypt(
 auto Token::Serialize(proto::Token& output) const noexcept -> bool
 {
     output.set_version(version_);
-    output.set_type(internal::translate(type_));
-    output.set_state(internal::translate(state_));
+    output.set_type(translate(type_));
+    output.set_state(translate(state_));
     output.set_notary(notary_->str());
     output.set_mint(unit_->str());
     output.set_series(series_);

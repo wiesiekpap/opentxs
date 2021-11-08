@@ -15,13 +15,14 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Options.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Options.hpp"
 
 namespace ot = opentxs;
 
@@ -102,10 +103,10 @@ namespace
 class Test_Address : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
 
     Test_Address()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
     {
     }
 };
@@ -115,7 +116,7 @@ TEST_F(Test_Address, decode)
     for (const auto& [address, data] : vector_) {
         const auto& [expectedStyle, expectedChains] = data;
         const auto [bytes, style, chains, supported] =
-            api_.Blockchain().DecodeAddress(address);
+            api_.Crypto().Blockchain().DecodeAddress(address);
 
         EXPECT_EQ(style, expectedStyle);
         EXPECT_EQ(chains.size(), expectedChains.size());
@@ -132,7 +133,7 @@ TEST_F(Test_Address, segwit)
     for (const auto& [address, data] : p2wpkh_) {
         const auto& [chain, payload] = data;
         const auto [bytes, style, chains, supported] =
-            api_.Blockchain().DecodeAddress(address);
+            api_.Crypto().Blockchain().DecodeAddress(address);
         const auto expected =
             api_.Factory().Data(payload, ot::StringStyle::Hex);
 
@@ -146,7 +147,7 @@ TEST_F(Test_Address, segwit)
     for (const auto& [address, data] : p2wsh_) {
         const auto& [chain, payload] = data;
         const auto [bytes, style, chains, supported] =
-            api_.Blockchain().DecodeAddress(address);
+            api_.Crypto().Blockchain().DecodeAddress(address);
         const auto expected =
             api_.Factory().Data(payload, ot::StringStyle::Hex);
 
@@ -159,7 +160,7 @@ TEST_F(Test_Address, segwit)
 
     for (const auto& address : invalid_segwit_) {
         const auto [bytes, style, chains, supported] =
-            api_.Blockchain().DecodeAddress(address);
+            api_.Crypto().Blockchain().DecodeAddress(address);
 
         EXPECT_EQ(bytes->size(), 0);
         EXPECT_EQ(style, Style::Unknown);

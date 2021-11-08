@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <cstddef>  // IWYU pragma: keep
 #include <cstdint>
 
 namespace opentxs::crypto

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_UI_ACCOUNTACTIVITYQT_HPP
-#define OPENTXS_UI_ACCOUNTACTIVITYQT_HPP
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -128,4 +127,3 @@ private:
     AccountActivityQt& operator=(const AccountActivityQt&) = delete;
     AccountActivityQt& operator=(AccountActivityQt&&) = delete;
 };
-#endif

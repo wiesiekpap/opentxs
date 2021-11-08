@@ -15,6 +15,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/UnitListItem.hpp"
 )
 target_link_libraries(opentxs-ui-unitlist PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-ui-unitlist SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-ui-unitlist PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-unitlist>)
 add_dependencies(opentxs-ui-unitlist generated_code)

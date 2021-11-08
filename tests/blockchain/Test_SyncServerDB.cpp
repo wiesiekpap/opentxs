@@ -11,17 +11,17 @@
 #include <vector>
 
 #include "Helpers.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace ot = opentxs;
@@ -38,7 +38,7 @@ protected:
     static constexpr auto other_server_{"tcp://example.com:3"};
     static std::unique_ptr<Listener> listener_p_;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     Listener& listener_;
 
     static auto count(
@@ -51,7 +51,7 @@ protected:
     auto cleanup() noexcept { listener_p_.reset(); }
 
     SyncServerDB()
-        : api_(ot::Context().StartClient(0))
+        : api_(ot::Context().StartClientSession(0))
         , listener_([&]() -> auto& {
             if (!listener_p_) {
                 listener_p_ = std::make_unique<Listener>(

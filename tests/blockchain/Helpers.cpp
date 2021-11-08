@@ -15,14 +15,14 @@
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/core/Amount.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace zmq = ot::network::zeromq;
 
@@ -42,7 +42,7 @@ struct Listener::Imp {
         return future.get();
     }
 
-    Imp(const ot::api::Core& api, const std::string& endpoint)
+    Imp(const ot::api::Session& api, const std::string& endpoint)
         : lock_()
         , data_()
         , counter_(-1)
@@ -116,7 +116,7 @@ private:
     }
 };
 
-Listener::Listener(const ot::api::Core& api, const std::string& endpoint)
+Listener::Listener(const ot::api::Session& api, const std::string& endpoint)
     : imp_(std::make_unique<Imp>(api, endpoint))
 {
 }

@@ -14,15 +14,18 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/Types.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 class PasswordPrompt;
@@ -45,7 +48,7 @@ public:
     auto Weight() const -> std::uint64_t final { return weight_; }
 
     Basket(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
         const std::string& name,
@@ -55,7 +58,7 @@ public:
         const core::UnitType unitOfAccount,
         const VersionNumber version);
     Basket(
-        const api::Core& api,
+        const api::Session& api,
         const Nym_p& nym,
         const proto::UnitDefinition serialized);
 

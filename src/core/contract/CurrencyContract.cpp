@@ -26,7 +26,7 @@ namespace opentxs
 using ReturnType = contract::unit::implementation::Currency;
 
 auto Factory::CurrencyContract(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -71,7 +71,7 @@ auto Factory::CurrencyContract(
 }
 
 auto Factory::CurrencyContract(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::unit::Currency>
@@ -98,7 +98,7 @@ auto Factory::CurrencyContract(
 namespace opentxs::contract::unit::implementation
 {
 Currency::Currency(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
     const std::string& name,
@@ -119,7 +119,7 @@ Currency::Currency(
 }
 
 Currency::Currency(
-    const api::Core& api,
+    const api::Session& api,
     const Nym_p& nym,
     const proto::UnitDefinition serialized)
     : Unit(api, nym, serialized)
@@ -142,8 +142,7 @@ Currency::Currency(const Currency& rhs)
 auto Currency::IDVersion(const Lock& lock) const -> SerializedType
 {
     auto contract = Unit::IDVersion(lock);
-    contract.set_type(
-        contract::internal::translate(contract::UnitType::Currency));
+    contract.set_type(translate(contract::UnitType::Currency));
     auto& currency = *contract.mutable_currency();
     currency.set_version(1);
     currency.set_tla(tla_);

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_API_CONTEXT_HPP
-#define OPENTXS_API_CONTEXT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -12,18 +11,18 @@
 #include <functional>
 #include <string>
 
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Periodic.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace internal
 {
-class Manager;
-}  // namespace client
+class Context;
+}  // namespace internal
 
 namespace network
 {
@@ -31,13 +30,14 @@ class Asio;
 class ZAP;
 }  // namespace network
 
-namespace server
+namespace session
 {
-class Manager;
-}  // namespace server
+class Client;
+class Notary;
+}  // namespace session
 
 class Crypto;
-class Primitives;
+class Factory;
 class Settings;
 }  // namespace api
 
@@ -79,54 +79,62 @@ public:
     static auto SuggestFolder(const std::string& app) noexcept -> std::string;
 
     virtual auto Asio() const noexcept -> const network::Asio& = 0;
-    virtual auto Client(const int instance) const
-        -> const api::client::Manager& = 0;
-    virtual auto Clients() const -> std::size_t = 0;
-    virtual auto Config(const std::string& path) const
+    /** Throws std::out_of_range if the specified session does not exist. */
+    virtual auto ClientSession(const int instance) const noexcept(false)
+        -> const api::session::Client& = 0;
+    virtual auto ClientSessionCount() const noexcept -> std::size_t = 0;
+    virtual auto Config(const std::string& path) const noexcept
         -> const api::Settings& = 0;
-    virtual auto Crypto() const -> const api::Crypto& = 0;
-    virtual auto Factory() const -> const api::Primitives& = 0;
-    virtual void HandleSignals(ShutdownCallback* callback = nullptr) const = 0;
-    virtual auto ProfileId() const -> std::string = 0;
+    virtual auto Crypto() const noexcept -> const api::Crypto& = 0;
+    virtual auto Factory() const noexcept -> const api::Factory& = 0;
+    virtual auto HandleSignals(
+        ShutdownCallback* callback = nullptr) const noexcept -> void = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Context& = 0;
+    /** Throws std::out_of_range if the specified session does not exist. */
+    virtual auto NotarySession(const int instance) const noexcept(false)
+        -> const session::Notary& = 0;
+    virtual auto NotarySessionCount() const noexcept -> std::size_t = 0;
+    virtual auto ProfileId() const noexcept -> std::string = 0;
     OPENTXS_NO_EXPORT virtual auto QtRootObject() const noexcept
         -> QObject* = 0;
     virtual auto RPC(const rpc::request::Base& command) const noexcept
         -> std::unique_ptr<rpc::response::Base> = 0;
     virtual auto RPC(const ReadView command, const AllocateOutput response)
         const noexcept -> bool = 0;
-    /** Throws std::out_of_range if the specified server does not exist. */
-    virtual auto Server(const int instance) const
-        -> const api::server::Manager& = 0;
-    virtual auto Servers() const -> std::size_t = 0;
-    /** Start up a new client
+    /** Start up a new client session
      *
      *  If the specified instance exists, it will be returned.
      *
      *  Otherwise the next instance will be created
      */
-    virtual auto StartClient(const Options& args, const int instance) const
-        -> const api::client::Manager& = 0;
-    virtual auto StartClient(const int instance) const
-        -> const api::client::Manager& = 0;
-    virtual auto StartClient(
+    virtual auto StartClientSession(const Options& args, const int instance)
+        const -> const api::session::Client& = 0;
+    virtual auto StartClientSession(const int instance) const
+        -> const api::session::Client& = 0;
+    virtual auto StartClientSession(
         const Options& args,
         const int instance,
         const std::string& recoverWords,
         const std::string& recoverPassphrase) const
-        -> const api::client::Manager& = 0;
-    /** Start up a new server
+        -> const api::session::Client& = 0;
+    /** Start up a new server session
      *
      *  If the specified instance exists, it will be returned.
      *
      *  Otherwise the next instance will be created
      */
-    virtual auto StartServer(const Options& args, const int instance) const
-        -> const api::server::Manager& = 0;
-    virtual auto StartServer(const int instance) const
-        -> const api::server::Manager& = 0;
+    virtual auto StartNotarySession(const Options& args, const int instance)
+        const -> const session::Notary& = 0;
+    virtual auto StartNotarySession(const int instance) const
+        -> const session::Notary& = 0;
     /** Access ZAP configuration API */
-    virtual auto ZAP() const -> const api::network::ZAP& = 0;
-    virtual auto ZMQ() const -> const opentxs::network::zeromq::Context& = 0;
+    virtual auto ZAP() const noexcept -> const api::network::ZAP& = 0;
+    virtual auto ZMQ() const noexcept
+        -> const opentxs::network::zeromq::Context& = 0;
+
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept
+        -> internal::Context& = 0;
 
     OPENTXS_NO_EXPORT ~Context() override = default;
 
@@ -141,4 +149,3 @@ private:
 };
 }  // namespace api
 }  // namespace opentxs
-#endif

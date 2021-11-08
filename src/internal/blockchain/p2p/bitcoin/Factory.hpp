@@ -20,7 +20,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace blockchain
@@ -78,16 +78,17 @@ class Frame;
 
 namespace opentxs::factory
 {
-auto BitcoinP2PHeader(const api::Core& api, const network::zeromq::Frame& bytes)
-    -> blockchain::p2p::bitcoin::Header*;
+auto BitcoinP2PHeader(
+    const api::Session& api,
+    const network::zeromq::Frame& bytes) -> blockchain::p2p::bitcoin::Header*;
 auto BitcoinP2PMessage(
-    const api::Core& api,
+    const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
     const blockchain::p2p::bitcoin::ProtocolVersion version,
     const void* payload = nullptr,
     const std::size_t size = 0) -> blockchain::p2p::bitcoin::Message*;
 auto BitcoinP2PPeerLegacy(
-    const api::Core& api,
+    const api::Session& api,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::node::internal::Network& network,

@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_UI_DESTINATIONVALIDATOR_HPP
-#define OPENTXS_UI_DESTINATIONVALIDATOR_HPP
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -20,10 +19,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace ui
@@ -55,7 +54,7 @@ public:
     State validate(QString& input, int& pos) const final;
 
     OPENTXS_NO_EXPORT DestinationValidator(
-        const api::client::Manager&,
+        const api::session::Client&,
         std::int8_t,
         const Identifier&,
         implementation::AccountActivity&) noexcept;
@@ -71,4 +70,3 @@ private:
     DestinationValidator& operator=(const DestinationValidator&) = delete;
     DestinationValidator& operator=(DestinationValidator&&) = delete;
 };
-#endif

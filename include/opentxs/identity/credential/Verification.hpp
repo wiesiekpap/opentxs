@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_IDENTITY_CREDENTIAL_VERIFICATION_HPP
-#define OPENTXS_IDENTITY_CREDENTIAL_VERIFICATION_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -14,7 +13,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace proto
@@ -35,7 +34,7 @@ public:
     OPENTXS_NO_EXPORT static auto SigningForm(const proto::Verification& item)
         -> proto::Verification;
     OPENTXS_NO_EXPORT static auto VerificationID(
-        const api::Core& api,
+        const api::Session& api,
         const proto::Verification& item) -> std::string;
 
     ~Verification() override = default;
@@ -52,4 +51,3 @@ private:
 }  // namespace credential
 }  // namespace identity
 }  // namespace opentxs
-#endif

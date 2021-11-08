@@ -12,6 +12,9 @@ add_library(
   "UpdateManager.hpp"
 )
 target_link_libraries(opentxs-api-client-ui PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-api-client-ui SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 
 if(OT_QT_EXPORT)
   target_sources(

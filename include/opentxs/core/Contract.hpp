@@ -5,8 +5,7 @@
 
 // IWYU pragma: no_include "opentxs/crypto/HashType.hpp"
 
-#ifndef OPENTXS_CORE_CONTRACT_HPP
-#define OPENTXS_CORE_CONTRACT_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -42,7 +41,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace crypto
@@ -166,7 +165,7 @@ public:
      * write it to strOutput. This is due to the fact that OT was never really
      * designed for signing flat text, only contracts. */
     static auto SignFlatText(
-        const api::Core& api,
+        const api::Session& api,
         String& strFlatText,
         const String& strContractType,  // "LEDGER" or "PURSE" etc.
         const identity::Nym& theSigner,
@@ -321,7 +320,7 @@ public:
     auto GetContractPublicNym() const -> Nym_p;
 
 protected:
-    const api::Core& api_;
+    const api::Session& api_;
 
     /** Contract name as shown in the wallet. */
     OTString m_strName;
@@ -390,18 +389,17 @@ protected:
     /** return -1 if error, 0 if nothing, and 1 if the node was processed. */
     virtual auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t;
 
-    explicit Contract(const api::Core& core);
+    explicit Contract(const api::Session& core);
     explicit Contract(
-        const api::Core& core,
+        const api::Session& core,
         const String& name,
         const String& foldername,
         const String& filename,
         const String& strID);
-    explicit Contract(const api::Core& core, const Identifier& theID);
-    explicit Contract(const api::Core& core, const String& strID);
+    explicit Contract(const api::Session& core, const Identifier& theID);
+    explicit Contract(const api::Session& core, const String& strID);
 
 private:
     Contract() = delete;
 };
 }  // namespace opentxs
-#endif

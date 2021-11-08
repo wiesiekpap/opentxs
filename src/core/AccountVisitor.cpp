@@ -10,7 +10,7 @@
 namespace opentxs
 {
 AccountVisitor::AccountVisitor(
-    const api::Wallet& wallet,
+    const api::session::Wallet& wallet,
     const identifier::Server& notaryID)
     : wallet_(wallet)
     , notaryID_(notaryID)

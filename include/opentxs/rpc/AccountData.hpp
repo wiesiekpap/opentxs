@@ -5,8 +5,7 @@
 
 // IWYU pragma: no_include "opentxs/rpc/AccountType.hpp"
 
-#ifndef OPENTXS_RPC_ACCOUNT_DATA_HPP
-#define OPENTXS_RPC_ACCOUNT_DATA_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -73,4 +72,3 @@ private:
 };
 }  // namespace rpc
 }  // namespace opentxs
-#endif

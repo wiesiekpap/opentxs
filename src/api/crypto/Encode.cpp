@@ -18,21 +18,21 @@
 #include "base58/base58.h"
 #include "base64/base64.h"
 #include "internal/api/crypto/Factory.hpp"
-#include "opentxs/Bytes.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Primitives.hpp"
+#include "opentxs/api/Factory.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 // #define OT_METHOD opentxs::api::crypto::implementation::Encode::
 
@@ -209,7 +209,7 @@ auto Encode::IdentifierDecode(const std::string& input) const -> std::string
     OT_ASSERT(hash)
 
     if (incoming != checksum) {
-        LogTrace()(__func__)(": Checksum failure").Flush();
+        LogTrace()()(__func__)(": Checksum failure").Flush();
 
         return {};
     }

@@ -9,16 +9,15 @@
 
 #include <chrono>
 #include <cstdint>
-#include <memory>
 #include <string>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/cron/OTCron.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "server/ServerSettings.hpp"
 
 #define SERVER_WALLET_FILENAME "notaryServer.xml"
@@ -28,7 +27,7 @@
 namespace opentxs::server
 {
 auto ConfigLoader::load(
-    const api::Core& api,
+    const api::Session& api,
     const api::Settings& config,
     String& walletFilename) -> bool
 {
@@ -52,7 +51,7 @@ auto ConfigLoader::load(
             bIsNewKey);
         walletFilename.Set(strValue);
         {
-            LogDetail(OT_METHOD)(__func__)(":Using Wallet: ")(strValue)(".")
+            LogDetail()(OT_METHOD)(__func__)(":Using Wallet: ")(strValue)(".")
                 .Flush();
         }
     }
@@ -442,7 +441,7 @@ auto ConfigLoader::load(
 
     // Done Loading... Lets save any changes...
     if (!config.Save()) {
-        LogOutput(OT_METHOD)(__func__)(
+        LogError()(OT_METHOD)(__func__)(
             ": Error! Unable to save updated Config!!!")
             .Flush();
         OT_FAIL;

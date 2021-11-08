@@ -19,15 +19,15 @@
 #include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/Manager.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
@@ -35,7 +35,7 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace network
@@ -78,7 +78,7 @@ public:
     auto Tip(const Chain chain) const noexcept -> Height;
 
     Sync(
-        const api::Core& api,
+        const api::Session& api,
         storage::lmdb::LMDB& lmdb,
         const std::string& path) noexcept(false);
 
@@ -125,7 +125,7 @@ private:
 
     static const std::array<unsigned char, 16> checksum_key_;
 
-    const api::Core& api_;
+    const api::Session& api_;
     const int tip_table_;
     mutable Mutex lock_;
     mutable Tips tips_;

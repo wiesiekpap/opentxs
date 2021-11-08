@@ -13,20 +13,19 @@
 #include <utility>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Endpoints.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD "opentxs::api::client::ui::UpdateManager::"
@@ -54,7 +53,7 @@ struct UpdateManager::Imp {
         }
     }
 
-    Imp(const api::client::Manager& api) noexcept
+    Imp(const api::session::Client& api) noexcept
         : api_(api)
         , lock_()
         , map_()
@@ -67,7 +66,7 @@ struct UpdateManager::Imp {
     }
 
 private:
-    const api::client::Manager& api_;
+    const api::session::Client& api_;
     mutable std::mutex lock_;
     mutable std::map<OTIdentifier, std::vector<SimpleCallback>> map_;
     OTZMQPublishSocket publisher_;
@@ -79,7 +78,7 @@ private:
 
         const auto& frame = in.at(0);
         const auto id = api_.Factory().Identifier(frame);
-        LogTrace(OT_METHOD)(__func__)(": Widget ")(id->str())(" updated.")
+        LogTrace()(OT_METHOD)(__func__)(": Widget ")(id->str())(" updated.")
             .Flush();
         auto lock = Lock{lock_};
         auto it = map_.find(id);
@@ -99,7 +98,7 @@ private:
     }
 };
 
-UpdateManager::UpdateManager(const api::client::Manager& api) noexcept
+UpdateManager::UpdateManager(const api::session::Client& api) noexcept
     : imp_(std::make_unique<Imp>(api))
 {
     // WARNING: do not access api_.Wallet() during construction

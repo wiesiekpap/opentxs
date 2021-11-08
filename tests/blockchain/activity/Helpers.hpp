@@ -18,15 +18,16 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace blockchain
@@ -77,7 +78,7 @@ struct Test_BlockchainActivity : public ::testing::Test {
     static const std::string contact_6_name_;
     static const std::string contact_7_name_;
 
-    const ot::api::client::Manager& api_;
+    const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;
 
     auto account_1_id() const noexcept -> const ot::Identifier&;

@@ -7,14 +7,14 @@
 
 #include "opentxs/protobuf/Basic.hpp"
 #include "opentxs/protobuf/Bip47Channel.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/verify/Bip47Direction.hpp"  // IWYU pragma: keep
-#include "opentxs/protobuf/verify/BlockchainActivity.hpp"
-#include "opentxs/protobuf/verify/BlockchainDeterministicAccountData.hpp"
-#include "opentxs/protobuf/verify/HDPath.hpp"
-#include "opentxs/protobuf/verify/PaymentCode.hpp"
+#include "opentxs/protobuf/ContactEnums.pb.h"              // IWYU pragma: keep
+#include "opentxs/protobuf/verify/Bip47Direction.hpp"      // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BlockchainActivity.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/BlockchainDeterministicAccountData.hpp"  // IWYU pragma: keep
+#include "opentxs/protobuf/verify/HDPath.hpp"       // IWYU pragma: keep
+#include "opentxs/protobuf/verify/PaymentCode.hpp"  // IWYU pragma: keep
 #include "opentxs/protobuf/verify/VerifyBlockchain.hpp"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/protobuf/verify/VerifyContacts.hpp"  // IWYU pragma: keep
 #include "protobuf/Check.hpp"
 
 #define PROTO_NAME "bip47 channel"

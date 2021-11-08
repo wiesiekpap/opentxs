@@ -25,7 +25,7 @@ struct Blockchain;
 }  // namespace internal
 }  // namespace network
 
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -45,7 +45,7 @@ struct SyncServer {
         const std::string& update,
         const std::string& publicUpdate) noexcept -> bool;
 
-    SyncServer(const api::Core& api, Blockchain& parent) noexcept;
+    SyncServer(const api::Session& api, Blockchain& parent) noexcept;
 
     ~SyncServer();
 

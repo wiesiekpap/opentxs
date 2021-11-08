@@ -10,16 +10,15 @@
 #include <string>
 #include <vector>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Storage.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
 #include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -33,6 +32,8 @@
 #include "opentxs/rpc/response/GetAccountActivity.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/BalanceItem.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "rpc/RPC.hpp"
 
 namespace opentxs::rpc::implementation
@@ -63,7 +64,7 @@ auto RPC::get_account_activity(const request::Base& base) const
             const auto accountID = api.Factory().Identifier(id);
             const auto owner = [&]() -> OTNymID {
                 const auto [chain, owner] =
-                    api.Blockchain().LookupAccount(accountID);
+                    api.Crypto().Blockchain().LookupAccount(accountID);
 
                 if (owner->empty()) {
 

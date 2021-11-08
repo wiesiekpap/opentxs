@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_CORE_OTTRACKABLE_HPP
-#define OPENTXS_CORE_OTTRACKABLE_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -12,12 +11,13 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Instrument.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 
 namespace identifier
@@ -79,13 +79,13 @@ protected:
     void SetSenderAcctID(const Identifier& ACCT_ID);
     void SetSenderNymID(const identifier::Nym& NYM_ID);
 
-    OTTrackable(const api::Core& api);
+    OTTrackable(const api::Session& api);
     OTTrackable(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
     OTTrackable(
-        const api::Core& api,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const Identifier& ACCT_ID,
@@ -95,4 +95,3 @@ private:
     OTTrackable() = delete;
 };
 }  // namespace opentxs
-#endif

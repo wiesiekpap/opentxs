@@ -5,7 +5,9 @@
 
 #include "opentxs/protobuf/verify/AsymmetricKey.hpp"  // IWYU pragma: associated
 
+#include <cstdint>
 #include <map>
+#include <set>
 
 #include "opentxs/protobuf/AsymmetricKey.pb.h"
 #include "opentxs/protobuf/Basic.hpp"

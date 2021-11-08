@@ -15,10 +15,9 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "opentxs/Bytes.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
@@ -49,6 +48,8 @@
 #include "opentxs/protobuf/PeerRequest.pb.h"
 #include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/protobuf/UnitDefinition.pb.h"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -87,22 +88,6 @@ class PasswordPrompt;
 class String;
 }  // namespace opentxs
 
-namespace opentxs::contract::internal
-{
-using ProtocolVersionMap = std::map<ProtocolVersion, proto::ProtocolVersion>;
-using ProtocolVersionReverseMap =
-    std::map<proto::ProtocolVersion, ProtocolVersion>;
-using UnitTypeMap = std::map<UnitType, proto::UnitType>;
-using UnitTypeReverseMap = std::map<proto::UnitType, UnitType>;
-
-auto protocolversion_map() noexcept -> const ProtocolVersionMap&;
-auto unittype_map() noexcept -> const UnitTypeMap&;
-auto translate(const ProtocolVersion in) noexcept -> proto::ProtocolVersion;
-auto translate(const UnitType in) noexcept -> proto::UnitType;
-auto translate(const proto::ProtocolVersion in) noexcept -> ProtocolVersion;
-auto translate(const proto::UnitType in) noexcept -> UnitType;
-}  // namespace opentxs::contract::internal
-
 namespace opentxs::contract::blank
 {
 struct Signable : virtual public opentxs::contract::Signable {
@@ -117,7 +102,7 @@ struct Signable : virtual public opentxs::contract::Signable {
 
     void SetAlias(const std::string&) final {}
 
-    Signable(const api::Core& api)
+    Signable(const api::Session& api)
         : api_(api)
         , id_(api.Factory().Identifier())
         , terms_()
@@ -127,7 +112,7 @@ struct Signable : virtual public opentxs::contract::Signable {
     ~Signable() override = default;
 
 protected:
-    const api::Core& api_;
+    const api::Session& api_;
     const OTIdentifier id_;
     const std::string terms_;
 
@@ -212,7 +197,7 @@ struct Unit final : virtual public opentxs::contract::Unit, public Signable {
 
     void InitAlias(const std::string&) final {}
 
-    Unit(const api::Core& api)
+    Unit(const api::Session& api)
         : Signable(api)
     {
     }
@@ -256,7 +241,7 @@ struct Server final : virtual public opentxs::contract::Server,
 
     void InitAlias(const std::string&) final {}
 
-    Server(const api::Core& api)
+    Server(const api::Session& api)
         : Signable(api)
     {
     }
@@ -291,7 +276,7 @@ struct Reply : virtual public opentxs::contract::peer::Reply,
         return PeerRequestType::Error;
     }
 
-    Reply(const api::Core& api)
+    Reply(const api::Session& api)
         : Signable(api)
         , server_(api.Factory().ServerID())
     {
@@ -333,7 +318,7 @@ struct Request : virtual public opentxs::contract::peer::Request,
         return PeerRequestType::Error;
     }
 
-    Request(const api::Core& api)
+    Request(const api::Session& api)
         : Signable(api)
         , nym_(api.Factory().NymID())
         , server_(api.Factory().ServerID())
@@ -366,7 +351,7 @@ struct Acknowledgement final
     : virtual public opentxs::contract::peer::reply::Acknowledgement,
       public contract::peer::blank::Reply {
 
-    Acknowledgement(const api::Core& api)
+    Acknowledgement(const api::Session& api)
         : Reply(api)
     {
     }
@@ -388,7 +373,7 @@ private:
 struct Bailment final : virtual public opentxs::contract::peer::reply::Bailment,
                         public contract::peer::blank::Reply {
 
-    Bailment(const api::Core& api)
+    Bailment(const api::Session& api)
         : Reply(api)
     {
     }
@@ -411,7 +396,7 @@ struct Connection final
     : virtual public opentxs::contract::peer::reply::Connection,
       public contract::peer::blank::Reply {
 
-    Connection(const api::Core& api)
+    Connection(const api::Session& api)
         : Reply(api)
     {
     }
@@ -434,7 +419,7 @@ struct Outbailment final
     : virtual public opentxs::contract::peer::reply::Outbailment,
       public contract::peer::blank::Reply {
 
-    Outbailment(const api::Core& api)
+    Outbailment(const api::Session& api)
         : Reply(api)
     {
     }
@@ -466,7 +451,7 @@ struct Bailment final
     }
     auto ServerID() const -> const identifier::Server& final { return server_; }
 
-    Bailment(const api::Core& api)
+    Bailment(const api::Session& api)
         : Request(api)
         , unit_(api.Factory().UnitID())
     {
@@ -493,7 +478,7 @@ struct BailmentNotice final
     : virtual public opentxs::contract::peer::request::BailmentNotice,
       public contract::peer::blank::Request {
 
-    BailmentNotice(const api::Core& api)
+    BailmentNotice(const api::Session& api)
         : Request(api)
     {
     }
@@ -516,7 +501,7 @@ struct Connection final
     : virtual public opentxs::contract::peer::request::Connection,
       public contract::peer::blank::Request {
 
-    Connection(const api::Core& api)
+    Connection(const api::Session& api)
         : Request(api)
     {
     }
@@ -539,7 +524,7 @@ struct Outbailment final
     : virtual public opentxs::contract::peer::request::Outbailment,
       public contract::peer::blank::Request {
 
-    Outbailment(const api::Core& api)
+    Outbailment(const api::Session& api)
         : Request(api)
     {
     }
@@ -562,7 +547,7 @@ struct StoreSecret final
     : virtual public opentxs::contract::peer::request::StoreSecret,
       public contract::peer::blank::Request {
 
-    StoreSecret(const api::Core& api)
+    StoreSecret(const api::Session& api)
         : Request(api)
     {
     }
@@ -580,5 +565,14 @@ private:
     {
     }
 };
-
 }  // namespace opentxs::contract::peer::request::blank
+
+namespace opentxs
+{
+auto translate(const contract::ProtocolVersion in) noexcept
+    -> proto::ProtocolVersion;
+auto translate(const contract::UnitType in) noexcept -> proto::UnitType;
+auto translate(const proto::ProtocolVersion in) noexcept
+    -> contract::ProtocolVersion;
+auto translate(const proto::UnitType in) noexcept -> contract::UnitType;
+}  // namespace opentxs

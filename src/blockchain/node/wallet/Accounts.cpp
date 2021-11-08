@@ -16,21 +16,21 @@
 
 #include "blockchain/node/wallet/Account.hpp"
 #include "blockchain/node/wallet/NotificationStateData.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/Wallet.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
 
@@ -58,8 +58,8 @@ struct Accounts::Imp {
             task_finished_);
 
         if (added) {
-            LogNormal("Initializing ")(DisplayString(chain_))(" wallet for ")(
-                nym)
+            LogConsole()("Initializing ")(DisplayString(chain_))(
+                " wallet for ")(nym)
                 .Flush();
         }
 
@@ -171,8 +171,8 @@ struct Accounts::Imp {
         for_each([&](auto& a) { a.ProcessTaskComplete(id, type, enabled); });
     }
 
-    Imp(const api::Core& api,
-        const api::client::internal::Blockchain& crypto,
+    Imp(const api::Session& api,
+        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         Accounts& parent,
         const node::internal::WalletDatabase& db,
@@ -202,8 +202,8 @@ private:
     using AccountMap = std::map<OTNymID, wallet::Account>;
     using PCMap = std::map<OTIdentifier, NotificationStateData>;
 
-    const api::Core& api_;
-    const api::client::internal::Blockchain& crypto_;
+    const api::Session& api_;
+    const api::crypto::Blockchain& crypto_;
     const node::internal::Network& node_;
     Accounts& parent_;
     const node::internal::WalletDatabase& db_;
@@ -245,7 +245,7 @@ private:
 
         if (3 > code->Version()) { return; }
 
-        LogNormal("Initializing payment code ")(code->asBase58())(" on ")(
+        LogConsole()("Initializing payment code ")(code->asBase58())(" on ")(
             DisplayString(chain_))
             .Flush();
         auto accountID =
@@ -273,8 +273,8 @@ private:
 };
 
 Accounts::Accounts(
-    const api::Core& api,
-    const api::client::internal::Blockchain& crypto,
+    const api::Session& api,
+    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
     const Type chain,

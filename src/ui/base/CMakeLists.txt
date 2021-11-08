@@ -21,6 +21,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/Widget.hpp"
 )
 target_link_libraries(opentxs-ui-base PRIVATE opentxs::messages)
+target_include_directories(
+  opentxs-ui-base SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
 target_sources(opentxs-ui-base PRIVATE ${cxx-install-headers})
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-base>)
 add_dependencies(opentxs-ui-base generated_code)

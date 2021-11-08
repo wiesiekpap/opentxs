@@ -10,14 +10,14 @@
 #include <utility>
 
 #include "internal/contact/Contact.hpp"
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/contact/ContactItem.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Log.hpp"
-#include "opentxs/core/LogSource.hpp"
 #include "opentxs/protobuf/ContactSection.pb.h"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 #define OT_METHOD "opentxs::ContactGroup::"
 
@@ -295,8 +295,8 @@ auto ContactGroup::SerializeTo(
     proto::ContactSection& section,
     const bool withIDs) const -> bool
 {
-    if (contact::internal::translate(section.name()) != imp_->section_) {
-        LogOutput(OT_METHOD)(__func__)(
+    if (translate(section.name()) != imp_->section_) {
+        LogError()(OT_METHOD)(__func__)(
             ": Trying to serialize to incorrect section.")
             .Flush();
 

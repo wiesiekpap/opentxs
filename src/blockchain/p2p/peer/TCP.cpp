@@ -10,13 +10,12 @@
 #include <boost/asio.hpp>
 #include <cstddef>
 
-#include "opentxs/Pimpl.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Log.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -26,6 +25,8 @@
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 #define OT_METHOD                                                              \
@@ -37,7 +38,7 @@ using tcp = asio::ip::tcp;
 namespace opentxs::blockchain::p2p::implementation
 {
 struct TCPConnectionManager : virtual public Peer::ConnectionManager {
-    const api::Core& api_;
+    const api::Session& api_;
     Peer& parent_;
     const Flag& running_;
     const network::asio::Endpoint endpoint_;
@@ -73,7 +74,8 @@ struct TCPConnectionManager : virtual public Peer::ConnectionManager {
     auto connect() noexcept -> void override
     {
         if (0 < connection_id_.size()) {
-            LogVerbose(OT_METHOD)(__func__)(": Connecting to ")(endpoint_.str())
+            LogVerbose()(OT_METHOD)(__func__)(": Connecting to ")(
+                endpoint_.str())
                 .Flush();
             socket_.Connect(reader(connection_id_));
         }
@@ -133,7 +135,7 @@ struct TCPConnectionManager : virtual public Peer::ConnectionManager {
                 }
             } break;
             case Peer::Task::Connect: {
-                LogVerbose(OT_METHOD)(__func__)(": Connect to ")(
+                LogVerbose()(OT_METHOD)(__func__)(": Connect to ")(
                     endpoint_.str())(" successful")
                     .Flush();
                 parent_.on_connect();
@@ -195,7 +197,7 @@ struct TCPConnectionManager : virtual public Peer::ConnectionManager {
     }
 
     TCPConnectionManager(
-        const api::Core& api,
+        const api::Session& api,
         Peer& parent,
         const Flag& running,
         const Peer::Address& address,
@@ -251,7 +253,7 @@ protected:
     }
 
     TCPConnectionManager(
-        const api::Core& api,
+        const api::Session& api,
         const Flag& running,
         const std::size_t headerSize,
         Peer& parent,
@@ -284,7 +286,7 @@ struct TCPIncomingConnectionManager final : public TCPConnectionManager {
     auto connect() noexcept -> void final {}
 
     TCPIncomingConnectionManager(
-        const api::Core& api,
+        const api::Session& api,
         Peer& parent,
         const Flag& running,
         const Peer::Address& address,
@@ -304,7 +306,7 @@ struct TCPIncomingConnectionManager final : public TCPConnectionManager {
 };
 
 auto Peer::ConnectionManager::TCP(
-    const api::Core& api,
+    const api::Session& api,
     Peer& parent,
     const Flag& running,
     const Peer::Address& address,
@@ -315,7 +317,7 @@ auto Peer::ConnectionManager::TCP(
 }
 
 auto Peer::ConnectionManager::TCPIncoming(
-    const api::Core& api,
+    const api::Session& api,
     Peer& parent,
     const Flag& running,
     const Peer::Address& address,

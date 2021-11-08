@@ -10,7 +10,7 @@
 #include <iosfwd>
 #include <string>
 
-#include "opentxs/api/Legacy.hpp"
+#include "internal/api/Legacy.hpp"
 
 namespace opentxs
 {

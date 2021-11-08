@@ -10,6 +10,8 @@
 
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
+#include "opentxs/core/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace ot = opentxs;
 

@@ -3,15 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_NETWORK_ZEROMQ_SOCKET_ROUTER_HPP
-#define OPENTXS_NETWORK_ZEROMQ_SOCKET_ROUTER_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/network/zeromq/curve/Client.hpp"
 #include "opentxs/network/zeromq/curve/Server.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {
@@ -64,4 +63,3 @@ private:
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
-#endif

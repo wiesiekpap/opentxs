@@ -14,14 +14,14 @@ namespace opentxs
 {
 namespace api
 {
-class Core;
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
 namespace opentxs::identity::wot::verification::internal
 {
 struct Group : virtual public verification::Group {
-    virtual auto API() const noexcept -> const api::Core& = 0;
+    virtual auto API() const noexcept -> const api::Session& = 0;
     virtual auto External() const noexcept -> bool = 0;
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
 
@@ -38,7 +38,7 @@ struct Item : virtual public verification::Item {
     ~Item() override = default;
 };
 struct Nym : virtual public verification::Nym {
-    virtual auto API() const noexcept -> const api::Core& = 0;
+    virtual auto API() const noexcept -> const api::Session& = 0;
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
 
     using verification::Nym::AddItem;
@@ -50,7 +50,7 @@ struct Nym : virtual public verification::Nym {
     ~Nym() override = default;
 };
 struct Set : virtual public verification::Set {
-    virtual auto API() const noexcept -> const api::Core& = 0;
+    virtual auto API() const noexcept -> const api::Session& = 0;
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
 
     virtual void Register(

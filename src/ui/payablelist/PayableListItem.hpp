@@ -10,10 +10,11 @@
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "internal/ui/UI.hpp"
-#include "opentxs/SharedPimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/core/UnitType.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "ui/contactlist/ContactListItem.hpp"
 
 class QVariant;
@@ -22,10 +23,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Manager;
-}  // namespace client
+class Client;
+}  // namespace session
 }  // namespace api
 
 namespace network
@@ -55,7 +56,7 @@ public:
 
     PayableListItem(
         const PayableInternalInterface& parent,
-        const api::client::Manager& api,
+        const api::session::Client& api,
         const PayableListRowID& rowID,
         const PayableListSortKey& key,
         const std::string& paymentcode,

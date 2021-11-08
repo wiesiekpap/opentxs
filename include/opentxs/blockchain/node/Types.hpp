@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_BLOCKCHAIN_NODE_TYPES_HPP
-#define OPENTXS_BLOCKCHAIN_NODE_TYPES_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -25,4 +24,3 @@ enum class TxoTag : std::uint16_t;
 OPENTXS_EXPORT auto print(blockchain::node::TxoState) noexcept -> std::string;
 OPENTXS_EXPORT auto print(blockchain::node::TxoTag) noexcept -> std::string;
 }  // namespace opentxs
-#endif

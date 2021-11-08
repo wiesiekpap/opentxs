@@ -8,18 +8,22 @@
 #include <stdexcept>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Core.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/HDSeed.hpp"
-#include "opentxs/api/client/Blockchain.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
+#include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Seed.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/crypto/key/HD.hpp"
+#include "opentxs/crypto/key/Secp256k1.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {
@@ -27,7 +31,7 @@ PaymentCodeFixture PC_Fixture_Base::user_1_{};
 PaymentCodeFixture PC_Fixture_Base::user_2_{};
 
 auto PaymentCodeFixture::bip44_path(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const ot::blockchain::Type chain,
     ot::AllocateOutput destination) const -> bool
 {
@@ -35,8 +39,8 @@ auto PaymentCodeFixture::bip44_path(
         throw std::runtime_error("missing seed");
     }
 
-    if (false ==
-        api.Blockchain().Bip44Path(chain, seed_.value(), destination)) {
+    if (false == api.Crypto().Blockchain().Bip44Path(
+                     chain, seed_.value(), destination)) {
         throw std::runtime_error("missing path");
     }
 
@@ -60,7 +64,7 @@ auto PaymentCodeFixture::blinding_key_public()
 }
 
 auto PaymentCodeFixture::blinding_key_secret(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const ot::blockchain::Type chain,
     const ot::PasswordPrompt& reason) -> const ot::crypto::key::EllipticCurve&
 {
@@ -71,7 +75,7 @@ auto PaymentCodeFixture::blinding_key_secret(
         if (false == bip44_path(api, chain, ot::writer(bytes))) {
             throw std::runtime_error("Failed");
         }
-        var = api.Seeds().AccountChildKey(
+        var = api.Crypto().Seed().AccountChildKey(
             ot::reader(bytes), ot::INTERNAL_CHAIN, index_, reason);
     }
 
@@ -81,7 +85,7 @@ auto PaymentCodeFixture::blinding_key_secret(
 }
 
 auto PaymentCodeFixture::blinding_key_secret(
-    const ot::api::client::Manager& api,
+    const ot::api::session::Client& api,
     const std::string& privateKey,
     const ot::PasswordPrompt& reason) -> const ot::crypto::key::EllipticCurve&
 {
@@ -91,7 +95,7 @@ auto PaymentCodeFixture::blinding_key_secret(
         const auto decoded =
             api.Factory().Data(privateKey, ot::StringStyle::Hex);
         const auto key = api.Factory().SecretFromBytes(decoded->Bytes());
-        var = api.Asymmetric().InstantiateSecp256k1Key(key, reason);
+        var = api.Crypto().Asymmetric().InstantiateSecp256k1Key(key, reason);
     }
 
     if (false == bool(var)) { throw std::runtime_error("Failed"); }
@@ -109,7 +113,7 @@ auto PaymentCodeFixture::cleanup() -> void
 }
 
 auto PaymentCodeFixture::payment_code_public(
-    const ot::api::Core& api,
+    const ot::api::Session& api,
     const std::string& base58) -> const ot::PaymentCode&
 {
     auto& var = pc_public_;
@@ -124,7 +128,7 @@ auto PaymentCodeFixture::payment_code_public(
 }
 
 auto PaymentCodeFixture::payment_code_secret(
-    const ot::api::Core& api,
+    const ot::api::Session& api,
     const std::uint8_t version,
     const ot::PasswordPrompt& reason) -> const ot::PaymentCode&
 {
@@ -145,7 +149,7 @@ auto PaymentCodeFixture::payment_code_secret(
 }
 
 auto PaymentCodeFixture::seed(
-    const ot::api::Core& api,
+    const ot::api::Session& api,
     const std::string_view wordList,
     const ot::PasswordPrompt& reason) -> const std::string&
 {
@@ -154,7 +158,7 @@ auto PaymentCodeFixture::seed(
     if (false == var.has_value()) {
         const auto words = api.Factory().SecretFromText(wordList);
         const auto phrase = api.Factory().Secret(0);
-        var.emplace(api.Seeds().ImportSeed(
+        var.emplace(api.Crypto().Seed().ImportSeed(
             words,
             phrase,
             ot::crypto::SeedStyle::BIP39,
@@ -174,7 +178,7 @@ PC_Fixture_Base::PC_Fixture_Base(
     const std::string& bobBip39,
     const std::string& aliceExpectedPC,
     const std::string& bobExpectedPC) noexcept
-    : api_(ot::Context().StartClient(0))
+    : api_(ot::Context().StartClientSession(0))
     , reason_(api_.Factory().PasswordPrompt(__func__))
     , alice_seed_(user_1_.seed(api_, aliceBip39, reason_))
     , bob_seed_(user_2_.seed(api_, bobBip39, reason_))

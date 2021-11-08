@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_PROTOBUF_VERIFYCREDENTIALS_HPP
-#define OPENTXS_PROTOBUF_VERIFYCREDENTIALS_HPP
+#pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -39,4 +38,3 @@ auto SymmetricKeyAllowedCiphertext() noexcept -> const VersionMap&;
 auto TaggedKeyAllowedSymmetricKey() noexcept -> const VersionMap&;
 }  // namespace proto
 }  // namespace opentxs
-#endif  // OPENTXS_PROTOBUF_VERIFYCREDENTIALS_HPP

@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/Options.hpp"
+#include "opentxs/util/Options.hpp"
 
 namespace ot = opentxs;
 namespace po = boost::program_options;

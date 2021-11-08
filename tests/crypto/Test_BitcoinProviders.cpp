@@ -14,16 +14,16 @@
 #include <vector>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Pimpl.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Manager.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -39,6 +39,8 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 
@@ -47,7 +49,7 @@ namespace ottest
 class Test_Bitcoin_Providers : public ::testing::Test
 {
 public:
-    const ot::api::client::Manager& client_;
+    const ot::api::session::Client& client_;
     ot::OTPasswordPrompt reason_;
     const ot::api::Crypto& crypto_;
     const std::map<std::string, std::string> base_58_{
@@ -392,7 +394,7 @@ public:
         };
 
     Test_Bitcoin_Providers()
-        : client_(ot::Context().StartClient(0))
+        : client_(ot::Context().StartClientSession(0))
         , reason_(client_.Factory().PasswordPrompt(__func__))
         , crypto_(client_.Crypto())
     {
@@ -465,13 +467,13 @@ public:
             const auto seedID = library.SeedID(seed->Bytes())->str();
             const auto serialized =
                 library.DeriveKey(ot::EcdsaCurve::secp256k1, seed, {});
-            auto pKey = client_.Asymmetric().InstantiateKey(
+            auto pKey = client_.Crypto().Asymmetric().InstantiateKey(
                 ot::crypto::key::asymmetric::Algorithm::Secp256k1,
                 seedID,
                 serialized,
-                reason_,
                 ot::crypto::key::asymmetric::Role::Sign,
-                ot::crypto::key::EllipticCurve::DefaultVersion);
+                ot::crypto::key::EllipticCurve::DefaultVersion,
+                reason_);
 
             EXPECT_TRUE(pKey);
 
@@ -585,13 +587,13 @@ public:
                 const auto seedID = library.SeedID(seed.Bytes())->str();
                 const auto serialized =
                     library.DeriveKey(ot::EcdsaCurve::secp256k1, seed, rawPath);
-                auto pKey = client_.Asymmetric().InstantiateKey(
+                auto pKey = client_.Crypto().Asymmetric().InstantiateKey(
                     ot::crypto::key::asymmetric::Algorithm::Secp256k1,
                     seedID,
                     serialized,
-                    reason_,
                     ot::crypto::key::asymmetric::Role::Sign,
-                    ot::crypto::key::EllipticCurve::DefaultVersion);
+                    ot::crypto::key::EllipticCurve::DefaultVersion,
+                    reason_);
 
                 EXPECT_TRUE(pKey);
 
