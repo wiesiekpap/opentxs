@@ -176,14 +176,13 @@ auto HeaderOracle::AddCheckpoint(
     auto update = UpdateTransaction{api_, database_};
 
     if (update.EffectiveCheckpoint()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Checkpoint already exists")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Checkpoint already exists").Flush();
 
         return false;
     }
 
     if (2 > position) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid position").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid position").Flush();
 
         return false;
     }
@@ -218,7 +217,7 @@ auto HeaderOracle::AddHeaders(
 
     for (auto& header : headers) {
         if (false == bool(header)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid header").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid header").Flush();
 
             return false;
         }
@@ -238,8 +237,7 @@ auto HeaderOracle::add_header(
     std::unique_ptr<block::Header> pHeader) noexcept -> bool
 {
     if (update.EffectiveHeaderExists(pHeader->Hash())) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Header already processed")
-            .Flush();
+        LogVerbose()(OT_PRETTY_CLASS())("Header already processed").Flush();
 
         return true;
     }
@@ -250,8 +248,7 @@ auto HeaderOracle::add_header(
     const auto* pParent = is_disconnected(header.ParentHash(), update);
 
     if (nullptr == pParent) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Adding disconnected header")
-            .Flush();
+        LogVerbose()(OT_PRETTY_CLASS())("Adding disconnected header").Flush();
         header.SetDisconnectedState();
         update.DisconnectBlock(header);
 
@@ -273,8 +270,7 @@ auto HeaderOracle::add_header(
             lock, current, parent, update, candidates, header);
         connect_children(lock, header, candidates, candidate, update);
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to connect children")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to connect children").Flush();
 
         return false;
     }
@@ -332,8 +328,7 @@ auto HeaderOracle::apply_checkpoint(
 
         return true;
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to process sibling chains")
+        LogError()(OT_PRETTY_CLASS())("Failed to process sibling chains")
             .Flush();
 
         return false;
@@ -588,16 +583,16 @@ auto HeaderOracle::choose_candidate(
                             update.SetReorgParent(parent);
                             update.AddToBestChain(segment);
                             update.AddSibling(current.Position());
-                            LogVerbose()(OT_PRETTY_CLASS(__func__))("Block ")(
+                            LogVerbose()(OT_PRETTY_CLASS())("Block ")(
                                 hash->asHex())(" at position ")(
                                 height)(" causes a chain reorg.")
                                 .Flush();
                         }
                     } else {
                         update.AddToBestChain(segment);
-                        LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                            "Adding block ")(hash->asHex())(
-                            " to best chain at position ")(height)
+                        LogVerbose()(OT_PRETTY_CLASS())("Adding block ")(
+                            hash->asHex())(" to best chain at position ")(
+                            height)
                             .Flush();
                     }
                 }
@@ -605,14 +600,13 @@ auto HeaderOracle::choose_candidate(
                 const auto orphan = tip.Position();
                 update.AddSibling(orphan);
                 const auto& [height, hash] = orphan;
-                LogVerbose()(OT_PRETTY_CLASS(__func__))("Adding block ")(
-                    hash->asHex())(" as an orphan at position ")(height)
+                LogVerbose()(OT_PRETTY_CLASS())("Adding block ")(hash->asHex())(
+                    " as an orphan at position ")(height)
                     .Flush();
             }
         }
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error evaluating candidates")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error evaluating candidates").Flush();
 
         return output;
     }
@@ -720,7 +714,7 @@ auto HeaderOracle::DeleteCheckpoint() noexcept -> bool
     auto update = UpdateTransaction{api_, database_};
 
     if (false == update.EffectiveCheckpoint()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("No checkpoint").Flush();
+        LogError()(OT_PRETTY_CLASS())("No checkpoint").Flush();
 
         return false;
     }
@@ -991,7 +985,7 @@ auto HeaderOracle::ProcessSyncData(
             previous = std::move(hash);
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
 
     if ((0u < output) && database_.ApplyUpdate(update)) {

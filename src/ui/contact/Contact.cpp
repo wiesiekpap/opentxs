@@ -204,8 +204,7 @@ auto Contact::sort_key(const contact::SectionType type) noexcept -> int
 
 auto Contact::startup() noexcept -> void
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Loading contact ")(primary_id_)
-        .Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Loading contact ")(primary_id_).Flush();
     const auto contact = api_.Contacts().Contact(primary_id_);
 
     OT_ASSERT(contact)

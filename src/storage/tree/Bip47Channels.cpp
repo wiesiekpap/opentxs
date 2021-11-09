@@ -116,7 +116,7 @@ auto Bip47Channels::init(const std::string& hash) -> void
     driver_.LoadProto(hash, proto);
 
     if (!proto) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed to load bip47 channel index file.")
             .Flush();
         OT_FAIL
@@ -177,7 +177,7 @@ auto Bip47Channels::repair_indices() noexcept -> void
 auto Bip47Channels::save(const std::unique_lock<std::mutex>& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
         OT_FAIL
     }
 

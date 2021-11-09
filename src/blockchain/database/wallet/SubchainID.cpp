@@ -28,13 +28,17 @@ SubchainID::SubchainID(
     : data_([&] {
         auto out = space(fixed_ + subaccount.size());
         auto* it = reinterpret_cast<std::byte*>(out.data());
+
         std::memcpy(it, &type, sizeof(type));
         std::advance(it, sizeof(type));
         std::memcpy(it, &filter, sizeof(filter));
         std::advance(it, sizeof(filter));
         std::memcpy(it, &version, sizeof(version));
         std::advance(it, sizeof(version));
-        std::memcpy(it, subaccount.data(), subaccount.size());
+
+        if (0u < subaccount.size()) {
+            std::memcpy(it, subaccount.data(), subaccount.size());
+        }
 
         return out;
     }())
@@ -86,7 +90,8 @@ auto SubchainID::SubaccountID(const api::Session& api) const noexcept
         const auto size = data_.size() - offset;
         const auto start = std::next(data_.data(), offset);
         auto& id = subaccount_.emplace(api.Factory().Identifier());
-        id->Assign(start, size);
+
+        if (0u < size) { id->Assign(start, size); }
     }
 
     return subaccount_.value();

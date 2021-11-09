@@ -13,6 +13,7 @@
 #include <memory>
 #include <utility>
 
+#include "Proto.hpp"
 #include "opentxs/protobuf/RPCResponse.pb.h"
 #include "opentxs/rpc/request/GetAccountActivity.hpp"
 

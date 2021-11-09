@@ -72,7 +72,7 @@ auto MessagableList::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -105,7 +105,7 @@ auto MessagableList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -117,13 +117,13 @@ auto MessagableList::process_contact(
     const MessagableListSortKey& key) noexcept -> void
 {
     if (owner_contact_id_ == id) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Skipping owner contact ")(
-            id)(" (")(key.second)(")")
+        LogDetail()(OT_PRETTY_CLASS())("Skipping owner contact ")(id)(" (")(
+            key.second)(")")
             .Flush();
 
         return;
     } else {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Incoming contact ")(id)(" (")(
+        LogDetail()(OT_PRETTY_CLASS())("Incoming contact ")(id)(" (")(
             key.second)(") is not owner contact: (")(owner_contact_id_)(")")
             .Flush();
     }
@@ -132,8 +132,8 @@ auto MessagableList::process_contact(
         case Messagability::READY:
         case Messagability::MISSING_RECIPIENT:
         case Messagability::UNREGISTERED: {
-            LogDetail()(OT_PRETTY_CLASS(__func__))("Messagable contact ")(
-                id)(" (")(key.second)(")")
+            LogDetail()(OT_PRETTY_CLASS())("Messagable contact ")(id)(" (")(
+                key.second)(")")
                 .Flush();
             auto custom = CustomData{};
             add_item(id, key, custom);
@@ -144,8 +144,8 @@ auto MessagableList::process_contact(
         case Messagability::CONTACT_LACKS_NYM:
         case Messagability::MISSING_CONTACT:
         default: {
-            LogDetail()(OT_PRETTY_CLASS(__func__))(
-                "Skipping non-messagable contact ")(id)(" (")(key.second)(")")
+            LogDetail()(OT_PRETTY_CLASS())("Skipping non-messagable contact ")(
+                id)(" (")(key.second)(")")
                 .Flush();
             delete_item(id);
         }
@@ -188,8 +188,7 @@ auto MessagableList::process_nym(const Message& message) noexcept -> void
 auto MessagableList::startup() noexcept -> void
 {
     const auto contacts = Widget::api_.Contacts().ContactList();
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(contacts.size())(
-        " contacts.")
+    LogDetail()(OT_PRETTY_CLASS())("Loading ")(contacts.size())(" contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {

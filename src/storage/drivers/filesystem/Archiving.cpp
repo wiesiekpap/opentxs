@@ -86,15 +86,14 @@ auto Archiving::calculate_path(
 
     if (8 < key.size()) {
         if (false == sync(level2)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unable to sync directory ")(
+            LogError()(OT_PRETTY_CLASS())("Unable to sync directory ")(
                 level2)(".")
                 .Flush();
         }
     }
 
     if (false == sync(level1)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to sync directory ")(
-            level1)(".")
+        LogError()(OT_PRETTY_CLASS())("Unable to sync directory ")(level1)(".")
             .Flush();
     }
 
@@ -136,8 +135,7 @@ auto Archiving::prepare_read(const std::string& input) const -> std::string
         encryption_key_.api().Factory().PasswordPrompt("Storage read");
 
     if (false == encryption_key_.Decrypt(ciphertext, reason, writer(output))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to decrypt value.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to decrypt value.").Flush();
     }
 
     return output;
@@ -156,8 +154,7 @@ auto Archiving::prepare_write(const std::string& plaintext) const -> std::string
         encryption_key_.Encrypt(plaintext, reason, ciphertext, false);
 
     if (false == encrypted) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to encrypt value.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to encrypt value.").Flush();
     }
 
     return proto::ToString(ciphertext);

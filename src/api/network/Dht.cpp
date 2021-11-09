@@ -304,20 +304,19 @@ auto Dht::ProcessPublicNym(
 
         foundValid = true;
 
-        LogDebug()(OT_PRETTY_STATIC(Dht, __func__))("Saved nym: ")(key).Flush();
+        LogDebug()(OT_PRETTY_STATIC(Dht))("Saved nym: ")(key).Flush();
 
         if (notifyCB) { notifyCB(key); }
     }
 
     if (!foundValid) {
-        LogVerbose()(OT_PRETTY_STATIC(Dht, __func__))(
+        LogVerbose()(OT_PRETTY_STATIC(Dht))(
             "Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogVerbose()(OT_PRETTY_STATIC(Dht, __func__))("All results are empty.")
-            .Flush();
+        LogVerbose()(OT_PRETTY_STATIC(Dht))("All results are empty.").Flush();
     }
 
     return foundData;
@@ -353,8 +352,7 @@ auto Dht::ProcessServerContract(
             continue;
         }
 
-        LogDebug()(OT_PRETTY_STATIC(Dht, __func__))("Saved contract: ")(key)
-            .Flush();
+        LogDebug()(OT_PRETTY_STATIC(Dht))("Saved contract: ")(key).Flush();
         foundValid = true;
 
         if (notifyCB) { notifyCB(key); }
@@ -363,14 +361,12 @@ auto Dht::ProcessServerContract(
     }
 
     if (!foundValid) {
-        LogError()(OT_PRETTY_STATIC(Dht, __func__))(
-            "Found results, but none are valid.")
+        LogError()(OT_PRETTY_STATIC(Dht))("Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogError()(OT_PRETTY_STATIC(Dht, __func__))("All results are empty.")
-            .Flush();
+        LogError()(OT_PRETTY_STATIC(Dht))("All results are empty.").Flush();
     }
 
     return foundData;
@@ -407,8 +403,7 @@ auto Dht::ProcessUnitDefinition(
             continue;
         }
 
-        LogDebug()(OT_PRETTY_STATIC(Dht, __func__))("Saved unit definition: ")(
-            key)
+        LogDebug()(OT_PRETTY_STATIC(Dht))("Saved unit definition: ")(key)
             .Flush();
         foundValid = true;
 
@@ -418,14 +413,12 @@ auto Dht::ProcessUnitDefinition(
     }
 
     if (!foundValid) {
-        LogError()(OT_PRETTY_STATIC(Dht, __func__))(
-            "Found results, but none are valid.")
+        LogError()(OT_PRETTY_STATIC(Dht))("Found results, but none are valid.")
             .Flush();
     }
 
     if (!foundData) {
-        LogError()(OT_PRETTY_STATIC(Dht, __func__))("All results are empty.")
-            .Flush();
+        LogError()(OT_PRETTY_STATIC(Dht))("All results are empty.").Flush();
     }
 
     return foundData;

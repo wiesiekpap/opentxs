@@ -15,12 +15,11 @@
 #include <vector>
 
 #include "blockchain/DownloadTask.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
-
-#define DOWNLOAD_MANAGER "opentxs::blockchain::download::Manager::"
 
 namespace opentxs::blockchain::download
 {
@@ -47,8 +46,8 @@ public:
     }
     auto Reset(const Position& position, Finished&& previous) noexcept -> void
     {
-        LogVerbose()(DOWNLOAD_MANAGER)(__func__)(": resetting ")(
-            log_)(" to height")(position.first)
+        LogVerbose()(OT_PRETTY_CLASS())("resetting ")(log_)(" to height")(
+            position.first)
             .Flush();
         auto lock = Lock{dm_lock_};
         dm_previous_ = std::move(previous);
@@ -79,8 +78,7 @@ protected:
         auto lock = Lock{dm_lock_};
 
         if (caught_up(lock)) {
-            LogTrace()(DOWNLOAD_MANAGER)(__func__)(": ")(log_)(" caught up")
-                .Flush();
+            LogTrace()(OT_PRETTY_CLASS())(log_)(" caught up").Flush();
 
             return {};
         }
@@ -94,8 +92,7 @@ protected:
             return std::min<std::size_t>(unallocated, batch);
         }();
 
-        LogTrace()(DOWNLOAD_MANAGER)(__func__)(": ")(size)(" ")(
-            log_)(" items to download")
+        LogTrace()(OT_PRETTY_CLASS())(size)(" ")(log_)(" items to download")
             .Flush();
 
         if (0 == size) { return {}; }
@@ -120,20 +117,9 @@ protected:
                         }
                     }
 
-                    LogTrace()(DOWNLOAD_MANAGER)(__func__)(": queueing ")(
-                        log_)(" item at height ")(task->position_.first)(" "
-                                                                         "f"
-                                                                         "o"
-                                                                         "r"
-                                                                         " "
-                                                                         "d"
-                                                                         "o"
-                                                                         "w"
-                                                                         "n"
-                                                                         "l"
-                                                                         "o"
-                                                                         "a"
-                                                                         "d")
+                    LogTrace()(OT_PRETTY_CLASS())("queueing ")(
+                        log_)(" item at height ")(task->position_.first)(
+                        " for download")
                         .Flush();
                     output.emplace_back(task);
 

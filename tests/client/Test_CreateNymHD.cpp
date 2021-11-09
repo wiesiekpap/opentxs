@@ -22,6 +22,7 @@
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 using namespace opentxs;
 

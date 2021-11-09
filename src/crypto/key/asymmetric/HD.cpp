@@ -57,8 +57,7 @@ auto HD::CalculateFingerprint(
     auto digest = Data::Factory();
 
     if (33 != key.size()) {
-        LogError()(OT_PRETTY_STATIC(HD, __func__))("Invalid public key")
-            .Flush();
+        LogError()(OT_PRETTY_STATIC(HD))("Invalid public key").Flush();
 
         return output;
     }
@@ -67,16 +66,14 @@ auto HD::CalculateFingerprint(
         hash.Digest(crypto::HashType::Bitcoin, key, digest->WriteInto());
 
     if (false == hashed) {
-        LogError()(OT_PRETTY_STATIC(HD, __func__))(
-            "Failed to calculate public key hash")
+        LogError()(OT_PRETTY_STATIC(HD))("Failed to calculate public key hash")
             .Flush();
 
         return output;
     }
 
     if (false == digest->Extract(output)) {
-        LogError()(OT_PRETTY_STATIC(HD, __func__))("Failed to set output")
-            .Flush();
+        LogError()(OT_PRETTY_STATIC(HD))("Failed to set output").Flush();
 
         return {};
     }
@@ -244,7 +241,7 @@ auto HD::chaincode(const Lock& lock, const PasswordPrompt& reason)
 
         return get_chain_code(lock, reason).Bytes();
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -334,7 +331,7 @@ auto HD::ChildKey(const Bip32Index index, const PasswordPrompt& reason)
         throw std::runtime_error{"HD key support missing but required"};
 #endif
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -399,7 +396,7 @@ auto HD::get_params() const noexcept -> std::tuple<bool, Bip32Depth, Bip32Index>
     auto& [success, depth, child] = output;
 
     if (false == bool(path_)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("missing path").Flush();
+        LogError()(OT_PRETTY_CLASS())("missing path").Flush();
 
         return output;
     }
@@ -408,15 +405,13 @@ auto HD::get_params() const noexcept -> std::tuple<bool, Bip32Depth, Bip32Index>
     auto size = path.child_size();
 
     if (0 > size) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid depth (")(size)(")")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid depth (")(size)(")").Flush();
 
         return output;
     }
 
     if (std::numeric_limits<Bip32Depth>::max() < size) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid depth (")(size)(")")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid depth (")(size)(")").Flush();
 
         return output;
     }
@@ -470,7 +465,7 @@ auto HD::Path(proto::HDPath& output) const noexcept -> bool
         return true;
     }
 
-    LogError()(OT_PRETTY_CLASS(__func__))("HDPath not instantiated.").Flush();
+    LogError()(OT_PRETTY_CLASS())("HDPath not instantiated.").Flush();
 
     return false;
 }

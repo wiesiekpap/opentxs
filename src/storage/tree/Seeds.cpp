@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Seed.pb.h"
@@ -156,7 +157,7 @@ auto Seeds::Store(const proto::Seed& data, const std::string& alias) -> bool
 
     if (existingKey) {
         const bool revisionCheck = check_revision<proto::Seed>(
-            (OT_PRETTY_CLASS(__func__)), incomingRevision, metadata);
+            (OT_PRETTY_CLASS()), incomingRevision, metadata);
 
         if (false == revisionCheck) {
             // We're trying to save a seed with a lower index than has already

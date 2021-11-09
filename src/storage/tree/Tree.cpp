@@ -149,8 +149,7 @@ auto Tree::get_child(
         pointer.reset(new T(driver_, hash, params...));
 
         if (false == bool(pointer)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unable to instantiate.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unable to instantiate.").Flush();
 
             OT_FAIL;
         }
@@ -204,7 +203,7 @@ void Tree::init(const std::string& hash)
             OT_ASSERT(master_key_);
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         OT_FAIL
     }
@@ -223,8 +222,7 @@ auto Tree::Load(std::shared_ptr<proto::Ciphertext>& output, const bool checking)
         return true;
     } else {
         if (false == checking) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Master key does not exist.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Master key does not exist.").Flush();
         }
     }
 
@@ -310,7 +308,7 @@ auto Tree::nyms() const -> storage::Nyms*
 auto Tree::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
         OT_FAIL
     }
 
@@ -329,12 +327,12 @@ void Tree::save_child(
     std::string& hash) const
 {
     if (false == verify_write_lock(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
         OT_FAIL
     }
 
     if (nullptr == input) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Null target.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Null target.").Flush();
         OT_FAIL
     }
 
@@ -343,7 +341,7 @@ void Tree::save_child(
     rootLock.unlock();
 
     if (false == save(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Save error.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Save error.").Flush();
         OT_FAIL
     }
 }

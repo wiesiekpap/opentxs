@@ -174,7 +174,7 @@ auto OTPaymentPlan::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             String::Factory(xml->getAttributeValue("completed"));
         m_bInitialPaymentDone = strCompleted->Compare("true");
 
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Initial Payment. Amount: ")(
+        LogDetail()(OT_PRETTY_CLASS())("Initial Payment. Amount: ")(
             m_lInitialPaymentAmount.str())(". Date: ")(GetInitialPaymentDate())(
             ". Completed Date: ")(GetInitialPaymentCompletedDate())(
             ". Number of failed attempts: ")(
@@ -217,11 +217,11 @@ auto OTPaymentPlan::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetDateOfLastPayment(tLast);
         SetDateOfLastFailedPayment(tLastAttempt);
 
-        LogDetail()(OT_PRETTY_CLASS(__func__))(
-            "Payment Plan. Amount per payment: ")(m_lPaymentPlanAmount.str())(
-            ". Seconds between payments: ")(tBetween.count())(
-            ". Payment plan Start Date: ")(tStart)(". Length: ")(
-            tLength.count())(". Maximum No. of Payments: ")(
+        LogDetail()(OT_PRETTY_CLASS())("Payment Plan. Amount per payment: ")(
+            m_lPaymentPlanAmount.str())(". Seconds between payments: ")(
+            tBetween.count())(". Payment plan Start Date: ")(
+            tStart)(". Length: ")(tLength.count())(
+            ". Maximum No. of Payments: ")(
             m_nMaximumNoPayments)(". Completed No. of Payments: ")(
             m_nNoPaymentsDone)(". Failed No. of Payments: ")(
             m_nNoFailedPayments)(". Date of last payment: ")(
@@ -412,7 +412,7 @@ auto OTPaymentPlan::VerifyMerchantSignature(
     OTPaymentPlan theMerchantCopy{api_};
     if (!m_strMerchantSignedCopy->Exists() ||
         !theMerchantCopy.LoadContractFromString(m_strMerchantSignedCopy)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Expected Merchant's signed copy to be inside the "
             "payment plan, but unable to load.")
             .Flush();
@@ -421,7 +421,7 @@ auto OTPaymentPlan::VerifyMerchantSignature(
 
     // Compare this against the merchant's copy using Compare function.
     if (!Compare(theMerchantCopy)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Merchant's copy of payment plan isn't equal to Customer's "
             "copy.")
             .Flush();
@@ -431,7 +431,7 @@ auto OTPaymentPlan::VerifyMerchantSignature(
     // Verify recipient's signature on merchant's copy.
     //
     if (!theMerchantCopy.VerifySignature(RECIPIENT_NYM)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Merchant's signature failed to verify on "
             "internal merchant copy of agreement.")
             .Flush();
@@ -445,7 +445,7 @@ auto OTPaymentPlan::VerifyCustomerSignature(
     const identity::Nym& SENDER_NYM) const -> bool
 {
     if (!VerifySignature(SENDER_NYM)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Customer's signature failed to verify.")
             .Flush();
         return false;
@@ -462,15 +462,14 @@ auto OTPaymentPlan::VerifyAgreement(
     const otx::context::Client& sender) const -> bool
 {
     if (!VerifyMerchantSignature(recipient.RemoteNym())) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Merchant's signature failed to verify.")
+        LogError()(OT_PRETTY_CLASS())("Merchant's signature failed to verify.")
             .Flush();
 
         return false;
     }
 
     if (!VerifyCustomerSignature(sender.RemoteNym())) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Customer's signature failed to verify.")
             .Flush();
 
@@ -480,7 +479,7 @@ auto OTPaymentPlan::VerifyAgreement(
     // Verify Transaction Num and Closing Nums against SENDER's issued list
     if ((GetCountClosingNumbers() < 1) ||
         !sender.VerifyIssuedNumber(GetTransactionNum())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Transaction number ")(
+        LogError()(OT_PRETTY_CLASS())("Transaction number ")(
             GetTransactionNum())(" isn't on sender's issued list, "
                                  "OR there weren't enough closing numbers.")
             .Flush();
@@ -490,9 +489,8 @@ auto OTPaymentPlan::VerifyAgreement(
 
     for (std::int32_t i = 0; i < GetCountClosingNumbers(); i++)
         if (!sender.VerifyIssuedNumber(GetClosingTransactionNoAt(i))) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Closing transaction number ")(GetClosingTransactionNoAt(i))(
-                " isn't on sender's issued list.")
+            LogError()(OT_PRETTY_CLASS())("Closing transaction number ")(
+                GetClosingTransactionNoAt(i))(" isn't on sender's issued list.")
                 .Flush();
 
             return false;
@@ -500,7 +498,7 @@ auto OTPaymentPlan::VerifyAgreement(
 
     // Verify Recipient closing numbers against RECIPIENT's issued list.
     if (GetRecipientCountClosingNumbers() < 2) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed verifying: "
             "Expected opening and closing transaction numbers for "
             "recipient. (2 total).")
@@ -512,7 +510,7 @@ auto OTPaymentPlan::VerifyAgreement(
     for (std::int32_t i = 0; i < GetRecipientCountClosingNumbers(); i++)
         if (!recipient.VerifyIssuedNumber(
                 GetRecipientClosingTransactionNoAt(i))) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Recipient's Closing transaction number ")(
                 GetRecipientClosingTransactionNoAt(i))(
                 " isn't on recipient's issued list.")
@@ -535,8 +533,7 @@ auto OTPaymentPlan::SetPaymentPlan(
 {
 
     if (lPaymentAmount <= 0) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Payment Amount less than zero.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Payment Amount less than zero.").Flush();
         return false;
     }
 
@@ -567,7 +564,7 @@ auto OTPaymentPlan::SetPaymentPlan(
     SetPaymentPlanStartDate(GetCreationDate() + tTimeUntilPlanStart);
 
     if (std::chrono::seconds{0} > tPlanLength) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Attempt to use negative number for plan length.")
             .Flush();
         return false;
@@ -578,7 +575,7 @@ auto OTPaymentPlan::SetPaymentPlan(
 
     if (0 > nMaxPayments)  // if it's a negative number...
     {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Attempt to use negative number for plan max payments.")
             .Flush();
         return false;
@@ -645,7 +642,7 @@ auto OTPaymentPlan::ProcessPayment(
     // the Nyms below.
     // (Instead I just disallow it entirely.)
     if (SOURCE_ACCT_ID == RECIPIENT_ACCT_ID) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Failed to process payment: both account IDs were identical.")
             .Flush();
         FlagForRemoval();  // Remove from Cron
@@ -711,8 +708,8 @@ auto OTPaymentPlan::ProcessPayment(
     {
         pSenderNym = api_.Wallet().Nym(SENDER_NYM_ID);
         if (nullptr == pSenderNym) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failure loading Sender Nym in: ")(SENDER_NYM_ID)(".")
+            LogError()(OT_PRETTY_CLASS())("Failure loading Sender Nym in: ")(
+                SENDER_NYM_ID)(".")
                 .Flush();
             FlagForRemoval();  // Remove it from future Cron processing, please.
             return false;
@@ -731,8 +728,8 @@ auto OTPaymentPlan::ProcessPayment(
     {
         pRecipientNym = api_.Wallet().Nym(RECIPIENT_NYM_ID);
         if (nullptr == pRecipientNym) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failure loading Recipient Nym in: ")(RECIPIENT_NYM_ID)(".")
+            LogError()(OT_PRETTY_CLASS())("Failure loading Recipient Nym in: ")(
+                RECIPIENT_NYM_ID)(".")
                 .Flush();
             FlagForRemoval();  // Remove it from future Cron processing, please.
             return false;
@@ -748,7 +745,7 @@ auto OTPaymentPlan::ProcessPayment(
 
     if ((nullptr == pPlan) || !pPlan->VerifyMerchantSignature(*pRecipientNym) ||
         !pPlan->VerifyCustomerSignature(*pSenderNym)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed verifying original signatures on Payment plan (while "
             "attempting to process...) "
             "Flagging for removal.")
@@ -775,7 +772,7 @@ auto OTPaymentPlan::ProcessPayment(
         wallet.Internal().mutable_Account(SOURCE_ACCT_ID, reason);
 
     if (false == bool(sourceAccount)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "ERROR verifying existence of source account during attempted "
             "payment plan processing.")
             .Flush();
@@ -787,7 +784,7 @@ auto OTPaymentPlan::ProcessPayment(
         wallet.Internal().mutable_Account(RECIPIENT_ACCT_ID, reason);
 
     if (false == bool(recipientAccount)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "ERROR verifying existence of recipient account during "
             "attempted payment plan processing.")
             .Flush();
@@ -807,7 +804,7 @@ auto OTPaymentPlan::ProcessPayment(
         // We already know the SUPPOSED Instrument Definition Ids of these
         // accounts... But only once the accounts THEMSELVES have been loaded
         // can we VERIFY this to be true.
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "ERROR - attempted payment between accounts of different "
             "instrument definitions.")
             .Flush();
@@ -823,7 +820,7 @@ auto OTPaymentPlan::ProcessPayment(
     else if (
         !sourceAccount.get().VerifyOwner(*pSenderNym) ||
         !sourceAccount.get().VerifySignature(*pServerNym)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "ERROR verifying ownership or signature on source account.")
             .Flush();
 
@@ -832,7 +829,7 @@ auto OTPaymentPlan::ProcessPayment(
     } else if (
         !recipientAccount.get().VerifyOwner(*pRecipientNym) ||
         !recipientAccount.get().VerifySignature(*pServerNym)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "ERROR verifying ownership or signature on "
             "recipient account.")
             .Flush();
@@ -887,7 +884,7 @@ auto OTPaymentPlan::ProcessPayment(
 
         if ((false == bSuccessLoadingSenderInbox) ||
             (false == bSuccessLoadingRecipientInbox)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "ERROR loading or generating inbox ledger.")
                 .Flush();
         } else {
@@ -898,7 +895,7 @@ auto OTPaymentPlan::ProcessPayment(
             //            OT_ASSERT(lNewTransactionNumber > 0); // this can be
             // my reminder.
             if (0 == lNewTransactionNumber) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))(
+                LogConsole()(OT_PRETTY_CLASS())(
                     "WARNING: Payment plan is unable to process because "
                     "there are no more transaction numbers available.")
                     .Flush();
@@ -1010,7 +1007,7 @@ auto OTPaymentPlan::ProcessPayment(
 
                 // If ANY of these failed, then roll them all back and break.
                 if (!bMoveSender || !bMoveRecipient) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Very strange! Funds were available but debit or "
                         "credit failed while performing payment.")
                         .Flush();
@@ -1047,7 +1044,7 @@ auto OTPaymentPlan::ProcessPayment(
                                                   // initial payment
                 {
                     SetInitialPaymentDone();
-                    LogConsole()(OT_PRETTY_CLASS(__func__))(
+                    LogConsole()(OT_PRETTY_CLASS())(
                         "Initial payment performed.")
                         .Flush();
                 } else if (m_bProcessingPaymentPlan)  // if this is a success
@@ -1056,7 +1053,7 @@ auto OTPaymentPlan::ProcessPayment(
                 {
                     IncrementNoPaymentsDone();
                     SetDateOfLastPayment(Clock::now());
-                    LogConsole()(OT_PRETTY_CLASS(__func__))(
+                    LogConsole()(OT_PRETTY_CLASS())(
                         "Recurring payment performed.")
                         .Flush();
                 }
@@ -1082,14 +1079,12 @@ auto OTPaymentPlan::ProcessPayment(
                 if (m_bProcessingInitialPayment) {
                     IncrementNoInitialFailures();
                     SetLastFailedInitialPaymentDate(Clock::now());
-                    LogConsole()(OT_PRETTY_CLASS(__func__))(
-                        "Initial payment failed.")
+                    LogConsole()(OT_PRETTY_CLASS())("Initial payment failed.")
                         .Flush();
                 } else if (m_bProcessingPaymentPlan) {
                     IncrementNoFailedPayments();
                     SetDateOfLastFailedPayment(Clock::now());
-                    LogConsole()(OT_PRETTY_CLASS(__func__))(
-                        "Recurring payment failed.")
+                    LogConsole()(OT_PRETTY_CLASS())("Recurring payment failed.")
                         .Flush();
                 }
             }
@@ -1409,8 +1404,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
     // Currently it calls OTCronItem::ProcessCron, which checks IsExpired().
     //
     if (!ot_super::ProcessCron(reason)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))("Cron job has expired.")
-            .Flush();
+        LogConsole()(OT_PRETTY_CLASS())("Cron job has expired.").Flush();
         return false;  // It's expired or flagged for removal--remove it from
                        // Cron.
     }
@@ -1424,7 +1418,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
     // return TRUE, so it will STAY on Cron until it BECOMES valid.
 
     if (GetCron()->GetTransactionCount() < 1) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Failed to process payment: Out of transaction numbers!")
             .Flush();
         return true;  // If there aren't enough transaction numbers, this won't
@@ -1439,8 +1433,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
         ((Time{} == GetLastFailedInitialPaymentDate()) ||
          ((Clock::now() - GetLastFailedInitialPaymentDate()) >
           std::chrono::hours(24)))) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
-            "Cron: Processing initial payment...")
+        LogConsole()(OT_PRETTY_CLASS())("Cron: Processing initial payment...")
             .Flush();
 
         ProcessInitialPayment(api_.Wallet(), reason);
@@ -1506,7 +1499,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
         // field.)
         if ((GetMaximumNoPayments() > 0) &&
             (GetNoPaymentsDone() >= GetMaximumNoPayments())) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Payment plan has expired by reaching max number of payments "
                 "allowed.")
                 .Flush();
@@ -1519,7 +1512,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
             (GetPaymentPlanLength() > std::chrono::seconds{0}) &&
             (Clock::now() >=
              GetPaymentPlanStartDate() + GetPaymentPlanLength())) {
-            LogDetail()(OT_PRETTY_CLASS(__func__))(
+            LogDetail()(OT_PRETTY_CLASS())(
                 "Payment plan has expired by reaching its maximum length "
                 "of time.")
                 .Flush();
@@ -1538,7 +1531,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
                                        // since last
         // payment is more than the payment period...
         {
-            LogDetail()(OT_PRETTY_CLASS(__func__))(
+            LogDetail()(OT_PRETTY_CLASS())(
                 "DEBUG: Not enough time has elapsed.")
                 .Flush();
         } else if (
@@ -1552,7 +1545,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
                                        // failed
                                        // payment...
         {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Cron (processing payment plan): Not enough time since "
                 "last failed payment. (Returning--for now).")
                 .Flush();
@@ -1563,8 +1556,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
         {  // I reversed the operators so they could be failures, resulting in
             // this else block for success.
 
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                "Cron: Processing payment...")
+            LogConsole()(OT_PRETTY_CLASS())("Cron: Processing payment...")
                 .Flush();
 
             // This function assumes the payment is due, and it only fails in
@@ -1591,7 +1583,7 @@ auto OTPaymentPlan::ProcessCron(const PasswordPrompt& reason) -> bool
     //
     if (IsFlaggedForRemoval() ||
         (HasInitialPayment() && IsInitialPaymentDone() && !HasPaymentPlan())) {
-        LogDebug()(OT_PRETTY_CLASS(__func__))(
+        LogDebug()(OT_PRETTY_CLASS())(
             "Removing payment plan from cron processing...")
             .Flush();
         return false;  // if there's no plan, and initial payment is done,

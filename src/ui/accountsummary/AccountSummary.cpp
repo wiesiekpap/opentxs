@@ -228,8 +228,7 @@ void AccountSummary::process_server(const identifier::Server& serverID) noexcept
 void AccountSummary::startup() noexcept
 {
     const auto issuers = api_.Wallet().IssuerList(primary_id_);
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(issuers.size())(
-        " issuers.")
+    LogDetail()(OT_PRETTY_CLASS())("Loading ")(issuers.size())(" issuers.")
         .Flush();
 
     for (const auto& id : issuers) { process_issuer(id); }

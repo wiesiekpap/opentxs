@@ -56,7 +56,7 @@ Socket::Socket(
     , type_(type)
 {
     if (nullptr == socket_) {
-        std::cerr << (OT_PRETTY_CLASS(__func__)) << zmq_strerror(zmq_errno())
+        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
                   << std::endl;
     }
 
@@ -126,7 +126,7 @@ auto Socket::bind(const Lock& lock, const std::string& endpoint) const noexcept
         add_endpoint(endpoint);
     } else {
         socket_ = nullptr;
-        std::cerr << (OT_PRETTY_CLASS(__func__)) << zmq_strerror(zmq_errno())
+        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
                   << std::endl;
     }
 
@@ -144,7 +144,7 @@ auto Socket::connect(const Lock& lock, const std::string& endpoint)
         add_endpoint(endpoint);
     } else {
         socket_ = nullptr;
-        std::cerr << (OT_PRETTY_CLASS(__func__)) << zmq_strerror(zmq_errno())
+        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
                   << std::endl;
     }
 
@@ -178,11 +178,11 @@ auto Socket::receive_message(
             auto zerr = zmq_errno();
             if (EAGAIN == zerr) {
                 std::cerr
-                    << (OT_PRETTY_STATIC(Socket, __func__))
+                    << (OT_PRETTY_STATIC(Socket))
                     << "zmq_msg_recv returns EAGAIN. This should never happen."
                     << std::endl;
             } else {
-                std::cerr << (OT_PRETTY_STATIC(Socket, __func__))
+                std::cerr << (OT_PRETTY_STATIC(Socket))
                           << ": Receive error: " << zmq_strerror(zerr)
                           << std::endl;
             }
@@ -197,7 +197,7 @@ auto Socket::receive_message(
             (-1 != zmq_getsockopt(socket, ZMQ_RCVMORE, &option, &optionBytes));
 
         if (false == haveOption) {
-            std::cerr << (OT_PRETTY_STATIC(Socket, __func__))
+            std::cerr << (OT_PRETTY_STATIC(Socket))
                       << "Failed to check socket options error:\n"
                       << zmq_strerror(zmq_errno()) << std::endl;
 
@@ -230,7 +230,7 @@ auto Socket::send_message(
     }
 
     if (false == sent) {
-        std::cerr << (OT_PRETTY_STATIC(Socket, __func__))
+        std::cerr << (OT_PRETTY_STATIC(Socket))
                   << "Send error: " << zmq_strerror(zmq_errno()) << '\n';
     }
 

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -124,7 +125,7 @@ auto Group::AddItem(
     const VersionNumber version) noexcept -> bool
 {
     if (external_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid internal item").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid internal item").Flush();
 
         return false;
     }
@@ -138,13 +139,13 @@ auto Group::AddItem(
     const Item::SerializedType verification) noexcept -> bool
 {
     if (false == external_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid external item").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid external item").Flush();
 
         return false;
     }
 
     if (verifier == parent_.NymID()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Attempting to add internal claim to external section")
             .Flush();
 
@@ -228,7 +229,7 @@ auto Group::UpgradeNymVersion(const VersionNumber nymVersion) noexcept -> bool
                 proto::VerificationGroupAllowedIdentity().at(groupVersion);
 
             if (nymVersion < min) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Version ")(
+                LogError()(OT_PRETTY_CLASS())("Version ")(
                     nymVersion)(" too old")
                     .Flush();
 
@@ -246,7 +247,7 @@ auto Group::UpgradeNymVersion(const VersionNumber nymVersion) noexcept -> bool
             }
         }
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("No support for version ")(
+        LogError()(OT_PRETTY_CLASS())("No support for version ")(
             nymVersion)(" items")
             .Flush();
 

@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Activity.hpp"
@@ -177,8 +178,7 @@ void ActivitySummary::process_thread(const Message& message) noexcept
 void ActivitySummary::startup() noexcept
 {
     const auto threads = api_.Activity().Threads(primary_id_, false);
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(threads.size())(
-        " threads.")
+    LogDetail()(OT_PRETTY_CLASS())("Loading ")(threads.size())(" threads.")
         .Flush();
     for (const auto& [id, alias] : threads) {
         [[maybe_unused]] const auto& notUsed = alias;

@@ -170,8 +170,7 @@ auto Getheaders::payload() const noexcept -> OTData
         if (32 == hash->size()) {
             output += hash;
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid hash: ")(
-                hash->asHex())
+            LogError()(OT_PRETTY_CLASS())("Invalid hash: ")(hash->asHex())
                 .Flush();
         }
     }

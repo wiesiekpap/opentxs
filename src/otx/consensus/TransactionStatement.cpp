@@ -13,7 +13,6 @@
 #include "internal/otx/common/XML.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Contract.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/util/Tag.hpp"
@@ -70,7 +69,7 @@ TransactionStatement::TransactionStatement(const String& serialized)
                     const bool loaded = LoadEncodedTextField(raw, list);
 
                     if (notary_.empty() || !loaded) {
-                        LogError()(OT_PRETTY_CLASS(__func__))(
+                        LogError()(OT_PRETTY_CLASS())(
                             "Error: transactionNums field without value.")
                             .Flush();
                         break;
@@ -85,8 +84,7 @@ TransactionStatement::TransactionStatement(const String& serialized)
                     while (numlist.Peek(number)) {
                         numlist.Pop();
 
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
-                            "Transaction Number ")(
+                        LogDebug()(OT_PRETTY_CLASS())("Transaction Number ")(
                             number)(" ready-to-use for NotaryID: ")(notary_)
                             .Flush();
                         available_.insert(number);
@@ -97,7 +95,7 @@ TransactionStatement::TransactionStatement(const String& serialized)
                     const bool loaded = LoadEncodedTextField(raw, list);
 
                     if (notary_.empty() || !loaded) {
-                        LogError()(OT_PRETTY_CLASS(__func__))(
+                        LogError()(OT_PRETTY_CLASS())(
                             "Error: issuedNums field without value.")
                             .Flush();
                         break;
@@ -112,21 +110,20 @@ TransactionStatement::TransactionStatement(const String& serialized)
                     while (numlist.Peek(number)) {
                         numlist.Pop();
 
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                        LogDebug()(OT_PRETTY_CLASS())(
                             "Currently liable for issued trans# ")(
                             number)(" at NotaryID: ")(notary_)
                             .Flush();
                         issued_.insert(number);
                     }
                 } else {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
-                        "Unknown element type in: ")(nodeName)(".")
+                    LogError()(OT_PRETTY_CLASS())("Unknown element type in: ")(
+                        nodeName)(".")
                         .Flush();
                 }
             } break;
             default: {
-                LogInsane()(OT_PRETTY_CLASS(__func__))("Unknown XML type in ")(
-                    nodeName)
+                LogInsane()(OT_PRETTY_CLASS())("Unknown XML type in ")(nodeName)
                     .Flush();
                 break;
             }

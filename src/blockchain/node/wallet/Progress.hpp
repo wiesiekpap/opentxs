@@ -33,6 +33,7 @@ public:
     auto Dirty() const noexcept -> std::optional<block::Position>;
     auto Get() const noexcept -> block::Position;
 
+    auto Init() noexcept -> void;
     auto Reorg(const block::Position& parent) noexcept -> void;
     auto UpdateProcess(const ProgressBatch& processed) noexcept -> void;
     auto UpdateScan(

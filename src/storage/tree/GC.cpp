@@ -45,15 +45,13 @@ auto Root::GC::Cleanup() noexcept -> void { future_.get(); }
 auto Root::GC::Check(const std::string root) noexcept -> CheckState
 {
     if (0 == interval_) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Garbage collection disabled")
-            .Flush();
+        LogVerbose()(OT_PRETTY_CLASS())("Garbage collection disabled").Flush();
 
         return CheckState::Skip;
     }
 
     if (running_.get()) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(
-            "Garbage collection in progress")
+        LogVerbose()(OT_PRETTY_CLASS())("Garbage collection in progress")
             .Flush();
 
         return CheckState::Skip;
@@ -92,8 +90,7 @@ auto Root::GC::collect_garbage(
     const Driver* to,
     const SimpleCallback done) noexcept -> void
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Beginning garbage collection.")
-        .Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Beginning garbage collection.").Flush();
     auto success{false};
     auto postcondition = ScopeGuard{[&] { promise_.set_value(success); }};
     auto temp = storage::Tree{driver_, root_};
@@ -102,8 +99,7 @@ auto Root::GC::collect_garbage(
     if (success) {
         driver_.EmptyBucket(from);
     } else {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Garbage collection failed")
-            .Flush();
+        LogVerbose()(OT_PRETTY_CLASS())("Garbage collection failed").Flush();
     }
 
     {
@@ -117,8 +113,7 @@ auto Root::GC::collect_garbage(
     OT_ASSERT(done);
 
     done();
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Finished garbage collection.")
-        .Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Finished garbage collection.").Flush();
 }
 
 auto Root::GC::Init(

@@ -247,7 +247,7 @@ auto Base::Save() const -> bool
     std::shared_ptr<SerializedType> serializedProto;
 
     if (!isValid(lock, serializedProto)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Unable to save serialized credential. Type (")(value(role_))(
             "), version ")(version_)
             .Flush();
@@ -259,8 +259,7 @@ auto Base::Save() const -> bool
         api_.Wallet().Internal().SaveCredential(*serializedProto);
 
     if (!bSaved) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error saving credential.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error saving credential.").Flush();
 
         return false;
     }
@@ -309,7 +308,7 @@ auto Base::serialize(
         if (crypto::key::asymmetric::Mode::Private == mode_) {
             serializedCredential->set_mode(translate(mode_));
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Can't serialize a public credential as a private "
                 "credential.")
                 .Flush();
@@ -425,7 +424,7 @@ auto Base::Verify(
     const Identifier& masterID,
     const proto::Signature& masterSig) const -> bool
 {
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Non-key credentials are not able to verify signatures")
         .Flush();
 
@@ -437,7 +436,7 @@ auto Base::Verify(
 auto Base::verify_internally(const Lock& lock) const -> bool
 {
     if (!CheckID(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Purported ID for this credential does not match its actual "
             "contents.")
             .Flush();
@@ -454,7 +453,7 @@ auto Base::verify_internally(const Lock& lock) const -> bool
     }
 
     if (!GoodMasterSignature) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "This credential hasn't been signed by its master credential.")
             .Flush();
 
@@ -470,8 +469,7 @@ auto Base::verify_master_signature(const Lock& lock) const -> bool
     auto masterSig = MasterSignature();
 
     if (!masterSig) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing master signature.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing master signature.").Flush();
 
         return false;
     }

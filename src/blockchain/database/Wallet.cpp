@@ -250,7 +250,7 @@ auto Wallet::ReorgTo(
             return true;
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         OT_FAIL;
     }
@@ -271,8 +271,7 @@ auto Wallet::ReserveUTXO(
     node::internal::SpendPolicy& policy) const noexcept -> std::optional<UTXO>
 {
     if (false == proposals_.Exists(id)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Proposal ")(
-            id)(" does not exist")
+        LogError()(OT_PRETTY_CLASS())("Proposal ")(id)(" does not exist")
             .Flush();
 
         return std::nullopt;

@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"

@@ -33,8 +33,7 @@ PairEventCallbackSwig::PairEventCallbackSwig(
     : callback_(callback)
 {
     if (nullptr == callback_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid callback pointer.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid callback pointer.").Flush();
 
         OT_FAIL;
     }
@@ -60,8 +59,7 @@ void PairEventCallbackSwig::Process(zeromq::Message& message) const
             callback_->ProcessStoreSecret(event.issuer());
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unknown event type.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unknown event type.").Flush();
         }
     }
 }

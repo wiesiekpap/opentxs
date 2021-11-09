@@ -98,9 +98,8 @@ struct ContactItem::Imp {
         , subtype_(subtype)
     {
         if (0 == version) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Warning: malformed version. "
-                "Setting to ")(parentVersion)(".")
+            LogError()(OT_PRETTY_CLASS())("Warning: malformed version. "
+                                          "Setting to ")(parentVersion)(".")
                 .Flush();
         }
     }

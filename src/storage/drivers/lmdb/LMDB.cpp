@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "internal/storage/drivers/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
 #include "storage/Config.hpp"
 #include "util/LMDB.hpp"
@@ -54,7 +55,7 @@ LMDB::LMDB(
               {Table::B, 0},
           })
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Using ")(config_.path_).Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Using ")(config_.path_).Flush();
     Init_LMDB();
 }
 
@@ -74,7 +75,7 @@ auto LMDB::get_table(const bool bucket) const -> LMDB::Table
 
 void LMDB::Init_LMDB()
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Database initialized.").Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Database initialized.").Flush();
 }
 
 auto LMDB::LoadFromBucket(

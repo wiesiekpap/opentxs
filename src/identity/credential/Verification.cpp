@@ -181,8 +181,7 @@ auto Verification::serialize(
                 serializedCredential->add_signature();
             *serializedMasterSignature = *masterSignature;
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to get master signature.")
+            LogError()(OT_PRETTY_CLASS())("Failed to get master signature.")
                 .Flush();
         }
     }
@@ -202,8 +201,7 @@ auto Verification::verify_internally(const Lock& lock) const -> bool
             bool valid = parent_.Verify(claim);
 
             if (!valid) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Invalid claim verification.")
+                LogError()(OT_PRETTY_CLASS())("Invalid claim verification.")
                     .Flush();
 
                 return false;

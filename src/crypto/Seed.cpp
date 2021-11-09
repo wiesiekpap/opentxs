@@ -8,10 +8,8 @@
 #include "crypto/Seed.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <boost/container/vector.hpp>
 #include <algorithm>
 #include <cstddef>
-#include <functional>
 #include <mutex>
 #include <stdexcept>
 #include <utility>
@@ -77,8 +75,7 @@ struct Seed::Imp {
         auto lock = Lock{lock_};
 
         if (index_ > index) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Index values must always increase.")
+            LogError()(OT_PRETTY_CLASS())("Index values must always increase.")
                 .Flush();
 
             return false;
@@ -479,8 +476,7 @@ private:
         *proto.mutable_raw() = encrypted_entropy_;
 
         if (false == storage_.Store(proto, id)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to store seed.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to store seed.").Flush();
 
             return false;
         }
@@ -597,4 +593,3 @@ auto Seed::Words() const noexcept -> const Secret& { return imp_->words_; }
 
 Seed::~Seed() = default;
 }  // namespace opentxs::crypto
-

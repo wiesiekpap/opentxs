@@ -17,6 +17,7 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -65,8 +66,7 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
         const auto data = api_.Factory().Data(hex, StringStyle::Hex);
 
         if (data->empty()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid genesis hex")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid genesis hex").Flush();
 
             return {};
         }
@@ -76,7 +76,7 @@ auto Blocks::LoadBitcoin(const block::Hash& block) const noexcept
         const auto bytes = common_.BlockLoad(block);
 
         if (false == bytes.valid()) {
-            LogDebug()(OT_PRETTY_CLASS(__func__))("block ")(block.asHex())(
+            LogDebug()(OT_PRETTY_CLASS())("block ")(block.asHex())(
                 " not found.")
                 .Flush();
 
@@ -103,8 +103,7 @@ auto Blocks::Store(const block::Block& block) const noexcept -> bool
     auto writer = common_.BlockStore(block.ID(), size);
 
     if (false == writer.get().valid(size)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to allocate storage for block")
+        LogError()(OT_PRETTY_CLASS())("Failed to allocate storage for block")
             .Flush();
 
         return false;
@@ -112,8 +111,7 @@ auto Blocks::Store(const block::Block& block) const noexcept -> bool
 
     if (false ==
         block.Serialize(preallocated(writer.size(), writer.get().data()))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize block")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize block").Flush();
 
         return false;
     }

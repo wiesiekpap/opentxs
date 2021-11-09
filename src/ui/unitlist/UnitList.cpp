@@ -122,7 +122,7 @@ auto UnitList::process_blockchain_balance(const Message& message) noexcept
     try {
         process_unit(BlockchainToUnit(chainFrame.as<blockchain::Type>()));
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid chain").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid chain").Flush();
 
         return;
     }
@@ -150,8 +150,7 @@ auto UnitList::setup_listeners(const ListenerDefinitions& definitions) noexcept
 auto UnitList::startup() noexcept -> void
 {
     const auto accounts = api_.Storage().AccountsByOwner(primary_id_);
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(accounts.size())(
-        " accounts.")
+    LogDetail()(OT_PRETTY_CLASS())("Loading ")(accounts.size())(" accounts.")
         .Flush();
 
     for (const auto& id : accounts) { process_account(id); }

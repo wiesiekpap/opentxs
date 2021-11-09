@@ -237,18 +237,16 @@ auto OTTransactionType::VerifyAccount(const identity::Nym& theNym) -> bool
     // Make sure that the supposed AcctID matches the one read from the file.
     //
     if (!VerifyContractID()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error verifying account ID.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error verifying account ID.").Flush();
 
         return false;
     } else if (!VerifySignature(theNym)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error verifying signature.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error verifying signature.").Flush();
 
         return false;
     }
 
-    LogTrace()(OT_PRETTY_CLASS(__func__))(
+    LogTrace()(OT_PRETTY_CLASS())(
         "We now know that...1) The expected Account ID matches the ID that "
         "was found on the object. 2) The SIGNATURE VERIFIED on the object.")
         .Flush();
@@ -272,7 +270,7 @@ auto OTTransactionType::VerifyContractID() const -> bool
         auto str1 = String::Factory(m_ID), str2 = String::Factory(m_AcctID),
              str3 = String::Factory(m_NotaryID),
              str4 = String::Factory(m_AcctNotaryID);
-        LogError()(OT_PRETTY_CLASS(__func__))("Identifiers mismatch").Flush();
+        LogError()(OT_PRETTY_CLASS())("Identifiers mismatch").Flush();
         LogError()("m_AcctID actual: ")(m_AcctID)(" expected: ")(m_ID).Flush();
         LogError()("m_NotaryID actual: ")(m_AcctNotaryID)(" expected: ")(
             m_NotaryID)

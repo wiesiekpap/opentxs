@@ -66,7 +66,7 @@ auto OTClient::ProcessUserCommand(
 
     if (nullptr != pAccount) {
         if (pAccount->GetPurportedNotaryID() != context.Notary()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "pAccount->GetPurportedNotaryID() doesn't match "
                 "NOTARY_ID. (Try adding: --server NOTARY_ID).")
                 .Flush();
@@ -141,7 +141,7 @@ auto OTClient::ProcessUserCommand(
             NYMBOX_HASH->GetString(theMessage.m_strNymboxHash);
 
             if (!String::Factory(NYMBOX_HASH)->Exists()) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed getting NymboxHash from Nym for server: ")(
                     context.Notary())(".")
                     .Flush();
@@ -175,7 +175,7 @@ auto OTClient::ProcessUserCommand(
             NYMBOX_HASH->GetString(theMessage.m_strNymboxHash);
 
             if (NYMBOX_HASH->IsEmpty()) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed getting NymboxHash from Nym for server: ")(
                     context.Notary())(".")
                     .Flush();
@@ -191,7 +191,7 @@ auto OTClient::ProcessUserCommand(
             lReturnValue = lRequestNumber;
         } break;
         default: {
-            LogConsole()(OT_PRETTY_CLASS(__func__)).Flush();
+            LogConsole()(OT_PRETTY_CLASS()).Flush();
         }
     }
 

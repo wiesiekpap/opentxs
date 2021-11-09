@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"   // IWYU pragma: associated
 #include "util/Thread.hpp"  // IWYU pragma: associated
 
-#include <robin_hood.h>
 #include <errno.h>
+#include <robin_hood.h>
 #include <string.h>
 #include <sys/resource.h>
 #include <unistd.h>

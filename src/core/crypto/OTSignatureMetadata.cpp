@@ -58,7 +58,7 @@ auto OTSignatureMetadata::SetMetadata(
         case 'S':
             break;
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Expected key type of A, E, or S, but instead found: ")(
                 metaKeyType)(" (bad data or error).")
                 .Flush();
@@ -73,7 +73,7 @@ auto OTSignatureMetadata::SetMetadata(
     str_verify_base62 += metaChildCredID;
 
     if (false == api_.Crypto().Encode().IsBase62(str_verify_base62)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Metadata for signature failed base62 validation: ")(
             str_verify_base62)(".")
             .Flush();

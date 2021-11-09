@@ -109,8 +109,7 @@ auto Data::Add(ReadView data) noexcept -> bool
             static_cast<opentxs::blockchain::block::Height>(proto.height());
 
         if (height != expected) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Non-contiguous sync data")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Non-contiguous sync data").Flush();
 
             return false;
         }
@@ -121,7 +120,7 @@ auto Data::Add(ReadView data) noexcept -> bool
 
         return true;
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }

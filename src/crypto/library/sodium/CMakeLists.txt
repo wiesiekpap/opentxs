@@ -17,6 +17,9 @@ target_link_libraries(
   opentxs-common PRIVATE opentxs-argon2 unofficial-sodium::sodium
 )
 target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
+target_include_directories(
+  opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/argon2"
+)
 
 if(ED25519_EXPORT)
   target_sources(opentxs-common PRIVATE "Ed25519.cpp")

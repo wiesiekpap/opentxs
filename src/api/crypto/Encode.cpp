@@ -207,7 +207,7 @@ auto Encode::IdentifierDecode(const std::string& input) const -> std::string
     OT_ASSERT(hash)
 
     if (incoming != checksum) {
-        LogTrace()()(__func__)(": Checksum failure").Flush();
+        LogTrace()(OT_PRETTY_CLASS())("Checksum failure").Flush();
 
         return {};
     }

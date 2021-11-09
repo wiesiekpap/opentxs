@@ -35,11 +35,10 @@
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/crypto/key/HD.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"  // IWYU pragma: keep
+#include "opentxs/crypto/key/HD.hpp"             // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
 

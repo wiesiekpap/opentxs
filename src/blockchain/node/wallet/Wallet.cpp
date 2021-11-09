@@ -187,7 +187,9 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            ": invalid message")
+            .Flush();
 
         OT_FAIL;
     }
@@ -241,7 +243,9 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
+                ": unhandled type")
+                .Flush();
 
             OT_FAIL;
         }
@@ -272,7 +276,9 @@ auto Wallet::process_block_header(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (3 >= body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            ": invalid message")
+            .Flush();
 
         OT_FAIL;
     }
@@ -360,7 +366,9 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (6 > body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(
+            ": invalid message")
+            .Flush();
 
         OT_FAIL;
     }
@@ -375,6 +383,9 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
     const auto tip = block::Position{
         body.at(5).as<block::Height>(),
         api_.Factory().Data(body.at(4).Bytes())};
+    LogConsole()(DisplayString(chain_))(": processing reorg to ")(
+        tip.second->asHex())(" at height ")(tip.first)
+        .Flush();
     accounts_.FinishBackgroundTasks();
     auto errors = std::atomic_int{};
     {
@@ -392,7 +403,8 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
                 throw std::runtime_error{"Finalize transaction failed"};
             }
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(": ")(e.what())
+                .Flush();
 
             OT_FAIL;
         }
@@ -404,10 +416,15 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
             throw std::runtime_error{"Advance chain failed"};
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(DisplayString(chain_))(" ")(e.what())
+            .Flush();
 
         OT_FAIL;
     }
+
+    LogConsole()(DisplayString(chain_))(": reorg to ")(tip.second->asHex())(
+        " at height ")(tip.first)(" finished")
+        .Flush();
 }
 
 auto Wallet::process_wallet() noexcept -> void

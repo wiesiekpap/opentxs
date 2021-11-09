@@ -11,10 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "blockchain/database/wallet/Types.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -54,17 +56,6 @@ namespace opentxs::blockchain::database::wallet
 class SubchainData
 {
 public:
-    using Common = api::client::blockchain::database::implementation::Database;
-    using Parent = node::internal::WalletDatabase;
-    using SubchainIndex = Parent::SubchainIndex;
-    using pSubchainIndex = Parent::pSubchainIndex;
-    using NodeID = Parent::NodeID;
-    using pNodeID = Parent::pNodeID;
-    using Subchain = Parent::Subchain;
-    using Patterns = Parent::Patterns;
-    using ElementMap = Parent::ElementMap;
-    using MatchingIndices = Parent::MatchingIndices;
-
     auto GetSubchainID(
         const NodeID& subaccount,
         const Subchain subchain,

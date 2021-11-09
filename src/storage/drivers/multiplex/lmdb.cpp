@@ -18,7 +18,7 @@ namespace opentxs::storage::driver
 {
 auto Multiplex::init_lmdb(std::unique_ptr<storage::Plugin>& plugin) -> void
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Initializing primary LMDB plugin.")
+    LogVerbose()(OT_PRETTY_CLASS())("Initializing primary LMDB plugin.")
         .Flush();
     plugin = factory::StorageLMDB(
         crypto_, asio_, storage_, config_, primary_bucket_);

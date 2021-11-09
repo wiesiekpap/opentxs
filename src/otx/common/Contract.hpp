@@ -4,19 +4,25 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/crypto/HashType.hpp"
+// IWYU pragma: no_include <irrxml/irrXML.hpp>
 
 #pragma once
 
 #include <cstdint>
+#include <iosfwd>
 #include <list>
+#include <map>
 #include <string>
 
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/XML.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
+#include "opentxs/core/crypto/Signature.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/otx/common/Contract.hpp"
 
 namespace opentxs
 {
@@ -32,6 +38,11 @@ namespace key
 class Asymmetric;
 }  // namespace key
 }  // namespace crypto
+
+namespace identity
+{
+class Nym;
+}  // namespace identity
 
 class PasswordPrompt;
 class Tag;

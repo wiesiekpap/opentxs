@@ -179,6 +179,7 @@ protected:
         const blockchain::crypto::Element& input,
         const Bip32Index index,
         WalletDatabase::ElementMap& output) const noexcept -> void;
+    virtual auto report_scan(const block::Position& pos) const noexcept -> void;
     auto set_key_data(block::bitcoin::Transaction& tx) const noexcept -> void;
     auto supported_scripts(const crypto::Element& element) const noexcept
         -> std::vector<ScriptForm>;
@@ -186,8 +187,8 @@ protected:
         const std::vector<WalletDatabase::UTXO>& utxos,
         Patterns& outpoints) const noexcept -> void;
     virtual auto type() const noexcept -> std::stringstream = 0;
-    virtual auto update_scan(const block::Position& pos, bool reorg)
-        const noexcept -> void;
+    auto update_scan(const block::Position& pos, bool reorg) const noexcept
+        -> void;
 
     virtual auto get_index() noexcept -> Index& = 0;
     virtual auto handle_confirmed_matches(

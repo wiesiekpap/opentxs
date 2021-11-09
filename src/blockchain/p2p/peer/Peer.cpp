@@ -301,7 +301,7 @@ auto Peer::pipeline(zmq::Message& message) noexcept -> void
 
             return body.at(0).as<Task>();
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
             // TODO It's impossible for this exception to happen but it does
             // anyway from time to time. Somebody really ought to figure out why
             // someday.
@@ -433,7 +433,7 @@ auto Peer::send(OTData in) noexcept -> SendStatus
 {
     try {
         if (false == state_.connect_.future_.get()) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            LogVerbose()(OT_PRETTY_CLASS())(
                 "Unable to send to disconnected peer")
                 .Flush();
 
@@ -489,8 +489,8 @@ auto Peer::shutdown(std::promise<void>& promise) noexcept -> void
 auto Peer::start_verify() noexcept -> void
 {
     if (address_.Incoming()) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("incoming peer ")(
-            address_.Display())(" is not required to validate checkpoints")
+        LogVerbose()(OT_PRETTY_CLASS())("incoming peer ")(address_.Display())(
+            " is not required to validate checkpoints")
             .Flush();
         state_.value_.store(State::Subscribe);
         do_work();
@@ -498,13 +498,13 @@ auto Peer::start_verify() noexcept -> void
         request_checkpoint_block_header();
 
         if (verify_filter_checkpoint_) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("outgoing peer ")(
+            LogVerbose()(OT_PRETTY_CLASS())("outgoing peer ")(
                 address_.Display())(
                 " must validate block header and cfheader checkpoints")
                 .Flush();
             request_checkpoint_filter_header();
         } else {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("outgoing peer ")(
+            LogVerbose()(OT_PRETTY_CLASS())("outgoing peer ")(
                 address_.Display())(
                 " must validate block header checkpoints only")
                 .Flush();
@@ -514,7 +514,7 @@ auto Peer::start_verify() noexcept -> void
 
 auto Peer::state_machine() noexcept -> bool
 {
-    LogTrace()(OT_PRETTY_CLASS(__func__)).Flush();
+    LogTrace()(OT_PRETTY_CLASS()).Flush();
 
     if (false == running_.get()) { return false; }
 
@@ -524,7 +524,7 @@ auto Peer::state_machine() noexcept -> bool
         case State::Listening: {
             OT_ASSERT(address_.Incoming());
 
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            LogVerbose()(OT_PRETTY_CLASS())(
                 "verifying incoming handshake protocol for ")(
                 address_.Display())
                 .Flush();
@@ -532,7 +532,7 @@ auto Peer::state_machine() noexcept -> bool
                 std::chrono::seconds(20), [] {}, State::Verify);
         } break;
         case State::Handshake: {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            LogVerbose()(OT_PRETTY_CLASS())(
                 "verifying outgoing handshake protocol for ")(
                 address_.Display())
                 .Flush();
@@ -542,8 +542,8 @@ auto Peer::state_machine() noexcept -> bool
                 State::Verify);
         } break;
         case State::Verify: {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                "verifying checkpoints for ")(address_.Display())
+            LogVerbose()(OT_PRETTY_CLASS())("verifying checkpoints for ")(
+                address_.Display())
                 .Flush();
             disconnect = state_.verify_.run(
                 std::chrono::seconds(30),
@@ -551,8 +551,8 @@ auto Peer::state_machine() noexcept -> bool
                 State::Subscribe);
         } break;
         case State::Subscribe: {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                "achieved subscribe state for ")(address_.Display())
+            LogVerbose()(OT_PRETTY_CLASS())("achieved subscribe state for ")(
+                address_.Display())
                 .Flush();
             subscribe();
             state_.value_.store(State::Run);
@@ -560,7 +560,7 @@ auto Peer::state_machine() noexcept -> bool
             [[fallthrough]];
         }
         case State::Run: {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("achieved run state for ")(
+            LogVerbose()(OT_PRETTY_CLASS())("achieved run state for ")(
                 address_.Display())
                 .Flush();
             process_state_machine();
@@ -573,8 +573,7 @@ auto Peer::state_machine() noexcept -> bool
     }
 
     if (disconnect) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Disconnecting ")(
-            address_.Display())
+        LogVerbose()(OT_PRETTY_CLASS())("Disconnecting ")(address_.Display())
             .Flush();
         this->disconnect();
     }
@@ -615,7 +614,7 @@ auto Peer::transmit(zmq::Message& message) noexcept -> void
     if (false == running_.get()) { return; }
 
     if (3 < message.Body().size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
         return;
     }
@@ -626,8 +625,7 @@ auto Peer::transmit(zmq::Message& message) noexcept -> void
     auto success = bool{false};
     auto postcondition =
         ScopeGuard{[&] { send_promises_.SetPromise(index, success); }};
-    LogTrace()(OT_PRETTY_CLASS(__func__))("Sending ")(payload.size())(
-        " byte message:")
+    LogTrace()(OT_PRETTY_CLASS())("Sending ")(payload.size())(" byte message:")
         .Flush();
     LogTrace()(Data::Factory(payload)->asHex()).Flush();
     auto promise = std::make_unique<SendPromise>();
@@ -667,8 +665,7 @@ auto Peer::transmit(zmq::Message& message) noexcept -> void
     }
 
     if (result) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Sent ")(payload.size())(
-            " bytes")
+        LogVerbose()(OT_PRETTY_CLASS())("Sent ")(payload.size())(" bytes")
             .Flush();
         success = true;
     } else {

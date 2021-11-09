@@ -163,7 +163,7 @@ auto BlockchainImp::disable(const Lock& lock, const Chain type) const noexcept
     -> bool
 {
     if (0 == opentxs::blockchain::SupportedChains().count(type)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unsupported chain").Flush();
+        LogError()(OT_PRETTY_CLASS())("Unsupported chain").Flush();
 
         return false;
     }
@@ -172,7 +172,7 @@ auto BlockchainImp::disable(const Lock& lock, const Chain type) const noexcept
 
     if (db_->Disable(type)) { return true; }
 
-    LogError()(OT_PRETTY_CLASS(__func__))("Database update failure").Flush();
+    LogError()(OT_PRETTY_CLASS())("Database update failure").Flush();
 
     return false;
 }
@@ -191,7 +191,7 @@ auto BlockchainImp::enable(
     const std::string& seednode) const noexcept -> bool
 {
     if (0 == opentxs::blockchain::SupportedChains().count(type)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unsupported chain").Flush();
+        LogError()(OT_PRETTY_CLASS())("Unsupported chain").Flush();
 
         return false;
     }
@@ -199,7 +199,7 @@ auto BlockchainImp::enable(
     init_.get();
 
     if (false == db_->Enable(type, seednode)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Database error").Flush();
+        LogError()(OT_PRETTY_CLASS())("Database error").Flush();
 
         return false;
     }
@@ -451,15 +451,14 @@ auto BlockchainImp::start(
 
     if (Chain::UnitTest != type) {
         if (0 == opentxs::blockchain::SupportedChains().count(type)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported chain").Flush();
+            LogError()(OT_PRETTY_CLASS())("Unsupported chain").Flush();
 
             return false;
         }
     }
 
     if (0 != networks_.count(type)) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Chain already running")
-            .Flush();
+        LogVerbose()(OT_PRETTY_CLASS())("Chain already running").Flush();
 
         return true;
     }
@@ -494,7 +493,7 @@ auto BlockchainImp::start(
                 type,
                 factory::BlockchainNetworkBitcoin(
                     api_, *crypto_, *this, type, config, seednode, endpoint));
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("started chain ")(
+            LogVerbose()(OT_PRETTY_CLASS())("started chain ")(
                 static_cast<std::uint32_t>(type))
                 .Flush();
             publish_chain_state(type, true);
@@ -550,8 +549,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
 
     it->second->Shutdown().get();
     networks_.erase(it);
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("stopped chain ")(
-        opentxs::print(type))
+    LogVerbose()(OT_PRETTY_CLASS())("stopped chain ")(opentxs::print(type))
         .Flush();
     publish_chain_state(type, false);
 

@@ -71,8 +71,7 @@ struct TCPConnectionManager : virtual public Peer::ConnectionManager {
     auto connect() noexcept -> void override
     {
         if (0 < connection_id_.size()) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Connecting to ")(
-                endpoint_.str())
+            LogVerbose()(OT_PRETTY_CLASS())("Connecting to ")(endpoint_.str())
                 .Flush();
             socket_.Connect(reader(connection_id_));
         }
@@ -132,8 +131,8 @@ struct TCPConnectionManager : virtual public Peer::ConnectionManager {
                 }
             } break;
             case Peer::Task::Connect: {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))("Connect to ")(
-                    endpoint_.str())(" successful")
+                LogVerbose()(OT_PRETTY_CLASS())("Connect to ")(endpoint_.str())(
+                    " successful")
                     .Flush();
                 parent_.on_connect();
                 run();

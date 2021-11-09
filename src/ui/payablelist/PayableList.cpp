@@ -81,7 +81,7 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -114,7 +114,7 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -130,7 +130,7 @@ auto PayableList::process_contact(
     const auto contact = Widget::api_.Contacts().Contact(id);
 
     if (false == bool(contact)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error: Contact ")(
+        LogError()(OT_PRETTY_CLASS())("Error: Contact ")(
             id)(" can not be loaded.")
             .Flush();
 
@@ -148,8 +148,7 @@ auto PayableList::process_contact(
         auto custom = CustomData{paymentCode.release()};
         add_item(id, key, custom);
     } else {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Skipping unpayable contact ")(
-            id)
+        LogDetail()(OT_PRETTY_CLASS())("Skipping unpayable contact ")(id)
             .Flush();
     }
 }
@@ -190,8 +189,7 @@ auto PayableList::process_nym(const Message& message) noexcept -> void
 auto PayableList::startup() noexcept -> void
 {
     const auto contacts = Widget::api_.Contacts().ContactList();
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(contacts.size())(
-        " contacts.")
+    LogDetail()(OT_PRETTY_CLASS())("Loading ")(contacts.size())(" contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {

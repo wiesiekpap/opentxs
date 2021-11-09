@@ -13,8 +13,7 @@ namespace opentxs::storage::driver
 {
 auto Multiplex::init_fs(std::unique_ptr<storage::Plugin>& plugin) -> void
 {
-    LogError()(OT_PRETTY_CLASS(__func__))("Filesystem driver not compiled in.")
-        .Flush();
+    LogError()(OT_PRETTY_CLASS())("Filesystem driver not compiled in.").Flush();
 }
 
 auto Multiplex::init_fs_backup(const std::string& dir) -> void { return; }

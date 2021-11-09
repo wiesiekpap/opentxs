@@ -149,8 +149,7 @@ void IssuerItem::refresh_accounts() noexcept
 {
     const auto blank = identifier::UnitDefinition::Factory();
     const auto accounts = issuer_->AccountList(currency_, blank);
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(accounts.size())(
-        " accounts.")
+    LogDetail()(OT_PRETTY_CLASS())("Loading ")(accounts.size())(" accounts.")
         .Flush();
 
     for (const auto& id : accounts) { process_account(id); }

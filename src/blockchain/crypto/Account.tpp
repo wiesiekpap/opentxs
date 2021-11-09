@@ -6,6 +6,7 @@
 #include "blockchain/crypto/Account.hpp"  // IWYU pragma: associated
 
 #include "internal/blockchain/crypto/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -121,17 +122,13 @@ auto Account::NodeGroup<InterfaceType, PayloadType>::add(
     std::unique_ptr<PayloadType> node) noexcept -> bool
 {
     if (false == bool(node)) {
-        LogError()("opentxs::blockchain::crypto::implementation::"
-                   "Account::NodeGroup::")(__func__)(": Invalid node")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid node").Flush();
 
         return false;
     }
 
     if (0 < index_.count(id)) {
-        LogError()("opentxs::blockchain::crypto::implementation::"
-                   "Account::NodeGroup::")(__func__)(": Index already exists")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Index already exists").Flush();
 
         return false;
     }

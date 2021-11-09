@@ -107,19 +107,18 @@ auto Wallet::load_legacy_account(
     const auto signerNym = Nym(server_.NymID());
 
     if (false == bool(signerNym)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to load signer nym.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Unable to load signer nym.").Flush();
 
         return false;
     }
 
     if (false == pAccount->VerifySignature(*signerNym)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid signature.").Flush();
 
         return false;
     }
 
-    LogError()(OT_PRETTY_CLASS(__func__))("Legacy account ")(accountID.str())(
+    LogError()(OT_PRETTY_CLASS())("Legacy account ")(accountID.str())(
         " exists.")
         .Flush();
 

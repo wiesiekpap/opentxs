@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "2_Factory.hpp"
+#include "Proto.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -130,8 +131,7 @@ auto Nym::AddItem(
         version)};
 
     if (false == bool(pCandidate)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct item")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to construct item").Flush();
 
         return false;
     }
@@ -144,8 +144,7 @@ auto Nym::AddItem(const Item::SerializedType item) noexcept -> bool
     auto pCandidate = Child{Factory::VerificationItem(*this, item)};
 
     if (false == bool(pCandidate)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct item")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to construct item").Flush();
 
         return false;
     }
@@ -277,7 +276,7 @@ auto Nym::UpgradeItemVersion(
                 proto::VerificationIdentityAllowedVerification().at(nymVersion);
 
             if (itemVersion < min) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Version ")(
+                LogError()(OT_PRETTY_CLASS())("Version ")(
                     itemVersion)(" too old")
                     .Flush();
 
@@ -292,7 +291,7 @@ auto Nym::UpgradeItemVersion(
             }
         }
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("No support for version ")(
+        LogError()(OT_PRETTY_CLASS())("No support for version ")(
             itemVersion)(" items")
             .Flush();
 

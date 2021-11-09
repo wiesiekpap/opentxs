@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
@@ -40,6 +41,14 @@ struct Progress::Imp {
         return last_reported_.value_or(parent_.null_position_);
     }
 
+    auto Init() noexcept -> void
+    {
+        auto lock = Lock{lock_};
+
+        if (highest_clean_.has_value()) {
+            parent_.report_scan(highest_clean_.value());
+        }
+    }
     auto Reorg(const block::Position& parent) noexcept -> void
     {
         auto lock = Lock{lock_};
@@ -92,7 +101,13 @@ struct Progress::Imp {
         : parent_(parent)
         , lock_()
         , last_reported_(std::nullopt)
-        , highest_clean_(std::nullopt)
+        , highest_clean_([&]() -> std::optional<block::Position> {
+            const auto pos = parent_.db_.SubchainLastScanned(parent_.db_key_);
+
+            if (pos == parent_.null_position_) { return std::nullopt; }
+
+            return std::move(pos);
+        }())
         , dirty_blocks_()
     {
     }
@@ -131,8 +146,8 @@ private:
         }();
 
         if (report) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
-                " progress: ")(best.first)
+            LogVerbose()(OT_PRETTY_CLASS())(parent_.name_)(" progress: ")(
+                best.first)
                 .Flush();
             parent_.update_scan(best, reorg);
             last_reported_ = std::move(best);
@@ -189,6 +204,8 @@ auto Progress::Dirty() const noexcept -> std::optional<block::Position>
 }
 
 auto Progress::Get() const noexcept -> block::Position { return imp_->Get(); }
+
+auto Progress::Init() noexcept -> void { imp_->Init(); }
 
 auto Progress::Reorg(const block::Position& parent) noexcept -> void
 {

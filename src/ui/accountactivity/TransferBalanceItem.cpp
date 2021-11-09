@@ -154,8 +154,8 @@ auto TransferBalanceItem::startup(
                     text = "Transfer #" + number + " cleared.";
                 } break;
                 default: {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
-                        "Invalid event state (")(event.type())(")")
+                    LogError()(OT_PRETTY_CLASS())("Invalid event state (")(
+                        event.type())(")")
                         .Flush();
                 }
             }
@@ -177,8 +177,8 @@ auto TransferBalanceItem::startup(
                     text = "Transfer #" + number + " cleared.";
                 } break;
                 default: {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
-                        "Invalid event state (")(event.type())(")")
+                    LogError()(OT_PRETTY_CLASS())("Invalid event state (")(
+                        event.type())(")")
                         .Flush();
                 }
             }
@@ -203,8 +203,8 @@ auto TransferBalanceItem::startup(
                     text = "Transfer #" + number + " cleared.";
                 } break;
                 default: {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
-                        "Invalid event state (")(event.type())(")")
+                    LogError()(OT_PRETTY_CLASS())("Invalid event state (")(
+                        event.type())(")")
                         .Flush();
                 }
             }
@@ -225,7 +225,7 @@ auto TransferBalanceItem::startup(
         case StorageBox::DRAFT:
         case StorageBox::UNKNOWN:
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid item type (")(
+            LogError()(OT_PRETTY_CLASS())("Invalid item type (")(
                 static_cast<std::uint8_t>(type_))(")")
                 .Flush();
         }

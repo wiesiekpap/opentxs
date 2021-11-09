@@ -153,8 +153,8 @@ auto CustodialAccountActivity::extract_event(
     }
 
     if (false == found) {
-        LogError()(OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
-            "Workflow ")(workflow.id())(", type ")(workflow.type())(", state ")(
+        LogError()(OT_PRETTY_STATIC(CustodialAccountActivity))("Workflow ")(
+            workflow.id())(", type ")(workflow.type())(", state ")(
             workflow.state())(" does not contain an event of type ")(eventType)
             .Flush();
 
@@ -204,8 +204,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Error:
                 case api::client::PaymentWorkflowState::Initiated:
                 default: {
-                    LogError()(
-                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                    LogError()(OT_PRETTY_STATIC(CustodialAccountActivity))(
                         "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -227,8 +226,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Accepted:
                 case api::client::PaymentWorkflowState::Initiated:
                 default: {
-                    LogError()(
-                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                    LogError()(OT_PRETTY_STATIC(CustodialAccountActivity))(
                         "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -262,8 +260,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Cancelled:
                 case api::client::PaymentWorkflowState::Expired:
                 default: {
-                    LogError()(
-                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                    LogError()(OT_PRETTY_STATIC(CustodialAccountActivity))(
                         "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -296,8 +293,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Aborted:
                 case api::client::PaymentWorkflowState::Acknowledged:
                 default: {
-                    LogError()(
-                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                    LogError()(OT_PRETTY_STATIC(CustodialAccountActivity))(
                         "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -331,8 +327,7 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Cancelled:
                 case api::client::PaymentWorkflowState::Expired:
                 default: {
-                    LogError()(
-                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                    LogError()(OT_PRETTY_STATIC(CustodialAccountActivity))(
                         "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
@@ -342,7 +337,7 @@ auto CustodialAccountActivity::extract_rows(
         case api::client::PaymentWorkflowType::OutgoingInvoice:
         case api::client::PaymentWorkflowType::IncomingInvoice:
         default: {
-            LogError()(OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+            LogError()(OT_PRETTY_STATIC(CustodialAccountActivity))(
                 "Unsupported workflow type (")(workflow.type())(")")
                 .Flush();
         }
@@ -379,7 +374,7 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -422,7 +417,7 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
 
             OT_FAIL;
         }

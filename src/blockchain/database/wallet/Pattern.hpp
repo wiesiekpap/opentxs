@@ -19,6 +19,7 @@ struct Pattern {
 
     Pattern(const Bip32Index index, const ReadView data) noexcept;
     Pattern(const ReadView bytes) noexcept(false);
+    Pattern(Pattern&& rhs) noexcept;
 
     ~Pattern() = default;
 
@@ -27,8 +28,9 @@ private:
 
     Pattern() = delete;
     Pattern(const Pattern&) = delete;
-    Pattern(Pattern&&) = delete;
     auto operator=(const Pattern&) -> Pattern& = delete;
     auto operator=(Pattern&&) -> Pattern& = delete;
 };
+
+auto operator==(const Pattern& lhs, const Pattern& rhs) noexcept -> bool;
 }  // namespace opentxs::blockchain::database::wallet::db

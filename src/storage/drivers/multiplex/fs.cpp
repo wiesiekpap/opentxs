@@ -20,8 +20,7 @@ namespace opentxs::storage::driver
 {
 auto Multiplex::init_fs(std::unique_ptr<storage::Plugin>& plugin) -> void
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))(
-        "Initializing primary filesystem plugin.")
+    LogVerbose()(OT_PRETTY_CLASS())("Initializing primary filesystem plugin.")
         .Flush();
     plugin = factory::StorageFSGC(
         crypto_, asio_, storage_, config_, primary_bucket_);

@@ -211,7 +211,7 @@ struct BitcoinTransactionBuilder::Imp {
 
             return true;
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             return false;
         }
@@ -222,14 +222,13 @@ struct BitcoinTransactionBuilder::Imp {
             factory::BitcoinTransactionInput(api_, crypto_, chain_, utxo);
 
         if (false == bool(pInput)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct input")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to construct input").Flush();
 
             return false;
         }
 
         const auto& input = *pInput;
-        LogTrace()(OT_PRETTY_CLASS(__func__))("adding previous output ")(
+        LogTrace()(OT_PRETTY_CLASS())("adding previous output ")(
             utxo.first.str())(" to transaction")
             .Flush();
         input_count_ = inputs_.size();
@@ -304,8 +303,7 @@ struct BitcoinTransactionBuilder::Imp {
                         bi::Opcode(static_cast<bb::OP>(N + 80)));
                     elements.emplace_back(bi::Opcode(bb::OP::CHECKMULTISIG));
                 } else {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
-                        "Unsupported output type")
+                    LogError()(OT_PRETTY_CLASS())("Unsupported output type")
                         .Flush();
 
                     return false;
@@ -316,8 +314,7 @@ struct BitcoinTransactionBuilder::Imp {
             }
 
             if (false == bool(pScript)) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to construct script")
+                LogError()(OT_PRETTY_CLASS())("Failed to construct script")
                     .Flush();
 
                 return false;
@@ -333,8 +330,7 @@ struct BitcoinTransactionBuilder::Imp {
                 {});
 
             if (false == bool(pOutput)) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to construct output")
+                LogError()(OT_PRETTY_CLASS())("Failed to construct output")
                     .Flush();
 
                 return false;
@@ -397,8 +393,7 @@ struct BitcoinTransactionBuilder::Imp {
         }());
 
         if (false == bool(inputs)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct inputs")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to construct inputs").Flush();
 
             return {};
         }
@@ -406,7 +401,7 @@ struct BitcoinTransactionBuilder::Imp {
         auto outputs = factory::BitcoinTransactionOutputs(std::move(outputs_));
 
         if (false == bool(outputs)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct outputs")
+            LogError()(OT_PRETTY_CLASS())("Failed to construct outputs")
                 .Flush();
 
             return {};
@@ -437,8 +432,7 @@ struct BitcoinTransactionBuilder::Imp {
 
         for (const auto& [input, value] : inputs_) {
             if (false == sign_input(++index, *input, txcopy, bip143)) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign input ")(
-                    index)
+                LogError()(OT_PRETTY_CLASS())("Failed to sign input ")(index)
                     .Flush();
 
                 return false;
@@ -580,8 +574,7 @@ private:
                     preimage, sigHash, reason, output, input);
             }
             default: {
-                LogError()(OT_PRETTY_CLASS(__func__))("Unsupported input type")
-                    .Flush();
+                LogError()(OT_PRETTY_CLASS())("Unsupported input type").Flush();
 
                 return false;
             }
@@ -597,8 +590,7 @@ private:
         const auto& script = spends.Script();
 
         if ((1u != script.M().value()) || (3u != script.N().value())) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Unsupported multisig pattern")
+            LogError()(OT_PRETTY_CLASS())("Unsupported multisig pattern")
                 .Flush();
 
             return false;
@@ -609,20 +601,18 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Loading element ")(
-                opentxs::print(id))(" to sign previous output ")(
-                input.PreviousOutput().str())
+            LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(opentxs::print(
+                id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
             const auto& node = crypto_.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "api::Blockchain::GetKey returned the wrong key")
                     .Flush();
-                LogError()(OT_PRETTY_CLASS(__func__))("requested: ")(
-                    opentxs::print(id))
+                LogError()(OT_PRETTY_CLASS())("requested: ")(opentxs::print(id))
                     .Flush();
-                LogError()(OT_PRETTY_CLASS(__func__))("      got: ")(
+                LogError()(OT_PRETTY_CLASS())("      got: ")(
                     opentxs::print(got))
                     .Flush();
 
@@ -636,8 +626,7 @@ private:
             const auto& key = *pKey;
 
             if (key.PublicKey() != script.MultisigPubkey(0).value()) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Pubkey mismatch")
-                    .Flush();
+                LogError()(OT_PRETTY_CLASS())("Pubkey mismatch").Flush();
 
                 continue;
             }
@@ -648,8 +637,7 @@ private:
                 key.SignDER(preimage, hash_type(), sig, reason);
 
             if (false == haveSig) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to obtain signature")
+                LogError()(OT_PRETTY_CLASS())("Failed to obtain signature")
                     .Flush();
 
                 return false;
@@ -663,16 +651,15 @@ private:
         }
 
         if (0 == views.size()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "No keys available for signing ")(input.PreviousOutput().str())
+            LogError()(OT_PRETTY_CLASS())("No keys available for signing ")(
+                input.PreviousOutput().str())
                 .Flush();
 
             return false;
         }
 
         if (false == input.AddMultisigSignatures(views)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to apply signature")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to apply signature").Flush();
 
             return false;
         }
@@ -691,20 +678,18 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Loading element ")(
-                opentxs::print(id))(" to sign previous output ")(
-                input.PreviousOutput().str())
+            LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(opentxs::print(
+                id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
             const auto& node = crypto_.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "api::Blockchain::GetKey returned the wrong key")
                     .Flush();
-                LogError()(OT_PRETTY_CLASS(__func__))("requested: ")(
-                    opentxs::print(id))
+                LogError()(OT_PRETTY_CLASS())("requested: ")(opentxs::print(id))
                     .Flush();
-                LogError()(OT_PRETTY_CLASS(__func__))("      got: ")(
+                LogError()(OT_PRETTY_CLASS())("      got: ")(
                     opentxs::print(got))
                     .Flush();
 
@@ -728,8 +713,7 @@ private:
                 key.SignDER(preimage, hash_type(), sig, reason);
 
             if (false == haveSig) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to obtain signature")
+                LogError()(OT_PRETTY_CLASS())("Failed to obtain signature")
                     .Flush();
 
                 return false;
@@ -743,16 +727,15 @@ private:
         }
 
         if (0 == views.size()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "No keys available for signing ")(input.PreviousOutput().str())
+            LogError()(OT_PRETTY_CLASS())("No keys available for signing ")(
+                input.PreviousOutput().str())
                 .Flush();
 
             return false;
         }
 
         if (false == input.AddSignatures(views)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to apply signature")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to apply signature").Flush();
 
             return false;
         }
@@ -771,20 +754,18 @@ private:
         auto views = block::bitcoin::internal::Input::Signatures{};
 
         for (const auto& id : input.Keys()) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Loading element ")(
-                opentxs::print(id))(" to sign previous output ")(
-                input.PreviousOutput().str())
+            LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(opentxs::print(
+                id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
             const auto& node = crypto_.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "api::Blockchain::GetKey returned the wrong key")
                     .Flush();
-                LogError()(OT_PRETTY_CLASS(__func__))("requested: ")(
-                    opentxs::print(id))
+                LogError()(OT_PRETTY_CLASS())("requested: ")(opentxs::print(id))
                     .Flush();
-                LogError()(OT_PRETTY_CLASS(__func__))("      got: ")(
+                LogError()(OT_PRETTY_CLASS())("      got: ")(
                     opentxs::print(got))
                     .Flush();
 
@@ -811,8 +792,7 @@ private:
                 key.SignDER(preimage, hash_type(), sig, reason);
 
             if (false == haveSig) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to obtain signature")
+                LogError()(OT_PRETTY_CLASS())("Failed to obtain signature")
                     .Flush();
 
                 return false;
@@ -826,16 +806,15 @@ private:
         }
 
         if (0 == views.size()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "No keys available for signing ")(input.PreviousOutput().str())
+            LogError()(OT_PRETTY_CLASS())("No keys available for signing ")(
+                input.PreviousOutput().str())
                 .Flush();
 
             return false;
         }
 
         if (false == input.AddSignatures(views)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to apply signature")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to apply signature").Flush();
 
             return false;
         }
@@ -859,8 +838,7 @@ private:
         try {
             dust = amount.Internal().amount_.convert_to<std::size_t>();
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))("error calculating dust: ")(
-                e.what())
+            LogError()(OT_PRETTY_CLASS())("error calculating dust: ")(e.what())
                 .Flush();
         }
         return dust;
@@ -873,8 +851,7 @@ private:
         auto pKey = element.PrivateKey(reason);
 
         if (!pKey) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "failed to obtain private key ")(
+            LogError()(OT_PRETTY_CLASS())("failed to obtain private key ")(
                 opentxs::print(element.KeyID()))
                 .Flush();
 
@@ -889,7 +866,7 @@ private:
             const auto got = api_.Factory().Data(key.PublicKey());
             const auto expected = api_.Factory().Data(pubkey.PublicKey());
             const auto [account, subchain, index] = element.KeyID();
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Derived private key for "
                 "account ")(account)(" subchain"
                                      " ")(static_cast<std::uint32_t>(subchain))(
@@ -938,8 +915,7 @@ private:
             }
 
             if (false == cb(preimage, output.outpoints_)) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to hash outpoints")
+                LogError()(OT_PRETTY_CLASS())("Failed to hash outpoints")
                     .Flush();
 
                 return false;
@@ -957,8 +933,7 @@ private:
             }
 
             if (false == cb(preimage, output.sequences_)) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to hash sequences")
+                LogError()(OT_PRETTY_CLASS())("Failed to hash sequences")
                     .Flush();
 
                 return false;
@@ -974,8 +949,7 @@ private:
 
                 if (false ==
                     output->Serialize(preallocated(size, it)).has_value()) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
-                        "Failed to serialize output")
+                    LogError()(OT_PRETTY_CLASS())("Failed to serialize output")
                         .Flush();
 
                     return false;
@@ -985,8 +959,7 @@ private:
             }
 
             if (false == cb(preimage, output.outputs_)) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Failed to hash outputs")
-                    .Flush();
+                LogError()(OT_PRETTY_CLASS())("Failed to hash outputs").Flush();
 
                 return false;
             }
@@ -1011,8 +984,7 @@ private:
         auto inputs = factory::BitcoinTransactionInputs(std::move(inputCopy));
 
         if (false == bool(inputs)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct inputs")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to construct inputs").Flush();
 
             return {};
         }
@@ -1027,7 +999,7 @@ private:
             factory::BitcoinTransactionOutputs(std::move(outputCopy));
 
         if (false == bool(outputs)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct outputs")
+            LogError()(OT_PRETTY_CLASS())("Failed to construct outputs")
                 .Flush();
 
             return {};
@@ -1107,8 +1079,7 @@ private:
             case Type::Ethereum_frontier:
             case Type::Ethereum_ropsten:
             default: {
-                LogError()(OT_PRETTY_CLASS(__func__))("Unsupported chain")
-                    .Flush();
+                LogError()(OT_PRETTY_CLASS())("Unsupported chain").Flush();
 
                 return false;
             }
@@ -1120,8 +1091,7 @@ private:
         Bip143& bip143) const noexcept -> bool
     {
         if (false == init_bip143(bip143)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Error instantiating bip143")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Error instantiating bip143").Flush();
 
             return false;
         }
@@ -1138,8 +1108,7 @@ private:
         Transaction& txcopy) const noexcept -> bool
     {
         if (false == init_txcopy(txcopy)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Error instantiating txcopy")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Error instantiating txcopy").Flush();
 
             return false;
         }
@@ -1148,8 +1117,7 @@ private:
         auto preimage = txcopy->GetPreimageBTC(index, sigHash);
 
         if (0 == preimage.size()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Error obtaining signing preimage")
+            LogError()(OT_PRETTY_CLASS())("Error obtaining signing preimage")
                 .Flush();
 
             return false;
@@ -1165,8 +1133,7 @@ private:
         Bip143& bip143) const noexcept -> bool
     {
         if (false == init_bip143(bip143)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Error instantiating bip143")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Error instantiating bip143").Flush();
 
             return false;
         }
@@ -1187,7 +1154,7 @@ private:
         -> crypto::ECKey
     {
         const auto [account, subchain, index] = element.KeyID();
-        LogTrace()(OT_PRETTY_CLASS(__func__))("considering spend key ")(
+        LogTrace()(OT_PRETTY_CLASS())("considering spend key ")(
             index)(" from subchain ")(static_cast<std::uint32_t>(subchain))(
             " of account ")(account)(" for previous "
                                      "output ")(outpoint.str())
@@ -1196,7 +1163,7 @@ private:
         auto pKey = element.Key();
 
         if (!pKey) {
-            LogError()(OT_PRETTY_CLASS(__func__))("missing public key").Flush();
+            LogError()(OT_PRETTY_CLASS())("missing public key").Flush();
 
             return {};
         }
@@ -1207,15 +1174,14 @@ private:
             const auto expected = output.Script().Pubkey();
 
             if (false == expected.has_value()) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "wrong output script type")
+                LogError()(OT_PRETTY_CLASS())("wrong output script type")
                     .Flush();
 
                 return {};
             }
 
             if (key.PublicKey() != expected.value()) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Provided public key does not match expected value")
                     .Flush();
 
@@ -1225,15 +1191,14 @@ private:
             const auto expected = output.Script().PubkeyHash();
 
             if (false == expected.has_value()) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "wrong output script type")
+                LogError()(OT_PRETTY_CLASS())("wrong output script type")
                     .Flush();
 
                 return {};
             }
 
             if (element.PubkeyHash()->Bytes() != expected.value()) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Provided public key does not match expected hash")
                     .Flush();
 

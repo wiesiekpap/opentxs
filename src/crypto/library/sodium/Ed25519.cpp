@@ -34,7 +34,7 @@ auto Sodium::PubkeyAdd(
     [[maybe_unused]] const ReadView scalar,
     [[maybe_unused]] const AllocateOutput result) const noexcept -> bool
 {
-    LogError()(OT_PRETTY_CLASS(__func__))("Not implemented").Flush();
+    LogError()(OT_PRETTY_CLASS())("Not implemented").Flush();
 
     return false;
 }
@@ -58,20 +58,19 @@ auto Sodium::ScalarAdd(
     const AllocateOutput result) const noexcept -> bool
 {
     if (false == bool(result)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid output allocator").Flush();
 
         return false;
     }
 
     if (crypto_core_ed25519_SCALARBYTES != lhs.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid lhs scalar").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid lhs scalar").Flush();
 
         return false;
     }
 
     if (crypto_core_ed25519_SCALARBYTES != rhs.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid rhs scalar").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid rhs scalar").Flush();
 
         return false;
     }
@@ -79,8 +78,7 @@ auto Sodium::ScalarAdd(
     auto key = result(crypto_core_ed25519_SCALARBYTES);
 
     if (false == key.valid(crypto_core_ed25519_SCALARBYTES)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to allocate space for result")
+        LogError()(OT_PRETTY_CLASS())("Failed to allocate space for result")
             .Flush();
 
         return false;
@@ -99,14 +97,13 @@ auto Sodium::ScalarMultiplyBase(
     const AllocateOutput result) const noexcept -> bool
 {
     if (false == bool(result)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid output allocator").Flush();
 
         return false;
     }
 
     if (crypto_scalarmult_ed25519_SCALARBYTES != scalar.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid scalar").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid scalar").Flush();
 
         return false;
     }
@@ -114,8 +111,7 @@ auto Sodium::ScalarMultiplyBase(
     auto pub = result(crypto_scalarmult_ed25519_BYTES);
 
     if (false == pub.valid(crypto_scalarmult_ed25519_BYTES)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to allocate space for public key")
+        LogError()(OT_PRETTY_CLASS())("Failed to allocate space for public key")
             .Flush();
 
         return false;
@@ -133,28 +129,25 @@ auto Sodium::SharedSecret(
     Secret& secret) const noexcept -> bool
 {
     if (SecretStyle::Default != style) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unsupported secret style")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Unsupported secret style").Flush();
 
         return false;
     }
 
     if (crypto_sign_PUBLICKEYBYTES != pub.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid public key ").Flush();
-        LogError()(OT_PRETTY_CLASS(__func__))("Expected: ")(
-            crypto_sign_PUBLICKEYBYTES)
+        LogError()(OT_PRETTY_CLASS())("Invalid public key ").Flush();
+        LogError()(OT_PRETTY_CLASS())("Expected: ")(crypto_sign_PUBLICKEYBYTES)
             .Flush();
-        LogError()(OT_PRETTY_CLASS(__func__))("Actual:   ")(pub.size()).Flush();
+        LogError()(OT_PRETTY_CLASS())("Actual:   ")(pub.size()).Flush();
 
         return false;
     }
 
     if (crypto_sign_SECRETKEYBYTES != prv.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid private key").Flush();
-        LogError()(OT_PRETTY_CLASS(__func__))("Expected: ")(
-            crypto_sign_SECRETKEYBYTES)
+        LogError()(OT_PRETTY_CLASS())("Invalid private key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Expected: ")(crypto_sign_SECRETKEYBYTES)
             .Flush();
-        LogError()(OT_PRETTY_CLASS(__func__))("Actual:   ")(prv.size()).Flush();
+        LogError()(OT_PRETTY_CLASS())("Actual:   ")(prv.size()).Flush();
 
         return false;
     }
@@ -173,7 +166,7 @@ auto Sodium::SharedSecret(
     if (0 != ::crypto_sign_ed25519_pk_to_curve25519(
                  publicEd.data(),
                  reinterpret_cast<const unsigned char*>(pub.data()))) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "crypto_sign_ed25519_pk_to_curve25519 error")
             .Flush();
 
@@ -183,7 +176,7 @@ auto Sodium::SharedSecret(
     if (0 != ::crypto_sign_ed25519_sk_to_curve25519(
                  reinterpret_cast<unsigned char*>(privateBytes.data()),
                  reinterpret_cast<const unsigned char*>(prv.data()))) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "crypto_sign_ed25519_sk_to_curve25519 error")
             .Flush();
 
@@ -207,7 +200,7 @@ auto Sodium::Sign(
     const AllocateOutput signature) const -> bool
 {
     if (crypto::HashType::Blake2b256 != hash) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Unsupported hash function: ")(
+        LogVerbose()(OT_PRETTY_CLASS())("Unsupported hash function: ")(
             value(hash))
             .Flush();
 
@@ -215,31 +208,28 @@ auto Sodium::Sign(
     }
 
     if (nullptr == priv.data() || 0 == priv.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing private key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing private key").Flush();
 
         return false;
     }
 
     if (crypto_sign_SECRETKEYBYTES != priv.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid private key").Flush();
-        LogError()(OT_PRETTY_CLASS(__func__))("Expected: ")(
-            crypto_sign_SECRETKEYBYTES)
+        LogError()(OT_PRETTY_CLASS())("Invalid private key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Expected: ")(crypto_sign_SECRETKEYBYTES)
             .Flush();
-        LogError()(OT_PRETTY_CLASS(__func__))("Actual:   ")(priv.size())
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Actual:   ")(priv.size()).Flush();
 
         return false;
     }
 
     if (priv == blank_private()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Blank private key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Blank private key").Flush();
 
         return false;
     }
 
     if (false == bool(signature)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid output allocator").Flush();
 
         return false;
     }
@@ -247,8 +237,7 @@ auto Sodium::Sign(
     auto output = signature(crypto_sign_BYTES);
 
     if (false == output.valid(crypto_sign_BYTES)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to allocate space for signature")
+        LogError()(OT_PRETTY_CLASS())("Failed to allocate space for signature")
             .Flush();
 
         return false;
@@ -263,8 +252,7 @@ auto Sodium::Sign(
                  reinterpret_cast<const unsigned char*>(priv.data()));
 
     if (false == success) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign plaintext.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to sign plaintext.").Flush();
     }
 
     return success;
@@ -277,7 +265,7 @@ auto Sodium::Verify(
     const crypto::HashType type) const -> bool
 {
     if (crypto::HashType::Blake2b256 != type) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Unsupported hash function: ")(
+        LogVerbose()(OT_PRETTY_CLASS())("Unsupported hash function: ")(
             value(type))
             .Flush();
 
@@ -285,23 +273,22 @@ auto Sodium::Verify(
     }
 
     if (crypto_sign_BYTES != signature.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid signature").Flush();
 
         return false;
     }
 
     if (nullptr == pub.data() || 0 == pub.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing public key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing public key").Flush();
 
         return false;
     }
 
     if (crypto_sign_PUBLICKEYBYTES != pub.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid public key").Flush();
-        LogError()(OT_PRETTY_CLASS(__func__))("Expected: ")(
-            crypto_sign_PUBLICKEYBYTES)
+        LogError()(OT_PRETTY_CLASS())("Invalid public key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Expected: ")(crypto_sign_PUBLICKEYBYTES)
             .Flush();
-        LogError()(OT_PRETTY_CLASS(__func__))("Actual:   ")(pub.size()).Flush();
+        LogError()(OT_PRETTY_CLASS())("Actual:   ")(pub.size()).Flush();
 
         return false;
     }
@@ -314,8 +301,7 @@ auto Sodium::Verify(
                  reinterpret_cast<const unsigned char*>(pub.data()));
 
     if (false == success) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Failed to verify signature")
-            .Flush();
+        LogVerbose()(OT_PRETTY_CLASS())("Failed to verify signature").Flush();
     }
 
     return success;

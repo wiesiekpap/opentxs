@@ -269,7 +269,7 @@ auto Block::at(const std::size_t index) const noexcept -> const value_type&
 
         return at(reader(index_.at(index)));
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return null_tx_;
     }
@@ -281,7 +281,7 @@ auto Block::at(const ReadView txid) const noexcept -> const value_type&
 
         return transactions_.at(txid);
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("transaction ")(
+        LogError()(OT_PRETTY_CLASS())("transaction ")(
             api_.Factory().Data(txid)->asHex())(" not found in block ")(
             header_.Hash().asHex())
             .Flush();
@@ -401,7 +401,7 @@ auto Block::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
-    LogTrace()(OT_PRETTY_CLASS(__func__))("processing ")(transactions_.size())(
+    LogTrace()(OT_PRETTY_CLASS())("processing ")(transactions_.size())(
         " transactions")
         .Flush();
 
@@ -413,8 +413,7 @@ auto Block::ExtractElements(const filter::Type style) const noexcept
             std::make_move_iterator(temp.end()));
     }
 
-    LogTrace()(OT_PRETTY_CLASS(__func__))("extracted ")(output.size())(
-        " elements")
+    LogTrace()(OT_PRETTY_CLASS())("extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -428,7 +427,7 @@ auto Block::FindMatches(
 {
     if (0 == (outpoints.size() + patterns.size())) { return {}; }
 
-    LogTrace()(OT_PRETTY_CLASS(__func__))("Verifying ")(
+    LogTrace()(OT_PRETTY_CLASS())("Verifying ")(
         patterns.size() + outpoints.size())(" potential matches in ")(
         transactions_.size())(" transactions")
         .Flush();
@@ -482,8 +481,7 @@ auto Block::Print() const noexcept -> std::string
 auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
 {
     if (false == bool(bytes)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid output allocator").Flush();
 
         return false;
     }
@@ -492,21 +490,19 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
     const auto out = bytes(size);
 
     if (false == out.valid(size)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocate output")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to allocate output").Flush();
 
         return false;
     }
 
-    LogInsane()(OT_PRETTY_CLASS(__func__))("Serializing ")(txCount.Value())(
+    LogInsane()(OT_PRETTY_CLASS())("Serializing ")(txCount.Value())(
         " transactions into ")(size)(" bytes.")
         .Flush();
     auto remaining = std::size_t{size};
     auto it = static_cast<std::byte*>(out.data());
 
     if (false == header_.Serialize(preallocated(remaining, it))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize header")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize header").Flush();
 
         return false;
     }
@@ -515,16 +511,14 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
     std::advance(it, header_bytes_);
 
     if (false == serialize_post_header(it, remaining)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to extra data (post header)")
+        LogError()(OT_PRETTY_CLASS())("Failed to extra data (post header)")
             .Flush();
 
         return false;
     }
 
     if (false == txCount.Encode(preallocated(remaining, it))) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to serialize transaction count")
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize transaction count")
             .Flush();
 
         return false;
@@ -544,7 +538,7 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
                 tx.Internal().Serialize(preallocated(remaining, it));
 
             if (false == encoded.has_value()) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "failed to serialize transaction ")(tx.ID().asHex())
                     .Flush();
 
@@ -554,16 +548,14 @@ auto Block::Serialize(AllocateOutput bytes) const noexcept -> bool
             remaining -= encoded.value();
             std::advance(it, encoded.value());
         } catch (...) {
-            LogError()(OT_PRETTY_CLASS(__func__))("missing transaction")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("missing transaction").Flush();
 
             return false;
         }
     }
 
     if (0 != remaining) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Extra bytes: ")(remaining)
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Extra bytes: ")(remaining).Flush();
 
         return false;
     }

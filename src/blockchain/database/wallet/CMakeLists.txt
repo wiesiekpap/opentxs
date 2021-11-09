@@ -8,6 +8,8 @@ target_sources(
   PRIVATE
     "Output.cpp"
     "Output.hpp"
+    "OutputCache.cpp"
+    "OutputCache.hpp"
     "Pattern.cpp"
     "Pattern.hpp"
     "Position.cpp"
@@ -16,8 +18,11 @@ target_sources(
     "Proposal.hpp"
     "Subchain.cpp"
     "Subchain.hpp"
+    "SubchainCache.cpp"
+    "SubchainCache.hpp"
     "SubchainID.cpp"
     "SubchainID.hpp"
+    "Types.hpp"
 )
 target_include_directories(
   opentxs-common SYSTEM

@@ -83,8 +83,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     -> bool
 {
     if (false == common_.StoreBlockHeaders(update.UpdatedHeaders())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save block headers")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to save block headers").Flush();
 
         return false;
     }
@@ -102,8 +101,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                     tsv(static_cast<std::size_t>(update.Checkpoint().first)),
                     parentTxn)
                 .first) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to save checkpoint height")
+            LogError()(OT_PRETTY_CLASS())("Failed to save checkpoint height")
                 .Flush();
 
             return false;
@@ -116,8 +114,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              update.Checkpoint().second->Bytes(),
                              parentTxn)
                          .first) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to save checkpoint hash")
+            LogError()(OT_PRETTY_CLASS())("Failed to save checkpoint hash")
                 .Flush();
 
             return false;
@@ -132,8 +129,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              child->Bytes(),
                              parentTxn)
                          .first) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to save disconnected hash")
+            LogError()(OT_PRETTY_CLASS())("Failed to save disconnected hash")
                 .Flush();
 
             return false;
@@ -146,8 +142,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                          parent->Bytes(),
                          child->Bytes(),
                          parentTxn)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to delete disconnected hash")
+            LogError()(OT_PRETTY_CLASS())("Failed to delete disconnected hash")
                 .Flush();
 
             return false;
@@ -162,7 +157,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              hash->Bytes(),
                              parentTxn)
                          .first) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to save sibling hash")
+            LogError()(OT_PRETTY_CLASS())("Failed to save sibling hash")
                 .Flush();
 
             return false;
@@ -187,8 +182,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             parentTxn);
 
         if (false == result.first) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to save block metadata")
+            LogError()(OT_PRETTY_CLASS())("Failed to save block metadata")
                 .Flush();
 
             return false;
@@ -198,8 +192,7 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
     if (update.HaveReorg()) {
         for (auto i = initialHeight; i > update.ReorgParent().first; --i) {
             if (false == pop_best(i, parentTxn)) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to delete best hash")
+                LogError()(OT_PRETTY_CLASS())("Failed to delete best hash")
                     .Flush();
 
                 return false;
@@ -221,15 +214,14 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
                              tsv(static_cast<std::size_t>(tip.first)),
                              parentTxn)
                          .first) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to store best hash")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to store best hash").Flush();
 
             return false;
         }
     }
 
     if (false == parentTxn.Finalize(true)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Database error").Flush();
+        LogError()(OT_PRETTY_CLASS())("Database error").Flush();
 
         return false;
     }

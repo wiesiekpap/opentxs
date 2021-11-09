@@ -182,8 +182,7 @@ auto Client::Activity() const -> const api::client::Activity&
 
 auto Client::Cleanup() -> void
 {
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Shutting down and cleaning up.")
-        .Flush();
+    LogDetail()(OT_PRETTY_CLASS())("Shutting down and cleaning up.").Flush();
     shutdown_sender_.Activate();
     ui_->Shutdown();
     ui_.reset();

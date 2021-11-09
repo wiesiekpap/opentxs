@@ -199,7 +199,7 @@ auto Crypto::hasSodium() const noexcept -> bool
 
 auto Crypto::Init() noexcept -> void
 {
-    LogDetail()(OT_PRETTY_CLASS(__func__))(
+    LogDetail()(OT_PRETTY_CLASS())(
         "Setting up rlimits, and crypto libraries...")
         .Flush();
 

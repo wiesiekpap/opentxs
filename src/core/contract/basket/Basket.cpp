@@ -216,8 +216,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_nSubCount = atoi(strSubCount->Get());
         m_lMinimumTransfer = Amount(strMinTrans->Get());
 
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Loading currency basket...")
-            .Flush();
+        LogDetail()(OT_PRETTY_CLASS())("Loading currency basket...").Flush();
 
         return 1;
     } else if (strNodeName->Compare("requestExchange")) {
@@ -239,7 +238,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             m_bExchangingIn = strDirection->Compare("in");
         if (strTemp->Exists()) SetClosingNum(strTemp->ToLong());
 
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Basket Transfer multiple is ")(
+        LogVerbose()(OT_PRETTY_CLASS())("Basket Transfer multiple is ")(
             m_nTransferMultiple)(". Direction is ")(
             strDirection)(". Closing number is ")(
             m_lClosingTransactionNo)(". Target account is: ")(
@@ -272,7 +271,7 @@ auto Basket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         m_dequeItems.push_back(pItem);
 
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Loaded basket item. ").Flush();
+        LogVerbose()(OT_PRETTY_CLASS())("Loaded basket item. ").Flush();
 
         return 1;
     }

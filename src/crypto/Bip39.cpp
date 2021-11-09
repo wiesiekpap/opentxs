@@ -87,7 +87,7 @@ auto Bip39::entropy_to_words(
         case 32:
             break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid entropy size: ")(
+            LogError()(OT_PRETTY_CLASS())("Invalid entropy size: ")(
                 bytes.size())
                 .Flush();
 
@@ -102,7 +102,7 @@ auto Bip39::entropy_to_words(
     const auto wordCount = std::size_t{entropyPlusCheckBits / BitsPerWord};
 
     if (0 != (wordCount % ValidMnemonicWordMultiple)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "(0 != (wordCount % ValidMnemonicWordMultiple))")
             .Flush();
 
@@ -110,7 +110,7 @@ auto Bip39::entropy_to_words(
     }
 
     if (0 != (entropyPlusCheckBits % BitsPerWord)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "(0 != (entropyPlusCheckBits % BitsPerWord))")
             .Flush();
 
@@ -124,7 +124,7 @@ auto Bip39::entropy_to_words(
                      opentxs::crypto::HashType::Sha256,
                      bytes,
                      digestOutput->WriteInto())) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Digest(opentxs::crypto::HashType::Sha256...) failed.")
             .Flush();
 
@@ -151,8 +151,7 @@ auto Bip39::entropy_to_words(
                 reinterpret_cast<std::uint8_t&>(indexed_byte), byteIndex);
 
             if (!bExtracted) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "(!bExtracted) -- returning")
+                LogError()(OT_PRETTY_CLASS())("(!bExtracted) -- returning")
                     .Flush();
 
                 return false;
@@ -171,15 +170,14 @@ auto Bip39::entropy_to_words(
             const auto& theString = dictionary.at(indexDict);
             mnemonicWords.push_back(theString);
         } catch (...) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported language")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unsupported language").Flush();
 
             return false;
         }
     }
 
     if (mnemonicWords.size() != ((bitIndex + 1) / BitsPerWord)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "(mnemonicWords.size() != ((bitIndex + 1) / BitsPerWord))")
             .Flush();
 
@@ -340,8 +338,7 @@ auto Bip39::words_to_root_pkt(
     const auto indices = tokenize(lang, words.Bytes());
 
     if (const auto size{indices.size()}; 15u != size) {
-        LogError()(OT_PRETTY_CLASS(__func__))("incorrect number of words: ")(
-            size)
+        LogError()(OT_PRETTY_CLASS())("incorrect number of words: ")(size)
             .Flush();
 
         return false;
@@ -383,8 +380,7 @@ auto Bip39::words_to_root_pkt(
     const auto version = (ent[0] >> 1) & 0x0f;
 
     if (0 != version) {
-        LogError()(OT_PRETTY_CLASS(__func__))("unsupported version: ")(version)
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("unsupported version: ")(version).Flush();
 
         return false;
     }
@@ -413,7 +409,7 @@ auto Bip39::words_to_root_pkt(
                 throw std::runtime_error{"checksum failure"};
             }
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             return false;
         }
@@ -421,7 +417,7 @@ auto Bip39::words_to_root_pkt(
 
     if (encrypted) {
         if (0 == passphrase.size()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "passphrase required but not provided")
                 .Flush();
 
@@ -482,7 +478,7 @@ auto Bip39::WordsToSeed(
             return words_to_root_pkt(api, lang, words, seed, passphrase);
         }
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("unsupported type").Flush();
+            LogError()(OT_PRETTY_CLASS())("unsupported type").Flush();
 
             return false;
         }

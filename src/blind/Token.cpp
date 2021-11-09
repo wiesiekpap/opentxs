@@ -183,8 +183,7 @@ auto Token::reencrypt(
         oldKey.Decrypt(ciphertext, oldPassword, plaintext->WriteInto());
 
     if (false == output) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to decrypt ciphertext.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to decrypt ciphertext.").Flush();
 
         return false;
     }
@@ -197,8 +196,7 @@ auto Token::reencrypt(
         opentxs::crypto::key::symmetric::Algorithm::ChaCha20Poly1305);
 
     if (false == output) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to encrypt ciphertext.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to encrypt ciphertext.").Flush();
 
         return false;
     }

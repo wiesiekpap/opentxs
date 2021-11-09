@@ -175,7 +175,7 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.Pubkey().value()) {
-                    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
+                    LogVerbose()(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": P2PK match found for ")(
                         DisplayString(node_.Chain()))(" transaction ")(
                         txid->asHex())(" output ")(i)(" via ")(
@@ -193,7 +193,7 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
+                    LogVerbose()(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": P2PKH match found for ")(
                         DisplayString(node_.Chain()))(" transaction ")(
                         txid->asHex())(" output ")(i)(" via ")(hash->asHex())
@@ -210,7 +210,7 @@ auto DeterministicStateData::process(
                 OT_ASSERT(script.PubkeyHash().has_value());
 
                 if (hash->Bytes() == script.PubkeyHash().value()) {
-                    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
+                    LogVerbose()(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": P2WPKH match found for ")(
                         DisplayString(node_.Chain()))(" transaction ")(
                         txid->asHex())(" output ")(i)(" via ")(hash->asHex())
@@ -241,7 +241,7 @@ auto DeterministicStateData::process(
                 const auto& key = *pKey;
 
                 if (key.PublicKey() == script.MultisigPubkey(0).value()) {
-                    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
+                    LogVerbose()(OT_PRETTY_CLASS())(name_)(" element ")(
                         index)(": ")(m.value())(" of ")(n.value())(
                         " P2MS match found for ")(DisplayString(node_.Chain()))(
                         " transaction ")(txid->asHex())(" output ")(i)(" via ")(
@@ -258,6 +258,13 @@ auto DeterministicStateData::process(
             }
         };
     }
+}
+
+auto DeterministicStateData::report_scan(
+    const block::Position& pos) const noexcept -> void
+{
+    subaccount_.Internal().SetScanProgress(pos, subchain_);
+    SubchainStateData::report_scan(pos);
 }
 
 auto DeterministicStateData::type() const noexcept -> std::stringstream
@@ -279,12 +286,5 @@ auto DeterministicStateData::type() const noexcept -> std::stringstream
     }
 
     return output;
-}
-
-auto DeterministicStateData::update_scan(const block::Position& pos, bool reorg)
-    const noexcept -> void
-{
-    subaccount_.Internal().SetScanProgress(pos, subchain_);
-    SubchainStateData::update_scan(pos, reorg);
 }
 }  // namespace opentxs::blockchain::node::wallet

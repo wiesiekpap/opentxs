@@ -198,8 +198,7 @@ auto Storage::Bip47Chain(
     const bool exists = Root().Tree().Nyms().Exists(nymID.str());
 
     if (false == exists) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return core::UnitType::Error;
     }
@@ -219,8 +218,7 @@ auto Storage::Bip47ChannelsByChain(
     const bool exists = Root().Tree().Nyms().Exists(nymID.str());
 
     if (false == exists) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return {};
     }
@@ -260,8 +258,7 @@ auto Storage::BlockchainThreadMap(const identifier::Nym& nym, const Data& txid)
     const auto& nyms = Root().Tree().Nyms();
 
     if (false == nyms.Exists(nym.str())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nym)(" does not exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nym)(" does not exist.").Flush();
 
         return {};
     }
@@ -275,8 +272,7 @@ auto Storage::BlockchainTransactionList(
     const auto& nyms = Root().Tree().Nyms();
 
     if (false == nyms.Exists(nym.str())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nym)(" does not exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nym)(" does not exist.").Flush();
 
         return {};
     }
@@ -390,8 +386,7 @@ auto Storage::DeletePaymentWorkflow(
     const bool exists = Root().Tree().Nyms().Exists(nymID);
 
     if (false == exists) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return false;
     }
@@ -442,8 +437,7 @@ auto Storage::IssuerList(const std::string& nymID) const -> ObjectList
     const bool exists = Root().Tree().Nyms().Exists(nymID);
 
     if (false == exists) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return {};
     }
@@ -484,8 +478,7 @@ auto Storage::Load(
     const bool exists = Root().Tree().Nyms().Exists(nymID.str());
 
     if (false == exists) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return false;
     }
@@ -575,8 +568,7 @@ auto Storage::Load(
     auto alias = std::string{};
 
     if (false == Root().Tree().Nyms().Nym(id).Load(temp, alias, checking)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load nym ")(id)
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to load nym ")(id).Flush();
 
         return false;
     }
@@ -607,8 +599,7 @@ auto Storage::Load(
     const bool checking) const -> bool
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return false;
     }
@@ -630,8 +621,7 @@ auto Storage::Load(
     const bool checking) const -> bool
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return false;
     }
@@ -777,8 +767,7 @@ auto Storage::Load(
     const auto& nymNode = Root().Tree().Nyms();
 
     if (false == nymNode.Exists(nym.str())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nym)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nym)(" doesn't exist.").Flush();
 
         return false;
     }
@@ -941,7 +930,7 @@ auto Storage::MoveThreadItem(
     const auto& nyms = Root().Tree().Nyms();
 
     if (false == nyms.Exists(nymId)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymId)(" does not exist.")
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymId)(" does not exist.")
             .Flush();
 
         return false;
@@ -950,7 +939,7 @@ auto Storage::MoveThreadItem(
     const auto& threads = nyms.Nym(nymId).Threads();
 
     if (false == threads.Exists(fromThreadID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Source thread ")(
+        LogError()(OT_PRETTY_CLASS())("Source thread ")(
             fromThreadID)(" does not exist.")
             .Flush();
 
@@ -958,7 +947,7 @@ auto Storage::MoveThreadItem(
     }
 
     if (false == threads.Exists(toThreadID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Destination thread ")(
+        LogError()(OT_PRETTY_CLASS())("Destination thread ")(
             toThreadID)(" does not exist.")
             .Flush();
 
@@ -999,13 +988,13 @@ auto Storage::MoveThreadItem(
     }
 
     if (false == found) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Item does not exist.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Item does not exist.").Flush();
 
         return false;
     }
 
     if (false == fromThread.Remove(itemID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to remove item.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to remove item.").Flush();
 
         return false;
     }
@@ -1026,7 +1015,7 @@ auto Storage::MoveThreadItem(
         toThread.Add(itemID, time, box, alias, contents, index, account);
 
     if (false == added) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to insert item.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to insert item.").Flush();
 
         return false;
     }
@@ -1092,8 +1081,7 @@ auto Storage::NymList() const -> ObjectList
 auto Storage::PaymentWorkflowList(const std::string& nymID) const -> ObjectList
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return {};
     }
@@ -1106,8 +1094,7 @@ auto Storage::PaymentWorkflowLookup(
     const std::string& sourceID) const -> std::string
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return {};
     }
@@ -1121,8 +1108,7 @@ auto Storage::PaymentWorkflowsByAccount(
     const std::string& accountID) const -> std::set<std::string>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return {};
     }
@@ -1138,8 +1124,7 @@ auto Storage::PaymentWorkflowsByState(
     -> std::set<std::string>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return {};
     }
@@ -1153,8 +1138,7 @@ auto Storage::PaymentWorkflowsByUnit(
     const std::string& unitID) const -> std::set<std::string>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return {};
     }
@@ -1169,8 +1153,7 @@ auto Storage::PaymentWorkflowState(
     pair<api::client::PaymentWorkflowType, api::client::PaymentWorkflowState>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return {};
     }
@@ -1201,8 +1184,7 @@ auto Storage::RemoveBlockchainThreadItem(
     const auto& nyms = Root().Tree().Nyms();
 
     if (false == nyms.Exists(nym.str())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nym)(" does not exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nym)(" does not exist.").Flush();
 
         return false;
     }
@@ -1210,8 +1192,7 @@ auto Storage::RemoveBlockchainThreadItem(
     const auto& threads = nyms.Nym(nym.str()).Threads();
 
     if (false == threads.Exists(threadID.str())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Thread ")(
-            threadID)(" does not exist.")
+        LogError()(OT_PRETTY_CLASS())("Thread ")(threadID)(" does not exist.")
             .Flush();
 
         return false;
@@ -1242,13 +1223,13 @@ auto Storage::RemoveBlockchainThreadItem(
     }
 
     if (false == found) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Item does not exist.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Item does not exist.").Flush();
 
         return false;
     }
 
     if (false == fromThread.Remove(id)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to remove item.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to remove item.").Flush();
 
         return false;
     }
@@ -1451,8 +1432,7 @@ auto Storage::RemoveThreadItem(
     const auto& nyms = Root().Tree().Nyms();
 
     if (false == nyms.Exists(nym.str())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nym)(" does not exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nym)(" does not exist.").Flush();
 
         return false;
     }
@@ -1460,8 +1440,7 @@ auto Storage::RemoveThreadItem(
     const auto& threads = nyms.Nym(nym.str()).Threads();
 
     if (false == threads.Exists(threadID.str())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Thread ")(
-            threadID)(" does not exist.")
+        LogError()(OT_PRETTY_CLASS())("Thread ")(threadID)(" does not exist.")
             .Flush();
 
         return false;
@@ -1491,13 +1470,13 @@ auto Storage::RemoveThreadItem(
     }
 
     if (false == found) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Item does not exist.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Item does not exist.").Flush();
 
         return false;
     }
 
     if (false == fromThread.Remove(id)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to remove item.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to remove item.").Flush();
 
         return false;
     }
@@ -1715,7 +1694,7 @@ auto Storage::SetReadState(
     auto& nyms = mutable_Root().get().mutable_Tree().get().mutable_Nyms().get();
 
     if (false == nyms.Exists(nymId)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymId)(" does not exist.")
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymId)(" does not exist.")
             .Flush();
 
         return false;
@@ -1724,8 +1703,7 @@ auto Storage::SetReadState(
     auto& threads = nyms.mutable_Nym(nymId).get().mutable_Threads().get();
 
     if (false == threads.Exists(threadId)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Thread ")(
-            threadId)(" does not exist.")
+        LogError()(OT_PRETTY_CLASS())("Thread ")(threadId)(" does not exist.")
             .Flush();
 
         return false;
@@ -1856,8 +1834,7 @@ auto Storage::Store(
     const bool exists = Root().Tree().Nyms().Exists(nymID.str());
 
     if (false == exists) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return false;
     }
@@ -1953,8 +1930,7 @@ auto Storage::Store(const std::string& nymID, const proto::Issuer& data) const
     const bool exists = Root().Tree().Nyms().Exists(nymID);
 
     if (false == exists) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return false;
     }
@@ -1979,8 +1955,7 @@ auto Storage::Store(
     const bool exists = Root().Tree().Nyms().Exists(nymID);
 
     if (false == exists) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymID)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
 
         return false;
     }
@@ -2197,8 +2172,7 @@ auto Storage::Store(const identifier::Nym& nym, const proto::Purse& purse) const
     auto nymNode = mutable_Root().get().mutable_Tree().get().mutable_Nyms();
 
     if (false == nymNode.get().Exists(nym.str())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nym)(" doesn't exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nym)(" doesn't exist.").Flush();
 
         return false;
     }
@@ -2312,7 +2286,7 @@ auto Storage::UnreadCount(const std::string& nymId, const std::string& threadId)
     auto& nyms = Root().Tree().Nyms();
 
     if (false == nyms.Exists(nymId)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nymId)(" does not exist.")
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nymId)(" does not exist.")
             .Flush();
 
         return 0;
@@ -2321,8 +2295,7 @@ auto Storage::UnreadCount(const std::string& nymId, const std::string& threadId)
     auto& threads = nyms.Nym(nymId).Threads();
 
     if (false == threads.Exists(threadId)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Thread ")(
-            threadId)(" does not exist.")
+        LogError()(OT_PRETTY_CLASS())("Thread ")(threadId)(" does not exist.")
             .Flush();
 
         return 0;
@@ -2336,7 +2309,7 @@ void Storage::UpgradeNyms()
     const auto level = Root().Tree().Nyms().UpgradeLevel();
 
     if (3 > level) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Beginning upgrade for version ")(
+        LogError()(OT_PRETTY_CLASS())("Beginning upgrade for version ")(
             level)(".")
             .Flush();
         mutable_Root()
@@ -2347,8 +2320,7 @@ void Storage::UpgradeNyms()
             .get()
             .UpgradeLocalnym();
     } else {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("No need to upgrade version ")(
-            level)
+        LogVerbose()(OT_PRETTY_CLASS())("No need to upgrade version ")(level)
             .Flush();
     }
 }
@@ -2356,13 +2328,13 @@ void Storage::UpgradeNyms()
 auto Storage::verify_write_lock(const Lock& lock) const -> bool
 {
     if (lock.mutex() != &write_lock_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect mutex.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock not owned.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock not owned.").Flush();
 
         return false;
     }

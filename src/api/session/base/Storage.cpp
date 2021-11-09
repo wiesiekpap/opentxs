@@ -77,22 +77,20 @@ auto Storage::init(
     auto seed = seeds.DefaultSeed();
 
     if (seed.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("No default seed.").Flush();
+        LogError()(OT_PRETTY_CLASS())("No default seed.").Flush();
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Default seed is: ")(seed)(".")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Default seed is: ")(seed)(".").Flush();
     }
 
     auto reason = factory.PasswordPrompt("Initializaing storage encryption");
     storage_encryption_key_ = seeds.GetStorageKey(seed, reason);
 
     if (storage_encryption_key_.get()) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Obtained storage key ")(
+        LogDetail()(OT_PRETTY_CLASS())("Obtained storage key ")(
             storage_encryption_key_->ID(reason))
             .Flush();
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load storage key ")(
-            seed)(".")
+        LogError()(OT_PRETTY_CLASS())("Failed to load storage key ")(seed)(".")
             .Flush();
     }
 #endif

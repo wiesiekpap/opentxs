@@ -14,6 +14,7 @@
 
 #include "Proto.hpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/protobuf/Check.hpp"
@@ -57,7 +58,7 @@ auto Contacts::Delete(const std::string& id) -> bool { return delete_item(id); }
 void Contacts::extract_nyms(const Lock& lock, const proto::Contact& data) const
 {
     if (false == verify_write_lock(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
 
         abort();
     }
@@ -86,8 +87,7 @@ void Contacts::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to load contact index file.")
+        LogError()(OT_PRETTY_CLASS())("Failed to load contact index file.")
             .Flush();
 
         abort();
@@ -167,7 +167,7 @@ auto Contacts::NymOwner(std::string nym) const -> std::string
 void Contacts::reconcile_maps(const Lock& lock, const proto::Contact& data)
 {
     if (false == verify_write_lock(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
 
         abort();
     }
@@ -209,7 +209,7 @@ void Contacts::reverse_merged()
 auto Contacts::save(const Lock& lock) const -> bool
 {
     if (false == verify_write_lock(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
 
         abort();
     }
@@ -298,7 +298,7 @@ auto Contacts::Store(const proto::Contact& data, const std::string& alias)
 
     if (existingKey) {
         const bool revisionCheck = check_revision<proto::Contact>(
-            (OT_PRETTY_CLASS(__func__)), incomingRevision, metadata);
+            (OT_PRETTY_CLASS()), incomingRevision, metadata);
 
         if (false == revisionCheck) {
             // We're trying to save a contact with a lower revision than has

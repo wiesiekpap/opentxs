@@ -348,7 +348,7 @@ Base::Base(
 
             peer_.Listen(*address);
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             continue;
         }
@@ -384,7 +384,7 @@ Base::Base(
 
             peer_.Listen(*address);
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             continue;
         }
@@ -395,8 +395,8 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
     const noexcept -> bool
 {
     if (!pBlock) {
-        LogError()(OT_PRETTY_CLASS(__func__))("invalid ")(
-            DisplayString(chain_))(" block")
+        LogError()(OT_PRETTY_CLASS())("invalid ")(DisplayString(chain_))(
+            " block")
             .Flush();
 
         return false;
@@ -416,7 +416,7 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
         }();
         block_.SubmitBlock(reader(bytes));
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("failed to serialize ")(
+        LogError()(OT_PRETTY_CLASS())("failed to serialize ")(
             DisplayString(chain_))(" block")
             .Flush();
 
@@ -427,15 +427,15 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
 
     if (std::future_status::ready !=
         block_.LoadBitcoin(id).wait_for(std::chrono::seconds(60))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("failed to load ")(
-            DisplayString(chain_))(" block")
+        LogError()(OT_PRETTY_CLASS())("failed to load ")(DisplayString(chain_))(
+            " block")
             .Flush();
 
         return false;
     }
 
     if (false == filters_.ProcessBlock(block)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("failed to index ")(
+        LogError()(OT_PRETTY_CLASS())("failed to index ")(
             DisplayString(chain_))(" block")
             .Flush();
 
@@ -443,7 +443,7 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
     }
 
     if (false == header_.AddHeader(block.Header().clone())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("failed to process ")(
+        LogError()(OT_PRETTY_CLASS())("failed to process ")(
             DisplayString(chain_))(" header")
             .Flush();
 
@@ -619,7 +619,7 @@ auto Base::pipeline(zmq::Message& in) noexcept -> void
 
             return body.at(0).as<Task>();
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             OT_FAIL;
         }
@@ -675,7 +675,7 @@ auto Base::process_block(network::zeromq::Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (2 > body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid block").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid block").Flush();
 
         return;
     }
@@ -724,7 +724,7 @@ auto Base::process_header(network::zeromq::Message& in) noexcept -> void
         const auto body = in.Body();
 
         if (2 > body.size()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
             return;
         }
@@ -831,7 +831,7 @@ auto Base::process_send_to_address(network::zeromq::Message& in) noexcept
 
         wallet_.ConstructTransaction(proposal, send_promises_.finish(promise));
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
         static const auto blank = api_.Factory().Data();
         send_promises_.finish(promise).set_value({rc, blank});
     }
@@ -946,8 +946,8 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
             txout.set_index(index.value());
             txout.set_paymentcodechannel(account.ID().str());
             const auto pubkey = api_.Factory().Data(key.PublicKey());
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                " using derived public key ")(pubkey->asHex())(
+            LogVerbose()(OT_PRETTY_CLASS())(" using derived public key ")(
+                pubkey->asHex())(
                 " at "
                 "index"
                 " ")(index.value())(" for outgoing transaction")
@@ -976,7 +976,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
 
         wallet_.ConstructTransaction(proposal, send_promises_.finish(promise));
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
         static const auto blank = api_.Factory().Data();
         send_promises_.finish(promise).set_value({rc, blank});
     }
@@ -992,7 +992,7 @@ auto Base::process_sync_data(network::zeromq::Message& in) noexcept -> void
         const auto& state = data.State();
 
         if (state.Chain() != chain_) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Wrong chain").Flush();
+            LogError()(OT_PRETTY_CLASS())("Wrong chain").Flush();
 
             return;
         }
@@ -1122,7 +1122,7 @@ auto Base::state_machine() noexcept -> bool
 {
     if (false == running_.get()) { return false; }
 
-    LogDebug()(OT_PRETTY_CLASS(__func__))("Starting state machine for ")(
+    LogDebug()(OT_PRETTY_CLASS())("Starting state machine for ")(
         DisplayString(chain_))
         .Flush();
     state_machine_headers();
@@ -1130,7 +1130,7 @@ auto Base::state_machine() noexcept -> bool
     switch (state_.load()) {
         case State::UpdatingHeaders: {
             if (is_synchronized_headers()) {
-                LogDetail()(OT_PRETTY_CLASS(__func__))(DisplayString(chain_))(
+                LogDetail()(OT_PRETTY_CLASS())(DisplayString(chain_))(
                     " header oracle is synchronized")
                     .Flush();
                 using Policy = database::BlockStorage;
@@ -1141,19 +1141,19 @@ auto Base::state_machine() noexcept -> bool
                     state_transition_filters();
                 }
             } else {
-                LogDebug()(OT_PRETTY_CLASS(__func__))("updating ")(
+                LogDebug()(OT_PRETTY_CLASS())("updating ")(
                     DisplayString(chain_))(" header oracle")
                     .Flush();
             }
         } break;
         case State::UpdatingBlocks: {
             if (is_synchronized_blocks()) {
-                LogDetail()(OT_PRETTY_CLASS(__func__))(DisplayString(chain_))(
+                LogDetail()(OT_PRETTY_CLASS())(DisplayString(chain_))(
                     " block oracle is synchronized")
                     .Flush();
                 state_transition_filters();
             } else {
-                LogDebug()(OT_PRETTY_CLASS(__func__))("updating ")(
+                LogDebug()(OT_PRETTY_CLASS())("updating ")(
                     DisplayString(chain_))(" block oracle")
                     .Flush();
 
@@ -1162,7 +1162,7 @@ auto Base::state_machine() noexcept -> bool
         } break;
         case State::UpdatingFilters: {
             if (is_synchronized_filters()) {
-                LogDetail()(OT_PRETTY_CLASS(__func__))(DisplayString(chain_))(
+                LogDetail()(OT_PRETTY_CLASS())(DisplayString(chain_))(
                     " filter oracle is synchronized")
                     .Flush();
 
@@ -1172,7 +1172,7 @@ auto Base::state_machine() noexcept -> bool
                     state_transition_normal();
                 }
             } else {
-                LogDebug()(OT_PRETTY_CLASS(__func__))("updating ")(
+                LogDebug()(OT_PRETTY_CLASS())("updating ")(
                     DisplayString(chain_))(" filter oracle")
                     .Flush();
 
@@ -1181,12 +1181,12 @@ auto Base::state_machine() noexcept -> bool
         } break;
         case State::UpdatingSyncData: {
             if (is_synchronized_sync_server()) {
-                LogDetail()(OT_PRETTY_CLASS(__func__))(DisplayString(chain_))(
+                LogDetail()(OT_PRETTY_CLASS())(DisplayString(chain_))(
                     " sync server is synchronized")
                     .Flush();
                 state_transition_normal();
             } else {
-                LogDebug()(OT_PRETTY_CLASS(__func__))("updating ")(
+                LogDebug()(OT_PRETTY_CLASS())("updating ")(
                     DisplayString(chain_))(" sync server")
                     .Flush();
 
@@ -1198,7 +1198,7 @@ auto Base::state_machine() noexcept -> bool
         }
     }
 
-    LogDebug()(OT_PRETTY_CLASS(__func__))("Completed state machine for ")(
+    LogDebug()(OT_PRETTY_CLASS())("Completed state machine for ")(
         DisplayString(chain_))
         .Flush();
 
@@ -1213,9 +1213,9 @@ auto Base::state_machine_headers() noexcept -> void
     const auto requestInterval = Clock::now() - headers_requested_;
     const auto receiveInterval = Clock::now() - headers_received_;
     const auto requestHeaders = [&] {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Requesting ")(
-            DisplayString(chain_))(" block headers from all connected peers "
-                                   "(instance ")(api_.Instance())(")")
+        LogVerbose()(OT_PRETTY_CLASS())("Requesting ")(DisplayString(chain_))(
+            " block headers from all connected peers "
+            "(instance ")(api_.Instance())(")")
             .Flush();
         waiting_for_headers_->On();
         peer_.RequestHeaders();
@@ -1227,7 +1227,7 @@ auto Base::state_machine_headers() noexcept -> void
     if (waiting_for_headers_.get()) {
         if (requestInterval < timeout) { return; }
 
-        LogDetail()(OT_PRETTY_CLASS(__func__))(DisplayString(chain_))(
+        LogDetail()(OT_PRETTY_CLASS())(DisplayString(chain_))(
             " headers not received before timeout "
             "(instance ")(api_.Instance())(")")
             .Flush();

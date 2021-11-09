@@ -218,7 +218,7 @@ auto Seed::Bip32Root(const std::string& seedID, const PasswordPrompt& reason)
 
         return entropy->asHex();
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -323,7 +323,7 @@ auto Seed::GetOrCreateDefaultSeed(
 
         return seed.Entropy();
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return factory_.Secret(0);
     }
@@ -406,8 +406,7 @@ auto Seed::GetStorageKey(
         reason);
 
     if (false == bool(pKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to derive storage key.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to derive storage key.").Flush();
 
         return OTSymmetricKey{opentxs::factory::SymmetricKey()};
     }
@@ -431,7 +430,7 @@ auto Seed::GetSeed(
 
         return seed.Entropy();
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return factory_.Secret(0);
     }
@@ -479,7 +478,7 @@ auto Seed::ImportRaw(const Secret& entropy, const PasswordPrompt& reason) const
 
         return id;
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -497,8 +496,7 @@ auto Seed::ImportSeed(
         case opentxs::crypto::SeedStyle::PKT: {
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported seed type")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unsupported seed type").Flush();
 
             return {};
         }
@@ -524,7 +522,7 @@ auto Seed::ImportSeed(
 
         return id;
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -573,8 +571,7 @@ auto Seed::new_seed(
         case opentxs::crypto::SeedStyle::BIP39: {
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported seed type")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unsupported seed type").Flush();
 
             return {};
         }
@@ -595,7 +592,7 @@ auto Seed::new_seed(
 
         return id;
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -611,7 +608,7 @@ auto Seed::Passphrase(const std::string& seedID, const PasswordPrompt& reason)
 
         return std::string{seed.Phrase().Bytes()};
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -667,7 +664,7 @@ auto Seed::UpdateIndex(
 
         return seed.IncrementIndex(index);
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }
@@ -700,8 +697,7 @@ auto Seed::WordCount(
         case opentxs::crypto::SeedStyle::PKT: {
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported seed type")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unsupported seed type").Flush();
 
             return {};
         }
@@ -735,7 +731,7 @@ auto Seed::Words(const std::string& seedID, const PasswordPrompt& reason) const
 
         return std::string{seed.Words().Bytes()};
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }

@@ -33,7 +33,7 @@ PairEventListener::PairEventListener(
 
     OT_ASSERT(started)
 
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("listening on ")(endpoint).Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("listening on ")(endpoint).Flush();
 }
 
 auto PairEventListener::clone() const noexcept -> PairEventListener*

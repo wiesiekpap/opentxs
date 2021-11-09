@@ -8,10 +8,16 @@
 #include "blockchain/database/common/Sync.hpp"  // IWYU pragma: associated
 
 #include <boost/container/flat_map.hpp>
+#include <boost/thread/thread.hpp>
 #include <algorithm>
+#include <array>
+#include <cstdint>
 #include <cstring>
+#include <iterator>
+#include <map>
 #include <memory>
 #include <set>
+#include <stdexcept>
 #include <string_view>
 #include <utility>
 
@@ -102,7 +108,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
 
                 return total < 1_MiB;
             } catch (const std::exception& e) {
-                LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+                LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
                 return false;
             }
@@ -112,7 +118,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
             using Dir = storage::lmdb::LMDB::Dir;
             lmdb_.ReadFrom(ChainToSyncTable(chain), start, cb, Dir::Forward);
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
         }
 
         return haveOne;
@@ -136,7 +142,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
             const auto parent = std::max<Height>(first.Height() - 1, 0);
 
             if (false == reorg(chain, parent)) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Reorg error").Flush();
+                LogError()(OT_PRETTY_CLASS())("Reorg error").Flush();
 
                 return false;
             }
@@ -147,14 +153,14 @@ struct Sync::Imp final : private util::MappedFileStorage {
         OT_ASSERT(-2 < previous);
 
         auto txn = lmdb_.TransactionRW();
-        LogTrace()(OT_PRETTY_CLASS(__func__))("previous tip height: ")(previous)
+        LogTrace()(OT_PRETTY_CLASS())("previous tip height: ")(previous)
             .Flush();
 
         for (const auto& item : items) {
             const auto height = item.Height();
 
             if (++previous != height) {
-                LogError()(OT_PRETTY_CLASS(__func__))("sequence error. Got ")(
+                LogError()(OT_PRETTY_CLASS())("sequence error. Got ")(
                     height)(" expected ")(previous)
                     .Flush();
 
@@ -166,8 +172,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
             auto raw = Space{};
 
             if (false == item.Serialize(writer(raw))) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to serialize item")
+                LogError()(OT_PRETTY_CLASS())("Failed to serialize item")
                     .Flush();
 
                 return false;
@@ -177,7 +182,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
             auto write = get_write_view(txn, data.index_, size);
 
             if (false == write.valid(size)) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed to allocate space for writing")
                     .Flush();
 
@@ -193,8 +198,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
                          write.as<unsigned char>(),
                          write.size(),
                          checksum_key_.data())) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to calculate checksum")
+                LogError()(OT_PRETTY_CLASS())("Failed to calculate checksum")
                     .Flush();
 
                 return false;
@@ -204,8 +208,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
                 lmdb_.Store(ChainToSyncTable(chain), dbKey, data, txn);
 
             if (false == result.first) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Failed to update index")
-                    .Flush();
+                LogError()(OT_PRETTY_CLASS())("Failed to update index").Flush();
 
                 return false;
             }
@@ -215,8 +218,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
         const auto tip = static_cast<Height>(items.back().Height());
 
         if (false == lmdb_.Store(tip_table_, dbKey, tsv(tip), txn).first) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to update tip")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to update tip").Flush();
 
             return false;
         }
@@ -224,7 +226,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
         tips_.at(chain) = tip;
 
         if (false == txn.Finalize(true)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Finalize error").Flush();
+            LogError()(OT_PRETTY_CLASS())("Finalize error").Flush();
 
             return false;
         }
@@ -389,7 +391,7 @@ private:
     auto reorg(const Chain chain, const Height height) const noexcept -> bool
     {
         if (0 > height) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid height").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid height").Flush();
 
             return false;
         }
@@ -401,7 +403,7 @@ private:
         for (auto key = Height{height + 1}; key <= tip; ++key) {
             if (false ==
                 lmdb_.Delete(table, static_cast<std::size_t>(key), txn)) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Delete error").Flush();
+                LogError()(OT_PRETTY_CLASS())("Delete error").Flush();
 
                 return false;
             }
@@ -410,14 +412,13 @@ private:
         const auto key = static_cast<std::size_t>(chain);
 
         if (false == lmdb_.Store(tip_table_, key, tsv(height), txn).first) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to update tip")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to update tip").Flush();
 
             return false;
         }
 
         if (false == txn.Finalize(true)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Finalize error").Flush();
+            LogError()(OT_PRETTY_CLASS())("Finalize error").Flush();
 
             return false;
         }

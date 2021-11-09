@@ -15,6 +15,7 @@
 
 #include "core/Amount.hpp"
 #include "internal/ui/UI.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Log.hpp"
 #include "ui/accountsummary/AccountSummaryItem.hpp"
@@ -86,7 +87,7 @@ auto AccountSummaryItem::qt_data(
                           .Internal()
                           .amount_.convert_to<unsigned long long>();
             } catch (const std::exception& e) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Error getting balance.")(
+                LogError()(OT_PRETTY_CLASS())("Error getting balance.")(
                     e.what())
                     .Flush();
                 out = {};

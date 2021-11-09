@@ -166,7 +166,7 @@ auto OTPayment::SetTempValues(const PasswordPrompt& reason)
         std::unique_ptr<OTTransaction> pNotice(InstantiateNotice());
 
         if (!pNotice) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: Failed instantiating "
                 "OTPayment (purported notice) contents: ")(m_strPayment)(".")
                 .Flush();
@@ -178,7 +178,7 @@ auto OTPayment::SetTempValues(const PasswordPrompt& reason)
         OTTrackable* pTrackable = Instantiate();
 
         if (nullptr == pTrackable) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: Failed instantiating "
                 "OTPayment contents: ")(m_strPayment)(".")
                 .Flush();
@@ -197,7 +197,7 @@ auto OTPayment::SetTempValues(const PasswordPrompt& reason)
             case INVOICE:
                 pCheque = dynamic_cast<Cheque*>(pTrackable);
                 if (nullptr == pCheque)
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Failure: "
                         "dynamic_cast<OTCheque *>(pTrackable). Contents: ")(
                         m_strPayment)(".")
@@ -211,7 +211,7 @@ auto OTPayment::SetTempValues(const PasswordPrompt& reason)
             case PAYMENT_PLAN:
                 pPaymentPlan = dynamic_cast<OTPaymentPlan*>(pTrackable);
                 if (nullptr == pPaymentPlan)
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Failure: "
                         "dynamic_cast<OTPaymentPlan *>(pTrackable). "
                         "Contents: ")(m_strPayment)(".")
@@ -225,7 +225,7 @@ auto OTPayment::SetTempValues(const PasswordPrompt& reason)
             case SMART_CONTRACT:
                 pSmartContract = dynamic_cast<OTSmartContract*>(pTrackable);
                 if (nullptr == pSmartContract)
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Failure: "
                         "dynamic_cast<OTSmartContract *>(pTrackable). "
                         "Contents: ")(m_strPayment)(".")
@@ -237,9 +237,8 @@ auto OTPayment::SetTempValues(const PasswordPrompt& reason)
                 break;
 
             default:
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failure: Wrong m_Type. "
-                    "Contents: ")(m_strPayment)(".")
+                LogError()(OT_PRETTY_CLASS())("Failure: Wrong m_Type. "
+                                              "Contents: ")(m_strPayment)(".")
                     .Flush();
                 return false;
         }
@@ -302,8 +301,8 @@ auto OTPayment::SetTempValuesFromCheque(const Cheque& theInput) -> bool
             return true;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Error: Wrong type. "
-                                                  "(Returning false).")
+            LogError()(OT_PRETTY_CLASS())("Error: Wrong type. "
+                                          "(Returning false).")
                 .Flush();
             break;
     }
@@ -345,7 +344,7 @@ auto OTPayment::SetTempValuesFromNotice(
                                                        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed geting reference string (containing cron item) "
                 "from instantiated OTPayment: ")(m_strPayment)(".")
                 .Flush();
@@ -357,7 +356,7 @@ auto OTPayment::SetTempValuesFromNotice(
 
         if (!pCronItemPayment || !pCronItemPayment->IsValid() ||
             !pCronItemPayment->SetTempValues(reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "1 Failed instantiating or verifying a "
                 "(purported) cron item: ")(strCronItem)(".")
                 .Flush();
@@ -367,7 +366,7 @@ auto OTPayment::SetTempValuesFromNotice(
         OTTrackable* pTrackable = pCronItemPayment->Instantiate();
 
         if (nullptr == pTrackable) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "2 Failed instantiating or verifying a "
                 "(purported) cron item: ")(strCronItem)(".")
                 .Flush();
@@ -386,14 +385,13 @@ auto OTPayment::SetTempValuesFromNotice(
             return true;
         }
         // -------------------------------------------
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error: Apparently it's not a payment plan "
             "or smart contract – but was supposed to be. "
             "(Returning false).")
             .Flush();
     } else
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Error: Wrong type. (Returning false).")
+        LogError()(OT_PRETTY_CLASS())("Error: Wrong type. (Returning false).")
             .Flush();
 
     return false;
@@ -440,8 +438,7 @@ auto OTPayment::SetTempValuesFromPaymentPlan(const OTPaymentPlan& theInput)
         lowLevelSetTempValuesFromPaymentPlan(theInput);
         return true;
     } else
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Error: Wrong type. (Returning false).")
+        LogError()(OT_PRETTY_CLASS())("Error: Wrong type. (Returning false).")
             .Flush();
 
     return false;
@@ -533,8 +530,7 @@ auto OTPayment::SetTempValuesFromSmartContract(const OTSmartContract& theInput)
         lowLevelSetTempValuesFromSmartContract(theInput);
         return true;
     } else
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Error: Wrong type. (Returning false).")
+        LogError()(OT_PRETTY_CLASS())("Error: Wrong type. (Returning false).")
             .Flush();
 
     return false;
@@ -566,7 +562,7 @@ auto OTPayment::GetMemo(String& strOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -597,7 +593,7 @@ auto OTPayment::GetAmount(Amount& lOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -628,7 +624,7 @@ auto OTPayment::GetAllTransactionNumbers(
     {  // ===> UPDATE: m_Type IS set!! This comment is wrong!
         OTTrackable* pTrackable = Instantiate();
         if (nullptr == pTrackable) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating OTPayment containing cron item: ")(
                 m_strPayment)(".")
                 .Flush();
@@ -657,7 +653,7 @@ auto OTPayment::GetAllTransactionNumbers(
         std::unique_ptr<OTTransaction> pNotice(InstantiateNotice());
 
         if (!pNotice) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating OTPayment containing a notice: ")(
                 m_strPayment)(".")
                 .Flush();
@@ -679,7 +675,7 @@ auto OTPayment::GetAllTransactionNumbers(
                                                        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed geting reference string (containing cron item) "
                 "from instantiated OTPayment: ")(m_strPayment)(".")
                 .Flush();
@@ -691,7 +687,7 @@ auto OTPayment::GetAllTransactionNumbers(
 
         if (!pCronItemPayment || !pCronItemPayment->IsValid() ||
             !pCronItemPayment->SetTempValues(reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating or verifying a "
                 "(purported) cron item: ")(strCronItem)(".")
                 .Flush();
@@ -730,7 +726,7 @@ auto OTPayment::GetAllTransactionNumbers(
                                          // already above.)
         case OTPayment::NOTICE:  // Should never happen. (Handled already
                                  // above.)
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -757,7 +753,7 @@ auto OTPayment::HasTransactionNum(
         (OTPayment::PAYMENT_PLAN == m_Type)) {
         OTTrackable* pTrackable = Instantiate();
         if (nullptr == pTrackable) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating OTPayment containing: ")(
                 m_strPayment)(".")
                 .Flush();
@@ -786,7 +782,7 @@ auto OTPayment::HasTransactionNum(
         std::unique_ptr<OTTransaction> pNotice(InstantiateNotice());
 
         if (!pNotice) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating OTPayment containing a notice: ")(
                 m_strPayment)(".")
                 .Flush();
@@ -808,7 +804,7 @@ auto OTPayment::HasTransactionNum(
                                                        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed geting reference string (containing cron item) "
                 "from instantiated OTPayment: ")(m_strPayment)(".")
                 .Flush();
@@ -820,7 +816,7 @@ auto OTPayment::HasTransactionNum(
 
         if (!pCronItemPayment || !pCronItemPayment->IsValid() ||
             !pCronItemPayment->SetTempValues(reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating or verifying a "
                 "(purported) cron item: ")(strCronItem)(".")
                 .Flush();
@@ -848,7 +844,7 @@ auto OTPayment::HasTransactionNum(
                                          // already above.)
         case OTPayment::NOTICE:  // Should never happen. (Handled already
                                  // above.)
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -870,7 +866,7 @@ auto OTPayment::GetClosingNum(
         (OTPayment::PAYMENT_PLAN == m_Type)) {
         OTTrackable* pTrackable = Instantiate();
         if (nullptr == pTrackable) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating OTPayment containing: ")(
                 m_strPayment)(".")
                 .Flush();
@@ -906,7 +902,7 @@ auto OTPayment::GetClosingNum(
         std::unique_ptr<OTTransaction> pNotice(InstantiateNotice());
 
         if (!pNotice) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating OTPayment containing a notice: ")(
                 m_strPayment)(".")
                 .Flush();
@@ -928,7 +924,7 @@ auto OTPayment::GetClosingNum(
                                                        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed geting reference string (containing cron item) "
                 "from instantiated OTPayment: ")(m_strPayment)(".")
                 .Flush();
@@ -940,7 +936,7 @@ auto OTPayment::GetClosingNum(
 
         if (!pCronItemPayment || !pCronItemPayment->IsValid() ||
             !pCronItemPayment->SetTempValues(reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating or verifying a "
                 "(purported) cron item: ")(strCronItem)(".")
                 .Flush();
@@ -967,7 +963,7 @@ auto OTPayment::GetClosingNum(
         case OTPayment::PAYMENT_PLAN:
         case OTPayment::SMART_CONTRACT:
         case OTPayment::NOTICE:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -990,7 +986,7 @@ auto OTPayment::GetOpeningNum(
         (OTPayment::PAYMENT_PLAN == m_Type)) {
         OTTrackable* pTrackable = Instantiate();
         if (nullptr == pTrackable) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating OTPayment containing: ")(
                 m_strPayment)(".")
                 .Flush();
@@ -1026,7 +1022,7 @@ auto OTPayment::GetOpeningNum(
         std::unique_ptr<OTTransaction> pNotice(InstantiateNotice());
 
         if (!pNotice) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating OTPayment containing a notice: ")(
                 m_strPayment)(".")
                 .Flush();
@@ -1048,7 +1044,7 @@ auto OTPayment::GetOpeningNum(
                                                        // original then.
         // -------------------------------------------
         if (!strCronItem->Exists()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed geting reference string (containing cron item) "
                 "from instantiated OTPayment: ")(m_strPayment)(".")
                 .Flush();
@@ -1060,7 +1056,7 @@ auto OTPayment::GetOpeningNum(
 
         if (!pCronItemPayment || !pCronItemPayment->IsValid() ||
             !pCronItemPayment->SetTempValues(reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed instantiating or verifying a "
                 "(purported) cron item: ")(strCronItem)(".")
                 .Flush();
@@ -1105,7 +1101,7 @@ auto OTPayment::GetOpeningNum(
         case OTPayment::PAYMENT_PLAN:
         case OTPayment::SMART_CONTRACT:
         case OTPayment::NOTICE:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1164,7 +1160,7 @@ auto OTPayment::GetTransNumDisplay(std::int64_t& lOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1196,7 +1192,7 @@ auto OTPayment::GetTransactionNum(std::int64_t& lOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1223,7 +1219,7 @@ auto OTPayment::GetValidFrom(Time& tOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1250,7 +1246,7 @@ auto OTPayment::GetValidTo(Time& tOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1324,7 +1320,7 @@ auto OTPayment::GetInstrumentDefinitionID(Identifier& theOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1336,8 +1332,7 @@ auto OTPayment::GetNotaryID(Identifier& theOutput) const -> bool
     theOutput.Release();
 
     if (!m_bAreTempValuesSet) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Object not yet instantiated.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Object not yet instantiated.").Flush();
 
         return false;
     }
@@ -1356,7 +1351,7 @@ auto OTPayment::GetNotaryID(Identifier& theOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1381,9 +1376,8 @@ auto OTPayment::GetRemitterNymID(identifier::Nym& theOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Bad payment type! Expected a "
-                "voucher cheque.")
+            LogError()(OT_PRETTY_CLASS())("Bad payment type! Expected a "
+                                          "voucher cheque.")
                 .Flush();
             break;
     }
@@ -1410,9 +1404,8 @@ auto OTPayment::GetRemitterAcctID(Identifier& theOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Bad payment type! Expected a "
-                "voucher cheque.")
+            LogError()(OT_PRETTY_CLASS())("Bad payment type! Expected a "
+                                          "voucher cheque.")
                 .Flush();
             break;
     }
@@ -1455,7 +1448,7 @@ auto OTPayment::GetSenderNymID(identifier::Nym& theOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1485,7 +1478,7 @@ auto OTPayment::GetSenderAcctID(Identifier& theOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1519,7 +1512,7 @@ auto OTPayment::GetRecipientNymID(identifier::Nym& theOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1561,7 +1554,7 @@ auto OTPayment::GetRecipientAcctID(Identifier& theOutput) const -> bool
             break;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Bad payment type!").Flush();
+            LogError()(OT_PRETTY_CLASS())("Bad payment type!").Flush();
             break;
     }
 
@@ -1602,14 +1595,14 @@ auto OTPayment::Instantiate() const -> OTTrackable*
                 pCheque = dynamic_cast<Cheque*>(pContract.release());
 
                 if (nullptr == pCheque) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Tried to instantiate cheque, "
                         "but factory returned non-cheque: ")(m_strPayment)(".")
                         .Flush();
                 } else
                     pTrackable = pCheque;
             } else
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Tried to instantiate cheque, but "
                     "factory returned nullptr: ")(m_strPayment)(".")
                     .Flush();
@@ -1623,7 +1616,7 @@ auto OTPayment::Instantiate() const -> OTTrackable*
                     dynamic_cast<OTPaymentPlan*>(pContract.release());
 
                 if (nullptr == pPaymentPlan) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Tried to instantiate payment "
                         "plan, but factory returned non-payment-plan: ")(
                         m_strPayment)(".")
@@ -1631,7 +1624,7 @@ auto OTPayment::Instantiate() const -> OTTrackable*
                 } else
                     pTrackable = pPaymentPlan;
             } else
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Tried to instantiate payment "
                     "plan, but factory returned nullptr: ")(m_strPayment)(".")
                     .Flush();
@@ -1645,14 +1638,14 @@ auto OTPayment::Instantiate() const -> OTTrackable*
                     dynamic_cast<OTSmartContract*>(pContract.release());
 
                 if (nullptr == pSmartContract) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Tried to instantiate smart contract, but factory "
                         "returned non-smart-contract: ")(m_strPayment)(".")
                         .Flush();
                 } else
                     pTrackable = pSmartContract;
             } else
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Tried to instantiate smart "
                     "contract, but factory returned nullptr: ")(
                     m_strPayment)(".")
@@ -1660,14 +1653,14 @@ auto OTPayment::Instantiate() const -> OTTrackable*
             break;
 
         case NOTICE:
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "ERROR: Tried to instantiate a notice, "
                 "but should have called OTPayment::InstantiateNotice.")
                 .Flush();
             return nullptr;
 
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "ERROR: Tried to instantiate payment "
                 "object, but had a bad type. Contents: ")(m_strPayment)(".")
                 .Flush();
@@ -1687,15 +1680,13 @@ auto OTPayment::Instantiate(const String& strPayment) -> OTTrackable*
 auto OTPayment::InstantiateNotice(const String& strNotice) -> OTTransaction*
 {
     if (!SetPayment(strNotice))
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "WARNING: Failed setting the "
-            "notice string based on "
-            "what was passed in: ")(strNotice)(".")
+        LogError()(OT_PRETTY_CLASS())("WARNING: Failed setting the "
+                                      "notice string based on "
+                                      "what was passed in: ")(strNotice)(".")
             .Flush();
     else if (OTPayment::NOTICE != m_Type)
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "WARNING: No notice was found in "
-            "provided string: ")(strNotice)(".")
+        LogError()(OT_PRETTY_CLASS())("WARNING: No notice was found in "
+                                      "provided string: ")(strNotice)(".")
             .Flush();
     else
         return InstantiateNotice();
@@ -1709,10 +1700,9 @@ auto OTPayment::InstantiateNotice() const -> OTTransaction*
         auto pType = api_.Factory().Transaction(m_strPayment);
 
         if (false == bool(pType)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failure 1: This payment object does "
-                "NOT contain a notice. "
-                "Contents: ")(m_strPayment)(".")
+            LogError()(OT_PRETTY_CLASS())("Failure 1: This payment object does "
+                                          "NOT contain a notice. "
+                                          "Contents: ")(m_strPayment)(".")
                 .Flush();
             return nullptr;
         }
@@ -1720,17 +1710,16 @@ auto OTPayment::InstantiateNotice() const -> OTTransaction*
         auto* pNotice = dynamic_cast<OTTransaction*>(pType.release());
 
         if (nullptr == pNotice) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failure 2: This payment object does "
-                "NOT contain a notice. "
-                "Contents: ")(m_strPayment)(".")
+            LogError()(OT_PRETTY_CLASS())("Failure 2: This payment object does "
+                                          "NOT contain a notice. "
+                                          "Contents: ")(m_strPayment)(".")
                 .Flush();
             return nullptr;
         }
 
         return pNotice;
     } else
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failure 3: This payment object does NOT contain a notice. "
             "Contents: ")(m_strPayment)(".")
             .Flush();
@@ -1742,8 +1731,7 @@ auto OTPayment::IsCancelledCheque(const PasswordPrompt& reason) -> bool
 {
     if (false == m_bAreTempValuesSet) {
         if (false == SetTempValues(reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to set temp values.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to set temp values.").Flush();
 
             return false;
         }
@@ -1758,14 +1746,13 @@ auto OTPayment::IsCancelledCheque(const PasswordPrompt& reason) -> bool
     Amount amount{0};
 
     if (false == GetSenderNymID(sender)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to get sender nym id.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to get sender nym id.").Flush();
 
         return false;
     }
 
     if (false == GetRecipientNymID(recipient)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to get recipient nym id.")
+        LogError()(OT_PRETTY_CLASS())("Failed to get recipient nym id.")
             .Flush();
 
         return false;
@@ -1774,7 +1761,7 @@ auto OTPayment::IsCancelledCheque(const PasswordPrompt& reason) -> bool
     if (sender != recipient) { return false; }
 
     if (false == GetAmount(amount)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to amount.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to amount.").Flush();
 
         return false;
     }
@@ -1799,7 +1786,7 @@ auto OTPayment::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         else
             m_Type = OTPayment::ERROR_STATE;
 
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Loaded payment... Type: ")(
+        LogTrace()(OT_PRETTY_CLASS())("Loaded payment... Type: ")(
             GetTypeString())
             .Flush();
 
@@ -1809,7 +1796,7 @@ auto OTPayment::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         if (!LoadEncodedTextField(xml, strContents) || !strContents->Exists() ||
             !SetPayment(strContents)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "ERROR: Contents field "
                 "without a value, OR error setting that "
                 "value onto this object. Raw: ")(strContents)(".")
@@ -1864,7 +1851,7 @@ void OTPayment::Release_Payment()
 auto OTPayment::SetPayment(const String& strPayment) -> bool
 {
     if (!strPayment.Exists()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Empty input string.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Empty input string.").Flush();
 
         return false;
     }
@@ -1874,7 +1861,7 @@ auto OTPayment::SetPayment(const String& strPayment) -> bool
     if (!strContract->DecodeIfArmored(false))  // bEscapedIsAllowed=true
                                                // by default.
     {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Input string apparently was encoded and "
             "then failed decoding. Contents: ")(strPayment)(".")
             .Flush();
@@ -1902,7 +1889,7 @@ auto OTPayment::SetPayment(const String& strPayment) -> bool
     else {
         m_Type = OTPayment::ERROR_STATE;
 
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failure: Unable to determine payment type, from input: ")(
             strContract)(".")
             .Flush();

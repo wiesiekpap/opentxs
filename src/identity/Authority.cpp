@@ -272,7 +272,7 @@ auto Authority::AddChildKeyCredential(
             reason)};
 
     if (!child) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed to instantiate child key credential.")
             .Flush();
 
@@ -289,8 +289,7 @@ auto Authority::AddContactCredential(
     const proto::ContactData& contactData,
     const opentxs::PasswordPrompt& reason) -> bool
 {
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Adding a contact credential.")
-        .Flush();
+    LogDetail()(OT_PRETTY_CLASS())("Adding a contact credential.").Flush();
 
     if (!master_) { return false; }
 
@@ -308,8 +307,7 @@ auto Authority::AddContactCredential(
             reason)};
 
     if (false == bool(credential)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct credential")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to construct credential").Flush();
 
         return false;
     }
@@ -328,8 +326,7 @@ auto Authority::AddVerificationCredential(
     const proto::VerificationSet& verificationSet,
     const opentxs::PasswordPrompt& reason) -> bool
 {
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Adding a verification credential.")
-        .Flush();
+    LogDetail()(OT_PRETTY_CLASS())("Adding a verification credential.").Flush();
 
     if (!master_) { return false; }
 
@@ -347,8 +344,7 @@ auto Authority::AddVerificationCredential(
             reason)};
 
     if (false == bool(credential)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct credential")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to construct credential").Flush();
 
         return false;
     }
@@ -375,7 +371,7 @@ auto Authority::create_child_credential(
 
 #if OT_CRYPTO_SUPPORTED_KEY_ED25519
     if (output.empty()) {
-        LogDetail()(OT_PRETTY_STATIC(Authority, __func__))(
+        LogDetail()(OT_PRETTY_STATIC(Authority))(
             "Creating an ed25519 child key credential.")
             .Flush();
         auto revised = parameters.ChangeType(NymParameterType::ed25519);
@@ -393,7 +389,7 @@ auto Authority::create_child_credential(
 
 #if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     if (output.empty()) {
-        LogDetail()(OT_PRETTY_STATIC(Authority, __func__))(
+        LogDetail()(OT_PRETTY_STATIC(Authority))(
             "Creating an secp256k1 child key credential.")
             .Flush();
         auto revised = parameters.ChangeType(NymParameterType::secp256k1);
@@ -411,7 +407,7 @@ auto Authority::create_child_credential(
 
 #if OT_CRYPTO_SUPPORTED_KEY_RSA
     if (output.empty()) {
-        LogDetail()(OT_PRETTY_STATIC(Authority, __func__))(
+        LogDetail()(OT_PRETTY_STATIC(Authority))(
             "Creating an RSA child key credential.")
             .Flush();
         auto revised = parameters.ChangeType(NymParameterType::rsa);
@@ -842,7 +838,7 @@ auto Authority::LoadChildKeyCredential(const String& strSubID) -> bool
         api_.Wallet().Internal().LoadCredential(strSubID.Get(), child);
 
     if (!loaded) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failure: Key Credential ")(
+        LogError()(OT_PRETTY_CLASS())("Failure: Key Credential ")(
             strSubID)(" doesn't exist for Nym ")(parent_.Source().NymID())
             .Flush();
         return false;
@@ -858,15 +854,14 @@ auto Authority::LoadChildKeyCredential(const proto::Credential& serializedCred)
         serializedCred, VERBOSE, mode_, proto::CREDROLE_ERROR, true);
 
     if (!validProto) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Invalid serialized child key credential.")
             .Flush();
         return false;
     }
 
     if (proto::CREDROLE_MASTERKEY == serializedCred.role()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unexpected master credential.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Unexpected master credential.").Flush();
 
         return false;
     }
@@ -924,8 +919,7 @@ auto Authority::LoadChildKeyCredential(const proto::Credential& serializedCred)
             verification_credentials_.emplace(std::move(id), child.release());
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid credential type")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid credential type").Flush();
 
             return false;
         }
@@ -977,7 +971,7 @@ auto Authority::Params(
             .GetPublicKey()
             .Params();
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid credential").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid credential").Flush();
 
         return {};
     }
@@ -993,7 +987,7 @@ auto Authority::Path(proto::HDPath& output) const -> bool
         return found;
     }
 
-    LogError()(OT_PRETTY_CLASS(__func__))("Master credential not instantiated.")
+    LogError()(OT_PRETTY_CLASS())("Master credential not instantiated.")
         .Flush();
 
     return false;
@@ -1134,8 +1128,8 @@ auto Authority::TransportKey(
         }
     }
 
-    LogError()(OT_PRETTY_CLASS(__func__))("No child credentials are capable of "
-                                          "generating transport keys.")
+    LogError()(OT_PRETTY_CLASS())("No child credentials are capable of "
+                                  "generating transport keys.")
         .Flush();
 
     return false;
@@ -1167,14 +1161,14 @@ auto Authority::Unlock(
                 dhKey, GetMasterCredID(), reason, testTag);
 
             if (false == calculated) {
-                LogTrace()(OT_PRETTY_CLASS(__func__))("Unable to calculate tag")
+                LogTrace()(OT_PRETTY_CLASS())("Unable to calculate tag")
                     .Flush();
 
                 continue;
             }
 
             if (tag != testTag) {
-                LogTrace()(OT_PRETTY_CLASS(__func__))(
+                LogTrace()(OT_PRETTY_CLASS())(
                     "Session key not applicable to this nym")
                     .Flush();
 
@@ -1186,7 +1180,7 @@ auto Authority::Unlock(
                 encryptKey.CalculateSessionPassword(dhKey, reason, password);
 
             if (false == calculated) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Unable to calculate session password")
                     .Flush();
 
@@ -1209,7 +1203,7 @@ auto Authority::validate_credential(const Item& item) const -> bool
     const auto& [id, pCredential] = item;
 
     if (nullptr == pCredential) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Null credential ")(id)(" in map")
+        LogError()(OT_PRETTY_CLASS())("Null credential ")(id)(" in map")
             .Flush();
 
         return false;
@@ -1219,7 +1213,7 @@ auto Authority::validate_credential(const Item& item) const -> bool
 
     if (credential.Validate()) { return true; }
 
-    LogError()(OT_PRETTY_CLASS(__func__))("Invalid credential ")(id).Flush();
+    LogError()(OT_PRETTY_CLASS())("Invalid credential ")(id).Flush();
 
     return false;
 }
@@ -1232,7 +1226,7 @@ auto Authority::Verify(
     std::string signerID(sig.credentialid());
 
     if (signerID == GetMasterCredID()->str()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Master credentials are only allowed to sign other credentials.")
             .Flush();
 
@@ -1242,7 +1236,7 @@ auto Authority::Verify(
     const auto* credential = get_secondary_credential(signerID);
 
     if (nullptr == credential) {
-        LogDebug()(OT_PRETTY_CLASS(__func__))(
+        LogDebug()(OT_PRETTY_CLASS())(
             "This Authority does not contain the credential which produced "
             "the signature.")
             .Flush();
@@ -1270,15 +1264,13 @@ auto Authority::Verify(const proto::Verification& item) const -> bool
 auto Authority::VerifyInternally() const -> bool
 {
     if (false == bool(master_)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))("Missing master credential.")
-            .Flush();
+        LogConsole()(OT_PRETTY_CLASS())("Missing master credential.").Flush();
         return false;
     }
 
     if (false == master_->Validate()) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
-            "Master Credential failed to verify: ")(GetMasterCredID())(
-            " NymID: ")(parent_.Source().NymID())
+        LogConsole()(OT_PRETTY_CLASS())("Master Credential failed to verify: ")(
+            GetMasterCredID())(" NymID: ")(parent_.Source().NymID())
             .Flush();
 
         return false;
@@ -1299,8 +1291,7 @@ auto Authority::VerifyInternally() const -> bool
 auto Authority::WriteCredentials() const -> bool
 {
     if (!master_->Save()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to save master credential.")
+        LogError()(OT_PRETTY_CLASS())("Failed to save master credential.")
             .Flush();
 
         return false;
@@ -1316,8 +1307,7 @@ auto Authority::WriteCredentials() const -> bool
     for_each(verification_credentials_, save);
 
     if (false == output) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to save child credential.")
+        LogError()(OT_PRETTY_CLASS())("Failed to save child credential.")
             .Flush();
     }
 

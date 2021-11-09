@@ -209,7 +209,7 @@ auto Factory::BlockHeader(const proto::BlockchainBlockHeader& serialized) const
         case opentxs::blockchain::Type::Ethereum_frontier:
         case opentxs::blockchain::Type::Ethereum_ropsten:
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported type (")(
+            LogError()(OT_PRETTY_CLASS())("Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")
                 .Flush();
 
@@ -243,7 +243,7 @@ auto Factory::BlockHeader(
         case opentxs::blockchain::Type::Ethereum_frontier:
         case opentxs::blockchain::Type::Ethereum_ropsten:
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported type (")(
+            LogError()(OT_PRETTY_CLASS())("Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")
                 .Flush();
 

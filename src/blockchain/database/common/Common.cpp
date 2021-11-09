@@ -8,8 +8,6 @@
 #include "internal/blockchain/database/common/Common.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <boost/container/vector.hpp>
-#include <functional>
 #include <set>
 
 #include "internal/blockchain/Params.hpp"

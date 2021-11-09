@@ -73,16 +73,14 @@ void Subscribe::process_incoming(const Lock& lock, Message& message) noexcept
     try {
         callback_.Process(message);
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Callback exception: ")(e.what())
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Callback exception: ")(e.what()).Flush();
 
         for (const auto& endpoint : endpoints_) {
-            LogError()(OT_PRETTY_CLASS(__func__))("connected endpoint: ")(
-                endpoint)
+            LogError()(OT_PRETTY_CLASS())("connected endpoint: ")(endpoint)
                 .Flush();
         }
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Callback exception").Flush();
+        LogError()(OT_PRETTY_CLASS())("Callback exception").Flush();
     }
 }
 

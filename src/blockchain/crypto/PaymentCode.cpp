@@ -8,6 +8,7 @@
 #include "blockchain/crypto/PaymentCode.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
+#include <cstdint>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -276,7 +277,7 @@ auto PaymentCode::has_private(const PasswordPrompt& reason) const noexcept
     auto pKey = local_.get().Key();
 
     if (!pKey) {
-        LogError()(OT_PRETTY_CLASS(__func__))("No local HD key").Flush();
+        LogError()(OT_PRETTY_CLASS())("No local HD key").Flush();
 
         return false;
     }
@@ -303,7 +304,7 @@ auto PaymentCode::PrivateKey(
     const PasswordPrompt& reason) const noexcept -> ECKey
 {
     if (false == has_private(reason)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing private key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing private key").Flush();
 
         return {};
     }
@@ -316,7 +317,7 @@ auto PaymentCode::PrivateKey(
             return local_.get().Incoming(remote_, index, chain_, reason);
         }
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid subchain").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid subchain").Flush();
 
             return {};
         }
@@ -356,8 +357,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
     serialize_deterministic(lock, *serialized.mutable_deterministic());
     auto local = proto::PaymentCode{};
     if (false == local_.get().Serialize(local)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to serialize local paymentcode")
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize local paymentcode")
             .Flush();
 
         return false;
@@ -365,8 +365,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
     *serialized.mutable_local() = local;
     auto remote = proto::PaymentCode{};
     if (false == remote_.get().Serialize(remote)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to serialize remote paymentcode")
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize remote paymentcode")
             .Flush();
 
         return false;
@@ -404,8 +403,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
     const bool saved = api_.Storage().Store(parent_.NymID(), id_, serialized);
 
     if (false == saved) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to save PaymentCode account")
+        LogError()(OT_PRETTY_CLASS())("Failed to save PaymentCode account")
             .Flush();
 
         return false;

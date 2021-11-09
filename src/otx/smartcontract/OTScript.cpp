@@ -304,8 +304,7 @@ void OTScript::RemoveVariable(OTVariable& theVar)
 
 auto OTScript::ExecuteScript(OTVariable*) -> bool
 {
-    LogError()(OT_PRETTY_CLASS(__func__))("Scripting has been disabled.")
-        .Flush();
+    LogError()(OT_PRETTY_CLASS())("Scripting has been disabled.").Flush();
     return true;
 }
 

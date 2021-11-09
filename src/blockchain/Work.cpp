@@ -200,8 +200,7 @@ auto Work::asHex() const noexcept -> std::string
         bmp::export_bits(
             bmp::cpp_int(data_), std::back_inserter(bytes), 8, true);
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to encode number")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to encode number").Flush();
 
         return {};
     }
