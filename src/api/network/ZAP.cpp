@@ -12,8 +12,6 @@
 #include "opentxs/network/zeromq/zap/Callback.hpp"
 #include "opentxs/network/zeromq/zap/Handler.hpp"
 
-//#define OT_METHOD "opentxs::api::network::ZAP::"
-
 namespace opentxs
 {
 namespace network

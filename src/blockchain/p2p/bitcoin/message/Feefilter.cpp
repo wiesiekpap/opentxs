@@ -18,8 +18,6 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Log.hpp"
 
-//#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Feefilter::"
-
 using FeeRateField = be::little_uint64_buf_t;
 
 namespace opentxs::factory

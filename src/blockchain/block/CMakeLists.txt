@@ -6,27 +6,23 @@
 add_subdirectory(bitcoin)
 add_subdirectory(pkt)
 
-add_library(
-  opentxs-blockchain-block OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/Block.hpp"
-  "Block.cpp"
-  "Block.hpp"
-  "Common.cpp"
-  "Header.cpp"
-  "Header.hpp"
-  "Outpoint.cpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/block/Block.hpp"
+    "Block.cpp"
+    "Block.hpp"
+    "Common.cpp"
+    "Header.cpp"
+    "Header.hpp"
+    "Outpoint.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Block.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Header.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/Outpoint.hpp"
 )
-target_link_libraries(
-  opentxs-blockchain-block PRIVATE Boost::headers opentxs::messages
-)
-target_sources(opentxs-blockchain-block PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-block>)
-add_dependencies(opentxs-blockchain-block generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

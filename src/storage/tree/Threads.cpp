@@ -43,8 +43,6 @@ class Mailbox;
 }  // namespace storage
 }  // namespace opentxs
 
-#define OT_METHOD "opentxs::storage::Threads::"
-
 namespace opentxs
 {
 namespace storage
@@ -149,7 +147,7 @@ auto Threads::create(
         node.swap(newThread);
         save(lock);
     } else {
-        LogError()(OT_METHOD)(__func__)(": Thread already exists.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Thread already exists.").Flush();
     }
 
     return id;
@@ -234,7 +232,7 @@ void Threads::init(const std::string& hash)
                 data.emplace(std::move(threadID));
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             continue;
         }
@@ -335,7 +333,7 @@ auto Threads::Rename(const std::string& existingID, const std::string& newID)
     auto it = item_map_.find(existingID);
 
     if (item_map_.end() == it) {
-        LogError()(OT_METHOD)(__func__)(": Thread ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Thread ")(
             existingID)(" does not exist.")
             .Flush();
 
@@ -357,7 +355,7 @@ auto Threads::Rename(const std::string& existingID, const std::string& newID)
     std::unique_ptr<storage::Thread> newThread{nullptr};
 
     if (false == oldThread->Rename(newID)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to rename thread ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to rename thread ")(
             existingID)(".")
             .Flush();
 

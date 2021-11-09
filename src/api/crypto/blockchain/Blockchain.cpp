@@ -27,8 +27,6 @@
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
 
-// #define OT_METHOD "opentxs::api::crypto::implementation::Blockchain::"
-
 namespace zmq = opentxs::network::zeromq;
 
 using ReturnType = opentxs::api::crypto::implementation::Blockchain;

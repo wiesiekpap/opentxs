@@ -7,29 +7,30 @@ add_subdirectory(curve)
 add_subdirectory(socket)
 add_subdirectory(zap)
 
-add_library(
-  opentxs-network-zeromq OBJECT
-  "Context.cpp"
-  "Context.hpp"
-  "Frame.cpp"
-  "Frame.hpp"
-  "FrameIterator.cpp"
-  "FrameSection.cpp"
-  "ListenCallback.cpp"
-  "ListenCallback.hpp"
-  "ListenCallbackSwig.cpp"
-  "ListenCallbackSwig.hpp"
-  "Message.cpp"
-  "PairEventCallback.cpp"
-  "PairEventCallback.hpp"
-  "PairEventCallbackSwig.cpp"
-  "PairEventCallbackSwig.hpp"
-  "PairEventListener.cpp"
-  "PairEventListener.hpp"
-  "Proxy.cpp"
-  "Proxy.hpp"
-  "ReplyCallback.cpp"
-  "ReplyCallback.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "Context.cpp"
+    "Context.hpp"
+    "Frame.cpp"
+    "Frame.hpp"
+    "FrameIterator.cpp"
+    "FrameSection.cpp"
+    "ListenCallback.cpp"
+    "ListenCallback.hpp"
+    "ListenCallbackSwig.cpp"
+    "ListenCallbackSwig.hpp"
+    "Message.cpp"
+    "PairEventCallback.cpp"
+    "PairEventCallback.hpp"
+    "PairEventCallbackSwig.cpp"
+    "PairEventCallbackSwig.hpp"
+    "PairEventListener.cpp"
+    "PairEventListener.hpp"
+    "Proxy.cpp"
+    "Proxy.hpp"
+    "ReplyCallback.cpp"
+    "ReplyCallback.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/Context.hpp"
@@ -45,13 +46,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/Proxy.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/ReplyCallback.hpp"
 )
-target_link_libraries(
-  opentxs-network-zeromq PRIVATE opentxs::messages "${OT_ZMQ_TARGET}"
-)
+target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")
 target_link_libraries(opentxs PUBLIC "${OT_ZMQ_TARGET}")
-target_sources(opentxs-network-zeromq PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-network-zeromq>)
-add_dependencies(opentxs-network-zeromq generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

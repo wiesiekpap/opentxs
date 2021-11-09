@@ -7,15 +7,13 @@
 #include "1_Internal.hpp"                           // IWYU pragma: associated
 #include "storage/drivers/multiplex/Multiplex.hpp"  // IWYU pragma: associated
 
-#include "opentxs/util/Log.hpp"
-
-#define OT_METHOD "opentxs::storage::driver::Multiplex::"
+#include "internal/util/LogMacros.hpp"
 
 namespace opentxs::storage::driver
 {
 auto Multiplex::init_fs(std::unique_ptr<storage::Plugin>& plugin) -> void
 {
-    LogError()(OT_METHOD)(__func__)(": Filesystem driver not compiled in.")
+    LogError()(OT_PRETTY_CLASS(__func__))("Filesystem driver not compiled in.")
         .Flush();
 }
 

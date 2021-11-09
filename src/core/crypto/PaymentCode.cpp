@@ -63,8 +63,6 @@
 
 template class opentxs::Pimpl<opentxs::PaymentCode>;
 
-#define OT_METHOD "opentxs::implementation::PaymentCode::"
-
 namespace be = boost::endian;
 
 namespace opentxs
@@ -183,7 +181,7 @@ auto PaymentCode::AddPrivateKeys(
         api_.Crypto().Seed().GetPaymentCode(seed, index, version_, reason);
 
     if (false == bool(pCandidate)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to derive private key")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to derive private key")
             .Flush();
 
         return false;
@@ -192,16 +190,16 @@ auto PaymentCode::AddPrivateKeys(
     const auto& candidate = *pCandidate;
 
     if (0 != pubkey_->Bytes().compare(candidate.PublicKey())) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Derived public key does not match this payment code")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Derived public key does not match this payment code")
             .Flush();
 
         return false;
     }
 
     if (0 != chain_code_->Bytes().compare(candidate.Chaincode(reason))) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Derived chain code does not match this payment code")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Derived chain code does not match this payment code")
             .Flush();
 
         return false;
@@ -336,7 +334,7 @@ auto PaymentCode::Blind(
 
         std::memcpy(out.data(), view.data(), size);
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }
@@ -402,7 +400,7 @@ auto PaymentCode::BlindV3(
             }
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }
@@ -558,7 +556,7 @@ auto PaymentCode::DecodeNotificationElements(
         throw std::runtime_error{"Missing sepc256k1 support"};
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     } catch (const std::exception& e) {
-        LogVerbose()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return {};
     }
@@ -668,7 +666,7 @@ auto PaymentCode::GenerateNotificationElements(
 
         return output;
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return {};
     }
@@ -766,7 +764,7 @@ auto PaymentCode::Incoming(
             }
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return {};
     }
@@ -847,7 +845,7 @@ auto PaymentCode::Locator(const AllocateOutput dest, const std::uint8_t version)
             }
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }
@@ -918,7 +916,7 @@ auto PaymentCode::Outgoing(
             }
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return {};
     }
@@ -1119,7 +1117,7 @@ auto PaymentCode::Unblind(
         throw std::runtime_error{"Missing secp256k1 support"};
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return {};
     }
@@ -1164,7 +1162,7 @@ auto PaymentCode::UnblindV3(
         throw std::runtime_error{"Missing secp256k1 support"};
 #endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return {};
     }
@@ -1291,7 +1289,8 @@ auto PaymentCode::Verify(
                      proto::KEYMODE_PUBLIC,
                      proto::CREDROLE_MASTERKEY,
                      false)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid master credential syntax.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Invalid master credential syntax.")
             .Flush();
 
         return false;
@@ -1301,8 +1300,8 @@ auto PaymentCode::Verify(
         (*this == master.masterdata().source().paymentcode());
 
     if (false == sameSource) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Master credential was not derived from this source.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Master credential was not derived from this source.")
             .Flush();
 
         return false;

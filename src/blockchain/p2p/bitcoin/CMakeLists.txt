@@ -5,24 +5,20 @@
 
 add_subdirectory(message)
 
-add_library(
-  opentxs-blockchain-p2p-bitcoin OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/blockchain/p2p/bitcoin/Factory.hpp"
-  "Bitcoin.cpp"
-  "Header.cpp"
-  "Header.hpp"
-  "Message.cpp"
-  "Message.hpp"
-  "Peer.cpp"
-  "Peer.hpp"
-)
-target_link_libraries(
-  opentxs-blockchain-p2p-bitcoin PRIVATE Boost::headers opentxs::messages
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/p2p/bitcoin/Factory.hpp"
+    "Bitcoin.cpp"
+    "Header.cpp"
+    "Header.hpp"
+    "Message.cpp"
+    "Message.hpp"
+    "Peer.cpp"
+    "Peer.hpp"
 )
 target_include_directories(
-  opentxs-blockchain-p2p-bitcoin SYSTEM
+  opentxs-common SYSTEM
   PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain-p2p-bitcoin>)
-add_dependencies(opentxs-blockchain-p2p-bitcoin generated_code)

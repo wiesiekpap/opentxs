@@ -372,10 +372,16 @@ add_library(
   ALIAS
   proto-verify
 )
-target_link_libraries(proto-verify PRIVATE protobuf::libprotobuf-lite)
+target_link_libraries(
+  proto-verify PRIVATE opentxs-common protobuf::libprotobuf-lite
+)
 target_link_libraries(opentxs PUBLIC protobuf::libprotobuf-lite)
 set_target_properties(
-  proto-verify PROPERTIES MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
+  proto-verify
+  PROPERTIES
+    MSVC_RUNTIME_LIBRARY "${MSVC_RUNTIME_DEFAULT}"
+    C_INCLUDE_WHAT_YOU_USE ""
+    CXX_INCLUDE_WHAT_YOU_USE ""
 )
 
 if(NOT MSVC)

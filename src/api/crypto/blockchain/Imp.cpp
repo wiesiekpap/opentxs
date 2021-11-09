@@ -58,8 +58,6 @@
 #define PATH_VERSION 1
 #define COMPRESSED_PUBKEY_SIZE 33
 
-#define OT_METHOD "opentxs::api::crypto::implementation::Blockchain::Imp::"
-
 namespace opentxs::api::crypto
 {
 enum class Prefix : std::uint8_t {
@@ -261,13 +259,14 @@ auto Blockchain::Imp::AssignContact(
 
             return node.Internal().SetContact(subchain, index, contactID);
         } catch (...) {
-            LogError()(OT_METHOD)(__func__)(": Failed to load balance element")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to load balance element")
                 .Flush();
 
             return false;
         }
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Failed to load account").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load account").Flush();
 
         return false;
     }
@@ -299,13 +298,14 @@ auto Blockchain::Imp::AssignLabel(
 
             return node.Internal().SetLabel(subchain, index, label);
         } catch (...) {
-            LogError()(OT_METHOD)(__func__)(": Failed to load balance element")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to load balance element")
                 .Flush();
 
             return false;
         }
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Failed to load account").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load account").Flush();
 
         return false;
     }
@@ -376,14 +376,15 @@ auto Blockchain::Imp::CalculateAddress(
             try {
                 data = PubkeyHash(chain, pubkey);
             } catch (...) {
-                LogError()(OT_METHOD)(__func__)(": Invalid public key.")
+                LogError()(OT_PRETTY_CLASS(__func__))("Invalid public key.")
                     .Flush();
 
                 return {};
             }
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported address style (")(
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unsupported address style (")(
                 static_cast<std::uint16_t>(format))(")")
                 .Flush();
 
@@ -510,12 +511,12 @@ auto Blockchain::Imp::decode_bech23(const std::string& encoded) const noexcept
 
             return std::move(output);
         } catch (const std::exception& e) {
-            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return blank_;
         }
     } catch (const std::exception& e) {
-        LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return std::nullopt;
     }
@@ -563,12 +564,12 @@ auto Blockchain::Imp::decode_legacy(const std::string& encoded) const noexcept
 
             return std::move(output);
         } catch (const std::exception& e) {
-            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return blank_;
         }
     } catch (const std::exception& e) {
-        LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return std::nullopt;
     }
@@ -593,7 +594,8 @@ auto Blockchain::Imp::EncodeAddress(
             return p2sh(chain, data);
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported address style (")(
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unsupported address style (")(
                 static_cast<std::uint16_t>(style))(")")
                 .Flush();
 
@@ -795,13 +797,14 @@ auto Blockchain::Imp::NewHDSubaccount(
     if (false == validate_nym(nymID)) { return blank; }
 
     if (opentxs::blockchain::Type::Unknown == derivationChain) {
-        LogError()(OT_METHOD)(__func__)(": Invalid derivationChain").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid derivationChain")
+            .Flush();
 
         return blank;
     }
 
     if (opentxs::blockchain::Type::Unknown == targetChain) {
-        LogError()(OT_METHOD)(__func__)(": Invalid targetChain").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid targetChain").Flush();
 
         return blank;
     }
@@ -809,7 +812,7 @@ auto Blockchain::Imp::NewHDSubaccount(
     auto nym = api_.Wallet().Nym(nymID);
 
     if (false == bool(nym)) {
-        LogError()(OT_METHOD)(__func__)(": Nym does not exist.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Nym does not exist.").Flush();
 
         return blank;
     }
@@ -817,19 +820,19 @@ auto Blockchain::Imp::NewHDSubaccount(
     auto nymPath = proto::HDPath{};
 
     if (false == nym->Path(nymPath)) {
-        LogError()(OT_METHOD)(__func__)(": No nym path.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("No nym path.").Flush();
 
         return blank;
     }
 
     if (0 == nymPath.root().size()) {
-        LogError()(OT_METHOD)(__func__)(": Missing root.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing root.").Flush();
 
         return blank;
     }
 
     if (2 > nymPath.child().size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid path.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid path.").Flush();
 
         return blank;
     }
@@ -849,7 +852,7 @@ auto Blockchain::Imp::NewHDSubaccount(
 
         OT_ASSERT(false == accountID->empty());
 
-        LogVerbose()(OT_METHOD)(__func__)(": Created new HD subaccount ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Created new HD subaccount ")(
             accountID)(" for ")(DisplayString(targetChain))(" account ")(
             tree.AccountID())(" owned by ")(nymID.str())(" using path ")(
             opentxs::crypto::Print(accountPath))
@@ -867,7 +870,8 @@ auto Blockchain::Imp::NewHDSubaccount(
 
         return accountID;
     } catch (...) {
-        LogVerbose()(OT_METHOD)(__func__)(": Failed to create account").Flush();
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Failed to create account")
+            .Flush();
 
         return blank;
     }
@@ -907,7 +911,7 @@ auto Blockchain::Imp::new_payment_code(
     if (false == validate_nym(nymID)) { return blank; }
 
     if (opentxs::blockchain::Type::Unknown == chain) {
-        LogError()(OT_METHOD)(__func__)(": Invalid chain").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid chain").Flush();
 
         return blank;
     }
@@ -915,19 +919,19 @@ auto Blockchain::Imp::new_payment_code(
     auto nym = api_.Wallet().Nym(nymID);
 
     if (false == bool(nym)) {
-        LogError()(OT_METHOD)(__func__)(": Nym does not exist.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Nym does not exist.").Flush();
 
         return blank;
     }
 
     if (0 == path.root().size()) {
-        LogError()(OT_METHOD)(__func__)(": Missing root.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing root.").Flush();
 
         return blank;
     }
 
     if (3 > path.child().size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid path: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid path: ")(
             opentxs::crypto::Print(path))
             .Flush();
 
@@ -942,8 +946,8 @@ auto Blockchain::Imp::new_payment_code(
 
         OT_ASSERT(false == accountID->empty());
 
-        LogVerbose()(OT_METHOD)(__func__)(
-            ": Created new payment code subaccount ")(accountID)(" for  ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            "Created new payment code subaccount ")(accountID)(" for  ")(
             DisplayString(chain))(" account ")(tree.AccountID())(" owned by ")(
             nymID.str())("in reference to remote payment code ")(
             remote.asBase58())
@@ -961,7 +965,8 @@ auto Blockchain::Imp::new_payment_code(
 
         return accountID;
     } catch (...) {
-        LogVerbose()(OT_METHOD)(__func__)(": Failed to create account").Flush();
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Failed to create account")
+            .Flush();
 
         return blank;
     }
@@ -1001,7 +1006,7 @@ auto Blockchain::Imp::p2pkh(
 
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Unsupported chain (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Unsupported chain (")(
             opentxs::print(chain))(")")
             .Flush();
 
@@ -1024,7 +1029,7 @@ auto Blockchain::Imp::p2sh(
 
         return api_.Crypto().Encode().IdentifierEncode(preimage);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Unsupported chain (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Unsupported chain (")(
             opentxs::print(chain))(")")
             .Flush();
 
@@ -1053,7 +1058,7 @@ auto Blockchain::Imp::p2wpkh(
 
         return segwit_addr::encode(hrp, 0, prog);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Unsupported chain (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Unsupported chain (")(
             opentxs::print(chain))(")")
             .Flush();
 
@@ -1189,7 +1194,7 @@ auto Blockchain::Imp::RecipientContact(const Key& key) const noexcept
             }
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return blank;
     }
@@ -1254,7 +1259,7 @@ auto Blockchain::Imp::SenderContact(const Key& key) const noexcept
             }
         }
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return blank;
     }

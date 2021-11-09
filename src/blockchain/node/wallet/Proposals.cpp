@@ -45,8 +45,6 @@
 #include "opentxs/util/Time.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::Proposals::"
-
 namespace opentxs::blockchain::node::wallet
 {
 struct Proposals::Imp {
@@ -58,7 +56,7 @@ public:
         auto id = api_.Factory().Identifier(tx.id());
 
         if (false == db_.AddProposal(id, tx)) {
-            LogError()(OT_METHOD)(__func__)(": Database error").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Database error").Flush();
             static const auto blank = api_.Factory().Data();
             promise.set_value({SendResult::DatabaseError, blank});
         }
@@ -135,7 +133,7 @@ private:
             auto lock = Lock{lock_};
 
             if (0 < ids_.count(id)) {
-                LogError()(OT_METHOD)(__func__)(": Proposal already exists")
+                LogError()(OT_PRETTY_CLASS(__func__))("Proposal already exists")
                     .Flush();
                 static const auto blank = api_.Factory().Data();
                 promise.set_value({SendResult::DuplicateProposal, blank});
@@ -236,7 +234,7 @@ private:
         }};
 
         if (false == builder.CreateOutputs(proposal)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to create outputs")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to create outputs")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::OutputCreationError;
@@ -245,8 +243,8 @@ private:
         }
 
         if (false == builder.AddChange(proposal)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to allocate change output")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to allocate change output")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::ChangeError;
@@ -259,7 +257,8 @@ private:
             auto utxo = db_.ReserveUTXO(builder.Spender(), id, policy);
 
             if (false == utxo.has_value()) {
-                LogError()(OT_METHOD)(__func__)(": Insufficient funds").Flush();
+                LogError()(OT_PRETTY_CLASS(__func__))("Insufficient funds")
+                    .Flush();
                 output = BuildResult::PermanentFailure;
                 rc = SendResult::InsufficientFunds;
 
@@ -267,7 +266,7 @@ private:
             }
 
             if (false == builder.AddInput(utxo.value())) {
-                LogError()(OT_METHOD)(__func__)(": Failed to add input")
+                LogError()(OT_PRETTY_CLASS(__func__))("Failed to add input")
                     .Flush();
                 output = BuildResult::PermanentFailure;
                 rc = SendResult::InputCreationError;
@@ -281,7 +280,7 @@ private:
         builder.FinalizeOutputs();
 
         if (false == builder.SignInputs()) {
-            LogError()(OT_METHOD)(__func__)(": Transaction signing failure")
+            LogError()(OT_PRETTY_CLASS(__func__))("Transaction signing failure")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::SignatureError;
@@ -292,8 +291,8 @@ private:
         auto pTransaction = builder.FinalizeTransaction();
 
         if (false == bool(pTransaction)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to instantiate transaction")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to instantiate transaction")
                 .Flush();
             output = BuildResult::PermanentFailure;
 
@@ -306,8 +305,8 @@ private:
             const auto proto = transaction.Serialize(crypto_);
 
             if (false == proto.has_value()) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to serialize transaction")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to serialize transaction")
                     .Flush();
                 output = BuildResult::PermanentFailure;
 
@@ -318,7 +317,7 @@ private:
         }
 
         if (!db_.AddProposal(id, proposal)) {
-            LogError()(OT_METHOD)(__func__)(": Database error (proposal)")
+            LogError()(OT_PRETTY_CLASS(__func__))("Database error (proposal)")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::DatabaseError;
@@ -327,7 +326,8 @@ private:
         }
 
         if (!db_.AddOutgoingTransaction(id, proposal, transaction)) {
-            LogError()(OT_METHOD)(__func__)(": Database error (transaction)")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Database error (transaction)")
                 .Flush();
             output = BuildResult::PermanentFailure;
             rc = SendResult::DatabaseError;
@@ -373,7 +373,7 @@ private:
                 account.AddNotification(transaction.ID());
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
         }
 
         return output;
@@ -411,7 +411,8 @@ private:
             case Type::Ethereum_frontier:
             case Type::Ethereum_ropsten:
             default: {
-                LogError()(OT_METHOD)(__func__)(": Unsupported chain").Flush();
+                LogError()(OT_PRETTY_CLASS(__func__))("Unsupported chain")
+                    .Flush();
 
                 return {};
             }

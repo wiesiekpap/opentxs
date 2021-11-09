@@ -48,8 +48,6 @@
 
 namespace be = boost::endian;
 
-#define OT_METHOD "opentxs::blockchain::block::bitcoin::implementation::Input::"
-
 namespace opentxs::factory
 {
 using ReturnType = blockchain::block::bitcoin::implementation::Input;
@@ -673,7 +671,7 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
     switch (style) {
         case filter::Type::ES: {
 
-            LogTrace()(OT_METHOD)(__func__)(": processing input script")
+            LogTrace()(OT_PRETTY_CLASS(__func__))("processing input script")
                 .Flush();
             output = script_->ExtractElements(style);
 
@@ -708,7 +706,8 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
                         std::make_move_iterator(temp.begin()),
                         std::make_move_iterator(temp.end()));
                 } else if (Redeem::MaybeP2WSH != type) {
-                    LogError()(OT_METHOD)(__func__)(": Invalid redeem script")
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Invalid redeem script")
                         .Flush();
                 }
             }
@@ -716,18 +715,20 @@ auto Input::ExtractElements(const filter::Type style) const noexcept
             [[fallthrough]];
         }
         case filter::Type::Basic_BCHVariant: {
-            LogTrace()(OT_METHOD)(__func__)(": processing consumed outpoint")
+            LogTrace()(OT_PRETTY_CLASS(__func__))(
+                "processing consumed outpoint")
                 .Flush();
             auto it = reinterpret_cast<const std::byte*>(&previous_);
             output.emplace_back(it, it + sizeof(previous_));
         } break;
         case filter::Type::Basic_BIP158:
         default: {
-            LogTrace()(OT_METHOD)(__func__)(": skipping input").Flush();
+            LogTrace()(OT_PRETTY_CLASS(__func__))("skipping input").Flush();
         }
     }
 
-    LogTrace()(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
+    LogTrace()(OT_PRETTY_CLASS(__func__))("extracted ")(output.size())(
+        " elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -753,7 +754,7 @@ auto Input::FindMatches(
         cache_.add({account->str(), subchain, index});
     }
 
-    LogTrace()(OT_METHOD)(__func__)(": Verified ")(inputs.size())(
+    LogTrace()(OT_PRETTY_CLASS(__func__))("Verified ")(inputs.size())(
         " outpoint matches")
         .Flush();
 
@@ -771,7 +772,7 @@ auto Input::index_elements(const api::crypto::Blockchain& blockchain) noexcept
     auto& hashes =
         const_cast<boost::container::flat_set<PatternID>&>(pubkey_hashes_);
     const auto patterns = script_->ExtractPatterns(api_, blockchain);
-    LogTrace()(OT_METHOD)(__func__)(": ")(patterns.size())(
+    LogTrace()(OT_PRETTY_CLASS(__func__))(patterns.size())(
         " pubkey hashes found:")
         .Flush();
     std::for_each(
@@ -841,7 +842,7 @@ auto Input::ReplaceScript() noexcept -> bool
 
         return true;
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }
@@ -851,7 +852,8 @@ auto Input::serialize(const AllocateOutput destination, const bool normalized)
     const noexcept -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
+            .Flush();
 
         return std::nullopt;
     }
@@ -860,7 +862,7 @@ auto Input::serialize(const AllocateOutput destination, const bool normalized)
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to allocate output bytes")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -883,7 +885,8 @@ auto Input::serialize(const AllocateOutput destination, const bool normalized)
             std::memcpy(it, coinbase_.data(), coinbase_.size());
         } else {
             if (false == script_->Serialize(preallocated(cs.Value(), it))) {
-                LogError()(OT_METHOD)(__func__)(": Failed to serialize script")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to serialize script")
                     .Flush();
 
                 return std::nullopt;

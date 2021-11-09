@@ -511,13 +511,13 @@ public:
         const ReadView& serialized) noexcept(false)
         -> std::unique_ptr<crypto::Envelope>;
 #if OT_CASH
-    static auto MintLucre(const api::Session& core) -> blind::Mint*;
+    static auto MintLucre(const api::Session& api) -> blind::Mint*;
     static auto MintLucre(
-        const api::Session& core,
+        const api::Session& api,
         const String& strNotaryID,
         const String& strInstrumentDefinitionID) -> blind::Mint*;
     static auto MintLucre(
-        const api::Session& core,
+        const api::Session& api,
         const String& strNotaryID,
         const String& strServerNymID,
         const String& strInstrumentDefinitionID) -> blind::Mint*;
@@ -553,7 +553,7 @@ public:
         const ReadView& serialized,
         const std::string& alias) -> identity::internal::Nym*;
     static auto NymFile(
-        const api::Session& core,
+        const api::Session& api,
         Nym_p targetNym,
         Nym_p signerNym) -> internal::NymFile*;
     static auto NymIDSource(

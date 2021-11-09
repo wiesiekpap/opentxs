@@ -37,8 +37,6 @@ template class opentxs::network::zeromq::socket::implementation::Receiver<
 
 #define ZAP_ENDPOINT "inproc://zeromq.zap.01"
 
-#define OT_METHOD "opentxs::network::zeromq::zap::implementation::Handler::"
-
 namespace opentxs::network::zeromq::zap
 {
 auto Handler::Factory(
@@ -68,7 +66,8 @@ void Handler::init() noexcept
 
     OT_ASSERT(running);
 
-    LogDetail()(OT_METHOD)(__func__)(": Listening on ")(ZAP_ENDPOINT).Flush();
+    LogDetail()(OT_PRETTY_CLASS(__func__))("Listening on ")(ZAP_ENDPOINT)
+        .Flush();
 }
 
 void Handler::process_incoming(const Lock& lock, zap::Request& message) noexcept

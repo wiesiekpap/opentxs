@@ -4,7 +4,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_library(opentxs-common OBJECT "")
-target_link_libraries(opentxs-common PUBLIC opentxs::messages)
+target_link_libraries(opentxs-common PRIVATE Boost::headers opentxs::messages)
+target_include_directories(
+  opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+)
+add_dependencies(opentxs-common generated_code)
 
 if(NOT OT_IWYU)
   target_precompile_headers(

@@ -53,8 +53,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 
-#define OT_METHOD "opentxs::api::session::implementation::Client::"
-
 namespace opentxs::factory
 {
 auto ClientSession(
@@ -184,7 +182,7 @@ auto Client::Activity() const -> const api::client::Activity&
 
 auto Client::Cleanup() -> void
 {
-    LogDetail()(OT_METHOD)(__func__)(": Shutting down and cleaning up.")
+    LogDetail()(OT_PRETTY_CLASS(__func__))("Shutting down and cleaning up.")
         .Flush();
     shutdown_sender_.Activate();
     ui_->Shutdown();

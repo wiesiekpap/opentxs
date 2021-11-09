@@ -57,8 +57,6 @@ extern "C" {
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Signals.hpp"
 
-// #define OT_METHOD "opentxs::api::implementation::Context::"
-
 namespace opentxs::factory
 {
 auto Context(
@@ -411,19 +409,34 @@ auto Context::setup_default_external_password_callback() -> void
 auto Context::shutdown() noexcept -> void
 {
     running_.Off();
+    Periodic::Shutdown();
 
     if (nullptr != shutdown_callback_) {
         ShutdownCallback& callback = *shutdown_callback_;
         callback();
+        shutdown_callback_ = nullptr;
     }
 
+    rpc_.reset();
     server_.clear();
+    zap_.reset();
     client_.clear();
+    shutdown_qt();
     crypto_.reset();
+    legacy_.reset();
+    factory_.reset();
 
     for (auto& config : config_) { config.second.reset(); }
 
     config_.clear();
+
+    if (asio_) {
+        asio_->Shutdown();
+        asio_.reset();
+    }
+
+    opentxs::internal::Log::Shutdown();
+    log_.reset();
 }
 
 auto Context::start_client(const Lock& lock, const Options& args) const -> void
@@ -558,14 +571,5 @@ auto Context::ZAP() const noexcept -> const api::network::ZAP&
     return *zap_;
 }
 
-Context::~Context()
-{
-    client_.clear();
-    server_.clear();
-    asio_->Shutdown();
-    asio_.reset();
-    opentxs::internal::Log::Shutdown();
-    log_.reset();
-    shutdown_qt();
-}
+Context::~Context() { shutdown(); }
 }  // namespace opentxs::api::implementation

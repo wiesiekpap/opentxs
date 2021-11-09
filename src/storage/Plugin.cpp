@@ -16,8 +16,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::Plugin"
-
 namespace opentxs::storage::implementation
 {
 Plugin::Plugin(
@@ -41,7 +39,8 @@ auto Plugin::Load(
 {
     if (key.empty()) {
         if (!checking) {
-            LogError()(OT_METHOD)(__func__)(": Error: Tried to load empty key.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error: Tried to load empty key.")
                 .Flush();
         }
 
@@ -66,8 +65,9 @@ auto Plugin::Load(
     }
 
     if (!valid && !checking) {
-        LogDetail()(OT_METHOD)(__func__)(": Specified object is not found.")(
-            " Hash: ")(key)(".")(" Size: ")(value.size())(".")
+        LogDetail()(OT_PRETTY_CLASS(__func__))(
+            "Specified object is not found.")(" Hash: ")(key)(".")(" Size: ")(
+            value.size())(".")
             .Flush();
     }
 
@@ -92,7 +92,7 @@ auto Plugin::Migrate(const std::string& key, const storage::Driver& to) const
         if (to.Store(false, key, value, targetBucket)) {
             return true;
         } else {
-            LogError()(OT_METHOD)(__func__)(": Save failure.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Save failure.").Flush();
 
             return false;
         }
@@ -103,7 +103,7 @@ auto Plugin::Migrate(const std::string& key, const storage::Driver& to) const
     const bool exists = to.LoadFromBucket(key, value, targetBucket);
 
     if (!exists) {
-        LogVerbose()(OT_METHOD)(__func__)(": Missing key.").Flush();
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Missing key.").Flush();
 
         return false;
     }

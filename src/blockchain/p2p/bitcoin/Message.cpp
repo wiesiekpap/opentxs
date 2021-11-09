@@ -30,8 +30,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::blockchain::p2p::bitcoin::Message::"
-
 namespace opentxs::factory
 {
 auto BitcoinP2PMessage(
@@ -257,7 +255,7 @@ auto Message::verify_checksum() const noexcept(false) -> void
     const auto& header = header_->Checksum();
 
     if (header != calculated) {
-        LogError()(OT_METHOD)(__func__)(": Checksum failure").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Checksum failure").Flush();
         LogError()("*  Calculated Payload:  ")(payload()->asHex()).Flush();
         LogError()("*  Calculated Checksum: ")(calculated->asHex()).Flush();
         LogError()("*  Provided Checksum:   ")(header.asHex()).Flush();

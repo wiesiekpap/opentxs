@@ -15,9 +15,6 @@
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::node::wallet::DeterministicStateData::Index::"
-
 namespace opentxs::blockchain::node::wallet
 {
 DeterministicStateData::Index::Index(
@@ -45,11 +42,11 @@ auto DeterministicStateData::Index::Do(
     const auto last = subaccount_.LastGenerated(subchain).value_or(0u);
 
     if (last > first) {
-        LogVerbose()(OT_METHOD)(__func__)(": ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
             name)(" indexing elements from ")(first)(" to ")(last)
             .Flush();
     } else {
-        LogVerbose()(OT_METHOD)(__func__)(": ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
             name)(" subchain is fully indexed to item ")(last)
             .Flush();
     }
@@ -71,19 +68,19 @@ auto DeterministicStateData::Index::need_index(
         const auto target = generated.value();
 
         if ((false == current.has_value()) || (current.value() != target)) {
-            LogVerbose()(OT_METHOD)(__func__)(": ")(name)(" has ")(target + 1)(
+            LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" has ")(target + 1)(
                 " keys generated, but only ")(current.value_or(0))(
                 " have been indexed.")
                 .Flush();
 
             return target;
         } else {
-            LogTrace()(OT_METHOD)(__func__)(": ")(name)(" all ")(target + 1)(
+            LogTrace()(OT_PRETTY_CLASS(__func__))(name)(" all ")(target + 1)(
                 " generated keys have been indexed.")
                 .Flush();
         }
     } else {
-        LogVerbose()(OT_METHOD)(__func__)(": ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
             name)(" no generated keys present")
             .Flush();
     }

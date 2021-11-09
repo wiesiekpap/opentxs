@@ -23,8 +23,6 @@
 
 #define CURRENT_VERSION 2
 
-#define OT_METHOD "opentxs::storage::Root::"
-
 namespace opentxs::storage
 {
 Root::Root(
@@ -63,7 +61,8 @@ void Root::init(const std::string& hash)
     auto data = std::shared_ptr<proto::StorageRoot>{};
 
     if (!driver_.LoadProto(hash, data)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to load root object file.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to load root object file.")
             .Flush();
         OT_FAIL;
     }
@@ -113,7 +112,7 @@ auto Root::Migrate(const Driver& to) const -> bool
             driver_.StoreRoot(true, root_);
         });
     } catch (const std::exception& e) {
-        LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }

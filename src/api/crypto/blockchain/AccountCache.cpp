@@ -25,8 +25,6 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-// #define OT_METHOD "opentxs::api::crypto::blockchain::AccountCache::"
-
 namespace opentxs::api::crypto::blockchain
 {
 AccountCache::AccountCache(const api::Session& api) noexcept

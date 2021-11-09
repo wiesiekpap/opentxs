@@ -27,8 +27,6 @@
 
 #define CURRENT_VERSION 2
 
-#define OT_METHOD "opentxs::storage::Seeds::"
-
 namespace opentxs
 {
 namespace storage
@@ -157,8 +155,8 @@ auto Seeds::Store(const proto::Seed& data, const std::string& alias) -> bool
     auto& hash = std::get<0>(metadata);
 
     if (existingKey) {
-        const bool revisionCheck =
-            check_revision<proto::Seed>(OT_METHOD, incomingRevision, metadata);
+        const bool revisionCheck = check_revision<proto::Seed>(
+            (OT_PRETTY_CLASS(__func__)), incomingRevision, metadata);
 
         if (false == revisionCheck) {
             // We're trying to save a seed with a lower index than has already

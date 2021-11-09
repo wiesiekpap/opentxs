@@ -39,8 +39,6 @@ extern "C" {
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::crypto::implementation::PacketCrypt::"
-
 namespace be = boost::endian;
 
 namespace opentxs::crypto::implementation
@@ -88,7 +86,7 @@ struct PacketCrypt::Imp {
             static constexpr auto threshold = decltype(height){122622};
 
             if (threshold > height) {
-                LogDetail()(OT_METHOD)(__func__)(
+                LogDetail()(OT_PRETTY_CLASS(__func__))(
                     ": Validation protocol for this block height not "
                     "supported. Assuming block is valid.")
                     .Flush();
@@ -207,7 +205,7 @@ struct PacketCrypt::Imp {
                 return false;
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }
@@ -233,7 +231,7 @@ auto PacketCrypt::Validate(const BitcoinBlock& block) const noexcept -> bool
     const auto* p = dynamic_cast<const Imp::PktBlock*>(&block);
 
     if (nullptr == p) {
-        LogError()(OT_METHOD)(__func__)(": Invalid block type").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid block type").Flush();
 
         return false;
     }

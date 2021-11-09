@@ -133,13 +133,13 @@ protected:
     Time m_EXPIRATION;
     OTIdentifier m_CashAccountID;
 
-    Mint(const api::Session& core);
+    Mint(const api::Session& api);
     Mint(
-        const api::Session& core,
+        const api::Session& api,
         const String& strNotaryID,
         const String& strInstrumentDefinitionID);
     Mint(
-        const api::Session& core,
+        const api::Session& api,
         const String& strNotaryID,
         const String& strServerNymID,
         const String& strInstrumentDefinitionID);

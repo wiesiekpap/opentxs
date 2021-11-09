@@ -11,6 +11,8 @@
 #include <cstring>
 #include <string>
 
+#include "internal/otx/common/XML.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -25,17 +27,13 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::Cheque"
-
 using namespace irr;
 using namespace io;
 
-//#define OT_METHOD "opentxs::Cheque::"
-
 namespace opentxs
 {
-Cheque::Cheque(const api::Session& core)
-    : ot_super(core)
+Cheque::Cheque(const api::Session& api)
+    : ot_super(api)
     , m_lAmount(0)
     , m_strMemo(String::Factory())
     , m_RECIPIENT_NYM_ID(api_.Factory().NymID())
@@ -48,10 +46,10 @@ Cheque::Cheque(const api::Session& core)
 }
 
 Cheque::Cheque(
-    const api::Session& core,
+    const api::Session& api,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
-    : ot_super(core, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
+    : ot_super(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
     , m_lAmount(0)
     , m_strMemo(String::Factory())
     , m_RECIPIENT_NYM_ID(api_.Factory().NymID())
@@ -190,7 +188,7 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
             m_REMITTER_ACCT_ID->Release();
         }
         {
-            LogVerbose()(OT_METHOD)(__func__)(": Cheque Amount: ")(
+            LogVerbose()(OT_PRETTY_CLASS(__func__))("Cheque Amount: ")(
                 m_lAmount.str())(". Transaction Number: ")(
                 m_lTransactionNum)(" Valid From: ")(
                 str_valid_from)(" Valid To: ")(
@@ -209,9 +207,9 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         }
         nReturnVal = 1;
     } else if (!strcmp("memo", xml->getNodeName())) {
-        if (!Contract::LoadEncodedTextField(xml, m_strMemo)) {
-            LogError()(OT_METHOD)(__func__)(": Error: Memo field without "
-                                            "value.")
+        if (!LoadEncodedTextField(xml, m_strMemo)) {
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error: Memo field without value.")
                 .Flush();
             return (-1);  // error condition
         }

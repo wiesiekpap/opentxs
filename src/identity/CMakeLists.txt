@@ -6,13 +6,14 @@
 add_subdirectory(credential)
 add_subdirectory(wot)
 
-add_library(
-  opentxs-identity OBJECT
-  "Authority.cpp"
-  "Authority.hpp"
-  "Nym.cpp"
-  "Nym.hpp"
-  "Source.cpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "Authority.cpp"
+    "Authority.hpp"
+    "Nym.cpp"
+    "Nym.hpp"
+    "Source.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/Authority.hpp"
@@ -24,16 +25,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/SourceType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/Types.hpp"
 )
-target_link_libraries(
-  opentxs-identity PRIVATE opentxs::messages unofficial-sodium::sodium
-)
+target_link_libraries(opentxs-common PRIVATE unofficial-sodium::sodium)
 target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
-target_include_directories(
-  opentxs-identity SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-identity PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-identity>)
-add_dependencies(opentxs-identity generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

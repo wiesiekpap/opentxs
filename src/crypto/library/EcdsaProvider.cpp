@@ -7,8 +7,6 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "crypto/library/EcdsaProvider.hpp"  // IWYU pragma: associated
 
-// #define OT_METHOD "opentxs::crypto::implementation::EcdsaProvider::"
-
 namespace opentxs::crypto::implementation
 {
 EcdsaProvider::EcdsaProvider(const api::Crypto& crypto)

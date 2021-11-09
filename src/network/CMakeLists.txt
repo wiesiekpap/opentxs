@@ -7,32 +7,27 @@ add_subdirectory(asio)
 add_subdirectory(blockchain)
 add_subdirectory(zeromq)
 
-add_library(
-  opentxs-network OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/network/Factory.hpp"
-  "ServerConnection.cpp"
-  "ServerConnection.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/network/Factory.hpp"
+    "ServerConnection.cpp"
+    "ServerConnection.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/OpenDHT.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/ServerConnection.hpp"
 )
-target_link_libraries(opentxs-network PRIVATE opentxs::messages)
-target_include_directories(
-  opentxs-network SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
 
 if(DHT_EXPORT)
-  target_sources(opentxs-network PRIVATE "OpenDHT.cpp" "OpenDHT.hpp")
-  target_link_libraries(opentxs-network PRIVATE opendht ${GNUTLS_LIBRARIES})
+  target_sources(opentxs-common PRIVATE "OpenDHT.cpp" "OpenDHT.hpp")
+  target_link_libraries(opentxs-common PRIVATE opendht ${GNUTLS_LIBRARIES})
   target_link_libraries(opentxs PUBLIC opendht ${GNUTLS_LIBRARIES})
 else()
-  target_sources(opentxs-network PRIVATE "Null.cpp")
+  target_sources(opentxs-common PRIVATE "Null.cpp")
 endif()
 
-target_sources(opentxs-network PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-network>)
-add_dependencies(opentxs-network generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

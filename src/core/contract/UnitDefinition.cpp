@@ -56,8 +56,6 @@
 #define OT_THOUSANDS_SEP ","
 #define OT_DECIMAL_POINT "."
 
-#define OT_METHOD "opentxs::contract::implementation::Unit::"
-
 inline auto separateThousands(
     std::stringstream& sss,
     const opentxs::Amount& value,
@@ -380,8 +378,8 @@ auto Unit::AddAccountRecord(
     Lock lock(lock_);
 
     if (theAccount.GetInstrumentDefinitionID() != id_) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error: theAccount doesn't have the same asset "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Error: theAccount doesn't have the same asset "
             "type ID as *this does.")
             .Flush();
         return false;
@@ -426,8 +424,8 @@ auto Unit::AddAccountRecord(
     // It exists.
     //
     if (nullptr == pMap) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error: Failed trying to load or create the account records "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Error: Failed trying to load or create the account records "
             "file for instrument definition: ")(strInstrumentDefinitionID)(".")
             .Flush();
         return false;
@@ -457,8 +455,8 @@ auto Unit::AddAccountRecord(
                                                                // never
         // happen.
         {
-            LogError()(OT_METHOD)(__func__)(
-                ": Error: wrong instrument definition found in "
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error: wrong instrument definition found in "
                 "account records "
                 "file. For instrument definition: ")(
                 strInstrumentDefinitionID)(". For account: ")(
@@ -488,8 +486,8 @@ auto Unit::AddAccountRecord(
             strAcctRecordFile->Get(),
             "",
             "")) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed trying to StoreObject, while saving updated "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed trying to StoreObject, while saving updated "
             "account records file for instrument definition: ")(
             strInstrumentDefinitionID)(" to contain account ID: ")(
             strAcctID)(".")
@@ -587,8 +585,8 @@ auto Unit::EraseAccountRecord(
     // It exists.
     //
     if (nullptr == pMap) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error: Failed trying to load or create the account records "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Error: Failed trying to load or create the account records "
             "file for instrument definition: ")(strInstrumentDefinitionID)(".")
             .Flush();
         return false;
@@ -620,8 +618,8 @@ auto Unit::EraseAccountRecord(
             strAcctRecordFile->Get(),
             "",
             "")) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed trying to StoreObject, while saving updated "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed trying to StoreObject, while saving updated "
             "account records file for instrument definition: ")(
             strInstrumentDefinitionID)(" to erase account ID: ")(strAcctID)(".")
             .Flush();
@@ -783,8 +781,8 @@ auto Unit::Serialize(AllocateOutput destination, bool includeNym) const -> bool
 {
     auto serialized = proto::UnitDefinition{};
     if (false == Serialize(serialized, includeNym)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to serialize unit definition.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to serialize unit definition.")
             .Flush();
         return false;
     }
@@ -880,7 +878,7 @@ auto Unit::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to create signature.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create signature.")
             .Flush();
     }
 
@@ -896,7 +894,7 @@ auto Unit::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE, true);
 
     if (1 > signatures_.size()) {
-        LogError()(OT_METHOD)(__func__)(": Missing signature.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing signature.").Flush();
 
         return false;
     }
@@ -971,8 +969,9 @@ auto Unit::VisitAccountRecords(
 
             if (!strInstrumentDefinitionID->Compare(
                     str_instrument_definition_id.c_str())) {
-                LogError()(OT_METHOD)(__func__)(": Error: wrong "
-                                                "instrument definition ID (")(
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Error: wrong "
+                    "instrument definition ID (")(
                     str_instrument_definition_id)(") when expecting: ")(
                     strInstrumentDefinitionID)(".")
                     .Flush();
@@ -982,16 +981,16 @@ auto Unit::VisitAccountRecords(
                 auto account = wallet.Internal().Account(accountID);
 
                 if (false == bool(account)) {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Unable to load account ")(str_acct_id)(".")
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Unable to load account ")(str_acct_id)(".")
                         .Flush();
 
                     continue;
                 }
 
                 if (false == visitor.Trigger(account.get(), reason)) {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Error: Trigger failed for account ")(str_acct_id)
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Error: Trigger failed for account ")(str_acct_id)
                         .Flush();
                 }
             }

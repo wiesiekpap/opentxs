@@ -27,8 +27,6 @@
 
 #define HEADER_SIZE 24
 
-//#define OT_METHOD "opentxs::blockchain::p2p::bitcoin::MessageHeader::"
-
 namespace opentxs::factory
 {
 auto BitcoinP2PHeader(

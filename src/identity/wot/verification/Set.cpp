@@ -21,8 +21,6 @@
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::identity::wot::verification::implementation::Set::"
-
 namespace opentxs
 {
 auto Factory::VerificationSet(
@@ -204,7 +202,7 @@ auto Set::UpgradeGroupVersion(const VersionNumber groupVersion) noexcept -> bool
                 proto::VerificationSetAllowedGroup().at(nymVersion);
 
             if (groupVersion < min) {
-                LogError()(OT_METHOD)(__func__)(": Version ")(
+                LogError()(OT_PRETTY_CLASS(__func__))("Version ")(
                     groupVersion)(" too old")
                     .Flush();
 
@@ -219,7 +217,7 @@ auto Set::UpgradeGroupVersion(const VersionNumber groupVersion) noexcept -> bool
             }
         }
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": No support for version ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("No support for version ")(
             groupVersion)(" groups")
             .Flush();
 

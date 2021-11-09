@@ -23,8 +23,6 @@ extern "C" {
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::crypto::OpenSSL::"
-
 namespace opentxs::factory
 {
 auto OpenSSL() noexcept -> std::unique_ptr<crypto::OpenSSL>
@@ -71,7 +69,8 @@ OpenSSL::DH::DH() noexcept
 auto OpenSSL::BIO::Export(const AllocateOutput allocator) noexcept -> bool
 {
     if (false == bool(allocator)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
+            .Flush();
 
         return false;
     }
@@ -80,7 +79,8 @@ auto OpenSSL::BIO::Export(const AllocateOutput allocator) noexcept -> bool
     auto out = allocator(bytes);
 
     if (false == out.valid(bytes)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to allocate space for output")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to allocate space for output")
             .Flush();
 
         return false;
@@ -89,7 +89,7 @@ auto OpenSSL::BIO::Export(const AllocateOutput allocator) noexcept -> bool
     const auto size{static_cast<int>(out.size())};
 
     if (size != BIO_read(bio_.get(), out, size)) {
-        LogError()(OT_METHOD)(__func__)(": Failed write output").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed write output").Flush();
 
         return false;
     }
@@ -102,7 +102,7 @@ auto OpenSSL::BIO::Import(const ReadView in) noexcept -> bool
     const auto size{static_cast<int>(in.size())};
 
     if (size != BIO_write(bio_.get(), in.data(), size)) {
-        LogError()(OT_METHOD)(__func__)(": Failed read input").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed read input").Flush();
 
         return false;
     }
@@ -120,8 +120,8 @@ auto OpenSSL::DH::init_keys(const ReadView prv, const ReadView pub) noexcept
                 return PEM_read_bio_PrivateKey(bio, nullptr, nullptr, nullptr);
             },
             local_)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed initializing local private key")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed initializing local private key")
             .Flush();
 
         return false;
@@ -134,8 +134,8 @@ auto OpenSSL::DH::init_keys(const ReadView prv, const ReadView pub) noexcept
                 return PEM_read_bio_PUBKEY(bio, nullptr, nullptr, nullptr);
             },
             remote_)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed initializing remote public key")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed initializing remote public key")
             .Flush();
 
         return false;
@@ -144,7 +144,7 @@ auto OpenSSL::DH::init_keys(const ReadView prv, const ReadView pub) noexcept
     dh_.reset(EVP_PKEY_CTX_new(local_.get(), nullptr));
 
     if (false == bool(dh_)) {
-        LogError()(OT_METHOD)(__func__)(": Failed initializing dh context")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed initializing dh context")
             .Flush();
 
         return false;
@@ -158,7 +158,7 @@ auto OpenSSL::MD::init_digest(const crypto::HashType hash) noexcept -> bool
     hash_ = HashTypeToOpenSSLType(hash);
 
     if (nullptr == hash_) {
-        LogVerbose()(OT_METHOD)(__func__)(": Unsupported hash algorithm.")
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Unsupported hash algorithm.")
             .Flush();
 
         return false;
@@ -236,15 +236,15 @@ auto OpenSSL::Digest(
     if (false == md.init_digest(type)) { return false; }
 
     if (1 != EVP_DigestInit_ex(md, md, nullptr)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to initialize digest operation")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to initialize digest operation")
             .Flush();
 
         return false;
     }
 
     if (1 != EVP_DigestUpdate(md, input, inputSize)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to process plaintext")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to process plaintext")
             .Flush();
 
         return false;
@@ -253,7 +253,7 @@ auto OpenSSL::Digest(
     unsigned int bytes{};
 
     if (1 != EVP_DigestFinal_ex(md, output, &bytes)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to write digest").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to write digest").Flush();
 
         return false;
     }
@@ -291,13 +291,14 @@ auto OpenSSL::HMAC(
 
             return true;
         } else {
-            LogError()(OT_METHOD)(__func__)(": Failed to produce a valid HMAC.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to produce a valid HMAC.")
                 .Flush();
 
             return false;
         }
     } else {
-        LogError()(OT_METHOD)(__func__)(": Invalid hash type.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid hash type.").Flush();
 
         return false;
     }
@@ -311,7 +312,9 @@ auto OpenSSL::init_key(
     auto pem = BIO{};
 
     if (false == pem.Import(bytes)) {
-        LogError()(OT_METHOD)(__func__)(": Failed read private key").Flush();
+        LogError()(OT_PRETTY_STATIC(OpenSSL, __func__))(
+            "Failed read private key")
+            .Flush();
 
         return false;
     }
@@ -321,7 +324,8 @@ auto OpenSSL::init_key(
     output.reset(function(pem));
 
     if (false == bool(output)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to instantiate EVP_PKEY")
+        LogError()(OT_PRETTY_STATIC(OpenSSL, __func__))(
+            "Failed to instantiate EVP_PKEY")
             .Flush();
 
         return false;
@@ -345,25 +349,26 @@ auto OpenSSL::PKCS5_PBKDF2_HMAC(
     const auto max = static_cast<std::size_t>(std::numeric_limits<int>::max());
 
     if (inputSize > max) {
-        LogError()(OT_METHOD)(__func__)(": Invalid input size").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid input size").Flush();
 
         return false;
     }
 
     if (saltSize > max) {
-        LogError()(OT_METHOD)(__func__)(": Invalid salt size").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid salt size").Flush();
 
         return false;
     }
 
     if (iterations > max) {
-        LogError()(OT_METHOD)(__func__)(": Invalid iteration count").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid iteration count")
+            .Flush();
 
         return false;
     }
 
     if (bytes > max) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output size").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output size").Flush();
 
         return false;
     }
@@ -371,7 +376,7 @@ auto OpenSSL::PKCS5_PBKDF2_HMAC(
     const auto* algorithm = HashTypeToOpenSSLType(hashType);
 
     if (nullptr == algorithm) {
-        LogError()(OT_METHOD)(__func__)(": Error: invalid hash type: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: invalid hash type: ")(
             HashingProvider::HashTypeToString(hashType))
             .Flush();
 

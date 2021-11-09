@@ -19,8 +19,6 @@
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
 #include "opentxs/protobuf/Ciphertext.pb.h"
 
-// #define OT_METHOD "opentxs::api::crypto::implementation::Symmetric::"
-
 namespace opentxs::factory
 {
 auto Symmetric(const api::Session& api) noexcept

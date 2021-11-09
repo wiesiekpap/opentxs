@@ -231,11 +231,11 @@ private:
 
     auto isPowerOfTen(const std::int64_t& x) -> bool;
 
-    OTOffer(const api::Session& core);  // The constructor contains
-                                        // the 3 variables needed to
-                                        // identify any market.
+    OTOffer(const api::Session& api);  // The constructor contains
+                                       // the 3 variables needed to
+                                       // identify any market.
     OTOffer(
-        const api::Session& core,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
         const identifier::UnitDefinition& CURRENCY_ID,

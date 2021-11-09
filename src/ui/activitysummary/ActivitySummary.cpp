@@ -34,8 +34,6 @@
 #include "opentxs/util/Time.hpp"
 #include "ui/base/List.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::ActivitySummary::"
-
 namespace opentxs::factory
 {
 auto ActivitySummaryModel(
@@ -179,7 +177,8 @@ void ActivitySummary::process_thread(const Message& message) noexcept
 void ActivitySummary::startup() noexcept
 {
     const auto threads = api_.Activity().Threads(primary_id_, false);
-    LogDetail()(OT_METHOD)(__func__)(": Loading ")(threads.size())(" threads.")
+    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(threads.size())(
+        " threads.")
         .Flush();
     for (const auto& [id, alias] : threads) {
         [[maybe_unused]] const auto& notUsed = alias;

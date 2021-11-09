@@ -34,8 +34,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-// #define OT_METHOD opentxs::api::crypto::implementation::Encode::
-
 namespace opentxs::factory
 {
 auto Encode(const api::Crypto& crypto) noexcept

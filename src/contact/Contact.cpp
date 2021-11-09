@@ -54,8 +54,6 @@
 
 #define ID_BYTES 32
 
-#define OT_METHOD "opentxs::Contact::"
-
 using AddressStyle = opentxs::Contact::AddressStyle;
 
 const std::map<AddressStyle, std::string> address_style_map_{
@@ -221,7 +219,7 @@ struct Contact::Imp {
         OT_ASSERT(verify_write_lock(lock));
 
         if (false == bool(item)) {
-            LogError()(OT_METHOD)(__func__)(": Null claim.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Null claim.").Flush();
 
             return false;
         }
@@ -236,7 +234,7 @@ struct Contact::Imp {
 
         if (false == proto::Validate<proto::ContactItem>(
                          proto, VERBOSE, proto::ClaimType::Indexed, version)) {
-            LogError()(OT_METHOD)(__func__)(": Invalid claim.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid claim.").Flush();
 
             return false;
         }
@@ -259,7 +257,7 @@ struct Contact::Imp {
         const bool typeMismatch = (contactType != nymType);
 
         if (haveType && typeMismatch) {
-            LogError()(OT_METHOD)(__func__)(": Wrong nym type.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Wrong nym type.").Flush();
 
             return false;
         }
@@ -343,7 +341,7 @@ struct Contact::Imp {
             nym = api_.Wallet().Nym(nymID);
 
             if (false == bool(nym)) {
-                LogVerbose()(OT_METHOD)(__func__)(": Failed to load nym ")(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("Failed to load nym ")(
                     nymID)(".")
                     .Flush();
             }
@@ -421,13 +419,13 @@ struct Contact::Imp {
     auto verify_write_lock(const Lock& lock) const -> bool
     {
         if (lock.mutex() != &lock_) {
-            LogError()(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect mutex.").Flush();
 
             return false;
         }
 
         if (false == lock.owns_lock()) {
-            LogError()(OT_METHOD)(__func__)(": Lock not owned.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Lock not owned.").Flush();
 
             return false;
         }
@@ -511,14 +509,15 @@ auto Contact::AddBlockchainAddress(
         bytes->empty() || (AddressStyle::Unknown == style) || chains.empty();
 
     if (bad) {
-        LogError()(OT_METHOD)(__func__)(": Failed to decode address").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to decode address")
+            .Flush();
 
         return false;
     }
 
     if (0 == chains.count(type)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Address is not valid for specified chain")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Address is not valid for specified chain")
             .Flush();
 
         return false;
@@ -623,7 +622,7 @@ auto Contact::AddPaymentCode(
         ""));
 
     if (false == imp_->add_claim(claim)) {
-        LogError()(OT_METHOD)(__func__)(": Unable to add claim.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to add claim.").Flush();
 
         return false;
     }
@@ -1060,7 +1059,8 @@ void Contact::Update(const proto::Nym& serialized)
     auto nym = imp_->api_.Wallet().Nym(serialized);
 
     if (false == bool(nym)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid serialized nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid serialized nym.")
+            .Flush();
 
         return;
     }

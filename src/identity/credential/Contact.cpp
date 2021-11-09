@@ -18,6 +18,7 @@
 #include "identity/credential/Base.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/crypto/key/Key.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/Types.hpp"
@@ -34,8 +35,6 @@
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-#define OT_METHOD "opentxs::identity::credential::implementation::Contact::"
 
 namespace opentxs
 {
@@ -238,7 +237,8 @@ auto Contact::serialize(
                 serializedCredential->add_signature();
             *serializedMasterSignature = *masterSignature;
         } else {
-            LogError()(OT_METHOD)(__func__)(": Failed to get master signature.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to get master signature.")
                 .Flush();
         }
     }

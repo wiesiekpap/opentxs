@@ -18,8 +18,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-//#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Getblocktxn::"
-
 namespace opentxs::factory
 {
 // We have a header and a raw payload. Parse it.

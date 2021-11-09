@@ -3,16 +3,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-ui-contact OBJECT
-  "Contact.cpp"
-  "Contact.hpp"
-  "ContactItem.cpp"
-  "ContactItem.hpp"
-  "ContactSection.cpp"
-  "ContactSection.hpp"
-  "ContactSubsection.cpp"
-  "ContactSubsection.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "Contact.cpp"
+    "Contact.hpp"
+    "ContactItem.cpp"
+    "ContactItem.hpp"
+    "ContactSection.cpp"
+    "ContactSection.hpp"
+    "ContactSubsection.cpp"
+    "ContactSubsection.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/Contact.hpp"
@@ -20,13 +21,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactSection.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactSubsection.hpp"
 )
-target_link_libraries(opentxs-ui-contact PRIVATE opentxs::messages)
-target_include_directories(
-  opentxs-ui-contact SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-ui-contact PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-contact>)
-add_dependencies(opentxs-ui-contact generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

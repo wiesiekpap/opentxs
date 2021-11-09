@@ -24,8 +24,6 @@
 #include "opentxs/ui/qt/BlockchainStatistics.hpp"
 #include "opentxs/ui/qt/SeedValidator.hpp"
 
-//#define OT_METHOD "opentxs::api::client::UI"
-
 namespace opentxs::api::client::ui
 {
 ImpQt::ImpQt(

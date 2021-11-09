@@ -14,6 +14,7 @@
 
 #include "internal/otx/AccountList.hpp"
 #include "internal/util/Exclusive.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -25,8 +26,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "server/MainFile.hpp"
 #include "server/Server.hpp"
-
-#define OT_METHOD "opentxs::Transactor::"
 
 namespace opentxs::server
 {
@@ -58,7 +57,7 @@ auto Transactor::issueNextTransactionNumber(
 
     // Next, we save it to file.
     if (!server_.GetMainFile().SaveMainFile()) {
-        LogError()(OT_METHOD)(__func__)(": Error saving main server file.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Error saving main server file.")
             .Flush();
         transactionNumber_--;
         return false;
@@ -85,7 +84,7 @@ auto Transactor::issueNextTransactionNumberToNym(
     // is also recorded in his Nym file.)  That way the server always knows
     // which numbers are valid for each Nym.
     if (!context.IssueNumber(transactionNumber_)) {
-        LogError()(OT_METHOD)(__func__)(
+        LogError()(OT_PRETTY_CLASS(__func__))(
             ": Error adding transaction number to Nym file.")
             .Flush();
         transactionNumber_--;
@@ -114,7 +113,7 @@ auto Transactor::addBasketAccountID(
 
     if (lookupBasketAccountID(BASKET_ID, theBasketAcctID)) {
         {
-            LogConsole()(OT_METHOD)(__func__)(
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
                 ": User attempted to add Basket that already exists.")
                 .Flush();
         }
@@ -241,15 +240,15 @@ auto Transactor::getVoucherAccount(
         const auto strInstrumentDefinitionID =
             String::Factory(INSTRUMENT_DEFINITION_ID);
         {
-            LogConsole()(OT_METHOD)(__func__)(": Successfully created "
-                                              "voucher account ID: ")(
+            LogConsole()(OT_PRETTY_CLASS(__func__))("Successfully created "
+                                                    "voucher account ID: ")(
                 strAcctID)(" Instrument Definition "
                            "ID:"
                            " ")(strInstrumentDefinitionID)(".")
                 .Flush();
         }
         if (!server_.GetMainFile().SaveMainFile()) {
-            LogError()(OT_METHOD)(__func__)(
+            LogError()(OT_PRETTY_CLASS(__func__))(
                 ": Error saving main "
                 "server file containing new account ID!!")
                 .Flush();

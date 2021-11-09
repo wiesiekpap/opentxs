@@ -28,8 +28,6 @@
 #include "ui/activitythread/ActivityThreadItem.hpp"
 #include "ui/base/Widget.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::PaymentItem::"
-
 namespace opentxs::factory
 {
 auto PaymentItem(
@@ -117,7 +115,7 @@ auto PaymentItem::Deposit() const noexcept -> bool
     auto lock = sLock{shared_lock_};
 
     if (false == bool(payment_)) {
-        LogError()(OT_METHOD)(__func__)(": Payment not loaded.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Payment not loaded.").Flush();
 
         return false;
     }
@@ -125,7 +123,8 @@ auto PaymentItem::Deposit() const noexcept -> bool
     auto task = api_.OTX().DepositPayment(nym_id_, payment_);
 
     if (0 == task.first) {
-        LogError()(OT_METHOD)(__func__)(": Failed to queue deposit.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to queue deposit.")
+            .Flush();
 
         return false;
     }

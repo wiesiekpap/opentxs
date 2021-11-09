@@ -48,8 +48,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::crypto::implementation::Envelope::"
-
 namespace opentxs
 {
 using ReturnType = crypto::implementation::Envelope;
@@ -150,7 +148,7 @@ auto Envelope::attach_session_keys(
     const key::Symmetric& masterKey,
     const PasswordPrompt& reason) noexcept -> bool
 {
-    LogVerbose()(OT_METHOD)(__func__)(": Recipient ")(nym.ID())(" has ")(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Recipient ")(nym.ID())(" has ")(
         nym.size())(" master credentials")
         .Flush();
 
@@ -163,8 +161,8 @@ auto Envelope::attach_session_keys(
             dhKey.CalculateTag(authority, type, reason, tag, password);
 
         if (false == haveTag) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to calculate session password")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to calculate session password")
                 .Flush();
 
             return false;
@@ -176,7 +174,7 @@ auto Envelope::attach_session_keys(
         const auto locked = key.ChangePassword(previousPassword, password);
 
         if (false == locked) {
-            LogError()(OT_METHOD)(__func__)(": Failed to lock session key")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to lock session key")
                 .Flush();
 
             return false;
@@ -195,8 +193,8 @@ auto Envelope::calculate_requirements(const Nyms& recipients) noexcept(false)
         const auto& targets = output.emplace_back(nym->EncryptionTargets());
 
         if (targets.second.empty()) {
-            LogError()(OT_METHOD)(__func__)(": Invalid recipient nym ")(
-                nym->ID())
+            LogError()(OT_PRETTY_STATIC(Envelope, __func__))(
+                "Invalid recipient nym ")(nym->ID())
                 .Flush();
 
             throw std::runtime_error("Invalid recipient nym");
@@ -315,7 +313,7 @@ auto Envelope::Open(
     const PasswordPrompt& reason) const noexcept -> bool
 {
     if (false == bool(ciphertext_)) {
-        LogError()(OT_METHOD)(__func__)(": Nothing to decrypt").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Nothing to decrypt").Flush();
 
         return false;
     }
@@ -329,7 +327,7 @@ auto Envelope::Open(
 
         return key.Decrypt(ciphertext, password, plaintext);
     } catch (...) {
-        LogVerbose()(OT_METHOD)(__func__)(": No session keys for this nym")
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("No session keys for this nym")
             .Flush();
 
         return false;
@@ -428,18 +426,19 @@ auto Envelope::seal(
     };
 
     if (ciphertext_) {
-        LogError()(OT_METHOD)(__func__)(": Envelope has already been sealed")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Envelope has already been sealed")
             .Flush();
 
         return false;
     }
 
     if (0 == recipients.size()) {
-        LogVerbose()(OT_METHOD)(__func__)(": No recipients").Flush();
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("No recipients").Flush();
 
         return false;
     } else {
-        LogVerbose()(OT_METHOD)(__func__)(": ")(recipients.size())(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(recipients.size())(
             " recipient(s)")
             .Flush();
     }
@@ -448,13 +447,13 @@ auto Envelope::seal(
     const auto dhkeys = find_solution(recipients, solution);
 
     if (0 == dhkeys.size()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": A recipient requires an unsupported key type")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "A recipient requires an unsupported key type")
             .Flush();
 
         return false;
     } else {
-        LogVerbose()(OT_METHOD)(__func__)(": ")(dhkeys.size())(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(dhkeys.size())(
             " dhkeys will be created")
             .Flush();
     }
@@ -479,7 +478,7 @@ auto Envelope::seal(
                     opentxs::crypto::key::asymmetric::Role::Encrypt);
             }
         } catch (...) {
-            LogError()(OT_METHOD)(__func__)(": Failed to generate DH key")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to generate DH key")
                 .Flush();
 
             return false;
@@ -497,7 +496,7 @@ auto Envelope::seal(
         masterKey->Encrypt(plaintext, password, *ciphertext_, false);
 
     if (false == encrypted) {
-        LogError()(OT_METHOD)(__func__)(": Failed to encrypt plaintext")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to encrypt plaintext")
             .Flush();
 
         return false;

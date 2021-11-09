@@ -58,8 +58,6 @@
 template class std::
     tuple<opentxs::OTIdentifier, opentxs::StorageBox, opentxs::OTIdentifier>;
 
-#define OT_METHOD "opentxs::ui::implementation::ActivityThread::"
-
 namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
@@ -250,7 +248,7 @@ auto ActivityThread::load_contacts(const proto::StorageThread& thread) noexcept
 auto ActivityThread::load_thread(const proto::StorageThread& thread) noexcept
     -> void
 {
-    LogDetail()(OT_METHOD)(__func__)(": Loading ")(thread.item().size())(
+    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(thread.item().size())(
         " items.")
         .Flush();
 
@@ -286,7 +284,7 @@ auto ActivityThread::Pay(
     const auto& unitID = Widget::api_.Storage().AccountContract(sourceAccount);
 
     if (unitID->empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid account: (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid account: (")(
             sourceAccount)(")")
             .Flush();
 
@@ -300,7 +298,7 @@ auto ActivityThread::Pay(
             contract->StringToAmountLocale(value, amount, "", "");
 
         if (false == converted) {
-            LogError()(OT_METHOD)(__func__)(": Error parsing amount (")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Error parsing amount (")(
                 amount)(")")
                 .Flush();
 
@@ -309,7 +307,7 @@ auto ActivityThread::Pay(
 
         return Pay(value, sourceAccount, memo, type);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Missing unit definition (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing unit definition (")(
             unitID)(")")
             .Flush();
 
@@ -326,8 +324,8 @@ auto ActivityThread::Pay(
     wait_for_startup();
 
     if (0 >= amount) {
-        LogError()(OT_METHOD)(__func__)(": Invalid amount: (")(amount.str())(
-            ")")
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid amount: (")(
+            amount.str())(")")
             .Flush();
 
         return false;
@@ -338,8 +336,8 @@ auto ActivityThread::Pay(
             return send_cheque(amount, sourceAccount, memo);
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported payment type: (")(
-                static_cast<int>(type))(")")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unsupported payment type: (")(static_cast<int>(type))(")")
                 .Flush();
 
             return false;
@@ -369,7 +367,7 @@ auto ActivityThread::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -417,7 +415,7 @@ auto ActivityThread::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -638,7 +636,7 @@ auto ActivityThread::process_otx(const Message& in) noexcept -> void
         const auto [status, reply] = future.get();
 
         if (otx::LastReplyStatus::MessageSuccess == status) {
-            LogDebug()(OT_METHOD)(__func__)(": Task ")(
+            LogDebug()(OT_PRETTY_CLASS(__func__))("Task ")(
                 taskID)(" completed successfully")
                 .Flush();
         } else {
@@ -719,8 +717,8 @@ auto ActivityThread::send_cheque(
     if (false == validate_account(sourceAccount)) { return false; }
 
     if (1 < contacts_.size()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Sending to multiple recipient not yet supported.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Sending to multiple recipient not yet supported.")
             .Flush();
 
         return false;
@@ -733,8 +731,8 @@ auto ActivityThread::send_cheque(
             Widget::api_.Storage().AccountContract(sourceAccount));
         contract->FormatAmountLocale(amount, displayAmount, ",", ".");
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to load unit definition contract")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to load unit definition contract")
             .Flush();
 
         return false;
@@ -747,8 +745,8 @@ auto ActivityThread::send_cheque(
     const auto taskID = std::get<0>(otx);
 
     if (0 == taskID) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to queue payment for sending.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to queue payment for sending.")
             .Flush();
 
         return false;
@@ -785,7 +783,7 @@ auto ActivityThread::SendDraft() const noexcept -> bool
         auto lock = rLock{recursive_lock_};
 
         if (draft_.empty()) {
-            LogDetail()(OT_METHOD)(__func__)(": No draft message to send.")
+            LogDetail()(OT_PRETTY_CLASS(__func__))("No draft message to send.")
                 .Flush();
 
             return false;
@@ -798,8 +796,8 @@ auto ActivityThread::SendDraft() const noexcept -> bool
         const auto taskID = std::get<0>(otx);
 
         if (0 == taskID) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to queue message for sending.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to queue message for sending.")
                 .Flush();
 
             return false;
@@ -991,7 +989,7 @@ auto ActivityThread::validate_account(
     const auto owner = Widget::api_.Storage().AccountOwner(sourceAccount);
 
     if (owner->empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid account id: (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid account id: (")(
             sourceAccount)(")")
             .Flush();
 
@@ -999,7 +997,7 @@ auto ActivityThread::validate_account(
     }
 
     if (primary_id_ != owner) {
-        LogError()(OT_METHOD)(__func__)(": Account ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Account ")(
             sourceAccount)(" is not owned by nym ")(primary_id_)
             .Flush();
 

@@ -14,12 +14,11 @@ extern "C" {
 #include <cstdint>
 #include <limits>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/util/Log.hpp"
-
-#define OT_METHOD "opentxs::crypto::implementation::Pbkdf2::"
 
 namespace opentxs::crypto::implementation
 {
@@ -43,25 +42,26 @@ auto Pbkdf2::PKCS5_PBKDF2_HMAC(
         static_cast<std::size_t>(std::numeric_limits<int>::max());
 
     if (inputSize > limit) {
-        LogError()(OT_METHOD)(__func__)(": Input too large").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Input too large").Flush();
 
         return false;
     }
 
     if (saltSize > limit) {
-        LogError()(OT_METHOD)(__func__)(": Salt too large").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Salt too large").Flush();
 
         return false;
     }
 
     if (bytes > limit) {
-        LogError()(OT_METHOD)(__func__)(": Requested output too large").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Requested output too large")
+            .Flush();
 
         return false;
     }
 
     if (iterations > std::numeric_limits<std::uint32_t>::max()) {
-        LogError()(OT_METHOD)(__func__)(": Too many iterations").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Too many iterations").Flush();
 
         return false;
     }
@@ -90,7 +90,7 @@ auto Pbkdf2::PKCS5_PBKDF2_HMAC(
                 static_cast<int>(bytes));
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Error: invalid hash type: ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Error: invalid hash type: ")(
                 HashingProvider::HashTypeToString(hashType))
                 .Flush();
 

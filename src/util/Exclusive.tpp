@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_EXCLUSIVE_TPP
-#define OPENTXS_EXCLUSIVE_TPP
+#pragma once
 
 #include "internal/util/Exclusive.hpp"  // IWYU pragma: associated
 
@@ -139,4 +138,3 @@ Exclusive<C>::~Exclusive()
     Release();
 }
 }  // namespace opentxs
-#endif  // OPENTXS_EXCLUSIVE_TPP

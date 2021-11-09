@@ -15,8 +15,6 @@
 #include "opentxs/Types.hpp"
 #include "ui/qt/DestinationValidator.hpp"
 
-// #define OT_METHOD "opentxs::ui::DestinationValidator::"
-
 namespace opentxs::ui
 {
 auto DestinationValidator::Imp::strip_invalid(

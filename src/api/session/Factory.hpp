@@ -494,7 +494,6 @@ public:
         const proto::AsymmetricKey& serializedPrivkey) const -> OTKeypair final;
     auto Keypair(const proto::AsymmetricKey& serializedPubkey) const
         -> OTKeypair final;
-#if OT_CRYPTO_WITH_BIP32
     auto Keypair(
         const std::string& fingerprint,
         const Bip32Index nym,
@@ -503,7 +502,6 @@ public:
         const EcdsaCurve& curve,
         const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const -> OTKeypair final;
-#endif  // OT_CRYPTO_WITH_BIP32
     auto Ledger(
         const opentxs::Identifier& theAccountID,
         const identifier::Server& theNotaryID) const

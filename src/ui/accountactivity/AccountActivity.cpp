@@ -20,8 +20,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Work.hpp"
 
-// #define OT_METHOD "opentxs::ui::implementation::AccountActivity::"
-
 namespace opentxs::ui::implementation
 {
 AccountActivity::AccountActivity(

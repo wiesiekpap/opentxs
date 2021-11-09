@@ -35,8 +35,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::blockchain::crypto::implementation::Element::"
-
 namespace opentxs::blockchain::crypto::implementation
 {
 Element::Element(
@@ -327,7 +325,7 @@ auto Element::PrivateKey(const PasswordPrompt& reason) const noexcept -> ECKey
         auto key = parent_.Internal().PrivateKey(subchain_, index_, reason);
 
         if (!key) {
-            LogError()(OT_METHOD)(__func__)(": error deriving private key")
+            LogError()(OT_PRETTY_CLASS(__func__))("error deriving private key")
                 .Flush();
 
             return {};
@@ -461,8 +459,8 @@ auto Element::Unreserve() noexcept -> bool
     auto lock = rLock{lock_};
 
     if ((0u < confirmed_.size()) || (0u < confirmed_.size())) {
-        LogVerbose()(OT_METHOD)(__func__)(
-            ": element is already associated with transactions")
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            "element is already associated with transactions")
             .Flush();
 
         return false;

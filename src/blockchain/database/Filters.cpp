@@ -32,8 +32,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
-#define OT_METHOD "opentxs::blockchain::database::Filters::"
-
 namespace opentxs::blockchain::database
 {
 Filters::Filters(
@@ -211,7 +209,7 @@ auto Filters::StoreFilters(
     auto output = common_.StoreFilters(type, headers, filters);
 
     if (false == output) {
-        LogError()(OT_METHOD)(__func__)(": Failed to save filters").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save filters").Flush();
 
         return false;
     }
@@ -228,7 +226,8 @@ auto Filters::StoreFilters(
                  .first;
 
     if (false == output) {
-        LogError()(OT_METHOD)(__func__)(": Failed to set header tip").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to set header tip")
+            .Flush();
 
         return false;
     }
@@ -242,7 +241,8 @@ auto Filters::StoreFilters(
                  .first;
 
     if (false == output) {
-        LogError()(OT_METHOD)(__func__)(": Failed to set filter tip").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to set filter tip")
+            .Flush();
 
         return false;
     }

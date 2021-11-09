@@ -63,8 +63,6 @@ using namespace opentxs;
 #define CHEQUE_AMOUNT_1 2000
 #define CHEQUE_MEMO_1 "memo"
 
-// #define OT_METHOD "::Test_DepositCheques::"
-
 namespace ot = opentxs;
 
 namespace ottest

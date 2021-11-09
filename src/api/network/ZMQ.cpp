@@ -28,18 +28,16 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define CLIENT_SEND_TIMEOUT_SECONDS 20
+#define CLIENT_SEND_TIMEOUT_SECONDS 5
 #if OT_VALGRIND
-#define CLIENT_RECV_TIMEOUT_SECONDS 400
+#define CLIENT_RECV_TIMEOUT_SECONDS 50
 #else
-#define CLIENT_RECV_TIMEOUT_SECONDS 40
+#define CLIENT_RECV_TIMEOUT_SECONDS 5
 #endif
 #define CLIENT_SOCKET_LINGER_SECONDS 0
 #define CLIENT_SEND_TIMEOUT CLIENT_SEND_TIMEOUT_SECONDS
 #define CLIENT_RECV_TIMEOUT CLIENT_RECV_TIMEOUT_SECONDS
 #define KEEP_ALIVE_SECONDS 30
-
-#define OT_METHOD "opentxs::api::ZMQ::"
 
 template class opentxs::Pimpl<opentxs::network::ServerConnection>;
 
@@ -213,13 +211,15 @@ auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
         notUsed);
 
     if (false == set) {
-        LogError()(OT_METHOD)(__func__)(": Unable to set socks proxy.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to set socks proxy.")
+            .Flush();
 
         return false;
     }
 
     if (false == api_.Config().Save()) {
-        LogError()(OT_METHOD)(__func__)(": Unable to set save config.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to set save config.")
+            .Flush();
 
         return false;
     }
@@ -238,7 +238,7 @@ auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
     }
 
     if (false == set) {
-        LogError()(OT_METHOD)(__func__)(": Unable to reset connection.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to reset connection.")
             .Flush();
     }
 
@@ -284,13 +284,13 @@ auto ZMQ::Status(const std::string& server) const -> ConnectionState
 auto ZMQ::verify_lock(const Lock& lock) const -> bool
 {
     if (lock.mutex() != &lock_) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect mutex.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogError()(OT_METHOD)(__func__)(": Lock not owned.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Lock not owned.").Flush();
 
         return false;
     }

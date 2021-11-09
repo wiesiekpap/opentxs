@@ -27,15 +27,20 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
+#include "util/Gatekeeper.hpp"
 
 namespace opentxs
 {
 struct Log::Imp final : public internal::Log {
     struct Logger {
         using Source = std::pair<OTZMQPushSocket, std::stringstream>;
+        using SourceMap = std::map<int, Source>;
 
-        std::atomic<int> verbosity_{-1};
-        std::atomic<bool> running_{false};
+        std::atomic_int verbosity_{-1};
+        std::atomic_int index_{-1};
+        Gatekeeper running_{};
+        std::mutex lock_{};
+        SourceMap map_{};
     };
 
     static Logger logger_;

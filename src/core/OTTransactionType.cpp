@@ -9,6 +9,7 @@
 
 #include <cstdint>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -20,18 +21,16 @@
 #include "opentxs/core/transaction/Helpers.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::OTTransactionType::"
-
 namespace opentxs
 {
 // keeping constructor private in order to force people to use the other
 // constructors and therefore provide the requisite IDs.
-OTTransactionType::OTTransactionType(const api::Session& core)
-    : Contract(core)
-    , m_AcctID(core.Factory().Identifier())
-    , m_NotaryID(core.Factory().ServerID())
-    , m_AcctNotaryID(core.Factory().ServerID())
-    , m_AcctNymID(core.Factory().NymID())
+OTTransactionType::OTTransactionType(const api::Session& api)
+    : Contract(api)
+    , m_AcctID(api.Factory().Identifier())
+    , m_NotaryID(api.Factory().ServerID())
+    , m_AcctNotaryID(api.Factory().ServerID())
+    , m_AcctNymID(api.Factory().NymID())
     , m_lTransactionNum(0)
     , m_lInReferenceToTransaction(0)
     , m_lNumberOfOrigin(0)
@@ -47,15 +46,15 @@ OTTransactionType::OTTransactionType(const api::Session& core)
 }
 
 OTTransactionType::OTTransactionType(
-    const api::Session& core,
+    const api::Session& api,
     const identifier::Nym& theNymID,
     const Identifier& theAccountID,
     const identifier::Server& theNotaryID,
     originType theOriginType)
-    : Contract(core, theAccountID)
-    , m_AcctID(core.Factory().Identifier())
+    : Contract(api, theAccountID)
+    , m_AcctID(api.Factory().Identifier())
     , m_NotaryID(theNotaryID)
-    , m_AcctNotaryID(core.Factory().ServerID())
+    , m_AcctNotaryID(api.Factory().ServerID())
     , m_AcctNymID(theNymID)
     , m_lTransactionNum(0)
     , m_lInReferenceToTransaction(0)
@@ -70,16 +69,16 @@ OTTransactionType::OTTransactionType(
 }
 
 OTTransactionType::OTTransactionType(
-    const api::Session& core,
+    const api::Session& api,
     const identifier::Nym& theNymID,
     const Identifier& theAccountID,
     const identifier::Server& theNotaryID,
     std::int64_t lTransactionNum,
     originType theOriginType)
-    : Contract(core, theAccountID)
-    , m_AcctID(core.Factory().Identifier())
+    : Contract(api, theAccountID)
+    , m_AcctID(api.Factory().Identifier())
     , m_NotaryID(theNotaryID)
-    , m_AcctNotaryID(core.Factory().ServerID())
+    , m_AcctNotaryID(api.Factory().ServerID())
     , m_AcctNymID(theNymID)
     , m_lTransactionNum(lTransactionNum)
     , m_lInReferenceToTransaction(0)
@@ -238,18 +237,19 @@ auto OTTransactionType::VerifyAccount(const identity::Nym& theNym) -> bool
     // Make sure that the supposed AcctID matches the one read from the file.
     //
     if (!VerifyContractID()) {
-        LogError()(OT_METHOD)(__func__)(": Error verifying account ID.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Error verifying account ID.")
             .Flush();
 
         return false;
     } else if (!VerifySignature(theNym)) {
-        LogError()(OT_METHOD)(__func__)(": Error verifying signature.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Error verifying signature.")
+            .Flush();
 
         return false;
     }
 
-    LogTrace()(OT_METHOD)(__func__)(
-        ": We now know that...1) The expected Account ID matches the ID that "
+    LogTrace()(OT_PRETTY_CLASS(__func__))(
+        "We now know that...1) The expected Account ID matches the ID that "
         "was found on the object. 2) The SIGNATURE VERIFIED on the object.")
         .Flush();
 
@@ -272,7 +272,7 @@ auto OTTransactionType::VerifyContractID() const -> bool
         auto str1 = String::Factory(m_ID), str2 = String::Factory(m_AcctID),
              str3 = String::Factory(m_NotaryID),
              str4 = String::Factory(m_AcctNotaryID);
-        LogError()(OT_METHOD)(__func__)(": Identifiers mismatch").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Identifiers mismatch").Flush();
         LogError()("m_AcctID actual: ")(m_AcctID)(" expected: ")(m_ID).Flush();
         LogError()("m_NotaryID actual: ")(m_AcctNotaryID)(" expected: ")(
             m_NotaryID)

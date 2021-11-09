@@ -20,6 +20,7 @@ extern "C" {
 #include <memory>
 
 #include "internal/api/Factory.hpp"
+#include "internal/util/Log.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -30,8 +31,6 @@ extern "C" {
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 
-#define LOG_SINK "inproc://opentxs/logsink/1"
-
 namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
@@ -40,6 +39,7 @@ auto Log(const zmq::Context& zmq, const std::string& endpoint) noexcept
     -> std::unique_ptr<api::internal::Log>
 {
     using ReturnType = api::implementation::Log;
+    internal::Log::Start();
 
     return std::make_unique<ReturnType>(zmq, endpoint);
 }
@@ -54,7 +54,7 @@ Log::Log(const zmq::Context& zmq, const std::string& endpoint)
     , publish_socket_(zmq.PublishSocket())
     , publish_{!endpoint.empty()}
 {
-    const auto started = socket_->Start(LOG_SINK);
+    const auto started = socket_->Start(opentxs::internal::Log::endpoint_);
 
     if (false == started) { abort(); }
 

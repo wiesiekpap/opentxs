@@ -51,7 +51,11 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/library/SymmetricProvider.hpp"
 )
 target_link_libraries(
-  opentxs-crypto-library PRIVATE opentxs::messages unofficial-sodium::sodium
+  opentxs-crypto-library
+  PRIVATE
+    Boost::headers
+    opentxs::messages
+    unofficial-sodium::sodium
 )
 target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
 

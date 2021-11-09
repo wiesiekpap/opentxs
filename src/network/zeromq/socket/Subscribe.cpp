@@ -25,9 +25,6 @@
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Subscribe>;
 
-#define OT_METHOD                                                              \
-    "opentxs::network::zeromq::socket::implementation::Subscribe::"
-
 namespace opentxs::factory
 {
 auto SubscribeSocket(
@@ -76,15 +73,16 @@ void Subscribe::process_incoming(const Lock& lock, Message& message) noexcept
     try {
         callback_.Process(message);
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": Callback exception: ")(e.what())
+        LogError()(OT_PRETTY_CLASS(__func__))("Callback exception: ")(e.what())
             .Flush();
 
         for (const auto& endpoint : endpoints_) {
-            LogError()(OT_METHOD)(__func__)(": connected endpoint: ")(endpoint)
+            LogError()(OT_PRETTY_CLASS(__func__))("connected endpoint: ")(
+                endpoint)
                 .Flush();
         }
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Callback exception").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Callback exception").Flush();
     }
 }
 

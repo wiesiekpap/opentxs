@@ -28,8 +28,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "smhasher/src/MurmurHash3.h"
 
-#define OT_METHOD "opentxs::api::crypto::implementation::Hash::"
-
 namespace opentxs::factory
 {
 using ReturnType = api::crypto::implementation::Hash;
@@ -85,8 +83,8 @@ auto Hash::bitcoin_hash_160(
 
     if (false ==
         digest(opentxs::crypto::HashType::Sha256, input, size, temp.data())) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to calculate intermediate hash.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to calculate intermediate hash.")
             .Flush();
 
         return false;
@@ -104,7 +102,8 @@ auto Hash::Digest(
     auto view = allocate(type, destination);
 
     if (false == view.valid()) {
-        LogError()(OT_METHOD)(__func__)(": Unable to allocate output space.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Unable to allocate output space.")
             .Flush();
 
         return false;
@@ -121,7 +120,8 @@ auto Hash::Digest(
     auto view = allocate(type, destination);
 
     if (false == view.valid()) {
-        LogError()(OT_METHOD)(__func__)(": Unable to allocate output space.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Unable to allocate output space.")
             .Flush();
 
         return false;
@@ -136,7 +136,8 @@ auto Hash::Digest(
     const AllocateOutput destination) const noexcept -> bool
 {
     if (false == bool(destination)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
+            .Flush();
 
         return false;
     }
@@ -147,7 +148,7 @@ auto Hash::Digest(
     auto view = allocate(type, temp->WriteInto());
 
     if (false == view.valid()) {
-        LogError()(OT_METHOD)(__func__)(": Unable to allocate temp space")
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to allocate temp space")
             .Flush();
 
         return false;
@@ -158,8 +159,8 @@ auto Hash::Digest(
         auto output = destination(encoded.size());
 
         if (false == output.valid(encoded.size())) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Unable to allocate encoded output space")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unable to allocate encoded output space")
                 .Flush();
 
             return false;
@@ -169,7 +170,8 @@ auto Hash::Digest(
 
         return true;
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to calculate digest").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate digest")
+            .Flush();
 
         return false;
     }
@@ -219,7 +221,7 @@ auto Hash::digest(
         }
     }
 
-    LogError()(OT_METHOD)(__func__)(": Unsupported hash type.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Unsupported hash type.").Flush();
 
     return false;
 }
@@ -233,7 +235,8 @@ auto Hash::HMAC(
     auto output = allocate(type, digest);
 
     if (false == output.valid()) {
-        LogError()(OT_METHOD)(__func__)(": Unable to allocate output space.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Unable to allocate output space.")
             .Flush();
 
         return false;
@@ -271,7 +274,7 @@ auto Hash::HMAC(
         }
     }
 
-    LogError()(OT_METHOD)(__func__)(": Unsupported hash type.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Unsupported hash type.").Flush();
 
     return false;
 }
@@ -374,8 +377,8 @@ auto Hash::sha_256_double(
 
     if (false ==
         digest(opentxs::crypto::HashType::Sha256, input, size, temp.data())) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to calculate intermediate hash.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to calculate intermediate hash.")
             .Flush();
 
         return false;
@@ -393,8 +396,8 @@ auto Hash::sha_256_double_checksum(
     auto temp = space(Provider::HashSize(opentxs::crypto::HashType::Sha256));
 
     if (false == sha_256_double(input, size, temp.data())) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to calculate intermediate hash.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to calculate intermediate hash.")
             .Flush();
 
         return false;

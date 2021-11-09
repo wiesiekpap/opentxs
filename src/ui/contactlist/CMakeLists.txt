@@ -3,24 +3,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-ui-contactlist OBJECT
-  "ContactList.cpp"
-  "ContactList.hpp"
-  "ContactListItem.cpp"
-  "ContactListItem.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "ContactList.cpp"
+    "ContactList.hpp"
+    "ContactListItem.cpp"
+    "ContactListItem.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactList.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/ContactListItem.hpp"
 )
-target_link_libraries(opentxs-ui-contactlist PRIVATE opentxs::messages)
-target_include_directories(
-  opentxs-ui-contactlist SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-ui-contactlist PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-contactlist>)
-add_dependencies(opentxs-ui-contactlist generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

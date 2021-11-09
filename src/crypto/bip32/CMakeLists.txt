@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 target_sources(
-  opentxs-crypto
+  opentxs-common
   PRIVATE
     "Bip32.cpp"
     "Imp.hpp"
@@ -12,7 +12,7 @@ target_sources(
 )
 
 if(BIP32_EXPORT)
-  target_sources(opentxs-crypto PRIVATE "hd.cpp")
+  target_sources(opentxs-common PRIVATE "hd.cpp")
 else()
-  target_sources(opentxs-crypto PRIVATE "no-hd.cpp")
+  target_sources(opentxs-common PRIVATE "no-hd.cpp")
 endif()

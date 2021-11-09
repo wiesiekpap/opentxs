@@ -35,8 +35,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
-// #define OT_METHOD "opentxs::api::session::implementation::Session::"
-
 namespace
 {
 opentxs::OTCaller* external_password_callback_{nullptr};

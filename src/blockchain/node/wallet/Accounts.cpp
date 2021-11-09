@@ -34,8 +34,6 @@
 #include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::node::wallet::Accounts::"
-
 namespace opentxs::blockchain::node::wallet
 {
 struct Accounts::Imp {

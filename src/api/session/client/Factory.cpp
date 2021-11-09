@@ -24,6 +24,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "internal/core/contract/peer/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -40,10 +41,6 @@
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/verify/BlockchainBlockHeader.hpp"
 #include "opentxs/util/Log.hpp"
-
-#if OT_BLOCKCHAIN
-#define OT_METHOD "opentxs::api::session::client::Factory::"
-#endif  // OT_BLOCKCHAIN
 
 namespace opentxs::factory
 {
@@ -212,7 +209,7 @@ auto Factory::BlockHeader(const proto::BlockchainBlockHeader& serialized) const
         case opentxs::blockchain::Type::Ethereum_frontier:
         case opentxs::blockchain::Type::Ethereum_ropsten:
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported type (")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")
                 .Flush();
 
@@ -246,7 +243,7 @@ auto Factory::BlockHeader(
         case opentxs::blockchain::Type::Ethereum_frontier:
         case opentxs::blockchain::Type::Ethereum_ropsten:
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported type (")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported type (")(
                 static_cast<std::uint32_t>(type))(")")
                 .Flush();
 

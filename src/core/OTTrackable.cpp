@@ -18,8 +18,8 @@
 
 namespace opentxs
 {
-OTTrackable::OTTrackable(const api::Session& core)
-    : Instrument(core)
+OTTrackable::OTTrackable(const api::Session& api)
+    : Instrument(api)
     , m_lTransactionNum(0)
     , m_SENDER_ACCT_ID(api_.Factory().Identifier())
     , m_SENDER_NYM_ID(api_.Factory().NymID())
@@ -28,10 +28,10 @@ OTTrackable::OTTrackable(const api::Session& core)
 }
 
 OTTrackable::OTTrackable(
-    const api::Session& core,
+    const api::Session& api,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID)
-    : Instrument(core, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
+    : Instrument(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
     , m_lTransactionNum(0)
     , m_SENDER_ACCT_ID(api_.Factory().Identifier())
     , m_SENDER_NYM_ID(api_.Factory().NymID())
@@ -40,12 +40,12 @@ OTTrackable::OTTrackable(
 }
 
 OTTrackable::OTTrackable(
-    const api::Session& core,
+    const api::Session& api,
     const identifier::Server& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const Identifier& ACCT_ID,
     const identifier::Nym& NYM_ID)
-    : Instrument(core, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
+    : Instrument(api, NOTARY_ID, INSTRUMENT_DEFINITION_ID)
     , m_lTransactionNum(0)
     , m_SENDER_ACCT_ID(api_.Factory().Identifier())
     , m_SENDER_NYM_ID(api_.Factory().NymID())

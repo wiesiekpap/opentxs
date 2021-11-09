@@ -16,7 +16,6 @@
 
 template class opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>;
 
-//#define OT_METHOD
 //"opentxs::network::zeromq::implementation::PairEventCallback::"
 
 namespace opentxs::network::zeromq

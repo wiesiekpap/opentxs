@@ -6,32 +6,29 @@
 add_subdirectory(drivers)
 add_subdirectory(tree)
 
-add_library(
-  opentxs-storage OBJECT
-  "Config.cpp"
-  "Config.hpp"
-  "Plugin.cpp"
-  "Plugin.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "Config.cpp"
+    "Config.hpp"
+    "Plugin.cpp"
+    "Plugin.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/storage/Driver.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/storage/Plugin.hpp"
 )
-target_link_libraries(opentxs-storage PRIVATE opentxs::messages)
-target_sources(opentxs-storage PRIVATE ${cxx-install-headers})
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(LMDB_EXPORT)
-  target_sources(opentxs-storage PRIVATE "config/DefaultLMDB.cpp")
+  target_sources(opentxs-common PRIVATE "config/DefaultLMDB.cpp")
 elseif(SQLITE_EXPORT)
-  target_sources(opentxs-storage PRIVATE "config/DefaultSqlite.cpp")
+  target_sources(opentxs-common PRIVATE "config/DefaultSqlite.cpp")
 elseif(FS_EXPORT)
-  target_sources(opentxs-storage PRIVATE "config/DefaultFS.cpp")
+  target_sources(opentxs-common PRIVATE "config/DefaultFS.cpp")
 else()
-  target_sources(opentxs-storage PRIVATE "config/DefaultNone.cpp")
+  target_sources(opentxs-common PRIVATE "config/DefaultNone.cpp")
 endif()
-
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-storage>)
-add_dependencies(opentxs-storage generated_code)
 
 if(OPENTXS_STANDALONE)
   install(

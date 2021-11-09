@@ -34,8 +34,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::ContactData::"
-
 namespace opentxs
 {
 static auto check_version(
@@ -89,8 +87,9 @@ struct ContactData::Imp {
         , sections_(sections)
     {
         if (0 == version) {
-            LogError()(OT_METHOD)(__func__)(": Warning: malformed version. "
-                                            "Setting to ")(targetVersion)(".")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Warning: malformed version. "
+                "Setting to ")(targetVersion)(".")
                 .Flush();
         }
     }
@@ -367,8 +366,8 @@ auto ContactData::AddPaymentCode(
         translate(section), translate(UnitToClaim(currency)), imp_->version_);
 
     if (0 == version) {
-        LogError()(OT_METHOD)(__func__)(
-            ": This currency is not allowed to set a procedure")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "This currency is not allowed to set a procedure")
             .Flush();
 
         return *this;
@@ -1026,7 +1025,7 @@ auto ContactData::SetScope(
 
         return ContactData(imp_->api_, imp_->nym_, version, version, mapCopy);
     } else {
-        LogError()(OT_METHOD)(__func__)(": Scope already set.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Scope already set.").Flush();
 
         return *this;
     }

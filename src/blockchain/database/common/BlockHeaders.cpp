@@ -24,8 +24,6 @@
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 
-#define OT_METHOD "opentxs::blockchain::database::common::BlockHeader::"
-
 namespace opentxs::blockchain::database::common
 {
 template <typename Input>
@@ -79,7 +77,7 @@ auto BlockHeader::Store(
 
     if (tx.Finalize(true)) { return true; }
 
-    LogError()(OT_METHOD)(__func__)(": Database update error").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Database update error").Flush();
 
     return false;
 }
@@ -100,7 +98,7 @@ auto BlockHeader::Store(const UpdatedHeader& headers) const noexcept -> bool
 
     if (tx.Finalize(true)) { return true; }
 
-    LogError()(OT_METHOD)(__func__)(": Database update error").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Database update error").Flush();
 
     return false;
 }
@@ -142,8 +140,8 @@ auto BlockHeader::store(
                 lmdb_.Store(table_, hash.Bytes(), tsv(index), tx);
 
             if (false == result.first) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to update index for block header ")(hash.asHex())
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to update index for block header ")(hash.asHex())
                     .Flush();
 
                 return false;
@@ -160,7 +158,7 @@ auto BlockHeader::store(
 
         return proto::write(proto, preallocated(bytes, view.data()));
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }

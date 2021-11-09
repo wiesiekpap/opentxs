@@ -461,7 +461,6 @@ public:
         const proto::AsymmetricKey& serializedPrivkey) const -> OTKeypair = 0;
     OPENTXS_NO_EXPORT virtual auto Keypair(
         const proto::AsymmetricKey& serializedPubkey) const -> OTKeypair = 0;
-#if OT_CRYPTO_WITH_BIP32
     virtual auto Keypair(
         const std::string& fingerprint,
         const Bip32Index nym,
@@ -470,7 +469,6 @@ public:
         const EcdsaCurve& curve,
         const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const -> OTKeypair = 0;
-#endif  // OT_CRYPTO_WITH_BIP32
     virtual auto Ledger(
         const opentxs::Identifier& theAccountID,
         const identifier::Server& theNotaryID) const

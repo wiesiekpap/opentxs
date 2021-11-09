@@ -129,9 +129,9 @@ private:  // Private prevents erroneous use by other classes.
 
     using ot_super = OTTrackable;
 
-    Cheque(const api::Session& core);
+    Cheque(const api::Session& api);
     Cheque(
-        const api::Session& core,
+        const api::Session& api,
         const identifier::Server& NOTARY_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID);
 

@@ -25,8 +25,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::crypto::key::implementation::EllipticCurve::"
-
 namespace opentxs::crypto::key
 {
 const VersionNumber EllipticCurve::DefaultVersion{2};
@@ -165,8 +163,8 @@ EllipticCurve::EllipticCurve(
 
                   return pubkey;
               } else {
-                  LogError()(OT_METHOD)(__func__)(
-                      ": Failed to calculate public key")
+                  LogError()(OT_PRETTY_CLASS(__func__))(
+                      "Failed to calculate public key")
                       .Flush();
 
                   return rhs.api_.Factory().Data();
@@ -232,7 +230,7 @@ auto EllipticCurve::IncrementPrivate(
 
         return replace_secret_key(std::move(newKey));
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return {};
     }
@@ -251,7 +249,7 @@ auto EllipticCurve::IncrementPublic(const Secret& rhs) const noexcept
 
         return replace_public_key(reader(newKey));
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return {};
     }
@@ -285,7 +283,7 @@ auto EllipticCurve::SignDER(
     auto lock = Lock{lock_};
 
     if (false == has_private(lock)) {
-        LogError()(OT_METHOD)(__func__)(": Missing private key").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing private key").Flush();
 
         return false;
     }
@@ -294,7 +292,8 @@ auto EllipticCurve::SignDER(
         ecdsa_.SignDER(preimage, private_key(lock, reason), hash, output);
 
     if (false == success) {
-        LogError()(OT_METHOD)(__func__)(": Failed to sign preimage").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign preimage")
+            .Flush();
     }
 
     return success;

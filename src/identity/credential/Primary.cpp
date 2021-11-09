@@ -41,8 +41,6 @@
 #include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
-#define OT_METHOD "opentxs::identity::credential::implementation::Primary::"
-
 namespace opentxs
 {
 using ReturnType = identity::credential::implementation::Primary;
@@ -160,7 +158,7 @@ auto Primary::Path(proto::HDPath& output) const -> bool
 
         return found;
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": No private key.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("No private key.").Flush();
 
         return false;
     }
@@ -272,7 +270,8 @@ auto Primary::Verify(
             opentxs::translate(crypto::key::asymmetric::Mode::Public),
             opentxs::translate(role),
             false)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid credential syntax.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid credential syntax.")
+            .Flush();
 
         return false;
     }
@@ -280,8 +279,8 @@ auto Primary::Verify(
     bool sameMaster = (id_ == masterID);
 
     if (!sameMaster) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Credential does not designate this credential as its master.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Credential does not designate this credential as its master.")
             .Flush();
 
         return false;
@@ -315,7 +314,7 @@ auto Primary::verify_against_source(const Lock& lock) const -> bool
     }
 
     if (false == bool(pSerialized)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize credentials")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize credentials")
             .Flush();
 
         return false;
@@ -325,8 +324,8 @@ auto Primary::verify_against_source(const Lock& lock) const -> bool
     const auto pSig = hasSourceSignature ? SourceSignature() : SelfSignature();
 
     if (false == bool(pSig)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Master credential not signed by its source.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Master credential not signed by its source.")
             .Flush();
 
         return false;
@@ -344,8 +343,8 @@ auto Primary::verify_internally(const Lock& lock) const -> bool
 
     // Check that the source validates this credential
     if (!verify_against_source(lock)) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Failed verifying master credential against "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "Failed verifying master credential against "
             "nym id source.")
             .Flush();
 

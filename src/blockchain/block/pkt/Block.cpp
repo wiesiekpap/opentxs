@@ -19,8 +19,6 @@
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::blockchain::block::pkt::Block::"
-
 namespace opentxs::factory
 {
 auto parse_pkt_block(
@@ -150,7 +148,8 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
 {
     for (const auto& [type, proof] : proofs_) {
         if (remaining < sizeof(type)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to serialize proof type")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to serialize proof type")
                 .Flush();
 
             return false;
@@ -166,7 +165,8 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
         const auto cs = network::blockchain::bitcoin::CompactSize{proof.size()};
 
         if (false == cs.Encode(preallocated(remaining, it))) {
-            LogError()(OT_METHOD)(__func__)(": Failed to serialize proof size")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to serialize proof size")
                 .Flush();
 
             return false;
@@ -179,7 +179,7 @@ auto Block::serialize_post_header(ByteIterator& it, std::size_t& remaining)
         }
 
         if (remaining < cs.Value()) {
-            LogError()(OT_METHOD)(__func__)(": Failed to serialize proof")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize proof")
                 .Flush();
 
             return false;

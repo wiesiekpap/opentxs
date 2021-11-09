@@ -19,6 +19,7 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/XML.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -33,8 +34,6 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-#define OT_METHOD "opentxs::blind::mint::implementation::Mint::"
 
 namespace opentxs::blind::mint::implementation
 {
@@ -224,7 +223,7 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
             szFolder2name,
             szFilename,
             "")) {
-        LogDetail()(OT_METHOD)(__func__)(": File does not exist: ")(
+        LogDetail()(OT_PRETTY_CLASS(__func__))("File does not exist: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
             szFolder2name)(api::Legacy::PathSeparator())(szFilename)
             .Flush();
@@ -241,7 +240,7 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
                // DATA STORE.
 
     if (strFileContents.length() < 2) {
-        LogError()(OT_METHOD)(__func__)(": Error reading file: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Error reading file: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
             szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
@@ -297,8 +296,8 @@ auto Mint::SaveMint(const char* szAppend) -> bool
     auto strRawFile = String::Factory();
 
     if (!SaveContractRaw(strRawFile)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error saving Mintfile (to string): ")(
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Error saving Mintfile (to string): ")(
             szFolder1name)(api::Legacy::PathSeparator())(
             szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
@@ -310,8 +309,8 @@ auto Mint::SaveMint(const char* szAppend) -> bool
 
     if (false ==
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error saving mint (Failed writing armored "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Error saving mint (Failed writing armored "
             "string): ")(szFolder1name)(api::Legacy::PathSeparator())(
             szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
@@ -328,13 +327,13 @@ auto Mint::SaveMint(const char* szAppend) -> bool
         "");  // <=== SAVING TO LOCAL DATA STORE.
     if (!bSaved) {
         if (nullptr != szAppend)
-            LogError()(OT_METHOD)(__func__)(": Error writing to file: ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Error writing to file: ")(
                 szFolder1name)(api::Legacy::PathSeparator())(
                 szFolder2name)(api::Legacy::PathSeparator())(
                 szFilename)(szAppend)(".")
                 .Flush();
         else
-            LogError()(OT_METHOD)(__func__)(": Error writing to file: ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Error writing to file: ")(
                 szFolder1name)(api::Legacy::PathSeparator())(
                 szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
                 .Flush();
@@ -352,21 +351,23 @@ auto Mint::VerifyMint(const identity::Nym& theOperator) -> bool
     // Make sure that the supposed Contract ID that was set is actually
     // a hash of the contract file, signatures and all.
     if (!VerifyContractID()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error comparing Mint ID to Asset Contract ID.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Error comparing Mint ID to Asset Contract ID.")
             .Flush();
         return false;
     } else if (!VerifySignature(theOperator)) {
-        LogError()(OT_METHOD)(__func__)(": Error verifying signature on mint.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Error verifying signature on mint.")
             .Flush();
         return false;
     }
 
-    LogDebug()(OT_METHOD)(__func__)(": We now know that...").Flush();
-    LogDebug()(OT_METHOD)(__func__)(": 1. The Asset Contract ID matches the "
-                                    "Mint ID loaded from the Mint file.")
+    LogDebug()(OT_PRETTY_CLASS(__func__))("We now know that...").Flush();
+    LogDebug()(OT_PRETTY_CLASS(__func__))(
+        "1. The Asset Contract ID matches the "
+        "Mint ID loaded from the Mint file.")
         .Flush();
-    LogDebug()(OT_METHOD)(__func__)(": 2. The SIGNATURE VERIFIED.").Flush();
+    LogDebug()(OT_PRETTY_CLASS(__func__))("2. The SIGNATURE VERIFIED.").Flush();
     return true;
 }
 
@@ -384,16 +385,16 @@ auto Mint::VerifyContractID() const -> bool
         auto str1 = String::Factory(m_ID),
              str2 = String::Factory(m_InstrumentDefinitionID);
 
-        LogError()(OT_METHOD)(__func__)(
-            ": Mint ID does NOT match Instrument Definition. ")(str1)(" | ")(
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Mint ID does NOT match Instrument Definition. ")(str1)(" | ")(
             str2)(".")
             .Flush();
         //                "\nRAW FILE:\n--->" << m_strRawFile << "<---"
         return false;
     } else {
         auto str1 = String::Factory(m_ID);
-        LogVerbose()(OT_METHOD)(__func__)(
-            ": Mint ID *SUCCESSFUL* match to Asset Contract ID: ")(str1)
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            " Mint ID *SUCCESSFUL* match to Asset Contract ID: ")(str1)
             .Flush();
         return true;
     }
@@ -409,8 +410,8 @@ auto Mint::GetPrivate(Armored& theArmor, const Amount& lDenomination) const
 
         return true;
     } catch (...) {
-        LogTrace()(OT_METHOD)(__func__)(": Denomination ")(lDenomination.str())(
-            " not found")
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Denomination ")(
+            lDenomination.str())(" not found")
             .Flush();
 
         return false;
@@ -427,8 +428,8 @@ auto Mint::GetPublic(Armored& theArmor, const Amount& lDenomination) const
 
         return true;
     } catch (...) {
-        LogTrace()(OT_METHOD)(__func__)(": Denomination ")(lDenomination.str())(
-            " not found")
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Denomination ")(
+            lDenomination.str())(" not found")
             .Flush();
 
         return false;
@@ -566,9 +567,9 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_InstrumentDefinitionID->SetString(strInstrumentDefinitionID);
         m_CashAccountID->SetString(strCashAcctID);
 
-        LogDetail()(OT_METHOD)(__func__)
+        LogDetail()(OT_PRETTY_CLASS(__func__))
             //    "\n===> Loading XML for mint into memory structures..."
-            (": Mint version: ")(m_strVersion)(" Notary ID: ")(
+            ("Mint version: ")(m_strVersion)(" Notary ID: ")(
                 strNotaryID)(" Instrument Definition ID: ")(
                 strInstrumentDefinitionID)(" Cash Acct ID: ")(
                 strCashAcctID)((m_CashAccountID->empty()) ? "FAILURE" : "SUCCESS")(
@@ -583,15 +584,16 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         auto lDenomination = Amount(xml->getAttributeValue("denomination"));
         auto pArmor = Armored::Factory();
 
-        if (!Contract::LoadEncodedTextField(xml, pArmor) || !pArmor->Exists()) {
-            LogError()(OT_METHOD)(__func__)(": Error: mintPrivateInfo field "
-                                            "without value.")
+        if (!LoadEncodedTextField(xml, pArmor) || !pArmor->Exists()) {
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error: mintPrivateInfo field "
+                "without value.")
                 .Flush();
 
             return (-1);  // error condition
         } else {
-            LogTrace()(OT_METHOD)(__func__)(
-                ": Loading private key for denomination ")(lDenomination.str())
+            LogTrace()(OT_PRETTY_CLASS(__func__))(
+                " Loading private key for denomination ")(lDenomination.str())
                 .Flush();
             m_mapPrivate.emplace(lDenomination, std::move(pArmor));
         }
@@ -602,15 +604,15 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         auto pArmor = Armored::Factory();
 
-        if (!Contract::LoadEncodedTextField(xml, pArmor) || !pArmor->Exists()) {
-            LogError()(OT_METHOD)(__func__)(": Error: mintPublicInfo field "
-                                            "without value.")
+        if (!LoadEncodedTextField(xml, pArmor) || !pArmor->Exists()) {
+            LogError()(OT_PRETTY_CLASS(__func__))("Error: mintPublicInfo field "
+                                                  "without value.")
                 .Flush();
 
             return (-1);  // error condition
         } else {
-            LogTrace()(OT_METHOD)(__func__)(
-                ": Loading public key for denomination ")(lDenomination.str())
+            LogTrace()(OT_PRETTY_CLASS(__func__))(
+                " Loading public key for denomination ")(lDenomination.str())
                 .Flush();
             m_mapPublic.emplace(lDenomination, std::move(pArmor));
             // Whether client or server, both sides have public. Each public
@@ -699,12 +701,12 @@ void Mint::GenerateNewMint(
 
     if (account) {
         account.get().GetIdentifier(m_CashAccountID);
-        LogDetail()(OT_METHOD)(__func__)(
-            ": Successfully created cash reserve account for new mint.")
+        LogDetail()(OT_PRETTY_CLASS(__func__))(
+            " Successfully created cash reserve account for new mint.")
             .Flush();
     } else {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": Error creating cash reserve account for new mint.")
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            " Error creating cash reserve account for new mint.")
             .Flush();
     }
 

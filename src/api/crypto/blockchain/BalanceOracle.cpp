@@ -40,8 +40,6 @@
 #include "opentxs/util/WorkType.hpp"
 #include "util/ScopeGuard.hpp"
 
-// #define OT_METHOD "opentxs::api::crypto::blockchain::BalanceOracle::"
-
 namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::api::crypto::blockchain

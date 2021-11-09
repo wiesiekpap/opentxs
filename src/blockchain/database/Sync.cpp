@@ -24,8 +24,6 @@
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
 
-#define OT_METHOD "opentxs::blockchain::database::Sync::"
-
 namespace opentxs::blockchain::database
 {
 template <typename Input>
@@ -60,13 +58,14 @@ Sync::Sync(
         OT_ASSERT(saved);
     }
 
-    LogVerbose()(OT_METHOD)(__func__)(": Sync tip: ")(tip.first).Flush();
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Sync tip: ")(tip.first).Flush();
 
     if (const auto ctip = common_.SyncTip(chain_); tip.first == ctip) {
-        LogVerbose()(OT_METHOD)(__func__)(": Database is consistent").Flush();
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Database is consistent")
+            .Flush();
     } else {
-        LogVerbose()(OT_METHOD)(__func__)(
-            ": Database inconsistency detected. Storage tip height: ")(ctip)
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            "Database inconsistency detected. Storage tip height: ")(ctip)
             .Flush();
     }
 }
@@ -96,7 +95,8 @@ auto Sync::Store(const block::Position& tip, const Items& items) const noexcept
     -> bool
 {
     if (false == common_.StoreSync(chain_, items)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to store sync data").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to store sync data")
+            .Flush();
 
         return false;
     }

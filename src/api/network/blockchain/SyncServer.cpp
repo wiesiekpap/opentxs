@@ -43,8 +43,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD "opentxs::api::network::blockchain::SyncServer::Imp::"
-
 namespace opentxs::api::network::blockchain
 {
 struct SyncServer::Imp {
@@ -95,7 +93,7 @@ struct SyncServer::Imp {
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogError()(OT_METHOD)(__func__)(": ")(::zmq_strerror(error))
+                LogError()(OT_PRETTY_CLASS(__func__))(::zmq_strerror(error))
                     .Flush();
 
                 continue;
@@ -189,8 +187,8 @@ private:
                 case bcsync::MessageType::sync_request: {
                 } break;
                 default: {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Unsupported message type ")(opentxs::print(type))
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Unsupported message type ")(opentxs::print(type))
                         .Flush();
 
                     return;
@@ -224,7 +222,7 @@ private:
                 }
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
         }
     }
     auto process_internal(const Lock& lock, void* socket) noexcept -> void
@@ -237,11 +235,12 @@ private:
         if ((0u == hSize) && (0u == bSize)) { return; }
 
         if (0u < hSize) {
-            LogTrace()(OT_METHOD)(__func__)(": transmitting sync reply")
+            LogTrace()(OT_PRETTY_CLASS(__func__))("transmitting sync reply")
                 .Flush();
             OTSocket::send_message(lock, sync_.get(), incoming);
         } else {
-            LogTrace()(OT_METHOD)(__func__)(": broadcasting push notification")
+            LogTrace()(OT_PRETTY_CLASS(__func__))(
+                "broadcasting push notification")
                 .Flush();
             OTSocket::send_message(lock, update_.get(), incoming);
         }
@@ -290,7 +289,7 @@ auto SyncServer::Start(
     const std::string& publicUpdate) noexcept -> bool
 {
     if (sync.empty() || update.empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid endpoint").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid endpoint").Flush();
 
         return false;
     }
@@ -319,8 +318,8 @@ auto SyncServer::Start(
                 publicSync)
                 .Flush();
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": failed to set sync socket identity")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "failed to set sync socket identity")
                 .Flush();
 
             return false;
@@ -330,8 +329,8 @@ auto SyncServer::Start(
             LogConsole()("Blockchain sync server listener bound to ")(sync)
                 .Flush();
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": failed to bind sync endpoint to ")(sync)
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "failed to bind sync endpoint to ")(sync)
                 .Flush();
 
             return false;
@@ -341,8 +340,8 @@ auto SyncServer::Start(
             LogConsole()("Blockchain sync server publisher bound to ")(update)
                 .Flush();
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": failed to bind update endpoint to ")(update)
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "failed to bind update endpoint to ")(update)
                 .Flush();
 
             return false;

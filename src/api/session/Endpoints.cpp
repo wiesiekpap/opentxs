@@ -64,8 +64,6 @@
 #define WIDGET_UPDATE_ENDPOINT "ui/widgetupdate"
 #define WORKFLOW_ACCOUNT_UPDATE_ENDPOINT "ui/workflowupdate/account"
 
-//#define OT_METHOD "opentxs::api::session::implementation::Endpoints::"
-
 namespace opentxs::factory
 {
 auto EndpointsAPI(

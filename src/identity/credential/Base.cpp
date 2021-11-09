@@ -40,8 +40,6 @@
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::identity::credential::implementation::Base::"
-
 namespace opentxs::identity::credential::implementation
 {
 Base::Base(
@@ -249,8 +247,8 @@ auto Base::Save() const -> bool
     std::shared_ptr<SerializedType> serializedProto;
 
     if (!isValid(lock, serializedProto)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Unable to save serialized credential. Type (")(value(role_))(
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Unable to save serialized credential. Type (")(value(role_))(
             "), version ")(version_)
             .Flush();
 
@@ -261,7 +259,8 @@ auto Base::Save() const -> bool
         api_.Wallet().Internal().SaveCredential(*serializedProto);
 
     if (!bSaved) {
-        LogError()(OT_METHOD)(__func__)(": Error saving credential.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Error saving credential.")
+            .Flush();
 
         return false;
     }
@@ -310,8 +309,8 @@ auto Base::serialize(
         if (crypto::key::asymmetric::Mode::Private == mode_) {
             serializedCredential->set_mode(translate(mode_));
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": Can't serialize a public credential as a private "
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Can't serialize a public credential as a private "
                 "credential.")
                 .Flush();
         }
@@ -426,8 +425,8 @@ auto Base::Verify(
     const Identifier& masterID,
     const proto::Signature& masterSig) const -> bool
 {
-    LogError()(OT_METHOD)(__func__)(
-        ": Non-key credentials are not able to verify signatures")
+    LogError()(OT_PRETTY_CLASS(__func__))(
+        "Non-key credentials are not able to verify signatures")
         .Flush();
 
     return false;
@@ -438,8 +437,8 @@ auto Base::Verify(
 auto Base::verify_internally(const Lock& lock) const -> bool
 {
     if (!CheckID(lock)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Purported ID for this credential does not match its actual "
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Purported ID for this credential does not match its actual "
             "contents.")
             .Flush();
 
@@ -455,8 +454,8 @@ auto Base::verify_internally(const Lock& lock) const -> bool
     }
 
     if (!GoodMasterSignature) {
-        LogError()(OT_METHOD)(__func__)(
-            ": This credential hasn't been signed by its master credential.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "This credential hasn't been signed by its master credential.")
             .Flush();
 
         return false;
@@ -471,7 +470,8 @@ auto Base::verify_master_signature(const Lock& lock) const -> bool
     auto masterSig = MasterSignature();
 
     if (!masterSig) {
-        LogError()(OT_METHOD)(__func__)(": Missing master signature.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing master signature.")
+            .Flush();
 
         return false;
     }

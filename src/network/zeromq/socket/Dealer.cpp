@@ -24,8 +24,6 @@
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Dealer>;
 
-#define OT_METHOD "opentxs::network::zeromq::socket::implementation::Dealer::"
-
 namespace opentxs::factory
 {
 auto DealerSocket(
@@ -68,11 +66,11 @@ void Dealer::process_incoming(
 {
     OT_ASSERT(verify_lock(lock))
 
-    LogTrace()(OT_METHOD)(__func__)(
-        ": Incoming messaged received. Triggering callback.")
+    LogTrace()(OT_PRETTY_CLASS(__func__))(
+        "Incoming messaged received. Triggering callback.")
         .Flush();
     callback_.Process(message);
-    LogTrace()(OT_METHOD)(__func__)(": Done.").Flush();
+    LogTrace()(OT_PRETTY_CLASS(__func__))("Done.").Flush();
 }
 
 Dealer::~Dealer() SHUTDOWN

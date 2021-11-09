@@ -20,7 +20,6 @@
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Publish>;
 
-//#define OT_METHOD
 //"opentxs::network::zeromq::socket::implementation::Publish::"
 
 namespace opentxs::factory

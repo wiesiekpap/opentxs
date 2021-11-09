@@ -22,8 +22,6 @@
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 
-#define OT_METHOD "opentxs::blockchain::node::wallet::Job::"
-
 namespace opentxs::blockchain::node::wallet
 {
 Job::Job(const ThreadPool pool, SubchainStateData& parent) noexcept
@@ -89,11 +87,11 @@ auto Job::queue_work(
         });
 
     if (queued) {
-        LogDebug()(OT_METHOD)(__func__)(": ")(parent_.name_)(" ")(
+        LogDebug()(OT_PRETTY_CLASS(__func__))(parent_.name_)(" ")(
             log)(" job queued")
             .Flush();
     } else {
-        LogDebug()(OT_METHOD)(__func__)(": ")(parent_.name_)(
+        LogDebug()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
             " failed to queue ")(log)(" job")
             .Flush();
         --parent_.job_counter_;
@@ -116,7 +114,7 @@ auto Job::wait(Lock& lock) const noexcept -> void
 
         const auto duration = std::chrono::duration_cast<std::chrono::seconds>(
             Clock::now() - start);
-        LogError()(OT_METHOD)(__func__)(": ")(parent_.name_)(" waiting on ")(
+        LogError()(OT_PRETTY_CLASS(__func__))(parent_.name_)(" waiting on ")(
             type())(" job for ")(duration.count())(" seconds")
             .Flush();
     }

@@ -40,8 +40,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::UnitList::"
-
 namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
@@ -124,7 +122,7 @@ auto UnitList::process_blockchain_balance(const Message& message) noexcept
     try {
         process_unit(BlockchainToUnit(chainFrame.as<blockchain::Type>()));
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Invalid chain").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid chain").Flush();
 
         return;
     }
@@ -152,7 +150,7 @@ auto UnitList::setup_listeners(const ListenerDefinitions& definitions) noexcept
 auto UnitList::startup() noexcept -> void
 {
     const auto accounts = api_.Storage().AccountsByOwner(primary_id_);
-    LogDetail()(OT_METHOD)(__func__)(": Loading ")(accounts.size())(
+    LogDetail()(OT_PRETTY_CLASS(__func__))("Loading ")(accounts.size())(
         " accounts.")
         .Flush();
 

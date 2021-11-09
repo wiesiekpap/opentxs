@@ -48,8 +48,6 @@ extern "C" {
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::api::Crypto::"
-
 template class opentxs::Pimpl<opentxs::crypto::key::Symmetric>;
 
 namespace opentxs::factory
@@ -201,8 +199,8 @@ auto Crypto::hasSodium() const noexcept -> bool
 
 auto Crypto::Init() noexcept -> void
 {
-    LogDetail()(OT_METHOD)(__func__)(
-        ": Setting up rlimits, and crypto libraries...")
+    LogDetail()(OT_PRETTY_CLASS(__func__))(
+        "Setting up rlimits, and crypto libraries...")
         .Flush();
 
 // Here is a security measure intended to make it more difficult to

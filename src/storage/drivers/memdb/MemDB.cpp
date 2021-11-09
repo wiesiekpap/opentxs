@@ -14,8 +14,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 
-// #define OT_METHOD "opentxs::storage::driver::MemDB::"
-
 namespace opentxs::factory
 {
 auto StorageMemDB(

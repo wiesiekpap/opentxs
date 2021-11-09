@@ -276,8 +276,8 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
                     const auto& [state, cheque] = chequeState;
 
                     if (false == bool(cheque)) {
-                        LogError()(OT_METHOD)(__func__)(
-                            ": Unable to load cheque from workflow")
+                        LogError()(OT_PRETTY_CLASS(__func__))(
+                            "Unable to load cheque from workflow")
                             .Flush();
                         add_output_task(output, "");
                         add_output_status(
@@ -293,8 +293,8 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
                 case api::client::PaymentWorkflowType::OutgoingInvoice:
                 case api::client::PaymentWorkflowType::Error:
                 default: {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Unsupported workflow type")
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        "Unsupported workflow type")
                         .Flush();
                     add_output_task(output, "");
                     add_output_status(output, proto::RPCRESPONSE_ERROR);
@@ -304,8 +304,8 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
             }
 
             if (false == bool(payment)) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to instantiate payment")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to instantiate payment")
                     .Flush();
                 add_output_task(output, "");
                 add_output_status(output, proto::RPCRESPONSE_PAYMENT_NOT_FOUND);
@@ -329,7 +329,7 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
                     output);
             }
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             continue;
         }
@@ -881,7 +881,7 @@ auto RPC::get_client(const std::int32_t instance) const
     -> const api::session::Client*
 {
     if (is_server_session(instance)) {
-        LogError()(OT_METHOD)(__func__)(": Error: provided instance ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: provided instance ")(
             instance)(" is a server session.")
             .Flush();
 
@@ -891,7 +891,7 @@ auto RPC::get_client(const std::int32_t instance) const
             return &dynamic_cast<const api::session::Client&>(
                 ot_.ClientSession(static_cast<int>(get_index(instance))));
         } catch (...) {
-            LogError()(OT_METHOD)(__func__)(": Error: provided instance ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Error: provided instance ")(
                 instance)(" is not a valid "
                           "client session.")
                 .Flush();
@@ -1116,7 +1116,7 @@ auto RPC::get_server(const std::int32_t instance) const
     -> const api::session::Notary*
 {
     if (is_client_session(instance)) {
-        LogError()(OT_METHOD)(__func__)(": Error: provided instance ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: provided instance ")(
             instance)(" is a client session.")
             .Flush();
 
@@ -1125,7 +1125,7 @@ auto RPC::get_server(const std::int32_t instance) const
         try {
             return &ot_.NotarySession(static_cast<int>(get_index(instance)));
         } catch (...) {
-            LogError()(OT_METHOD)(__func__)(": Error: provided instance ")(
+            LogError()(OT_PRETTY_CLASS(__func__))("Error: provided instance ")(
                 instance)(" is not a valid "
                           "server session.")
                 .Flush();
@@ -1617,7 +1617,8 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
     const auto valid = proto::Validate(command, VERBOSE);
 
     if (false == valid) {
-        LogError()(OT_METHOD)(__func__)(": Invalid serialized command").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid serialized command")
+            .Flush();
 
         return invalid_command(command);
     }
@@ -1707,7 +1708,7 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
         case proto::RPCCOMMAND_ACCEPTVERIFICATION:
         case proto::RPCCOMMAND_SENDCONTACTMESSAGE:
         case proto::RPCCOMMAND_GETCONTACTACTIVITY: {
-            LogError()(OT_METHOD)(__func__)(": Command not implemented.")
+            LogError()(OT_PRETTY_CLASS(__func__))("Command not implemented.")
                 .Flush();
         } break;
         case proto::RPCCOMMAND_ACCEPTPENDINGPAYMENTS: {
@@ -1745,7 +1746,8 @@ auto RPC::Process(const proto::RPCCommand& command) const -> proto::RPCResponse
         }
         case proto::RPCCOMMAND_ERROR:
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported command.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported command.")
+                .Flush();
         }
     }
 
@@ -1813,7 +1815,8 @@ auto RPC::Process(const request::Base& command) const
         case CommandType::rename_account:
         case CommandType::error:
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported command.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unsupported command.")
+                .Flush();
 
             return std::make_unique<response::Invalid>(command);
         }
@@ -2018,7 +2021,7 @@ void RPC::task_handler(const zmq::Message& in)
 
     const auto taskID = std::to_string(body.at(1).as<ID>());
     const auto success = body.at(2).as<bool>();
-    LogTrace()(OT_METHOD)(__func__)(": Received notice for task ")(taskID)
+    LogTrace()(OT_PRETTY_CLASS(__func__))("Received notice for task ")(taskID)
         .Flush();
     auto lock = Lock{task_lock_};
     auto it = queued_tasks_.find(taskID);
@@ -2032,7 +2035,8 @@ void RPC::task_handler(const zmq::Message& in)
 
         if (finish) { finish(future.get(), task); }
     } else {
-        LogTrace()(OT_METHOD)(__func__)(": We don't care about task ")(taskID)
+        LogTrace()(OT_PRETTY_CLASS(__func__))("We don't care about task ")(
+            taskID)
             .Flush();
 
         return;

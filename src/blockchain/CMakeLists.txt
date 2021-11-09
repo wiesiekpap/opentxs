@@ -13,14 +13,15 @@ if(OT_BLOCKCHAIN_EXPORT)
   add_subdirectory(p2p)
 endif()
 
-add_library(
-  opentxs-blockchain OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/blockchain/Params.hpp"
-  "DownloadManager.hpp"
-  "DownloadTask.hpp"
-  "NumericHash.cpp"
-  "NumericHash.hpp"
-  "Params.cpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/Params.hpp"
+    "DownloadManager.hpp"
+    "DownloadTask.hpp"
+    "NumericHash.cpp"
+    "NumericHash.hpp"
+    "Params.cpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Blockchain.hpp"
@@ -31,16 +32,10 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/SendResult.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Types.hpp"
 )
-target_link_libraries(
-  opentxs-blockchain PRIVATE Boost::headers opentxs::messages
-)
-target_include_directories(
-  opentxs-blockchain SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
 
 if(OT_BLOCKCHAIN_EXPORT)
   target_sources(
-    opentxs-blockchain
+    opentxs-common
     PRIVATE
       "${opentxs_SOURCE_DIR}/src/internal/blockchain/Blockchain.hpp"
       "Blockchain.cpp"
@@ -57,13 +52,11 @@ if(OT_BLOCKCHAIN_EXPORT)
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/NumericHash.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Work.hpp"
   )
-  target_link_libraries(opentxs-blockchain PRIVATE lmdb)
+  target_link_libraries(opentxs-common PRIVATE lmdb)
   target_link_libraries(opentxs PUBLIC lmdb)
 endif()
 
-target_sources(opentxs-blockchain PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-blockchain>)
-add_dependencies(opentxs-blockchain generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

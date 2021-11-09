@@ -29,8 +29,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::block::Header::"
-
 namespace opentxs::factory
 {
 auto GenesisBlockHeader(

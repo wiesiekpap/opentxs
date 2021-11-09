@@ -15,6 +15,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
@@ -26,8 +27,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/client/PaymentTasks.hpp"
-
-#define OT_METHOD "opentxs::otx::client::implementation::DepositPayment::"
 
 namespace opentxs::otx::client::implementation
 {
@@ -53,7 +52,7 @@ auto DepositPayment::deposit() -> bool
     auto& [unitID, accountID, pPayment] = payment_;
 
     if (false == bool(pPayment)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid payment").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid payment").Flush();
         error = true;
         repeat = false;
 
@@ -85,8 +84,8 @@ auto DepositPayment::deposit() -> bool
             auto [taskid, future] = parent_.DepositPayment(payment_);
 
             if (0 == taskid) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to schedule deposit payment")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to schedule deposit payment")
                     .Flush();
                 error = true;
                 repeat = true;
@@ -98,14 +97,15 @@ auto DepositPayment::deposit() -> bool
             const auto [result, pMessage] = value;
 
             if (otx::LastReplyStatus::MessageSuccess == result) {
-                LogVerbose()(OT_METHOD)(__func__)(": Deposit success").Flush();
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("Deposit success")
+                    .Flush();
                 result_ = std::move(value);
                 error = false;
                 repeat = false;
 
                 goto exit;
             } else {
-                LogError()(OT_METHOD)(__func__)(": Deposit failed").Flush();
+                LogError()(OT_PRETTY_CLASS(__func__))("Deposit failed").Flush();
                 error = true;
                 repeat = false;
             }
@@ -116,7 +116,7 @@ auto DepositPayment::deposit() -> bool
         case Depositability::WRONG_RECIPIENT:
         case Depositability::NOT_REGISTERED:
         default: {
-            LogError()(OT_METHOD)(__func__)(": Invalid state").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid state").Flush();
             error = true;
             repeat = false;
 
@@ -139,8 +139,8 @@ auto DepositPayment::get_account_id(const identifier::UnitDefinition& unit)
     const auto accounts = parent_.api().Storage().AccountsByContract(unit);
 
     if (1 < accounts.size()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Too many accounts to automatically deposit payment")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Too many accounts to automatically deposit payment")
             .Flush();
 
         return parent_.api().Factory().Identifier();
@@ -151,20 +151,21 @@ auto DepositPayment::get_account_id(const identifier::UnitDefinition& unit)
     try {
         parent_.api().Wallet().UnitDefinition(unit);
     } catch (...) {
-        LogTrace()(OT_METHOD)(__func__)(": Downloading unit definition")
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Downloading unit definition")
             .Flush();
         parent_.DownloadUnitDefinition(unit);
 
         return parent_.api().Factory().Identifier();
     }
 
-    LogVerbose()(OT_METHOD)(__func__)(": Registering account for deposit")
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Registering account for deposit")
         .Flush();
 
     auto [taskid, future] = parent_.RegisterAccount({"", unit});
 
     if (0 == taskid) {
-        LogError()(OT_METHOD)(__func__)(": Failed to schedule register account")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to schedule register account")
             .Flush();
 
         return parent_.api().Factory().Identifier();
@@ -174,15 +175,15 @@ auto DepositPayment::get_account_id(const identifier::UnitDefinition& unit)
     const auto [result, pMessage] = result_;
 
     if (otx::LastReplyStatus::MessageSuccess != result) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to send register account message")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to send register account message")
             .Flush();
 
         return parent_.api().Factory().Identifier();
     }
 
     if (false == bool(pMessage)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid register account reply")
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid register account reply")
             .Flush();
 
         return parent_.api().Factory().Identifier();
@@ -193,9 +194,10 @@ auto DepositPayment::get_account_id(const identifier::UnitDefinition& unit)
         parent_.api().Factory().Identifier(message.m_strAcctID);
 
     if (accountID->empty()) {
-        LogError()(OT_METHOD)(__func__)(": Failed to get account id").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to get account id")
+            .Flush();
     } else {
-        LogVerbose()(OT_METHOD)(__func__)(": Registered new account ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Registered new account ")(
             accountID)
             .Flush();
     }

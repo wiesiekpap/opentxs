@@ -32,8 +32,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "ui/base/List.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::Contact::"
-
 namespace opentxs::factory
 {
 auto ContactModel(
@@ -206,7 +204,7 @@ auto Contact::sort_key(const contact::SectionType type) noexcept -> int
 
 auto Contact::startup() noexcept -> void
 {
-    LogVerbose()(OT_METHOD)(__func__)(": Loading contact ")(primary_id_)
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Loading contact ")(primary_id_)
         .Flush();
     const auto contact = api_.Contacts().Contact(primary_id_);
 

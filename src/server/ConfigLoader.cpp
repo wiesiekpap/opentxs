@@ -22,7 +22,6 @@
 
 #define SERVER_WALLET_FILENAME "notaryServer.xml"
 #define SERVER_MASTER_KEY_TIMEOUT_DEFAULT -1
-#define OT_METHOD "opentxs::Configloader::"
 
 namespace opentxs::server
 {
@@ -51,7 +50,8 @@ auto ConfigLoader::load(
             bIsNewKey);
         walletFilename.Set(strValue);
         {
-            LogDetail()(OT_METHOD)(__func__)(":Using Wallet: ")(strValue)(".")
+            LogDetail()(OT_PRETTY_STATIC(ConfigLoader, __func__))(
+                "Using Wallet: ")(strValue)(".")
                 .Flush();
         }
     }
@@ -441,8 +441,8 @@ auto ConfigLoader::load(
 
     // Done Loading... Lets save any changes...
     if (!config.Save()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error! Unable to save updated Config!!!")
+        LogError()(OT_PRETTY_STATIC(ConfigLoader, __func__))(
+            "Error! Unable to save updated Config!!!")
             .Flush();
         OT_FAIL;
     }

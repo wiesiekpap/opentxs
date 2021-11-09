@@ -21,8 +21,6 @@
 #include "network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::network::blockchain::bitcoin::CompactSize::"
-
 namespace be = boost::endian;
 
 namespace opentxs::network::blockchain::bitcoin
@@ -181,7 +179,8 @@ auto CompactSize::Imp::convert_to_raw(AllocateOutput output) const noexcept
     OT_ASSERT(std::numeric_limits<SizeType>::max() >= data_);
 
     if (false == bool(output)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
+            .Flush();
 
         return false;
     }
@@ -189,7 +188,8 @@ auto CompactSize::Imp::convert_to_raw(AllocateOutput output) const noexcept
     const auto out = output(sizeof(SizeType));
 
     if (false == out.valid(sizeof(SizeType))) {
-        LogError()(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocate output")
+            .Flush();
 
         return false;
     }
@@ -214,7 +214,7 @@ auto CompactSize::Decode(const std::vector<std::byte>& bytes) noexcept -> bool
     } else if (sizeof(std::uint64_t) == bytes.size()) {
         imp_->convert_from_raw<std::uint64_t>(bytes);
     } else {
-        LogError()(OT_METHOD)(__func__)(": Wrong number of bytes: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Wrong number of bytes: ")(
             bytes.size())
             .Flush();
         output = false;
@@ -234,7 +234,8 @@ auto CompactSize::Encode() const noexcept -> std::vector<std::byte>
 auto CompactSize::Encode(AllocateOutput destination) const noexcept -> bool
 {
     if (false == bool(destination)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
+            .Flush();
 
         return false;
     }
@@ -243,7 +244,8 @@ auto CompactSize::Encode(AllocateOutput destination) const noexcept -> bool
     const auto out = destination(size);
 
     if (false == out.valid(size)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to allocate output").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocate output")
+            .Flush();
 
         return false;
     }

@@ -51,8 +51,6 @@
 
 #define CURRENT_VERSION 1
 
-#define OT_METHOD "opentxs::api::client::implementation::Issuer::"
-
 namespace opentxs::factory
 {
 auto Issuer(
@@ -287,7 +285,7 @@ auto Issuer::add_request(
     const auto& notUsed [[maybe_unused]] = it;
 
     if (found) {
-        LogError()(OT_METHOD)(__func__)(": Request ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Request ")(
             requestID)(" already exists.")
             .Flush();
 
@@ -310,7 +308,8 @@ auto Issuer::AddReply(
     auto& [reply, used] = it->second;
 
     if (false == found) {
-        LogDetail()(OT_METHOD)(__func__)(": Request ")(requestID)(" not found.")
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Request ")(
+            requestID)(" not found.")
             .Flush();
 
         return add_request(lock, type, requestID, replyID);
@@ -336,8 +335,8 @@ auto Issuer::AddRequest(
 auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
     -> bool
 {
-    LogVerbose()(OT_METHOD)(__func__)(
-        ": Searching for initiated bailment requests for unit ")(unitID)
+    LogVerbose()(OT_PRETTY_CLASS(__func__))(
+        "Searching for initiated bailment requests for unit ")(unitID)
         .Flush();
     Lock lock(lock_);
     std::size_t count{0};
@@ -345,7 +344,7 @@ auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
         lock,
         contract::peer::PeerRequestType::Bailment,
         RequestStatus::Requested);
-    LogVerbose()(OT_METHOD)(__func__)(": Have ")(requests.size())(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Have ")(requests.size())(
         " initiated requests.")
         .Flush();
 
@@ -372,14 +371,14 @@ auto Issuer::BailmentInitiated(const identifier::UnitDefinition& unitID) const
             if (unitID == requestType) {
                 ++count;
             } else {
-                LogVerbose()(OT_METHOD)(__func__)(": Request ")(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("Request ")(
                     requestID)(" is wrong type (")(request.bailment().unitid())(
                     ")")
                     .Flush();
             }
         } else {
-            LogVerbose()(OT_METHOD)(__func__)(
-                ": Failed to serialize request: ")(requestID)
+            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                "Failed to serialize request: ")(requestID)
                 .Flush();
         }
     }
@@ -433,8 +432,8 @@ auto Issuer::BailmentInstructions(
             }
 
             if (false == loadedreply) {
-                LogVerbose()(OT_METHOD)(__func__)(
-                    ": Failed to serialize reply: ")(replyID)
+                LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to serialize reply: ")(replyID)
                     .Flush();
             } else {
                 auto nym = wallet_.Nym(issuer_id_);
@@ -442,8 +441,8 @@ auto Issuer::BailmentInstructions(
                 output.emplace_back(requestID, bailmentreply);
             }
         } else {
-            LogVerbose()(OT_METHOD)(__func__)(
-                ": Failed to serialize request: ")(requestID)
+            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                "Failed to serialize request: ")(requestID)
                 .Flush();
         }
     }
@@ -456,7 +455,7 @@ auto Issuer::ConnectionInfo(
     const contract::peer::ConnectionInfoType type) const
     -> std::vector<Issuer::ConnectionDetails>
 {
-    LogVerbose()(OT_METHOD)(__func__)(": Searching for type ")(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Searching for type ")(
         static_cast<std::uint32_t>(type))(
         " connection info requests (which have replies).")
         .Flush();
@@ -466,7 +465,7 @@ auto Issuer::ConnectionInfo(
         lock,
         contract::peer::PeerRequestType::ConnectionInfo,
         RequestStatus::Replied);
-    LogVerbose()(OT_METHOD)(__func__)(": Have ")(replies.size())(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Have ")(replies.size())(
         " total requests.")
         .Flush();
 
@@ -492,7 +491,7 @@ auto Issuer::ConnectionInfo(
 
         if (loaded) {
             if (type != translate(request.connectioninfo().type())) {
-                LogVerbose()(OT_METHOD)(__func__)(": Request ")(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("Request ")(
                     requestID)(" is wrong type (")(
                     request.connectioninfo().type())(")")
                     .Flush();
@@ -516,13 +515,13 @@ auto Issuer::ConnectionInfo(
                     client.Factory().ConnectionReply(nym, reply);
                 output.emplace_back(requestID, connectionreply);
             } else {
-                LogVerbose()(OT_METHOD)(__func__)(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))(
                     ": Failed to serialize reply: ")(replyID)
                     .Flush();
             }
         } else {
-            LogVerbose()(OT_METHOD)(__func__)(
-                ": Failed to serialize request: ")(requestID)
+            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                "Failed to serialize request: ")(requestID)
                 .Flush();
         }
     }
@@ -533,7 +532,7 @@ auto Issuer::ConnectionInfo(
 auto Issuer::ConnectionInfoInitiated(
     const contract::peer::ConnectionInfoType type) const -> bool
 {
-    LogVerbose()(OT_METHOD)(__func__)(": Searching for all type ")(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Searching for all type ")(
         static_cast<std::uint32_t>(type))(" connection info requests.")
         .Flush();
     Lock lock(lock_);
@@ -542,7 +541,7 @@ auto Issuer::ConnectionInfoInitiated(
         lock,
         contract::peer::PeerRequestType::ConnectionInfo,
         RequestStatus::All);
-    LogVerbose()(OT_METHOD)(__func__)(": Have ")(requests.size())(
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Have ")(requests.size())(
         " total requests.")
         .Flush();
 
@@ -568,14 +567,14 @@ auto Issuer::ConnectionInfoInitiated(
             if (type == translate(request.connectioninfo().type())) {
                 ++count;
             } else {
-                LogVerbose()(OT_METHOD)(__func__)(": Request ")(
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("Request ")(
                     requestID)(" is wrong type (")(
                     request.connectioninfo().type())(")")
                     .Flush();
             }
         } else {
-            LogVerbose()(OT_METHOD)(__func__)(
-                ": Failed to serialize request: ")(requestID);
+            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                "Failed to serialize request: ")(requestID);
         }
     }
 

@@ -93,17 +93,17 @@ private:  // Private prevents erroneous use by other classes.
     // These assume SetFilename() was already called,
     // or at least one of the constructors that uses it.
     //
-    explicit OTSignedFile(const api::Session& core);
+    explicit OTSignedFile(const api::Session& api);
     explicit OTSignedFile(
-        const api::Session& core,
+        const api::Session& api,
         const String& LOCAL_SUBDIR,
         const String& FILE_NAME);
     explicit OTSignedFile(
-        const api::Session& core,
+        const api::Session& api,
         const char* LOCAL_SUBDIR,
         const String& FILE_NAME);
     explicit OTSignedFile(
-        const api::Session& core,
+        const api::Session& api,
         const char* LOCAL_SUBDIR,
         const char* FILE_NAME);
 

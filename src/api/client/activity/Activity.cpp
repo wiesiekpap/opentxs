@@ -16,8 +16,6 @@
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 
-// #define OT_METHOD "opentxs::api::client::implementation::Activity::"
-
 namespace opentxs::factory
 {
 auto ActivityAPI(

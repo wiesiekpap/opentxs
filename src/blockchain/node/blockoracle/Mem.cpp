@@ -14,7 +14,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-// #define OT_METHOD
 // "opentxs::blockchain::node::implementation::BlockOracle::Cache::Mem::"
 
 namespace opentxs::blockchain::node::implementation

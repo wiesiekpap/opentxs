@@ -11,7 +11,6 @@
 
 #include <memory>
 
-// #define OT_METHOD
 // "opentxs::blockchain::node::implementation::PeerManager::IncomingConnectionManager::"
 
 namespace opentxs

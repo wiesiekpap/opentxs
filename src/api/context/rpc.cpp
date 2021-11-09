@@ -10,8 +10,6 @@
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 
-// #define OT_METHOD "opentxs::api::implementation::Context::"
-
 namespace opentxs::api::implementation
 {
 auto Context::RPC(const ReadView command, const AllocateOutput response)

@@ -24,8 +24,6 @@
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
 
-//#define OT_METHOD "opentxs::ui::implementation::ContactSection::"
-
 namespace opentxs::factory
 {
 auto ContactSectionWidget(

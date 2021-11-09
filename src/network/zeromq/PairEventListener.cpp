@@ -18,9 +18,6 @@
 #define PAIR_EVENT_ENDPOINT_PATH "pairevent"
 #define PAIR_EVENT_ENDPOINT_VERSION 1
 
-#define OT_METHOD                                                              \
-    "opentxs::network::zeromq::implementation::PairEventListener::"
-
 namespace opentxs::network::zeromq::implementation
 {
 PairEventListener::PairEventListener(
@@ -36,7 +33,7 @@ PairEventListener::PairEventListener(
 
     OT_ASSERT(started)
 
-    LogVerbose()(OT_METHOD)(__func__)(": listening on ")(endpoint).Flush();
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("listening on ")(endpoint).Flush();
 }
 
 auto PairEventListener::clone() const noexcept -> PairEventListener*

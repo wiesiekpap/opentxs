@@ -93,7 +93,8 @@
     Lock lock(decision_lock_);                                                 \
                                                                                \
     if (running().load()) {                                                    \
-        LogDebug()(OT_METHOD)(__func__)(": State machine is already running.") \
+        LogDebug()(OT_PRETTY_CLASS(__func__))(                                 \
+            "State machine is already running.")                               \
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
@@ -104,8 +105,6 @@
 #define OPERATION_POLL_MILLISECONDS 100
 #define OPERATION_JOIN_MILLISECONDS OPERATION_POLL_MILLISECONDS
 #define MAX_ERROR_COUNT 3
-
-#define OT_METHOD "opentxs::otx::client::implementation::Operation::"
 
 #define PREPARE_CONTEXT()                                                      \
     auto contextEditor = context();                                            \
@@ -121,7 +120,8 @@
         context.InitializeServerCommand(MessageType::a, __VA_ARGS__);          \
                                                                                \
     if (false == bool(pMessage)) {                                             \
-        LogError()(OT_METHOD)(__func__)(": Failed to construct ")(#a).Flush(); \
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct ")(#a)      \
+            .Flush();                                                          \
                                                                                \
         return {};                                                             \
     }                                                                          \
@@ -132,7 +132,7 @@
     const auto finalized = context.FinalizeServerCommand(message, reason_);    \
                                                                                \
     if (false == bool(finalized)) {                                            \
-        LogError()(OT_METHOD)(#a)(": Failed to sign ")(#b);                    \
+        LogError()((OT_PRETTY_CLASS(#a)))(": Failed to sign ")(#b);            \
                                                                                \
         return {};                                                             \
     }                                                                          \
@@ -147,7 +147,8 @@
     auto account = api_.Wallet().Internal().Account(account_id_);              \
                                                                                \
     if (false == bool(account)) {                                              \
-        LogError()(OT_METHOD)(__func__)(": Failed to load account.").Flush();  \
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load account.")       \
+            .Flush();                                                          \
                                                                                \
         return {};                                                             \
     }                                                                          \
@@ -155,28 +156,28 @@
     numbers_.insert(                                                           \
         context.NextTransactionNumber(MessageType::notarizeTransaction));      \
     auto& managedNumber = *numbers_.rbegin();                                  \
-    LogVerbose()(OT_METHOD)(__func__)(": Allocating transaction number ")(     \
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Allocating transaction number ")( \
         managedNumber->Value())                                                \
         .Flush();                                                              \
                                                                                \
     if (false == managedNumber->Valid()) {                                     \
-        LogError()(OT_METHOD)(__func__)(                                       \
-            ": No transaction numbers were available. Suggest requesting the " \
+        LogError()(OT_PRETTY_CLASS(__func__))(                                 \
+            "No transaction numbers were available. Suggest requesting the "   \
             "server for one.")                                                 \
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
     }                                                                          \
                                                                                \
-    LogVerbose()(OT_METHOD)(__func__)(": Allocated transaction number ")(      \
+    LogVerbose()(OT_PRETTY_CLASS(__func__))("Allocated transaction number ")(  \
         managedNumber->Value())                                                \
         .Flush();                                                              \
     const auto transactionNum = managedNumber->Value();                        \
     auto pLedger{api_.Factory().Ledger(nymID, account_id_, serverID)};         \
                                                                                \
     if (false == bool(pLedger)) {                                              \
-        LogError()(OT_METHOD)(__func__)(                                       \
-            ": Failed to construct transaction ledger.")                       \
+        LogError()(OT_PRETTY_CLASS(__func__))(                                 \
+            "Failed to construct transaction ledger.")                         \
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
@@ -187,8 +188,8 @@
         ledger.GenerateLedger(account_id_, serverID, ledgerType::message);     \
                                                                                \
     if (false == generated) {                                                  \
-        LogError()(OT_METHOD)(__func__)(                                       \
-            ": Failed to generate transaction ledger")                         \
+        LogError()(OT_PRETTY_CLASS(__func__))(                                 \
+            "Failed to generate transaction ledger")                           \
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
@@ -205,7 +206,8 @@
                                                     .release()};               \
                                                                                \
     if (false == bool(pTransaction)) {                                         \
-        LogError()(OT_METHOD)(__func__)(": Failed to construct transaction.")  \
+        LogError()(OT_PRETTY_CLASS(__func__))(                                 \
+            "Failed to construct transaction.")                                \
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
@@ -217,7 +219,7 @@
         api_.Factory().Item(transaction, ITEM_TYPE, DESTINATION_ACCOUNT)};     \
                                                                                \
     if (false == bool(pItem)) {                                                \
-        LogError()(OT_METHOD)(__func__)(": Failed to construct item.")         \
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct item.")     \
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
@@ -229,16 +231,16 @@
     outbox_.reset(account.get().LoadOutbox(nym).release());                    \
                                                                                \
     if (false == bool(inbox_)) {                                               \
-        LogError()(OT_METHOD)(__func__)(": Failed loading inbox for "          \
-                                        "account: ")(account_id_)              \
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed loading inbox for "      \
+                                              "account: ")(account_id_)        \
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
     }                                                                          \
                                                                                \
     if (false == bool(outbox_)) {                                              \
-        LogError()(OT_METHOD)(__func__)(": Failed loading outbox for "         \
-                                        "account: ")(account_id_)              \
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed loading outbox for "     \
+                                              "account: ")(account_id_)        \
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
@@ -253,7 +255,8 @@
         AMOUNT, transaction, context, account.get(), outbox, reason_)};        \
                                                                                \
     if (false == bool(pBalanceItem)) {                                         \
-        LogError()(OT_METHOD)(__func__)(": Failed to construct balance item.") \
+        LogError()(OT_PRETTY_CLASS(__func__))(                                 \
+            "Failed to construct balance item.")                               \
             .Flush();                                                          \
                                                                                \
         return {};                                                             \
@@ -548,7 +551,8 @@ auto Operation::construct() -> std::shared_ptr<Message>
         }
 #endif
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unknown message type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unknown message type")
+                .Flush();
         }
     }
 
@@ -580,7 +584,7 @@ auto Operation::construct_check_nym() -> std::shared_ptr<Message>
 auto Operation::construct_convey_payment() -> std::shared_ptr<Message>
 {
     if (false == bool(payment_)) {
-        LogError()(OT_METHOD)(__func__)(": No payment to convey").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("No payment to convey").Flush();
 
         return {};
     }
@@ -589,7 +593,8 @@ auto Operation::construct_convey_payment() -> std::shared_ptr<Message>
     const auto recipientNym = api_.Wallet().Nym(target_nym_id_);
 
     if (false == bool(recipientNym)) {
-        LogError()(OT_METHOD)(__func__)(": Recipient nym credentials not found")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Recipient nym credentials not found")
             .Flush();
 
         return {};
@@ -603,8 +608,8 @@ auto Operation::construct_convey_payment() -> std::shared_ptr<Message>
     const bool havePayment = payment.GetPaymentContents(serialized);
 
     if (false == havePayment) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed attempt to send a blank payment.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed attempt to send a blank payment.")
             .Flush();
 
         return {};
@@ -617,7 +622,8 @@ auto Operation::construct_convey_payment() -> std::shared_ptr<Message>
     if (sealed) { sealed &= envelope->Armored(message.m_ascPayload); }
 
     if (false == sealed) {
-        LogError()(OT_METHOD)(__func__)(": Failed encrypt payment.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed encrypt payment.")
+            .Flush();
 
         return {};
     }
@@ -625,7 +631,7 @@ auto Operation::construct_convey_payment() -> std::shared_ptr<Message>
     const auto finalized = context.FinalizeServerCommand(message, reason_);
 
     if (false == bool(finalized)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to sign message");
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign message");
 
         return {};
     }
@@ -634,7 +640,7 @@ auto Operation::construct_convey_payment() -> std::shared_ptr<Message>
         context.Nym(), String::Factory(message)->Get(), true);
 
     if (false == bool(pObject)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to create peer object");
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create peer object");
 
         return {};
     }
@@ -649,7 +655,7 @@ auto Operation::construct_convey_payment() -> std::shared_ptr<Message>
 auto Operation::construct_deposit_cash() -> std::shared_ptr<Message>
 {
     if (false == bool(purse_)) {
-        LogError()(OT_METHOD)(__func__)(": Missing purse.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing purse.").Flush();
 
         return {};
     }
@@ -667,7 +673,7 @@ auto Operation::construct_deposit_cash() -> std::shared_ptr<Message>
     const auto& unitID = account.get().GetInstrumentDefinitionID();
 
     if (unitID != purse.Unit()) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect account type").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect account type").Flush();
 
         return {};
     }
@@ -686,7 +692,7 @@ auto Operation::construct_deposit_cash() -> std::shared_ptr<Message>
 auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
 {
     if (false == bool(cheque_)) {
-        LogError()(OT_METHOD)(__func__)(": No cheque to deposit").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("No cheque to deposit").Flush();
 
         return {};
     }
@@ -702,7 +708,7 @@ auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
         amount);
 
     if (cheque.GetNotaryID() != serverID) {
-        LogError()(OT_METHOD)(__func__)(": NotaryID on cheque (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("NotaryID on cheque (")(
             cheque.GetNotaryID())(") doesn't match "
                                   "notaryID where it's "
                                   "being deposited to "
@@ -738,8 +744,8 @@ auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
         // issued, then our attempt to cancel the cheque is going to fail.
         if (false == cancellingCheque) {
             // This is the "tried and failed" block.
-            LogError()(OT_METHOD)(__func__)(
-                ": Cannot cancel this cheque. Either the signature fails to "
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Cannot cancel this cheque. Either the signature fails to "
                 "verify, or the transaction number is already closed out.")
                 .Flush();
 
@@ -753,8 +759,8 @@ auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
             inbox_->GetChequeReceipt(cheque.GetTransactionNum());
 
         if (pChequeReceipt) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Cannot cancel this cheque. There is already "
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Cannot cancel this cheque. There is already "
                 "a ")(
                 cheque.HasRemitter() ? "voucherReceipt"
                                      : "chequeReceipt")(" for it in the inbox.")
@@ -764,8 +770,8 @@ auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
         }
 
         if (false == copy->LoadContractFromString(String::Factory(cheque))) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Unable to load cheque from string.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unable to load cheque from string.")
                 .Flush();
 
             return {};
@@ -814,7 +820,7 @@ auto Operation::construct_download_mint() -> std::shared_ptr<Message>
     try {
         api_.Wallet().UnitDefinition(target_unit_id_);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Invalid unit definition id");
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid unit definition id");
 
         return {};
     }
@@ -847,7 +853,7 @@ auto Operation::construct_get_transaction_numbers() -> std::shared_ptr<Message>
 auto Operation::construct_issue_unit_definition() -> std::shared_ptr<Message>
 {
     if (false == bool(unit_definition_)) {
-        LogError()(OT_METHOD)(__func__)(": Missing unit definition");
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing unit definition");
 
         return {};
     }
@@ -863,8 +869,8 @@ auto Operation::construct_issue_unit_definition() -> std::shared_ptr<Message>
         id->GetString(message.m_strInstrumentDefinitionID);
         auto serialized = proto::UnitDefinition{};
         if (false == contract->Serialize(serialized, true)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to serialize unit definition")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to serialize unit definition")
                 .Flush();
 
             return {};
@@ -873,7 +879,8 @@ auto Operation::construct_issue_unit_definition() -> std::shared_ptr<Message>
 
         FINISH_MESSAGE(__func__, registerInstrumentDefinition);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Invalid unit definition").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid unit definition")
+            .Flush();
 
         return {};
     }
@@ -884,7 +891,7 @@ auto Operation::construct_publish_nym() -> std::shared_ptr<Message>
     const auto contract = api_.Wallet().Nym(target_nym_id_);
 
     if (false == bool(contract)) {
-        LogError()(OT_METHOD)(__func__)(": Nym not found: ")(target_nym_id_)
+        LogError()(OT_PRETTY_CLASS(__func__))("Nym not found: ")(target_nym_id_)
             .Flush();
 
         return {};
@@ -896,7 +903,7 @@ auto Operation::construct_publish_nym() -> std::shared_ptr<Message>
     message.enum_ = static_cast<std::uint8_t>(ContractType::nym);
     auto publicNym = proto::Nym{};
     if (false == contract->Serialize(publicNym)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize nym: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize nym: ")(
             target_nym_id_)
             .Flush();
         return {};
@@ -917,8 +924,8 @@ auto Operation::construct_publish_server() -> std::shared_ptr<Message>
         message.enum_ = static_cast<std::uint8_t>(ContractType::server);
         auto serialized = proto::ServerContract{};
         if (false == contract->Serialize(serialized, true)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to serialize server contract: ")(target_server_id_)
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to serialize server contract: ")(target_server_id_)
                 .Flush();
 
             return {};
@@ -927,7 +934,7 @@ auto Operation::construct_publish_server() -> std::shared_ptr<Message>
 
         FINISH_MESSAGE(__func__, registerContract);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Server not found: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Server not found: ")(
             target_server_id_)
             .Flush();
 
@@ -946,8 +953,8 @@ auto Operation::construct_publish_unit() -> std::shared_ptr<Message>
         message.enum_ = static_cast<std::uint8_t>(ContractType::unit);
         auto serialized = proto::UnitDefinition{};
         if (false == contract->Serialize(serialized)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to serialize unit definition: ")(target_unit_id_)
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to serialize unit definition: ")(target_unit_id_)
                 .Flush();
 
             return {};
@@ -956,7 +963,7 @@ auto Operation::construct_publish_unit() -> std::shared_ptr<Message>
 
         FINISH_MESSAGE(__func__, registerContract);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Unit definition not found: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Unit definition not found: ")(
             target_unit_id_)
             .Flush();
 
@@ -989,7 +996,7 @@ auto Operation::construct_register_account() -> std::shared_ptr<Message>
 
         FINISH_MESSAGE(__func__, registerAccount);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Invalid unit definition id");
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid unit definition id");
 
         return {};
     }
@@ -1002,7 +1009,7 @@ auto Operation::construct_register_nym() -> std::shared_ptr<Message>
 
     auto publicNym = proto::Nym{};
     if (false == nym.Serialize(publicNym)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize nym.");
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize nym.");
         return {};
     }
     message.m_ascPayload = api_.Factory().Armored(publicNym);
@@ -1044,7 +1051,7 @@ auto Operation::construct_send_nym_object(
     auto envelope = api_.Factory().Envelope();
     auto output = proto::PeerObject{};
     if (false == object.Serialize(output)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize object.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize object.")
             .Flush();
 
         return {};
@@ -1056,7 +1063,7 @@ auto Operation::construct_send_nym_object(
     if (sealed) { sealed &= envelope->Armored(message.m_ascPayload); }
 
     if (false == sealed) {
-        LogError()(OT_METHOD)(__func__)(": Failed encrypt object.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed encrypt object.").Flush();
 
         return {};
     }
@@ -1081,14 +1088,15 @@ auto Operation::construct_send_cash() -> std::shared_ptr<Message>
     const auto pRecipient = api_.Wallet().Nym(target_nym_id_);
 
     if (false == bool(pRecipient)) {
-        LogError()(OT_METHOD)(__func__)(": Recipient nym credentials not found")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Recipient nym credentials not found")
             .Flush();
 
         return {};
     }
 
     if (false == bool(purse_)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid purse").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid purse").Flush();
 
         return {};
     }
@@ -1098,7 +1106,7 @@ auto Operation::construct_send_cash() -> std::shared_ptr<Message>
     const auto pObject = api_.Factory().PeerObject(context.Nym(), purse_);
 
     if (false == bool(pObject)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to create peer object");
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create peer object");
 
         return {};
     }
@@ -1114,14 +1122,15 @@ auto Operation::construct_send_message() -> std::shared_ptr<Message>
     const auto recipientNym = api_.Wallet().Nym(target_nym_id_);
 
     if (false == bool(recipientNym)) {
-        LogError()(OT_METHOD)(__func__)(": Recipient nym credentials not found")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Recipient nym credentials not found")
             .Flush();
 
         return {};
     }
 
     if (memo_->empty()) {
-        LogError()(OT_METHOD)(__func__)(": Message is empty").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Message is empty").Flush();
 
         return {};
     }
@@ -1135,7 +1144,7 @@ auto Operation::construct_send_message() -> std::shared_ptr<Message>
         api_.Factory().PeerObject(context.Nym(), memo_->Get(), false);
 
     if (false == bool(pObject)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to create peer object")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create peer object")
             .Flush();
 
         return {};
@@ -1156,7 +1165,7 @@ auto Operation::construct_send_message() -> std::shared_ptr<Message>
         MessageType::outmail, target_nym_id_, number, false, false);
 
     if (false == bool(pOutmail)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to construct outmail")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct outmail")
             .Flush();
 
         return {};
@@ -1175,20 +1184,21 @@ auto Operation::construct_send_peer_reply() -> std::shared_ptr<Message>
 {
     const auto recipientNym = api_.Wallet().Nym(target_nym_id_);
     if (false == bool(recipientNym)) {
-        LogError()(OT_METHOD)(__func__)(": Recipient nym credentials not found")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Recipient nym credentials not found")
             .Flush();
 
         return {};
     }
 
     if (0 == peer_reply_->Version()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid reply.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid reply.").Flush();
 
         return {};
     }
 
     if (0 == peer_request_->Version()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid request.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid request.").Flush();
 
         return {};
     }
@@ -1199,13 +1209,14 @@ auto Operation::construct_send_peer_reply() -> std::shared_ptr<Message>
     context.SetPush(enable_otx_push_.load());
     auto reply = proto::PeerReply{};
     if (false == peer_reply_->Serialize(reply)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize reply.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize reply.")
+            .Flush();
 
         return {};
     }
     auto request = proto::PeerRequest{};
     if (false == peer_request_->Serialize(request)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize request.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize request.")
             .Flush();
 
         return {};
@@ -1214,7 +1225,7 @@ auto Operation::construct_send_peer_reply() -> std::shared_ptr<Message>
         api_.Wallet().Internal().PeerReplyCreate(nym.ID(), request, reply);
 
     if (false == saved) {
-        LogError()(OT_METHOD)(__func__)(": Failed to save reply in wallet.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save reply in wallet.")
             .Flush();
 
         return {};
@@ -1224,7 +1235,7 @@ auto Operation::construct_send_peer_reply() -> std::shared_ptr<Message>
         peer_request_, peer_reply_, PEER_OBJECT_PEER_REPLY);
 
     if (false == bool(pObject)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to create peer object")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create peer object")
             .Flush();
 
         return {};
@@ -1246,14 +1257,15 @@ auto Operation::construct_send_peer_request() -> std::shared_ptr<Message>
     const auto recipientNym = api_.Wallet().Nym(target_nym_id_);
 
     if (false == bool(recipientNym)) {
-        LogError()(OT_METHOD)(__func__)(": Recipient nym credentials not found")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Recipient nym credentials not found")
             .Flush();
 
         return {};
     }
 
     if (0 == peer_request_->Version()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid request.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid request.").Flush();
 
         return {};
     }
@@ -1264,7 +1276,7 @@ auto Operation::construct_send_peer_request() -> std::shared_ptr<Message>
     context.SetPush(enable_otx_push_.load());
     auto serialized = proto::PeerRequest{};
     if (false == peer_request_->Serialize(serialized)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize request.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize request.")
             .Flush();
 
         return {};
@@ -1273,7 +1285,8 @@ auto Operation::construct_send_peer_request() -> std::shared_ptr<Message>
         api_.Wallet().Internal().PeerRequestCreate(nym.ID(), serialized);
 
     if (false == saved) {
-        LogError()(OT_METHOD)(__func__)(": Failed to save request in wallet.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to save request in wallet.")
             .Flush();
 
         return {};
@@ -1284,7 +1297,7 @@ auto Operation::construct_send_peer_request() -> std::shared_ptr<Message>
         api_.Factory().PeerObject(peer_request_, PEER_OBJECT_PEER_REQUEST);
 
     if (false == bool(pObject)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to create peer object")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create peer object")
             .Flush();
         api_.Wallet().PeerRequestCreateRollback(nym.ID(), itemID);
 
@@ -1353,10 +1366,11 @@ auto Operation::construct_send_transfer() -> std::shared_ptr<Message>
     const auto workflowID = api_.Workflow().CreateTransfer(item, message);
 
     if (workflowID->empty()) {
-        LogError()(OT_METHOD)(__func__)(": Failed to create transfer workflow")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to create transfer workflow")
             .Flush();
     } else {
-        LogDetail()(OT_METHOD)(__func__)(": Created transfer ")(
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Created transfer ")(
             item.GetTransactionNum())(" workflow"
                                       " ")(workflowID)
             .Flush();
@@ -1387,7 +1401,7 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
         "");
 
     if (false == exists) {
-        LogError()(OT_METHOD)(__func__)(": File does not exist: ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("File does not exist: ")(
             api_.Internal().Legacy().Mint())(api::Legacy::PathSeparator())(
             serverID)(api::Legacy::PathSeparator())(unitID)
             .Flush();
@@ -1399,7 +1413,7 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
         String::Factory(serverID), String::Factory(unitID))};
 
     if (false == bool(pMint)) {
-        LogError()(OT_METHOD)(__func__)(": Missing mint").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing mint").Flush();
 
         return {};
     }
@@ -1408,7 +1422,7 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
     const bool validMint = mint.LoadMint() && mint.VerifyMint(serverNym);
 
     if (false == validMint) {
-        LogError()(OT_METHOD)(__func__)(": Invalid mint").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid mint").Flush();
 
         return {};
     }
@@ -1417,7 +1431,8 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
         api_.Factory().Purse(context, unitID, mint, totalAmount, reason_)};
 
     if (false == bool(pPurse)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to construct purse").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct purse")
+            .Flush();
 
         return {};
     }
@@ -1459,7 +1474,7 @@ auto Operation::DepositCash(
     const std::shared_ptr<blind::Purse> purse) -> bool
 {
     if (false == bool(purse)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid purse").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid purse").Flush();
 
         return false;
     }
@@ -1467,7 +1482,7 @@ auto Operation::DepositCash(
     auto pContext = api_.Wallet().ServerContext(nym_id_, server_id_);
 
     if (false == bool(pContext)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to load context").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load context").Flush();
 
         return false;
     }
@@ -1477,13 +1492,15 @@ auto Operation::DepositCash(
     const auto& serverNym = context.RemoteNym();
 
     if (false == purse->Unlock(nym, reason_)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to unlock pursed").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to unlock pursed")
+            .Flush();
 
         return false;
     }
 
     if (false == purse->AddNym(serverNym, reason_)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to encrypt purse to notary")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to encrypt purse to notary")
             .Flush();
 
         return false;
@@ -1518,7 +1535,7 @@ auto Operation::download_accounts(
     otx::context::Server::DeliveryResult& lastResult) -> bool
 {
     if (affected_accounts_.empty()) {
-        LogError()(OT_METHOD)(__func__)(": Warning: no accounts to update")
+        LogError()(OT_PRETTY_CLASS(__func__))("Warning: no accounts to update")
             .Flush();
         state_.store(successState);
 
@@ -1534,13 +1551,14 @@ auto Operation::download_accounts(
     }
 
     if (affected_accounts_.size() == ready) {
-        LogDetail()(OT_METHOD)(__func__)(": All accounts synchronized").Flush();
+        LogDetail()(OT_PRETTY_CLASS(__func__))("All accounts synchronized")
+            .Flush();
         state_.store(successState);
 
         return true;
     }
 
-    LogError()(OT_METHOD)(__func__)(": Retrying account synchronization")
+    LogError()(OT_PRETTY_CLASS(__func__))("Retrying account synchronization")
         .Flush();
     state_.store(failState);
 
@@ -1562,11 +1580,11 @@ auto Operation::download_account(
     OT_ASSERT(ledgerType::outbox == outbox->GetType());
 
     if (get_account_data(accountID, inbox, outbox, lastResult)) {
-        LogDetail()(OT_METHOD)(__func__)(": Success downloading account ")(
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Success downloading account ")(
             accountID)
             .Flush();
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed downloading account ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed downloading account ")(
             accountID)
             .Flush();
 
@@ -1576,11 +1594,11 @@ auto Operation::download_account(
     if (shutdown().load()) { return 0; }
 
     if (get_receipts(accountID, inbox, outbox)) {
-        LogDetail()(OT_METHOD)(__func__)(": Success synchronizing account ")(
-            accountID)
+        LogDetail()(OT_PRETTY_CLASS(__func__))(
+            "Success synchronizing account ")(accountID)
             .Flush();
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed synchronizing account ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed synchronizing account ")(
             accountID)
             .Flush();
 
@@ -1590,13 +1608,14 @@ auto Operation::download_account(
     if (shutdown().load()) { return 0; }
 
     if (process_inbox(accountID, inbox, outbox, lastResult)) {
-        LogDetail()(OT_METHOD)(__func__)(": Success processing inbox ")(
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Success processing inbox ")(
             accountID)
             .Flush();
 
         return 1;
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed processing inbox ")(accountID)
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed processing inbox ")(
+            accountID)
             .Flush();
 
         return 0;
@@ -1615,7 +1634,7 @@ auto Operation::download_box_receipt(
             MessageType::getBoxReceipt, -1, false, false);
 
     if (false == bool(message)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to construct message")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct message")
             .Flush();
 
         return false;
@@ -1631,7 +1650,7 @@ auto Operation::download_box_receipt(
     const auto finalized = context.FinalizeServerCommand(*command, reason_);
 
     if (false == finalized) {
-        LogError()(OT_METHOD)(__func__)(": Failed to sign message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign message").Flush();
 
         return false;
     }
@@ -1640,7 +1659,7 @@ auto Operation::download_box_receipt(
     auto result = context.Queue(api_, command, reason_, {});
 
     while (false == bool(result)) {
-        LogTrace()(OT_METHOD)(__func__)(": Context is busy").Flush();
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Context is busy").Flush();
         Sleep(std::chrono::milliseconds(OPERATION_POLL_MILLISECONDS));
         result = context.Queue(api_, command, reason_, {});
     }
@@ -1690,7 +1709,7 @@ auto Operation::evaluate_transaction_reply(
     const Message& reply) const -> bool
 {
     if (false == reply.m_bSuccess) {
-        LogError()(OT_METHOD)(__func__)(": Message failure").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Message failure").Flush();
 
         return false;
     }
@@ -1701,7 +1720,7 @@ auto Operation::evaluate_transaction_reply(
         case MessageType::processNymboxResponse:
             break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": ")(reply.m_strCommand)(
+            LogError()(OT_PRETTY_CLASS(__func__))(reply.m_strCommand)(
                 " is not a transaction")
                 .Flush();
 
@@ -1712,8 +1731,8 @@ auto Operation::evaluate_transaction_reply(
     const auto serialized = String::Factory(reply.m_ascPayload);
 
     if (false == serialized->Exists()) {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": No response ledger found on message.")
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "No response ledger found on message.")
             .Flush();
 
         return false;
@@ -1724,8 +1743,8 @@ auto Operation::evaluate_transaction_reply(
     OT_ASSERT(response);
 
     if (false == response->LoadContractFromString(serialized)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Unable to deserialize response ledger")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Unable to deserialize response ledger")
             .Flush();
 
         return false;
@@ -1737,8 +1756,8 @@ auto Operation::evaluate_transaction_reply(
     std::size_t good{0};
 
     if (0 == count) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Response ledger does not contain a transaction")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Response ledger does not contain a transaction")
             .Flush();
 
         return false;
@@ -1746,14 +1765,15 @@ auto Operation::evaluate_transaction_reply(
 
     for (auto& [number, pTransaction] : response->GetTransactionMap()) {
         if (1 > number) {
-            LogError()(OT_METHOD)(__func__)(": Invalid transaction number ")(
-                number)
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Invalid transaction number ")(number)
                 .Flush();
             continue;
         }
 
         if (false == bool(pTransaction)) {
-            LogError()(OT_METHOD)(__func__)(": Invalid transaction ")(number)
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid transaction ")(
+                number)
                 .Flush();
             continue;
         }
@@ -1761,12 +1781,13 @@ auto Operation::evaluate_transaction_reply(
         auto& transaction = *pTransaction;
 
         if (transaction.GetSuccess()) {
-            LogVerbose()(OT_METHOD)(__func__)(": Successful transaction ")(
+            LogVerbose()(OT_PRETTY_CLASS(__func__))("Successful transaction ")(
                 number)
                 .Flush();
             ++good;
         } else {
-            LogVerbose()(OT_METHOD)(__func__)(": Failed transaction ")(number)
+            LogVerbose()(OT_PRETTY_CLASS(__func__))("Failed transaction ")(
+                number)
                 .Flush();
         }
     }
@@ -1795,7 +1816,7 @@ void Operation::execute()
     }
 
     if (false == bool(message_)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to construct command")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct command")
             .Flush();
         ++error_count_;
 
@@ -1816,7 +1837,7 @@ void Operation::execute()
     }
 
     if (false == bool(result)) {
-        LogTrace()(OT_METHOD)(__func__)(": Context is busy").Flush();
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Context is busy").Flush();
         Sleep(std::chrono::milliseconds(OPERATION_POLL_MILLISECONDS));
 
         return;
@@ -1880,7 +1901,7 @@ auto Operation::get_account_data(
     auto message = construct_get_account_data(accountID);
 
     if (false == bool(message)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to construct command")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct command")
             .Flush();
 
         return false;
@@ -1891,7 +1912,7 @@ auto Operation::get_account_data(
     auto result = context.Queue(api_, message, inbox, outbox, {}, reason_);
 
     if (false == bool(result)) {
-        LogTrace()(OT_METHOD)(__func__)(": Context is busy").Flush();
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Context is busy").Flush();
         Sleep(std::chrono::milliseconds(OPERATION_POLL_MILLISECONDS));
 
         return false;
@@ -1931,20 +1952,21 @@ auto Operation::get_receipts(
     std::size_t good{0};
 
     if (0 == count) {
-        LogDetail()(OT_METHOD)(__func__)(": Box is empty").Flush();
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Box is empty").Flush();
     }
 
     for (auto [number, pItem] : box.GetTransactionMap()) {
         if (1 > number) {
-            LogError()(OT_METHOD)(__func__)(": Invalid transaction number ")(
-                number)
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Invalid transaction number ")(number)
                 .Flush();
 
             continue;
         }
 
         if (false == bool(pItem)) {
-            LogError()(OT_METHOD)(__func__)(": Warning: Invalid item ")(number)
+            LogError()(OT_PRETTY_CLASS(__func__))("Warning: Invalid item ")(
+                number)
                 .Flush();
         }
 
@@ -1958,7 +1980,7 @@ auto Operation::get_receipts(
             number);
 
         if (exists) {
-            LogDetail()(OT_METHOD)(__func__)(": Receipt ")(
+            LogDetail()(OT_PRETTY_CLASS(__func__))("Receipt ")(
                 number)(" already exists.")
                 .Flush();
             ++good;
@@ -1967,12 +1989,13 @@ auto Operation::get_receipts(
         }
 
         if (download_box_receipt(accountID, type, number)) {
-            LogDetail()(OT_METHOD)(__func__)(": Downloaded receipt ")(number)
+            LogDetail()(OT_PRETTY_CLASS(__func__))("Downloaded receipt ")(
+                number)
                 .Flush();
             ++good;
         } else {
-            LogError()(OT_METHOD)(__func__)(": Failed to download receipt ")(
-                number)
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to download receipt ")(number)
                 .Flush();
         }
     }
@@ -1997,13 +2020,15 @@ auto Operation::IssueUnitDefinition(
     const otx::context::Server::ExtraArgs& args) -> bool
 {
     if (false == bool(unitDefinition)) {
-        LogError()(OT_METHOD)(__func__)(": Missing unit definition").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing unit definition")
+            .Flush();
 
         return false;
     }
 
     if (false == proto::Validate(*unitDefinition, VERBOSE)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid unit definition").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid unit definition")
+            .Flush();
 
         return false;
     }
@@ -2057,7 +2082,7 @@ void Operation::nymbox_post()
         auto result = context.RefreshNymbox(api_, reason_);
 
         if (false == bool(result)) {
-            LogTrace()(OT_METHOD)(__func__)(": Context is busy").Flush();
+            LogTrace()(OT_PRETTY_CLASS(__func__))("Context is busy").Flush();
 
             return;
         }
@@ -2105,7 +2130,8 @@ void Operation::nymbox_pre()
             auto result = context.RefreshNymbox(api_, reason_);
 
             if (false == bool(result)) {
-                LogTrace()(OT_METHOD)(__func__)(": Context is busy").Flush();
+                LogTrace()(OT_PRETTY_CLASS(__func__))("Context is busy")
+                    .Flush();
 
                 break;
             }
@@ -2154,13 +2180,13 @@ auto Operation::process_inbox(
         ~Cleanup()
         {
             if (recover_ && (0 != number_)) {
-                LogError()(OT_METHOD)(__func__)(": Recovering unused number ")(
-                    number_)(".")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Recovering unused number ")(number_)(".")
                     .Flush();
                 const bool recovered = context_.RecoverAvailableNumber(number_);
 
                 if (false == recovered) {
-                    LogError()(OT_METHOD)(__func__)("Failed.").Flush();
+                    LogError()(OT_PRETTY_CLASS(__func__))("Failed.").Flush();
                 }
             }
         }
@@ -2180,13 +2206,13 @@ auto Operation::process_inbox(
         (inbox->GetTransactionCount() > 0) ? inbox->GetTransactionCount() : 0;
 
     if (1 > count) {
-        LogDetail()(OT_METHOD)(__func__)(": No items to accept in account ")(
-            accountID)
+        LogDetail()(OT_PRETTY_CLASS(__func__))(
+            "No items to accept in account ")(accountID)
             .Flush();
 
         return true;
     } else {
-        LogDetail()(OT_METHOD)(__func__)(": ")(
+        LogDetail()(OT_PRETTY_CLASS(__func__))(
             count)(" items to accept in account ")(accountID)
             .Flush();
         redownload_accounts_.insert(accountID);
@@ -2199,8 +2225,8 @@ auto Operation::process_inbox(
             accountID, context, *inbox);
 
     if (false == bool(response)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Error instantiating processInbox for account: ")(accountID)
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Error instantiating processInbox for account: ")(accountID)
             .Flush();
 
         return false;
@@ -2212,7 +2238,8 @@ auto Operation::process_inbox(
         auto transaction = inbox->GetTransactionByIndex(i);
 
         if (false == bool(transaction)) {
-            LogError()(OT_METHOD)(__func__)(": Invalid transaction").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid transaction")
+                .Flush();
 
             return false;
         }
@@ -2224,7 +2251,7 @@ auto Operation::process_inbox(
             transaction = inbox->GetTransaction(number);
 
             if (false == bool(transaction)) {
-                LogError()(OT_METHOD)(__func__)(": Unable to load item: ")(
+                LogError()(OT_PRETTY_CLASS(__func__))("Unable to load item: ")(
                     number)(".")
                     .Flush();
 
@@ -2238,10 +2265,11 @@ auto Operation::process_inbox(
                 api_.Workflow().ClearCheque(context.Nym()->ID(), *transaction);
 
             if (workflowUpdated) {
-                LogVerbose()(OT_METHOD)(__func__)(": Updated workflow.")
+                LogVerbose()(OT_PRETTY_CLASS(__func__))("Updated workflow.")
                     .Flush();
             } else {
-                LogError()(OT_METHOD)(__func__)(": Failed to update workflow.")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Failed to update workflow.")
                     .Flush();
             }
         }
@@ -2250,7 +2278,8 @@ auto Operation::process_inbox(
             accountID, true, context, *transaction, *response);
 
         if (false == accepted) {
-            LogError()(OT_METHOD)(__func__)(": Failed to accept item: ")(number)
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to accept item: ")(
+                number)
                 .Flush();
 
             return false;
@@ -2261,7 +2290,7 @@ auto Operation::process_inbox(
         accountID, context, *response, *inbox, *outbox, reason_);
 
     if (false == finalized) {
-        LogError()(OT_METHOD)(__func__)(": Unable to finalize response.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to finalize response.")
             .Flush();
 
         return false;
@@ -2270,7 +2299,7 @@ auto Operation::process_inbox(
     auto message = construct_process_inbox(accountID, *response, context);
 
     if (false == bool(message)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to construct command")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct command")
             .Flush();
 
         return false;
@@ -2279,7 +2308,7 @@ auto Operation::process_inbox(
     auto result = context.Queue(api_, message, reason_, {});
 
     while (false == bool(result)) {
-        LogTrace()(OT_METHOD)(__func__)(": Context is busy").Flush();
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Context is busy").Flush();
         Sleep(std::chrono::milliseconds(OPERATION_POLL_MILLISECONDS));
         result = context.Queue(api_, message, reason_, {});
     }
@@ -2292,8 +2321,8 @@ auto Operation::process_inbox(
     const auto [status, reply] = lastResult;
 
     if (otx::LastReplyStatus::MessageSuccess != status) {
-        LogError()(OT_METHOD)(__func__)(": Failed to deliver processInbox ")(
-            value(status))
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to deliver processInbox ")(value(status))
             .Flush();
 
         return false;
@@ -2306,11 +2335,11 @@ auto Operation::process_inbox(
     const auto success = evaluate_transaction_reply(accountID, *reply);
 
     if (success) {
-        LogDetail()(OT_METHOD)(__func__)(": Success processing inbox ")(
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Success processing inbox ")(
             accountID)
             .Flush();
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failure processing inbox ")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Failure processing inbox ")(
             accountID)
             .Flush();
     }
@@ -2406,14 +2435,15 @@ auto Operation::SendCash(
     const auto pRecipient = api_.Wallet().Nym(recipientID);
 
     if (false == bool(pRecipient)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to load recipient nym")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load recipient nym")
             .Flush();
 
         return false;
     }
 
     if (false == bool(pSender)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to load sender nym").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load sender nym")
+            .Flush();
 
         return false;
     }
@@ -2436,14 +2466,14 @@ auto Operation::SendCash(
             api::client::Workflow::InstantiatePurse(api_, workflow);
 
         if (api::client::PaymentWorkflowState::Unsent != state) {
-            LogError()(OT_METHOD)(__func__)(": Incorrect workflow state")
+            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect workflow state")
                 .Flush();
 
             return false;
         }
 
         if (false == bool(pPurse)) {
-            LogError()(OT_METHOD)(__func__)(": Purse not found").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Purse not found").Flush();
 
             return false;
         }
@@ -2451,15 +2481,15 @@ auto Operation::SendCash(
         auto& purse = *pPurse;
 
         if (false == purse.Unlock(sender, reason_)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to unlock pursed")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to unlock pursed")
                 .Flush();
 
             return false;
         }
 
         if (false == purse.AddNym(recipient, reason_)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to encrypt purse to recipient")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to encrypt purse to recipient")
                 .Flush();
 
             return false;
@@ -2473,7 +2503,7 @@ auto Operation::SendCash(
 
         return start(lock, otx::OperationType::SendCash, {});
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return false;
     }
@@ -2577,7 +2607,8 @@ auto Operation::Start(
             break;
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Incorrect arguments").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect arguments")
+                .Flush();
 
             return false;
         }
@@ -2599,7 +2630,8 @@ auto Operation::Start(
             break;
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Incorrect arguments").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect arguments")
+                .Flush();
 
             return false;
         }
@@ -2622,7 +2654,8 @@ auto Operation::Start(
             break;
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Incorrect arguments").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect arguments")
+                .Flush();
 
             return false;
         }
@@ -2670,18 +2703,18 @@ auto Operation::state_machine() -> bool
             nymbox_post();
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unexpected state").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unexpected state").Flush();
         }
     }
 
     if (State::Idle == state_.load()) {
-        LogDetail()(OT_METHOD)(__func__)(": Success").Flush();
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Success").Flush();
 
         return false;
     }
 
     if (error_count_ > MAX_ERROR_COUNT) {
-        LogError()(OT_METHOD)(__func__)(": Error count exceeded").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Error count exceeded").Flush();
         set_result({otx::LastReplyStatus::Unknown, nullptr});
         state_.store(State::Idle);
 
@@ -2728,7 +2761,7 @@ void Operation::transaction_numbers()
     auto result = context.Queue(api_, message, reason_, {});
 
     if (false == bool(result)) {
-        LogTrace()(OT_METHOD)(__func__)(": Context is busy").Flush();
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Context is busy").Flush();
         Sleep(std::chrono::milliseconds(OPERATION_POLL_MILLISECONDS));
 
         return;
@@ -2743,7 +2776,7 @@ void Operation::transaction_numbers()
 
         while (false == bool(nymbox)) {
             if (shutdown().load()) { return; }
-            LogTrace()(OT_METHOD)(__func__)(": Context is busy").Flush();
+            LogTrace()(OT_PRETTY_CLASS(__func__))("Context is busy").Flush();
             Sleep(std::chrono::milliseconds(OPERATION_POLL_MILLISECONDS));
             nymbox = context.RefreshNymbox(api_, reason_);
         }
@@ -2798,7 +2831,7 @@ void Operation::update_workflow_convey_payment(
     const auto loaded = cheque.LoadContractFromString(payment_->Payment());
 
     if (false == loaded) {
-        LogError()(OT_METHOD)(__func__)(": Failed to load cheque.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load cheque.").Flush();
 
         return;
     }
@@ -2812,10 +2845,11 @@ void Operation::update_workflow_convey_payment(
     }
 
     if (workflowUpdated) {
-        LogDetail()(OT_METHOD)(__func__)(": Successfully updated workflow.")
+        LogDetail()(OT_PRETTY_CLASS(__func__))("Successfully updated workflow.")
             .Flush();
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to update workflow.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to update workflow.")
+            .Flush();
     }
 }
 

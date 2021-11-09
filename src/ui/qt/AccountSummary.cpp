@@ -20,8 +20,6 @@
 #include "ui/accountsummary/AccountSummaryItem.hpp"
 #include "ui/accountsummary/IssuerItem.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::AccountSummaryItem::"
-
 namespace opentxs::factory
 {
 auto AccountSummaryQtModel(ui::internal::AccountSummary& parent) noexcept
@@ -88,7 +86,7 @@ auto AccountSummaryItem::qt_data(
                           .Internal()
                           .amount_.convert_to<unsigned long long>();
             } catch (const std::exception& e) {
-                LogError()(OT_METHOD)(__func__)(" Error getting balance.")(
+                LogError()(OT_PRETTY_CLASS(__func__))("Error getting balance.")(
                     e.what())
                     .Flush();
                 out = {};

@@ -23,8 +23,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::ContactItem::"
-
 namespace opentxs
 {
 static auto extract_attributes(const proto::ContactItem& serialized)
@@ -100,8 +98,9 @@ struct ContactItem::Imp {
         , subtype_(subtype)
     {
         if (0 == version) {
-            LogError()(OT_METHOD)(__func__)(": Warning: malformed version. "
-                                            "Setting to ")(parentVersion)(".")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Warning: malformed version. "
+                "Setting to ")(parentVersion)(".")
                 .Flush();
         }
     }

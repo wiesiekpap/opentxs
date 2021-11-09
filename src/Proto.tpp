@@ -3,8 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_PROTO_TPP
-#define OPENTXS_PROTO_TPP
+#pragma once
 
 #include "Proto.hpp"            // IWYU pragma: associated
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -105,4 +104,3 @@ Output StringToProto(const String& input)
 }
 }  // namespace proto
 }  // namespace opentxs
-#endif

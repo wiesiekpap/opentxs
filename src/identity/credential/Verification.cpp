@@ -16,6 +16,7 @@
 #include "identity/credential/Base.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -31,8 +32,6 @@
 #include "opentxs/protobuf/VerificationIdentity.pb.h"
 #include "opentxs/protobuf/VerificationSet.pb.h"
 #include "opentxs/util/Log.hpp"
-
-#define OT_METHOD "opentxs::identity::credential::Verification::"
 
 namespace opentxs
 {
@@ -182,7 +181,8 @@ auto Verification::serialize(
                 serializedCredential->add_signature();
             *serializedMasterSignature = *masterSignature;
         } else {
-            LogError()(OT_METHOD)(__func__)(": Failed to get master signature.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to get master signature.")
                 .Flush();
         }
     }
@@ -202,7 +202,8 @@ auto Verification::verify_internally(const Lock& lock) const -> bool
             bool valid = parent_.Verify(claim);
 
             if (!valid) {
-                LogError()(OT_METHOD)(__func__)(": Invalid claim verification.")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    "Invalid claim verification.")
                     .Flush();
 
                 return false;

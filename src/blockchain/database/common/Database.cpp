@@ -26,15 +26,11 @@ extern "C" {
 
 #include "blockchain/database/common/BlockFilter.hpp"
 #include "blockchain/database/common/BlockHeaders.hpp"
-#if OPENTXS_BLOCK_STORAGE_ENABLED
 #include "blockchain/database/common/Blocks.hpp"
-#endif  // OPENTXS_BLOCK_STORAGE_ENABLED
 #include "blockchain/database/common/Bulk.hpp"
 #include "blockchain/database/common/Config.hpp"
 #include "blockchain/database/common/Peers.hpp"
-#if OPENTXS_BLOCK_STORAGE_ENABLED
 #include "blockchain/database/common/Sync.hpp"
-#endif  // OPENTXS_BLOCK_STORAGE_ENABLED
 #include "blockchain/database/common/Wallet.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -46,9 +42,6 @@ extern "C" {
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
-
-// #define OT_METHOD
-// "opentxs::blockchain::database::common::Database::"
 
 constexpr auto false_byte_ = std::byte{0x0};
 constexpr auto true_byte_ = std::byte{0x1};
@@ -78,16 +71,14 @@ struct Database::Imp {
     BlockHeader headers_;
     Peers peers_;
     BlockFilter filters_;
-#if OPENTXS_BLOCK_STORAGE_ENABLED
     Blocks blocks_;
     Sync sync_;
-#endif  // OPENTXS_BLOCK_STORAGE_ENABLED
     Wallet wallet_;
     Configuration config_;
 
     static auto block_storage_enabled() noexcept -> bool
     {
-        return 1 == OPENTXS_BLOCK_STORAGE_ENABLED;
+        return 1 == storage_enabled_;
     }
     static auto block_storage_level(
         const Options& args,
@@ -148,10 +139,10 @@ struct Database::Imp {
     }
     static auto block_storage_level_default() noexcept -> BlockStorage
     {
-        if (2 == OPENTXS_DEFAULT_BLOCK_STORAGE_POLICY) {
+        if (2 == default_storage_level_) {
 
             return BlockStorage::All;
-        } else if (1 == OPENTXS_DEFAULT_BLOCK_STORAGE_POLICY) {
+        } else if (1 == default_storage_level_) {
 
             return BlockStorage::Cache;
         } else {
@@ -340,10 +331,8 @@ struct Database::Imp {
         , headers_(lmdb_, bulk_)
         , peers_(api_, lmdb_)
         , filters_(api_, lmdb_, bulk_)
-#if OPENTXS_BLOCK_STORAGE_ENABLED
         , blocks_(lmdb_, bulk_)
         , sync_(api_, lmdb_, blocks_path_->Get())
-#endif  // OPENTXS_BLOCK_STORAGE_ENABLED
         , wallet_(api_, blockchain, lmdb_, bulk_)
         , config_(api_, lmdb_)
     {
@@ -430,20 +419,12 @@ auto Database::BlockHeaderExists(const BlockHash& hash) const noexcept -> bool
 
 auto Database::BlockExists(const BlockHash& block) const noexcept -> bool
 {
-#if OPENTXS_BLOCK_STORAGE_ENABLED
     return imp_.blocks_.Exists(block);
-#else
-    return false;
-#endif
 }
 
 auto Database::BlockLoad(const BlockHash& block) const noexcept -> BlockReader
 {
-#if OPENTXS_BLOCK_STORAGE_ENABLED
     return imp_.blocks_.Load(block);
-#else
-    return BlockReader{};
-#endif
 }
 
 auto Database::BlockPolicy() const noexcept -> BlockStorage
@@ -454,11 +435,7 @@ auto Database::BlockPolicy() const noexcept -> BlockStorage
 auto Database::BlockStore(const BlockHash& block, const std::size_t bytes)
     const noexcept -> BlockWriter
 {
-#if OPENTXS_BLOCK_STORAGE_ENABLED
     return imp_.blocks_.Store(block, bytes);
-#else
-    return {};
-#endif
 }
 
 auto Database::DeleteSyncServer(const std::string& endpoint) const noexcept
@@ -575,11 +552,7 @@ auto Database::LoadSync(
     const Height height,
     opentxs::network::blockchain::sync::Data& output) const noexcept -> bool
 {
-#if OPENTXS_BLOCK_STORAGE_ENABLED
     return imp_.sync_.Load(chain, height, output);
-#else
-    return false;
-#endif
 }
 
 auto Database::LookupTransactions(const PatternID pattern) const noexcept
@@ -623,11 +596,7 @@ auto Database::LoadEnabledChains() const noexcept -> std::vector<EnabledChain>
 auto Database::ReorgSync(const Chain chain, const Height height) const noexcept
     -> bool
 {
-#if OPENTXS_BLOCK_STORAGE_ENABLED
     return imp_.sync_.Reorg(chain, height);
-#else
-    return false;
-#endif
 }
 
 auto Database::StoreBlockHeader(
@@ -667,11 +636,7 @@ auto Database::StoreFilters(
 auto Database::StoreSync(const Chain chain, const SyncItems& items)
     const noexcept -> bool
 {
-#if OPENTXS_BLOCK_STORAGE_ENABLED
     return imp_.sync_.Store(chain, items);
-#else
-    return false;
-#endif
 }
 
 auto Database::StoreTransaction(
@@ -682,13 +647,7 @@ auto Database::StoreTransaction(
 
 auto Database::SyncTip(const Chain chain) const noexcept -> Height
 {
-#if OPENTXS_BLOCK_STORAGE_ENABLED
     return imp_.sync_.Tip(chain);
-#else
-    static const auto null = make_blank<Position>::value(imp_.api_);
-
-    return null.first;
-#endif
 }
 
 auto Database::UpdateContact(const Contact& contact) const noexcept

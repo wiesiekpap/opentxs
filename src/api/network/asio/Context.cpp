@@ -17,8 +17,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 
-// #define OT_METHOD "opentxs::api::network::asio::Context::Imp::"
-
 namespace opentxs::api::network::asio
 {
 struct Context::Imp {

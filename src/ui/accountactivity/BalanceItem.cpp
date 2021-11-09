@@ -36,8 +36,6 @@
 #include "ui/accountactivity/TransferBalanceItem.hpp"
 #include "ui/base/Widget.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::BalanceItem::"
-
 namespace opentxs::factory
 {
 auto BalanceItem(
@@ -96,8 +94,8 @@ auto BalanceItem(
         }
         case api::client::PaymentWorkflowType::Error:
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unhandled workflow type (")(
-                type)(")")
+            LogError()("opentxs::factory::")(__func__)(
+                "Unhandled workflow type (")(type)(")")
                 .Flush();
         }
     }

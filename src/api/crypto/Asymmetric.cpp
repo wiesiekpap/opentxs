@@ -16,6 +16,7 @@
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Data.hpp"
@@ -35,8 +36,6 @@
 #include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-#define OT_METHOD "opentxs::api::crypto::implementation::Asymmetric::"
 
 namespace opentxs::factory
 {
@@ -104,7 +103,7 @@ auto Asymmetric::instantiate_hd_key(
                 reason);
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Invalid key type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key type").Flush();
 
             return std::make_unique<NullType>();
         }
@@ -134,7 +133,7 @@ auto Asymmetric::instantiate_serialized_key(
                 serialized);
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Invalid key type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key type").Flush();
 
             return std::make_unique<NullType>();
         }
@@ -153,7 +152,8 @@ auto Asymmetric::InstantiateECKey(const proto::AsymmetricKey& serialized)
             return instantiate_serialized_key<ReturnType, NullType>(serialized);
         }
         case (proto::AKEYTYPE_LEGACY): {
-            LogError()(OT_METHOD)(__func__)(": Wrong key type (RSA)").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Wrong key type (RSA)")
+                .Flush();
         } break;
         default: {
         }
@@ -174,7 +174,8 @@ auto Asymmetric::InstantiateHDKey(const proto::AsymmetricKey& serialized)
             return instantiate_serialized_key<ReturnType, NullType>(serialized);
         }
         case (proto::AKEYTYPE_LEGACY): {
-            LogError()(OT_METHOD)(__func__)(": Wrong key type (RSA)").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Wrong key type (RSA)")
+                .Flush();
         } break;
         default: {
         }
@@ -269,7 +270,7 @@ auto Asymmetric::InstantiateKey(const proto::AsymmetricKey& serialized)
                 serialized);
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Invalid key type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key type").Flush();
 
             return std::make_unique<NullType>();
         }
@@ -379,7 +380,7 @@ auto Asymmetric::InstantiateSecp256k1Key(
         api_.Crypto().Internal().EllipticProvider(Type::Secp256k1);
 
     if (false == ecdsa.ScalarMultiplyBase(priv.Bytes(), pub->WriteInto())) {
-        LogError()(OT_METHOD)(__func__)(": Failed to calculate public key")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate public key")
             .Flush();
 
         return {};
@@ -532,7 +533,7 @@ auto Asymmetric::NewKey(
                 reason);
         }
         default: {
-            LogError()(OT_METHOD)(__func__)(": Invalid key type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key type").Flush();
 
             return {};
         }

@@ -20,8 +20,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::OpenDHT::"
-
 namespace opentxs::factory
 {
 auto OpenDHT(const network::DhtConfig& config) noexcept
@@ -120,8 +118,8 @@ auto OpenDHT::Insert(
         if (false == bool(pValue)) { return; }
 
         if (value.size() > dht::MAX_VALUE_SIZE) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Error: data size exceeds DHT limits.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Error: data size exceeds DHT limits.")
                 .Flush();
             return;
         }

@@ -110,7 +110,11 @@ target_include_directories(
   opentxs-test-helpers SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
 target_link_libraries(
-  opentxs-test-helpers PUBLIC opentxs::libopentxs Boost::filesystem Boost::program_options
+  opentxs-test-helpers
+  PUBLIC
+    opentxs::libopentxs
+    Boost::filesystem
+    Boost::program_options
 )
 
 if(OT_QT_EXPORT)

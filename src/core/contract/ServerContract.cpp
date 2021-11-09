@@ -39,8 +39,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::contract::implementation::Server::"
-
 namespace opentxs
 {
 using ReturnType = contract::implementation::Server;
@@ -92,21 +90,16 @@ auto Factory::ServerContract(
         Lock lock(contract.lock_);
 
         if (false == contract.update_signature(lock, reason)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to sign contract")
-                .Flush();
-
-            return nullptr;
+            throw std::runtime_error{"Failed to sign contract"};
         }
 
         if (!contract.validate(lock)) {
-            LogError()(OT_METHOD)(__func__)(": Invalid contract").Flush();
-
-            return nullptr;
+            throw std::runtime_error{"Invalid contract"};
         }
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_STATIC(Factory, __func__))(e.what()).Flush();
 
         return {};
     }
@@ -348,7 +341,7 @@ auto Server::Serialize(AllocateOutput destination, bool includeNym) const
 {
     auto serialized = proto::ServerContract{};
     if (false == Serialize(serialized, includeNym)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize server.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize server.")
             .Flush();
         return false;
     }
@@ -416,7 +409,7 @@ auto Server::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogError()(OT_METHOD)(__func__)(": failed to create signature.")
+        LogError()(OT_PRETTY_CLASS(__func__))("failed to create signature.")
             .Flush();
     }
 
@@ -430,7 +423,7 @@ auto Server::validate(const Lock& lock) const -> bool
     if (nym_) { validNym = nym_->VerifyPseudonym(); }
 
     if (!validNym) {
-        LogError()(OT_METHOD)(__func__)(": Invalid nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid nym.").Flush();
 
         return false;
     }
@@ -438,13 +431,13 @@ auto Server::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogError()(OT_METHOD)(__func__)(": Invalid syntax.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 > signatures_.size()) {
-        LogError()(OT_METHOD)(__func__)(": Missing signature.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing signature.").Flush();
 
         return false;
     }
@@ -455,7 +448,7 @@ auto Server::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogError()(OT_METHOD)(__func__)(": Invalid signature.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature.").Flush();
 
         return false;
     }

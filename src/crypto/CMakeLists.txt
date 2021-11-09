@@ -3,14 +3,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(opentxs-crypto OBJECT "")
-
 add_subdirectory(bip32)
 add_subdirectory(key)
 add_subdirectory(library)
 
 target_sources(
-  opentxs-crypto
+  opentxs-common
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/crypto/Crypto.hpp"
     "Bip39.cpp"
@@ -39,20 +37,9 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/SignatureRole.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Types.hpp"
 )
-target_link_libraries(
-  opentxs-crypto
-  PRIVATE
-    Boost::headers
-    opentxs::messages
-    unofficial-sodium::sodium
-)
+target_link_libraries(opentxs-common PRIVATE unofficial-sodium::sodium)
 target_link_libraries(opentxs PUBLIC unofficial-sodium::sodium)
-target_include_directories(
-  opentxs-crypto SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-crypto PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-crypto>)
-add_dependencies(opentxs-crypto generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

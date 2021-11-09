@@ -28,9 +28,6 @@
 #include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::blockchain::block::bitcoin::implementation::Outputs::"
-
 namespace opentxs::factory
 {
 using ReturnType = blockchain::block::bitcoin::implementation::Outputs;
@@ -124,7 +121,7 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     auto output = std::vector<Space>{};
-    LogTrace()(OT_METHOD)(__func__)(": processing ")(size())(" outputs")
+    LogTrace()(OT_PRETTY_CLASS(__func__))("processing ")(size())(" outputs")
         .Flush();
 
     for (const auto& txout : *this) {
@@ -135,7 +132,8 @@ auto Outputs::ExtractElements(const filter::Type style) const noexcept
             std::make_move_iterator(temp.end()));
     }
 
-    LogTrace()(OT_METHOD)(__func__)(": extracted ")(output.size())(" elements")
+    LogTrace()(OT_PRETTY_CLASS(__func__))("extracted ")(output.size())(
+        " elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -152,7 +150,7 @@ auto Outputs::FindMatches(
 
     for (const auto& txout : *this) {
         auto temp = txout.Internal().FindMatches(txid, type, patterns);
-        LogTrace()(OT_METHOD)(__func__)(": Verified ")(temp.second.size())(
+        LogTrace()(OT_PRETTY_CLASS(__func__))("Verified ")(temp.second.size())(
             " matches in output ")(++index)
             .Flush();
         output.second.insert(
@@ -210,7 +208,8 @@ auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
     const auto count = size();
 
     if (count != rhs.size()) {
-        LogError()(OT_METHOD)(__func__)(": Wrong number of outputs").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Wrong number of outputs")
+            .Flush();
 
         return false;
     }
@@ -220,7 +219,7 @@ auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
         auto& r = rhs.at(i).Internal();
 
         if (false == l.MergeMetadata(r)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to merge output ")(i)
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to merge output ")(i)
                 .Flush();
 
             return false;
@@ -247,7 +246,8 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
     -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogError()(OT_METHOD)(__func__)(": Invalid output allocator").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
+            .Flush();
 
         return std::nullopt;
     }
@@ -256,7 +256,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to allocate output bytes")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -275,7 +275,7 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
         const auto bytes = row->Serialize(preallocated(remaining, it));
 
         if (false == bytes.has_value()) {
-            LogError()(OT_METHOD)(__func__)(": Failed to serialize script")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize script")
                 .Flush();
 
             return std::nullopt;

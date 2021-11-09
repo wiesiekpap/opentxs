@@ -20,8 +20,6 @@
 #include "opentxs/core/Flag.hpp"
 #include "storage/Config.hpp"
 
-// #define OT_METHOD "opentxs::storage::driver::filesystem::GarbageCollected::"
-
 namespace opentxs::factory
 {
 auto StorageFSGC(

@@ -48,8 +48,6 @@
 
 template class opentxs::Pimpl<opentxs::crypto::key::Asymmetric>;
 
-#define OT_METHOD "opentxs::crypto::key::implementation::Asymmetric::"
-
 namespace opentxs::crypto::key
 {
 const VersionNumber Asymmetric::DefaultVersion{2};
@@ -261,7 +259,8 @@ auto Asymmetric::CalculateHash(
         output->WriteInto());
 
     if (false == hashed) {
-        LogError()(OT_METHOD)(__func__)(": Failed to calculate hash").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate hash")
+            .Flush();
 
         return Data::Factory();
     }
@@ -272,7 +271,7 @@ auto Asymmetric::CalculateHash(
 auto Asymmetric::CalculateID(Identifier& output) const noexcept -> bool
 {
     if (false == HasPublic()) {
-        LogError()(OT_METHOD)(__func__)(": Missing public key").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing public key").Flush();
 
         return false;
     }
@@ -290,7 +289,7 @@ auto Asymmetric::CalculateTag(
     auto lock = Lock{lock_};
 
     if (false == has_private_) {
-        LogError()(OT_METHOD)(__func__)(": Not a private key.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Not a private key.").Flush();
 
         return false;
     }
@@ -303,15 +302,15 @@ auto Asymmetric::CalculateTag(
                 .GetPublicKey();
 
         if (false == get_tag(lock, key, nym.GetMasterCredID(), reason, tag)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to calculate tag.")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate tag.")
                 .Flush();
 
             return false;
         }
 
         if (false == get_password(lock, key, reason, password)) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to calculate session password.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to calculate session password.")
                 .Flush();
 
             return false;
@@ -319,7 +318,7 @@ auto Asymmetric::CalculateTag(
 
         return true;
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Invalid credential").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid credential").Flush();
 
         return false;
     }
@@ -334,7 +333,7 @@ auto Asymmetric::CalculateTag(
     auto lock = Lock{lock_};
 
     if (false == has_private_) {
-        LogError()(OT_METHOD)(__func__)(": Not a private key.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Not a private key.").Flush();
 
         return false;
     }
@@ -350,7 +349,7 @@ auto Asymmetric::CalculateSessionPassword(
     auto lock = Lock{lock_};
 
     if (false == has_private_) {
-        LogError()(OT_METHOD)(__func__)(": Not a private key.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Not a private key.").Flush();
 
         return false;
     }
@@ -392,7 +391,9 @@ auto Asymmetric::encrypt_key(
     auto output = std::make_unique<proto::Ciphertext>();
 
     if (false == bool(output)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to construct output").Flush();
+        LogError()(OT_PRETTY_STATIC(Asymmetric, __func__))(
+            "Failed to construct output")
+            .Flush();
 
         return {};
     }
@@ -430,7 +431,9 @@ auto Asymmetric::encrypt_key(
         sessionKey.Encrypt(plaintext, reason, ciphertext, attach);
 
     if (false == encrypted) {
-        LogError()(OT_METHOD)(__func__)(": Failed to encrypt key").Flush();
+        LogError()(OT_PRETTY_STATIC(Asymmetric, __func__))(
+            "Failed to encrypt key")
+            .Flush();
 
         return false;
     }
@@ -516,7 +519,8 @@ auto Asymmetric::get_tag(
                      private_key(lock, reason),
                      SecretStyle::Default,
                      password)) {
-        LogVerbose()(OT_METHOD)(__func__)(": Failed to calculate shared secret")
+        LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            "Failed to calculate shared secret")
             .Flush();
 
         return false;
@@ -527,7 +531,7 @@ auto Asymmetric::get_tag(
                      password->Bytes(),
                      credential.Bytes(),
                      hashed->WriteInto(Secret::Mode::Mem))) {
-        LogError()(OT_METHOD)(__func__)(": Failed to hash shared secret")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to hash shared secret")
             .Flush();
 
         return false;
@@ -608,14 +612,14 @@ auto Asymmetric::NewSignature(
 
 auto Asymmetric::Path() const noexcept -> const std::string
 {
-    LogError()(OT_METHOD)(__func__)(": Incorrect key type.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Incorrect key type.").Flush();
 
     return "";
 }
 
 auto Asymmetric::Path(proto::HDPath&) const noexcept -> bool
 {
-    LogError()(OT_METHOD)(__func__)(": Incorrect key type.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Incorrect key type.").Flush();
 
     return false;
 }
@@ -635,7 +639,7 @@ auto Asymmetric::private_key(const Lock& lock, const PasswordPrompt& reason)
 
         return get_private_key(lock, reason).Bytes();
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
         return {};
     }
@@ -688,7 +692,8 @@ auto Asymmetric::Sign(
     try {
         signature = NewSignature(credential, role, type);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(": Invalid signature role.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature role.")
+            .Flush();
 
         return false;
     }
@@ -708,7 +713,7 @@ auto Asymmetric::Sign(
     auto lock = Lock{lock_};
 
     if (false == has_private_) {
-        LogError()(OT_METHOD)(__func__)(": Missing private key").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing private key").Flush();
 
         return false;
     }
@@ -717,7 +722,8 @@ auto Asymmetric::Sign(
         engine().Sign(preimage, private_key(lock, reason), hash, output);
 
     if (false == success) {
-        LogError()(OT_METHOD)(__func__)(": Failed to sign preimage").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign preimage")
+            .Flush();
     }
 
     return success;
@@ -797,7 +803,7 @@ auto Asymmetric::Verify(const Data& plaintext, const proto::Signature& sig)
     const noexcept -> bool
 {
     if (false == HasPublic()) {
-        LogError()(OT_METHOD)(__func__)(": Missing public key").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Missing public key").Flush();
 
         return false;
     }
@@ -809,7 +815,7 @@ auto Asymmetric::Verify(const Data& plaintext, const proto::Signature& sig)
         translate(sig.hashtype()));
 
     if (false == output) {
-        LogError()(OT_METHOD)(__func__)(": Invalid signature").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature").Flush();
     }
 
     return output;

@@ -36,8 +36,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define OT_METHOD "opentxs::OTAPI_Func::"
-
 auto VerifyStringVal(const std::string& nValue) -> bool
 {
     return 0 < nValue.length();
@@ -186,8 +184,8 @@ OTAPI_Func::OTAPI_Func(
             label_ = label;
         } break;
         default: {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
         }
@@ -212,8 +210,8 @@ OTAPI_Func::OTAPI_Func(
             accountID_ = nymID2;
         } break;
         default: {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
         }
@@ -241,8 +239,8 @@ OTAPI_Func::OTAPI_Func(
             paymentPlan_.reset(paymentPlan.release());
         } break;
         default: {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
         }
@@ -277,15 +275,15 @@ OTAPI_Func::OTAPI_Func(
                 transactionNumber_ =
                     int64val.Internal().amount_.convert_to<std::int64_t>();
             } catch (const std::exception& e) {
-                LogConsole()(OT_METHOD)(__func__)(
-                    ": Error setting transaction number. ")(e.what())
+                LogConsole()(OT_PRETTY_CLASS(__func__))(
+                    "Error setting transaction number. ")(e.what())
                     .Flush();
                 OT_FAIL
             }
         } break;
         default: {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
         }
@@ -308,11 +306,11 @@ OTAPI_Func::OTAPI_Func(
         "Warning: Empty std::string passed to OTAPI_Func.OTAPI_Func() as: ";
 
     if (!VerifyStringVal(clause)) {
-        LogError()(OT_METHOD)(__func__)(": clause.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("clause.").Flush();
     }
 
     if (!VerifyStringVal(parameter)) {
-        LogError()(OT_METHOD)(__func__)(": parameter.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("parameter.").Flush();
     }
 
     nTransNumsNeeded_ = 1;
@@ -322,8 +320,8 @@ OTAPI_Func::OTAPI_Func(
         clause_ = clause;
         parameter_ = parameter;
     } else {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
             "ERROR!!!!!!")
             .Flush();
         OT_FAIL
@@ -346,7 +344,7 @@ OTAPI_Func::OTAPI_Func(
         "Warning: Empty std::string passed to OTAPI_Func.OTAPI_Func() as: ";
 
     if (!VerifyStringVal(agentName)) {
-        LogError()(OT_METHOD)(__func__)(": agentName.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("agentName.").Flush();
     }
 
     nTransNumsNeeded_ = 1;
@@ -365,8 +363,8 @@ OTAPI_Func::OTAPI_Func(
 
         if (nNumsNeeded > 0) { nTransNumsNeeded_ = nNumsNeeded; }
     } else {
-        LogConsole()(OT_METHOD)(__func__)(
-            ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
+        LogConsole()(OT_PRETTY_CLASS(__func__))(
+            "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
             "ERROR!!!!!!")
             .Flush();
         OT_FAIL
@@ -400,8 +398,8 @@ OTAPI_Func::OTAPI_Func(
             recipientID_ = nymID2;
         } break;
         default: {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func(). "
                 "ERROR!!!!!!")
                 .Flush();
             OT_FAIL
@@ -470,8 +468,8 @@ OTAPI_Func::OTAPI_Func(
             activationPrice_ = activationPrice;
         } break;
         default: {
-            LogConsole()(OT_METHOD)(__func__)(
-                ": ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
+            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                "ERROR! WRONG TYPE passed to OTAPI_Func.OTAPI_Func().")
                 .Flush();
             OT_FAIL
         }
@@ -480,7 +478,7 @@ OTAPI_Func::OTAPI_Func(
 
 auto OTAPI_Func::Run(const std::size_t) -> std::string
 {
-    LogConsole()(OT_METHOD)(__func__)(": Not implemented").Flush();
+    LogConsole()(OT_PRETTY_CLASS(__func__))("Not implemented").Flush();
 
     return {};
 }
@@ -587,8 +585,8 @@ void OTAPI_Func::run()
                 if (!STOP_SIGN.empty() &&
                     ((ACTIVATION_PRICE == 0) ||
                      ((cStopSign != '<') && (cStopSign != '>')))) {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": If STOP_SIGN is provided, it must be < "
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+"If STOP_SIGN is provided, it must be < "
                         "or >, and in that case ACTIVATION_PRICE "
                         "must be non-zero.")
                         .Flush();
@@ -608,8 +606,8 @@ void OTAPI_Func::run()
 
                 if (str_asset_notary_id.empty() ||
        str_currency_notary_id.empty() || str_asset_nym_id.empty() ||
-       str_currency_nym_id.empty()) { LogError()(OT_METHOD)(__func__)(
-                        ": Failed determining server or nym ID for "
+       str_currency_nym_id.empty()) { LogError()(OT_PRETTY_CLASS(__func__))(
+"Failed determining server or nym ID for "
                         "either asset or currency account.")
                         .Flush();
 
@@ -633,7 +631,7 @@ void OTAPI_Func::run()
                 last_attempt_ =
                     api_.InternalClient().OTAPI().usageCredits(context_,
        targetID_, adjustment_); } break; default: {
-                LogError()(OT_METHOD)(__func__)(": Error: unhandled function
+                LogError()(OT_PRETTY_CLASS(__func__))("Error: unhandled function
        " "type: ")(type_)(".") .Flush();
 
                 OT_FAIL;

@@ -20,7 +20,6 @@
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Pull>;
 
-//#define OT_METHOD
 //"opentxs::network::zeromq::socket::implementation::Pull::"
 
 namespace opentxs::factory

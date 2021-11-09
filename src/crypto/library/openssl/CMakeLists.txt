@@ -4,39 +4,28 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 if(OPENSSL_EXPORT)
-  add_library(
-    opentxs-crypto-library-openssl OBJECT
-    "${opentxs_SOURCE_DIR}/src/internal/crypto/library/OpenSSL.hpp"
-    "OpenSSL.cpp"
-    "OpenSSL.hpp"
-    "OpenSSL_BIO.cpp"
-    "OpenSSL_BIO.hpp"
-  )
-  target_link_libraries(
-    opentxs-crypto-library-openssl
+  target_sources(
+    opentxs-common
     PRIVATE
-      Boost::headers
-      OpenSSL::Crypto
-      opentxs-api-crypto
-      opentxs::messages
+      "${opentxs_SOURCE_DIR}/src/internal/crypto/library/OpenSSL.hpp"
+      "OpenSSL.cpp"
+      "OpenSSL.hpp"
+      "OpenSSL_BIO.cpp"
+      "OpenSSL_BIO.hpp"
   )
+  target_link_libraries(opentxs-common PRIVATE OpenSSL::Crypto)
   target_link_libraries(opentxs PUBLIC OpenSSL::Crypto)
 
   if(RSA_EXPORT)
-    target_sources(opentxs-crypto-library-openssl PRIVATE "RSA.cpp")
+    target_sources(opentxs-common PRIVATE "RSA.cpp")
   else()
-    target_sources(opentxs-crypto-library-openssl PRIVATE "noRSA.cpp")
+    target_sources(opentxs-common PRIVATE "noRSA.cpp")
   endif()
 
   if(WIN32 AND OT_STATIC_DEPENDENCIES)
-    target_link_libraries(opentxs-crypto-library-openssl PRIVATE CRYPT32.LIB)
+    target_link_libraries(opentxs-common PRIVATE CRYPT32.LIB)
     target_link_libraries(opentxs PUBLIC CRYPT32.LIB)
   endif()
-
-  target_sources(
-    opentxs PRIVATE $<TARGET_OBJECTS:opentxs-crypto-library-openssl>
-  )
-  add_dependencies(opentxs-crypto-library-openssl generated_code)
 else()
   target_sources(opentxs-crypto-library PRIVATE "Null.cpp")
 endif()

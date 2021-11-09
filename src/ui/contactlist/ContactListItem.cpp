@@ -16,8 +16,6 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-//#define OT_METHOD "opentxs::ui::implementation::ContactListItem::"
-
 namespace opentxs::factory
 {
 auto ContactListItem(

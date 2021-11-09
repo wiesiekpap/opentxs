@@ -23,8 +23,6 @@
 #include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD "opentxs::ContactSection::"
-
 namespace opentxs
 {
 static auto check_version(
@@ -199,8 +197,8 @@ ContactSection::ContactSection(
           create_group(nym, section, item))
 {
     if (0 == version) {
-        LogError()(OT_METHOD)(__func__)(": Warning: malformed version. "
-                                        "Setting to ")(parentVersion)(".")
+        LogError()(OT_PRETTY_CLASS(__func__))("Warning: malformed version. "
+                                              "Setting to ")(parentVersion)(".")
             .Flush();
     }
 }
@@ -381,8 +379,8 @@ auto ContactSection::Serialize(AllocateOutput destination, const bool withIDs)
 {
     proto::ContactData data;
     if (false == SerializeTo(data, withIDs) || data.section_size() != 1) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to serialize the contactsection.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to serialize the contactsection.")
             .Flush();
         return false;
     }

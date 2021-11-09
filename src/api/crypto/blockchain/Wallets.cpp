@@ -16,8 +16,6 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 
-// #define OT_METHOD "opentxs::api::crypto::blockchain::Wallets::"
-
 namespace opentxs::api::crypto::blockchain
 {
 Wallets::Wallets(

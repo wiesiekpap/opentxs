@@ -25,7 +25,7 @@ namespace opentxs::server
         const char* pActionNameStr = msgIn.m_strCommand->Get();                \
                                                                                \
         if (false == NYM_IS_ALLOWED(pNymAllowedIDStr, BOOL_VAR_NAME)) {        \
-            LogConsole()(OT_METHOD)(__func__)(": Nym ")(                       \
+            LogConsole()(OT_PRETTY_CLASS(__func__))("Nym ")(                   \
                 pNymAllowedIDStr)(" attempted an action "                      \
                                   "(")(pActionNameStr)("), but "               \
                                                        "based on "             \

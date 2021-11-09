@@ -32,8 +32,6 @@ class AccountActivity;
 }  // namespace implementation
 }  // namespace opentxs
 
-#define OT_METHOD "opentxs::ui::AmountValidator::"
-
 namespace opentxs::ui
 {
 struct AmountValidator::Imp {
@@ -52,7 +50,7 @@ struct AmountValidator::Imp {
             return fix(input, static_cast<Index>(std::max(previous, 0)))
                 .c_str();
         } catch (const std::exception& e) {
-            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return {};
         }
@@ -85,7 +83,7 @@ struct AmountValidator::Imp {
 
             return State::Acceptable;
         } catch (const std::exception& e) {
-            LogTrace()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return State::Invalid;
         }

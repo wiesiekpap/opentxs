@@ -20,8 +20,6 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-// #define OT_METHOD "opentxs::crypto::key::implementation::Keypair::"
-
 template class opentxs::Pimpl<opentxs::crypto::key::Keypair>;
 
 namespace opentxs::factory

@@ -18,8 +18,6 @@ extern "C" {
 #include "internal/util/LogMacros.hpp"
 #include "util/LMDB.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::implementation::Database::"
-
 namespace opentxs::factory
 {
 auto BlockchainDatabase(

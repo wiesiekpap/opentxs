@@ -46,8 +46,6 @@
 #include "opentxs/util/Time.hpp"
 #include "ui/base/Widget.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::CustodialAccountActivity::"
-
 namespace opentxs::factory
 {
 auto CustodialAccountActivityModel(
@@ -155,9 +153,9 @@ auto CustodialAccountActivity::extract_event(
     }
 
     if (false == found) {
-        LogError()(OT_METHOD)(__func__)(": Workflow ")(workflow.id())(
-            ", type ")(workflow.type())(", state ")(workflow.state())(
-            " does not contain an event of type ")(eventType)
+        LogError()(OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+            "Workflow ")(workflow.id())(", type ")(workflow.type())(", state ")(
+            workflow.state())(" does not contain an event of type ")(eventType)
             .Flush();
 
         OT_FAIL;
@@ -206,8 +204,9 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Error:
                 case api::client::PaymentWorkflowState::Initiated:
                 default: {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Invalid workflow state (")(workflow.state())(")")
+                    LogError()(
+                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                        "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
             }
@@ -228,8 +227,9 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Accepted:
                 case api::client::PaymentWorkflowState::Initiated:
                 default: {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Invalid workflow state (")(workflow.state())(")")
+                    LogError()(
+                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                        "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
             }
@@ -262,8 +262,9 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Cancelled:
                 case api::client::PaymentWorkflowState::Expired:
                 default: {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Invalid workflow state (")(workflow.state())(")")
+                    LogError()(
+                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                        "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
             }
@@ -295,8 +296,9 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Aborted:
                 case api::client::PaymentWorkflowState::Acknowledged:
                 default: {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Invalid workflow state (")(workflow.state())(")")
+                    LogError()(
+                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                        "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
             }
@@ -329,8 +331,9 @@ auto CustodialAccountActivity::extract_rows(
                 case api::client::PaymentWorkflowState::Cancelled:
                 case api::client::PaymentWorkflowState::Expired:
                 default: {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Invalid workflow state (")(workflow.state())(")")
+                    LogError()(
+                        OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                        "Invalid workflow state (")(workflow.state())(")")
                         .Flush();
                 }
             }
@@ -339,8 +342,8 @@ auto CustodialAccountActivity::extract_rows(
         case api::client::PaymentWorkflowType::OutgoingInvoice:
         case api::client::PaymentWorkflowType::IncomingInvoice:
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unsupported workflow type (")(
-                workflow.type())(")")
+            LogError()(OT_PRETTY_STATIC(CustodialAccountActivity, __func__))(
+                "Unsupported workflow type (")(workflow.type())(")")
                 .Flush();
         }
     }
@@ -376,7 +379,7 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -419,7 +422,7 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
 
             OT_FAIL;
         }

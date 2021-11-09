@@ -17,8 +17,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-//#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Cmpctblock::"
-
 namespace opentxs::factory
 {
 // We have a header and a raw payload. Parse it.

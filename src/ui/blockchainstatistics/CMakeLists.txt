@@ -3,26 +3,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-ui-blockchainstatistics OBJECT
-  "BlockchainStatistics.cpp"
-  "BlockchainStatistics.hpp"
-  "BlockchainStatisticsItem.cpp"
-  "BlockchainStatisticsItem.hpp"
+target_sources(
+  opentxs-common
+  PRIVATE
+    "BlockchainStatistics.cpp"
+    "BlockchainStatistics.hpp"
+    "BlockchainStatisticsItem.cpp"
+    "BlockchainStatisticsItem.hpp"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/BlockchainStatistics.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/BlockchainStatisticsItem.hpp"
 )
-target_link_libraries(opentxs-ui-blockchainstatistics PRIVATE opentxs::messages)
-target_include_directories(
-  opentxs-ui-blockchainstatistics SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
-)
-target_sources(opentxs-ui-blockchainstatistics PRIVATE ${cxx-install-headers})
-target_sources(
-  opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-blockchainstatistics>
-)
-add_dependencies(opentxs-ui-blockchainstatistics generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

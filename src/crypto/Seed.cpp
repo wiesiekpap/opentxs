@@ -40,8 +40,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
 
-#define OT_METHOD "opentxs::crypto::Seed::"
-
 namespace opentxs::crypto
 {
 struct Seed::Imp {
@@ -79,8 +77,8 @@ struct Seed::Imp {
         auto lock = Lock{lock_};
 
         if (index_ > index) {
-            LogError()(OT_METHOD)(__func__)(
-                ": Index values must always increase.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Index values must always increase.")
                 .Flush();
 
             return false;
@@ -481,7 +479,8 @@ private:
         *proto.mutable_raw() = encrypted_entropy_;
 
         if (false == storage_.Store(proto, id)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to store seed.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to store seed.")
+                .Flush();
 
             return false;
         }

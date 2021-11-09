@@ -47,8 +47,6 @@
 #include "opentxs/util/Log.hpp"
 #include "ui/base/List.hpp"
 
-#define OT_METHOD "opentxs::ui::implementation::BlockchainAccountStatus::"
-
 namespace opentxs::factory
 {
 auto BlockchainAccountStatusModel(
@@ -145,7 +143,7 @@ auto BlockchainAccountStatus::load() noexcept -> void
         }();
         add_children(std::move(map));
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
     }
 }
 
@@ -156,7 +154,7 @@ auto BlockchainAccountStatus::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -199,7 +197,7 @@ auto BlockchainAccountStatus::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -367,7 +365,7 @@ auto BlockchainAccountStatus::process_account(const Message& in) noexcept
         }();
         add_children(std::move(map));
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
     }
 }
 
@@ -413,7 +411,7 @@ auto BlockchainAccountStatus::process_progress(const Message& in) noexcept
         }();
         add_children(std::move(map));
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
     }
 }
 

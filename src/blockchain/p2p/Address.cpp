@@ -23,8 +23,6 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::p2p::implementation::Address::"
-
 namespace opentxs::factory
 {
 using ReturnType = blockchain::p2p::implementation::Address;

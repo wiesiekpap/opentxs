@@ -38,8 +38,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
-#define OT_METHOD "opentxs::blockchain::database::SubchainData::"
-
 namespace opentxs::blockchain::database::wallet
 {
 template <typename Input>
@@ -110,7 +108,7 @@ struct SubchainData::Imp {
 
             return load_patterns(key, patterns);
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return {};
         }
@@ -150,7 +148,7 @@ struct SubchainData::Imp {
 
             return load_patterns(key, patterns);
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return {};
         }
@@ -238,7 +236,7 @@ struct SubchainData::Imp {
 
             return true;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }
@@ -312,7 +310,7 @@ struct SubchainData::Imp {
 
             return output;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }
@@ -403,7 +401,7 @@ private:
                 auto [first, second] = map.try_emplace(key, bytes);
                 it = first;
             } catch (const std::exception& e) {
-                LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+                LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
             }
         });
 
@@ -470,7 +468,7 @@ private:
                 auto [first, second] = map.try_emplace(subchain, bytes);
                 it = first;
             } catch (const std::exception& e) {
-                LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+                LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
             }
         });
 
@@ -539,7 +537,7 @@ private:
 
             return true;
         } catch (const std::exception& e) {
-            LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
 
             return false;
         }

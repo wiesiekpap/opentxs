@@ -30,7 +30,6 @@
 #include "opentxs/protobuf/BlockchainAccountData.pb.h"
 #include "opentxs/protobuf/BlockchainActivity.pb.h"
 
-// #define OT_METHOD
 // "opentxs::blockchain::crypto::implementation::Subaccount::"
 
 namespace opentxs::blockchain::crypto::implementation

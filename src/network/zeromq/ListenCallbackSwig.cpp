@@ -11,9 +11,6 @@
 #include "opentxs/network/zeromq/ListenCallbackSwig.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define OT_METHOD                                                              \
-    "opentxs::network::zeromq::implementation::ListenCallbackSwig::"
-
 namespace opentxs::network::zeromq
 {
 auto ListenCallback::Factory(opentxs::ListenCallbackSwig* callback)
@@ -30,7 +27,8 @@ ListenCallbackSwig::ListenCallbackSwig(opentxs::ListenCallbackSwig* callback)
     : callback_(callback)
 {
     if (nullptr == callback_) {
-        LogError()(OT_METHOD)(__func__)(": Invalid callback pointer.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid callback pointer.")
+            .Flush();
 
         OT_FAIL;
     }

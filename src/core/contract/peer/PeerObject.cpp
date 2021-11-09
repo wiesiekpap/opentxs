@@ -14,6 +14,7 @@
 #include "Proto.tpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -36,8 +37,6 @@
 #include "opentxs/protobuf/verify/PeerObject.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-#define OT_METHOD "opentxs::peer::implementation::Object::"
 
 namespace opentxs::factory
 {
@@ -160,7 +159,7 @@ auto PeerObject(
             output = std::make_unique<peer::implementation::Object>(
                 contacts, api, signerNym, serialized);
         } else {
-            LogError()(OT_METHOD)(__func__)(": Invalid peer object.").Flush();
+            throw std::runtime_error{"Invalid peer object"};
         }
 
         if (!output->Validate()) { output.reset(); }
@@ -295,7 +294,7 @@ Object::Object(
 #endif
         } break;
         default: {
-            LogError()(OT_METHOD)(__func__)(": Incorrect type.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect type.").Flush();
         }
     }
 }
@@ -403,7 +402,7 @@ auto Object::Serialize(proto::PeerObject& output) const -> bool
     auto publicNym = [&](Nym_p nym) -> proto::Nym {
         auto publicNym = proto::Nym{};
         if (false == nym->Serialize(publicNym)) {
-            LogError()(OT_METHOD)(__func__)(": Failed to serialize nym.")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize nym.")
                 .Flush();
         }
         return publicNym;
@@ -478,7 +477,7 @@ auto Object::Serialize(proto::PeerObject& output) const -> bool
         } break;
 #endif
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unknown type.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unknown type.").Flush();
             return false;
         }
     }
@@ -515,7 +514,7 @@ auto Object::Validate() const -> bool
         } break;
 #endif
         default: {
-            LogError()(OT_METHOD)(__func__)(": Unknown type.").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Unknown type.").Flush();
         }
     }
 

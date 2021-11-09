@@ -22,8 +22,6 @@
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
 
-//#define OT_METHOD "opentxs::ui::implementation::ContactSubsection::"
-
 namespace opentxs::factory
 {
 auto ContactSubsectionWidget(

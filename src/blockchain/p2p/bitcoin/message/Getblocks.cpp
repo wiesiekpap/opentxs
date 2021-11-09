@@ -17,8 +17,6 @@
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
 
-//#define OT_METHOD " opentxs::blockchain::p2p::bitcoin::message::Getblocks::"
-
 namespace opentxs::factory
 {
 // We have a header and a raw payload. Parse it.

@@ -7,8 +7,6 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "blockchain/block/Block.hpp"  // IWYU pragma: associated
 
-//  #define OT_METHOD "opentxs::blockchain::block::implementation::Block::"
-
 namespace opentxs::blockchain::block::implementation
 {
 Block::Block(const api::Session& api, const block::Header& header) noexcept

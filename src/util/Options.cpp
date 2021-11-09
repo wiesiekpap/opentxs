@@ -31,8 +31,6 @@
 
 class QObject;
 
-#define OT_METHOD "opentxs::Options::"
-
 namespace po = boost::program_options;
 
 namespace opentxs
@@ -923,7 +921,7 @@ auto Options::ParseCommandLine(int argc, char** argv) noexcept -> Options&
     try {
         imp_->parse(argc, argv);
     } catch (const std::exception& e) {
-        LogError()(OT_METHOD)(__func__)(": ")(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
     }
 
     return *this;

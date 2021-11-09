@@ -719,19 +719,19 @@ protected:
     // OTTransactionType will require
     // both the Account ID and the NotaryID.
     explicit OTTransactionType(
-        const api::Session& core,
+        const api::Session& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         originType theOriginType = originType::not_applicable);
     explicit OTTransactionType(
-        const api::Session& core,
+        const api::Session& api,
         const identifier::Nym& theNymID,
         const Identifier& theAccountID,
         const identifier::Server& theNotaryID,
         std::int64_t lTransactionNum,
         originType theOriginType = originType::not_applicable);
-    explicit OTTransactionType(const api::Session& core);
+    explicit OTTransactionType(const api::Session& api);
 
 private:
     using ot_super = Contract;

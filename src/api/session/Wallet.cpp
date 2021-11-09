@@ -23,6 +23,7 @@
 #include "internal/core/Core.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/otx/OTX.hpp"
+#include "internal/otx/common/XML.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -86,8 +87,6 @@ template class opentxs::Exclusive<opentxs::Account>;
 template class opentxs::Shared<opentxs::Account>;
 template class opentxs::Pimpl<opentxs::network::zeromq::Message>;
 
-#define OT_METHOD "opentxs::api::session::implementation::Wallet::"
-
 namespace opentxs::api::session::implementation
 {
 const Wallet::UnitNameMap Wallet::unit_of_account_{
@@ -116,8 +115,8 @@ const Wallet::UnitNameMap Wallet::unit_of_account_{
 const Wallet::UnitNameReverse Wallet::unit_lookup_{
     reverse_unit_map(unit_of_account_)};
 
-Wallet::Wallet(const api::Session& core)
-    : api_(core)
+Wallet::Wallet(const api::Session& api)
+    : api_(api)
     , context_map_()
     , context_map_lock_()
     , account_map_()
@@ -177,7 +176,7 @@ auto Wallet::account(
     auto& [rowMutex, pAccount] = row;
 
     if (pAccount) {
-        LogVerbose()(OT_METHOD)(__func__)(": Account ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Account ")(
             account)(" already exists in map.")
             .Flush();
 
@@ -197,7 +196,7 @@ auto Wallet::account(
         api_.Storage().Load(account.str(), serialized, alias, true);
 
     if (loaded) {
-        LogVerbose()(OT_METHOD)(__func__)(": Account ")(
+        LogVerbose()(OT_PRETTY_CLASS(__func__))("Account ")(
             account)(" loaded from storage.")
             .Flush();
         pAccount.reset(account_factory(account, alias, serialized));
@@ -205,7 +204,7 @@ auto Wallet::account(
         OT_ASSERT(pAccount);
     } else {
         if (false == create) {
-            LogDetail()(OT_METHOD)(__func__)(": Trying to load account ")(
+            LogDetail()(OT_PRETTY_CLASS(__func__))("Trying to load account ")(
                 account)(" via legacy method.")
                 .Flush();
             const auto legacy = load_legacy_account(account, rowLock, row);
@@ -254,12 +253,12 @@ auto Wallet::account_factory(
     const std::string& serialized) const -> opentxs::Account*
 {
     auto strContract = String::Factory(), strFirstLine = String::Factory();
-    const bool bProcessed = Contract::DearmorAndTrim(
+    const bool bProcessed = DearmorAndTrim(
         String::Factory(serialized.c_str()), strContract, strFirstLine);
 
     if (false == bProcessed) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to dearmor serialized account.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to dearmor serialized account.")
             .Flush();
 
         return nullptr;
@@ -272,7 +271,8 @@ auto Wallet::account_factory(
         new opentxs::Account{api_, owner, accountID, notary}};
 
     if (false == bool(pAccount)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to create account.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create account.")
+            .Flush();
 
         return nullptr;
     }
@@ -280,7 +280,7 @@ auto Wallet::account_factory(
     auto& account = *pAccount;
 
     if (account.GetNymID() != owner) {
-        LogError()(OT_METHOD)(__func__)(": Nym id (")(account.GetNymID())(
+        LogError()(OT_PRETTY_CLASS(__func__))("Nym id (")(account.GetNymID())(
             ") does not match expect value "
             "(")(owner)(")")
             .Flush();
@@ -288,7 +288,7 @@ auto Wallet::account_factory(
     }
 
     if (account.GetRealAccountID() != accountID) {
-        LogError()(OT_METHOD)(__func__)(": Account id (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Account id (")(
             account.GetRealAccountID())(") does not match "
                                         "expect value "
                                         "(")(accountID)(")")
@@ -297,7 +297,7 @@ auto Wallet::account_factory(
     }
 
     if (account.GetPurportedAccountID() != accountID) {
-        LogError()(OT_METHOD)(__func__)(": Purported account id (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Purported account id (")(
             account.GetPurportedAccountID())(") does "
                                              "not "
                                              "match "
@@ -309,7 +309,7 @@ auto Wallet::account_factory(
     }
 
     if (account.GetRealNotaryID() != notary) {
-        LogError()(OT_METHOD)(__func__)(": Notary id (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Notary id (")(
             account.GetRealNotaryID())(") does not match expect "
                                        "value (")(notary)(")")
             .Flush();
@@ -317,7 +317,7 @@ auto Wallet::account_factory(
     }
 
     if (account.GetPurportedNotaryID() != notary) {
-        LogError()(OT_METHOD)(__func__)(": Purported notary id (")(
+        LogError()(OT_PRETTY_CLASS(__func__))("Purported notary id (")(
             account.GetPurportedNotaryID())(") does "
                                             "not match "
                                             "expect "
@@ -331,7 +331,7 @@ auto Wallet::account_factory(
     auto deserialized = account.LoadContractFromString(strContract);
 
     if (false == deserialized) {
-        LogError()(OT_METHOD)(__func__)(": Failed to deserialize account.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to deserialize account.")
             .Flush();
 
         return nullptr;
@@ -340,7 +340,7 @@ auto Wallet::account_factory(
     const auto signerID = api_.Storage().AccountSigner(accountID);
 
     if (signerID->empty()) {
-        LogError()(OT_METHOD)(__func__)(": Unknown signer nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unknown signer nym.").Flush();
 
         return nullptr;
     }
@@ -348,13 +348,14 @@ auto Wallet::account_factory(
     const auto signerNym = Nym(signerID);
 
     if (false == bool(signerNym)) {
-        LogError()(OT_METHOD)(__func__)(": Unable to load signer nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to load signer nym.")
+            .Flush();
 
         return nullptr;
     }
 
     if (false == account.VerifySignature(*signerNym)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid signature.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature.").Flush();
 
         return nullptr;
     }
@@ -442,7 +443,7 @@ auto Wallet::CreateAccount(
         auto& pAccount = std::get<1>(row);
 
         if (pAccount) {
-            LogError()(OT_METHOD)(__func__)(": Account already exists.")
+            LogError()(OT_PRETTY_CLASS(__func__))("Account already exists.")
                 .Flush();
 
             return {};
@@ -607,33 +608,35 @@ auto Wallet::UpdateAccount(
         new opentxs::Account(api_, localNym.ID(), accountID, context.Notary()));
 
     if (false == bool(newAccount)) {
-        LogError()(OT_METHOD)(__func__)(": Unable to construct account.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to construct account.")
             .Flush();
 
         return false;
     }
 
     if (false == newAccount->LoadContractFromString(serialized)) {
-        LogError()(OT_METHOD)(__func__)(": Unable to deserialize account.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to deserialize account.")
             .Flush();
 
         return false;
     }
 
     if (false == newAccount->VerifyAccount(context.RemoteNym())) {
-        LogError()(OT_METHOD)(__func__)(": Unable to verify account.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to verify account.")
+            .Flush();
 
         return false;
     }
 
     if (localNym.ID() != newAccount->GetNymID()) {
-        LogError()(OT_METHOD)(__func__)(": Wrong nym on account.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Wrong nym on account.").Flush();
 
         return false;
     }
 
     if (context.Notary() != newAccount->GetRealNotaryID()) {
-        LogError()(OT_METHOD)(__func__)(": Wrong server on account.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Wrong server on account.")
+            .Flush();
 
         return false;
     }
@@ -641,13 +644,14 @@ auto Wallet::UpdateAccount(
     newAccount->ReleaseSignatures();
 
     if (false == newAccount->SignContract(localNym, reason)) {
-        LogError()(OT_METHOD)(__func__)(": Unable to sign account.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to sign account.")
+            .Flush();
 
         return false;
     }
 
     if (false == newAccount->SaveContract()) {
-        LogError()(OT_METHOD)(__func__)(": Unable to serialize account.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to serialize account.")
             .Flush();
 
         return false;
@@ -665,7 +669,8 @@ auto Wallet::UpdateAccount(
         auto saved = pAccount->SaveContractRaw(raw);
 
         if (false == saved) {
-            LogError()(OT_METHOD)(__func__)(": Unable to serialized account.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unable to serialized account.")
                 .Flush();
 
             return false;
@@ -684,7 +689,7 @@ auto Wallet::UpdateAccount(
             extract_unit(contract));
 
         if (false == saved) {
-            LogError()(OT_METHOD)(__func__)(": Unable to save account.")
+            LogError()(OT_PRETTY_CLASS(__func__))("Unable to save account.")
                 .Flush();
 
             return false;
@@ -703,8 +708,8 @@ auto Wallet::UpdateAccount(
 
         return true;
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Unable to load unit definition contract ")(unitID)
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Unable to load unit definition contract ")(unitID)
             .Flush();
 
         return false;
@@ -725,8 +730,8 @@ auto Wallet::extract_unit(const identifier::UnitDefinition& contractID) const
 
         return extract_unit(contract);
     } catch (...) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Unable to load unit definition contract ")(contractID)(".")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Unable to load unit definition contract ")(contractID)(".")
             .Flush();
 
         return core::UnitType::Unknown;
@@ -782,14 +787,14 @@ auto Wallet::context(
     if (!loaded) { return nullptr; }
 
     if (local != serialized.localnym()) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect localnym in protobuf.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect localnym in protobuf.")
             .Flush();
 
         return nullptr;
     }
 
     if (remote != serialized.remotenym()) {
-        LogError()(OT_METHOD)(__func__)(": Incorrect localnym in protobuf.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect localnym in protobuf.")
             .Flush();
 
         return nullptr;
@@ -802,13 +807,15 @@ auto Wallet::context(
     const auto remoteNym = Nym(remoteNymID);
 
     if (!localNym) {
-        LogError()(OT_METHOD)(__func__)(": Unable to load local nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to load local nym.")
+            .Flush();
 
         return nullptr;
     }
 
     if (!remoteNym) {
-        LogError()(OT_METHOD)(__func__)(": Unable to load remote nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Unable to load remote nym.")
+            .Flush();
 
         return nullptr;
     }
@@ -832,7 +839,7 @@ auto Wallet::context(
     if (!valid) {
         context_map_.erase(context);
 
-        LogError()(OT_METHOD)(__func__)(": Invalid signature on context.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature on context.")
             .Flush();
 
         OT_FAIL
@@ -878,7 +885,7 @@ auto Wallet::ImportAccount(std::unique_ptr<opentxs::Account>& imported) const
     -> bool
 {
     if (false == bool(imported)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid account.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid account.").Flush();
 
         return false;
     }
@@ -896,7 +903,7 @@ auto Wallet::ImportAccount(std::unique_ptr<opentxs::Account>& imported) const
         mapLock.unlock();
 
         if (pAccount) {
-            LogError()(OT_METHOD)(__func__)(": Account already exists.")
+            LogError()(OT_PRETTY_CLASS(__func__))("Account already exists.")
                 .Flush();
 
             return false;
@@ -926,7 +933,7 @@ auto Wallet::ImportAccount(std::unique_ptr<opentxs::Account>& imported) const
                 extract_unit(contract));
 
             if (false == saved) {
-                LogError()(OT_METHOD)(__func__)(": Failed to save account.")
+                LogError()(OT_PRETTY_CLASS(__func__))("Failed to save account.")
                     .Flush();
                 imported.reset(pAccount.release());
 
@@ -935,7 +942,8 @@ auto Wallet::ImportAccount(std::unique_ptr<opentxs::Account>& imported) const
 
             return true;
         } catch (...) {
-            LogError()(OT_METHOD)(__func__)(": Unable to load unit definition.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Unable to load unit definition.")
                 .Flush();
             imported.reset(pAccount.release());
 
@@ -944,7 +952,7 @@ auto Wallet::ImportAccount(std::unique_ptr<opentxs::Account>& imported) const
     } catch (...) {
     }
 
-    LogError()(OT_METHOD)(__func__)(": Unable to import account.").Flush();
+    LogError()(OT_PRETTY_CLASS(__func__))("Unable to import account.").Flush();
 
     return false;
 }
@@ -1003,8 +1011,8 @@ auto Wallet::issuer(
         (blockchain::Type::Unknown != blockchain::Chain(api_, issuerID));
 
     if (isBlockchain) {
-        LogError()(OT_METHOD)(__func__)(
-            ": erroneously attempting to load a blockchain as an otx issuer")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " erroneously attempting to load a blockchain as an otx issuer")
             .Flush();
     }
 
@@ -1014,7 +1022,7 @@ auto Wallet::issuer(
 
     if (loaded) {
         if (isBlockchain) {
-            LogError()(OT_METHOD)(__func__)(": deleting invalid issuer")
+            LogError()(OT_PRETTY_CLASS(__func__))("deleting invalid issuer")
                 .Flush();
             // TODO
         } else {
@@ -1073,8 +1081,8 @@ auto Wallet::Nym(
     const std::chrono::milliseconds& timeout) const -> Nym_p
 {
     if (blockchain::Type::Unknown != blockchain::Chain(api_, id)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": erroneously attempting to load a blockchain as a nym")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " erroneously attempting to load a blockchain as a nym")
             .Flush();
 
         return nullptr;
@@ -1143,7 +1151,7 @@ auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
     const auto nymID = identifier::Nym::Factory(id);
 
     if (nymID->empty()) {
-        LogError()(OT_METHOD)(__func__)(": Invalid nym ID.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid nym ID.").Flush();
 
         return {};
     }
@@ -1151,8 +1159,8 @@ auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
     auto existing = Nym(nymID);
 
     if (existing && (existing->Revision() >= serialized.revision())) {
-        LogDetail()(OT_METHOD)(__func__)(
-            ": Incoming nym is not newer than existing nym.")
+        LogDetail()(OT_PRETTY_CLASS(__func__))(
+            " Incoming nym is not newer than existing nym.")
             .Flush();
 
         return existing;
@@ -1167,7 +1175,7 @@ auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
         if (false == candidate.CompareID(nymID)) { return existing; }
 
         if (candidate.VerifyPseudonym()) {
-            LogDetail()(OT_METHOD)(__func__)(": Saving updated nym ")(id)
+            LogDetail()(OT_PRETTY_CLASS(__func__))("Saving updated nym ")(id)
                 .Flush();
             candidate.WriteCredentials();
             SaveCredentialIDs(candidate);
@@ -1179,7 +1187,7 @@ auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
 
             return mapNym;
         } else {
-            LogError()(OT_METHOD)(__func__)(": Incoming nym is not valid.")
+            LogError()(OT_PRETTY_CLASS(__func__))("Incoming nym is not valid.")
                 .Flush();
         }
     }
@@ -1202,7 +1210,7 @@ auto Wallet::Nym(
         opentxs::Factory::Nym(api_, parameters, type, name, reason));
 
     if (false == bool(pNym)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to create nym").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create nym").Flush();
 
         return {};
     }
@@ -1239,7 +1247,7 @@ auto Wallet::Nym(
 
             return std::move(pNym);
         } else {
-            LogError()(OT_METHOD)(__func__)(": Failed to save credentials")
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to save credentials")
                 .Flush();
 
             return {};
@@ -1258,7 +1266,8 @@ auto Wallet::mutable_Nym(
     auto exists = Nym(id);
 
     if (false == bool(exists)) {
-        LogError()(OT_METHOD)(__func__)(": Nym ")(nym)(" not found.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nym)(" not found.")
+            .Flush();
     }
 
     Lock mapLock(nym_map_lock_);
@@ -1291,8 +1300,8 @@ auto Wallet::Nymfile(const identifier::Nym& id, const PasswordPrompt& reason)
     OT_ASSERT(nymfile)
 
     if (false == nymfile->LoadSignedNymFile(reason)) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failure calling load_signed_nymfile: ")(id)(".")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Failure calling load_signed_nymfile: ")(id)(".")
             .Flush();
 
         return {};
@@ -1454,7 +1463,7 @@ auto Wallet::PeerReplyComplete(
         nymID, replyID.str(), StorageBox::SENTPEERREPLY, reply, false);
 
     if (!haveReply) {
-        LogError()(OT_METHOD)(__func__)(": Sent reply not found.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Sent reply not found.").Flush();
 
         return false;
     }
@@ -1466,7 +1475,7 @@ auto Wallet::PeerReplyComplete(
         api_.Storage().Store(reply, nymID, StorageBox::FINISHEDPEERREPLY);
 
     if (!savedReply) {
-        LogError()(OT_METHOD)(__func__)(": Failed to save finished reply.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save finished reply.")
             .Flush();
 
         return false;
@@ -1476,8 +1485,8 @@ auto Wallet::PeerReplyComplete(
         nymID, StorageBox::SENTPEERREPLY, realReplyID);
 
     if (!removedReply) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to delete finished reply from sent box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Failed to delete finished reply from sent box.")
             .Flush();
     }
 
@@ -1493,16 +1502,16 @@ auto Wallet::PeerReplyCreate(
     Lock lock(peer_lock(nymID));
 
     if (reply.cookie() != request.id()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Reply cookie does not match request id.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Reply cookie does not match request id.")
             .Flush();
 
         return false;
     }
 
     if (reply.type() != request.type()) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Reply type does not match request type.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Reply type does not match request type.")
             .Flush();
 
         return false;
@@ -1512,7 +1521,8 @@ auto Wallet::PeerReplyCreate(
         api_.Storage().Store(reply, nymID, StorageBox::SENTPEERREPLY);
 
     if (!createdReply) {
-        LogError()(OT_METHOD)(__func__)(": Failed to save sent reply.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save sent reply.")
+            .Flush();
 
         return false;
     }
@@ -1521,7 +1531,8 @@ auto Wallet::PeerReplyCreate(
         api_.Storage().Store(request, nymID, StorageBox::PROCESSEDPEERREQUEST);
 
     if (!processedRequest) {
-        LogError()(OT_METHOD)(__func__)(": Failed to save processed request.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to save processed request.")
             .Flush();
 
         return false;
@@ -1531,8 +1542,8 @@ auto Wallet::PeerReplyCreate(
         nymID, StorageBox::INCOMINGPEERREQUEST, request.id());
 
     if (!processedRequest) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to delete processed request from incoming box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Failed to delete processed request from incoming box.")
             .Flush();
     }
 
@@ -1566,20 +1577,20 @@ auto Wallet::PeerReplyCreateRollback(
             const bool purgedRequest = api_.Storage().RemoveNymBoxItem(
                 nymID, StorageBox::PROCESSEDPEERREQUEST, requestID);
             if (!purgedRequest) {
-                LogError()(OT_METHOD)(__func__)(
-                    ": Failed to delete request from processed box.")
+                LogError()(OT_PRETTY_CLASS(__func__))(
+                    " Failed to delete request from processed box.")
                     .Flush();
                 output = false;
             }
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": Failed to save request to incoming box.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                " Failed to save request to incoming box.")
                 .Flush();
             output = false;
         }
     } else {
-        LogError()(OT_METHOD)(__func__)(
-            ": Did not find the request in the processed box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Did not find the request in the processed box.")
             .Flush();
         output = false;
     }
@@ -1588,8 +1599,8 @@ auto Wallet::PeerReplyCreateRollback(
         nymID, StorageBox::SENTPEERREPLY, replyID);
 
     if (!removedReply) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to delete reply from sent box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Failed to delete reply from sent box.")
             .Flush();
         output = false;
     }
@@ -1634,19 +1645,20 @@ auto Wallet::PeerReplyReceive(
     const PeerObject& reply) const -> bool
 {
     if (contract::peer::PeerObjectType::Response != reply.Type()) {
-        LogError()(OT_METHOD)(__func__)(": This is not a peer reply.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("This is not a peer reply.")
+            .Flush();
 
         return false;
     }
 
     if (0 == reply.Request()->Version()) {
-        LogError()(OT_METHOD)(__func__)(": Null request.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Null request.").Flush();
 
         return false;
     }
 
     if (0 == reply.Reply()->Version()) {
-        LogError()(OT_METHOD)(__func__)(": Null reply.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Null reply.").Flush();
 
         return false;
     }
@@ -1666,8 +1678,8 @@ auto Wallet::PeerReplyReceive(
         false);
 
     if (false == haveRequest) {
-        LogError()(OT_METHOD)(__func__)(
-            ": The request for this reply does not exist in the sent box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " The request for this reply does not exist in the sent box.")
             .Flush();
 
         return false;
@@ -1675,7 +1687,8 @@ auto Wallet::PeerReplyReceive(
 
     auto serialized = proto::PeerReply{};
     if (false == reply.Reply()->Serialize(serialized)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize reply.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize reply.")
+            .Flush();
 
         return false;
     }
@@ -1689,7 +1702,7 @@ auto Wallet::PeerReplyReceive(
         message->AddFrame(serialized);
         peer_reply_publisher_->Send(message);
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to save incoming reply.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save incoming reply.")
             .Flush();
 
         return false;
@@ -1699,8 +1712,8 @@ auto Wallet::PeerReplyReceive(
         api_.Storage().Store(request, nymID, StorageBox::FINISHEDPEERREQUEST);
 
     if (!finishedRequest) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to save request to finished box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Failed to save request to finished box.")
             .Flush();
 
         return false;
@@ -1710,8 +1723,8 @@ auto Wallet::PeerReplyReceive(
         nymID, StorageBox::SENTPEERREQUEST, requestID->str());
 
     if (!finishedRequest) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to delete finished request from sent box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Failed to delete finished request from sent box.")
             .Flush();
     }
 
@@ -1762,8 +1775,8 @@ auto Wallet::PeerRequestComplete(
         nymID, replyID.str(), StorageBox::INCOMINGPEERREPLY, reply, false);
 
     if (!haveReply) {
-        LogError()(OT_METHOD)(__func__)(
-            ": The reply does not exist in the incoming box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " The reply does not exist in the incoming box.")
             .Flush();
 
         return false;
@@ -1776,8 +1789,8 @@ auto Wallet::PeerRequestComplete(
         api_.Storage().Store(reply, nymID, StorageBox::PROCESSEDPEERREPLY);
 
     if (!storedReply) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to save reply to processed box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Failed to save reply to processed box.")
             .Flush();
 
         return false;
@@ -1787,8 +1800,8 @@ auto Wallet::PeerRequestComplete(
         nymID, StorageBox::INCOMINGPEERREPLY, realReplyID);
 
     if (!removedReply) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failed to delete completed reply from incoming box.")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Failed to delete completed reply from incoming box.")
             .Flush();
     }
 
@@ -1877,21 +1890,21 @@ auto Wallet::PeerRequestReceive(
     const PeerObject& request) const -> bool
 {
     if (contract::peer::PeerObjectType::Request != request.Type()) {
-        LogError()(OT_METHOD)(__func__)(": This is not a peer request.")
+        LogError()(OT_PRETTY_CLASS(__func__))("This is not a peer request.")
             .Flush();
 
         return false;
     }
 
     if (0 == request.Request()->Version()) {
-        LogError()(OT_METHOD)(__func__)(": Null request.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Null request.").Flush();
 
         return false;
     }
 
     auto serialized = proto::PeerRequest{};
     if (false == request.Request()->Serialize(serialized)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize request.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize request.")
             .Flush();
 
         return false;
@@ -1944,14 +1957,15 @@ auto Wallet::purse(
 
     if (false == loaded) {
         if (false == checking) {
-            LogError()(OT_METHOD)(__func__)(": Purse does not exist").Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Purse does not exist")
+                .Flush();
         }
 
         return {};
     }
 
     if (false == proto::Validate(serialized, VERBOSE)) {
-        LogError()(OT_METHOD)(__func__)(": Invalid purse").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid purse").Flush();
 
         return {};
     }
@@ -1960,7 +1974,7 @@ auto Wallet::purse(
         opentxs::Factory::Purse(api_, serialized)};
 
     if (false == bool(output)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to instantiate purse")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to instantiate purse")
             .Flush();
 
         return {};
@@ -2225,14 +2239,14 @@ auto Wallet::SaveCredentialIDs(const identity::Nym& nym) const -> bool
     if (!valid) { return false; }
 
     if (!api_.Storage().Store(index, nym.Alias())) {
-        LogError()(OT_METHOD)(__func__)(
-            ": Failure trying to store credential list for Nym: ")(nym.ID())
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            " Failure trying to store credential list for Nym: ")(nym.ID())
             .Flush();
 
         return false;
     }
 
-    LogDetail()(OT_METHOD)(__func__)(": Credentials saved.").Flush();
+    LogDetail()(OT_PRETTY_CLASS(__func__))("Credentials saved.").Flush();
 
     return true;
 }
@@ -2348,7 +2362,7 @@ auto Wallet::server(std::unique_ptr<contract::Server> contract) const
 
     auto serialized = proto::ServerContract{};
     if (false == contract->Serialize(serialized)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize contract.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize contract.")
             .Flush();
     }
     if (api_.Storage().Store(serialized, contract->Alias())) {
@@ -2359,7 +2373,7 @@ auto Wallet::server(std::unique_ptr<contract::Server> contract) const
 
         publish_server(id);
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to save server contract.")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save server contract.")
             .Flush();
     }
 
@@ -2395,15 +2409,15 @@ auto Wallet::Server(const proto::ServerContract& contract) const
         if (candidate) {
             if (candidate->Validate()) {
                 if (serverID.get() != candidate->ID()) {
-                    LogError()(OT_METHOD)(__func__)(": Wrong contract ID.")
+                    LogError()(OT_PRETTY_CLASS(__func__))("Wrong contract ID.")
                         .Flush();
                     serverID->Assign(candidate->ID());
                 }
 
                 auto serialized = proto::ServerContract{};
                 if (false == candidate->Serialize(serialized)) {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Failed to serialize server contract.")
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        " Failed to serialize server contract.")
                         .Flush();
                 }
                 const auto stored = api_.Storage().Store(
@@ -2420,7 +2434,7 @@ auto Wallet::Server(const proto::ServerContract& contract) const
             }
         }
     } else {
-        LogError()(OT_METHOD)(__func__)(": Invalid nym.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Invalid nym.").Flush();
     }
 
     return Server(serverID);
@@ -2464,12 +2478,13 @@ auto Wallet::Server(
 
             return this->server(std::move(pContract));
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": Error: Failed to create contract.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                " Error: Failed to create contract.")
                 .Flush();
         }
     } else {
-        LogError()(OT_METHOD)(__func__)(": Error: Nym does not exist.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: Nym does not exist.")
+            .Flush();
     }
 
     return Server(identifier::Server::Factory(server));
@@ -2513,13 +2528,14 @@ auto Wallet::server_to_nym(Identifier& input) const -> OTNymID
                 identifier::Server::Factory(input.str()));  // TODO conversion
             auto serialized = proto::ServerContract{};
             if (false == contract->Serialize(serialized)) {
-                LogDetail()(OT_METHOD)(__func__)(
-                    ": Failed to serialize server contract: ")(input)
+                LogDetail()(OT_PRETTY_CLASS(__func__))(
+                    " Failed to serialize server contract: ")(input)
                     .Flush();
             }
             output->SetString(serialized.nymid());
         } catch (...) {
-            LogDetail()(OT_METHOD)(__func__)(": Non-existent server: ")(input)
+            LogDetail()(OT_PRETTY_CLASS(__func__))("Non-existent server: ")(
+                input)
                 .Flush();
         }
     }
@@ -2668,7 +2684,8 @@ auto Wallet::unit_definition(std::shared_ptr<contract::Unit>&& contract) const
 
     auto serialized = proto::UnitDefinition{};
     if (false == contract->Serialize(serialized)) {
-        LogError()(OT_METHOD)(__func__)(": Failed to serialize unit definition")
+        LogError()(OT_PRETTY_CLASS(__func__))(
+            "Failed to serialize unit definition")
             .Flush();
     }
     if (api_.Storage().Store(serialized, contract->Alias())) {
@@ -2685,7 +2702,7 @@ auto Wallet::unit_definition(std::shared_ptr<contract::Unit>&& contract) const
 
         publish_unit(id);
     } else {
-        LogError()(OT_METHOD)(__func__)(": Failed to save unit definition")
+        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save unit definition")
             .Flush();
     }
 
@@ -2716,15 +2733,15 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
         if (candidate) {
             if (candidate->Validate()) {
                 if (unitID.get() != candidate->ID()) {
-                    LogError()(OT_METHOD)(__func__)(": Wrong contract ID.")
+                    LogError()(OT_PRETTY_CLASS(__func__))("Wrong contract ID.")
                         .Flush();
                     unitID->Assign(candidate->ID());
                 }
 
                 auto serialized = proto::UnitDefinition{};
                 if (false == candidate->Serialize(serialized)) {
-                    LogError()(OT_METHOD)(__func__)(
-                        ": Failed to serialize unit definition.")
+                    LogError()(OT_PRETTY_CLASS(__func__))(
+                        " Failed to serialize unit definition.")
                         .Flush();
                 }
                 const auto stored =
@@ -2786,12 +2803,13 @@ auto Wallet::UnitDefinition(
 
             return unit_definition(std::move(contract));
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": Error: Failed to create contract.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                " Error: Failed to create contract.")
                 .Flush();
         }
     } else {
-        LogError()(OT_METHOD)(__func__)(": Error: Nym does not exist.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: Nym does not exist.")
+            .Flush();
     }
 
     return UnitDefinition(identifier::UnitDefinition::Factory(unit));
@@ -2826,12 +2844,13 @@ auto Wallet::UnitDefinition(
 
             return unit_definition(std::move(contract));
         } else {
-            LogError()(OT_METHOD)(__func__)(
-                ": Error: Failed to create contract.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                " Error: Failed to create contract.")
                 .Flush();
         }
     } else {
-        LogError()(OT_METHOD)(__func__)(": Error: Nym does not exist.").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Error: Nym does not exist.")
+            .Flush();
     }
 
     return UnitDefinition(identifier::UnitDefinition::Factory(unit));

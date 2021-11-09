@@ -27,8 +27,6 @@
 #include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
 
-// #define OT_METHOD "opentxs::blockchain::node::wallet::Account::"
-
 namespace opentxs::blockchain::node::wallet
 {
 using Subchain = node::internal::WalletDatabase::Subchain;

@@ -24,8 +24,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/Blockchains.hpp"
 
-//#define OT_METHOD "opentxs::api::client::UI"
-
 namespace opentxs::api::client
 {
 UI::Imp::Imp(

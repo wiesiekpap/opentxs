@@ -46,8 +46,6 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-#define OT_METHOD "opentxs::api::client::activity::MailCache::Imp::"
-
 namespace opentxs::api::client::activity
 {
 struct MailCache::Imp {
@@ -107,14 +105,14 @@ struct MailCache::Imp {
             api_.Storage().Load(nym.str(), id.str(), box, raw, alias, true);
 
         if (false == loaded) {
-            LogError()(OT_METHOD)(__func__)(": Failed to load message ")(id)
+            LogError()(OT_PRETTY_CLASS(__func__))("Failed to load message ")(id)
                 .Flush();
 
             return output;
         }
 
         if (raw.empty()) {
-            LogError()(OT_METHOD)(__func__)(": Empty message ")(id).Flush();
+            LogError()(OT_PRETTY_CLASS(__func__))("Empty message ")(id).Flush();
 
             return output;
         }
@@ -125,8 +123,8 @@ struct MailCache::Imp {
 
         if (false ==
             output->LoadContractFromString(String::Factory(raw.c_str()))) {
-            LogError()(OT_METHOD)(__func__)(": Failed to deserialize message ")(
-                id)
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to deserialize message ")(id)
                 .Flush();
 
             output.reset();

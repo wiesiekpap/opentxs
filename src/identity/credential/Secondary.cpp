@@ -12,13 +12,12 @@
 
 #include "2_Factory.hpp"
 #include "identity/credential/Key.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/protobuf/Credential.pb.h"
 #include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Log.hpp"
-
-#define OT_METHOD "opentxs::identity::credential::implementation::Secondary::"
 
 namespace opentxs
 {
@@ -127,7 +126,8 @@ auto Secondary::serialize(
         if (masterSignature) {
             *serializedCredential->add_signature() = *masterSignature;
         } else {
-            LogError()(OT_METHOD)(__func__)(": Failed to get master signature.")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed to get master signature.")
                 .Flush();
         }
     }

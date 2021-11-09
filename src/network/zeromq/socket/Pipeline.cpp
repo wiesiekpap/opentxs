@@ -23,7 +23,6 @@
 
 template class opentxs::Pimpl<opentxs::network::zeromq::Pipeline>;
 
-//#define OT_METHOD
 //"opentxs::network::zeromq::socket::implementation::Pipeline::"
 
 namespace opentxs::factory

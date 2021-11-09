@@ -22,7 +22,6 @@ template class opentxs::Pimpl<opentxs::network::zeromq::socket::Reply>;
 template class opentxs::network::zeromq::socket::implementation::Receiver<
     opentxs::network::zeromq::Message>;
 
-//#define OT_METHOD
 //"opentxs::network::zeromq::socket::implementation::Reply::"
 
 namespace opentxs::factory

@@ -45,8 +45,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
-#define OT_METHOD "opentxs::blockchain::crypto::implementation::BalanceTree::"
-
 namespace opentxs::factory
 {
 auto BlockchainAccountKeys(
@@ -176,7 +174,7 @@ auto Account::AssociateTransaction(
         auto* pNode = node_index_.Find(accountID);
 
         if (nullptr == pNode) {
-            LogVerbose()(OT_METHOD)(__func__)(": Account ")(
+            LogVerbose()(OT_PRETTY_CLASS(__func__))("Account ")(
                 accountID)(" not found")
                 .Flush();
 
@@ -202,7 +200,8 @@ auto Account::AssociateTransaction(
                     std::forward_as_tuple(key, amount));
             }
         } else {
-            LogError()(OT_METHOD)(__func__)(": Failed processing transaction")
+            LogError()(OT_PRETTY_CLASS(__func__))(
+                "Failed processing transaction")
                 .Flush();
 
             return false;

@@ -23,8 +23,6 @@ extern "C" {
 
 #define READ_AMOUNT 256
 
-#define OT_METHOD "opentxs::crypto::implementation::OpenSSL_BIO::"
-
 namespace opentxs::crypto::implementation
 {
 // OpenSSL_BIO
@@ -79,7 +77,7 @@ auto OpenSSL_BIO::ToBytes() -> std::vector<std::byte>
     read_bio(READ_AMOUNT, read, total, output);
 
     if (0 == read) {
-        LogError()(OT_METHOD)(__func__)(": Read failed").Flush();
+        LogError()(OT_PRETTY_CLASS(__func__))("Read failed").Flush();
 
         return {};
     }
@@ -87,7 +85,7 @@ auto OpenSSL_BIO::ToBytes() -> std::vector<std::byte>
     while (READ_AMOUNT == read) { read_bio(READ_AMOUNT, read, total, output); }
 
     output.resize(total);
-    LogInsane()(OT_METHOD)(__func__)(": Read ")(total)(" bytes").Flush();
+    LogInsane()(OT_PRETTY_CLASS(__func__))("Read ")(total)(" bytes").Flush();
 
     return output;
 }
