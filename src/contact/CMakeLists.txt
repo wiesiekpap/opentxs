@@ -13,6 +13,9 @@ target_sources(
     "ContactSection.cpp"
     "Internal.cpp"
 )
+target_include_directories(
+  opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/contact/Contact.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/contact/ContactData.hpp"

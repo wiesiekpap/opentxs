@@ -58,6 +58,10 @@ target_sources(
     "StringXML.hpp"
     "Worker.hpp"
 )
+target_include_directories(
+  opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
+
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Account.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/AccountVisitor.hpp"

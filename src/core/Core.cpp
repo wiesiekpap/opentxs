@@ -6,8 +6,8 @@
 #include "1_Internal.hpp"          // IWYU pragma: associated
 #include "internal/core/Core.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <cstdint>
-#include <map>
 #include <mutex>
 #include <set>
 #include <utility>
@@ -182,8 +182,10 @@ auto UnitID(const api::Session& api, const blockchain::Type chain) noexcept
 
 namespace opentxs::core
 {
-using AddressTypeMap = std::map<AddressType, proto::AddressType>;
-using AddressTypeReverseMap = std::map<proto::AddressType, AddressType>;
+using AddressTypeMap =
+    robin_hood::unordered_flat_map<AddressType, proto::AddressType>;
+using AddressTypeReverseMap =
+    robin_hood::unordered_flat_map<proto::AddressType, AddressType>;
 
 auto addresstype_map() noexcept -> const AddressTypeMap&;
 }  // namespace opentxs::core
