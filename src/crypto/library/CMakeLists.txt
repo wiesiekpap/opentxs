@@ -43,6 +43,10 @@ target_sources(
     "Ripemd160.cpp"
     "Ripemd160.hpp"
 )
+target_include_directories(
+  opentxs-crypto-library SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/library/AsymmetricProvider.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/library/EcdsaProvider.hpp"

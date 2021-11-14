@@ -42,21 +42,25 @@ class Base;
 
 namespace opentxs
 {
-auto translate(rpc::AccountEventType type) noexcept -> proto::AccountEventType;
-auto translate(rpc::AccountType type) noexcept -> proto::AccountType;
-auto translate(rpc::CommandType type) noexcept -> proto::RPCCommandType;
-auto translate(rpc::ContactEventType type) noexcept -> proto::ContactEventType;
-auto translate(rpc::PaymentType type) noexcept -> proto::RPCPaymentType;
-auto translate(rpc::PushType type) noexcept -> proto::RPCPushType;
-auto translate(rpc::ResponseCode type) noexcept -> proto::RPCResponseCode;
+auto translate(const rpc::AccountEventType type) noexcept
+    -> proto::AccountEventType;
+auto translate(const rpc::AccountType type) noexcept -> proto::AccountType;
+auto translate(const rpc::CommandType type) noexcept -> proto::RPCCommandType;
+auto translate(const rpc::ContactEventType type) noexcept
+    -> proto::ContactEventType;
+auto translate(const rpc::PaymentType type) noexcept -> proto::RPCPaymentType;
+auto translate(const rpc::PushType type) noexcept -> proto::RPCPushType;
+auto translate(const rpc::ResponseCode type) noexcept -> proto::RPCResponseCode;
 
-auto translate(proto::AccountEventType type) noexcept -> rpc::AccountEventType;
-auto translate(proto::AccountType type) noexcept -> rpc::AccountType;
-auto translate(proto::ContactEventType type) noexcept -> rpc::ContactEventType;
-auto translate(proto::RPCCommandType type) noexcept -> rpc::CommandType;
-auto translate(proto::RPCPaymentType type) noexcept -> rpc::PaymentType;
-auto translate(proto::RPCPushType type) noexcept -> rpc::PushType;
-auto translate(proto::RPCResponseCode type) noexcept -> rpc::ResponseCode;
+auto translate(const proto::AccountEventType type) noexcept
+    -> rpc::AccountEventType;
+auto translate(const proto::AccountType type) noexcept -> rpc::AccountType;
+auto translate(const proto::ContactEventType type) noexcept
+    -> rpc::ContactEventType;
+auto translate(const proto::RPCCommandType type) noexcept -> rpc::CommandType;
+auto translate(const proto::RPCPaymentType type) noexcept -> rpc::PaymentType;
+auto translate(const proto::RPCPushType type) noexcept -> rpc::PushType;
+auto translate(const proto::RPCResponseCode type) noexcept -> rpc::ResponseCode;
 }  // namespace opentxs
 
 namespace opentxs::rpc::internal

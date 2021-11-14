@@ -20,6 +20,10 @@ function(
   target_sources(
     ${target_name} PRIVATE "${opentxs_SOURCE_DIR}/tests/OTTestEnvironment.cpp"
   )
+  target_include_directories(
+    ${target_name} SYSTEM
+    PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+  )
 
   if(OT_QT_EXPORT)
     target_sources(${target_name} PRIVATE "${opentxs_SOURCE_DIR}/tests/Qt.cpp")
@@ -107,7 +111,9 @@ target_include_directories(
   opentxs-test-helpers PUBLIC "${opentxs_SOURCE_DIR}/tests/"
 )
 target_include_directories(
-  opentxs-test-helpers SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+  opentxs-test-helpers SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+          "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 target_link_libraries(
   opentxs-test-helpers

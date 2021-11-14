@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "internal/blockchain/database/common/Common.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
+#include <robin_hood.h>
 #include <boost/container/vector.hpp>
 #include <functional>
 #include <set>
@@ -19,7 +19,7 @@ namespace opentxs::blockchain::database::common
 {
 constexpr auto sync_map_ = [] {
     constexpr auto offset{65536};
-    auto map = boost::container::flat_map<Chain, SyncTableData>{};
+    auto map = robin_hood::unordered_flat_map<Chain, SyncTableData>{};
 
     for (const auto& chain : opentxs::blockchain::DefinedChains()) {
         auto& [table, name] = map[chain];

@@ -5,8 +5,8 @@
 
 #pragma once
 
+#include <robin_hood.h>
 #include <cstdint>
-#include <map>
 #include <memory>
 
 #include "Proto.hpp"
@@ -74,9 +74,10 @@ public:
 private:
     friend opentxs::Factory;
 
-    using SourceTypeMap = std::map<identity::SourceType, proto::SourceType>;
+    using SourceTypeMap =
+        robin_hood::unordered_flat_map<identity::SourceType, proto::SourceType>;
     using SourceTypeReverseMap =
-        std::map<proto::SourceType, identity::SourceType>;
+        robin_hood::unordered_flat_map<proto::SourceType, identity::SourceType>;
 
     static const VersionConversionMap key_to_source_version_;
 

@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "opentxs/crypto/Types.hpp"  // IWYU pragma: associated
 
-#include <map>
+#include <robin_hood.h>
 #include <string>
 
 #include "opentxs/crypto/SeedStyle.hpp"
@@ -17,7 +17,7 @@ namespace opentxs
 auto print(crypto::SeedStyle type) noexcept -> std::string
 {
     using Type = crypto::SeedStyle;
-    static const auto map = std::map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::Error, "invalid"},
         {Type::BIP32, "BIP-32"},
         {Type::BIP39, "BIP-39"},

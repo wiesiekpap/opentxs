@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "internal/blind/Blind.hpp"  // IWYU pragma: associated
 
-#include <map>
+#include <robin_hood.h>
 
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/PurseType.hpp"
@@ -17,12 +17,18 @@
 
 namespace opentxs::blind
 {
-using CashTypeMap = std::map<blind::CashType, proto::CashType>;
-using CashTypeReverseMap = std::map<proto::CashType, blind::CashType>;
-using PurseTypeMap = std::map<blind::PurseType, proto::PurseType>;
-using PurseTypeReverseMap = std::map<proto::PurseType, blind::PurseType>;
-using TokenStateMap = std::map<blind::TokenState, proto::TokenState>;
-using TokenStateReverseMap = std::map<proto::TokenState, blind::TokenState>;
+using CashTypeMap =
+    robin_hood::unordered_flat_map<blind::CashType, proto::CashType>;
+using CashTypeReverseMap =
+    robin_hood::unordered_flat_map<proto::CashType, blind::CashType>;
+using PurseTypeMap =
+    robin_hood::unordered_flat_map<blind::PurseType, proto::PurseType>;
+using PurseTypeReverseMap =
+    robin_hood::unordered_flat_map<proto::PurseType, blind::PurseType>;
+using TokenStateMap =
+    robin_hood::unordered_flat_map<blind::TokenState, proto::TokenState>;
+using TokenStateReverseMap =
+    robin_hood::unordered_flat_map<proto::TokenState, blind::TokenState>;
 
 auto cashtype_map() noexcept -> const CashTypeMap&;
 auto pursetype_map() noexcept -> const PurseTypeMap&;

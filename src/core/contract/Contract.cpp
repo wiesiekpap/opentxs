@@ -6,7 +6,7 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "internal/core/contract/Contract.hpp"  // IWYU pragma: associated
 
-#include <map>
+#include <robin_hood.h>
 
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -107,11 +107,13 @@ auto Unit::Serialize(proto::UnitDefinition& output, bool includeNym) const
 
 namespace opentxs::contract
 {
-using ProtocolVersionMap = std::map<ProtocolVersion, proto::ProtocolVersion>;
+using ProtocolVersionMap =
+    robin_hood::unordered_flat_map<ProtocolVersion, proto::ProtocolVersion>;
 using ProtocolVersionReverseMap =
-    std::map<proto::ProtocolVersion, ProtocolVersion>;
-using UnitTypeMap = std::map<UnitType, proto::UnitType>;
-using UnitTypeReverseMap = std::map<proto::UnitType, UnitType>;
+    robin_hood::unordered_flat_map<proto::ProtocolVersion, ProtocolVersion>;
+using UnitTypeMap = robin_hood::unordered_flat_map<UnitType, proto::UnitType>;
+using UnitTypeReverseMap =
+    robin_hood::unordered_flat_map<proto::UnitType, UnitType>;
 
 auto protocolversion_map() noexcept -> const ProtocolVersionMap&;
 auto unittype_map() noexcept -> const UnitTypeMap&;
@@ -145,7 +147,8 @@ auto unittype_map() noexcept -> const UnitTypeMap&
 
 namespace opentxs
 {
-auto translate(contract::ProtocolVersion in) noexcept -> proto::ProtocolVersion
+auto translate(const contract::ProtocolVersion in) noexcept
+    -> proto::ProtocolVersion
 {
     try {
         return contract::protocolversion_map().at(in);
@@ -154,7 +157,7 @@ auto translate(contract::ProtocolVersion in) noexcept -> proto::ProtocolVersion
     }
 }
 
-auto translate(contract::UnitType in) noexcept -> proto::UnitType
+auto translate(const contract::UnitType in) noexcept -> proto::UnitType
 {
     try {
         return contract::unittype_map().at(in);
@@ -163,7 +166,8 @@ auto translate(contract::UnitType in) noexcept -> proto::UnitType
     }
 }
 
-auto translate(proto::ProtocolVersion in) noexcept -> contract::ProtocolVersion
+auto translate(const proto::ProtocolVersion in) noexcept
+    -> contract::ProtocolVersion
 {
     static const auto map = reverse_arbitrary_map<
         contract::ProtocolVersion,
@@ -177,7 +181,7 @@ auto translate(proto::ProtocolVersion in) noexcept -> contract::ProtocolVersion
     }
 }
 
-auto translate(proto::UnitType in) noexcept -> contract::UnitType
+auto translate(const proto::UnitType in) noexcept -> contract::UnitType
 {
     static const auto map = reverse_arbitrary_map<
         contract::UnitType,

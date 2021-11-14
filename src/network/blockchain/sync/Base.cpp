@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "opentxs/network/blockchain/sync/Base.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
 #include <boost/container/vector.hpp>
 #include <functional>
 #include <stdexcept>
@@ -31,8 +30,8 @@ namespace opentxs::network::blockchain::sync
 {
 using LocalType = Base::Imp::LocalType;
 using RemoteType = Base::Imp::RemoteType;
-using ForwardMap = boost::container::flat_map<LocalType, RemoteType>;
-using ReverseMap = boost::container::flat_map<RemoteType, LocalType>;
+using ForwardMap = robin_hood::unordered_flat_map<LocalType, RemoteType>;
+using ReverseMap = robin_hood::unordered_flat_map<RemoteType, LocalType>;
 
 auto map() noexcept -> const ForwardMap&;
 auto map() noexcept -> const ForwardMap&
@@ -186,12 +185,12 @@ auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
     return true;
 }
 
-auto Base::Imp::translate(LocalType in) noexcept -> RemoteType
+auto Base::Imp::translate(const LocalType in) noexcept -> RemoteType
 {
     return map().at(in);
 }
 
-auto Base::Imp::translate(RemoteType in) noexcept -> LocalType
+auto Base::Imp::translate(const RemoteType in) noexcept -> LocalType
 {
     return reverse_map().at(in);
 }

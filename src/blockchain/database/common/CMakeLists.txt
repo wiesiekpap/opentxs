@@ -32,6 +32,10 @@ if(OPENTXS_BLOCK_STORAGE_ENABLED)
 else()
   target_sources(opentxs-common PRIVATE "noStorage.cpp")
 endif()
+target_include_directories(
+  opentxs-common SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 
 target_link_libraries(opentxs-common PRIVATE unofficial-sodium::sodium lmdb)
 target_link_libraries(

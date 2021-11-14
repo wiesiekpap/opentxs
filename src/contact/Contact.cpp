@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "opentxs/contact/Contact.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <atomic>
 #include <cstdint>
 #include <map>
@@ -56,15 +57,17 @@
 
 using AddressStyle = opentxs::Contact::AddressStyle;
 
-const std::map<AddressStyle, std::string> address_style_map_{
-    {AddressStyle::P2PKH,
-     std::to_string(static_cast<int>(AddressStyle::P2PKH))},
-    {AddressStyle::P2SH, std::to_string(static_cast<int>(AddressStyle::P2SH))},
-    {AddressStyle::P2WPKH,
-     std::to_string(static_cast<int>(AddressStyle::P2WPKH))},
-};
-const std::map<std::string, AddressStyle> address_style_reverse_map_{
-    opentxs::reverse_map(address_style_map_)};
+const robin_hood::unordered_flat_map<AddressStyle, std::string>
+    address_style_map_{
+        {AddressStyle::P2PKH,
+         std::to_string(static_cast<int>(AddressStyle::P2PKH))},
+        {AddressStyle::P2SH,
+         std::to_string(static_cast<int>(AddressStyle::P2SH))},
+        {AddressStyle::P2WPKH,
+         std::to_string(static_cast<int>(AddressStyle::P2WPKH))},
+    };
+const robin_hood::unordered_flat_map<std::string, AddressStyle>
+    address_style_reverse_map_{opentxs::reverse_map(address_style_map_)};
 
 auto translate_style(const std::string& in) noexcept -> AddressStyle;
 auto translate_style(const std::string& in) noexcept -> AddressStyle

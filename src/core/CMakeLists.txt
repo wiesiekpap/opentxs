@@ -59,7 +59,8 @@ target_sources(
     "Worker.hpp"
 )
 target_include_directories(
-  opentxs-common SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+  opentxs-common SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 
 set(cxx-install-headers

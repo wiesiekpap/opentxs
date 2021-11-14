@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "internal/crypto/key/Key.hpp"  // IWYU pragma: associated
 
-#include <map>
+#include <robin_hood.h>
 
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
@@ -17,20 +17,26 @@
 
 namespace opentxs::crypto::key
 {
-using AsymmetricAlgorithmMap =
-    std::map<asymmetric::Algorithm, proto::AsymmetricKeyType>;
-using AsymmetricAlgorithmReverseMap =
-    std::map<proto::AsymmetricKeyType, asymmetric::Algorithm>;
-using ModeMap = std::map<asymmetric::Mode, proto::KeyMode>;
-using ModeReverseMap = std::map<proto::KeyMode, asymmetric::Mode>;
-using RoleMap = std::map<asymmetric::Role, proto::KeyRole>;
-using RoleReverseMap = std::map<proto::KeyRole, asymmetric::Role>;
-using SourceMap = std::map<symmetric::Source, proto::SymmetricKeyType>;
-using SourceReverseMap = std::map<proto::SymmetricKeyType, symmetric::Source>;
+using AsymmetricAlgorithmMap = robin_hood::
+    unordered_flat_map<asymmetric::Algorithm, proto::AsymmetricKeyType>;
+using AsymmetricAlgorithmReverseMap = robin_hood::
+    unordered_flat_map<proto::AsymmetricKeyType, asymmetric::Algorithm>;
+using ModeMap =
+    robin_hood::unordered_flat_map<asymmetric::Mode, proto::KeyMode>;
+using ModeReverseMap =
+    robin_hood::unordered_flat_map<proto::KeyMode, asymmetric::Mode>;
+using RoleMap =
+    robin_hood::unordered_flat_map<asymmetric::Role, proto::KeyRole>;
+using RoleReverseMap =
+    robin_hood::unordered_flat_map<proto::KeyRole, asymmetric::Role>;
+using SourceMap =
+    robin_hood::unordered_flat_map<symmetric::Source, proto::SymmetricKeyType>;
+using SourceReverseMap =
+    robin_hood::unordered_flat_map<proto::SymmetricKeyType, symmetric::Source>;
 using SymmetricAlgorithmMap =
-    std::map<symmetric::Algorithm, proto::SymmetricMode>;
+    robin_hood::unordered_flat_map<symmetric::Algorithm, proto::SymmetricMode>;
 using SymmetricAlgorithmReverseMap =
-    std::map<proto::SymmetricMode, symmetric::Algorithm>;
+    robin_hood::unordered_flat_map<proto::SymmetricMode, symmetric::Algorithm>;
 
 auto asymmetricalgorithm_map() noexcept -> const AsymmetricAlgorithmMap&;
 auto mode_map() noexcept -> const ModeMap&;
@@ -104,7 +110,7 @@ auto symmetricalgorithm_map() noexcept -> const SymmetricAlgorithmMap&
 
 namespace opentxs
 {
-auto translate(crypto::key::asymmetric::Algorithm in) noexcept
+auto translate(const crypto::key::asymmetric::Algorithm in) noexcept
     -> proto::AsymmetricKeyType
 {
     try {
@@ -134,7 +140,7 @@ auto translate(const crypto::key::asymmetric::Role in) noexcept
     }
 }
 
-auto translate(crypto::key::symmetric::Source in) noexcept
+auto translate(const crypto::key::symmetric::Source in) noexcept
     -> proto::SymmetricKeyType
 {
     try {
@@ -144,7 +150,7 @@ auto translate(crypto::key::symmetric::Source in) noexcept
     }
 }
 
-auto translate(crypto::key::symmetric::Algorithm in) noexcept
+auto translate(const crypto::key::symmetric::Algorithm in) noexcept
     -> proto::SymmetricMode
 {
     try {
@@ -154,7 +160,7 @@ auto translate(crypto::key::symmetric::Algorithm in) noexcept
     }
 }
 
-auto translate(proto::AsymmetricKeyType in) noexcept
+auto translate(const proto::AsymmetricKeyType in) noexcept
     -> crypto::key::asymmetric::Algorithm
 {
     static const auto map = reverse_arbitrary_map<
@@ -200,7 +206,7 @@ auto translate(const proto::KeyRole in) noexcept
     }
 }
 
-auto translate(proto::SymmetricKeyType in) noexcept
+auto translate(const proto::SymmetricKeyType in) noexcept
     -> crypto::key::symmetric::Source
 {
     static const auto map = reverse_arbitrary_map<
@@ -215,7 +221,7 @@ auto translate(proto::SymmetricKeyType in) noexcept
     }
 }
 
-auto translate(proto::SymmetricMode in) noexcept
+auto translate(const proto::SymmetricMode in) noexcept
     -> crypto::key::symmetric::Algorithm
 {
     static const auto map = reverse_arbitrary_map<

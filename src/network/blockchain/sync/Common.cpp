@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                             // IWYU pragma: associated
 #include "opentxs/network/blockchain/sync/Types.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
+#include <robin_hood.h>
 #include <boost/intrusive/detail/iterator.hpp>
 #include <boost/move/algo/detail/set_difference.hpp>
 #include <boost/move/algo/move.hpp>
@@ -21,7 +21,7 @@ using Type = network::blockchain::sync::MessageType;
 
 auto print(Type value) noexcept -> std::string
 {
-    static const auto map = boost::container::flat_map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::sync_request, "sync request"},
         {Type::sync_ack, "sync acknowledgment"},
         {Type::sync_reply, "sync reply"},

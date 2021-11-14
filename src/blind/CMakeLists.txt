@@ -31,7 +31,9 @@ if(OT_CASH_EXPORT)
 
   target_link_libraries(opentxs-blind PRIVATE Boost::headers opentxs::messages)
   target_include_directories(
-    opentxs-blind SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+    opentxs-blind SYSTEM
+    PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+            "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
   )
 
   if(CASH_LUCRE_EXPORT)

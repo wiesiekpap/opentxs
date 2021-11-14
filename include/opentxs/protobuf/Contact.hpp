@@ -7,6 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
+#include <cstring>
 #include <cstdint>
 #include <map>
 #include <set>
@@ -28,19 +30,46 @@ namespace opentxs
 {
 namespace proto
 {
-// A map of allowed section names by ContactData version
-using ContactSectionMap = std::map<uint32_t, std::set<ContactSectionName>>;
-// A map of allowed item types by ContactSection version
 using ContactSectionVersion = std::pair<uint32_t, ContactSectionName>;
-using ContactItemMap =
-    std::map<ContactSectionVersion, std::set<ContactItemType>>;
-// A map of allowed item attributes by ContactItem version
-using ItemAttributeMap = std::map<uint32_t, std::set<ContactItemAttribute>>;
-// Maps for converting enum values to human-readable names
 using EnumLang = std::pair<uint32_t, std::string>;
-using EnumTranslation = std::map<EnumLang, std::string>;
+}  // namespace proto
+}  // namespace opentxs
+
+namespace std
+{
+template <>
+struct hash<opentxs::proto::ContactSectionVersion> {
+    auto operator()(const opentxs::proto::ContactSectionVersion&) const noexcept
+        -> size_t;
+};
+
+template <>
+struct hash<opentxs::proto::EnumLang> {
+    auto operator()(const opentxs::proto::EnumLang&) const noexcept -> size_t;
+};
+
+}  // namespace std
+
+namespace opentxs
+{
+namespace proto
+{
+
+// A map of allowed section names by ContactData version
+using ContactSectionMap =
+    robin_hood::unordered_flat_map<uint32_t, std::set<ContactSectionName>>;
+
+// A map of allowed item types by ContactSection version
+using ContactItemMap = robin_hood::
+    unordered_flat_map<ContactSectionVersion, std::set<ContactItemType>>;
+// A map of allowed item attributes by ContactItem version
+using ItemAttributeMap =
+    robin_hood::unordered_flat_map<uint32_t, std::set<ContactItemAttribute>>;
+// Maps for converting enum values to human-readable names
+using EnumTranslation = robin_hood::unordered_flat_map<EnumLang, std::string>;
 // A map for storing relationship reciprocities
-using RelationshipReciprocity = std::map<ContactItemType, ContactItemType>;
+using RelationshipReciprocity =
+    robin_hood::unordered_flat_map<ContactItemType, ContactItemType>;
 
 auto AllowedSectionNames() noexcept -> const ContactSectionMap&;
 auto AllowedItemTypes() noexcept -> const ContactItemMap&;

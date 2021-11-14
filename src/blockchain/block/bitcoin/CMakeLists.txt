@@ -41,6 +41,10 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/block/bitcoin/Transaction.hpp"
 )
 target_sources(opentxs-common PRIVATE ${cxx-install-headers})
+target_include_directories(
+  opentxs-common SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 
 if(OPENTXS_STANDALONE)
   install(

@@ -22,6 +22,10 @@ target_sources(
     "Seed.hpp"
     "bip39_word_list.cpp"
 )
+target_include_directories(
+  opentxs-common SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Bip32.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/crypto/Bip32Child.hpp"
