@@ -23,6 +23,10 @@ target_sources(
     "NumericHash.hpp"
     "Params.cpp"
 )
+target_include_directories(
+  opentxs-common SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/Blockchain.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/blockchain/BlockchainType.hpp"

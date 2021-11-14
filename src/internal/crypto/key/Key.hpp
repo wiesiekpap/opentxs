@@ -14,20 +14,24 @@
 
 namespace opentxs
 {
-auto translate(crypto::key::asymmetric::Algorithm in) noexcept
+auto translate(const crypto::key::asymmetric::Algorithm in) noexcept
     -> proto::AsymmetricKeyType;
-auto translate(crypto::key::asymmetric::Mode in) noexcept -> proto::KeyMode;
-auto translate(crypto::key::asymmetric::Role in) noexcept -> proto::KeyRole;
-auto translate(crypto::key::symmetric::Source in) noexcept
+auto translate(const crypto::key::asymmetric::Mode in) noexcept
+    -> proto::KeyMode;
+auto translate(const crypto::key::asymmetric::Role in) noexcept
+    -> proto::KeyRole;
+auto translate(const crypto::key::symmetric::Source in) noexcept
     -> proto::SymmetricKeyType;
-auto translate(crypto::key::symmetric::Algorithm in) noexcept
+auto translate(const crypto::key::symmetric::Algorithm in) noexcept
     -> proto::SymmetricMode;
-auto translate(proto::KeyMode in) noexcept -> crypto::key::asymmetric::Mode;
-auto translate(proto::KeyRole in) noexcept -> crypto::key::asymmetric::Role;
-auto translate(proto::AsymmetricKeyType in) noexcept
+auto translate(const proto::KeyMode in) noexcept
+    -> crypto::key::asymmetric::Mode;
+auto translate(const proto::KeyRole in) noexcept
+    -> crypto::key::asymmetric::Role;
+auto translate(const proto::AsymmetricKeyType in) noexcept
     -> crypto::key::asymmetric::Algorithm;
-auto translate(proto::SymmetricKeyType in) noexcept
+auto translate(const proto::SymmetricKeyType in) noexcept
     -> crypto::key::symmetric::Source;
-auto translate(proto::SymmetricMode in) noexcept
+auto translate(const proto::SymmetricMode in) noexcept
     -> crypto::key::symmetric::Algorithm;
 }  // namespace opentxs

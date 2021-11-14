@@ -8,7 +8,7 @@
 #include "internal/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 #include "internal/blockchain/Params.hpp"      // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
+#include <robin_hood.h>
 #include <boost/container/vector.hpp>
 #include <boost/move/algo/detail/set_difference.hpp>
 #include <boost/move/algo/move.hpp>
@@ -71,7 +71,7 @@ using Code = blockchain::SendResult;
 
 auto print(Code code) noexcept -> std::string
 {
-    static const auto map = boost::container::flat_map<Code, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Code, std::string>{
         {Code::InvalidSenderNym, "invalid sender nym"},
         {Code::AddressNotValidforChain,
          "provided address is not valid for specified blockchain"},

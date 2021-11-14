@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <map>
+#include <robin_hood.h>
 #include <memory>
 #include <string>
 
@@ -73,10 +73,10 @@ public:
 private:
     friend opentxs::Factory;
 
-    using SourceProofTypeMap =
-        std::map<identity::SourceProofType, proto::SourceProofType>;
-    using SourceProofTypeReverseMap =
-        std::map<proto::SourceProofType, identity::SourceProofType>;
+    using SourceProofTypeMap = robin_hood::
+        unordered_flat_map<identity::SourceProofType, proto::SourceProofType>;
+    using SourceProofTypeReverseMap = robin_hood::
+        unordered_flat_map<proto::SourceProofType, identity::SourceProofType>;
 
     static const VersionConversionMap credential_to_master_params_;
 

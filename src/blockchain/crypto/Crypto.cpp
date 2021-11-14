@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                         // IWYU pragma: associated
 #include "internal/blockchain/crypto/Crypto.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
+#include <robin_hood.h>
 #include <boost/intrusive/detail/iterator.hpp>
 #include <boost/move/algo/detail/set_difference.hpp>
 #include <boost/move/algo/move.hpp>
@@ -75,7 +75,7 @@ auto operator!=(
 auto print(blockchain::crypto::HDProtocol value) noexcept -> std::string
 {
     using Proto = blockchain::crypto::HDProtocol;
-    static const auto map = boost::container::flat_map<Proto, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Proto, std::string>{
         {Proto::BIP_32, "BIP-32"},
         {Proto::BIP_44, "BIP-44"},
         {Proto::BIP_49, "BIP-49"},
@@ -95,14 +95,15 @@ auto print(blockchain::crypto::HDProtocol value) noexcept -> std::string
 auto print(blockchain::crypto::Subchain value) noexcept -> std::string
 {
     using Subchain = blockchain::crypto::Subchain;
-    static const auto map = boost::container::flat_map<Subchain, std::string>{
-        {Subchain::Internal, "internal"},
-        {Subchain::External, "external"},
-        {Subchain::Incoming, "incoming"},
-        {Subchain::Outgoing, "outgoing"},
-        {Subchain::Notification, "notification"},
-        {Subchain::None, "none"},
-    };
+    static const auto map =
+        robin_hood::unordered_flat_map<Subchain, std::string>{
+            {Subchain::Internal, "internal"},
+            {Subchain::External, "external"},
+            {Subchain::Incoming, "incoming"},
+            {Subchain::Outgoing, "outgoing"},
+            {Subchain::Notification, "notification"},
+            {Subchain::None, "none"},
+        };
 
     try {
 

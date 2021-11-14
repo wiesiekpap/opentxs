@@ -8,6 +8,7 @@
 #include "internal/blockchain/node/Node.hpp"  // IWYU pragma: associated
 #include "opentxs/blockchain/node/Types.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <iosfwd>
 #include <sstream>
 
@@ -47,7 +48,7 @@ namespace opentxs
 auto print(blockchain::node::TxoState in) noexcept -> std::string
 {
     using Type = blockchain::node::TxoState;
-    static const auto map = std::map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::Error, "error"},
         {Type::UnconfirmedNew, "unspent (unconfirmed)"},
         {Type::UnconfirmedSpend, "spent (unconfirmed)"},
@@ -70,7 +71,7 @@ auto print(blockchain::node::TxoState in) noexcept -> std::string
 auto print(blockchain::node::TxoTag in) noexcept -> std::string
 {
     using Type = blockchain::node::TxoTag;
-    static const auto map = std::map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::Normal, "normal"},
         {Type::Generation, "generated"},
     };

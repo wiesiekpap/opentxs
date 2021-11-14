@@ -89,3 +89,7 @@ set_target_properties(
                                                        ""
 )
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-license>)
+target_include_directories(
+  opentxs-license SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)

@@ -7,12 +7,12 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <iterator>
-#include <map>
 #include <numeric>
 #include <sstream>
 #include <stdexcept>
@@ -302,7 +302,7 @@ auto Script::CalculateSize() const noexcept -> std::size_t
 
 auto Script::decode(const std::byte in) noexcept(false) -> OP
 {
-    static const auto map = std::map<std::uint8_t, OP>{
+    static const auto map = robin_hood::unordered_flat_map<std::uint8_t, OP>{
         {static_cast<std::uint8_t>(OP::ZERO), OP::ZERO},
         {static_cast<std::uint8_t>(OP::PUSHDATA_1), OP::PUSHDATA_1},
         {static_cast<std::uint8_t>(OP::PUSHDATA_2), OP::PUSHDATA_2},

@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include <robin_hood.h>
 #include <cstdint>
 #include <functional>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -239,12 +239,16 @@ protected:
         OTSecret&& newSecretKey) noexcept;
 
 private:
-    using HashTypeMap = std::map<crypto::HashType, proto::HashType>;
-    using HashTypeReverseMap = std::map<proto::HashType, crypto::HashType>;
-    using SignatureRoleMap =
-        std::map<crypto::SignatureRole, proto::SignatureRole>;
+    using HashTypeMap =
+        robin_hood::unordered_flat_map<crypto::HashType, proto::HashType>;
+    using HashTypeReverseMap =
+        robin_hood::unordered_flat_map<proto::HashType, crypto::HashType>;
+    using SignatureRoleMap = robin_hood::
+        unordered_flat_map<crypto::SignatureRole, proto::SignatureRole>;
 
-    static const std::map<crypto::SignatureRole, VersionNumber> sig_version_;
+    static const robin_hood::
+        unordered_flat_map<crypto::SignatureRole, VersionNumber>
+            sig_version_;
 
     const crypto::AsymmetricProvider& provider_;
     const bool has_public_;

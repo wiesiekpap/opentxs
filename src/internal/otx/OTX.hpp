@@ -17,14 +17,20 @@
 
 namespace opentxs
 {
-auto translate(otx::ConsensusType in) noexcept -> proto::ConsensusType;
-auto translate(otx::LastReplyStatus in) noexcept -> proto::LastReplyStatus;
-auto translate(otx::OTXPushType in) noexcept -> proto::OTXPushType;
-auto translate(otx::ServerReplyType in) noexcept -> proto::ServerReplyType;
-auto translate(otx::ServerRequestType in) noexcept -> proto::ServerRequestType;
-auto translate(proto::ConsensusType in) noexcept -> otx::ConsensusType;
-auto translate(proto::LastReplyStatus in) noexcept -> otx::LastReplyStatus;
-auto translate(proto::OTXPushType in) noexcept -> otx::OTXPushType;
-auto translate(proto::ServerReplyType in) noexcept -> otx::ServerReplyType;
-auto translate(proto::ServerRequestType in) noexcept -> otx::ServerRequestType;
+auto translate(const otx::ConsensusType in) noexcept -> proto::ConsensusType;
+auto translate(const otx::LastReplyStatus in) noexcept
+    -> proto::LastReplyStatus;
+auto translate(const otx::OTXPushType in) noexcept -> proto::OTXPushType;
+auto translate(const otx::ServerReplyType in) noexcept
+    -> proto::ServerReplyType;
+auto translate(const otx::ServerRequestType in) noexcept
+    -> proto::ServerRequestType;
+auto translate(const proto::ConsensusType in) noexcept -> otx::ConsensusType;
+auto translate(const proto::LastReplyStatus in) noexcept
+    -> otx::LastReplyStatus;
+auto translate(const proto::OTXPushType in) noexcept -> otx::OTXPushType;
+auto translate(const proto::ServerReplyType in) noexcept
+    -> otx::ServerReplyType;
+auto translate(const proto::ServerRequestType in) noexcept
+    -> otx::ServerRequestType;
 }  // namespace opentxs

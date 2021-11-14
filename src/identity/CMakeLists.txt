@@ -15,6 +15,10 @@ target_sources(
     "Nym.hpp"
     "Source.cpp"
 )
+target_include_directories(
+  opentxs-common SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/Authority.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/identity/CredentialRole.hpp"

@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"   // IWYU pragma: associated
 #include "crypto/Seed.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
+#include <robin_hood.h>
 #include <boost/container/vector.hpp>
 #include <algorithm>
 #include <cstddef>
@@ -351,12 +351,12 @@ struct Seed::Imp {
 
 private:
     using SerializeType = proto::Seed;
-    using TypeMap = boost::container::flat_map<SeedStyle, proto::SeedType>;
+    using TypeMap = robin_hood::unordered_flat_map<SeedStyle, proto::SeedType>;
     using TypeReverseMap =
-        boost::container::flat_map<proto::SeedType, SeedStyle>;
-    using LangMap = boost::container::flat_map<Language, proto::SeedLang>;
+        robin_hood::unordered_flat_map<proto::SeedType, SeedStyle>;
+    using LangMap = robin_hood::unordered_flat_map<Language, proto::SeedLang>;
     using LangReverseMap =
-        boost::container::flat_map<proto::SeedLang, Language>;
+        robin_hood::unordered_flat_map<proto::SeedLang, Language>;
 
     static constexpr auto default_version_ = VersionNumber{4u};
     static constexpr auto no_passphrase_{""};
@@ -586,7 +586,7 @@ auto Seed::Index() const noexcept -> Bip32Index { return imp_->Index(); }
 
 auto Seed::Phrase() const noexcept -> const Secret& { return imp_->phrase_; }
 
-auto Seed::Translate(int proto) noexcept -> SeedStyle
+auto Seed::Translate(const int proto) noexcept -> SeedStyle
 {
     return Imp::translate(static_cast<proto::SeedType>(proto));
 }
@@ -597,3 +597,4 @@ auto Seed::Words() const noexcept -> const Secret& { return imp_->words_; }
 
 Seed::~Seed() = default;
 }  // namespace opentxs::crypto
+

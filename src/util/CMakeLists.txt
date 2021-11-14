@@ -40,6 +40,10 @@ add_library(
   "Time.cpp"
   "Work.hpp"
 )
+target_include_directories(
+  opentxs-util SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Bytes.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Log.hpp"

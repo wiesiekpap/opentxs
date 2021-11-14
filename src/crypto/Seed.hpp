@@ -52,7 +52,7 @@ namespace opentxs::crypto
 class Seed
 {
 public:
-    static auto Translate(int proto) noexcept -> SeedStyle;
+    static auto Translate(const int proto) noexcept -> SeedStyle;
 
     auto Entropy() const noexcept -> const Secret&;
     auto ID() const noexcept -> const Identifier&;

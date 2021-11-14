@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <robin_hood.h>
 #include <map>
 #include <vector>
 
@@ -82,4 +83,16 @@ auto reverse_map(const std::map<Key, Value>& map) noexcept
 {
     return reverse_arbitrary_map<Key, Value>(map);
 }
+
+template <typename Key, typename Value>
+auto reverse_map(const robin_hood::unordered_flat_map<Key, Value>& map) noexcept
+    -> robin_hood::unordered_flat_map<Value, Key>
+{
+    return reverse_arbitrary_map<
+        Key,
+        Value,
+        robin_hood::unordered_flat_map<Value, Key>,
+        robin_hood::unordered_flat_map<Key, Value>>(map);
+}
+
 }  // namespace opentxs

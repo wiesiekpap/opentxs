@@ -7,21 +7,22 @@
 #include "1_Internal.hpp"   // IWYU pragma: associated
 #include "util/Thread.hpp"  // IWYU pragma: associated
 
-#include <map>
+#include <robin_hood.h>
 
 namespace opentxs
 {
 auto print(ThreadPriority priority) noexcept -> const char*
 {
-    static const auto map = std::map<ThreadPriority, const char*>{
-        {ThreadPriority::Idle, "idle"},
-        {ThreadPriority::Lowest, "lowest"},
-        {ThreadPriority::BelowNormal, "below normal"},
-        {ThreadPriority::Normal, "normal"},
-        {ThreadPriority::AboveNormal, "above normal"},
-        {ThreadPriority::Highest, "highest"},
-        {ThreadPriority::TimeCritical, "time critical"},
-    };
+    static const auto map =
+        robin_hood::unordered_flat_map<ThreadPriority, const char*>{
+            {ThreadPriority::Idle, "idle"},
+            {ThreadPriority::Lowest, "lowest"},
+            {ThreadPriority::BelowNormal, "below normal"},
+            {ThreadPriority::Normal, "normal"},
+            {ThreadPriority::AboveNormal, "above normal"},
+            {ThreadPriority::Highest, "highest"},
+            {ThreadPriority::TimeCritical, "time critical"},
+        };
 
     try {
 

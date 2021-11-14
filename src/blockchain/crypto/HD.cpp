@@ -180,14 +180,15 @@ HD::HD(
         if (0 < path_.child().size()) {
             using Index = opentxs::HDIndex<Bip43Purpose>;
 
-            static const auto map = std::map<Bip32Index, HDProtocol>{
-                {Index{Bip43Purpose::HDWALLET, Bip32Child::HARDENED},
-                 HDProtocol::BIP_44},
-                {Index{Bip43Purpose::P2SH_P2WPKH, Bip32Child::HARDENED},
-                 HDProtocol::BIP_49},
-                {Index{Bip43Purpose::P2WPKH, Bip32Child::HARDENED},
-                 HDProtocol::BIP_84},
-            };
+            static const auto map =
+                robin_hood::unordered_flat_map<Bip32Index, HDProtocol>{
+                    {Index{Bip43Purpose::HDWALLET, Bip32Child::HARDENED},
+                     HDProtocol::BIP_44},
+                    {Index{Bip43Purpose::P2SH_P2WPKH, Bip32Child::HARDENED},
+                     HDProtocol::BIP_49},
+                    {Index{Bip43Purpose::P2WPKH, Bip32Child::HARDENED},
+                     HDProtocol::BIP_84},
+                };
 
             try {
 

@@ -7,9 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <chrono>
 #include <functional>
-#include <map>
 #include <string>
 
 #include "opentxs/Types.hpp"
@@ -66,7 +66,7 @@ OPENTXS_EXPORT auto InitContext(
  */
 OPENTXS_EXPORT auto Join() noexcept -> void;
 
-using LicenseMap = std::map<std::string, std::string>;
+using LicenseMap = robin_hood::unordered_flat_map<std::string, std::string>;
 
 OPENTXS_EXPORT auto LicenseData() noexcept -> const LicenseMap&;
 OPENTXS_EXPORT auto VersionMajor() noexcept -> unsigned int;

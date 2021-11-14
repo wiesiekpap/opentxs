@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"        // IWYU pragma: associated
 #include "internal/rpc/RPC.hpp"  // IWYU pragma: associated
 
-#include <boost/container/flat_map.hpp>
+#include <robin_hood.h>
 #include <boost/container/vector.hpp>
 #include <boost/intrusive/detail/iterator.hpp>
 #include <boost/move/algo/detail/set_difference.hpp>
@@ -31,7 +31,7 @@ namespace opentxs
 auto print(rpc::AccountEventType value) noexcept -> std::string
 {
     using Type = rpc::AccountEventType;
-    static const auto map = boost::container::flat_map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::incoming_cheque, "incoming cheque"},
         {Type::outgoing_cheque, "outgoing cheque"},
         {Type::incoming_transfer, "incoming transfer"},
@@ -56,7 +56,7 @@ auto print(rpc::AccountEventType value) noexcept -> std::string
 auto print(rpc::AccountType value) noexcept -> std::string
 {
     using Type = rpc::AccountType;
-    static const auto map = boost::container::flat_map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::normal, "custodial"},
         {Type::issuer, "custodial issuer"},
         {Type::blockchain, "blockchain"},
@@ -74,7 +74,7 @@ auto print(rpc::AccountType value) noexcept -> std::string
 auto print(rpc::CommandType value) noexcept -> std::string
 {
     using Type = rpc::CommandType;
-    static const auto map = boost::container::flat_map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::add_client_session, "add client session"},
         {Type::add_server_session, "add server session"},
         {Type::list_client_sessions, "list client sessions"},
@@ -134,7 +134,7 @@ auto print(rpc::CommandType value) noexcept -> std::string
 auto print(rpc::ContactEventType value) noexcept -> std::string
 {
     using Type = rpc::ContactEventType;
-    static const auto map = boost::container::flat_map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::incoming_message, "incoming message"},
         {Type::outgoing_message, "outgoing message"},
         {Type::incoming_payment, "incoming payment"},
@@ -153,7 +153,7 @@ auto print(rpc::ContactEventType value) noexcept -> std::string
 auto print(rpc::PaymentType value) noexcept -> std::string
 {
     using Type = rpc::PaymentType;
-    static const auto map = boost::container::flat_map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::cheque, "cheque"},
         {Type::transfer, "transfer"},
         {Type::voucher, "voucher"},
@@ -174,7 +174,7 @@ auto print(rpc::PaymentType value) noexcept -> std::string
 auto print(rpc::PushType value) noexcept -> std::string
 {
     using Type = rpc::PushType;
-    static const auto map = boost::container::flat_map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::account, "account"},
         {Type::contact, "contact"},
         {Type::task, "task"},
@@ -192,7 +192,7 @@ auto print(rpc::PushType value) noexcept -> std::string
 auto print(rpc::ResponseCode value) noexcept -> std::string
 {
     using Type = rpc::ResponseCode;
-    static const auto map = boost::container::flat_map<Type, std::string>{
+    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
         {Type::invalid, "invalid"},
         {Type::success, "success"},
         {Type::bad_session, "bad_session"},
@@ -240,30 +240,32 @@ auto print(rpc::ResponseCode value) noexcept -> std::string
 namespace opentxs::rpc
 {
 using AccountEventMap =
-    boost::container::flat_map<AccountEventType, proto::AccountEventType>;
+    robin_hood::unordered_flat_map<AccountEventType, proto::AccountEventType>;
 using AccountEventReverseMap =
-    boost::container::flat_map<proto::AccountEventType, AccountEventType>;
-using AccountMap = boost::container::flat_map<AccountType, proto::AccountType>;
+    robin_hood::unordered_flat_map<proto::AccountEventType, AccountEventType>;
+using AccountMap =
+    robin_hood::unordered_flat_map<AccountType, proto::AccountType>;
 using AccountReverseMap =
-    boost::container::flat_map<proto::AccountType, AccountType>;
+    robin_hood::unordered_flat_map<proto::AccountType, AccountType>;
 using CommandMap =
-    boost::container::flat_map<CommandType, proto::RPCCommandType>;
+    robin_hood::unordered_flat_map<CommandType, proto::RPCCommandType>;
 using CommandReverseMap =
-    boost::container::flat_map<proto::RPCCommandType, CommandType>;
+    robin_hood::unordered_flat_map<proto::RPCCommandType, CommandType>;
 using ContactEventMap =
-    boost::container::flat_map<ContactEventType, proto::ContactEventType>;
+    robin_hood::unordered_flat_map<ContactEventType, proto::ContactEventType>;
 using ContactEventReverseMap =
-    boost::container::flat_map<proto::ContactEventType, ContactEventType>;
+    robin_hood::unordered_flat_map<proto::ContactEventType, ContactEventType>;
 using PaymentMap =
-    boost::container::flat_map<PaymentType, proto::RPCPaymentType>;
+    robin_hood::unordered_flat_map<PaymentType, proto::RPCPaymentType>;
 using PaymentReverseMap =
-    boost::container::flat_map<proto::RPCPaymentType, PaymentType>;
-using PushMap = boost::container::flat_map<PushType, proto::RPCPushType>;
-using PushReverseMap = boost::container::flat_map<proto::RPCPushType, PushType>;
+    robin_hood::unordered_flat_map<proto::RPCPaymentType, PaymentType>;
+using PushMap = robin_hood::unordered_flat_map<PushType, proto::RPCPushType>;
+using PushReverseMap =
+    robin_hood::unordered_flat_map<proto::RPCPushType, PushType>;
 using ResponseCodeMap =
-    boost::container::flat_map<ResponseCode, proto::RPCResponseCode>;
+    robin_hood::unordered_flat_map<ResponseCode, proto::RPCResponseCode>;
 using ResponseCodeReverseMap =
-    boost::container::flat_map<proto::RPCResponseCode, ResponseCode>;
+    robin_hood::unordered_flat_map<proto::RPCResponseCode, ResponseCode>;
 
 auto account_event_map() noexcept -> AccountEventMap;
 auto account_event_map() noexcept -> AccountEventMap
@@ -477,7 +479,8 @@ auto response_code_map() noexcept -> ResponseCodeMap
 
 namespace opentxs
 {
-auto translate(rpc::AccountEventType type) noexcept -> proto::AccountEventType
+auto translate(const rpc::AccountEventType type) noexcept
+    -> proto::AccountEventType
 {
     try {
 
@@ -487,7 +490,7 @@ auto translate(rpc::AccountEventType type) noexcept -> proto::AccountEventType
         return proto::ACCOUNTEVENT_ERROR;
     }
 }
-auto translate(rpc::AccountType type) noexcept -> proto::AccountType
+auto translate(const rpc::AccountType type) noexcept -> proto::AccountType
 {
     try {
 
@@ -497,7 +500,7 @@ auto translate(rpc::AccountType type) noexcept -> proto::AccountType
         return proto::ACCOUNTTYPE_ERROR;
     }
 }
-auto translate(rpc::CommandType type) noexcept -> proto::RPCCommandType
+auto translate(const rpc::CommandType type) noexcept -> proto::RPCCommandType
 {
     try {
 
@@ -507,7 +510,8 @@ auto translate(rpc::CommandType type) noexcept -> proto::RPCCommandType
         return proto::RPCCOMMAND_ERROR;
     }
 }
-auto translate(rpc::ContactEventType type) noexcept -> proto::ContactEventType
+auto translate(const rpc::ContactEventType type) noexcept
+    -> proto::ContactEventType
 {
     try {
 
@@ -517,7 +521,7 @@ auto translate(rpc::ContactEventType type) noexcept -> proto::ContactEventType
         return proto::CONTACTEVENT_ERROR;
     }
 }
-auto translate(rpc::PaymentType type) noexcept -> proto::RPCPaymentType
+auto translate(const rpc::PaymentType type) noexcept -> proto::RPCPaymentType
 {
     try {
 
@@ -527,7 +531,7 @@ auto translate(rpc::PaymentType type) noexcept -> proto::RPCPaymentType
         return proto::RPCPAYMENTTYPE_ERROR;
     }
 }
-auto translate(rpc::PushType type) noexcept -> proto::RPCPushType
+auto translate(const rpc::PushType type) noexcept -> proto::RPCPushType
 {
     try {
 
@@ -537,7 +541,7 @@ auto translate(rpc::PushType type) noexcept -> proto::RPCPushType
         return proto::RPCPUSH_ERROR;
     }
 }
-auto translate(rpc::ResponseCode type) noexcept -> proto::RPCResponseCode
+auto translate(const rpc::ResponseCode type) noexcept -> proto::RPCResponseCode
 {
     try {
 
@@ -547,7 +551,8 @@ auto translate(rpc::ResponseCode type) noexcept -> proto::RPCResponseCode
         return proto::RPCRESPONSE_INVALID;
     }
 }
-auto translate(proto::AccountEventType type) noexcept -> rpc::AccountEventType
+auto translate(const proto::AccountEventType type) noexcept
+    -> rpc::AccountEventType
 {
     static const auto map = reverse_arbitrary_map<
         rpc::AccountEventType,
@@ -562,7 +567,7 @@ auto translate(proto::AccountEventType type) noexcept -> rpc::AccountEventType
         return rpc::AccountEventType::error;
     }
 }
-auto translate(proto::AccountType type) noexcept -> rpc::AccountType
+auto translate(const proto::AccountType type) noexcept -> rpc::AccountType
 {
     static const auto map = reverse_arbitrary_map<
         rpc::AccountType,
@@ -577,7 +582,8 @@ auto translate(proto::AccountType type) noexcept -> rpc::AccountType
         return rpc::AccountType::error;
     }
 }
-auto translate(proto::ContactEventType type) noexcept -> rpc::ContactEventType
+auto translate(const proto::ContactEventType type) noexcept
+    -> rpc::ContactEventType
 {
     static const auto map = reverse_arbitrary_map<
         rpc::ContactEventType,
@@ -592,7 +598,7 @@ auto translate(proto::ContactEventType type) noexcept -> rpc::ContactEventType
         return rpc::ContactEventType::error;
     }
 }
-auto translate(proto::RPCCommandType type) noexcept -> rpc::CommandType
+auto translate(const proto::RPCCommandType type) noexcept -> rpc::CommandType
 {
     static const auto map = reverse_arbitrary_map<
         rpc::CommandType,
@@ -607,7 +613,7 @@ auto translate(proto::RPCCommandType type) noexcept -> rpc::CommandType
         return rpc::CommandType::error;
     }
 }
-auto translate(proto::RPCPaymentType type) noexcept -> rpc::PaymentType
+auto translate(const proto::RPCPaymentType type) noexcept -> rpc::PaymentType
 {
     static const auto map = reverse_arbitrary_map<
         rpc::PaymentType,
@@ -622,7 +628,7 @@ auto translate(proto::RPCPaymentType type) noexcept -> rpc::PaymentType
         return rpc::PaymentType::error;
     }
 }
-auto translate(proto::RPCPushType type) noexcept -> rpc::PushType
+auto translate(const proto::RPCPushType type) noexcept -> rpc::PushType
 {
     static const auto map = reverse_arbitrary_map<
         rpc::PushType,
@@ -637,7 +643,7 @@ auto translate(proto::RPCPushType type) noexcept -> rpc::PushType
         return rpc::PushType::error;
     }
 }
-auto translate(proto::RPCResponseCode type) noexcept -> rpc::ResponseCode
+auto translate(const proto::RPCResponseCode type) noexcept -> rpc::ResponseCode
 {
     static const auto map = reverse_arbitrary_map<
         rpc::ResponseCode,

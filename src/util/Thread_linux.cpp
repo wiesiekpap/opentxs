@@ -7,12 +7,12 @@
 #include "1_Internal.hpp"   // IWYU pragma: associated
 #include "util/Thread.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/resource.h>
 #include <unistd.h>
 #include <array>
-#include <map>
 
 #include "opentxs/util/Log.hpp"
 
@@ -20,7 +20,7 @@ namespace opentxs
 {
 auto SetThisThreadsPriority(ThreadPriority priority) noexcept -> void
 {
-    static const auto map = std::map<ThreadPriority, int>{
+    static const auto map = robin_hood::unordered_flat_map<ThreadPriority, int>{
         {ThreadPriority::Idle, 20},
         {ThreadPriority::Lowest, 15},
         {ThreadPriority::BelowNormal, 10},

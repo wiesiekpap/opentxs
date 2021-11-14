@@ -61,20 +61,21 @@ auto Asymmetric::Factory() noexcept -> OTAsymmetricKey
 
 namespace opentxs::crypto::key::implementation
 {
-const std::map<crypto::SignatureRole, VersionNumber> Asymmetric::sig_version_{
-    {SignatureRole::PublicCredential, 1},
-    {SignatureRole::PrivateCredential, 1},
-    {SignatureRole::NymIDSource, 1},
-    {SignatureRole::Claim, 1},
-    {SignatureRole::ServerContract, 1},
-    {SignatureRole::UnitDefinition, 1},
-    {SignatureRole::PeerRequest, 1},
-    {SignatureRole::PeerReply, 1},
-    {SignatureRole::Context, 2},
-    {SignatureRole::Account, 2},
-    {SignatureRole::ServerRequest, 3},
-    {SignatureRole::ServerReply, 3},
-};
+const robin_hood::unordered_flat_map<crypto::SignatureRole, VersionNumber>
+    Asymmetric::sig_version_{
+        {SignatureRole::PublicCredential, 1},
+        {SignatureRole::PrivateCredential, 1},
+        {SignatureRole::NymIDSource, 1},
+        {SignatureRole::Claim, 1},
+        {SignatureRole::ServerContract, 1},
+        {SignatureRole::UnitDefinition, 1},
+        {SignatureRole::PeerRequest, 1},
+        {SignatureRole::PeerReply, 1},
+        {SignatureRole::Context, 2},
+        {SignatureRole::Account, 2},
+        {SignatureRole::ServerRequest, 3},
+        {SignatureRole::ServerReply, 3},
+    };
 
 Asymmetric::Asymmetric(
     const api::Session& api,

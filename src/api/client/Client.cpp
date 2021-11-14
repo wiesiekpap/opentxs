@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "internal/api/client/Client.hpp"  // IWYU pragma: associated
 
-#include <map>
+#include <robin_hood.h>
 
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
@@ -16,14 +16,18 @@
 
 namespace opentxs::api::client
 {
-using PaymentWorkflowStateMap =
-    std::map<api::client::PaymentWorkflowState, proto::PaymentWorkflowState>;
-using PaymentWorkflowStateReverseMap =
-    std::map<proto::PaymentWorkflowState, api::client::PaymentWorkflowState>;
-using PaymentWorkflowTypeMap =
-    std::map<api::client::PaymentWorkflowType, proto::PaymentWorkflowType>;
-using PaymentWorkflowTypeReverseMap =
-    std::map<proto::PaymentWorkflowType, api::client::PaymentWorkflowType>;
+using PaymentWorkflowStateMap = robin_hood::unordered_flat_map<
+    api::client::PaymentWorkflowState,
+    proto::PaymentWorkflowState>;
+using PaymentWorkflowStateReverseMap = robin_hood::unordered_flat_map<
+    proto::PaymentWorkflowState,
+    api::client::PaymentWorkflowState>;
+using PaymentWorkflowTypeMap = robin_hood::unordered_flat_map<
+    api::client::PaymentWorkflowType,
+    proto::PaymentWorkflowType>;
+using PaymentWorkflowTypeReverseMap = robin_hood::unordered_flat_map<
+    proto::PaymentWorkflowType,
+    api::client::PaymentWorkflowType>;
 
 auto paymentworkflowstate_map() noexcept -> const PaymentWorkflowStateMap&;
 auto paymentworkflowtype_map() noexcept -> const PaymentWorkflowTypeMap&;

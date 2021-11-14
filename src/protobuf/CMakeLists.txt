@@ -372,6 +372,10 @@ add_library(
   ALIAS
   proto-verify
 )
+target_include_directories(
+  proto-verify SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)
 target_link_libraries(
   proto-verify PRIVATE opentxs-common protobuf::libprotobuf-lite
 )

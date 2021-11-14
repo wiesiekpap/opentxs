@@ -46,8 +46,8 @@ struct Base::Imp {
     const std::string endpoint_;
     const std::vector<Block> blocks_;
 
-    static auto translate(LocalType in) noexcept -> RemoteType;
-    static auto translate(RemoteType in) noexcept -> LocalType;
+    static auto translate(const LocalType in) noexcept -> RemoteType;
+    static auto translate(const RemoteType in) noexcept -> LocalType;
 
     virtual auto asAcknowledgement() const noexcept -> const Acknowledgement&;
     virtual auto asData() const noexcept -> const Data&;

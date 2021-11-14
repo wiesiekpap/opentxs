@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "identity/credential/Base.hpp"  // IWYU pragma: associated
 
-#include <map>
+#include <robin_hood.h>
 
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
@@ -17,12 +17,14 @@
 
 namespace opentxs::identity::credential
 {
-using CredentialRoleMap = std::map<CredentialRole, proto::CredentialRole>;
+using CredentialRoleMap =
+    robin_hood::unordered_flat_map<CredentialRole, proto::CredentialRole>;
 using CredentialRoleReverseMap =
-    std::map<proto::CredentialRole, CredentialRole>;
-using CredentialTypeMap = std::map<CredentialType, proto::CredentialType>;
+    robin_hood::unordered_flat_map<proto::CredentialRole, CredentialRole>;
+using CredentialTypeMap =
+    robin_hood::unordered_flat_map<CredentialType, proto::CredentialType>;
 using CredentialTypeReverseMap =
-    std::map<proto::CredentialType, CredentialType>;
+    robin_hood::unordered_flat_map<proto::CredentialType, CredentialType>;
 
 auto credentialrole_map() noexcept -> const CredentialRoleMap&;
 auto credentialtype_map() noexcept -> const CredentialTypeMap&;

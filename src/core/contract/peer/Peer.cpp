@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "internal/core/contract/peer/Peer.hpp"  // IWYU pragma: associated
 
-#include <map>
+#include <robin_hood.h>
 
 #include "Proto.tpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
@@ -47,22 +47,26 @@ PairEvent::PairEvent(
 
 namespace opentxs::contract::peer
 {
-using ConnectionInfoTypeMap =
-    std::map<ConnectionInfoType, proto::ConnectionInfoType>;
-using ConnectionInfoTypeReverseMap =
-    std::map<proto::ConnectionInfoType, ConnectionInfoType>;
-using PairEventTypeMap =
-    std::map<internal::PairEventType, proto::PairEventType>;
-using PairEventTypeReverseMap =
-    std::map<proto::PairEventType, internal::PairEventType>;
-using PeerObjectTypeMap = std::map<PeerObjectType, proto::PeerObjectType>;
+using ConnectionInfoTypeMap = robin_hood::
+    unordered_flat_map<ConnectionInfoType, proto::ConnectionInfoType>;
+using ConnectionInfoTypeReverseMap = robin_hood::
+    unordered_flat_map<proto::ConnectionInfoType, ConnectionInfoType>;
+using PairEventTypeMap = robin_hood::
+    unordered_flat_map<internal::PairEventType, proto::PairEventType>;
+using PairEventTypeReverseMap = robin_hood::
+    unordered_flat_map<proto::PairEventType, internal::PairEventType>;
+using PeerObjectTypeMap =
+    robin_hood::unordered_flat_map<PeerObjectType, proto::PeerObjectType>;
 using PeerObjectTypeReverseMap =
-    std::map<proto::PeerObjectType, PeerObjectType>;
-using PeerRequestTypeMap = std::map<PeerRequestType, proto::PeerRequestType>;
+    robin_hood::unordered_flat_map<proto::PeerObjectType, PeerObjectType>;
+using PeerRequestTypeMap =
+    robin_hood::unordered_flat_map<PeerRequestType, proto::PeerRequestType>;
 using PeerRequestTypeReverseMap =
-    std::map<proto::PeerRequestType, PeerRequestType>;
-using SecretTypeMap = std::map<SecretType, proto::SecretType>;
-using SecretTypeReverseMap = std::map<proto::SecretType, SecretType>;
+    robin_hood::unordered_flat_map<proto::PeerRequestType, PeerRequestType>;
+using SecretTypeMap =
+    robin_hood::unordered_flat_map<SecretType, proto::SecretType>;
+using SecretTypeReverseMap =
+    robin_hood::unordered_flat_map<proto::SecretType, SecretType>;
 
 auto connectioninfotype_map() noexcept -> const ConnectionInfoTypeMap&;
 auto paireventtype_map() noexcept -> const PairEventTypeMap&;
@@ -143,7 +147,7 @@ auto secrettype_map() noexcept -> const SecretTypeMap&
 
 namespace opentxs
 {
-auto translate(contract::peer::ConnectionInfoType in) noexcept
+auto translate(const contract::peer::ConnectionInfoType in) noexcept
     -> proto::ConnectionInfoType
 {
     try {
@@ -153,7 +157,7 @@ auto translate(contract::peer::ConnectionInfoType in) noexcept
     }
 }
 
-auto translate(contract::peer::internal::PairEventType in) noexcept
+auto translate(const contract::peer::internal::PairEventType in) noexcept
     -> proto::PairEventType
 {
     try {
@@ -163,7 +167,7 @@ auto translate(contract::peer::internal::PairEventType in) noexcept
     }
 }
 
-auto translate(contract::peer::PeerObjectType in) noexcept
+auto translate(const contract::peer::PeerObjectType in) noexcept
     -> proto::PeerObjectType
 {
     try {
@@ -173,7 +177,7 @@ auto translate(contract::peer::PeerObjectType in) noexcept
     }
 }
 
-auto translate(contract::peer::PeerRequestType in) noexcept
+auto translate(const contract::peer::PeerRequestType in) noexcept
     -> proto::PeerRequestType
 {
     try {
@@ -183,7 +187,8 @@ auto translate(contract::peer::PeerRequestType in) noexcept
     }
 }
 
-auto translate(contract::peer::SecretType in) noexcept -> proto::SecretType
+auto translate(const contract::peer::SecretType in) noexcept
+    -> proto::SecretType
 {
     try {
         return contract::peer::secrettype_map().at(in);
@@ -192,7 +197,7 @@ auto translate(contract::peer::SecretType in) noexcept -> proto::SecretType
     }
 }
 
-auto translate(proto::ConnectionInfoType in) noexcept
+auto translate(const proto::ConnectionInfoType in) noexcept
     -> contract::peer::ConnectionInfoType
 {
     static const auto map = reverse_arbitrary_map<
@@ -208,7 +213,7 @@ auto translate(proto::ConnectionInfoType in) noexcept
     }
 }
 
-auto translate(proto::PairEventType in) noexcept
+auto translate(const proto::PairEventType in) noexcept
     -> contract::peer::internal::PairEventType
 {
     static const auto map = reverse_arbitrary_map<
@@ -224,7 +229,7 @@ auto translate(proto::PairEventType in) noexcept
     }
 }
 
-auto translate(proto::PeerObjectType in) noexcept
+auto translate(const proto::PeerObjectType in) noexcept
     -> contract::peer::PeerObjectType
 {
     static const auto map = reverse_arbitrary_map<
@@ -240,7 +245,7 @@ auto translate(proto::PeerObjectType in) noexcept
     }
 }
 
-auto translate(proto::PeerRequestType in) noexcept
+auto translate(const proto::PeerRequestType in) noexcept
     -> contract::peer::PeerRequestType
 {
     static const auto map = reverse_arbitrary_map<
@@ -256,7 +261,8 @@ auto translate(proto::PeerRequestType in) noexcept
     }
 }
 
-auto translate(proto::SecretType in) noexcept -> contract::peer::SecretType
+auto translate(const proto::SecretType in) noexcept
+    -> contract::peer::SecretType
 {
     static const auto map = reverse_arbitrary_map<
         contract::peer::SecretType,
