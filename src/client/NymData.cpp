@@ -16,7 +16,7 @@
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -58,7 +58,7 @@ NymData::NymData(const NymData& rhs)
 
 auto NymData::AddChildKeyCredential(
     const Identifier& strMasterID,
-    const NymParameters& nymParameters,
+    const crypto::Parameters& nymParameters,
     const PasswordPrompt& reason) -> std::string
 {
     return nym().AddChildKeyCredential(strMasterID, nymParameters, reason);
@@ -112,7 +112,7 @@ auto NymData::AddPaymentCode(
 {
     auto paymentCode = factory_.PaymentCode(code);
 
-    if (false == paymentCode->Valid()) {
+    if (false == paymentCode.Valid()) {
         LogError()(OT_PRETTY_CLASS())("Invalid payment code.").Flush();
 
         return false;

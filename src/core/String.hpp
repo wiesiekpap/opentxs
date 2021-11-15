@@ -108,13 +108,15 @@ private:
         -> std::vector<char>;
 
     auto clone() const -> String* override;
+    auto tokenize_basic(Map& map) const -> bool;
+    auto tokenize_enhanced(Map& map) const -> bool;
+
     /** Only call this right after calling Initialize() or Release(). Also, this
      * function ASSUMES the new_string pointer is good. */
     void LowLevelSet(const char* data, std::uint32_t enforcedMaxLength);
     /** You better have called Initialize() or Release() before you dare call
      * this. */
     void LowLevelSetStr(const String& buffer);
-
     void Initialize();
     void zeroMemory();
 };

@@ -33,6 +33,7 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/client/Contacts.hpp"
@@ -54,7 +55,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -111,7 +112,7 @@ struct BitcoinTransactionBuilder::Imp {
                         const auto message =
                             std::string{
                                 "Constructing notification transaction to "} +
-                            recipient->asBase58();
+                            recipient.asBase58();
                         const auto reason =
                             api_.Factory().PasswordPrompt(message);
                         const auto pc = [&] {
@@ -119,7 +120,7 @@ struct BitcoinTransactionBuilder::Imp {
                                 api_.Factory().PaymentCode(notif.sender());
                             const auto& path = notif.path();
                             auto seed{path.root()};
-                            const auto rc = out->AddPrivateKeys(
+                            const auto rc = out.Internal().AddPrivateKeys(
                                 seed, *path.child().rbegin(), reason);
 
                             if (false == rc) {
@@ -137,7 +138,7 @@ struct BitcoinTransactionBuilder::Imp {
                         }
 
                         const auto& key = *pKey;
-                        const auto keys = pc->GenerateNotificationElements(
+                        const auto keys = pc.GenerateNotificationElements(
                             recipient, key, reason);
 
                         if (3u != keys.size()) {

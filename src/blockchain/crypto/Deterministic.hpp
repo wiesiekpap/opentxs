@@ -163,7 +163,6 @@ protected:
         -> Bip32Index;
     auto serialize_deterministic(const rLock& lock, SerializedType& out)
         const noexcept -> void;
-#if OT_CRYPTO_WITH_BIP32
     auto use_next(
         const rLock& lock,
         const Subchain type,
@@ -172,7 +171,6 @@ protected:
         const std::string& label,
         const Time time,
         Batch& generated) const noexcept -> std::optional<Bip32Index>;
-#endif  // OT_CRYPTO_WITH_BIP32
 
     auto element(
         const rLock& lock,
@@ -214,7 +212,6 @@ private:
         const AddressMap& map,
         std::set<OTIdentifier>& contacts) noexcept -> void;
 
-#if OT_CRYPTO_WITH_BIP32
     auto accept(
         const rLock& lock,
         const Subchain type,
@@ -236,7 +233,6 @@ private:
         Fallback& fallback,
         std::size_t& gap,
         Batch& generated) const noexcept(false) -> std::optional<Bip32Index>;
-#endif  // OT_CRYPTO_WITH_BIP32
     auto check_activity(
         const rLock& lock,
         const std::vector<Activity>& unspent,

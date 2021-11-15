@@ -13,12 +13,15 @@ add_subdirectory(script)
 add_subdirectory(trade)
 add_subdirectory(transaction)
 add_subdirectory(util)
+add_subdirectory(paymentcode)
 
 target_sources(
   opentxs-common
   PRIVATE
     "${opentxs_SOURCE_DIR}/include/opentxs/core/UniqueQueue.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/core/Core.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/core/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/core/Null.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/core/identifier/Identifier.hpp"
     "Account.cpp"
     "AccountVisitor.cpp"

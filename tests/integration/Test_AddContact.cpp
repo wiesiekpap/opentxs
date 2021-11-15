@@ -8,16 +8,18 @@
 #include <future>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/ui/ContactList.hpp"
 #include "ui/Helpers.hpp"
@@ -43,6 +45,8 @@ Counter contact_list_chris_{};
 Counter messagable_list_chris_{};
 
 struct Test_AddContact : public IntegrationFixture {
+    static const bool have_hd_;
+
     const ot::api::session::Client& api_alex_;
     const ot::api::session::Client& api_bob_;
     const ot::api::session::Client& api_chris_;
@@ -59,6 +63,13 @@ struct Test_AddContact : public IntegrationFixture {
         const_cast<User&>(bob_).init(api_bob_, server_1_);
         const_cast<User&>(chris_).init(api_chris_, server_1_);
     }
+};
+
+const bool Test_AddContact::have_hd_{
+    ot::api::crypto::HaveHDKeys() &&
+    ot::api::crypto::HaveSupport(
+        ot::crypto::key::asymmetric::Algorithm::Secp256k1)
+
 };
 
 TEST_F(Test_AddContact, init_ot) {}
@@ -220,57 +231,71 @@ TEST_F(Test_AddContact, add_nymid_messagable_list_alex)
     EXPECT_TRUE(check_messagable_list_qt(alex_, expected));
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 TEST_F(Test_AddContact, paymentcode)
 {
-    ASSERT_FALSE(chris_.payment_code_.empty());
+    if (have_hd_) {
+        ASSERT_FALSE(chris_.payment_code_.empty());
 
-    contact_list_alex_.expected_ += 1;
-    messagable_list_alex_.expected_ += 1;
-    const auto& widget = alex_.api_->UI().ContactList(alex_.nym_id_);
-    const auto id = widget.AddContact(chris_.name_, "", chris_.payment_code_);
-    api_alex_.OTX().ContextIdle(alex_.nym_id_, server_1_.id_).get();
+        contact_list_alex_.expected_ += 1;
+        messagable_list_alex_.expected_ += 1;
+        const auto& widget = alex_.api_->UI().ContactList(alex_.nym_id_);
+        const auto id =
+            widget.AddContact(chris_.name_, "", chris_.payment_code_);
+        api_alex_.OTX().ContextIdle(alex_.nym_id_, server_1_.id_).get();
 
-    ASSERT_FALSE(id.empty());
-    EXPECT_TRUE(alex_.SetContact(chris_.name_, id));
+        ASSERT_FALSE(id.empty());
+        EXPECT_TRUE(alex_.SetContact(chris_.name_, id));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_AddContact, add_paymentcode_contact_list_alex)
 {
-    ASSERT_TRUE(wait_for_counter(contact_list_alex_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(contact_list_alex_));
 
-    const auto expected = ContactListData{{
-        {true, alex_.name_, alex_.name_, "ME", ""},
-        {true, bob_.name_, bob_.name_, "B", ""},
-        {true, chris_.name_, chris_.name_, "C", ""},
-    }};
+        const auto expected = ContactListData{{
+            {true, alex_.name_, alex_.name_, "ME", ""},
+            {true, bob_.name_, bob_.name_, "B", ""},
+            {true, chris_.name_, chris_.name_, "C", ""},
+        }};
 
-    ASSERT_TRUE(wait_for_counter(contact_list_alex_));
-    EXPECT_TRUE(check_contact_list(alex_, expected));
-    EXPECT_TRUE(check_contact_list_qt(alex_, expected));
+        ASSERT_TRUE(wait_for_counter(contact_list_alex_));
+        EXPECT_TRUE(check_contact_list(alex_, expected));
+        EXPECT_TRUE(check_contact_list_qt(alex_, expected));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_AddContact, add_paymentcode_messagable_list_alex)
 {
-    ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
 
-    const auto expected = ContactListData{{
-        {true, bob_.name_, bob_.name_, "B", ""},
-        {true, chris_.name_, chris_.name_, "C", ""},
-    }};
+        const auto expected = ContactListData{{
+            {true, bob_.name_, bob_.name_, "B", ""},
+            {true, chris_.name_, chris_.name_, "C", ""},
+        }};
 
-    ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
-    EXPECT_TRUE(check_messagable_list(alex_, expected));
-    EXPECT_TRUE(check_messagable_list_qt(alex_, expected));
+        ASSERT_TRUE(wait_for_counter(messagable_list_alex_));
+        EXPECT_TRUE(check_messagable_list(alex_, expected));
+        EXPECT_TRUE(check_messagable_list_qt(alex_, expected));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
 TEST_F(Test_AddContact, both)
 {
     ASSERT_FALSE(alex_.nym_id_->empty());
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    ASSERT_FALSE(alex_.payment_code_.empty());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+
+    if (have_hd_) {
+        ASSERT_FALSE(alex_.payment_code_.empty());
+    } else {
+        // TODO
+    }
 
     contact_list_bob_.expected_ += 1;
     messagable_list_bob_.expected_ += 1;
@@ -313,9 +338,12 @@ TEST_F(Test_AddContact, add_both_messagable_list_bob)
 TEST_F(Test_AddContact, backwards)
 {
     ASSERT_FALSE(chris_.nym_id_->empty());
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    ASSERT_FALSE(chris_.payment_code_.empty());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+
+    if (have_hd_) {
+        ASSERT_FALSE(chris_.payment_code_.empty());
+    } else {
+        // TODO
+    }
 
     contact_list_bob_.expected_ += 1;
     messagable_list_bob_.expected_ += 1;
@@ -357,48 +385,58 @@ TEST_F(Test_AddContact, add_backwards_messagable_list_bob)
     EXPECT_TRUE(check_messagable_list_qt(bob_, expected));
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 TEST_F(Test_AddContact, paymentcode_as_nymid)
 {
-    ASSERT_FALSE(alex_.payment_code_.empty());
+    if (have_hd_) {
+        ASSERT_FALSE(alex_.payment_code_.empty());
 
-    contact_list_chris_.expected_ += 1;
-    messagable_list_chris_.expected_ += 1;
-    const auto& widget = chris_.api_->UI().ContactList(chris_.nym_id_);
-    const auto id = widget.AddContact(alex_.name_, alex_.payment_code_, "");
-    api_chris_.OTX().ContextIdle(chris_.nym_id_, server_1_.id_).get();
+        contact_list_chris_.expected_ += 1;
+        messagable_list_chris_.expected_ += 1;
+        const auto& widget = chris_.api_->UI().ContactList(chris_.nym_id_);
+        const auto id = widget.AddContact(alex_.name_, alex_.payment_code_, "");
+        api_chris_.OTX().ContextIdle(chris_.nym_id_, server_1_.id_).get();
 
-    ASSERT_FALSE(id.empty());
-    EXPECT_TRUE(chris_.SetContact(alex_.name_, id));
+        ASSERT_FALSE(id.empty());
+        EXPECT_TRUE(chris_.SetContact(alex_.name_, id));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_AddContact, add_payment_code_as_nymid_contact_list_chris)
 {
-    ASSERT_TRUE(wait_for_counter(contact_list_chris_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(contact_list_chris_));
 
-    const auto expected = ContactListData{{
-        {true, chris_.name_, chris_.name_, "ME", ""},
-        {true, alex_.name_, alex_.name_, "A", ""},
-    }};
+        const auto expected = ContactListData{{
+            {true, chris_.name_, chris_.name_, "ME", ""},
+            {true, alex_.name_, alex_.name_, "A", ""},
+        }};
 
-    ASSERT_TRUE(wait_for_counter(contact_list_chris_));
-    EXPECT_TRUE(check_contact_list(chris_, expected));
-    EXPECT_TRUE(check_contact_list_qt(chris_, expected));
+        ASSERT_TRUE(wait_for_counter(contact_list_chris_));
+        EXPECT_TRUE(check_contact_list(chris_, expected));
+        EXPECT_TRUE(check_contact_list_qt(chris_, expected));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_AddContact, add_payment_code_as_nymid_messagable_list_chris)
 {
-    ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
 
-    const auto expected = ContactListData{{
-        {true, alex_.name_, alex_.name_, "A", ""},
-    }};
+        const auto expected = ContactListData{{
+            {true, alex_.name_, alex_.name_, "A", ""},
+        }};
 
-    ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
-    EXPECT_TRUE(check_messagable_list(chris_, expected));
-    EXPECT_TRUE(check_messagable_list_qt(chris_, expected));
+        ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
+        EXPECT_TRUE(check_messagable_list(chris_, expected));
+        EXPECT_TRUE(check_messagable_list_qt(chris_, expected));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
 TEST_F(Test_AddContact, nymid_as_paymentcode)
 {
@@ -418,13 +456,21 @@ TEST_F(Test_AddContact, add_nymid_as_paymentcode_contact_list_chris)
 {
     ASSERT_TRUE(wait_for_counter(contact_list_chris_));
 
-    const auto expected = ContactListData{{
-        {true, chris_.name_, chris_.name_, "ME", ""},
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-        {true, alex_.name_, alex_.name_, "A", ""},
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-        {true, bob_.name_, bob_.name_, "B", ""},
-    }};
+    const auto expected = [] {
+        auto out = ContactListData{};
+        out.rows_.emplace_back(
+            ContactListRow{true, chris_.name_, chris_.name_, "ME", ""});
+
+        if (have_hd_) {
+            out.rows_.emplace_back(
+                ContactListRow{true, alex_.name_, alex_.name_, "A", ""});
+        }
+
+        out.rows_.emplace_back(
+            ContactListRow{true, bob_.name_, bob_.name_, "B", ""});
+
+        return out;
+    }();
 
     ASSERT_TRUE(wait_for_counter(contact_list_chris_));
     EXPECT_TRUE(check_contact_list(chris_, expected));
@@ -435,12 +481,19 @@ TEST_F(Test_AddContact, add_nymid_as_paymentcode_messagable_list_chris)
 {
     ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
 
-    const auto expected = ContactListData{{
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-        {true, alex_.name_, alex_.name_, "A", ""},
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-        {true, bob_.name_, bob_.name_, "B", ""},
-    }};
+    const auto expected = [] {
+        auto out = ContactListData{};
+
+        if (have_hd_) {
+            out.rows_.emplace_back(
+                ContactListRow{true, alex_.name_, alex_.name_, "A", ""});
+        }
+
+        out.rows_.emplace_back(
+            ContactListRow{true, bob_.name_, bob_.name_, "B", ""});
+
+        return out;
+    }();
 
     ASSERT_TRUE(wait_for_counter(messagable_list_chris_));
     EXPECT_TRUE(check_messagable_list(chris_, expected));

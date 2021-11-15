@@ -22,6 +22,7 @@
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -45,10 +46,10 @@
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/cron/OTCron.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -179,30 +180,34 @@ auto Server::parse_seed_backup(const std::string& input) const
 
 void Server::CreateMainFile(bool& mainFileExists)
 {
-#if OT_CRYPTO_WITH_BIP32
-    const auto backup = OTDB::QueryPlainString(
-        manager_, manager_.DataFolder(), SEED_BACKUP_FILE, "", "", "");
     std::string seed{};
 
-    if (false == backup.empty()) {
-        LogError()(OT_PRETTY_CLASS())("Seed backup found. Restoring.").Flush();
-        auto parsed = parse_seed_backup(backup);
-        auto phrase = manager_.Factory().SecretFromText(parsed.first);
-        auto words = manager_.Factory().SecretFromText(parsed.second);
-        seed = manager_.Crypto().Seed().ImportSeed(
-            words,
-            phrase,
-            crypto::SeedStyle::BIP39,
-            crypto::Language::en,
-            reason_);
+    if (api::crypto::HaveHDKeys()) {
+        const auto backup = OTDB::QueryPlainString(
+            manager_, manager_.DataFolder(), SEED_BACKUP_FILE, "", "", "");
 
-        if (seed.empty()) {
-            LogError()(OT_PRETTY_CLASS())("Seed restoration failed.").Flush();
-        } else {
-            LogError()(OT_PRETTY_CLASS())("Seed ")(seed)(" restored.").Flush();
+        if (false == backup.empty()) {
+            LogError()(OT_PRETTY_CLASS())("Seed backup found. Restoring.")
+                .Flush();
+            auto parsed = parse_seed_backup(backup);
+            auto phrase = manager_.Factory().SecretFromText(parsed.first);
+            auto words = manager_.Factory().SecretFromText(parsed.second);
+            seed = manager_.Crypto().Seed().ImportSeed(
+                words,
+                phrase,
+                crypto::SeedStyle::BIP39,
+                crypto::Language::en,
+                reason_);
+
+            if (seed.empty()) {
+                LogError()(OT_PRETTY_CLASS())("Seed restoration failed.")
+                    .Flush();
+            } else {
+                LogError()(OT_PRETTY_CLASS())("Seed ")(seed)(" restored.")
+                    .Flush();
+            }
         }
     }
-#endif
 
     const std::string defaultName = DEFAULT_NAME;
     const std::string& userName = manager_.GetUserName();
@@ -210,14 +215,12 @@ void Server::CreateMainFile(bool& mainFileExists)
 
     if (1 > name.size()) { name = defaultName; }
 
-    auto nymParameters = NymParameters{};
-#if OT_CRYPTO_WITH_BIP32
+    auto nymParameters = crypto::Parameters{};
     nymParameters.SetSeed(seed);
     nymParameters.SetNym(0);
     nymParameters.SetDefault(false);
-#endif
     m_nymServer = manager_.Wallet().Nym(
-        reason_, name, nymParameters, contact::ClaimType::Server);
+        nymParameters, contact::ClaimType::Server, reason_, name);
 
     if (false == bool(m_nymServer)) {
         LogError()(OT_PRETTY_CLASS())("Error: Failed to create server nym.")
@@ -421,16 +424,10 @@ void Server::CreateMainFile(bool& mainFileExists)
         SERVER_CONTRACT_FILE)(" in the server data directory.")
         .Flush();
 
-#if OT_CRYPTO_WITH_BIP32
     const auto seedID = manager_.Storage().DefaultSeed();
     const auto words = manager_.Crypto().Seed().Words(seedID, reason_);
     const auto passphrase =
         manager_.Crypto().Seed().Passphrase(seedID, reason_);
-#else
-    const std::string words;
-    const std::string passphrase;
-#endif
-
     std::string json;
     json += "{ \"passphrase\": \"";
     json += passphrase;

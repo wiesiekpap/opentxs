@@ -45,10 +45,11 @@ namespace key
 {
 class Asymmetric;
 }  // namespace key
+
+class Parameters;
 }  // namespace crypto
 
 class Data;
-class NymParameters;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
@@ -103,11 +104,12 @@ public:
         const std::size_t inputSize,
         std::uint8_t* output) const -> bool final;
 
+    using AsymmetricProvider::RandomKeypair;
     auto RandomKeypair(
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
         const crypto::key::asymmetric::Role role,
-        const NymParameters& options,
+        const Parameters& options,
         const AllocateOutput params) const noexcept -> bool final;
     auto SharedSecret(
         const ReadView publicKey,
@@ -212,11 +214,11 @@ private:
         -> const ::EVP_MD*;
     static auto primes(const int bits) -> int;
 
-    auto generate_dh(const NymParameters& options, ::EVP_PKEY* output)
+    auto generate_dh(const Parameters& options, ::EVP_PKEY* output)
         const noexcept -> bool;
     auto get_params(
         const AllocateOutput params,
-        const NymParameters& options,
+        const Parameters& options,
         ::EVP_PKEY* output) const noexcept -> bool;
     auto import_dh(const ReadView existing, ::EVP_PKEY* output) const noexcept
         -> bool;
@@ -224,11 +226,11 @@ private:
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
         const AllocateOutput params,
-        const NymParameters& options) const noexcept -> bool;
+        const Parameters& options) const noexcept -> bool;
     auto make_signing_key(
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
-        const NymParameters& options) const noexcept -> bool;
+        const Parameters& options) const noexcept -> bool;
     auto write_dh(const AllocateOutput params, ::EVP_PKEY* dh) const noexcept
         -> bool;
     auto write_keypair(

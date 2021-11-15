@@ -27,6 +27,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/client/Pair.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -696,11 +697,11 @@ void Pair::check_store_secret(
     Issuer& issuer,
     const identifier::Server& serverID) const noexcept
 {
-#if OT_CRYPTO_WITH_BIP32
     if (false == issuer.Paired()) { return; }
 
     const auto needStoreSecret = (false == issuer.StoreSecretComplete()) &&
-                                 (false == issuer.StoreSecretInitiated());
+                                 (false == issuer.StoreSecretInitiated()) &&
+                                 api::crypto::HaveHDKeys();
 
     if (needStoreSecret) {
         LogDetail()(OT_PRETTY_CLASS())("Sending store secret peer request.")
@@ -713,7 +714,6 @@ void Pair::check_store_secret(
                 contract::peer::PeerRequestType::StoreSecret, requestID);
         }
     }
-#endif  // OT_CRYPTO_WITH_BIP32
 }
 
 auto Pair::CheckIssuer(
@@ -1400,15 +1400,18 @@ void Pair::state_machine(const IssuerID& id) const
     }
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto Pair::store_secret(
     const identifier::Nym& localNymID,
     const identifier::Nym& issuerNymID,
     const identifier::Server& serverID) const -> std::pair<bool, OTIdentifier>
 {
+    auto output =
+        std::pair<bool, OTIdentifier>{false, client_.Factory().Identifier()};
+
+    if (false == api::crypto::HaveHDKeys()) { return output; }
+
     auto reason = client_.Factory().PasswordPrompt(
         "Backing up BIP-39 data to paired node");
-    std::pair<bool, OTIdentifier> output{false, Identifier::Factory()};
     auto& [success, requestID] = output;
 
     auto setID = [&](const Identifier& in) -> void { output.second = in; };
@@ -1429,5 +1432,4 @@ auto Pair::store_secret(
 
     return output;
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 }  // namespace opentxs::api::client::implementation

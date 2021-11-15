@@ -21,7 +21,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/ContactList.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -125,7 +125,7 @@ private:
 
     struct ParsedArgs {
         OTNymID nym_id_;
-        OTPaymentCode payment_code_;
+        PaymentCode payment_code_;
 
         ParsedArgs(
             const api::Session& api,
@@ -140,7 +140,7 @@ private:
         static auto extract_paymentcode(
             const api::Session& api,
             const std::string& purportedID,
-            const std::string& purportedPaymentCode) noexcept -> OTPaymentCode;
+            const std::string& purportedPaymentCode) noexcept -> PaymentCode;
     };
 
     const ContactListRowID owner_contact_id_;

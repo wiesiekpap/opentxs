@@ -14,6 +14,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/ParameterType.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
@@ -60,9 +61,9 @@ namespace opentxs::crypto::key::implementation
 class Secp256k1 final : virtual public key::Secp256k1, public HD
 {
 public:
-    auto CreateType() const -> NymParameterType final
+    auto CreateType() const -> ParameterType final
     {
-        return NymParameterType::secp256k1;
+        return ParameterType::secp256k1;
     }
 
     Secp256k1(
@@ -84,7 +85,6 @@ public:
         const VersionNumber version,
         key::Symmetric& sessionKey,
         const PasswordPrompt& reason) noexcept(false);
-#if OT_CRYPTO_WITH_BIP32
     Secp256k1(
         const api::Session& api,
         const crypto::EcdsaProvider& ecdsa,
@@ -107,7 +107,6 @@ public:
         const Bip32Fingerprint parent,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version) noexcept(false);
-#endif  // OT_CRYPTO_WITH_BIP32
     Secp256k1(const Secp256k1& rhs, const ReadView newPublic) noexcept;
     Secp256k1(const Secp256k1& rhs, OTSecret&& newSecretKey) noexcept;
 

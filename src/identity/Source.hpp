@@ -13,8 +13,8 @@
 #include "internal/util/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/identity/Source.hpp"
@@ -31,6 +31,11 @@ namespace session
 class Factory;
 }  // namespace session
 }  // namespace api
+
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
 
 namespace identity
 {
@@ -49,7 +54,6 @@ class Signature;
 }  // namespace proto
 
 class Factory;
-class NymParameters;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -85,7 +89,7 @@ private:
 
     identity::SourceType type_;
     OTAsymmetricKey pubkey_;
-    OTPaymentCode payment_code_;
+    PaymentCode payment_code_;
     VersionNumber version_;
 
     static auto deserialize_pubkey(
@@ -95,7 +99,7 @@ private:
     static auto deserialize_paymentcode(
         const api::session::Factory& factory,
         const identity::SourceType type,
-        const proto::NymIDSource& serialized) -> OTPaymentCode;
+        const proto::NymIDSource& serialized) -> PaymentCode;
     static auto extract_key(
         const proto::Credential& credential,
         const proto::KeyRole role) -> std::unique_ptr<proto::AsymmetricKey>;
@@ -112,7 +116,7 @@ private:
         const proto::NymIDSource& serializedSource) noexcept;
     Source(
         const api::session::Factory& factory,
-        const NymParameters& nymParameters) noexcept(false);
+        const crypto::Parameters& nymParameters) noexcept(false);
     Source(
         const api::session::Factory& factory,
         const PaymentCode& source) noexcept;

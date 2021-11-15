@@ -279,13 +279,11 @@ private:
         const identifier::Nym& localNymID,
         const identifier::Server& serverID) const -> bool;
     void state_machine(const IssuerID& id) const;
-#if OT_CRYPTO_WITH_BIP32
     auto store_secret(
         const identifier::Nym& localNymID,
         const identifier::Nym& issuerNymID,
         const identifier::Server& serverID) const
         -> std::pair<bool, OTIdentifier>;
-#endif  // OT_CRYPTO_WITH_BIP32
 
     void callback_nym(const zmq::Message& in) noexcept;
     void callback_peer_reply(const zmq::Message& in) noexcept;

@@ -24,6 +24,7 @@
 #include "internal/api/crypto/Symmetric.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -32,8 +33,8 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Envelope.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
@@ -81,18 +82,26 @@ const VersionNumber Envelope::default_version_{2};
 const VersionNumber Envelope::tagged_key_version_{1};
 // NOTE: elements in supported_ must be added in sorted order or else
 // test_solution() will not produce the correct result
-const Envelope::SupportedKeys Envelope::supported_
-{
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
-    crypto::key::asymmetric::Algorithm::Legacy,
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-        crypto::key::asymmetric::Algorithm::Secp256k1,
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-        crypto::key::asymmetric::Algorithm::ED25519,
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
-};
+const Envelope::SupportedKeys Envelope::supported_{[] {
+    auto out = SupportedKeys{};
+    using Type = crypto::key::asymmetric::Algorithm;
+
+    if (api::crypto::HaveSupport(Type::Legacy)) {
+        out.emplace_back(Type::Legacy);
+    }
+
+    if (api::crypto::HaveSupport(Type::Secp256k1)) {
+        out.emplace_back(Type::Secp256k1);
+    }
+
+    if (api::crypto::HaveSupport(Type::ED25519)) {
+        out.emplace_back(Type::ED25519);
+    }
+
+    std::sort(out.begin(), out.end());
+
+    return out;
+}()};
 const Envelope::WeightMap Envelope::key_weights_{
     {crypto::key::asymmetric::Algorithm::ED25519, 1},
     {crypto::key::asymmetric::Algorithm::Secp256k1, 2},
@@ -287,8 +296,10 @@ auto Envelope::get_dh_key(
 
         return *set.cbegin();
     } else {
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
-        auto params = NymParameters{type};
+        OT_ASSERT(api::crypto::HaveSupport(
+            crypto::key::asymmetric::Algorithm::Legacy));
+
+        auto params = Parameters{type};
         params.SetDHParams(nym.Params(type));
         auto& set = dh_keys_[type];
         set.emplace_back(api_.Factory().AsymmetricKey(
@@ -300,9 +311,6 @@ auto Envelope::get_dh_key(
         OT_ASSERT(0 < key.Params().size());
 
         return key;
-#else
-        OT_FAIL;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
     }
 }
 
@@ -458,7 +466,7 @@ auto Envelope::seal(
 
     for (const auto& type : dhkeys) {
         try {
-            const auto params = NymParameters{type};
+            const auto params = Parameters{type};
 
             if (crypto::key::asymmetric::Algorithm::Legacy != type) {
                 auto& set = dh_keys_[type];

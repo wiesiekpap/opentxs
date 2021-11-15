@@ -23,6 +23,7 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/OTXPushType.hpp"
 #include "opentxs/otx/Reply.hpp"
@@ -87,7 +88,7 @@ public:
                 "daughter leave valley twelve gossip paper",
                 "");
         const_cast<OTNymID&>(alice_nym_id_) =
-            client_.Wallet().Nym(reason_c_, "Alice", {SeedA_, 0})->ID();
+            client_.Wallet().Nym({SeedA_, 0}, reason_c_, "Alice")->ID();
         const_cast<std::string&>(Alice_) = alice_nym_id_->str();
 
         OT_ASSERT(false == server_id_.empty());

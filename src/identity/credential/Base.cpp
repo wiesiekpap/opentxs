@@ -28,8 +28,8 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/Signable.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/Source.hpp"
@@ -46,7 +46,7 @@ Base::Base(
     const api::Session& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
-    const NymParameters& nymParameters,
+    const crypto::Parameters& nymParameters,
     const VersionNumber version,
     const identity::CredentialRole role,
     const crypto::key::asymmetric::Mode mode,

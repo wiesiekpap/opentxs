@@ -29,6 +29,11 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
+
 namespace identity
 {
 namespace internal
@@ -46,7 +51,6 @@ class Signature;
 class VerificationSet;
 }  // namespace proto
 
-class NymParameters;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
@@ -150,7 +154,7 @@ protected:
         const api::Session& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber version,
         const identity::CredentialRole role,
         const crypto::key::asymmetric::Mode mode,

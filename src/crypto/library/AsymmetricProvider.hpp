@@ -3,10 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/crypto/key/asymmetric/Role.hpp"
+// IWYU pragma: no_include "opentxs/crypto/HashType.hpp"
+
 #pragma once
 
 #include "Proto.hpp"
-#include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -36,6 +39,21 @@ namespace opentxs::crypto::implementation
 class AsymmetricProvider : virtual public crypto::AsymmetricProvider
 {
 public:
+    using crypto::AsymmetricProvider::RandomKeypair;
+    auto RandomKeypair(
+        const AllocateOutput privateKey,
+        const AllocateOutput publicKey,
+        const AllocateOutput params) const noexcept -> bool final;
+    auto RandomKeypair(
+        const AllocateOutput privateKey,
+        const AllocateOutput publicKey,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const AllocateOutput params) const noexcept -> bool final;
+    auto RandomKeypair(
+        const AllocateOutput privateKey,
+        const AllocateOutput publicKey,
+        const Parameters& options,
+        const AllocateOutput params) const noexcept -> bool final;
     auto SeedToCurveKey(
         const ReadView seed,
         const AllocateOutput privateKey,

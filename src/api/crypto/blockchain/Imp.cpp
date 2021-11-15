@@ -41,7 +41,7 @@
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"

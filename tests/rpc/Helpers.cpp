@@ -340,7 +340,7 @@ auto RPC_fixture::CreateNym(
     int index) const noexcept -> std::string
 {
     const auto reason = api.Factory().PasswordPrompt(__func__);
-    auto nym = api.Wallet().Nym(reason, name, {seed, index});
+    auto nym = api.Wallet().Nym({seed, index}, reason, name);
 
     OT_ASSERT(nym);
 

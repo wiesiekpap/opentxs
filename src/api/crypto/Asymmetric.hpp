@@ -47,6 +47,8 @@ class EllipticCurve;
 class HD;
 class Secp256k1;
 }  // namespace key
+
+class Parameters;
 }  // namespace crypto
 
 namespace proto
@@ -54,7 +56,6 @@ namespace proto
 class AsymmetricKey;
 }  // namespace proto
 
-class NymParameters;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
@@ -172,20 +173,22 @@ public:
         const VersionNumber version,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> final;
-    auto NewKey(const NymParameters& params, const PasswordPrompt& reason) const
+    auto NewKey(
+        const opentxs::crypto::Parameters& params,
+        const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::Asymmetric> final;
     auto NewKey(
-        const NymParameters& params,
+        const opentxs::crypto::Parameters& params,
         const opentxs::crypto::key::asymmetric::Role role,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::Asymmetric> final;
     auto NewKey(
-        const NymParameters& params,
+        const opentxs::crypto::Parameters& params,
         const VersionNumber version,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::Asymmetric> final;
     auto NewKey(
-        const NymParameters& params,
+        const opentxs::crypto::Parameters& params,
         const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version,
         const PasswordPrompt& reason) const

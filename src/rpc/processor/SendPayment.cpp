@@ -27,7 +27,7 @@
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/PaymentType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
@@ -108,7 +108,7 @@ auto RPC::send_payment_blockchain(
             const auto& network = api.Network().Blockchain().GetChain(chain);
             const auto recipient = api.Factory().PaymentCode(address);
 
-            if (0 < recipient->Version()) {
+            if (0 < recipient.Version()) {
                 return network.SendToPaymentCode(
                     owner, recipient, amount, memo);
             } else {

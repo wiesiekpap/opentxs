@@ -16,12 +16,12 @@
 #include "internal/core/contract/peer/Peer.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/Pair.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -499,11 +499,12 @@ TEST_F(Test_Pair, pair_trusted)
         EXPECT_EQ(issuer.PairingCode(), server_1_.password_);
         EXPECT_EQ(server_1_.id_, issuer.PrimaryServer());
         EXPECT_FALSE(issuer.StoreSecretComplete());
-#if OT_CRYPTO_WITH_BIP32
-        EXPECT_TRUE(issuer.StoreSecretInitiated());
-#else
-        EXPECT_FALSE(issuer.StoreSecretInitiated());
-#endif  // OT_CRYPTO_WITH_BIP32
+
+        if (ot::api::crypto::HaveHDKeys()) {
+            EXPECT_TRUE(issuer.StoreSecretInitiated());
+        } else {
+            EXPECT_FALSE(issuer.StoreSecretInitiated());
+        }
     }
 }
 

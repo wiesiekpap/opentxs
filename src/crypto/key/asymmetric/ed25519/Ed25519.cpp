@@ -43,7 +43,6 @@ Ed25519::Ed25519(
     OT_ASSERT(blank_private() != plaintext_key_->Bytes());
 }
 
-#if OT_CRYPTO_WITH_BIP32
 Ed25519::Ed25519(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
@@ -71,7 +70,6 @@ Ed25519::Ed25519(
           reason)
 {
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 Ed25519::Ed25519(const Ed25519& rhs) noexcept
     : key::Ed25519()

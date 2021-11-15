@@ -7,19 +7,16 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "opentxs/util/Signals.hpp"  // IWYU pragma: associated
 
-#include <csignal>
 #include <memory>
 #include <string>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
-
 const std::map<int, std::function<bool()>> Signals::handler_{
     {1, &Signals::handle_1},   {2, &Signals::handle_2},
     {3, &Signals::handle_3},   {4, &Signals::handle_4},
@@ -44,40 +41,6 @@ Signals::Signals(const Flag& running)
     , thread_(nullptr)
 {
     thread_ = std::make_unique<std::thread>(&Signals::handle, this);
-}
-
-void Signals::Block()
-{
-#ifdef _WIN32
-    LogError()("Signal handling is not supported on Windows").Flush();
-#else
-    sigset_t allSignals;
-    sigfillset(&allSignals);
-    pthread_sigmask(SIG_SETMASK, &allSignals, nullptr);
-#endif
-}
-
-void Signals::handle()
-{
-#ifdef _WIN32
-    LogError()("Signal handling is not supported on Windows").Flush();
-#else
-    sigset_t allSignals;
-    sigfillset(&allSignals);
-
-    while (running_) {
-        int sig{0};
-
-        if (0 == sigwait(&allSignals, &sig)) {
-            auto shouldBreak = process(sig);
-
-            if (shouldBreak) { break; }
-        } else {
-            LogError()(OT_PRETTY_CLASS())("ERROR: Invalid signal received.")
-                .Flush();
-        }
-    }
-#endif
 }
 
 auto Signals::process(const int signal) -> bool

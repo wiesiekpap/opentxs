@@ -235,18 +235,6 @@ if(NOT OT_IWYU)
   )
 endif()
 
-if(WIN32)
-  target_precompile_headers(
-    opentxs-common
-    PUBLIC
-    <ShlObj.h>
-    <WinSock2.h>
-    <Windows.h>
-    <direct.h>
-    <xstring>
-  )
-endif()
-
 if(APPLE)
   target_precompile_headers(
     opentxs-common
@@ -270,6 +258,7 @@ add_subdirectory(iterator)
 add_subdirectory(license)
 add_subdirectory(network)
 add_subdirectory(otx)
+add_subdirectory(platform)
 add_subdirectory(protobuf)
 add_subdirectory(rpc)
 add_subdirectory(server)
@@ -303,7 +292,6 @@ target_sources(
     "Proto.hpp"
     "Proto.tpp"
 )
-target_link_libraries(opentxs PRIVATE opentxs-common)
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-common>)
 set_target_properties(
   opentxs

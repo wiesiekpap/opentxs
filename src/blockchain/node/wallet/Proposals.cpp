@@ -36,7 +36,7 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"

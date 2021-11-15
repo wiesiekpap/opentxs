@@ -25,9 +25,9 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
@@ -182,7 +182,7 @@ public:
 
     auto AddChildKeyCredential(
         const Identifier& strMasterID,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const PasswordPrompt& reason) -> std::string final;
     auto AddClaim(const Claim& claim, const PasswordPrompt& reason)
         -> bool final;
@@ -276,7 +276,7 @@ private:
         const identity::Nym& parent,
         const identity::Source& source,
         const VersionNumber version,
-        const NymParameters& params,
+        const crypto::Parameters& params,
         const PasswordPrompt& reason) noexcept(false) -> CredentialMap;
     static auto load_authorities(
         const api::Session& api,
@@ -291,8 +291,8 @@ private:
         CredentialMap& revoked) noexcept(false) -> String::List;
     static auto normalize(
         const api::Session& api,
-        const NymParameters& in,
-        const PasswordPrompt& reason) noexcept(false) -> NymParameters;
+        const crypto::Parameters& in,
+        const PasswordPrompt& reason) noexcept(false) -> crypto::Parameters;
 
     template <typename T>
     auto get_private_auth_key(
@@ -335,7 +335,7 @@ private:
     auto path(const sLock& lock, proto::HDPath& output) const -> bool;
 
     Nym(const api::Session& api,
-        NymParameters& nymParameters,
+        crypto::Parameters& nymParameters,
         std::unique_ptr<const identity::Source> source,
         const PasswordPrompt& reason) noexcept(false);
     Nym(const api::Session& api,

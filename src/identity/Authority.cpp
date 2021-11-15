@@ -22,9 +22,11 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -32,8 +34,9 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/ParameterType.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
@@ -88,7 +91,7 @@ auto Factory::Authority(
     const api::Session& api,
     const identity::Nym& parent,
     const identity::Source& source,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     const VersionNumber nymVersion,
     const opentxs::PasswordPrompt& reason) -> identity::internal::Authority*
 {
@@ -210,7 +213,7 @@ Authority::Authority(
     const api::Session& api,
     const identity::Nym& parent,
     const identity::Source& source,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     VersionNumber nymVersion,
     const opentxs::PasswordPrompt& reason) noexcept(false)
     : api_(api)
@@ -252,14 +255,12 @@ Authority::Authority(
 }
 
 auto Authority::AddChildKeyCredential(
-    const NymParameters& nymParameters,
+    const crypto::Parameters& nymParameters,
     const opentxs::PasswordPrompt& reason) -> std::string
 {
     auto output = api_.Factory().Identifier();
-    NymParameters revisedParameters{nymParameters};
-#if OT_CRYPTO_WITH_BIP32
+    auto revisedParameters{nymParameters};
     revisedParameters.SetCredIndex(index_++);
-#endif
     std::unique_ptr<credential::internal::Secondary> child{
         opentxs::Factory::Credential<credential::internal::Secondary>(
             api_,
@@ -293,8 +294,8 @@ auto Authority::AddContactCredential(
 
     if (!master_) { return false; }
 
-    NymParameters parameters;
-    parameters.SetContactData(contactData);
+    auto parameters = crypto::Parameters{};
+    parameters.Internal().SetContactData(contactData);
     std::unique_ptr<credential::internal::Contact> credential{
         opentxs::Factory::Credential<credential::internal::Contact>(
             api_,
@@ -330,8 +331,8 @@ auto Authority::AddVerificationCredential(
 
     if (!master_) { return false; }
 
-    NymParameters parameters;
-    parameters.SetVerificationSet(verificationSet);
+    auto parameters = crypto::Parameters{};
+    parameters.Internal().SetVerificationSet(verificationSet);
     std::unique_ptr<credential::internal::Verification> credential{
         opentxs::Factory::Credential<credential::internal::Verification>(
             api_,
@@ -357,7 +358,7 @@ auto Authority::AddVerificationCredential(
 
 auto Authority::create_child_credential(
     const api::Session& api,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     const identity::Source& source,
     const credential::internal::Primary& master,
     internal::Authority& parent,
@@ -368,31 +369,13 @@ auto Authority::create_child_credential(
     auto output = KeyCredentialMap{};
     output.emplace(create_key_credential(
         api, parameters, source, master, parent, parentVersion, index, reason));
+    using Type = crypto::ParameterType;
 
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-    if (output.empty()) {
-        LogDetail()(OT_PRETTY_STATIC(Authority))(
-            "Creating an ed25519 child key credential.")
-            .Flush();
-        auto revised = parameters.ChangeType(NymParameterType::ed25519);
-        output.emplace(create_key_credential(
-            api,
-            revised,
-            source,
-            master,
-            parent,
-            parentVersion,
-            index,
-            reason));
-    }
-#endif
-
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    if (output.empty()) {
+    if (output.empty() && api::crypto::HaveSupport(Type::secp256k1)) {
         LogDetail()(OT_PRETTY_STATIC(Authority))(
             "Creating an secp256k1 child key credential.")
             .Flush();
-        auto revised = parameters.ChangeType(NymParameterType::secp256k1);
+        auto revised = parameters.ChangeType(crypto::ParameterType::secp256k1);
         output.emplace(create_key_credential(
             api,
             revised,
@@ -403,14 +386,28 @@ auto Authority::create_child_credential(
             index,
             reason));
     }
-#endif
 
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
-    if (output.empty()) {
+    if (output.empty() && api::crypto::HaveSupport(Type::ed25519)) {
+        LogDetail()(OT_PRETTY_STATIC(Authority))(
+            "Creating an ed25519 child key credential.")
+            .Flush();
+        auto revised = parameters.ChangeType(crypto::ParameterType::ed25519);
+        output.emplace(create_key_credential(
+            api,
+            revised,
+            source,
+            master,
+            parent,
+            parentVersion,
+            index,
+            reason));
+    }
+
+    if (output.empty() && api::crypto::HaveSupport(Type::rsa)) {
         LogDetail()(OT_PRETTY_STATIC(Authority))(
             "Creating an RSA child key credential.")
             .Flush();
-        auto revised = parameters.ChangeType(NymParameterType::rsa);
+        auto revised = parameters.ChangeType(crypto::ParameterType::rsa);
         output.emplace(create_key_credential(
             api,
             revised,
@@ -421,7 +418,6 @@ auto Authority::create_child_credential(
             index,
             reason));
     }
-#endif
 
     if (output.empty()) {
         throw std::runtime_error("Failed to generate child credentials");
@@ -432,7 +428,7 @@ auto Authority::create_child_credential(
 
 auto Authority::create_contact_credental(
     const api::Session& api,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     const identity::Source& source,
     const credential::internal::Primary& master,
     internal::Authority& parent,
@@ -443,7 +439,7 @@ auto Authority::create_contact_credental(
     auto output = ContactCredentialMap{};
 
     auto serialized = proto::ContactData{};
-    if (parameters.GetContactData(serialized)) {
+    if (parameters.Internal().GetContactData(serialized)) {
         auto pCredential = std::unique_ptr<credential::internal::Contact>{
             opentxs::Factory::Credential<credential::internal::Contact>(
                 api,
@@ -469,7 +465,7 @@ auto Authority::create_contact_credental(
 
 auto Authority::create_key_credential(
     const api::Session& api,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     const identity::Source& source,
     const credential::internal::Primary& master,
     internal::Authority& parent,
@@ -483,9 +479,7 @@ auto Authority::create_key_credential(
     auto& [id, pChild] = output;
 
     auto revised{parameters};
-#if OT_CRYPTO_WITH_BIP32
     revised.SetCredIndex(index++);
-#endif
     pChild.reset(opentxs::Factory::Credential<credential::internal::Secondary>(
         api,
         parent,
@@ -511,21 +505,21 @@ auto Authority::create_master(
     identity::internal::Authority& owner,
     const identity::Source& source,
     const VersionNumber version,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     const Bip32Index index,
     const opentxs::PasswordPrompt& reason) noexcept(false)
     -> std::unique_ptr<credential::internal::Primary>
 {
-#if OT_CRYPTO_WITH_BIP32
-    if (0 != index) {
-        throw std::runtime_error(
-            "The master credential must be the first credential created");
-    }
+    if (api::crypto::HaveHDKeys()) {
+        if (0 != index) {
+            throw std::runtime_error(
+                "The master credential must be the first credential created");
+        }
 
-    if (0 != parameters.CredIndex()) {
-        throw std::runtime_error("Invalid credential index");
+        if (0 != parameters.CredIndex()) {
+            throw std::runtime_error("Invalid credential index");
+        }
     }
-#endif
 
     auto output = std::unique_ptr<credential::internal::Primary>{
         opentxs::Factory::PrimaryCredential(

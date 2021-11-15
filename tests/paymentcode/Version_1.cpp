@@ -19,7 +19,7 @@
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -132,8 +132,8 @@ TEST_F(Test_PaymentCode_v1, unblind)
     const auto pPC = bob_pc_secret_.Unblind(
         blinded->Bytes(), alice_blind_public_, outpoint->Bytes(), reason_);
 
-    ASSERT_TRUE(pPC);
-    EXPECT_EQ(pPC->asBase58(), expected);
+    EXPECT_GT(pPC.Version(), 0u);
+    EXPECT_EQ(pPC.asBase58(), expected);
 }
 
 TEST_F(Test_PaymentCode_v1, shutdown) { Shutdown(); }

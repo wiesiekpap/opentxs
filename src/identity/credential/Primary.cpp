@@ -21,7 +21,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
@@ -49,7 +49,7 @@ auto Factory::PrimaryCredential(
     const api::Session& api,
     identity::internal::Authority& parent,
     const identity::Source& source,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason)
     -> identity::credential::internal::Primary*
@@ -101,7 +101,7 @@ Primary::Primary(
     const api::Session& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
-    const NymParameters& params,
+    const crypto::Parameters& params,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept(false)
     : credential::implementation::Key(
@@ -211,7 +211,8 @@ void Primary::sign(
     }
 }
 
-auto Primary::source_proof(const NymParameters& params) -> proto::SourceProof
+auto Primary::source_proof(const crypto::Parameters& params)
+    -> proto::SourceProof
 {
     auto output = proto::SourceProof{};
     output.set_version(1);

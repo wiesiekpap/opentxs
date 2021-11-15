@@ -16,14 +16,16 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Envelope.hpp"
+#include "opentxs/crypto/ParameterType.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -42,6 +44,9 @@ public:
     using Test = std::pair<bool, std::vector<int>>;
     using Expected = std::vector<Test>;
 
+    static const bool have_rsa_;
+    static const bool have_secp256k1_;
+    static const bool have_ed25519_;
     static const Expected expected_;
     static Nyms nyms_;
 
@@ -79,17 +84,24 @@ public:
         if (false == init_) {
             init_ = true;
             {
-                auto params = ot::NymParameters
-                {
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-                    ot::NymParameterType::ed25519
-#elif OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-                    ot::NymParameterType::secp256k1
-#elif OT_CRYPTO_SUPPORTED_KEY_RSA
-                    ot::NymParameterType::rsa
-#endif
-                };
-                auto rNym = recipient_.Wallet().Nym(reason_r_, "", params);
+                auto params = [] {
+                    using Type = ot::crypto::ParameterType;
+
+                    if (have_ed25519_) {
+
+                        return ot::crypto::Parameters{Type::ed25519};
+                    } else if (have_secp256k1_) {
+
+                        return ot::crypto::Parameters{Type::secp256k1};
+                    } else if (have_rsa_) {
+
+                        return ot::crypto::Parameters{Type::rsa};
+                    } else {
+
+                        return ot::crypto::Parameters{};
+                    }
+                }();
+                auto rNym = recipient_.Wallet().Nym(params, reason_r_, "");
 
                 OT_ASSERT(rNym);
 
@@ -100,17 +112,24 @@ public:
                 OT_ASSERT(bool(*nyms_.crbegin()));
             }
             {
-                auto params = ot::NymParameters
-                {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-                    ot::NymParameterType::secp256k1
-#elif OT_CRYPTO_SUPPORTED_KEY_RSA
-                    ot::NymParameterType::rsa
-#elif OT_CRYPTO_SUPPORTED_KEY_ED25519
-                    ot::NymParameterType::ed25519
-#endif
-                };
-                auto rNym = recipient_.Wallet().Nym(reason_r_, "", params);
+                auto params = [] {
+                    using Type = ot::crypto::ParameterType;
+
+                    if (have_secp256k1_) {
+
+                        return ot::crypto::Parameters{Type::secp256k1};
+                    } else if (have_rsa_) {
+
+                        return ot::crypto::Parameters{Type::rsa};
+                    } else if (have_ed25519_) {
+
+                        return ot::crypto::Parameters{Type::ed25519};
+                    } else {
+
+                        return ot::crypto::Parameters{};
+                    }
+                }();
+                auto rNym = recipient_.Wallet().Nym(params, reason_r_, "");
 
                 OT_ASSERT(rNym);
 
@@ -121,17 +140,24 @@ public:
                 OT_ASSERT(bool(*nyms_.crbegin()));
             }
             {
-                auto params = ot::NymParameters
-                {
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
-                    ot::NymParameterType::rsa
-#elif OT_CRYPTO_SUPPORTED_KEY_ED25519
-                    ot::NymParameterType::ed25519
-#elif OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-                    ot::NymParameterType::secp256k1
-#endif
-                };
-                auto rNym = recipient_.Wallet().Nym(reason_r_, "", params);
+                auto params = [] {
+                    using Type = ot::crypto::ParameterType;
+
+                    if (have_rsa_) {
+
+                        return ot::crypto::Parameters{Type::rsa};
+                    } else if (have_ed25519_) {
+
+                        return ot::crypto::Parameters{Type::ed25519};
+                    } else if (have_secp256k1_) {
+
+                        return ot::crypto::Parameters{Type::secp256k1};
+                    } else {
+
+                        return ot::crypto::Parameters{};
+                    }
+                }();
+                auto rNym = recipient_.Wallet().Nym(params, reason_r_, "");
 
                 OT_ASSERT(rNym);
 
@@ -145,6 +171,12 @@ public:
     }
 };
 
+const bool Test_Envelope::have_rsa_{ot::api::crypto::HaveSupport(
+    ot::crypto::key::asymmetric::Algorithm::Legacy)};
+const bool Test_Envelope::have_secp256k1_{ot::api::crypto::HaveSupport(
+    ot::crypto::key::asymmetric::Algorithm::Secp256k1)};
+const bool Test_Envelope::have_ed25519_{ot::api::crypto::HaveSupport(
+    ot::crypto::key::asymmetric::Algorithm::ED25519)};
 Test_Envelope::Nyms Test_Envelope::nyms_{};
 const Test_Envelope::Expected Test_Envelope::expected_{
     {false, {false, false, false}},

@@ -41,7 +41,6 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -50,7 +49,8 @@
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"      // TODO remove
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"  // TODO remove
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/util/Bytes.hpp"
 
@@ -140,6 +140,7 @@ class OTTrade;
 class OTTransaction;
 class OTTransactionType;
 class Secret;
+class PaymentCode;
 }  // namespace opentxs
 
 namespace opentxs
@@ -163,7 +164,7 @@ public:
         const google::protobuf::MessageLite& input,
         const std::string& header) const -> OTString = 0;
     virtual auto AsymmetricKey(
-        const NymParameters& params,
+        const opentxs::crypto::Parameters& params,
         const opentxs::PasswordPrompt& reason,
         const opentxs::crypto::key::asymmetric::Role role =
             opentxs::crypto::key::asymmetric::Role::Sign,
@@ -452,7 +453,7 @@ public:
         const opentxs::Identifier& pDestinationAcctID) const
         -> std::unique_ptr<opentxs::Item> = 0;
     virtual auto Keypair(
-        const NymParameters& nymParameters,
+        const opentxs::crypto::Parameters& nymParameters,
         const VersionNumber version,
         const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const -> OTKeypair = 0;
@@ -557,13 +558,12 @@ public:
         const opentxs::PasswordPrompt& reason) const
         -> std::unique_ptr<OTPayment> = 0;
     virtual auto PaymentCode(const std::string& base58) const noexcept
-        -> OTPaymentCode = 0;
+        -> opentxs::PaymentCode = 0;
     OPENTXS_NO_EXPORT virtual auto PaymentCode(
         const proto::PaymentCode& serialized) const noexcept
-        -> OTPaymentCode = 0;
+        -> opentxs::PaymentCode = 0;
     virtual auto PaymentCode(const ReadView& serialized) const noexcept
-        -> OTPaymentCode = 0;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+        -> opentxs::PaymentCode = 0;
     virtual auto PaymentCode(
         const std::string& seed,
         const Bip32Index nym,
@@ -572,8 +572,7 @@ public:
         const bool bitmessage = false,
         const std::uint8_t bitmessageVersion = 0,
         const std::uint8_t bitmessageStream = 0) const noexcept
-        -> OTPaymentCode = 0;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+        -> opentxs::PaymentCode = 0;
     virtual auto PaymentPlan() const -> std::unique_ptr<OTPaymentPlan> = 0;
     virtual auto PaymentPlan(
         const identifier::Server& NOTARY_ID,

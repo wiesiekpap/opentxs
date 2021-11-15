@@ -19,6 +19,13 @@ target_sources(
     "Keypair.cpp"
     "Keypair.hpp"
 )
+
+if(BIP32_EXPORT)
+  target_sources(opentxs-common PRIVATE "bip32.cpp")
+else()
+  target_sources(opentxs-common PRIVATE "no-bip32.cpp")
+endif()
+
 target_include_directories(
   opentxs-common SYSTEM
   PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"

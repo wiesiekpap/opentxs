@@ -7,20 +7,15 @@
 #include "1_Internal.hpp"                // IWYU pragma: associated
 #include "crypto/key/asymmetric/HD.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <cstdint>
 #include <iterator>
 #include <limits>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "crypto/key/asymmetric/EllipticCurve.hpp"
-#include "internal/api/Crypto.hpp"
 #include "internal/api/crypto/Symmetric.hpp"
-#include "internal/crypto/key/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
@@ -34,9 +29,7 @@
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/HashType.hpp"
-#include "opentxs/crypto/key/Ed25519.hpp"
 #include "opentxs/crypto/key/HD.hpp"
-#include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
@@ -144,7 +137,6 @@ HD::HD(
 {
 }
 
-#if OT_CRYPTO_WITH_BIP32
 HD::HD(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
@@ -196,7 +188,6 @@ HD::HD(
 {
     OT_ASSERT(path_);
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 HD::HD(const HD& rhs) noexcept
     : EllipticCurve(rhs)
@@ -240,96 +231,6 @@ auto HD::chaincode(const Lock& lock, const PasswordPrompt& reason)
     try {
 
         return get_chain_code(lock, reason).Bytes();
-    } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
-
-        return {};
-    }
-}
-
-auto HD::ChildKey(const Bip32Index index, const PasswordPrompt& reason)
-    const noexcept -> std::unique_ptr<key::HD>
-{
-    try {
-#if OT_CRYPTO_WITH_BIP32
-        static const auto blank = api_.Factory().Secret(0);
-        const auto hasPrivate = [&] {
-            auto lock = Lock{lock_};
-
-            return has_private(lock);
-        }();
-        const auto serialized = [&] {
-            const auto path = [&] {
-                auto out = Bip32::Path{};
-
-                if (path_) {
-                    std::copy(
-                        path_->child().begin(),
-                        path_->child().end(),
-                        std::back_inserter(out));
-                }
-
-                return out;
-            }();
-
-            if (hasPrivate) {
-                return api_.Crypto().BIP32().DerivePrivateKey(
-                    *this, {index}, reason);
-            } else {
-                return api_.Crypto().BIP32().DerivePublicKey(
-                    *this, {index}, reason);
-            }
-        }();
-        const auto& [privkey, ccode, pubkey, spath, parent] = serialized;
-        const auto path = [&] {
-            auto out = proto::HDPath{};
-
-            if (path_) {
-                out = *path_;
-                out.add_child(index);
-            }
-
-            return out;
-        }();
-
-        switch (type_) {
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-            case crypto::key::asymmetric::Algorithm::ED25519: {
-                return factory::Ed25519Key(
-                    api_,
-                    api_.Crypto().Internal().EllipticProvider(type_),
-                    hasPrivate ? privkey : blank,
-                    ccode,
-                    pubkey,
-                    path,
-                    parent,
-                    role_,
-                    version_,
-                    reason);
-            }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-            case crypto::key::asymmetric::Algorithm::Secp256k1: {
-                return factory::Secp256k1Key(
-                    api_,
-                    api_.Crypto().Internal().EllipticProvider(type_),
-                    hasPrivate ? privkey : blank,
-                    ccode,
-                    pubkey,
-                    path,
-                    parent,
-                    role_,
-                    version_,
-                    reason);
-            }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-            default: {
-                throw std::runtime_error{"Unsupported key type"};
-            }
-        }
-#else
-        throw std::runtime_error{"HD key support missing but required"};
-#endif
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 

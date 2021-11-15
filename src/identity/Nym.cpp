@@ -20,8 +20,10 @@
 
 #include "2_Factory.hpp"
 #include "Proto.tpp"
+#include "internal/crypto/Parameters.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -29,16 +31,16 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/core/Armored.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/util/Tag.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
@@ -67,7 +69,7 @@ namespace opentxs
 {
 auto Factory::Nym(
     const api::Session& api,
-    const NymParameters& params,
+    const crypto::Parameters& params,
     const contact::ClaimType type,
     const std::string name,
     const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*
@@ -107,7 +109,7 @@ auto Factory::Nym(
                 version,
                 ContactData::SectionMap{}};
             const auto scope = blank.SetScope(type, name);
-            revised.SetContactData([&] {
+            revised.Internal().SetContactData([&] {
                 auto out = proto::ContactData{};
                 scope.Serialize(out);
 
@@ -181,7 +183,7 @@ const VersionConversionMap Nym::contact_credential_to_contact_data_version_{
 
 Nym::Nym(
     const api::Session& api,
-    NymParameters& params,
+    crypto::Parameters& params,
     std::unique_ptr<const identity::Source> source,
     const opentxs::PasswordPrompt& reason) noexcept(false)
     : api_(api)
@@ -273,7 +275,7 @@ auto Nym::add_verification_credential(
 
 auto Nym::AddChildKeyCredential(
     const Identifier& masterID,
-    const NymParameters& nymParameters,
+    const crypto::Parameters& nymParameters,
     const opentxs::PasswordPrompt& reason) -> std::string
 {
     eLock lock(shared_lock_);
@@ -609,7 +611,7 @@ auto Nym::create_authority(
     const identity::Nym& parent,
     const identity::Source& source,
     const VersionNumber version,
-    const NymParameters& params,
+    const crypto::Parameters& params,
     const PasswordPrompt& reason) noexcept(false) -> CredentialMap
 {
     auto output = CredentialMap{};
@@ -1071,13 +1073,17 @@ auto Nym::Name() const -> std::string
 
 auto Nym::normalize(
     const api::Session& api,
-    const NymParameters& in,
-    const PasswordPrompt& reason) noexcept(false) -> NymParameters
+    const crypto::Parameters& in,
+    const PasswordPrompt& reason) noexcept(false) -> crypto::Parameters
 {
     auto output{in};
 
     if (identity::CredentialType::HD == in.credentialType()) {
-#if OT_CRYPTO_WITH_BIP32
+        if (false == api::crypto::HaveHDKeys()) {
+            throw std::runtime_error(
+                "opentxs compiled without hd credential support");
+        }
+
         const auto& seeds = api.Crypto().Seed();
         output.SetCredset(0);
         auto nymIndex = Bip32Index{0};
@@ -1114,10 +1120,6 @@ auto Nym::normalize(
         output.SetEntropy(seed);
         output.SetSeed(fingerprint);
         output.SetNym(nymIndex);
-#else
-        throw std::runtime_error(
-            "opentxs compiled without hd credential support");
-#endif
     }
 
     return output;
@@ -1184,7 +1186,7 @@ auto Nym::PaymentCode() const -> std::string
 
     auto paymentCode = api_.Factory().PaymentCode(serialized.paymentcode());
 
-    return paymentCode->asBase58();
+    return paymentCode.asBase58();
 }
 
 auto Nym::PaymentCodePath(AllocateOutput destination) const -> bool

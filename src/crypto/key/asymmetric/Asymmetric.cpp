@@ -359,7 +359,7 @@ auto Asymmetric::CalculateSessionPassword(
 auto Asymmetric::create_key(
     const api::Session& api,
     const crypto::AsymmetricProvider& provider,
-    const NymParameters& options,
+    const Parameters& options,
     const crypto::key::asymmetric::Role role,
     const AllocateOutput publicKey,
     const AllocateOutput privateKey,
@@ -447,7 +447,7 @@ auto Asymmetric::erase_private_data(const Lock&) -> void
 
 auto Asymmetric::generate_key(
     const crypto::AsymmetricProvider& provider,
-    const NymParameters& options,
+    const Parameters& options,
     const crypto::key::asymmetric::Role role,
     const AllocateOutput publicKey,
     const AllocateOutput privateKey,

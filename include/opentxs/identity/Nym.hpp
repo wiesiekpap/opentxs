@@ -39,6 +39,8 @@ namespace key
 {
 class Symmetric;
 }  // namespace key
+
+class Parameters;
 }  // namespace crypto
 
 namespace identifier
@@ -61,7 +63,6 @@ class Signature;
 }  // namespace proto
 
 class ContactData;
-class NymParameters;
 class PasswordPrompt;
 class PaymentCode;
 class Signature;
@@ -196,7 +197,7 @@ public:
 
     virtual auto AddChildKeyCredential(
         const Identifier& strMasterID,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const PasswordPrompt& reason) -> std::string = 0;
     virtual auto AddClaim(const Claim& claim, const PasswordPrompt& reason)
         -> bool = 0;

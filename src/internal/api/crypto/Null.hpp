@@ -162,7 +162,7 @@ public:
         const Chain,
         const PasswordPrompt&) const noexcept -> OTIdentifier final
     {
-        return {id_};
+        return {id_.get()};
     }
     auto NewHDSubaccount(
         const identifier::Nym&,
@@ -171,7 +171,7 @@ public:
         const Chain,
         const PasswordPrompt&) const noexcept -> OTIdentifier final
     {
-        return {id_};
+        return {id_.get()};
     }
     auto NewNym(const identifier::Nym& id) const noexcept -> void final {}
     auto NewPaymentCodeSubaccount(
@@ -182,7 +182,7 @@ public:
         const Chain,
         const PasswordPrompt&) const noexcept -> OTIdentifier final
     {
-        return {id_};
+        return {id_.get()};
     }
     auto NewPaymentCodeSubaccount(
         const identifier::Nym&,
@@ -192,7 +192,7 @@ public:
         const Chain,
         const PasswordPrompt&) const noexcept -> OTIdentifier final
     {
-        return {id_};
+        return {id_.get()};
     }
     auto Owner(const Identifier&) const noexcept -> const identifier::Nym& final
     {
@@ -251,12 +251,12 @@ public:
     }
     auto RecipientContact(const Key&) const noexcept -> OTIdentifier final
     {
-        return {id_};
+        return {id_.get()};
     }
     auto Release(const Key) const noexcept -> bool final { return {}; }
     auto SenderContact(const Key&) const noexcept -> OTIdentifier final
     {
-        return {id_};
+        return {id_.get()};
     }
     auto SubaccountList(const identifier::Nym&, const Chain) const noexcept
         -> std::set<OTIdentifier> final

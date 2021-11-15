@@ -117,7 +117,7 @@ enum class UnitType : std::uint32_t {
     HBAR = 97,    // Hedera
     XTZ = 98,     // Tezos
     MANA = 99,    // Decentraland
-    NEAR = 100,   // NEAR Protocol
+    Near = 100,   // NEAR Protocol
     GRT = 101,    // The Graph
     CAKE = 102,   // PancakeSwap
     EOS = 103,    // EOS

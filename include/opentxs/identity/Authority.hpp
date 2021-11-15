@@ -137,7 +137,7 @@ public:
     virtual auto VerifyInternally() const -> bool = 0;
 
     virtual auto AddChildKeyCredential(
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const PasswordPrompt& reason) -> std::string = 0;
     virtual auto AddVerificationCredential(
         const proto::VerificationSet& verificationSet,

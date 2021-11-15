@@ -23,8 +23,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 
 namespace opentxs::ui
 {
@@ -54,7 +53,7 @@ struct BlockchainDestinationValidator final : public Super {
         auto text = std::stringstream{};
         text << "Address format: ";
 
-        if (const auto ver = code->Version(); 0u < ver) {
+        if (const auto ver = code.Version(); 0u < ver) {
             text << "version " << std::to_string(ver) << " payment code";
             reset(text.str());
 

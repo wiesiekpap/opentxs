@@ -87,6 +87,10 @@ class OTCaller;
 class Signals;
 }  // namespace opentxs
 
+extern "C" {
+struct rlimit;
+}
+
 namespace opentxs::api::implementation
 {
 class Context final : public internal::Context, Lockable, Periodic
@@ -178,6 +182,7 @@ private:
 
     static auto client_instance(const int count) -> int;
     static auto server_instance(const int count) -> int;
+    static auto set_desired_files(::rlimit& out) noexcept -> void;
 
     auto init_pid() const -> void;
     auto start_client(const Lock& lock, const Options& args) const -> void;
@@ -188,9 +193,7 @@ private:
     auto Init_Crypto() -> void;
     auto Init_Factory() -> void;
     auto Init_Log() -> void;
-#ifndef _WIN32
     auto Init_Rlimit() noexcept -> void;
-#endif  // _WIN32
     auto Init_Profile() -> void;
     auto Init_Zap() -> void;
     auto Init() noexcept -> void final;

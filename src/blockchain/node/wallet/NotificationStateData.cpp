@@ -21,6 +21,7 @@
 
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -43,6 +44,7 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -59,7 +61,7 @@ NotificationStateData::NotificationStateData(
     const filter::Type filter,
     const Type chain,
     const identifier::Nym& nym,
-    OTPaymentCode&& code,
+    PaymentCode&& code,
     proto::HDPath&& path) noexcept
     : SubchainStateData(
           api,
@@ -162,8 +164,8 @@ auto NotificationStateData::init_keys() noexcept -> OTPasswordPrompt
     if (auto key{code_.Key()}; key) {
         if (false == key->HasPrivate()) {
             auto seed{path_.root()};
-            const auto upgraded =
-                code_.AddPrivateKeys(seed, *path_.child().rbegin(), reason);
+            const auto upgraded = code_.Internal().AddPrivateKeys(
+                seed, *path_.child().rbegin(), reason);
 
             if (false == upgraded) { OT_FAIL; }
         }
@@ -187,7 +189,7 @@ auto NotificationStateData::process(
 
         if (script.IsNotification(version, code_)) {
             const auto elements = [&] {
-                auto out = PaymentCode::Elements{};
+                auto out = std::vector<Space>{};
 
                 for (auto i{0u}; i < 3u; ++i) {
                     const auto view = script.MultisigPubkey(i);
@@ -204,15 +206,14 @@ auto NotificationStateData::process(
                 return out;
             }();
 
-            auto pSender =
+            auto sender =
                 code_.DecodeNotificationElements(version, elements, reason);
 
-            if (!pSender) { continue; }
+            if (0u == sender.Version()) { continue; }
 
-            const auto& sender = *pSender;
-            LogVerbose()(OT_PRETTY_CLASS())("decoded incoming notification "
-                                            "from ")(sender.asBase58())(" on ")(
-                DisplayString(node_.Chain()))(" for ")(code_.asBase58())
+            LogVerbose()(OT_PRETTY_CLASS())(
+                "decoded incoming notification from ")(sender.asBase58())(
+                " on ")(DisplayString(node_.Chain()))(" for ")(code_.asBase58())
                 .Flush();
             const auto& account = crypto_.Internal().PaymentCodeSubaccount(
                 owner_, code_, sender, path_, node_.Chain(), reason);

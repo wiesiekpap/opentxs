@@ -35,6 +35,7 @@ class Asymmetric;
 }  // namespace key
 
 class AsymmetricProvider;
+class Parameters;
 }  // namespace crypto
 
 namespace proto
@@ -43,7 +44,6 @@ class AsymmetricKey;
 class Ciphertext;
 }  // namespace proto
 
-class NymParameters;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
@@ -65,7 +65,7 @@ public:
         const crypto::AsymmetricProvider& engine,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version,
-        const NymParameters& options,
+        const Parameters& options,
         Space& params,
         const PasswordPrompt& reason)
     noexcept(false);

@@ -34,7 +34,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/Bip47Channel.pb.h"
@@ -113,13 +113,11 @@ public:
         const Identifier& contact,
         const std::string& label,
         const Time time) const noexcept -> Batch final;
-#if OT_CRYPTO_WITH_BIP32
     auto RootNode(const PasswordPrompt& reason) const noexcept
         -> blockchain::crypto::HDKey final
     {
         return local_.get().Key();
     }
-#endif  // OT_CRYPTO_WITH_BIP32
 
     PaymentCode(
         const api::Session& api,
@@ -151,7 +149,8 @@ private:
 
     using Compare = std::function<
         void(const opentxs::PaymentCode&, const opentxs::PaymentCode&)>;
-    using Latest = LatestVersion<OTPaymentCode, opentxs::PaymentCode, Compare>;
+    using Latest =
+        LatestVersion<opentxs::PaymentCode, opentxs::PaymentCode, Compare>;
 
     VersionNumber version_;
     mutable std::set<opentxs::blockchain::block::pTxid> outgoing_notifications_;

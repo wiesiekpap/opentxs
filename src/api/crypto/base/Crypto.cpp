@@ -7,22 +7,6 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "api/crypto/base/Crypto.hpp"  // IWYU pragma: associated
 
-#if defined(unix) || defined(__unix__) || defined(__unix) ||                   \
-    defined(__APPLE__) || defined(linux) || defined(__linux) ||                \
-    defined(__linux__)
-#define PREDEF_PLATFORM_UNIX 1
-#endif
-
-#if defined(debug) || defined(_DEBUG) || defined(DEBUG)
-#define PREDEF_MODE_DEBUG 1
-#endif
-
-#ifndef _WIN32
-extern "C" {
-#include <sys/resource.h>
-}
-#endif
-
 #include "2_Factory.hpp"
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/crypto/Crypto.hpp"
@@ -199,23 +183,7 @@ auto Crypto::hasSodium() const noexcept -> bool
 
 auto Crypto::Init() noexcept -> void
 {
-    LogDetail()(OT_PRETTY_CLASS())(
-        "Setting up rlimits, and crypto libraries...")
-        .Flush();
-
-// Here is a security measure intended to make it more difficult to
-// capture a core dump. (Not used in debug mode, obviously.)
-//
-#if !defined(PREDEF_MODE_DEBUG) && defined(PREDEF_PLATFORM_UNIX)
-    struct rlimit rlim;
-    getrlimit(RLIMIT_CORE, &rlim);
-    rlim.rlim_max = rlim.rlim_cur = 0;
-    if (setrlimit(RLIMIT_CORE, &rlim)) {
-        OT_FAIL_MSG("Crypto::Init: ASSERT: setrlimit failed. (Used for "
-                    "preventing core dumps.)\n");
-    }
-#endif  // !defined(PREDEF_MODE_DEBUG) && defined(PREDEF_PLATFORM_UNIX)
-
+    LogDetail()(OT_PRETTY_CLASS())("Setting up crypto libraries...").Flush();
     Init_Sodium();
     Init_OpenSSL();
     Init_Libsecp256k1();

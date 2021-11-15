@@ -9,16 +9,13 @@
 
 namespace opentxs::crypto::implementation
 {
-auto OpenSSL::generate_dh(const NymParameters&, ::EVP_PKEY*) const noexcept
-    -> bool
+auto OpenSSL::generate_dh(const Parameters&, ::EVP_PKEY*) const noexcept -> bool
 {
     return false;
 }
 
-auto OpenSSL::get_params(
-    const AllocateOutput,
-    const NymParameters&,
-    ::EVP_PKEY*) const noexcept -> bool
+auto OpenSSL::get_params(const AllocateOutput, const Parameters&, ::EVP_PKEY*)
+    const noexcept -> bool
 {
     return false;
 }
@@ -32,7 +29,7 @@ auto OpenSSL::make_dh_key(
     const AllocateOutput,
     const AllocateOutput,
     const AllocateOutput,
-    const NymParameters&) const noexcept -> bool
+    const Parameters&) const noexcept -> bool
 {
     return false;
 }
@@ -40,7 +37,7 @@ auto OpenSSL::make_dh_key(
 auto OpenSSL::make_signing_key(
     const AllocateOutput,
     const AllocateOutput,
-    const NymParameters&) const noexcept -> bool
+    const Parameters&) const noexcept -> bool
 {
     return false;
 }
@@ -51,7 +48,7 @@ auto OpenSSL::RandomKeypair(
     const AllocateOutput,
     const AllocateOutput,
     const crypto::key::asymmetric::Role,
-    const NymParameters&,
+    const Parameters&,
     const AllocateOutput) const noexcept -> bool
 {
     return false;

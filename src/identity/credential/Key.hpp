@@ -34,6 +34,11 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
+
 namespace identity
 {
 namespace internal
@@ -52,7 +57,6 @@ class Signature;
 }  // namespace proto
 
 class Data;
-class NymParameters;
 class OTPassword;
 class PasswordPrompt;
 class Signature;
@@ -122,7 +126,7 @@ protected:
     Key(const api::Session& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber version,
         const identity::CredentialRole role,
         const PasswordPrompt& reason,
@@ -145,13 +149,13 @@ private:
     static auto new_key(
         const api::Session& api,
         const proto::KeyRole role,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber version,
         const PasswordPrompt& reason,
         const ReadView dh = {}) noexcept(false) -> OTKeypair;
     static auto signing_key(
         const api::Session& api,
-        const NymParameters& params,
+        const crypto::Parameters& params,
         const VersionNumber subversion,
         const bool useProvided,
         const PasswordPrompt& reason) noexcept(false) -> OTKeypair;

@@ -33,7 +33,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/protobuf/HDPath.pb.h"
@@ -127,7 +127,7 @@ public:
         const filter::Type filter,
         const Type chain,
         const identifier::Nym& nym,
-        OTPaymentCode&& code,
+        PaymentCode&& code,
         proto::HDPath&& path) noexcept;
 
     ~NotificationStateData() final = default;
@@ -136,7 +136,7 @@ private:
     class Index final : public wallet::Index
     {
     public:
-        OTPaymentCode code_;
+        PaymentCode code_;
 
         auto Do(std::optional<Bip32Index> current, Bip32Index target) noexcept
             -> void final;
@@ -146,7 +146,7 @@ private:
             Scan& scan,
             Rescan& rescan,
             Progress& progress,
-            OTPaymentCode&& code) noexcept;
+            PaymentCode&& code) noexcept;
 
         ~Index() final = default;
 

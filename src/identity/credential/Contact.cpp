@@ -17,6 +17,7 @@
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -24,7 +25,7 @@
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
@@ -45,7 +46,7 @@ auto Factory::ContactCredential(
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason)
     -> identity::credential::internal::Contact*
@@ -166,7 +167,7 @@ Contact::Contact(
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const internal::Primary& master,
-    const NymParameters& params,
+    const crypto::Parameters& params,
     const VersionNumber version,
     const PasswordPrompt& reason) noexcept(false)
     : credential::implementation::Base(
@@ -178,9 +179,9 @@ Contact::Contact(
           identity::CredentialRole::Contact,
           crypto::key::asymmetric::Mode::Null,
           get_master_id(master))
-    , data_([&](const NymParameters& params) -> const proto::ContactData {
+    , data_([&](const crypto::Parameters& params) -> const proto::ContactData {
         auto proto = proto::ContactData{};
-        params.GetContactData(proto);
+        params.Internal().GetContactData(proto);
         return proto;
     }(params))
 {

@@ -14,10 +14,10 @@
 #include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
@@ -30,15 +30,17 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -72,6 +74,7 @@ bool init_{false};
 class Test_DepositCheques : public ::testing::Test
 {
 public:
+    static const bool have_hd_;
     static const std::string SeedA_;
     static const std::string SeedB_;
     static const std::string SeedC_;
@@ -146,11 +149,11 @@ public:
         auto reasonB = bob_client_.Factory().PasswordPrompt(__func__);
         auto reasonI = issuer_client_.Factory().PasswordPrompt(__func__);
         const_cast<OTNymID&>(alice_nym_id_) =
-            alice_client_.Wallet().Nym(reasonA, ALEX, {SeedA_, 0})->ID();
+            alice_client_.Wallet().Nym({SeedA_, 0}, reasonA, ALEX)->ID();
         const_cast<OTNymID&>(bob_nym_id_) =
-            bob_client_.Wallet().Nym(reasonB, BOB, {SeedB_, 0})->ID();
+            bob_client_.Wallet().Nym({SeedB_, 0}, reasonB, BOB)->ID();
         const_cast<OTNymID&>(issuer_nym_id_) =
-            issuer_client_.Wallet().Nym(reasonI, ISSUER, {SeedC_, 0})->ID();
+            issuer_client_.Wallet().Nym({SeedC_, 0}, reasonI, ISSUER)->ID();
 
         import_server_contract(server_contract_, alice_client_);
         import_server_contract(server_contract_, bob_client_);
@@ -163,6 +166,12 @@ public:
     }
 };
 
+const bool Test_DepositCheques::have_hd_{
+    ot::api::crypto::HaveHDKeys() &&
+    ot::api::crypto::HaveSupport(
+        ot::crypto::key::asymmetric::Algorithm::Secp256k1)
+
+};
 const std::string Test_DepositCheques::SeedA_{""};
 const std::string Test_DepositCheques::SeedB_{""};
 const std::string Test_DepositCheques::SeedC_{""};
@@ -210,17 +219,20 @@ TEST_F(Test_DepositCheques, payment_codes)
     EXPECT_TRUE(bobScopeSet);
     EXPECT_TRUE(issuerScopeSet);
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     alice_payment_code_ =
-        alice_client_.Factory().PaymentCode(SeedA_, 0, 1, reasonA)->asBase58();
+        alice_client_.Factory().PaymentCode(SeedA_, 0, 1, reasonA).asBase58();
     bob_payment_code_ =
-        bob_client_.Factory().PaymentCode(SeedB_, 0, 1, reasonB)->asBase58();
+        bob_client_.Factory().PaymentCode(SeedB_, 0, 1, reasonB).asBase58();
     issuer_payment_code_ =
-        issuer_client_.Factory().PaymentCode(SeedC_, 0, 1, reasonI)->asBase58();
+        issuer_client_.Factory().PaymentCode(SeedC_, 0, 1, reasonI).asBase58();
 
-    EXPECT_FALSE(alice_payment_code_.empty());
-    EXPECT_FALSE(bob_payment_code_.empty());
-    EXPECT_FALSE(issuer_payment_code_.empty());
+    if (have_hd_) {
+        EXPECT_FALSE(alice_payment_code_.empty());
+        EXPECT_FALSE(bob_payment_code_.empty());
+        EXPECT_FALSE(issuer_payment_code_.empty());
+    } else {
+        // TODO
+    }
 
     alice.AddPaymentCode(
         alice_payment_code_, ot::core::UnitType::BTC, true, true, reasonA);
@@ -235,13 +247,16 @@ TEST_F(Test_DepositCheques, payment_codes)
     issuer.AddPaymentCode(
         issuer_payment_code_, ot::core::UnitType::BCH, true, true, reasonI);
 
-    EXPECT_FALSE(alice.PaymentCode(core::UnitType::BTC).empty());
-    EXPECT_FALSE(bob.PaymentCode(core::UnitType::BTC).empty());
-    EXPECT_FALSE(issuer.PaymentCode(core::UnitType::BTC).empty());
-    EXPECT_FALSE(alice.PaymentCode(core::UnitType::BCH).empty());
-    EXPECT_FALSE(bob.PaymentCode(core::UnitType::BCH).empty());
-    EXPECT_FALSE(issuer.PaymentCode(core::UnitType::BCH).empty());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+    if (have_hd_) {
+        EXPECT_FALSE(alice.PaymentCode(core::UnitType::BTC).empty());
+        EXPECT_FALSE(bob.PaymentCode(core::UnitType::BTC).empty());
+        EXPECT_FALSE(issuer.PaymentCode(core::UnitType::BTC).empty());
+        EXPECT_FALSE(alice.PaymentCode(core::UnitType::BCH).empty());
+        EXPECT_FALSE(bob.PaymentCode(core::UnitType::BCH).empty());
+        EXPECT_FALSE(issuer.PaymentCode(core::UnitType::BCH).empty());
+    } else {
+        // TODO
+    }
 
     alice.Release();
     bob.Release();

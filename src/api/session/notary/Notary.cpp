@@ -369,13 +369,7 @@ void Notary::Init()
 #endif  // OT_CASH
 
     Scheduler::Start(storage_.get(), network_.DHT());
-    Storage::init(
-        factory_
-#if OT_CRYPTO_WITH_BIP32
-        ,
-        crypto_.Seed()
-#endif  // OT_CRYPTO_WITH_BIP32
-    );
+    Storage::init(factory_, crypto_.Seed());
 
     Start();
 }

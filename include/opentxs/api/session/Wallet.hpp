@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -16,11 +18,10 @@
 #include <string>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ClaimType.hpp"
+#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/identity/Nym.hpp"
 
 namespace opentxs
@@ -31,6 +32,11 @@ namespace client
 {
 class Issuer;
 }  // namespace client
+
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
 
 namespace session
 {
@@ -198,11 +204,20 @@ public:
     virtual auto Nym(const ReadView& bytes) const -> Nym_p = 0;
 
     virtual auto Nym(
+        const contact::ClaimType type,
         const PasswordPrompt& reason,
-        const std::string name = "",
-        const NymParameters& parameters = {},
-        const contact::ClaimType type = contact::ClaimType::Individual) const
-        -> Nym_p = 0;
+        const std::string& name = {}) const -> Nym_p = 0;
+    virtual auto Nym(
+        const opentxs::crypto::Parameters& parameters,
+        const PasswordPrompt& reason,
+        const std::string& name = {}) const -> Nym_p = 0;
+    virtual auto Nym(const PasswordPrompt& reason, const std::string& name = {})
+        const -> Nym_p = 0;
+    virtual auto Nym(
+        const opentxs::crypto::Parameters& parameters,
+        const contact::ClaimType type,
+        const PasswordPrompt& reason,
+        const std::string& name = {}) const -> Nym_p = 0;
 
     virtual auto mutable_Nym(
         const identifier::Nym& id,

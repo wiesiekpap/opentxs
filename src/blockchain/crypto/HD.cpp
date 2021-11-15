@@ -24,6 +24,7 @@
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -254,7 +255,8 @@ auto HD::PrivateKey(
         }
     }
 
-#if OT_CRYPTO_WITH_BIP32
+    if (false == api::crypto::HaveHDKeys()) { return {}; }
+
     const auto change =
         (internalType == type) ? INTERNAL_CHAIN : EXTERNAL_CHAIN;
     auto& pKey = (internalType == type) ? cached_internal_ : cached_external_;
@@ -277,10 +279,6 @@ auto HD::PrivateKey(
     const auto& key = *pKey;
 
     return key.ChildKey(index, reason);
-#else
-
-    return {};
-#endif  // OT_CRYPTO_WITH_BIP32
 }
 
 auto HD::save(const rLock& lock) const noexcept -> bool

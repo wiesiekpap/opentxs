@@ -41,7 +41,7 @@ RSA::RSA(
     const crypto::AsymmetricProvider& engine,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version,
-    const NymParameters& options,
+    const Parameters& options,
     Space& params,
     const PasswordPrompt& reason) noexcept(false)
     : Asymmetric(

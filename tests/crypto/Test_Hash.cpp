@@ -72,9 +72,7 @@ public:
 
     static const std::vector<HMACVector> hmac_sha2_;
     static const std::vector<MurmurVector> murmur_;
-#if OT_CRYPTO_USING_OPENSSL
     static const std::vector<PbkdfVector> pbkdf_sha1_;
-#endif  // OT_CRYPTO_USING_OPENSSL
     static const std::vector<PbkdfVector> pbkdf_sha256_;
     static const std::vector<PbkdfVector> pbkdf_sha512_;
     static const std::vector<ScryptVector> scrypt_rfc7914_;
@@ -145,7 +143,6 @@ const std::vector<Test_Hash::MurmurVector> Test_Hash::murmur_{
     {"0x00", 0, 1364076727},
 };
 
-#if OT_CRYPTO_USING_OPENSSL
 // https://tools.ietf.org/html/rfc6070
 const std::vector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha1_{
     {"password", "salt", 1, 20, "0x0c60c80f961f0e71f3a9b524af6012062fe037a6"},
@@ -166,7 +163,6 @@ const std::vector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha1_{
      25,
      "0x3d2eec4fe41c849b80c8d83662c0e44a8b291a964cf2f07038"},
 };
-#endif  // OT_CRYPTO_USING_OPENSSL
 
 // https://github.com/Anti-weakpasswords/PBKDF2-Test-Vectors/releases
 const std::vector<Test_Hash::PbkdfVector> Test_Hash::pbkdf_sha256_{
@@ -417,7 +413,6 @@ TEST_F(Test_Hash, MurmurHash3)
     }
 }
 
-#if OT_CRYPTO_USING_OPENSSL
 TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA1)
 {
     for (const auto& [P, S, c, dkLen, DK] : pbkdf_sha1_) {
@@ -430,7 +425,6 @@ TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA1)
         EXPECT_EQ(output.get(), expected.get());
     }
 }
-#endif  // OT_CRYPTO_USING_OPENSSL
 
 TEST_F(Test_Hash, PKCS5_PBKDF2_HMAC_SHA256)
 {

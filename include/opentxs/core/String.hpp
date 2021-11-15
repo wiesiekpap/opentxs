@@ -80,8 +80,6 @@ public:
     static auto StringToUlong(const std::string& number) -> std::uint64_t;
     static auto trim(std::string& str) -> std::string&;
     static auto UlongToString(const std::uint64_t& uNumber) -> std::string;
-    static auto ATTR_PRINTF(1, 0)
-        vformat(const char* fmt, std::va_list* pvl, std::string& s) -> bool;
 
     virtual auto operator>(const String& rhs) const -> bool = 0;
     virtual auto operator<(const String& rhs) const -> bool = 0;

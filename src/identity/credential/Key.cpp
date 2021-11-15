@@ -17,12 +17,13 @@
 #include "internal/crypto/key/Key.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/crypto/OTSignatureMetadata.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
@@ -57,7 +58,7 @@ Key::Key(
     const api::Session& api,
     const identity::internal::Authority& parent,
     const identity::Source& source,
-    const NymParameters& params,
+    const crypto::Parameters& params,
     const VersionNumber version,
     const identity::CredentialRole role,
     const PasswordPrompt& reason,
@@ -353,7 +354,7 @@ auto Key::hasCapability(const NymCapability& capability) const -> bool
 auto Key::new_key(
     const api::Session& api,
     const proto::KeyRole role,
-    const NymParameters& params,
+    const crypto::Parameters& params,
     const VersionNumber version,
     const PasswordPrompt& reason,
     const ReadView dh) noexcept(false) -> OTKeypair
@@ -361,16 +362,16 @@ auto Key::new_key(
     switch (params.credentialType()) {
         case identity::CredentialType::Legacy: {
             auto revised{params};
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
             revised.SetDHParams(dh);
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
             return api.Factory().Keypair(
                 revised, version, translate(role), reason);
         }
-        case identity::CredentialType::HD:
-#if OT_CRYPTO_WITH_BIP32
-        {
+        case identity::CredentialType::HD: {
+            if (false == api::crypto::HaveHDKeys()) {
+                throw std::runtime_error("Missing HD key support");
+            }
+
             const auto curve =
                 crypto::AsymmetricProvider::KeyTypeToCurve(params.Algorithm());
 
@@ -387,7 +388,6 @@ auto Key::new_key(
                 translate(role),
                 reason);
         }
-#endif  // OT_CRYPTO_WITH_BIP32
         case identity::CredentialType::Error:
         default: {
             throw std::runtime_error("Unsupported credential type");
@@ -500,7 +500,7 @@ auto Key::Sign(
 
 auto Key::signing_key(
     const api::Session& api,
-    const NymParameters& params,
+    const crypto::Parameters& params,
     const VersionNumber subversion,
     const bool useProvided,
     const PasswordPrompt& reason) noexcept(false) -> OTKeypair

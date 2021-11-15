@@ -18,11 +18,11 @@
 #include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/client/UI.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/client/NymData.hpp"
@@ -37,15 +37,16 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
@@ -128,6 +129,7 @@ Counter profile_bob_{};
 class Integration : public IntegrationFixture
 {
 public:
+    static const bool have_hd_;
     static Issuer issuer_data_;
     static int msg_count_;
     static std::map<int, std::string> message_;
@@ -158,6 +160,12 @@ public:
     }
 };
 
+const bool Integration::have_hd_{
+    ot::api::crypto::HaveHDKeys() &&
+    ot::api::crypto::HaveSupport(
+        ot::crypto::key::asymmetric::Algorithm::Secp256k1)
+
+};
 int Integration::msg_count_ = 0;
 std::map<int, std::string> Integration::message_{};
 ot::OTUnitID Integration::unit_id_{ot::identifier::UnitDefinition::Factory()};
@@ -177,11 +185,11 @@ TEST_F(Integration, instantiate_ui_objects)
     contact_list_alex_.expected_ = 1;
     messagable_list_alex_.expected_ = 0;
     payable_list_bch_alex_.expected_ = 0;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    payable_list_btc_alex_.expected_ = 1;
-#else
-    payable_list_btc_alex_.expected_ = 0;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+    if (have_hd_) {
+        payable_list_btc_alex_.expected_ = 1;
+    } else {
+        payable_list_btc_alex_.expected_ = 0;
+    }
     profile_alex_.expected_ = 1;
 
     account_activity_usd_bob_.expected_ = 0;
@@ -194,11 +202,11 @@ TEST_F(Integration, instantiate_ui_objects)
     contact_list_bob_.expected_ = 1;
     messagable_list_bob_.expected_ = 0;
     payable_list_bch_bob_.expected_ = 0;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    payable_list_btc_bob_.expected_ = 1;
-#else
-    payable_list_btc_bob_.expected_ = 0;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+    if (have_hd_) {
+        payable_list_btc_bob_.expected_ = 1;
+    } else {
+        payable_list_btc_bob_.expected_ = 0;
+    }
     profile_bob_.expected_ = 1;
 
     api_alex_.UI().AccountList(
@@ -365,13 +373,13 @@ TEST_F(Integration, payable_list_btc_alex_0)
         alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::BTC);
     auto row = widget.First();
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    EXPECT_TRUE(row->Last());
-#else
-    EXPECT_FALSE(row->Valid());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+    if (have_hd_) {
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), alex_.name_);
+        EXPECT_TRUE(row->Last());
+    } else {
+        EXPECT_FALSE(row->Valid());
+    }
 }
 
 TEST_F(Integration, profile_alex_0)
@@ -380,10 +388,11 @@ TEST_F(Integration, profile_alex_0)
 
     const auto& widget = alex_.api_->UI().Profile(alex_.nym_id_);
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    EXPECT_EQ(widget.PaymentCode(), alex_.PaymentCode()->asBase58());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    EXPECT_EQ(widget.DisplayName(), alex_.name_);
+    if (have_hd_) {
+        EXPECT_EQ(widget.PaymentCode(), alex_.PaymentCode().asBase58());
+    } else {
+        EXPECT_EQ(widget.DisplayName(), alex_.name_);
+    }
 
     auto row = widget.First();
 
@@ -491,13 +500,13 @@ TEST_F(Integration, payable_list_btc_bob_0)
         bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BTC);
     auto row = widget.First();
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), bob_.name_);
-    EXPECT_TRUE(row->Last());
-#else
-    EXPECT_FALSE(row->Valid());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+    if (have_hd_) {
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), bob_.name_);
+        EXPECT_TRUE(row->Last());
+    } else {
+        EXPECT_FALSE(row->Valid());
+    }
 }
 
 TEST_F(Integration, profile_bob_0)
@@ -506,10 +515,11 @@ TEST_F(Integration, profile_bob_0)
 
     const auto& widget = bob_.api_->UI().Profile(bob_.nym_id_);
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    EXPECT_EQ(widget.PaymentCode(), bob_.PaymentCode()->asBase58());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    EXPECT_EQ(widget.DisplayName(), bob_.name_);
+    if (have_hd_) {
+        EXPECT_EQ(widget.PaymentCode(), bob_.PaymentCode().asBase58());
+    } else {
+        EXPECT_EQ(widget.DisplayName(), bob_.name_);
+    }
 
     auto row = widget.First();
 
@@ -541,47 +551,55 @@ TEST_F(Integration, payment_codes)
     EXPECT_TRUE(bobScopeSet);
     EXPECT_TRUE(issuerScopeSet);
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    EXPECT_FALSE(alex_.payment_code_.empty());
-    EXPECT_FALSE(bob_.payment_code_.empty());
-    EXPECT_FALSE(issuer_.payment_code_.empty());
+    if (have_hd_) {
+        EXPECT_FALSE(alex_.payment_code_.empty());
+        EXPECT_FALSE(bob_.payment_code_.empty());
+        EXPECT_FALSE(issuer_.payment_code_.empty());
 
-    alex.AddPaymentCode(
-        alex_.payment_code_,
-        ot::core::UnitType::BTC,
-        true,
-        true,
-        alex_.Reason());
-    bob.AddPaymentCode(
-        bob_.payment_code_, ot::core::UnitType::BTC, true, true, bob_.Reason());
-    issuer.AddPaymentCode(
-        issuer_.payment_code_,
-        ot::core::UnitType::BTC,
-        true,
-        true,
-        issuer_.Reason());
-    alex.AddPaymentCode(
-        alex_.payment_code_,
-        ot::core::UnitType::BCH,
-        true,
-        true,
-        alex_.Reason());
-    bob.AddPaymentCode(
-        bob_.payment_code_, ot::core::UnitType::BCH, true, true, bob_.Reason());
-    issuer.AddPaymentCode(
-        issuer_.payment_code_,
-        ot::core::UnitType::BCH,
-        true,
-        true,
-        issuer_.Reason());
+        alex.AddPaymentCode(
+            alex_.payment_code_,
+            ot::core::UnitType::BTC,
+            true,
+            true,
+            alex_.Reason());
+        bob.AddPaymentCode(
+            bob_.payment_code_,
+            ot::core::UnitType::BTC,
+            true,
+            true,
+            bob_.Reason());
+        issuer.AddPaymentCode(
+            issuer_.payment_code_,
+            ot::core::UnitType::BTC,
+            true,
+            true,
+            issuer_.Reason());
+        alex.AddPaymentCode(
+            alex_.payment_code_,
+            ot::core::UnitType::BCH,
+            true,
+            true,
+            alex_.Reason());
+        bob.AddPaymentCode(
+            bob_.payment_code_,
+            ot::core::UnitType::BCH,
+            true,
+            true,
+            bob_.Reason());
+        issuer.AddPaymentCode(
+            issuer_.payment_code_,
+            ot::core::UnitType::BCH,
+            true,
+            true,
+            issuer_.Reason());
 
-    EXPECT_FALSE(alex.PaymentCode(ot::core::UnitType::BTC).empty());
-    EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::BTC).empty());
-    EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::BTC).empty());
-    EXPECT_FALSE(alex.PaymentCode(ot::core::UnitType::BCH).empty());
-    EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::BCH).empty());
-    EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::BCH).empty());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+        EXPECT_FALSE(alex.PaymentCode(ot::core::UnitType::BTC).empty());
+        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::BTC).empty());
+        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::BTC).empty());
+        EXPECT_FALSE(alex.PaymentCode(ot::core::UnitType::BCH).empty());
+        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::BCH).empty());
+        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::BCH).empty());
+    }
 
     alex.Release();
     bob.Release();
@@ -622,10 +640,10 @@ TEST_F(Integration, add_contact_Bob_To_Alex)
 {
     contact_list_alex_.expected_ += 1;
     messagable_list_alex_.expected_ += 1;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    payable_list_bch_alex_.expected_ += 1;
-    payable_list_btc_alex_.expected_ += 1;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+    if (have_hd_) {
+        payable_list_bch_alex_.expected_ += 1;
+        payable_list_btc_alex_.expected_ += 1;
+    }
 
     alex_.api_->UI()
         .ContactList(alex_.nym_id_)
@@ -673,38 +691,40 @@ TEST_F(Integration, messagable_list_alex_1)
     EXPECT_TRUE(row->Last());
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 TEST_F(Integration, payable_list_bch_alex_1)
 {
-    ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
 
-    const auto& widget =
-        alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::BCH);
-    auto row = widget.First();
+        const auto& widget = alex_.api_->UI().PayableList(
+            alex_.nym_id_, ot::core::UnitType::BCH);
+        auto row = widget.First();
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), bob_.name_);
-    EXPECT_TRUE(row->Last());
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), bob_.name_);
+        EXPECT_TRUE(row->Last());
+    }
 }
 
 TEST_F(Integration, payable_list_btc_alex_1)
 {
-    ASSERT_TRUE(wait_for_counter(payable_list_btc_alex_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(payable_list_btc_alex_));
 
-    const auto& widget =
-        alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::BTC);
-    auto row = widget.First();
+        const auto& widget = alex_.api_->UI().PayableList(
+            alex_.nym_id_, ot::core::UnitType::BTC);
+        auto row = widget.First();
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    EXPECT_FALSE(row->Last());
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), alex_.name_);
+        EXPECT_FALSE(row->Last());
 
-    row = widget.Next();
+        row = widget.Next();
 
-    EXPECT_EQ(row->DisplayName(), bob_.name_);
-    EXPECT_TRUE(row->Last());
+        EXPECT_EQ(row->DisplayName(), bob_.name_);
+        EXPECT_TRUE(row->Last());
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
 TEST_F(Integration, activity_thread_bob_alex_0)
 {
@@ -730,11 +750,12 @@ TEST_F(Integration, send_message_from_Alex_to_Bob_1)
     activity_summary_bob_.expected_ += 2;
     contact_list_bob_.expected_ += 2;
     messagable_list_bob_.expected_ += 2;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    payable_list_bch_alex_.expected_ += 1;
-    payable_list_bch_bob_.expected_ += 1;
-    payable_list_btc_bob_.expected_ += 1;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+
+    if (have_hd_) {
+        payable_list_bch_alex_.expected_ += 1;
+        payable_list_bch_bob_.expected_ += 1;
+        payable_list_btc_bob_.expected_ += 1;
+    }
 
     const auto& from_client = api_alex_;
     const auto messageID = ++msg_count_;
@@ -874,58 +895,62 @@ TEST_F(Integration, messagable_list_bob_1)
     EXPECT_TRUE(row->Last());
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 TEST_F(Integration, payable_list_bch_alex_2)
 {
-    ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
 
-    const auto& widget =
-        alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::BCH);
-    auto row = widget.First();
+        const auto& widget = alex_.api_->UI().PayableList(
+            alex_.nym_id_, ot::core::UnitType::BCH);
+        auto row = widget.First();
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    EXPECT_FALSE(row->Last());
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), alex_.name_);
+        EXPECT_FALSE(row->Last());
 
-    row = widget.Next();
+        row = widget.Next();
 
-    EXPECT_EQ(row->DisplayName(), bob_.name_);
-    EXPECT_TRUE(row->Last());
+        EXPECT_EQ(row->DisplayName(), bob_.name_);
+        EXPECT_TRUE(row->Last());
+    }
 }
 
 TEST_F(Integration, payable_list_bch_bob_1)
 {
-    ASSERT_TRUE(wait_for_counter(payable_list_bch_bob_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(payable_list_bch_bob_));
 
-    const auto& widget =
-        bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BTC);
-    auto row = widget.First();
+        const auto& widget =
+            bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BTC);
+        auto row = widget.First();
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    EXPECT_FALSE(row->Last());
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), alex_.name_);
+        EXPECT_FALSE(row->Last());
 
-    row = widget.Next();
+        row = widget.Next();
 
-    EXPECT_EQ(row->DisplayName(), bob_.name_);
-    EXPECT_TRUE(row->Last());
+        EXPECT_EQ(row->DisplayName(), bob_.name_);
+        EXPECT_TRUE(row->Last());
+    }
 }
 
 TEST_F(Integration, payable_list_btc_bob_1)
 {
-    ASSERT_TRUE(wait_for_counter(payable_list_btc_bob_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(payable_list_btc_bob_));
 
-    const auto& widget =
-        bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BCH);
-    auto row = widget.First();
+        const auto& widget =
+            bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BCH);
+        auto row = widget.First();
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    EXPECT_TRUE(row->Last());
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), alex_.name_);
+        EXPECT_TRUE(row->Last());
 
-    // TODO why isn't Bob in this list?
+        // TODO why isn't Bob in this list?
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
 TEST_F(Integration, activity_thread_alex_bob_0)
 {
@@ -957,9 +982,8 @@ TEST_F(Integration, send_message_from_Bob_to_Alex_2)
     activity_thread_bob_alex_.expected_ += 3;
     activity_summary_bob_.expected_ += 2;
     activity_thread_alex_bob_.expected_ += 5;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    payable_list_bch_bob_.expected_ += 1;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+
+    if (have_hd_) { payable_list_bch_bob_.expected_ += 1; }
 
     const auto& from_client = api_bob_;
     const auto messageID = ++msg_count_;
@@ -1116,25 +1140,25 @@ TEST_F(Integration, contact_list_bob_2)
     EXPECT_TRUE(row->Last());
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 TEST_F(Integration, payable_list_bch_bob_2)
 {
-    ASSERT_TRUE(wait_for_counter(payable_list_bch_bob_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(payable_list_bch_bob_));
 
-    const auto& widget =
-        bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BTC);
-    auto row = widget.First();
+        const auto& widget =
+            bob_.api_->UI().PayableList(bob_.nym_id_, ot::core::UnitType::BTC);
+        auto row = widget.First();
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    EXPECT_FALSE(row->Last());
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), alex_.name_);
+        EXPECT_FALSE(row->Last());
 
-    row = widget.Next();
+        row = widget.Next();
 
-    EXPECT_EQ(row->DisplayName(), bob_.name_);
-    EXPECT_TRUE(row->Last());
+        EXPECT_EQ(row->DisplayName(), bob_.name_);
+        EXPECT_TRUE(row->Last());
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
 TEST_F(Integration, issue_dollars)
 {
@@ -1225,10 +1249,11 @@ TEST_F(Integration, pay_alex)
     activity_summary_alex_.expected_ += 2;
     contact_list_alex_.expected_ += 2;
     messagable_list_alex_.expected_ += 1;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    payable_list_bch_alex_.expected_ += 1;
-    payable_list_btc_alex_.expected_ += 1;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+
+    if (have_hd_) {
+        payable_list_bch_alex_.expected_ += 1;
+        payable_list_btc_alex_.expected_ += 1;
+    }
 
     idle();
     auto task = api_issuer_.OTX().SendCheque(
@@ -1331,53 +1356,55 @@ TEST_F(Integration, messagable_list_alex_2)
     EXPECT_TRUE(row->Last());
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 TEST_F(Integration, payable_list_bch_alex_3)
 {
-    ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
 
-    const auto& widget =
-        alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::BCH);
-    auto row = widget.First();
+        const auto& widget = alex_.api_->UI().PayableList(
+            alex_.nym_id_, ot::core::UnitType::BCH);
+        auto row = widget.First();
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    EXPECT_FALSE(row->Last());
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), alex_.name_);
+        EXPECT_FALSE(row->Last());
 
-    row = widget.Next();
+        row = widget.Next();
 
-    EXPECT_EQ(row->DisplayName(), bob_.name_);
-    EXPECT_FALSE(row->Last());
+        EXPECT_EQ(row->DisplayName(), bob_.name_);
+        EXPECT_FALSE(row->Last());
 
-    row = widget.Next();
+        row = widget.Next();
 
-    EXPECT_EQ(row->DisplayName(), issuer_.name_);
-    EXPECT_TRUE(row->Last());
+        EXPECT_EQ(row->DisplayName(), issuer_.name_);
+        EXPECT_TRUE(row->Last());
+    }
 }
 
 TEST_F(Integration, payable_list_btc_alex_2)
 {
-    ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
+    if (have_hd_) {
+        ASSERT_TRUE(wait_for_counter(payable_list_bch_alex_));
 
-    const auto& widget =
-        alex_.api_->UI().PayableList(alex_.nym_id_, ot::core::UnitType::BTC);
-    auto row = widget.First();
+        const auto& widget = alex_.api_->UI().PayableList(
+            alex_.nym_id_, ot::core::UnitType::BTC);
+        auto row = widget.First();
 
-    ASSERT_TRUE(row->Valid());
-    EXPECT_EQ(row->DisplayName(), alex_.name_);
-    EXPECT_FALSE(row->Last());
+        ASSERT_TRUE(row->Valid());
+        EXPECT_EQ(row->DisplayName(), alex_.name_);
+        EXPECT_FALSE(row->Last());
 
-    row = widget.Next();
+        row = widget.Next();
 
-    EXPECT_EQ(row->DisplayName(), bob_.name_);
-    EXPECT_FALSE(row->Last());
+        EXPECT_EQ(row->DisplayName(), bob_.name_);
+        EXPECT_FALSE(row->Last());
 
-    row = widget.Next();
+        row = widget.Next();
 
-    EXPECT_EQ(row->DisplayName(), issuer_.name_);
-    EXPECT_TRUE(row->Last());
+        EXPECT_EQ(row->DisplayName(), issuer_.name_);
+        EXPECT_TRUE(row->Last());
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
 TEST_F(Integration, issuer_claims)
 {
@@ -1494,9 +1521,8 @@ TEST_F(Integration, contact_issuer_alex_0)
 
     EXPECT_EQ(alex_.Contact(issuer_.name_).str(), widget.ContactID());
     EXPECT_EQ(std::string(issuer_.name_), widget.DisplayName());
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    EXPECT_EQ(issuer_.payment_code_, widget.PaymentCode());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+
+    if (have_hd_) { EXPECT_EQ(issuer_.payment_code_, widget.PaymentCode()); }
 
     auto row = widget.First();
 
@@ -1699,9 +1725,8 @@ TEST_F(Integration, contact_issuer_alex_1)
 
     EXPECT_EQ(alex_.Contact(issuer_.name_).str(), widget.ContactID());
     EXPECT_EQ(std::string(issuer_.name_), widget.DisplayName());
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
-    EXPECT_EQ(issuer_.payment_code_, widget.PaymentCode());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+
+    if (have_hd_) { EXPECT_EQ(issuer_.payment_code_, widget.PaymentCode()); }
 
     auto row = widget.First();
 

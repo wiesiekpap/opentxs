@@ -13,18 +13,21 @@
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
+#include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/identity/CredentialType.hpp"
@@ -45,14 +48,19 @@ namespace opentxs
 {
 auto Factory::NymIDSource(
     const api::Session& api,
-    NymParameters& params,
+    crypto::Parameters& params,
     const opentxs::PasswordPrompt& reason) -> identity::Source*
 {
     using ReturnType = identity::implementation::Source;
 
     switch (params.SourceType()) {
         case identity::SourceType::Bip47: {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+            if ((false == api::crypto::HaveHDKeys()) ||
+                (false == api::crypto::HaveSupport(
+                              crypto::key::asymmetric::Algorithm::Secp256k1))) {
+                throw std::runtime_error("Missing BIP-47 support");
+            }
+
             const auto paymentCode = api.Factory().PaymentCode(
                 params.Seed(),
                 params.Nym(),
@@ -60,13 +68,6 @@ auto Factory::NymIDSource(
                 reason);
 
             return new ReturnType{api.Factory(), paymentCode};
-#else
-            LogError()("opentxs::Factory::")(__func__)(
-                ": opentxs was build without bip47 support")
-                .Flush();
-
-            return nullptr;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
         }
         case identity::SourceType::PubKey:
             switch (params.credentialType()) {
@@ -77,9 +78,11 @@ auto Factory::NymIDSource(
                         opentxs::crypto::key::asymmetric::Role::Sign,
                         reason);
                 } break;
-                case identity::CredentialType::HD:
-#if OT_CRYPTO_WITH_BIP32
-                {
+                case identity::CredentialType::HD: {
+                    if (false == api::crypto::HaveHDKeys()) {
+                        throw std::runtime_error("Missing HD key support");
+                    }
+
                     const auto curve =
                         crypto::AsymmetricProvider::KeyTypeToCurve(
                             params.Algorithm());
@@ -97,7 +100,6 @@ auto Factory::NymIDSource(
                         opentxs::crypto::key::asymmetric::Role::Sign,
                         reason);
                 } break;
-#endif  // OT_CRYPTO_WITH_BIP32
                 case identity::CredentialType::Error:
                 default: {
                     throw std::runtime_error("Unsupported credential type");
@@ -155,7 +157,7 @@ Source::Source(
 
 Source::Source(
     const api::session::Factory& factory,
-    const NymParameters& nymParameters) noexcept(false)
+    const crypto::Parameters& nymParameters) noexcept(false)
     : factory_{factory}
     , type_(nymParameters.SourceType())
     , pubkey_(nymParameters.Keypair().GetPublicKey())
@@ -175,7 +177,7 @@ Source::Source(
     , type_(identity::SourceType::Bip47)
     , pubkey_(crypto::key::Asymmetric::Factory())
     , payment_code_{source}
-    , version_(key_to_source_version_.at(payment_code_->Version()))
+    , version_(key_to_source_version_.at(payment_code_.Version()))
 {
 }
 
@@ -199,7 +201,7 @@ auto Source::asData() const -> OTData
 auto Source::deserialize_paymentcode(
     const api::session::Factory& factory,
     const identity::SourceType type,
-    const proto::NymIDSource& serialized) -> OTPaymentCode
+    const proto::NymIDSource& serialized) -> PaymentCode
 {
     if (identity::SourceType::Bip47 == type) {
 
@@ -259,7 +261,7 @@ auto Source::NymID() const noexcept -> OTNymID
 
         } break;
         case identity::SourceType::Bip47: {
-            nymID = payment_code_->ID();
+            nymID = payment_code_.ID();
         } break;
         default: {
         }
@@ -284,8 +286,8 @@ auto Source::Serialize(proto::NymIDSource& source) const noexcept -> bool
 
         } break;
         case identity::SourceType::Bip47: {
-            if (false ==
-                payment_code_->Serialize(*(source.mutable_paymentcode()))) {
+            if (false == payment_code_.Internal().Serialize(
+                             *(source.mutable_paymentcode()))) {
                 return false;
             }
 
@@ -382,24 +384,14 @@ auto Source::Verify(
                 return false;
             }
         } break;
-        case identity::SourceType::Bip47:
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-        {
-            if (!payment_code_->Verify(master, sourceSignature)) {
+        case identity::SourceType::Bip47: {
+            if (!payment_code_.Internal().Verify(master, sourceSignature)) {
                 LogError()(OT_PRETTY_CLASS())("Invalid source signature.")
                     .Flush();
 
                 return false;
             }
         } break;
-#else
-        {
-            LogError()(OT_PRETTY_CLASS())("Missing support for secp256k1")
-                .Flush();
-
-            return false;
-        }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         default: {
             return false;
         }
@@ -421,12 +413,7 @@ auto Source::Sign(
 
         } break;
         case (identity::SourceType::Bip47): {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-            goodsig = payment_code_->Sign(credential, sig, reason);
-#else
-            LogError()(OT_PRETTY_CLASS())("Missing support for secp256k1")
-                .Flush();
-#endif
+            goodsig = payment_code_.Internal().Sign(credential, sig, reason);
         } break;
         default: {
         }
@@ -453,7 +440,7 @@ auto Source::Description() const noexcept -> OTString
             }
         } break;
         case (identity::SourceType::Bip47): {
-            description = String::Factory(payment_code_->asBase58());
+            description = String::Factory(payment_code_.asBase58());
 
         } break;
         default: {

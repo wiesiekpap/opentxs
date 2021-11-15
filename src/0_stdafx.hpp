@@ -18,12 +18,6 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-
-#include <ShlObj.h>
-#include <WinSock2.h>
-#include <Windows.h>
-#include <direct.h>
-#include <xstring>
 #endif
 
 #ifndef OT_USE_CHAI_STDLIB

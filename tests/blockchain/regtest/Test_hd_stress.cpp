@@ -43,6 +43,7 @@
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
@@ -149,7 +150,7 @@ protected:
                         reason);
                 }();
 
-                alice_p_ = client_1_.Wallet().Nym(reason, "Alice", {seedID, 0});
+                alice_p_ = client_1_.Wallet().Nym({seedID, 0}, reason, "Alice");
 
                 OT_ASSERT(alice_p_)
                 OT_ASSERT(alice_p_->PaymentCode() == vector.payment_code_)
@@ -183,7 +184,7 @@ protected:
                         reason);
                 }();
 
-                bob_p_ = client_2_.Wallet().Nym(reason, "Alice", {seedID, 0});
+                bob_p_ = client_2_.Wallet().Nym({seedID, 0}, reason, "Alice");
 
                 OT_ASSERT(bob_p_)
 

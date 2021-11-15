@@ -31,6 +31,7 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
+#include "internal/core/PaymentCode.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -55,7 +56,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -874,13 +875,13 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
         const auto& nym = *pNym;
         const auto sender = api_.Factory().PaymentCode(nym.PaymentCode());
 
-        if (0 == sender->Version()) {
+        if (0 == sender.Version()) {
             rc = SendResult::SenderMissingPaymentCode;
 
             throw std::runtime_error{"Invalid sender payment code"};
         }
 
-        if (3 > recipient->Version()) {
+        if (3 > recipient.Version()) {
             rc = SendResult::UnsupportedRecipientPaymentCode;
 
             throw std::runtime_error{
@@ -900,7 +901,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
             return out;
         }();
         const auto reason = api_.Factory().PasswordPrompt(
-            std::string{"Sending a transaction to "} + recipient->asBase58());
+            std::string{"Sending a transaction to "} + recipient.asBase58());
         const auto& account = crypto_.Internal().PaymentCodeSubaccount(
             nymID, sender, recipient, path, chain_, reason);
         using Subchain = blockchain::crypto::Subchain;
@@ -961,12 +962,12 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
                 auto serialize =
                     [&](const PaymentCode& pc) -> proto::PaymentCode {
                     auto proto = proto::PaymentCode{};
-                    pc.Serialize(proto);
+                    pc.Internal().Serialize(proto);
                     return proto;
                 };
                 auto& notif = *out.add_notification();
                 notif.set_version(notification_version_);
-                *notif.mutable_sender() = serialize(sender.get());
+                *notif.mutable_sender() = serialize(sender);
                 *notif.mutable_path() = path;
                 *notif.mutable_recipient() = serialize(recipient);
             }

@@ -24,7 +24,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -241,9 +241,9 @@ private:
         const auto& nym = *pNym;
         auto code = api_.Factory().PaymentCode(nym.PaymentCode());
 
-        if (3 > code->Version()) { return; }
+        if (3 > code.Version()) { return; }
 
-        LogConsole()("Initializing payment code ")(code->asBase58())(" on ")(
+        LogConsole()("Initializing payment code ")(code.asBase58())(" on ")(
             DisplayString(chain_))
             .Flush();
         auto accountID =

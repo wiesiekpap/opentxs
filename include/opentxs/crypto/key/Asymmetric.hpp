@@ -35,7 +35,13 @@ namespace identity
 class Authority;
 }  // namespace identity
 
+namespace proto
+{
+class AsymmetricKey;
+}  // namespace proto
+
 class OTSignatureMetadata;
+class PasswordPrompt;
 class Secret;
 
 using OTAsymmetricKey = Pimpl<crypto::key::Asymmetric>;

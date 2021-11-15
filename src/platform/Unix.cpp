@@ -3,14 +3,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"     // IWYU pragma: associated
-#include "1_Internal.hpp"   // IWYU pragma: associated
-#include "util/Thread.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"             // IWYU pragma: associated
+#include "1_Internal.hpp"           // IWYU pragma: associated
+#include "api/Legacy.hpp"           // IWYU pragma: associated
+#include "api/context/Context.hpp"  // IWYU pragma: associated
+#include "util/Thread.hpp"          // IWYU pragma: associated
+
+extern "C" {
+#include <sys/resource.h>
+}
 
 #include <errno.h>
 #include <robin_hood.h>
 #include <string.h>
-#include <sys/resource.h>
 #include <unistd.h>
 #include <array>
 
@@ -43,3 +48,16 @@ auto SetThisThreadsPriority(ThreadPriority priority) noexcept -> void
     }
 }
 }  // namespace opentxs
+
+namespace opentxs::api::implementation
+{
+auto Context::set_desired_files(::rlimit& out) noexcept -> void
+{
+    out.rlim_cur = 32768;
+    out.rlim_max = 32768;
+}
+
+auto Legacy::get_suffix() noexcept -> fs::path { return get_suffix("ot"); }
+
+auto Legacy::prepend() noexcept -> std::string { return {}; }
+}  // namespace opentxs::api::implementation

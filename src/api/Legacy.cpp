@@ -7,13 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "api/Legacy.hpp"  // IWYU pragma: associated
 
-#ifndef _WIN32
-extern "C" {
-#include <pwd.h>
-#include <unistd.h>
-}
-#endif
-
 #include <boost/filesystem.hpp>
 #include <cstdlib>
 #include <memory>
@@ -199,26 +192,9 @@ auto Legacy::get_home_directory() noexcept -> fs::path
 
     if (false == home.empty()) { return std::move(home); }
 
-    // Windows
-    home = getenv("USERPROFILE");
+    home = get_home_platform();
 
     if (false == home.empty()) { return std::move(home); }
-
-    const auto drive = std::string{getenv("HOMEDRIVE")};
-    const auto path = std::string{getenv("HOMEPATH")};
-
-    if ((false == drive.empty()) && (false == drive.empty())) {
-
-        return drive + path;
-    }
-
-#ifndef _WIN32
-    const auto* pwd = getpwuid(getuid());
-
-    if (nullptr != pwd) {
-        if (nullptr != pwd->pw_dir) { return pwd->pw_dir; }
-    }
-#endif
 
     LogConsole()("Unable to determine home directory.").Flush();
 
@@ -227,37 +203,14 @@ auto Legacy::get_home_directory() noexcept -> fs::path
 
 auto Legacy::get_suffix(const char* application) noexcept -> fs::path
 {
-    auto output = std::string
-    {
-#if defined(TARGET_OS_MAC)
-#if TARGET_OS_IPHONE  // iOS
-        "Documents/"
-#else  // OSX
-        "Library/Application Support/"
-#endif
-#endif
-    };
-#if defined(_WIN32)
-#elif defined(TARGET_OS_MAC)
-#elif defined(ANDROID)
-#else  // unix
-    output += '.';
-#endif
+    auto output = prepend();
+
+    if (use_dot()) { output += '.'; }
+
     output += application;
     output += '/';
 
     return std::move(output);
-}
-
-auto Legacy::get_suffix() noexcept -> fs::path
-{
-#if defined(_WIN32)
-    return get_suffix("OpenTransactions");
-#elif defined(TARGET_OS_MAC)
-    return get_suffix("OpenTransactions");
-#else  // unix
-    return get_suffix("ot");
-#endif
 }
 
 auto Legacy::get_file(const std::string& fragment, const int instance)

@@ -33,6 +33,7 @@
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"  // IWYU pragma: keep
@@ -83,7 +84,7 @@ protected:
 
             if (!nym_) {
                 const_cast<ot::Nym_p&>(nym_) =
-                    api_.Wallet().Nym(reason_, "Alice", {seed_id_, 0});
+                    api_.Wallet().Nym({seed_id_, 0}, reason_, "Alice");
 
                 OT_ASSERT(nym_);
 

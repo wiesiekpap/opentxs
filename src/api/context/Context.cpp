@@ -7,12 +7,6 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "api/context/Context.hpp"  // IWYU pragma: associated
 
-#ifndef _WIN32
-extern "C" {
-#include <sys/resource.h>
-}
-#endif  // _WIN32
-
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
@@ -42,6 +36,7 @@ extern "C" {
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -180,21 +175,6 @@ auto Context::GetPasswordCaller() const noexcept -> OTCaller&
     return *external_password_callback_;
 }
 
-auto Context::HandleSignals(ShutdownCallback* callback) const noexcept -> void
-{
-#ifdef _WIN32
-    LogError()("Signal handling is not supported on Windows").Flush();
-#else
-    Lock lock(signal_handler_lock_);
-
-    if (nullptr != callback) { shutdown_callback_ = callback; }
-
-    if (false == bool(signal_handler_)) {
-        signal_handler_ = std::make_unique<Signals>(running_);
-    }
-#endif
-}
-
 auto Context::ProfileId() const noexcept -> std::string { return profile_id_; }
 
 auto Context::Init() noexcept -> void
@@ -205,9 +185,7 @@ auto Context::Init() noexcept -> void
     Init_Crypto();
     Init_Factory();
     Init_Profile();
-#ifndef _WIN32
     Init_Rlimit();
-#endif  // _WIN32
     Init_Zap();
 }
 
@@ -310,52 +288,6 @@ auto Context::init_pid() const -> void
         OT_FAIL;
     }
 }
-
-#ifndef _WIN32
-auto Context::Init_Rlimit() noexcept -> void
-{
-    auto original = ::rlimit{};
-    auto desired = ::rlimit{};
-    auto result = ::rlimit{};
-#ifdef __APPLE__
-    desired.rlim_cur = OPEN_MAX;
-    desired.rlim_max = OPEN_MAX;
-#else
-    desired.rlim_cur = 32768;
-    desired.rlim_max = 32768;
-#endif
-
-    if (0 != ::getrlimit(RLIMIT_NOFILE, &original)) {
-        LogConsole()("Failed to query resource limits").Flush();
-
-        return;
-    }
-
-    LogVerbose()("Current open files limit: ")(original.rlim_cur)(" / ")(
-        original.rlim_max)
-        .Flush();
-
-    if (0 != ::setrlimit(RLIMIT_NOFILE, &desired)) {
-        LogConsole()("Failed to set open file limit to ")(desired.rlim_cur)(
-            ". You must increase "
-            "this user account's resource limits via the method "
-            "appropriate for your operating system.")
-            .Flush();
-
-        return;
-    }
-
-    if (0 != ::getrlimit(RLIMIT_NOFILE, &result)) {
-        LogConsole()("Failed to query resource limits").Flush();
-
-        return;
-    }
-
-    LogVerbose()("Adjusted open files limit: ")(result.rlim_cur)(" / ")(
-        result.rlim_max)
-        .Flush();
-}
-#endif  // _WIN32
 
 auto Context::Init_Zap() -> void
 {
@@ -494,7 +426,8 @@ auto Context::StartClientSession(
     const std::string& recoverWords,
     const std::string& recoverPassphrase) const -> const api::session::Client&
 {
-#if OT_CRYPTO_WITH_BIP32
+    OT_ASSERT(crypto::HaveHDKeys());
+
     const auto& client = StartClientSession(args, instance);
     auto reason = client.Factory().PasswordPrompt("Recovering a BIP-39 seed");
 
@@ -512,9 +445,6 @@ auto Context::StartClientSession(
     }
 
     return client;
-#else
-    OT_FAIL;
-#endif  // OT_CRYPTO_WITH_BIP32
 }
 
 auto Context::start_server(const Lock& lock, const Options& args) const -> void

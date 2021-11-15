@@ -22,6 +22,7 @@ extern "C" {
 #include "opentxs/api/Factory.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -43,7 +44,7 @@ auto Sodium::RandomKeypair(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey,
     const opentxs::crypto::key::asymmetric::Role,
-    const NymParameters&,
+    const Parameters&,
     const AllocateOutput) const noexcept -> bool
 {
     auto seed = Context().Factory().Secret(0);

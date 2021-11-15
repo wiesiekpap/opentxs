@@ -14,6 +14,7 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
+#include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -21,7 +22,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
@@ -42,7 +43,7 @@ auto Factory::VerificationCredential(
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason)
     -> identity::credential::internal::Verification*
@@ -109,7 +110,7 @@ Verification::Verification(
     const identity::internal::Authority& parent,
     const identity::Source& source,
     const internal::Primary& master,
-    const NymParameters& params,
+    const crypto::Parameters& params,
     const VersionNumber version,
     const PasswordPrompt& reason) noexcept(false)
     : credential::implementation::Base(
@@ -121,11 +122,13 @@ Verification::Verification(
           identity::CredentialRole::Verify,
           crypto::key::asymmetric::Mode::Null,
           get_master_id(master))
-    , data_([&](const NymParameters& params) -> const proto::VerificationSet {
-        auto proto = proto::VerificationSet{};
-        params.GetVerificationSet(proto);
-        return proto;
-    }(params))
+    , data_(
+          [&](const crypto::Parameters& params)
+              -> const proto::VerificationSet {
+              auto proto = proto::VerificationSet{};
+              params.Internal().GetVerificationSet(proto);
+              return proto;
+          }(params))
 {
     {
         Lock lock(lock_);

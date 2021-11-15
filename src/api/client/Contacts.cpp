@@ -35,7 +35,7 @@
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -227,7 +227,7 @@ auto Contacts::ContactName(const Identifier& id, core::UnitType currencyHint)
         const auto isPaymentCode = [&] {
             auto code = api_.Factory().PaymentCode(alias);
 
-            return code->Valid();
+            return code.Valid();
         }();
 
         if (false == isPaymentCode) { return alias; }
@@ -706,7 +706,7 @@ auto Contacts::PaymentCodeToContact(
     static const auto blank = api_.Factory().Identifier();
     const auto code = api_.Factory().PaymentCode(serialized);
 
-    if (0 == code->Version()) { return blank; }
+    if (0 == code.Version()) { return blank; }
 
     return PaymentCodeToContact(code, currency);
 }

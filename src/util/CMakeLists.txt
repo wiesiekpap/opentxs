@@ -56,14 +56,6 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/WorkType.hpp"
 )
 
-if(WIN32)
-  target_sources(opentxs-util PRIVATE "Thread_win32.cpp")
-elseif(APPLE)
-  target_sources(opentxs-util PRIVATE "Thread_mac.cpp")
-else()
-  target_sources(opentxs-util PRIVATE "Thread_linux.cpp")
-endif()
-
 target_link_libraries(
   opentxs-util
   PRIVATE

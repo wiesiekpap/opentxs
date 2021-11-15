@@ -18,7 +18,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/qt/AccountList.hpp"
 #include "ui/base/Widget.hpp"
@@ -40,7 +40,7 @@ auto BlockchainAccountActivity::Send(
         const auto recipient = Widget::api_.Factory().PaymentCode(address);
         const auto amount = scales_.Import(input, scale);
 
-        if (0 < recipient->Version()) {
+        if (0 < recipient.Version()) {
 
             return SendMonitor().watch(
                 network.SendToPaymentCode(primary_id_, recipient, amount, memo),

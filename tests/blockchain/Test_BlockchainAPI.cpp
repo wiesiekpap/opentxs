@@ -22,7 +22,6 @@
 #include "internal/api/session/Client.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -46,8 +45,9 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -56,7 +56,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
-#if OT_CRYPTO_WITH_BIP32
 namespace ot = opentxs;
 
 namespace
@@ -242,19 +241,19 @@ public:
                     "");
             alex_p_.reset(new ot::OTNymID{
                 api.Wallet()
-                    .Nym(*reason_p_, "Alex", {fingerprint_a_, 0}, individual_)
+                    .Nym({fingerprint_a_, 0}, individual_, *reason_p_, "Alex")
                     ->ID()});
             bob_p_.reset(new ot::OTNymID{
                 api.Wallet()
-                    .Nym(*reason_p_, "Bob", {fingerprint_b_, 0}, individual_)
+                    .Nym({fingerprint_b_, 0}, individual_, *reason_p_, "Bob")
                     ->ID()});
             chris_p_.reset(new ot::OTNymID{
                 api.Wallet()
-                    .Nym(*reason_p_, "Chris", {fingerprint_c_, 0}, individual_)
+                    .Nym({fingerprint_c_, 0}, individual_, *reason_p_, "Chris")
                     ->ID()});
             daniel_p_.reset(new ot::OTNymID{
                 api.Wallet()
-                    .Nym(*reason_p_, "Daniel", {fingerprint_a_, 1}, individual_)
+                    .Nym({fingerprint_a_, 1}, individual_, *reason_p_, "Daniel")
                     ->ID()});
 
             address_1_p_.reset(new ot::OTData{api.Factory().Data(
@@ -743,7 +742,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
 
     const auto& nymID =
         api_.Wallet()
-            .Nym(reason_, "John Doe", {fingerprint, 0}, individual_)
+            .Nym({fingerprint, 0}, individual_, reason_, "John Doe")
             ->ID();
 
     ASSERT_FALSE(nymID.empty());
@@ -782,7 +781,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
 
     const auto& nymID =
         api_.Wallet()
-            .Nym(reason_, "John Doe", {fingerprint, 0}, individual_)
+            .Nym({fingerprint, 0}, individual_, reason_, "John Doe")
             ->ID();
 
     ASSERT_FALSE(nymID.empty());
@@ -1386,4 +1385,3 @@ TEST_F(Test_BlockchainAPI, batch)
     }
 }
 }  // namespace
-#endif  // OT_CRYPTO_WITH_BIP32

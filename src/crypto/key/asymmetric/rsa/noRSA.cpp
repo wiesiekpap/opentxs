@@ -26,7 +26,7 @@ auto RSAKey(
     const crypto::AsymmetricProvider&,
     const crypto::key::asymmetric::Role,
     const VersionNumber,
-    const NymParameters&,
+    const crypto::Parameters&,
     const opentxs::PasswordPrompt&) noexcept
     -> std::unique_ptr<crypto::key::RSA>
 {

@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                 // IWYU pragma: associated
-#include "1_Internal.hpp"               // IWYU pragma: associated
-#include "core/crypto/PaymentCode.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"              // IWYU pragma: associated
+#include "1_Internal.hpp"            // IWYU pragma: associated
+#include "core/paymentcode/Imp.hpp"  // IWYU pragma: associated
 
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
@@ -19,9 +19,9 @@
 #include <utility>
 #include <vector>
 
-#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
+#include "core/paymentcode/Preimage.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -35,8 +35,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
@@ -61,50 +61,14 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-template class opentxs::Pimpl<opentxs::PaymentCode>;
-
 namespace be = boost::endian;
-
-namespace opentxs
-{
-const VersionNumber PaymentCode::DefaultVersion{3};
-
-using ReturnType = implementation::PaymentCode;
-
-auto Factory::PaymentCode(
-    const api::Session& api,
-    const std::uint8_t version,
-    const bool hasBitmessage,
-    const ReadView pubkey,
-    const ReadView chaincode,
-    const std::uint8_t bitmessageVersion,
-    const std::uint8_t bitmessageStream
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    ,
-    std::unique_ptr<crypto::key::Secp256k1> key
-#endif
-    ) noexcept -> std::unique_ptr<opentxs::PaymentCode>
-{
-    return std::make_unique<ReturnType>(
-        api,
-        version,
-        hasBitmessage,
-        pubkey,
-        chaincode,
-        bitmessageVersion,
-        bitmessageStream
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-        ,
-        std::move(key)
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    );
-}
-}  // namespace opentxs
 
 namespace opentxs::implementation
 {
-const std::size_t PaymentCode::pubkey_size_{sizeof(XpubPreimage::key_)};
-const std::size_t PaymentCode::chain_code_size_{sizeof(XpubPreimage::code_)};
+const std::size_t PaymentCode::pubkey_size_{
+    sizeof(paymentcode::XpubPreimage::key_)};
+const std::size_t PaymentCode::chain_code_size_{
+    sizeof(paymentcode::XpubPreimage::code_)};
 
 PaymentCode::PaymentCode(
     const api::Session& api,
@@ -113,12 +77,8 @@ PaymentCode::PaymentCode(
     const ReadView pubkey,
     const ReadView chaincode,
     const std::uint8_t bitmessageVersion,
-    const std::uint8_t bitmessageStream
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-    ,
-    std::unique_ptr<crypto::key::Secp256k1> key
-#endif
-    ) noexcept
+    const std::uint8_t bitmessageStream,
+    std::unique_ptr<crypto::key::Secp256k1> key) noexcept
     : api_(api)
     , version_(version)
     , hasBitmessage_(hasBitmessage)
@@ -127,18 +87,12 @@ PaymentCode::PaymentCode(
     , bitmessage_version_(bitmessageVersion)
     , bitmessage_stream_(bitmessageStream)
     , id_(calculate_id(api, pubkey, chaincode))
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     , key_(std::move(key))
-#else
-    , key_(crypto::key::Asymmetric::Factory())
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     OT_ASSERT(key_);
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
 
-PaymentCode::PaymentCode(const PaymentCode& rhs)
+PaymentCode::PaymentCode(const PaymentCode& rhs) noexcept
     : api_(rhs.api_)
     , version_(rhs.version_)
     , hasBitmessage_(rhs.hasBitmessage_)
@@ -153,11 +107,7 @@ PaymentCode::PaymentCode(const PaymentCode& rhs)
 
 PaymentCode::operator const crypto::key::Asymmetric&() const noexcept
 {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     return *key_;
-#else
-    return key_.get();
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
 
 auto PaymentCode::operator==(const proto::PaymentCode& rhs) const noexcept
@@ -176,7 +126,6 @@ auto PaymentCode::AddPrivateKeys(
     const Bip32Index index,
     const PasswordPrompt& reason) noexcept -> bool
 {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     auto pCandidate =
         api_.Crypto().Seed().GetPaymentCode(seed, index, version_, reason);
 
@@ -209,13 +158,9 @@ auto PaymentCode::AddPrivateKeys(
     OT_ASSERT(key_);
 
     return true;
-#else
-
-    return false;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 }
 
-auto PaymentCode::apply_mask(const Mask& mask, BinaryPreimage& pre)
+auto PaymentCode::apply_mask(const Mask& mask, paymentcode::BinaryPreimage& pre)
     const noexcept -> void
 {
     static_assert(80 == sizeof(pre));
@@ -230,8 +175,9 @@ auto PaymentCode::apply_mask(const Mask& mask, BinaryPreimage& pre)
     }
 }
 
-auto PaymentCode::apply_mask(const Mask& mask, BinaryPreimage_3& pre)
-    const noexcept -> void
+auto PaymentCode::apply_mask(
+    const Mask& mask,
+    paymentcode::BinaryPreimage_3& pre) const noexcept -> void
 {
     static_assert(34 == sizeof(pre));
 
@@ -263,19 +209,22 @@ auto PaymentCode::asBase58() const noexcept -> std::string
     }
 }
 
-auto PaymentCode::base58_preimage() const noexcept -> Base58Preimage
+auto PaymentCode::base58_preimage() const noexcept
+    -> paymentcode::Base58Preimage
 {
-    return Base58Preimage{binary_preimage()};
+    return paymentcode::Base58Preimage{binary_preimage()};
 }
 
-auto PaymentCode::base58_preimage_v3() const noexcept -> Base58Preimage_3
+auto PaymentCode::base58_preimage_v3() const noexcept
+    -> paymentcode::Base58Preimage_3
 {
-    return Base58Preimage_3{binary_preimage_v3()};
+    return paymentcode::Base58Preimage_3{binary_preimage_v3()};
 }
 
-auto PaymentCode::binary_preimage() const noexcept -> BinaryPreimage
+auto PaymentCode::binary_preimage() const noexcept
+    -> paymentcode::BinaryPreimage
 {
-    return BinaryPreimage{
+    return paymentcode::BinaryPreimage{
         version_,
         hasBitmessage_,
         pubkey_->Bytes(),
@@ -284,9 +233,10 @@ auto PaymentCode::binary_preimage() const noexcept -> BinaryPreimage
         bitmessage_stream_};
 }
 
-auto PaymentCode::binary_preimage_v3() const noexcept -> BinaryPreimage_3
+auto PaymentCode::binary_preimage_v3() const noexcept
+    -> paymentcode::BinaryPreimage_3
 {
-    return BinaryPreimage_3{version_, pubkey_->Bytes()};
+    return paymentcode::BinaryPreimage_3{version_, pubkey_->Bytes()};
 }
 
 auto PaymentCode::Blind(
@@ -474,9 +424,8 @@ auto PaymentCode::calculate_mask_v3(
 
 auto PaymentCode::DecodeNotificationElements(
     const std::uint8_t version,
-    const Elements& in,
-    const PasswordPrompt& reason) const noexcept
-    -> std::unique_ptr<opentxs::PaymentCode>
+    const std::vector<Space>& in,
+    const PasswordPrompt& reason) const noexcept -> opentxs::PaymentCode
 {
     try {
         if (3 > version_) {
@@ -522,7 +471,7 @@ auto PaymentCode::DecodeNotificationElements(
                         ") bytes"};
                 }
 
-                auto out = space(sizeof(BinaryPreimage));
+                auto out = space(sizeof(paymentcode::BinaryPreimage));
                 auto* o = out.data();
                 {
                     auto* f = F.data();
@@ -540,7 +489,6 @@ auto PaymentCode::DecodeNotificationElements(
             }
         }();
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
         const auto pKey = api_.Crypto().Asymmetric().InstantiateSecp256k1Key(
             reader(A), reason);
 
@@ -551,9 +499,6 @@ auto PaymentCode::DecodeNotificationElements(
         const auto& key = *pKey;
 
         return UnblindV3(version, reader(blind), key, reason);
-#else
-        throw std::runtime_error{"Missing sepc256k1 support"};
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     } catch (const std::exception& e) {
         LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -568,7 +513,6 @@ auto PaymentCode::derive_keys(
     const PasswordPrompt& reason) const noexcept(false)
     -> std::pair<ECKey, ECKey>
 {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     auto output = std::pair<ECKey, ECKey>{};
     auto& [localPrivate, remotePublic] = output;
 
@@ -597,9 +541,6 @@ auto PaymentCode::derive_keys(
     }
 
     return output;
-#else
-    throw std::runtime_error("Missing secp256k1 support");
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
 
 auto PaymentCode::effective_version(
@@ -622,7 +563,7 @@ auto PaymentCode::effective_version(
 auto PaymentCode::GenerateNotificationElements(
     const opentxs::PaymentCode& recipient,
     const crypto::key::EllipticCurve& privateKey,
-    const PasswordPrompt& reason) const noexcept -> Elements
+    const PasswordPrompt& reason) const noexcept -> std::vector<Space>
 {
     try {
         if (3 > recipient.Version()) {
@@ -640,8 +581,8 @@ auto PaymentCode::GenerateNotificationElements(
             return out;
         }();
 
-        auto output = Elements{};
-        constexpr auto size = sizeof(BinaryPreimage_3::key_);
+        auto output = std::vector<Space>{};
+        constexpr auto size = sizeof(paymentcode::BinaryPreimage_3::key_);
         {
             auto& A = output.emplace_back(space(size));
             const auto rc =
@@ -674,11 +615,11 @@ auto PaymentCode::GenerateNotificationElements(
 auto PaymentCode::generate_elements_v1(
     const opentxs::PaymentCode& recipient,
     const Space& blind,
-    Elements& output) const noexcept(false) -> void
+    std::vector<Space>& output) const noexcept(false) -> void
 {
     constexpr auto size = std::size_t{65};
 
-    OT_ASSERT(blind.size() == sizeof(BinaryPreimage));
+    OT_ASSERT(blind.size() == sizeof(paymentcode::BinaryPreimage));
 
     auto* b = blind.data();
     {
@@ -707,9 +648,9 @@ auto PaymentCode::generate_elements_v1(
 auto PaymentCode::generate_elements_v3(
     const opentxs::PaymentCode& recipient,
     const Space& blind,
-    Elements& output) const noexcept(false) -> void
+    std::vector<Space>& output) const noexcept(false) -> void
 {
-    constexpr auto size = sizeof(BinaryPreimage_3::key_);
+    constexpr auto size = sizeof(paymentcode::BinaryPreimage_3::key_);
 
     OT_ASSERT(blind.size() == size);
 
@@ -769,16 +710,7 @@ auto PaymentCode::Incoming(
     }
 }
 
-auto PaymentCode::Key() const noexcept -> HDKey
-{
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-
-    return key_;
-#else
-
-    return {};
-#endif
-}
+auto PaymentCode::Key() const noexcept -> HDKey { return key_; }
 
 auto PaymentCode::Locator(const AllocateOutput dest, const std::uint8_t version)
     const noexcept -> bool
@@ -856,7 +788,7 @@ auto PaymentCode::match_locator(
     const std::uint8_t version,
     const Space& element) const noexcept(false) -> bool
 {
-    if (sizeof(BinaryPreimage_3::key_) > element.size()) {
+    if (sizeof(paymentcode::BinaryPreimage_3::key_) > element.size()) {
         throw std::runtime_error{"Invalid F"};
     }
 
@@ -1016,12 +948,13 @@ auto PaymentCode::Sign(
     proto::Signature& sig,
     const PasswordPrompt& reason) const noexcept -> bool
 {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     auto serialized = proto::Credential{};
+
     if (false ==
         credential.Serialize(serialized, AS_PUBLIC, WITHOUT_SIGNATURES)) {
         return false;
     }
+
     auto& signature = *serialized.add_signature();
     const bool output = key_->Sign(
         [&]() -> std::string { return proto::ToString(serialized); },
@@ -1032,10 +965,6 @@ auto PaymentCode::Sign(
     sig.CopyFrom(signature);
 
     return output;
-#else
-
-    return false;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
 
 auto PaymentCode::Sign(
@@ -1043,7 +972,6 @@ auto PaymentCode::Sign(
     Data& output,
     const PasswordPrompt& reason) const noexcept -> bool
 {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     const auto& key = *key_;
 
     return key.engine().Sign(
@@ -1051,25 +979,19 @@ auto PaymentCode::Sign(
         key.PrivateKey(reason),
         crypto::HashType::Sha256,
         output.WriteInto());
-#else
-
-    return false;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
 
 auto PaymentCode::Unblind(
     const ReadView in,
     const crypto::key::EllipticCurve& remote,
     const ReadView outpoint,
-    const PasswordPrompt& reason) const noexcept
-    -> std::unique_ptr<opentxs::PaymentCode>
+    const PasswordPrompt& reason) const noexcept -> opentxs::PaymentCode
 {
     try {
         if (2 < version_) {
             throw std::runtime_error{"Payment code version too high"};
         }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         if (!key_) { throw std::runtime_error{"Missing private key"}; }
 
         const auto pLocal = key_->ChildKey(0, reason);
@@ -1081,7 +1003,7 @@ auto PaymentCode::Unblind(
         const auto& local = *pLocal;
         const auto mask = calculate_mask_v1(local, remote, outpoint, reason);
         auto pre = [&] {
-            auto out = BinaryPreimage{};
+            auto out = paymentcode::BinaryPreimage{};
 
             if ((nullptr == in.data()) || (in.size() != sizeof(out))) {
                 throw std::runtime_error{"Invalid blinded payment code"};
@@ -1094,27 +1016,25 @@ auto PaymentCode::Unblind(
         apply_mask(mask, pre);
 
         return std::make_unique<PaymentCode>(
-            api_,
-            pre.version_,
-            pre.haveBitmessage(),
-            pre.xpub_.Key(),
-            pre.xpub_.Chaincode(),
-            pre.bm_version_,
-            pre.bm_stream_,
-            factory::Secp256k1Key(
-                api_,
-                local.ECDSA(),
-                api_.Factory().Secret(0),
-                api_.Factory().SecretFromBytes(pre.xpub_.Chaincode()),
-                api_.Factory().Data(pre.xpub_.Key()),
-                proto::HDPath{},
-                Bip32Fingerprint{},
-                crypto::key::asymmetric::Role::Sign,
-                crypto::key::EllipticCurve::DefaultVersion,
-                reason));
-#else
-        throw std::runtime_error{"Missing secp256k1 support"};
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+                   api_,
+                   pre.version_,
+                   pre.haveBitmessage(),
+                   pre.xpub_.Key(),
+                   pre.xpub_.Chaincode(),
+                   pre.bm_version_,
+                   pre.bm_stream_,
+                   factory::Secp256k1Key(
+                       api_,
+                       local.ECDSA(),
+                       api_.Factory().Secret(0),
+                       api_.Factory().SecretFromBytes(pre.xpub_.Chaincode()),
+                       api_.Factory().Data(pre.xpub_.Key()),
+                       proto::HDPath{},
+                       Bip32Fingerprint{},
+                       crypto::key::asymmetric::Role::Sign,
+                       crypto::key::EllipticCurve::DefaultVersion,
+                       reason))
+            .release();
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -1126,11 +1046,9 @@ auto PaymentCode::UnblindV3(
     const std::uint8_t version,
     const ReadView in,
     const crypto::key::EllipticCurve& remote,
-    const PasswordPrompt& reason) const noexcept
-    -> std::unique_ptr<opentxs::PaymentCode>
+    const PasswordPrompt& reason) const noexcept -> opentxs::PaymentCode
 {
     try {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
         if (3 > version_) {
             throw std::runtime_error{"Local payment code version too low"};
         }
@@ -1157,9 +1075,6 @@ auto PaymentCode::UnblindV3(
                 return unblind_v3(version, in, mask, local.ECDSA(), reason);
             }
         }
-#else
-        throw std::runtime_error{"Missing secp256k1 support"};
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -1167,15 +1082,14 @@ auto PaymentCode::UnblindV3(
     }
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 auto PaymentCode::unblind_v1(
     const ReadView in,
     const Mask& mask,
     const crypto::EcdsaProvider& ecdsa,
-    const PasswordPrompt& reason) const -> std::unique_ptr<opentxs::PaymentCode>
+    const PasswordPrompt& reason) const -> opentxs::PaymentCode
 {
     const auto pre = [&] {
-        auto out = BinaryPreimage{};
+        auto out = paymentcode::BinaryPreimage{};
 
         if ((nullptr == in.data()) || (in.size() != (sizeof(out)))) {
             throw std::runtime_error{"Invalid blinded payment code (v1)"};
@@ -1189,24 +1103,25 @@ auto PaymentCode::unblind_v1(
     }();
 
     return std::make_unique<PaymentCode>(
-        api_,
-        pre.version_,
-        pre.haveBitmessage(),
-        pre.xpub_.Key(),
-        pre.xpub_.Chaincode(),
-        pre.bm_version_,
-        pre.bm_stream_,
-        factory::Secp256k1Key(
-            api_,
-            ecdsa,
-            api_.Factory().Secret(0),
-            api_.Factory().SecretFromBytes(pre.xpub_.Chaincode()),
-            api_.Factory().Data(pre.xpub_.Key()),
-            proto::HDPath{},
-            Bip32Fingerprint{},
-            crypto::key::asymmetric::Role::Sign,
-            crypto::key::EllipticCurve::DefaultVersion,
-            reason));
+               api_,
+               pre.version_,
+               pre.haveBitmessage(),
+               pre.xpub_.Key(),
+               pre.xpub_.Chaincode(),
+               pre.bm_version_,
+               pre.bm_stream_,
+               factory::Secp256k1Key(
+                   api_,
+                   ecdsa,
+                   api_.Factory().Secret(0),
+                   api_.Factory().SecretFromBytes(pre.xpub_.Chaincode()),
+                   api_.Factory().Data(pre.xpub_.Key()),
+                   proto::HDPath{},
+                   Bip32Fingerprint{},
+                   crypto::key::asymmetric::Role::Sign,
+                   crypto::key::EllipticCurve::DefaultVersion,
+                   reason))
+        .release();
 }
 
 auto PaymentCode::unblind_v3(
@@ -1214,10 +1129,10 @@ auto PaymentCode::unblind_v3(
     const ReadView in,
     const Mask& mask,
     const crypto::EcdsaProvider& ecdsa,
-    const PasswordPrompt& reason) const -> std::unique_ptr<opentxs::PaymentCode>
+    const PasswordPrompt& reason) const -> opentxs::PaymentCode
 {
     const auto pre = [&] {
-        auto out = BinaryPreimage_3{};
+        auto out = paymentcode::BinaryPreimage_3{};
         out.version_ = version;
 
         if ((nullptr == in.data()) || ((in.size() + 1u) != sizeof(out))) {
@@ -1243,26 +1158,26 @@ auto PaymentCode::unblind_v3(
     }();
 
     return std::make_unique<PaymentCode>(
-        api_,
-        pre.version_,
-        false,
-        pre.Key(),
-        code->Bytes(),
-        0,
-        0,
-        factory::Secp256k1Key(
-            api_,
-            ecdsa,
-            api_.Factory().Secret(0),
-            code,
-            api_.Factory().Data(pre.Key()),
-            proto::HDPath{},
-            Bip32Fingerprint{},
-            crypto::key::asymmetric::Role::Sign,
-            crypto::key::EllipticCurve::DefaultVersion,
-            reason));
+               api_,
+               pre.version_,
+               false,
+               pre.Key(),
+               code->Bytes(),
+               0,
+               0,
+               factory::Secp256k1Key(
+                   api_,
+                   ecdsa,
+                   api_.Factory().Secret(0),
+                   code,
+                   api_.Factory().Data(pre.Key()),
+                   proto::HDPath{},
+                   Bip32Fingerprint{},
+                   crypto::key::asymmetric::Role::Sign,
+                   crypto::key::EllipticCurve::DefaultVersion,
+                   reason))
+        .release();
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
 auto PaymentCode::Valid() const noexcept -> bool
 {
@@ -1273,7 +1188,9 @@ auto PaymentCode::Valid() const noexcept -> bool
     if (chain_code_size_ != chain_code_->size()) { return false; }
 
     auto serialized = proto::PaymentCode{};
+
     if (false == Serialize(serialized)) { return false; }
+
     return proto::Validate<proto::PaymentCode>(serialized, SILENT);
 }
 
@@ -1281,7 +1198,6 @@ auto PaymentCode::Verify(
     const proto::Credential& master,
     const proto::Signature& sourceSignature) const noexcept -> bool
 {
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     if (false == proto::Validate<proto::Credential>(
                      master,
                      VERBOSE,
@@ -1312,9 +1228,5 @@ auto PaymentCode::Verify(
     signature.clear_signature();
 
     return key_->Verify(api_.Factory().Data(copy), sourceSignature);
-#else
-
-    return false;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }
 }  // namespace opentxs::implementation

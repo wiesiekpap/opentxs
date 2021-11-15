@@ -3,16 +3,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/crypto/key/asymmetric/Role.hpp"
+
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <optional>
 
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/crypto/key/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
@@ -21,6 +23,13 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
+
+class Signature;
 }  // namespace opentxs
 
 namespace opentxs
@@ -47,9 +56,22 @@ public:
     virtual auto RandomKeypair(
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
-        const opentxs::crypto::key::asymmetric::Role role =
-            opentxs::crypto::key::asymmetric::Role::Sign,
-        const NymParameters& options = {},
+        const AllocateOutput params = {}) const noexcept -> bool = 0;
+    virtual auto RandomKeypair(
+        const AllocateOutput privateKey,
+        const AllocateOutput publicKey,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const AllocateOutput params = {}) const noexcept -> bool = 0;
+    virtual auto RandomKeypair(
+        const AllocateOutput privateKey,
+        const AllocateOutput publicKey,
+        const Parameters& options,
+        const AllocateOutput params = {}) const noexcept -> bool = 0;
+    virtual auto RandomKeypair(
+        const AllocateOutput privateKey,
+        const AllocateOutput publicKey,
+        const opentxs::crypto::key::asymmetric::Role role,
+        const Parameters& options,
         const AllocateOutput params = {}) const noexcept -> bool = 0;
     virtual auto Sign(
         const ReadView plaintext,

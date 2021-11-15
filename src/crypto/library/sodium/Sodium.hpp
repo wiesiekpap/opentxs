@@ -40,7 +40,10 @@ namespace crypto
 namespace key
 {
 class Asymmetric;
+class Parameters;
 }  // namespace key
+
+class Parameters;
 }  // namespace crypto
 
 namespace proto
@@ -49,7 +52,6 @@ class Ciphertext;
 }  // namespace proto
 
 class Data;
-class NymParameters;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
@@ -89,11 +91,12 @@ public:
         const ReadView pubkey,
         const ReadView scalar,
         const AllocateOutput result) const noexcept -> bool final;
+    using AsymmetricProvider::RandomKeypair;
     auto RandomKeypair(
         const AllocateOutput privateKey,
         const AllocateOutput publicKey,
         const opentxs::crypto::key::asymmetric::Role role,
-        const NymParameters& options,
+        const Parameters& options,
         const AllocateOutput params) const noexcept -> bool final;
     auto RandomizeMemory(void* destination, const std::size_t size) const
         -> bool final;

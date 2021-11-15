@@ -124,7 +124,7 @@ auto PaymentCodeFixture::payment_code_public(
 
     if (false == var.has_value()) { throw std::runtime_error("Failed"); }
 
-    return var.value().get();
+    return var.value();
 }
 
 auto PaymentCodeFixture::payment_code_secret(
@@ -145,7 +145,7 @@ auto PaymentCodeFixture::payment_code_secret(
 
     if (false == var.has_value()) { throw std::runtime_error("Failed"); }
 
-    return var.value().get();
+    return var.value();
 }
 
 auto PaymentCodeFixture::seed(
