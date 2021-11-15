@@ -103,7 +103,7 @@ auto Asymmetric::instantiate_hd_key(
                 reason);
         }
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key type").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid key type").Flush();
 
             return std::make_unique<NullType>();
         }
@@ -133,7 +133,7 @@ auto Asymmetric::instantiate_serialized_key(
                 serialized);
         }
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key type").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid key type").Flush();
 
             return std::make_unique<NullType>();
         }
@@ -152,8 +152,7 @@ auto Asymmetric::InstantiateECKey(const proto::AsymmetricKey& serialized)
             return instantiate_serialized_key<ReturnType, NullType>(serialized);
         }
         case (proto::AKEYTYPE_LEGACY): {
-            LogError()(OT_PRETTY_CLASS(__func__))("Wrong key type (RSA)")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Wrong key type (RSA)").Flush();
         } break;
         default: {
         }
@@ -174,8 +173,7 @@ auto Asymmetric::InstantiateHDKey(const proto::AsymmetricKey& serialized)
             return instantiate_serialized_key<ReturnType, NullType>(serialized);
         }
         case (proto::AKEYTYPE_LEGACY): {
-            LogError()(OT_PRETTY_CLASS(__func__))("Wrong key type (RSA)")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Wrong key type (RSA)").Flush();
         } break;
         default: {
         }
@@ -270,7 +268,7 @@ auto Asymmetric::InstantiateKey(const proto::AsymmetricKey& serialized)
                 serialized);
         }
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key type").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid key type").Flush();
 
             return std::make_unique<NullType>();
         }
@@ -380,8 +378,7 @@ auto Asymmetric::InstantiateSecp256k1Key(
         api_.Crypto().Internal().EllipticProvider(Type::Secp256k1);
 
     if (false == ecdsa.ScalarMultiplyBase(priv.Bytes(), pub->WriteInto())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate public key")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to calculate public key").Flush();
 
         return {};
     }
@@ -533,7 +530,7 @@ auto Asymmetric::NewKey(
                 reason);
         }
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key type").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid key type").Flush();
 
             return {};
         }

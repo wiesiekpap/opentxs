@@ -237,8 +237,7 @@ auto Contact::serialize(
                 serializedCredential->add_signature();
             *serializedMasterSignature = *masterSignature;
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to get master signature.")
+            LogError()(OT_PRETTY_CLASS())("Failed to get master signature.")
                 .Flush();
         }
     }

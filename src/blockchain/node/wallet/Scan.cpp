@@ -81,7 +81,7 @@ auto Scan::Do(
             lock.lock();
             last_scanned_ = highestTested;
         } else {
-            LogTrace()(OT_PRETTY_CLASS(__func__))(name)(" ")(this->type())(
+            LogTrace()(OT_PRETTY_CLASS())(name)(" ")(this->type())(
                 " job had no work to do. Start height: ")(
                 startHeight)(", stop height: ")(stopHeight)
                 .Flush();
@@ -93,7 +93,7 @@ auto Scan::Do(
 
     if (startHeight > stopHeight) { return; }
 
-    LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" ")(this->type())(
+    LogVerbose()(OT_PRETTY_CLASS())(name)(" ")(this->type())(
         "ning filters from ")(startHeight)(" to ")(stopHeight)
         .Flush();
     const auto [elements, utxos, patterns] = parent_.get_account_targets();
@@ -105,7 +105,7 @@ auto Scan::Do(
         blockHash = headers.BestHash(i, best);
 
         if (blockHash->empty()) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" interrupting ")(
+            LogVerbose()(OT_PRETTY_CLASS())(name)(" interrupting ")(
                 this->type())(" due to chain reorg")
                 .Flush();
 
@@ -116,7 +116,7 @@ auto Scan::Do(
         const auto pFilter = filters.LoadFilterOrResetTip(type, testPosition);
 
         if (false == bool(pFilter)) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" filter at height ")(
+            LogVerbose()(OT_PRETTY_CLASS())(name)(" filter at height ")(
                 i)(" not found ")
                 .Flush();
 
@@ -134,9 +134,9 @@ auto Scan::Do(
             matches = filter.Match(retest);
 
             if (0 < matches.size()) {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" GCS ")(
-                    this->type())(" for block ")(blockHash->asHex())(
-                    " at height ")(i)(" found ")(matches.size())(
+                LogVerbose()(OT_PRETTY_CLASS())(name)(" GCS ")(this->type())(
+                    " for block ")(blockHash->asHex())(" at height ")(
+                    i)(" found ")(matches.size())(
                     " new potential matches for the ")(patterns.size())(
                     " target elements for ")(parent_.id_)
                     .Flush();
@@ -161,15 +161,15 @@ auto Scan::Do(
 
     if (atLeastOnce) {
         const auto count = jobs.size();
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" ")(this->type())(
-            " found ")(count)(" new potential matches between blocks ")(
+        LogVerbose()(OT_PRETTY_CLASS())(name)(" ")(this->type())(" found ")(
+            count)(" new potential matches between blocks ")(
             startHeight)(" and ")(highestTested.first)(" in ")(
             std::chrono::duration_cast<std::chrono::milliseconds>(
                 Clock::now() - start)
                 .count())(" milliseconds")
             .Flush();
     } else {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" ")(this->type())(
+        LogVerbose()(OT_PRETTY_CLASS())(name)(" ")(this->type())(
             " interrupted due to missing filter")
             .Flush();
     }
@@ -228,8 +228,8 @@ auto Scan::Run(const block::Position& filterTip) noexcept -> bool
         // NOTE below this line we can assume only one Scan thread is running
         if (current.has_value()) {
             if (current == filterTip) {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" has been ")(
-                    type())("ned to the newest downloaded cfilter ")(
+                LogVerbose()(OT_PRETTY_CLASS())(name)(" has been ")(type())(
+                    "ned to the newest downloaded cfilter ")(
                     filterTip.second->asHex())(" at height ")(filterTip.first)
                     .Flush();
                 needScan = false;

@@ -65,7 +65,7 @@ public:
     auto Listen(const p2p::Address& address) const noexcept -> bool final
     {
         if (p2p::Network::zmq != address.Type()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid address").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid address").Flush();
 
             return false;
         }
@@ -131,7 +131,7 @@ private:
         const auto& header = message.Header();
 
         if (0 == header.size()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid header").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid header").Flush();
 
             return;
         }
@@ -166,7 +166,7 @@ private:
                 true);
 
             if (false == internal_->Start(zmq)) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed to listen to internal endpoint")
                     .Flush();
 
@@ -176,8 +176,7 @@ private:
             const auto peerID = parent_.ConstructPeer(std::move(address));
 
             if (-1 == peerID) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to instantiate peer")
+                LogError()(OT_PRETTY_CLASS())("Failed to instantiate peer")
                     .Flush();
 
                 return;

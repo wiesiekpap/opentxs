@@ -8,12 +8,17 @@
 #include "blockchain/database/common/Blocks.hpp"  // IWYU pragma: associated
 
 #include <cstring>
+#include <map>
+#include <mutex>
+#include <shared_mutex>
 #include <type_traits>
 #include <utility>
 
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/LMDB.hpp"
@@ -51,7 +56,7 @@ struct Blocks::Imp {
         lmdb_.Load(table_, block.Bytes(), cb);
 
         if (0 == index.size_) {
-            LogTrace()(OT_PRETTY_CLASS(__func__))("Block ")(block.asHex())(
+            LogTrace()(OT_PRETTY_CLASS())("Block ")(block.asHex())(
                 " not found in index")
                 .Flush();
 
@@ -67,7 +72,7 @@ struct Blocks::Imp {
         auto lock = Lock{lock_};
 
         if (0 == bytes) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Block ")(block.asHex())(
+            LogError()(OT_PRETTY_CLASS())("Block ")(block.asHex())(
                 " invalid block size")
                 .Flush();
 
@@ -90,7 +95,7 @@ struct Blocks::Imp {
                 lmdb_.Store(table_, block.Bytes(), tsv(index), tx);
 
             if (false == result.first) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed to update index for block ")(block.asHex())
                     .Flush();
 
@@ -103,7 +108,7 @@ struct Blocks::Imp {
         auto view = bulk_.WriteView(tx, index, std::move(cb), bytes);
 
         if (false == view.valid()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed to get write position for block ")(block.asHex())
                 .Flush();
 
@@ -111,7 +116,7 @@ struct Blocks::Imp {
         }
 
         if (false == tx.Finalize(true)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Database error").Flush();
+            LogError()(OT_PRETTY_CLASS())("Database error").Flush();
 
             return {};
         }

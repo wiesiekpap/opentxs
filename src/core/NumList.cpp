@@ -128,7 +128,7 @@ auto NumList::Add(const char* szNumbers) -> bool  // if false, means the numbers
                        // comma-separated list.)
             bStartedANumber = false;  // reset
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: Unexpected character found in "
                 "erstwhile comma-separated list of longs: ") (*pChar)(".")
                 .Flush();
@@ -235,7 +235,7 @@ auto NumList::Verify(const std::set<std::int64_t>& theNumbers) const -> bool
 auto NumList::Verify(const NumList& rhs) const -> bool
 {
     if (Count() != rhs.Count()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect count ")(rhs.Count())(
+        LogError()(OT_PRETTY_CLASS())("Incorrect count ")(rhs.Count())(
             " should be ")(Count())
             .Flush();
 
@@ -244,8 +244,7 @@ auto NumList::Verify(const NumList& rhs) const -> bool
 
     for (auto& it : m_setData) {
         if (false == rhs.Verify(it)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Number ")(it)(" missing")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Number ")(it)(" missing").Flush();
 
             return false;
         }

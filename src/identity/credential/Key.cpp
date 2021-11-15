@@ -117,7 +117,7 @@ auto Key::addKeyCredentialtoSerializedCredential(
         new proto::KeyCredential);
 
     if (!keyCredential) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed to allocate keyCredential protobuf.")
             .Flush();
 
@@ -297,7 +297,7 @@ auto Key::GetPublicKeysBySignature(
                         listOutput, theSignature);
                     break;  // bInclusive=false by default
                 default:
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Unexpected keytype value in signature "
                         "metadata: ")(theSignature.getMetaData().GetKeyType())(
                         " (Failure)!")
@@ -322,7 +322,7 @@ auto Key::GetPublicKeysBySignature(
                 listOutput, theSignature, true);
             break;  // bInclusive=true
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Unexpected value for cKeyType (should be 0, A, E, or "
                 "S): ")(cKeyType)(".")
                 .Flush();
@@ -546,9 +546,8 @@ auto Key::Verify(
             keyToUse = &signing_key_.get();
             break;
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Can not verify signatures with the "
-                "specified key.")
+            LogError()(OT_PRETTY_CLASS())("Can not verify signatures with the "
+                                          "specified key.")
                 .Flush();
             return false;
     }
@@ -559,8 +558,7 @@ auto Key::Verify(
 
         return keyToUse->GetPublicKey().Verify(plaintext, sig);
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to verify signature.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to verify signature.").Flush();
 
         return false;
     }
@@ -584,7 +582,7 @@ auto Key::verify_internally(const Lock& lock) const -> bool
 
     // All KeyCredentials must sign themselves
     if (!VerifySignedBySelf(lock)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Failed verifying key credential: it's not "
             "signed by itself (its own signing key).")
             .Flush();
@@ -602,7 +600,7 @@ auto Key::VerifySig(
     std::shared_ptr<Base::SerializedType> serialized;
 
     if ((crypto::key::asymmetric::Mode::Private != mode_) && asPrivate) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Can not serialize a public credential as a private credential.")
             .Flush();
         return false;
@@ -627,8 +625,7 @@ auto Key::VerifySignedBySelf(const Lock& lock) const -> bool
     auto publicSig = SelfSignature(PUBLIC_VERSION);
 
     if (!publicSig) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Could not find public self signature.")
+        LogError()(OT_PRETTY_CLASS())("Could not find public self signature.")
             .Flush();
 
         return false;
@@ -637,8 +634,7 @@ auto Key::VerifySignedBySelf(const Lock& lock) const -> bool
     bool goodPublic = VerifySig(lock, *publicSig, PUBLIC_VERSION);
 
     if (!goodPublic) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Could not verify public self signature.")
+        LogError()(OT_PRETTY_CLASS())("Could not verify public self signature.")
             .Flush();
 
         return false;
@@ -648,7 +644,7 @@ auto Key::VerifySignedBySelf(const Lock& lock) const -> bool
         auto privateSig = SelfSignature(PRIVATE_VERSION);
 
         if (!privateSig) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Could not find private self signature.")
                 .Flush();
 
@@ -658,7 +654,7 @@ auto Key::VerifySignedBySelf(const Lock& lock) const -> bool
         bool goodPrivate = VerifySig(lock, *privateSig, PRIVATE_VERSION);
 
         if (!goodPrivate) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Could not verify private self signature.")
                 .Flush();
 

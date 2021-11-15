@@ -158,7 +158,7 @@ auto Primary::Path(proto::HDPath& output) const -> bool
 
         return found;
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("No private key.").Flush();
+        LogError()(OT_PRETTY_CLASS())("No private key.").Flush();
 
         return false;
     }
@@ -270,8 +270,7 @@ auto Primary::Verify(
             opentxs::translate(crypto::key::asymmetric::Mode::Public),
             opentxs::translate(role),
             false)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid credential syntax.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid credential syntax.").Flush();
 
         return false;
     }
@@ -279,7 +278,7 @@ auto Primary::Verify(
     bool sameMaster = (id_ == masterID);
 
     if (!sameMaster) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Credential does not designate this credential as its master.")
             .Flush();
 
@@ -314,7 +313,7 @@ auto Primary::verify_against_source(const Lock& lock) const -> bool
     }
 
     if (false == bool(pSerialized)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize credentials")
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize credentials")
             .Flush();
 
         return false;
@@ -324,7 +323,7 @@ auto Primary::verify_against_source(const Lock& lock) const -> bool
     const auto pSig = hasSourceSignature ? SourceSignature() : SelfSignature();
 
     if (false == bool(pSig)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Master credential not signed by its source.")
             .Flush();
 
@@ -343,7 +342,7 @@ auto Primary::verify_internally(const Lock& lock) const -> bool
 
     // Check that the source validates this credential
     if (!verify_against_source(lock)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Failed verifying master credential against "
             "nym id source.")
             .Flush();

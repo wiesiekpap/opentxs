@@ -99,7 +99,7 @@ auto Factory::ServerContract(
 
         return std::move(output);
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_STATIC(Factory, __func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_STATIC(Factory))(e.what()).Flush();
 
         return {};
     }
@@ -341,8 +341,7 @@ auto Server::Serialize(AllocateOutput destination, bool includeNym) const
 {
     auto serialized = proto::ServerContract{};
     if (false == Serialize(serialized, includeNym)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize server.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize server.").Flush();
         return false;
     }
 
@@ -409,8 +408,7 @@ auto Server::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("failed to create signature.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("failed to create signature.").Flush();
     }
 
     return success;
@@ -423,7 +421,7 @@ auto Server::validate(const Lock& lock) const -> bool
     if (nym_) { validNym = nym_->VerifyPseudonym(); }
 
     if (!validNym) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid nym.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid nym.").Flush();
 
         return false;
     }
@@ -431,13 +429,13 @@ auto Server::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid syntax.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 > signatures_.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing signature.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing signature.").Flush();
 
         return false;
     }
@@ -448,7 +446,7 @@ auto Server::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid signature.").Flush();
 
         return false;
     }

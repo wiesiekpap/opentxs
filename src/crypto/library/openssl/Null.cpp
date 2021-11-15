@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "internal/crypto/library/Factory.hpp"  // IWYU pragma: associated
 
-#include "crypto/library/openssl/OpenSSL.hpp"
+#include "internal/crypto/library/OpenSSL.hpp"
 
 namespace opentxs::factory
 {

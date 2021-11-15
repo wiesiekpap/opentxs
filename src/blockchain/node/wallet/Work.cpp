@@ -61,7 +61,7 @@ auto Work::Do(SubchainStateData& parent) noexcept -> bool
     const auto pBlock = future.get();
 
     if (false == bool(pBlock)) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" invalid block ")(
+        LogVerbose()(OT_PRETTY_CLASS())(name)(" invalid block ")(
             blockHash.asHex())
             .Flush();
 
@@ -100,8 +100,8 @@ auto Work::Do(SubchainStateData& parent) noexcept -> bool
     OT_ASSERT(position == header.Position());
 
     parent.handle_confirmed_matches(block, position, confirmed);
-    LogVerbose()(OT_PRETTY_CLASS(__func__))(name)(" block ")(
-        block.ID().asHex())(" at height ")(position.first)(" processed in ")(
+    LogVerbose()(OT_PRETTY_CLASS())(name)(" block ")(block.ID().asHex())(
+        " at height ")(position.first)(" processed in ")(
         std::chrono::duration_cast<std::chrono::milliseconds>(
             Clock::now() - start)
             .count())(" milliseconds. ")(match_count_)(" of ")(

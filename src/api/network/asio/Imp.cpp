@@ -166,7 +166,7 @@ auto Asio::Imp::Connect(
         internal,
         [this, connection{space(id)}, address{endpoint.str()}](const auto& e) {
             if (e) {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))("asio connect error: ")(
+                LogVerbose()(OT_PRETTY_CLASS())("asio connect error: ")(
                     e.message())
                     .Flush();
             }
@@ -223,7 +223,7 @@ auto Asio::Imp::data_callback(zmq::Message& in) noexcept -> void
             }
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
 }
 
@@ -362,7 +362,7 @@ auto Asio::Imp::Receive(
                 reader(connection), e ? value(WorkType::AsioDisconnect) : type);
 
             if (e) {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))("asio receive error: ")(
+                LogVerbose()(OT_PRETTY_CLASS())("asio receive error: ")(
                     e.message())
                     .Flush();
                 work->AddFrame(address);
@@ -415,7 +415,7 @@ auto Asio::Imp::Resolve(std::string_view server, std::uint16_t port)
             }
         }
     } catch (const std::exception& e) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
 
     return output;
@@ -570,8 +570,8 @@ auto Asio::Imp::retrieve_address_async(
         const auto address = ip::make_address(address_string, address_ec);
 
         if (!address_ec) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                "GET response: IP address: ")(address_string)
+            LogVerbose()(OT_PRETTY_CLASS())("GET response: IP address: ")(
+                address_string)
                 .Flush();
             if (address.is_v4()) {
                 const auto bytes = address.to_v4().to_bytes();
@@ -794,8 +794,8 @@ auto Asio::Imp::retrieve_address_async_ssl(
         const auto address = ip::make_address(address_string, address_ec);
 
         if (!address_ec) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                "GET response: IP address: ")(address_string)
+            LogVerbose()(OT_PRETTY_CLASS())("GET response: IP address: ")(
+                address_string)
                 .Flush();
             if (address.is_v4()) {
                 const auto bytes = address.to_v4().to_bytes();
@@ -837,7 +837,7 @@ auto Asio::Imp::retrieve_address_async_ssl(
     } catch (const std::exception& e) {
         // The value of promise is already set, so log the shutdown error
         // and continue.
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
 }
 
@@ -914,7 +914,7 @@ auto Asio::Imp::state_machine() noexcept -> bool
 
                 if (eptr) { std::rethrow_exception(eptr); }
             } catch (const std::exception& e) {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+                LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
             }
         }
     }
@@ -933,7 +933,7 @@ auto Asio::Imp::state_machine() noexcept -> bool
 
                 if (eptr) { std::rethrow_exception(eptr); }
             } catch (const std::exception& e) {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+                LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
             }
         }
     }

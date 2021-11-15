@@ -21,6 +21,7 @@
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
@@ -62,7 +63,7 @@ auto Wallet::AssociateTransaction(
     const Txid& txid,
     const std::vector<PatternID>& in) const noexcept -> bool
 {
-    LogTrace()(OT_PRETTY_CLASS(__func__))("Transaction ")(txid.asHex())(
+    LogTrace()(OT_PRETTY_CLASS())("Transaction ")(txid.asHex())(
         " is associated with patterns:")
         .Flush();
     // TODO transaction data never changes so indexing should only happen
@@ -90,7 +91,7 @@ auto Wallet::AssociateTransaction(
         std::back_inserter(removedElements));
 
     if (0 < newElements.size()) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))("New patterns:").Flush();
+        LogTrace()(OT_PRETTY_CLASS())("New patterns:").Flush();
     }
 
     std::for_each(
@@ -102,7 +103,7 @@ auto Wallet::AssociateTransaction(
         });
 
     if (0 < removedElements.size()) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Obsolete patterns:").Flush();
+        LogTrace()(OT_PRETTY_CLASS())("Obsolete patterns:").Flush();
     }
 
     std::for_each(
@@ -144,7 +145,7 @@ auto Wallet::LoadTransaction(const ReadView txid) const noexcept
 
         return factory::BitcoinTransaction(api_, blockchain_, proto);
     } catch (const std::exception& e) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -206,7 +207,7 @@ auto Wallet::StoreTransaction(
                 lmdb_.Store(transaction_table_, hash, tsv(index), tx);
 
             if (false == result.first) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed to update index for transaction ")(in.ID().asHex())
                     .Flush();
 
@@ -237,7 +238,7 @@ auto Wallet::StoreTransaction(
 
         return true;
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }

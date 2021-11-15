@@ -155,7 +155,7 @@ auto NymFile::deserialize_nymfile(
                                               // just being safe...
 
                     if (UserNymID->GetLength()) {
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                        LogDebug()(OT_PRETTY_CLASS())(
                             "Loading user, version: ")(
                             m_strVersion)(" NymID: ")(UserNymID)
                             .Flush();
@@ -164,12 +164,12 @@ auto NymFile::deserialize_nymfile(
                     convert = (String::Factory("1.0")->Compare(m_strVersion));
 
                     if (convert) {
-                        LogError()(OT_PRETTY_CLASS(__func__))(
+                        LogError()(OT_PRETTY_CLASS())(
                             "Converting nymfile with version ")(
                             m_strVersion)(".")
                             .Flush();
                     } else {
-                        LogDetail()(OT_PRETTY_CLASS(__func__))(
+                        LogDetail()(OT_PRETTY_CLASS())(
                             "Not converting nymfile because version is ")(
                             m_strVersion)
                             .Flush();
@@ -182,7 +182,7 @@ auto NymFile::deserialize_nymfile(
                     const auto strHashValue =
                         String::Factory(xml->getAttributeValue("hashValue"));
 
-                    LogDebug()(OT_PRETTY_CLASS(__func__))("InboxHash is ")(
+                    LogDebug()(OT_PRETTY_CLASS())("InboxHash is ")(
                         strHashValue)(" for Account ID: ")(strAccountID)
                         .Flush();
 
@@ -202,7 +202,7 @@ auto NymFile::deserialize_nymfile(
                     const auto strHashValue =
                         String::Factory(xml->getAttributeValue("hashValue"));
 
-                    LogDebug()(OT_PRETTY_CLASS(__func__))("OutboxHash is ")(
+                    LogDebug()(OT_PRETTY_CLASS())("OutboxHash is ")(
                         strHashValue)(" for Account ID: ")(strAccountID)
                         .Flush();
 
@@ -218,7 +218,7 @@ auto NymFile::deserialize_nymfile(
                     }
                 } else if (strNodeName->Compare("MARKED_FOR_DELETION")) {
                     m_bMarkForDeletion = true;
-                    LogDebug()(OT_PRETTY_CLASS(__func__))(
+                    LogDebug()(OT_PRETTY_CLASS())(
                         "This nym has been MARKED_FOR_DELETION at some "
                         "point prior.")
                         .Flush();
@@ -227,12 +227,12 @@ auto NymFile::deserialize_nymfile(
 
                     if (strID->Exists()) {
                         m_setAccounts.insert(strID->Get());
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                        LogDebug()(OT_PRETTY_CLASS())(
                             "This nym has an asset account with the ID: ")(
                             strID)
                             .Flush();
                     } else
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                        LogDebug()(OT_PRETTY_CLASS())(
                             "This nym MISSING asset account ID when loading "
                             "nym record.")
                             .Flush();
@@ -284,15 +284,15 @@ auto NymFile::deserialize_nymfile(
                 }          // outpayments message
                 else {
                     // unknown element type
-                    LogError()(OT_PRETTY_CLASS(__func__))(
-                        "Unknown element type in: ")(xml->getNodeName())(".")
+                    LogError()(OT_PRETTY_CLASS())("Unknown element type in: ")(
+                        xml->getNodeName())(".")
                         .Flush();
                     bSuccess = false;
                 }
                 break;
             }
             default: {
-                LogInsane()(OT_PRETTY_CLASS(__func__))("Unknown XML type in ")(
+                LogInsane()(OT_PRETTY_CLASS())("Unknown XML type in ")(
                     xml->getNodeName())
                     .Flush();
                 break;
@@ -462,8 +462,8 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
         String::Factory(api_.Internal().Legacy().Nym()), nymID);
 
     if (!theNymFile->LoadFile()) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))(
-            "Failed loading a signed nymfile: ")(nymID)
+        LogDetail()(OT_PRETTY_CLASS())("Failed loading a signed nymfile: ")(
+            nymID)
             .Flush();
 
         return false;
@@ -476,8 +476,7 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
     // 3. That the signature matches for the signer nym who was passed in.
     //
     if (!theNymFile->VerifyFile()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed verifying nymfile: ")(
-            nymID)(".")
+        LogError()(OT_PRETTY_CLASS())("Failed verifying nymfile: ")(nymID)(".")
             .Flush();
 
         return false;
@@ -486,7 +485,7 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
     const auto& publicSignKey = signer_nym_->GetPublicSignKey();
 
     if (!theNymFile->VerifyWithKey(publicSignKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed verifying signature on nymfile: ")(
             nymID)(". Signer Nym ID: ")(signer_nym_->ID())(".")
             .Flush();
@@ -494,14 +493,14 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
         return false;
     }
 
-    LogVerbose()(OT_PRETTY_CLASS(__func__))(
+    LogVerbose()(OT_PRETTY_CLASS())(
         "Loaded and verified signed nymfile. Reading from string... ")
         .Flush();
 
     if (1 > theNymFile->GetFilePayload().GetLength()) {
         const auto lLength = theNymFile->GetFilePayload().GetLength();
 
-        LogError()(OT_PRETTY_CLASS(__func__))("Bad length (")(
+        LogError()(OT_PRETTY_CLASS())("Bad length (")(
             lLength)(") while loading nymfile: ")(nymID)(".")
             .Flush();
     }
@@ -559,9 +558,9 @@ auto NymFile::RemoveOutpaymentsByIndex(const std::int32_t nIndex) -> bool
     // Out of bounds.
     if (m_dequeOutpayments.empty() || (nIndex < 0) ||
         (uIndex >= m_dequeOutpayments.size())) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Error: Index out of bounds: signed: ")(nIndex)(". Unsigned: ")(
-            uIndex)(" (deque size is ")(m_dequeOutpayments.size())(").")
+        LogError()(OT_PRETTY_CLASS())("Error: Index out of bounds: signed: ")(
+            nIndex)(". Unsigned: ")(uIndex)(" (deque size is ")(
+            m_dequeOutpayments.size())(").")
             .Flush();
         return false;
     }
@@ -714,7 +713,7 @@ auto NymFile::SerializeNymFile(const char* szFoldername, const char* szFilename)
         "",
         "");
     if (!bSaved)
-        LogError()(OT_PRETTY_CLASS(__func__))("Error saving file: ")(
+        LogError()(OT_PRETTY_CLASS())("Error saving file: ")(
             szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
 
@@ -743,8 +742,7 @@ auto NymFile::save_signed_nymfile(const T& lock, const PasswordPrompt& reason)
         api_.Factory().SignedFile(api_.Internal().Legacy().Nym(), strNymID);
     theNymFile->GetFilename(m_strNymFile);
 
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Saving nym to: ")(m_strNymFile)
-        .Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Saving nym to: ")(m_strNymFile).Flush();
 
     // First we save this nym to a string...
     // Specifically, the file payload string on the OTSignedFile object.
@@ -761,7 +759,7 @@ auto NymFile::save_signed_nymfile(const T& lock, const PasswordPrompt& reason)
         const bool bSaved = theNymFile->SaveFile();
 
         if (!bSaved) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed while calling theNymFile->SaveFile() for Nym ")(
                 strNymID)(" using Signer Nym ")(signer_nym_->ID())(".")
                 .Flush();
@@ -769,7 +767,7 @@ auto NymFile::save_signed_nymfile(const T& lock, const PasswordPrompt& reason)
 
         return bSaved;
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed trying to sign and save NymFile for Nym ")(
             strNymID)(" using Signer Nym ")(signer_nym_->ID())(".")
             .Flush();

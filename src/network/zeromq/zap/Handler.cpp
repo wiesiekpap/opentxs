@@ -66,8 +66,7 @@ void Handler::init() noexcept
 
     OT_ASSERT(running);
 
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Listening on ")(ZAP_ENDPOINT)
-        .Flush();
+    LogDetail()(OT_PRETTY_CLASS())("Listening on ")(ZAP_ENDPOINT).Flush();
 }
 
 void Handler::process_incoming(const Lock& lock, zap::Request& message) noexcept

@@ -42,26 +42,25 @@ auto Pbkdf2::PKCS5_PBKDF2_HMAC(
         static_cast<std::size_t>(std::numeric_limits<int>::max());
 
     if (inputSize > limit) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Input too large").Flush();
+        LogError()(OT_PRETTY_CLASS())("Input too large").Flush();
 
         return false;
     }
 
     if (saltSize > limit) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Salt too large").Flush();
+        LogError()(OT_PRETTY_CLASS())("Salt too large").Flush();
 
         return false;
     }
 
     if (bytes > limit) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Requested output too large")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Requested output too large").Flush();
 
         return false;
     }
 
     if (iterations > std::numeric_limits<std::uint32_t>::max()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Too many iterations").Flush();
+        LogError()(OT_PRETTY_CLASS())("Too many iterations").Flush();
 
         return false;
     }
@@ -90,7 +89,7 @@ auto Pbkdf2::PKCS5_PBKDF2_HMAC(
                 static_cast<int>(bytes));
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Error: invalid hash type: ")(
+            LogError()(OT_PRETTY_CLASS())("Error: invalid hash type: ")(
                 HashingProvider::HashTypeToString(hashType))
                 .Flush();
 

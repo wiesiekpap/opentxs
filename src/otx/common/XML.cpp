@@ -7,10 +7,18 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "otx/common/Contract.hpp"  // IWYU pragma: associated
 
+#include <array>
+#include <cstring>
+#include <utility>
+
+#include "internal/otx/common/XML.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
+#include "opentxs/core/Armored.hpp"
 #include "opentxs/core/crypto/OTSignatureMetadata.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
+#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
 {

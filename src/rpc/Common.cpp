@@ -8,11 +8,6 @@
 #include "internal/rpc/RPC.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <boost/container/vector.hpp>
-#include <boost/intrusive/detail/iterator.hpp>
-#include <boost/move/algo/detail/set_difference.hpp>
-#include <boost/move/algo/move.hpp>
-#include <functional>
 #include <string>
 
 #include "opentxs/protobuf/RPCEnums.pb.h"

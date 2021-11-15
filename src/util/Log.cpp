@@ -8,6 +8,7 @@
 #include "opentxs/util/Log.hpp"  // IWYU pragma: associated
 
 #include <boost/stacktrace.hpp>
+#include <cassert>
 #include <chrono>
 #include <cstdlib>
 #include <future>
@@ -16,6 +17,7 @@
 
 #include "internal/util/Log.hpp"
 #include "opentxs/OT.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"

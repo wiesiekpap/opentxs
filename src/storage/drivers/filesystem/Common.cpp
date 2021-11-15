@@ -180,8 +180,7 @@ auto Common::sync(const std::string& path) const -> bool
     FileDescriptor fd(path);
 
     if (!fd) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to open ")(path)(".")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to open ")(path)(".").Flush();
 
         return false;
     }
@@ -216,14 +215,14 @@ auto Common::write_file(
             file.write(data.c_str(), data.size());
 
             if (false == sync(file)) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Failed to sync file ")(
+                LogError()(OT_PRETTY_CLASS())("Failed to sync file ")(
                     filename)(".")
                     .Flush();
             }
 
             if (false == sync(directory)) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Failed to sync directory ")(directory)(".")
+                LogError()(OT_PRETTY_CLASS())("Failed to sync directory ")(
+                    directory)(".")
                     .Flush();
             }
 
@@ -231,11 +230,10 @@ auto Common::write_file(
 
             return true;
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to write file.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to write file.").Flush();
         }
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to write empty filename.")
+        LogError()(OT_PRETTY_CLASS())("Failed to write empty filename.")
             .Flush();
     }
 

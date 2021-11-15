@@ -18,6 +18,7 @@
 #include "Proto.hpp"
 #include "core/contract/UnitDefinition.hpp"
 #include "internal/core/contract/Contract.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -119,9 +120,9 @@ auto Basket::FinalizeTemplate(
     try {
         contract->first_time_init(lock);
     } catch (const std::exception& e) {
-        LogError()("opentxs::contract::unit::Basket::")(__func__)(": ")(
-            e.what())
-            .Flush();
+        LogError()(OT_PRETTY_STATIC(Basket))(e.what()).Flush();
+
+        return false;
     }
 
     if (contract->nym_) {
@@ -131,7 +132,8 @@ auto Basket::FinalizeTemplate(
         if (contract->update_signature(lock, reason)) {
             lock.unlock();
             if (false == contract->Serialize(serialized, true)) {
-                LogError()("Failed to serialize unit definition.")(__func__)
+                LogError()(OT_PRETTY_STATIC(Basket))(
+                    "Failed to serialize unit definition.")
                     .Flush();
                 return false;
                 ;

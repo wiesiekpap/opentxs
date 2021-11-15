@@ -7,8 +7,8 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: associated
 
-#include <robin_hood.h>
 #include <boost/endian/buffers.hpp>
+#include <robin_hood.h>
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
@@ -284,8 +284,7 @@ auto Script::CalculateHash160(
     auto preimage = Space{};
 
     if (false == Serialize(writer(preimage))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize script")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize script").Flush();
 
         return false;
     }
@@ -627,7 +626,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
     -> std::vector<Space>
 {
     if (0 == elements_.size()) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))("skipping empty script").Flush();
+        LogTrace()(OT_PRETTY_CLASS())("skipping empty script").Flush();
 
         return {};
     }
@@ -636,8 +635,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
 
     switch (style) {
         case filter::Type::ES: {
-            LogTrace()(OT_PRETTY_CLASS(__func__))("processing data pushes")
-                .Flush();
+            LogTrace()(OT_PRETTY_CLASS())("processing data pushes").Flush();
 
             for (const auto& element : *this) {
                 if (is_data_push(element)) {
@@ -678,23 +676,20 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
         case filter::Type::Basic_BCHVariant:
         default: {
             if (OP::RETURN == elements_.at(0).opcode_) {
-                LogTrace()(OT_PRETTY_CLASS(__func__))(
-                    "skipping null data script")
+                LogTrace()(OT_PRETTY_CLASS())("skipping null data script")
                     .Flush();
 
                 return {};
             }
 
-            LogTrace()(OT_PRETTY_CLASS(__func__))(
-                "processing serialized script")
+            LogTrace()(OT_PRETTY_CLASS())("processing serialized script")
                 .Flush();
             auto& script = output.emplace_back();
             Serialize(writer(script));
         }
     }
 
-    LogTrace()(OT_PRETTY_CLASS(__func__))("extracted ")(output.size())(
-        " elements")
+    LogTrace()(OT_PRETTY_CLASS())("extracted ")(output.size())(" elements")
         .Flush();
     std::sort(output.begin(), output.end());
 
@@ -1114,8 +1109,7 @@ auto Script::ScriptHash() const noexcept -> std::optional<ReadView>
 auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool
 {
     if (!destination) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid output allocator").Flush();
 
         return false;
     }
@@ -1127,7 +1121,7 @@ auto Script::Serialize(const AllocateOutput destination) const noexcept -> bool
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocate output bytes")
+        LogError()(OT_PRETTY_CLASS())("Failed to allocate output bytes")
             .Flush();
 
         return false;

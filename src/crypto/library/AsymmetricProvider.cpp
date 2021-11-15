@@ -100,14 +100,13 @@ auto AsymmetricProvider::SeedToCurveKey(
                      seed,
                      edPrivate->WriteInto(Secret::Mode::Mem),
                      edPublic->WriteInto())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to expand seed.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to expand seed.").Flush();
 
         return false;
     }
 
     if (false == bool(privateKey) || false == bool(publicKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid output allocator").Flush();
 
         return false;
     }
@@ -138,8 +137,7 @@ auto AsymmetricProvider::SignContract(
                                       // b64-encoded output, please."
 
     if (false == success) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign contract")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to sign contract").Flush();
     }
 
     return success;

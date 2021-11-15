@@ -66,7 +66,7 @@ void Nym::_save(
     _save(mail_outbox_.get(), lock, mail_outbox_lock_, mail_outbox_root_);
 
     if (nullptr == input) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Null target.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Null target.").Flush();
         OT_FAIL;
     }
 
@@ -75,7 +75,7 @@ void Nym::_save(
     rootLock.unlock();
 
     if (false == save(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Save error.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Save error.").Flush();
         OT_FAIL;
     }
 }
@@ -201,8 +201,7 @@ auto Nym::construct(
         pointer.reset(new T(driver_, root, params...));
 
         if (!pointer) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unable to instantiate.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unable to instantiate.").Flush();
             OT_FAIL;
         }
     }
@@ -285,8 +284,7 @@ void Nym::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load nym index file.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to load nym index file.").Flush();
         OT_FAIL;
     }
 
@@ -393,8 +391,7 @@ auto Nym::Load(
 
     if (blockchain_accounts_.end() == it) {
         if (false == checking) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Account does not exist.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Account does not exist.").Flush();
         }
 
         return false;
@@ -414,7 +411,7 @@ auto Nym::Load(
 
     if (!check_hash(credentials_)) {
         if (false == checking) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Error: nym with id ")(
+            LogError()(OT_PRETTY_CLASS())("Error: nym with id ")(
                 nymid_)(" has no credentials.")
                 .Flush();
         }
@@ -445,7 +442,7 @@ auto Nym::Load(
 
     if (purse_id_.end() == it) {
         if (false == checking) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Purse not found ").Flush();
+            LogError()(OT_PRETTY_CLASS())("Purse not found ").Flush();
         }
 
         return false;
@@ -652,7 +649,7 @@ auto Nym::ProcessedReplyBox() const -> const PeerReplies&
 auto Nym::save(const Lock& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
         OT_FAIL;
     }
 
@@ -671,12 +668,12 @@ void Nym::_save(
     std::string& root)
 {
     if (!verify_write_lock(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock failure.").Flush();
         OT_FAIL;
     }
 
     if (nullptr == input) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Null target.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Null target.").Flush();
         OT_FAIL;
     }
 
@@ -685,7 +682,7 @@ void Nym::_save(
     rootLock.unlock();
 
     if (false == save(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Save error.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Save error.").Flush();
         OT_FAIL;
     }
 }
@@ -813,13 +810,13 @@ auto Nym::Store(const core::UnitType type, const proto::HDAccount& data) -> bool
     const auto& accountID = data.deterministic().common().id();
 
     if (accountID.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid account ID.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid account ID.").Flush();
 
         return false;
     }
 
     if (false == proto::Validate(data, VERBOSE)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid account.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid account.").Flush();
 
         return false;
     }
@@ -837,7 +834,7 @@ auto Nym::Store(const core::UnitType type, const proto::HDAccount& data) -> bool
 
         if (existing->deterministic().common().revision() >
             data.deterministic().common().revision()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Not saving object with older revision.")
                 .Flush();
         } else {

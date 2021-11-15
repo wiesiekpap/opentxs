@@ -110,8 +110,7 @@ auto Output::Cache::merge(const internal::Output& rhs) noexcept -> bool
         const auto& [account, subchain, index] = key;
 
         if (crypto::Subchain::Outgoing == subchain) {
-            LogError()(OT_PRETTY_CLASS(__func__))("discarding invalid key")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("discarding invalid key").Flush();
         } else {
             add(std::move(key));
         }

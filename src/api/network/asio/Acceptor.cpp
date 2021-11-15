@@ -52,15 +52,13 @@ struct Acceptor::Imp {
         auto lock = Lock{lock_};
 
         if (running_) {
-            LogTrace()(OT_PRETTY_CLASS(__func__))("shutting down ")(
-                endpoint_.str())
+            LogTrace()(OT_PRETTY_CLASS())("shutting down ")(endpoint_.str())
                 .Flush();
             auto ec = boost::system::error_code{};
             acceptor_.cancel(ec);
             acceptor_.close(ec);
             running_ = false;
-            LogTrace()(OT_PRETTY_CLASS(__func__))(endpoint_.str())(" closed")
-                .Flush();
+            LogTrace()(OT_PRETTY_CLASS())(endpoint_.str())(" closed").Flush();
         }
     }
 
@@ -96,16 +94,16 @@ private:
                 case Error::operation_canceled: {
                 } break;
                 default: {
-                    LogError()(OT_PRETTY_CLASS(__func__))("error ")(
-                        error)(", ")(ec.message())
+                    LogError()(OT_PRETTY_CLASS())("error ")(error)(", ")(
+                        ec.message())
                         .Flush();
                 }
             }
 
             return;
         } else {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                "incoming connection request on ")(endpoint_.str())
+            LogVerbose()(OT_PRETTY_CLASS())("incoming connection request on ")(
+                endpoint_.str())
                 .Flush();
         }
 

@@ -108,12 +108,12 @@ auto Callbacks::callback(const ot::network::zeromq::Message& incoming) noexcept
             future = {};
             limit = 0;
         } else {
-            ot::LogError()("::Callbacks::")(__func__)(": ")(
-                name_)(" missing callback for ")(static_cast<int>(type))
+            ot::LogError()(OT_PRETTY_CLASS())(name_)(" missing callback for ")(
+                static_cast<int>(type))
                 .Flush();
         }
     } else {
-        ot::LogVerbose()("::Callbacks::")(__func__)(": Skipping update ")(
+        ot::LogVerbose()(OT_PRETTY_CLASS())("Skipping update ")(
             counter)(" to ")(static_cast<int>(type))
             .Flush();
     }

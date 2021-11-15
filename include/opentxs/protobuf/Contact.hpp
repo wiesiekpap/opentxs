@@ -8,8 +8,8 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <cstring>
 #include <cstdint>
+#include <cstring>
 #include <map>
 #include <set>
 #include <string>

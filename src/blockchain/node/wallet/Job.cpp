@@ -87,12 +87,11 @@ auto Job::queue_work(
         });
 
     if (queued) {
-        LogDebug()(OT_PRETTY_CLASS(__func__))(parent_.name_)(" ")(
-            log)(" job queued")
+        LogDebug()(OT_PRETTY_CLASS())(parent_.name_)(" ")(log)(" job queued")
             .Flush();
     } else {
-        LogDebug()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
-            " failed to queue ")(log)(" job")
+        LogDebug()(OT_PRETTY_CLASS())(parent_.name_)(" failed to queue ")(
+            log)(" job")
             .Flush();
         --parent_.job_counter_;
     }
@@ -114,8 +113,8 @@ auto Job::wait(Lock& lock) const noexcept -> void
 
         const auto duration = std::chrono::duration_cast<std::chrono::seconds>(
             Clock::now() - start);
-        LogError()(OT_PRETTY_CLASS(__func__))(parent_.name_)(" waiting on ")(
-            type())(" job for ")(duration.count())(" seconds")
+        LogError()(OT_PRETTY_CLASS())(parent_.name_)(" waiting on ")(type())(
+            " job for ")(duration.count())(" seconds")
             .Flush();
     }
 }

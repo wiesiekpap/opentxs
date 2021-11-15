@@ -121,7 +121,7 @@ auto Deterministic::accept(
     auto& element =
         const_cast<Deterministic&>(*this).element(lock, type, index);
     element.Internal().Reserve(time);
-    LogTrace()(OT_PRETTY_CLASS(__func__))("Accepted index ")(index).Flush();
+    LogTrace()(OT_PRETTY_CLASS())("Accepted index ")(index).Flush();
 
     return index;
 }
@@ -159,29 +159,28 @@ auto Deterministic::check(
     };
 
     if (is_generated(lock, type, candidate)) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Examining generated index ")(
-            candidate)
+        LogTrace()(OT_PRETTY_CLASS())("Examining generated index ")(candidate)
             .Flush();
         const auto& element = this->element(lock, type, candidate);
         const auto status = element.Internal().IsAvailable(contact, label);
 
         switch (status) {
             case Status::NeverUsed: {
-                LogTrace()(OT_PRETTY_CLASS(__func__))("index ")(
+                LogTrace()(OT_PRETTY_CLASS())("index ")(
                     candidate)(" was never used")
                     .Flush();
 
                 return accept(candidate);
             }
             case Status::Reissue: {
-                LogTrace()(OT_PRETTY_CLASS(__func__))(
-                    "Recycling unused index ")(candidate)
+                LogTrace()(OT_PRETTY_CLASS())("Recycling unused index ")(
+                    candidate)
                     .Flush();
 
                 return accept(candidate);
             }
             case Status::Used: {
-                LogTrace()(OT_PRETTY_CLASS(__func__))("index ")(
+                LogTrace()(OT_PRETTY_CLASS())("index ")(
                     candidate)(" has confirmed transactions")
                     .Flush();
                 gap = 0;
@@ -189,7 +188,7 @@ auto Deterministic::check(
                 throw std::runtime_error("Not acceptable");
             }
             case Status::MetadataConflict: {
-                LogTrace()(OT_PRETTY_CLASS(__func__))("index ")(
+                LogTrace()(OT_PRETTY_CLASS())("index ")(
                     candidate)(" can not be used")
                     .Flush();
                 ++gap;
@@ -197,7 +196,7 @@ auto Deterministic::check(
                 throw std::runtime_error("Not acceptable");
             }
             case Status::Reserved: {
-                LogTrace()(OT_PRETTY_CLASS(__func__))("index ")(
+                LogTrace()(OT_PRETTY_CLASS())("index ")(
                     candidate)(" is reserved")
                     .Flush();
                 ++gap;
@@ -206,7 +205,7 @@ auto Deterministic::check(
             }
             case Status::StaleUnconfirmed:
             default: {
-                LogTrace()(OT_PRETTY_CLASS(__func__))("saving index ")(
+                LogTrace()(OT_PRETTY_CLASS())("saving index ")(
                     candidate)(" as a fallback")
                     .Flush();
                 fallback[status].emplace(candidate);
@@ -216,8 +215,7 @@ auto Deterministic::check(
             }
         }
     } else {
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Generating index ")(candidate)
-            .Flush();
+        LogTrace()(OT_PRETTY_CLASS())("Generating index ")(candidate).Flush();
         const auto newIndex = generate(lock, type, candidate, reason);
 
         OT_ASSERT(newIndex == candidate);
@@ -618,7 +616,7 @@ auto Deterministic::ScanProgress(Subchain type) const noexcept
 
         return data_.Get(type).progress_;
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return Subaccount::ScanProgress(type);
     }
@@ -661,7 +659,7 @@ auto Deterministic::SetScanProgress(
 
         data_.Get(type).progress_ = progress;
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
 }
 
@@ -715,7 +713,7 @@ auto Deterministic::use_next(
             }
         }
 
-        LogTrace()(OT_PRETTY_CLASS(__func__))(
+        LogTrace()(OT_PRETTY_CLASS())(
             "Gap limit reached. Searching for acceptable fallback")
             .Flush();
         const auto accept = [&](Bip32Index index) {
@@ -724,14 +722,14 @@ auto Deterministic::use_next(
         };
 
         if (auto& set = fallback[Status::StaleUnconfirmed]; 0 < set.size()) {
-            LogTrace()(OT_PRETTY_CLASS(__func__))(
+            LogTrace()(OT_PRETTY_CLASS())(
                 "Recycling index with old never-confirmed transactions")
                 .Flush();
 
             return accept(*set.cbegin());
         }
 
-        LogTrace()(OT_PRETTY_CLASS(__func__))(
+        LogTrace()(OT_PRETTY_CLASS())(
             "No acceptable fallback discovered. Generating past the gap "
             "limit")
             .Flush();

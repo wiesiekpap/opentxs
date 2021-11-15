@@ -118,7 +118,7 @@ auto OpenDHT::Insert(
         if (false == bool(pValue)) { return; }
 
         if (value.size() > dht::MAX_VALUE_SIZE) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: data size exceeds DHT limits.")
                 .Flush();
             return;

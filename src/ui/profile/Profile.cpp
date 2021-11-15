@@ -358,8 +358,7 @@ auto Profile::sort_key(const contact::SectionType type) noexcept -> int
 
 void Profile::startup() noexcept
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Loading nym ")(primary_id_)
-        .Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Loading nym ")(primary_id_).Flush();
     const auto nym = api_.Wallet().Nym(primary_id_);
 
     OT_ASSERT(nym)

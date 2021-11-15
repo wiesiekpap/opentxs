@@ -376,8 +376,7 @@ auto Symmetric::ChangePassword(
         return encrypt_key(lock, plain.value(), copy);
     }
 
-    LogError()(OT_PRETTY_CLASS(__func__))("Unable to unlock master key.")
-        .Flush();
+    LogError()(OT_PRETTY_CLASS())("Unable to unlock master key.").Flush();
 
     return false;
 }
@@ -394,8 +393,7 @@ auto Symmetric::decrypt(
 
     if (false == plain.has_value()) {
         if (false == unlock(lock, reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Unable to unlock master key.")
+            LogError()(OT_PRETTY_CLASS())("Unable to unlock master key.")
                 .Flush();
 
             return false;
@@ -411,7 +409,7 @@ auto Symmetric::decrypt(
         plaintext);
 
     if (false == output) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to decrypt key.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Unable to decrypt key.").Flush();
 
         return false;
     }
@@ -427,8 +425,7 @@ auto Symmetric::Decrypt(
     auto lock = Lock{lock_};
 
     if (false == bool(plaintext)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing output allocator")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing output allocator").Flush();
 
         return false;
     }
@@ -436,7 +433,7 @@ auto Symmetric::Decrypt(
     auto output = plaintext(ciphertext.data().size());
 
     if (false == output.valid(ciphertext.data().size())) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Unable to allocate space for decryption.")
             .Flush();
 
@@ -467,7 +464,7 @@ auto Symmetric::encrypt(
     const bool text) const -> bool
 {
     if (nullptr == input) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Null input.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Null input.").Flush();
 
         return false;
     }
@@ -476,8 +473,7 @@ auto Symmetric::encrypt(
 
     if (false == plain.has_value()) {
         if (false == unlock(lock, reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Unable to unlock master key.")
+            LogError()(OT_PRETTY_CLASS())("Unable to unlock master key.")
                 .Flush();
 
             return false;
@@ -560,8 +556,7 @@ auto Symmetric::Encrypt(
     auto serialized = proto::Ciphertext{};
 
     if (false == Encrypt(plaintext, reason, serialized, attachKey, mode, iv)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to encrypt data.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to encrypt data.").Flush();
 
         return false;
     }
@@ -569,8 +564,7 @@ auto Symmetric::Encrypt(
     auto view = ciphertext(serialized.ByteSizeLong());
     if (false == serialized.SerializeToArray(
                      view.data(), static_cast<int>(view.size()))) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to serialize encrypted data.")
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize encrypted data.")
             .Flush();
 
         return false;
@@ -661,8 +655,7 @@ auto Symmetric::get_password(
             password.Assign(bytes.data(), static_cast<std::size_t>(length));
             result = true;
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to obtain master password")
+            LogError()(OT_PRETTY_CLASS())("Failed to obtain master password")
                 .Flush();
         }
 
@@ -683,8 +676,7 @@ auto Symmetric::ID(const opentxs::PasswordPrompt& reason) const -> OTIdentifier
 
     if (false == plain.has_value()) {
         if (false == unlock(lock, reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Unable to unlock master key.")
+            LogError()(OT_PRETTY_CLASS())("Unable to unlock master key.")
                 .Flush();
 
             return api_.Factory().Identifier();
@@ -704,8 +696,7 @@ auto Symmetric::RawKey(const opentxs::PasswordPrompt& reason, Secret& output)
 
     if (false == plain.has_value()) {
         if (false == unlock(lock, reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Unable to unlock master key.")
+            LogError()(OT_PRETTY_CLASS())("Unable to unlock master key.")
                 .Flush();
 
             return false;
@@ -764,14 +755,14 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
     }};
 
     if (false == bool(encrypted)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Master key not loaded.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Master key not loaded.").Flush();
 
         return output;
     }
 
     if (plain.has_value()) {
         if (0 < plain.value()->Bytes().size()) {
-            LogDetail()(OT_PRETTY_CLASS(__func__))("Already unlocked").Flush();
+            LogDetail()(OT_PRETTY_CLASS())("Already unlocked").Flush();
             output = true;
 
             return output;
@@ -783,7 +774,7 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
 
         // Allocate space for plaintext (same size as ciphertext)
         if (!allocate(lock, encrypted->data().size(), plain.value())) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Unable to allocate space for plaintext master key.")
                 .Flush();
 
@@ -796,8 +787,7 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
     auto key = api_.Factory().Secret(0);
 
     if (false == get_password(lock, reason, key)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Unable to obtain master password.")
+        LogError()(OT_PRETTY_CLASS())("Unable to obtain master password.")
             .Flush();
 
         return output;
@@ -823,9 +813,9 @@ auto Symmetric::unlock(const Lock& lock, const opentxs::PasswordPrompt& reason)
         reinterpret_cast<std::uint8_t*>(plain.value()->data()));
 
     if (output) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Key unlocked").Flush();
+        LogDetail()(OT_PRETTY_CLASS())("Key unlocked").Flush();
     } else {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Failed to unlock key").Flush();
+        LogDetail()(OT_PRETTY_CLASS())("Failed to unlock key").Flush();
     }
 
     return output;

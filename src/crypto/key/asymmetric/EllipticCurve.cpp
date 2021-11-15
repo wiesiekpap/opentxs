@@ -163,7 +163,7 @@ EllipticCurve::EllipticCurve(
 
                   return pubkey;
               } else {
-                  LogError()(OT_PRETTY_CLASS(__func__))(
+                  LogError()(OT_PRETTY_CLASS())(
                       "Failed to calculate public key")
                       .Flush();
 
@@ -230,7 +230,7 @@ auto EllipticCurve::IncrementPrivate(
 
         return replace_secret_key(std::move(newKey));
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -249,7 +249,7 @@ auto EllipticCurve::IncrementPublic(const Secret& rhs) const noexcept
 
         return replace_public_key(reader(newKey));
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return {};
     }
@@ -283,7 +283,7 @@ auto EllipticCurve::SignDER(
     auto lock = Lock{lock_};
 
     if (false == has_private(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing private key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing private key").Flush();
 
         return false;
     }
@@ -292,8 +292,7 @@ auto EllipticCurve::SignDER(
         ecdsa_.SignDER(preimage, private_key(lock, reason), hash, output);
 
     if (false == success) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign preimage")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to sign preimage").Flush();
     }
 
     return success;

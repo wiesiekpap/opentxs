@@ -45,7 +45,7 @@ struct Acceptors::Imp {
 
             return added;
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             return false;
         }

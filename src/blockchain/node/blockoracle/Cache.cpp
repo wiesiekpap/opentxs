@@ -91,7 +91,7 @@ auto BlockOracle::Cache::ReceiveBlock(const zmq::Frame& in) const noexcept
 auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
 {
     if (false == bool(in)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid block").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid block").Flush();
 
         return;
     }
@@ -109,8 +109,7 @@ auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
     auto pending = pending_.find(id);
 
     if (pending_.end() == pending) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(
-            "Received block not in request list")
+        LogVerbose()(OT_PRETTY_CLASS())("Received block not in request list")
             .Flush();
 
         return;
@@ -119,8 +118,7 @@ auto BlockOracle::Cache::ReceiveBlock(BitcoinBlock_p in) const noexcept -> void
     auto& [time, promise, future, queued] = pending->second;
     promise.set_value(std::move(in));
     publish(id);
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Cached block ")(id.asHex())
-        .Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Cached block ")(id.asHex()).Flush();
     mem_.push(id, std::move(future));
     pending_.erase(pending);
     publish(pending_.size());
@@ -208,8 +206,8 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
 
                 return key->Bytes();
             });
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Downloading ")(
-            blockList.size())(" blocks from peers")
+        LogVerbose()(OT_PRETTY_CLASS())("Downloading ")(blockList.size())(
+            " blocks from peers")
             .Flush();
         const auto messageSent = node_.RequestBlocks(blockList);
 
@@ -251,7 +249,7 @@ auto BlockOracle::Cache::StateMachine() const noexcept -> bool
 
     if (false == running_) { return false; }
 
-    LogVerbose()(OT_PRETTY_CLASS(__func__))(DisplayString(chain_))(
+    LogVerbose()(OT_PRETTY_CLASS())(DisplayString(chain_))(
         " download queue contains ")(pending_.size())(" blocks.")
         .Flush();
     auto blockList = std::vector<ReadView>{};
@@ -265,14 +263,14 @@ auto BlockOracle::Cache::StateMachine() const noexcept -> bool
         const auto timeout = download_timeout_ <= elapsed;
 
         if (timeout || (false == queued)) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Requesting ")(
+            LogVerbose()(OT_PRETTY_CLASS())("Requesting ")(
                 DisplayString(chain_))(" block ")(hash->asHex())(" from peers")
                 .Flush();
             blockList.emplace_back(hash->Bytes());
             queued = true;
             time = now;
         } else {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(elapsed.count())(
+            LogVerbose()(OT_PRETTY_CLASS())(elapsed.count())(
                 " milliseconds elapsed waiting for ")(DisplayString(chain_))(
                 " block ")(hash->asHex())
                 .Flush();

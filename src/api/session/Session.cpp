@@ -200,7 +200,8 @@ auto Session::GetSecret(
     }
 
     if (false == unlocked) {
-        opentxs::LogError()(__func__)(": Failed to unlock master key").Flush();
+        opentxs::LogError()(OT_PRETTY_CLASS())("Failed to unlock master key")
+            .Flush();
 
         return success;
     }
@@ -211,7 +212,8 @@ auto Session::GetSecret(
         master_secret_.value()->WriteInto(Secret::Mode::Mem));
 
     if (false == decrypted) {
-        opentxs::LogError()(__func__)(": Failed to decrypt master secret")
+        opentxs::LogError()(OT_PRETTY_CLASS())(
+            "Failed to decrypt master secret")
             .Flush();
 
         return success;

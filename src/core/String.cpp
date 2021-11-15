@@ -566,7 +566,7 @@ auto String::DecodeIfArmored(bool bEscapedIsAllowed) -> bool
         bArmoredAndALSOescaped = true;
 
         if (!bEscapedIsAllowed) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Armored and escaped value passed in, "
                 "but escaped are forbidden here. "
                 "(Returning).")
@@ -598,10 +598,9 @@ auto String::DecodeIfArmored(bool bEscapedIsAllowed) -> bool
         // We're doing this: "-----BEGIN OT ARMORED" (Should worked for
         // escaped as well, here.)
         {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Error loading string contents from "
-                "ascii-armored encoding. "
-                "Contents: ")(Get())(".")
+            LogError()(OT_PRETTY_CLASS())("Error loading string contents from "
+                                          "ascii-armored encoding. "
+                                          "Contents: ")(Get())(".")
                 .Flush();
             return false;
         } else  // success loading the actual contents out of the ascii-armored
@@ -936,7 +935,7 @@ auto String::TokenizeIntoKeyValuePairs(
 
     if (wordexp(Get(), &exp_result, 0))  // non-zero == failure.
     {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error calling wordexp() "
             "(to expand user-defined script args). Data: ")(
             static_cast<const opentxs::String&>(*this))(".")
@@ -961,8 +960,7 @@ auto String::TokenizeIntoKeyValuePairs(
             const std::string str_key = exp_result.we_wordv[i];
             const std::string str_val = exp_result.we_wordv[i + 1];
 
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Parsed: ")(str_key)(" = ")(
-                str_val)
+            LogVerbose()(OT_PRETTY_CLASS())("Parsed: ")(str_key)(" = ")(str_val)
                 .Flush();
             mapOutput.insert(
                 std::pair<std::string, std::string>(str_key, str_val));
@@ -989,8 +987,7 @@ auto String::TokenizeIntoKeyValuePairs(
             k = i;
             while (txt[i] != quote && txt[i] != 0) i++;
             if (txt[i] != quote) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Unmatched quotes in: ")(
-                    txt)(".")
+                LogError()(OT_PRETTY_CLASS())("Unmatched quotes in: ")(txt)(".")
                     .Flush();
                 return false;
             }
@@ -1011,8 +1008,7 @@ auto String::TokenizeIntoKeyValuePairs(
             v = i;
             while (txt[i] != quote && txt[i] != 0) i++;
             if (txt[i] != quote) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Unmatched quotes in: ")(
-                    txt)(".")
+                LogError()(OT_PRETTY_CLASS())("Unmatched quotes in: ")(txt)(".")
                     .Flush();
                 return false;
             }
@@ -1025,8 +1021,7 @@ auto String::TokenizeIntoKeyValuePairs(
         const std::string value = buf.substr(v, v2 - v);
 
         if (key.length() != 0 && value.length() != 0) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Parsed: ")(key)(" = ")(
-                value)
+            LogVerbose()(OT_PRETTY_CLASS())("Parsed: ")(key)(" = ")(value)
                 .Flush();
             mapOutput.insert(std::pair<std::string, std::string>(key, value));
         }

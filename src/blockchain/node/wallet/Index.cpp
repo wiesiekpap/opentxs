@@ -101,9 +101,9 @@ auto Index::rescan(
     const block::Position& pos,
     const std::size_t matches) noexcept -> void
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))(parent_.name_)(
-        " processing for block ")(pos.second->asHex())(" at height ")(
-        pos.first)(" found ")(matches)(" new matches");
+    LogVerbose()(OT_PRETTY_CLASS())(parent_.name_)(" processing for block ")(
+        pos.second->asHex())(" at height ")(pos.first)(" found ")(
+        matches)(" new matches");
     const auto interval = [&]() -> block::Height {
         if (0 < matches) {
 

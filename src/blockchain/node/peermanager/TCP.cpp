@@ -82,7 +82,7 @@ public:
 
             return output;
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             return false;
         }
@@ -154,8 +154,7 @@ private:
         const auto peerID = parent_.ConstructPeer(std::move(address));
 
         if (-1 == peerID) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to instantiate peer")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Failed to instantiate peer").Flush();
 
             return;
         }

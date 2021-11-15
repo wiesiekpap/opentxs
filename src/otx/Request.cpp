@@ -256,8 +256,7 @@ auto Request::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create signature.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to create signature.").Flush();
     }
 
     return success;
@@ -270,7 +269,7 @@ auto Request::validate(const Lock& lock) const -> bool
     if (nym_) { validNym = nym_->VerifyPseudonym(); }
 
     if (false == validNym) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid nym.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid nym.").Flush();
 
         return false;
     }
@@ -278,14 +277,13 @@ auto Request::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(full_version(lock), VERBOSE);
 
     if (false == validSyntax) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid syntax.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 != signatures_.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Wrong number signatures.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Wrong number signatures.").Flush();
 
         return false;
     }
@@ -296,7 +294,7 @@ auto Request::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (false == validSig) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid signature.").Flush();
 
         return false;
     }

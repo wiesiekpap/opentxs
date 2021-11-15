@@ -202,7 +202,7 @@ auto Set::UpgradeGroupVersion(const VersionNumber groupVersion) noexcept -> bool
                 proto::VerificationSetAllowedGroup().at(nymVersion);
 
             if (groupVersion < min) {
-                LogError()(OT_PRETTY_CLASS(__func__))("Version ")(
+                LogError()(OT_PRETTY_CLASS())("Version ")(
                     groupVersion)(" too old")
                     .Flush();
 
@@ -217,7 +217,7 @@ auto Set::UpgradeGroupVersion(const VersionNumber groupVersion) noexcept -> bool
             }
         }
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("No support for version ")(
+        LogError()(OT_PRETTY_CLASS())("No support for version ")(
             groupVersion)(" groups")
             .Flush();
 

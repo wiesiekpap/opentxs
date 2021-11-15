@@ -7,13 +7,12 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "storage/tree/Contexts.hpp"  // IWYU pragma: associated
 
-#include <cstdlib>
-#include <iostream>
 #include <map>
 #include <tuple>
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/protobuf/Check.hpp"
 #include "opentxs/protobuf/Context.pb.h"
@@ -22,6 +21,7 @@
 #include "opentxs/protobuf/verify/Context.hpp"
 #include "opentxs/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "opentxs/util/Log.hpp"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 
@@ -47,9 +47,9 @@ void Contexts::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (!serialized) {
-        std::cerr << __func__ << ": Failed to load servers index file."
-                  << std::endl;
-        abort();
+        LogError()(OT_PRETTY_CLASS())("Failed to load servers index file")
+            .Flush();
+        OT_FAIL;
     }
 
     init_version(2, *serialized);
@@ -72,8 +72,8 @@ auto Contexts::Load(
 auto Contexts::save(const std::unique_lock<std::mutex>& lock) const -> bool
 {
     if (!verify_write_lock(lock)) {
-        std::cerr << __func__ << ": Lock failure." << std::endl;
-        abort();
+        LogError()(OT_PRETTY_CLASS())("Lock failure").Flush();
+        OT_FAIL;
     }
 
     auto serialized = serialize();

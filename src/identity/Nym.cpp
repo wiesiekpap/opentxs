@@ -283,7 +283,7 @@ auto Nym::AddChildKeyCredential(
     const bool noMaster = (it == active_.end());
 
     if (noMaster) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Master ID not found.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Master ID not found.").Flush();
 
         return output;
     }
@@ -1094,7 +1094,7 @@ auto Nym::normalize(
         const auto defaultIndex = in.UseAutoIndex();
 
         if (false == defaultIndex) {
-            LogDetail()(OT_PRETTY_STATIC(Nym, __func__))(
+            LogDetail()(OT_PRETTY_STATIC(Nym))(
                 "Re-creating nym at specified path.")
                 .Flush();
 
@@ -1136,8 +1136,7 @@ auto Nym::path(const sLock& lock, proto::HDPath& output) const -> bool
         }
     }
 
-    LogError()(OT_PRETTY_CLASS(__func__))("No authority contains a path.")
-        .Flush();
+    LogError()(OT_PRETTY_CLASS())("No authority contains a path.").Flush();
 
     return false;
 }
@@ -1192,7 +1191,7 @@ auto Nym::PaymentCodePath(AllocateOutput destination) const -> bool
 {
     auto path = proto::HDPath{};
     if (false == PaymentCodePath(path)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed to serialize payment code path to HDPath.")
             .Flush();
 
@@ -1355,7 +1354,7 @@ auto Nym::set_contact_data(
     auto version = proto::NymRequiredVersion(data.version(), version_);
 
     if ((0 == version) || version > MaxVersion) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Contact data version not supported by this nym.")
             .Flush();
 
@@ -1363,14 +1362,13 @@ auto Nym::set_contact_data(
     }
 
     if (false == has_capability(lock, NymCapability::SIGN_CHILDCRED)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("This nym can not be modified.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("This nym can not be modified.").Flush();
 
         return false;
     }
 
     if (false == proto::Validate(data, VERBOSE, proto::ClaimType::Normal)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid contact data.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid contact data.").Flush();
 
         return false;
     }
@@ -1605,7 +1603,7 @@ auto Nym::Verify(const ProtobufType& input, proto::Signature& signature) const
         }
     }
 
-    LogError()(OT_PRETTY_CLASS(__func__))("all ")(active_.size())(
+    LogError()(OT_PRETTY_CLASS())("all ")(active_.size())(
         " authorities on nym ")(id_)(" failed to verify "
                                      "signature")
         .Flush();
@@ -1625,7 +1623,7 @@ auto Nym::verify_pseudonym(const eLock& lock) const -> bool
             // Verify all Credentials in the Authority, including source
             // verification for the master credential.
             if (!pCredential->VerifyInternally()) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Credential (")(
+                LogConsole()(OT_PRETTY_CLASS())("Credential (")(
                     pCredential->GetMasterCredID())(") failed its "
                                                     "own internal "
                                                     "verification.")
@@ -1635,7 +1633,7 @@ auto Nym::verify_pseudonym(const eLock& lock) const -> bool
         }
         return true;
     }
-    LogError()(OT_PRETTY_CLASS(__func__))("No credentials.").Flush();
+    LogError()(OT_PRETTY_CLASS())("No credentials.").Flush();
     return false;
 }
 
@@ -1652,7 +1650,7 @@ auto Nym::WriteCredentials() const -> bool
 
     for (auto& it : active_) {
         if (!it.second->WriteCredentials()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed to save credentials.")
+            LogError()(OT_PRETTY_CLASS())("Failed to save credentials.")
                 .Flush();
 
             return false;

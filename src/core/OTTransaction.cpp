@@ -31,7 +31,6 @@
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/Ledger.hpp"
@@ -440,26 +439,24 @@ auto OTTransaction::VerifyAccount(const identity::Nym& theNym) -> bool
     // Make sure that the supposed AcctID matches the one read from the file.
     //
     if (!VerifyContractID()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error verifying account ID.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error verifying account ID.").Flush();
         return false;
     }
     // todo security audit:
     else if (
         IsAbbreviated() && (pParent != nullptr) &&
         !pParent->VerifySignature(theNym)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error verifying signature on parent ledger "
             "for abbreviated transaction receipt.")
             .Flush();
         return false;
     } else if (!IsAbbreviated() && (false == VerifySignature(theNym))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error verifying signature.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error verifying signature.").Flush();
         return false;
     }
 
-    LogTrace()(OT_PRETTY_CLASS(__func__))(
+    LogTrace()(OT_PRETTY_CLASS())(
         "We now know that...\n1) The expected Account ID matches the ID that "
         "was found on the object.\n2) The SIGNATURE VERIFIED on the object.")
         .Flush();
@@ -957,14 +954,14 @@ auto OTTransaction::HarvestOpeningNumber(
                                         strPaymentPlan))
                                     return thePlan->GetRecipientOpeningNum();
                                 else
-                                    LogError()(OT_PRETTY_CLASS(__func__))(
+                                    LogError()(OT_PRETTY_CLASS())(
                                         "Error: Unable to load "
                                         "paymentPlan object from "
                                         "paymentPlan "
                                         "transaction item.")
                                         .Flush();
                             } else
-                                LogError()(OT_PRETTY_CLASS(__func__))(
+                                LogError()(OT_PRETTY_CLASS())(
                                     "Error: Unable to find "
                                     "paymentPlan item in paymentPlan "
                                     "transaction.")
@@ -1078,7 +1075,7 @@ auto OTTransaction::HarvestOpeningNumber(
                 const auto pItem = GetItem(itemType::smartContract);
 
                 if (false == bool(pItem)) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Error: Unable "
                         "to find "
                         "smartContract item in smartContract transaction.")
@@ -1094,7 +1091,7 @@ auto OTTransaction::HarvestOpeningNumber(
                     if (!strSmartContract->Exists() ||
                         (false == theSmartContract->LoadContractFromString(
                                       strSmartContract))) {
-                        LogError()(OT_PRETTY_CLASS(__func__))(
+                        LogError()(OT_PRETTY_CLASS())(
                             "Error: "
                             "Unable to load "
                             "smartContract object from smartContract "
@@ -1194,7 +1191,7 @@ auto OTTransaction::HarvestClosingNumbers(
                 const auto pItem = GetItem(itemType::marketOffer);
 
                 if (false == bool(pItem)) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Error: "
                         "Unable "
                         "to find "
@@ -1217,7 +1214,7 @@ auto OTTransaction::HarvestClosingNumbers(
 
                     // If failed to load the trade...
                     if (!bLoadContractFromString) {
-                        LogError()(OT_PRETTY_CLASS(__func__))(
+                        LogError()(OT_PRETTY_CLASS())(
                             "ERROR: "
                             "Failed loading trade from string: ")(strTrade)(".")
                             .Flush();
@@ -1308,7 +1305,7 @@ auto OTTransaction::HarvestClosingNumbers(
                 const auto pItem = GetItem(itemType::paymentPlan);
 
                 if (false == bool(pItem)) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Error: "
                         "Unable "
                         "to find "
@@ -1331,7 +1328,7 @@ auto OTTransaction::HarvestClosingNumbers(
 
                     // If failed to load the payment plan from string...
                     if (!bLoadContractFromString) {
-                        LogError()(OT_PRETTY_CLASS(__func__))(
+                        LogError()(OT_PRETTY_CLASS())(
                             "ERROR : "
                             "Failed loading payment plan from string: ")(
                             strPaymentPlan)(".")
@@ -1420,7 +1417,7 @@ auto OTTransaction::HarvestClosingNumbers(
                 const auto pItem = GetItem(itemType::smartContract);
 
                 if (false == bool(pItem)) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Error: "
                         "Unable "
                         "to find "
@@ -1440,7 +1437,7 @@ auto OTTransaction::HarvestClosingNumbers(
                     if (!strSmartContract->Exists() ||
                         (false == theSmartContract->LoadContractFromString(
                                       strSmartContract))) {
-                        LogError()(OT_PRETTY_CLASS(__func__))(
+                        LogError()(OT_PRETTY_CLASS())(
                             "Error: "
                             "Unable to load "
                             "smartContract object from smartContract "
@@ -1700,7 +1697,7 @@ auto OTTransaction::VerifyBalanceReceipt(
      */
 
     if (IsAbbreviated()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error: This is an "
             "abbreviated receipt. (Load the box receipt first).")
             .Flush();
@@ -1729,8 +1726,8 @@ auto OTTransaction::VerifyBalanceReceipt(
             szFolder2name,
             szFilename,
             "")) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))(
-            "Receipt file doesn't exist in ")(szFilename)
+        LogDetail()(OT_PRETTY_CLASS())("Receipt file doesn't exist in ")(
+            szFilename)
             .Flush();
 
         return false;
@@ -1740,8 +1737,8 @@ auto OTTransaction::VerifyBalanceReceipt(
         api_, api_.DataFolder(), szFolder1name, szFolder2name, szFilename, ""));
 
     if (strFileContents.length() < 2) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error reading "
-                                              "transaction statement: ")(
+        LogError()(OT_PRETTY_CLASS())("Error reading "
+                                      "transaction statement: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
             szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
@@ -1753,17 +1750,16 @@ auto OTTransaction::VerifyBalanceReceipt(
     const auto pContents{api_.Factory().Transaction(strTransaction)};
 
     if (false == bool(pContents)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to load "
-                                              "transaction statement: ")(
+        LogError()(OT_PRETTY_CLASS())("Unable to load "
+                                      "transaction statement: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
             szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
 
         return false;
     } else if (!pContents->VerifySignature(SERVER_NYM)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Unable to verify "
-            "signature on transaction statement: ")(
+        LogError()(OT_PRETTY_CLASS())("Unable to verify "
+                                      "signature on transaction statement: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
             szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
@@ -1776,7 +1772,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     auto* pTrans = dynamic_cast<OTTransaction*>(pContents.get());
 
     if (nullptr == pTrans) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Was expecting an "
             "OTTransaction to be stored in the transaction statement "
             "at: ")(szFolder1name)(api::Legacy::PathSeparator())(
@@ -1810,7 +1806,7 @@ auto OTTransaction::VerifyBalanceReceipt(
             tranOut.GetItem(itemType::atTransactionStatement);
 
         if (false == bool(pResponseTransactionItem)) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "No atTransactionStatement item found on receipt "
                 "(strange).")
                 .Flush();
@@ -1818,14 +1814,14 @@ auto OTTransaction::VerifyBalanceReceipt(
             return false;
         } else if (
             Item::acknowledgement != pResponseTransactionItem->GetStatus()) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Error: atTransactionStatement found on receipt, but not "
                 "a successful one.")
                 .Flush();
 
             return false;
         } else if (!pResponseTransactionItem->VerifySignature(SERVER_NYM)) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Unable to verify signature on atTransactionStatement "
                 "item.")
                 .Flush();
@@ -1837,7 +1833,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         pResponseTransactionItem->GetReferenceString(strBalanceItem);
 
         if (!strBalanceItem->Exists()) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "No transactionStatement item found as 'in ref to' string "
                 "on a receipt containing atTransactionStatement item.")
                 .Flush();
@@ -1854,7 +1850,7 @@ auto OTTransaction::VerifyBalanceReceipt(
                 .release());
 
         if (false == bool(pTransactionItem)) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Unable to load transactionStatement item from string "
                 "(from a receipt containing an atTransactionStatement "
                 "item).")
@@ -1863,14 +1859,14 @@ auto OTTransaction::VerifyBalanceReceipt(
             return false;
         } else if (
             pTransactionItem->GetType() != itemType::transactionStatement) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Wrong type on pTransactionItem (expected "
                 "Item::transactionStatement).")
                 .Flush();
 
             return false;
         } else if (!pTransactionItem->VerifySignature(THE_NYM)) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Unable to verify signature on transactionStatement item "
                 "in.")
                 .Flush();
@@ -1883,7 +1879,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     auto account = api_.Wallet().Internal().Account(GetRealAccountID());
 
     if (false == bool(account)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Failed loading or verifying account for THE_NYM.")
             .Flush();
 
@@ -1894,7 +1890,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     std::unique_ptr<Ledger> pOutbox(account.get().LoadOutbox(THE_NYM));
 
     if ((!pInbox) || (!pOutbox)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Inbox or outbox was nullptr after THE_ACCOUNT.Load.")
             .Flush();
 
@@ -1904,20 +1900,20 @@ auto OTTransaction::VerifyBalanceReceipt(
     auto pResponseBalanceItem = GetItem(itemType::atBalanceStatement);
 
     if (false == bool(pResponseBalanceItem)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "No atBalanceStatement item found on receipt (strange).")
             .Flush();
 
         return false;
     } else if (Item::acknowledgement != pResponseBalanceItem->GetStatus()) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Error: atBalanceStatement found on receipt, but not a "
             "successful one.")
             .Flush();
 
         return false;
     } else if (!pResponseBalanceItem->VerifySignature(SERVER_NYM)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Unable to verify signature on atBalanceStatement item.")
             .Flush();
 
@@ -1929,7 +1925,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     pResponseBalanceItem->GetReferenceString(strBalanceItem);
 
     if (!strBalanceItem->Exists()) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "No balanceStatement item found as 'in ref to' string on a "
             "receipt containing atBalanceStatement item.")
             .Flush();
@@ -1945,21 +1941,20 @@ auto OTTransaction::VerifyBalanceReceipt(
                            .release());
 
     if (false == bool(pBalanceItem)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Unable to load balanceStatement item from string (from a "
             "receipt containing an atBalanceStatement item).")
             .Flush();
 
         return false;
     } else if (pBalanceItem->GetType() != itemType::balanceStatement) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
-            "Wrong type on pBalanceItem (expected "
-            "Item::balanceStatement).")
+        LogConsole()(OT_PRETTY_CLASS())("Wrong type on pBalanceItem (expected "
+                                        "Item::balanceStatement).")
             .Flush();
 
         return false;
     } else if (!pBalanceItem->VerifySignature(THE_NYM)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Unable to verify signature on balanceStatement item.")
             .Flush();
 
@@ -1979,8 +1974,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     pItemWithIssuedList->GetAttachment(serialized);
 
     if (!serialized->Exists()) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))("Unable to load message nym.")
-            .Flush();
+        LogConsole()(OT_PRETTY_CLASS())("Unable to load message nym.").Flush();
 
         return false;
     }
@@ -2043,7 +2037,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     // receipt already.
 
     if (!context.Verify(statement)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Unable to verify issued numbers on last signed receipt with "
             "numbers on THE_NYM.")
             .Flush();
@@ -2064,7 +2058,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
     // Notice here, I'm back to using pBalanceItem instead of
     // pItemWithIssuedList, since this is the inbox/outbox section...
-    LogDetail()(OT_PRETTY_CLASS(__func__))(
+    LogDetail()(OT_PRETTY_CLASS())(
         "Number of inbox/outbox items on the balance statement: ")(
         pBalanceItem->GetItemCount())
         .Flush();
@@ -2110,7 +2104,7 @@ auto OTTransaction::VerifyBalanceReceipt(
             default: {
                 auto strItemType = String::Factory();
                 pSubItem->GetTypeString(strItemType);
-                LogDebug()(OT_PRETTY_CLASS(__func__))("Ignoring ")(
+                LogDebug()(OT_PRETTY_CLASS())("Ignoring ")(
                     strItemType)(" item in balance statement while verifying "
                                  "it against inbox.")
                     .Flush();
@@ -2173,7 +2167,7 @@ auto OTTransaction::VerifyBalanceReceipt(
             (pResponseBalanceItem->GetNewOutboxTransNum() > 0)) {
             lTempTransactionNum = pResponseBalanceItem->GetNewOutboxTransNum();
             pTransaction = pLedger->GetTransaction(lTempTransactionNum);
-            LogDebug()(OT_PRETTY_CLASS(__func__))(
+            LogDebug()(OT_PRETTY_CLASS())(
                 "This iteration, "
                 " I'm handling an item listed as '1' in the outbox.)")
                 .Flush();
@@ -2210,7 +2204,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         // Therefore the code has to specifically allow for this case, for
         // outbox items...
         if ((false == bool(pTransaction)) && (pOutbox.get() == pLedger)) {
-            LogTrace()(OT_PRETTY_CLASS(__func__))(
+            LogTrace()(OT_PRETTY_CLASS())(
                 "Outbox pending found as inbox transferReceipt. (Normal.)")
                 .Flush();
 
@@ -2290,7 +2284,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
         // STILL not found??
         if (false == bool(pTransaction)) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))("Expected ")(
+            LogConsole()(OT_PRETTY_CLASS())("Expected ")(
                 pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") not found. (Amount ")(
                 pSubItem->GetAmount().str())(".)")
@@ -2302,8 +2296,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         // subItem is from the balance statement, and pTransaction is from the
         // inbox/outbox
         if (pSubItem->GetReferenceToNum() != lTempReferenceToNum) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") mismatch Reference Num: ")(
                 pSubItem->GetReferenceToNum())(", expected ")(
                 lTempReferenceToNum)(".")
@@ -2313,8 +2306,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         }
 
         if (pSubItem->GetRawNumberOfOrigin() != lTempNumberOfOrigin) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") mismatch Number of Origin: ")(
                 pSubItem->GetRawNumberOfOrigin())(", expected ")(
                 lTempNumberOfOrigin)(".")
@@ -2327,8 +2319,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         lTransactionAmount *= lReceiptAmountMultiplier;
 
         if (pSubItem->GetAmount() != lTransactionAmount) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") amounts don't match: Report says ")(
                 pSubItem->GetAmount().str())(", but expected ")(
                 lTransactionAmount.str())(". Trans recpt amt: ")(
@@ -2348,8 +2339,7 @@ auto OTTransaction::VerifyBalanceReceipt(
              ((pLedger == pInbox.get()) &&
               (pTransaction->GetType() != transactionType::pending) &&
               (pTransaction->GetType() != transactionType::transferReceipt)))) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") wrong type. (pending block).")
                 .Flush();
 
@@ -2358,8 +2348,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
         if ((pSubItem->GetType() == itemType::chequeReceipt) &&
             (pTransaction->GetType() != transactionType::chequeReceipt)) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") wrong type. (chequeReceipt block).")
                 .Flush();
 
@@ -2369,8 +2358,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         if ((pSubItem->GetType() == itemType::voucherReceipt) &&
             ((pTransaction->GetType() != transactionType::voucherReceipt) ||
              (pSubItem->GetOriginType() != pTransaction->GetOriginType()))) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") wrong type or origin type. "
                                      "(voucherReceipt block).")
                 .Flush();
@@ -2380,8 +2368,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
         if ((pSubItem->GetType() == itemType::marketReceipt) &&
             (pTransaction->GetType() != transactionType::marketReceipt)) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") wrong type. (marketReceipt block).")
                 .Flush();
 
@@ -2391,8 +2378,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         if ((pSubItem->GetType() == itemType::paymentReceipt) &&
             ((pTransaction->GetType() != transactionType::paymentReceipt) ||
              (pSubItem->GetOriginType() != pTransaction->GetOriginType()))) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") wrong type or origin type. "
                                      "(paymentReceipt block).")
                 .Flush();
@@ -2402,8 +2388,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
         if ((pSubItem->GetType() == itemType::transferReceipt) &&
             (pTransaction->GetType() != transactionType::transferReceipt)) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") wrong type. (transferReceipt block).")
                 .Flush();
 
@@ -2413,8 +2398,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         if ((pSubItem->GetType() == itemType::basketReceipt) &&
             ((pTransaction->GetType() != transactionType::basketReceipt) ||
              (pSubItem->GetClosingNum() != pTransaction->GetClosingNum()))) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") wrong type or closing num (")(
                 pSubItem->GetClosingNum())(") (basketReceipt block).")
                 .Flush();
@@ -2426,8 +2410,7 @@ auto OTTransaction::VerifyBalanceReceipt(
             ((pTransaction->GetType() != transactionType::finalReceipt) ||
              (pSubItem->GetClosingNum() != pTransaction->GetClosingNum()) ||
              (pSubItem->GetOriginType() != pTransaction->GetOriginType()))) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                pszLedgerType)(" transaction (")(
+            LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") wrong type or closing num or origin "
                                      "type (")(pSubItem->GetClosingNum())(
                 "). (finalReceipt block).")
@@ -2444,7 +2427,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     // since this list is a subset of that one (supposedly.)
 
     if (nOutboxItemCount != pOutbox->GetTransactionCount()) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Outbox mismatch in expected transaction count."
             " --- THE_INBOX count: ")(pInbox->GetTransactionCount())(
             " --- THE_OUTBOX count: ")(pOutbox->GetTransactionCount())(
@@ -2499,7 +2482,7 @@ auto OTTransaction::VerifyBalanceReceipt(
                                                     // here.
                 break;
             default: {
-                LogTrace()(OT_PRETTY_CLASS(__func__))("Ignoring ")(
+                LogTrace()(OT_PRETTY_CLASS())("Ignoring ")(
                     pTransaction->GetTypeString())(
                     " item in inbox while verifying it against balance "
                     "receipt.")
@@ -2564,7 +2547,7 @@ auto OTTransaction::VerifyBalanceReceipt(
                     // If it was FOUND... (bad)
                     //
                     if (nullptr != pFinalReceiptItem) {
-                        LogConsole()(OT_PRETTY_CLASS(__func__))(
+                        LogConsole()(OT_PRETTY_CLASS())(
                             "Malicious server? A new cronReceipt has "
                             "appeared, "
                             "even though its corresponding finalReceipt "
@@ -2620,7 +2603,7 @@ auto OTTransaction::VerifyBalanceReceipt(
             // the inbox
             if (pSubItem->GetReferenceToNum() !=
                 pTransaction->GetReferenceToNum()) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(
                     ") mismatch Reference Num: ")(
                     pSubItem->GetReferenceToNum())(", expected ")(
@@ -2631,7 +2614,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
             if (pSubItem->GetNumberOfOrigin() !=
                 pTransaction->GetNumberOfOrigin()) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(
                     ") mismatch Reference Num: ")(
                     pSubItem->GetNumberOfOrigin())(", expected ")(
@@ -2645,7 +2628,7 @@ auto OTTransaction::VerifyBalanceReceipt(
             // (that was only for outbox items.)
             if (pSubItem->GetAmount() !=
                 (pTransaction->GetReceiptAmount(reason))) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(") amounts don't match: ")(
                     pSubItem->GetAmount().str())(", expected ")(
                     pTransaction->GetReceiptAmount(reason).str())(
@@ -2657,7 +2640,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
             if ((pSubItem->GetType() == itemType::transfer) &&
                 (pTransaction->GetType() != transactionType::pending)) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(
                     ") wrong type. (pending block).")
                     .Flush();
@@ -2666,7 +2649,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
             if ((pSubItem->GetType() == itemType::chequeReceipt) &&
                 (pTransaction->GetType() != transactionType::chequeReceipt)) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(") wrong type. "
                                                    "(chequeReceipt block).")
                     .Flush();
@@ -2677,7 +2660,7 @@ auto OTTransaction::VerifyBalanceReceipt(
                 ((pTransaction->GetType() != transactionType::voucherReceipt) ||
                  (pSubItem->GetOriginType() !=
                   pTransaction->GetOriginType()))) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(
                     ") wrong type or origin type. "
                     "(voucherReceipt block).")
@@ -2687,7 +2670,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
             if ((pSubItem->GetType() == itemType::marketReceipt) &&
                 (pTransaction->GetType() != transactionType::marketReceipt)) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(") wrong type. "
                                                    "(marketReceipt block).")
                     .Flush();
@@ -2698,7 +2681,7 @@ auto OTTransaction::VerifyBalanceReceipt(
                 ((pTransaction->GetType() != transactionType::paymentReceipt) ||
                  (pSubItem->GetOriginType() !=
                   pTransaction->GetOriginType()))) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(") wrong type. "
                                                    "(paymentReceipt block).")
                     .Flush();
@@ -2707,7 +2690,7 @@ auto OTTransaction::VerifyBalanceReceipt(
 
             if ((pSubItem->GetType() == itemType::transferReceipt) &&
                 (pTransaction->GetType() != transactionType::transferReceipt)) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(") wrong type. "
                                                    "(transferReceipt block).")
                     .Flush();
@@ -2718,7 +2701,7 @@ auto OTTransaction::VerifyBalanceReceipt(
                 ((pTransaction->GetType() != transactionType::basketReceipt) ||
                  (pSubItem->GetClosingNum() !=
                   pTransaction->GetClosingNum()))) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(
                     ") wrong type, "
                     "or mismatched closing num. (basketReceipt block).")
@@ -2731,7 +2714,7 @@ auto OTTransaction::VerifyBalanceReceipt(
                  (pSubItem->GetClosingNum() != pTransaction->GetClosingNum()) ||
                  (pSubItem->GetOriginType() !=
                   pTransaction->GetOriginType()))) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Inbox transaction (")(
+                LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(
                     ") wrong type or origin type, "
                     "or mismatched closing num. (finalReceipt block).")
@@ -2825,7 +2808,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         const bool missing = (1 != statement.Issued().count(lIssuedNum));
 
         if (missing) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error verifying if transaction num in inbox (")(
                 pTransaction->GetTransactionNum())(
                 ") was actually signed out (")(lIssuedNum)(").")
@@ -2922,7 +2905,7 @@ auto OTTransaction::VerifyBalanceReceipt(
     // supposed difference from adding up just the new receipts, (Which is
     // probably impossible anyway) then return false.
     if (lActualDifference != lInboxSupposedDifference) {
-        LogError()(OT_PRETTY_CLASS(__func__))("lActualDifference (")(
+        LogError()(OT_PRETTY_CLASS())("lActualDifference (")(
             lActualDifference.str())(
             ") is not equal to lInboxSupposedDifference (")(
             lInboxSupposedDifference.str())(
@@ -2951,9 +2934,9 @@ auto OTTransaction::VerifyBalanceReceipt(
          (account.get().GetBalance() + (lActualDifference * (-1))));
 
     if (wrongBalance) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "lActualDifference in receipts (")(lActualDifference.str())(
-            ") plus current acct balance (")(account.get().GetBalance().str())(
+        LogError()(OT_PRETTY_CLASS())("lActualDifference in receipts (")(
+            lActualDifference.str())(") plus current acct balance (")(
+            account.get().GetBalance().str())(
             ") is NOT equal to last signed balance (")(
             pBalanceItem->GetAmount().str())(").")
             .Flush();
@@ -2993,7 +2976,7 @@ auto OTTransaction::DeleteBoxReceipt(Ledger& theLedger) -> bool
             strFolder2name->Get(),
             strFolder3name->Get(),
             strFilename->Get())) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(
+        LogVerbose()(OT_PRETTY_CLASS())(
             "Box receipt already doesn't exist, thus no need to delete: ")(
             "At location: ")(strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
@@ -3010,7 +2993,7 @@ auto OTTransaction::DeleteBoxReceipt(Ledger& theLedger) -> bool
 
         if (false ==
             ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error deleting (writing over) box receipt (failed "
                 "writing armored string): ")(
                 strFolder1name)(api::Legacy::PathSeparator())(
@@ -3049,8 +3032,7 @@ auto OTTransaction::DeleteBoxReceipt(Ledger& theLedger) -> bool
         strFolder3name->Get(),
         strFilename->Get());
     if (!bDeleted)
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Error deleting (writing over) file: ")(
+        LogError()(OT_PRETTY_CLASS())("Error deleting (writing over) file: ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(
@@ -3064,7 +3046,7 @@ auto OTTransaction::SaveBoxReceipt(std::int64_t lLedgerType) -> bool
 {
 
     if (IsAbbreviated()) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))("Unable to save box receipt ")(
+        LogConsole()(OT_PRETTY_CLASS())("Unable to save box receipt ")(
             GetTransactionNum())(": ")(
             "This transaction is the abbreviated version (box receipt is "
             "supposed to "
@@ -3097,7 +3079,7 @@ auto OTTransaction::SaveBoxReceipt(std::int64_t lLedgerType) -> bool
             strFolder2name->Get(),
             strFolder3name->Get(),
             strFilename->Get())) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Warning -- Box receipt already exists! (Overwriting)"
             "At location: ")(strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
@@ -3113,7 +3095,7 @@ auto OTTransaction::SaveBoxReceipt(std::int64_t lLedgerType) -> bool
 
     if (false ==
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error saving box receipt (failed writing armored string): ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
@@ -3132,7 +3114,7 @@ auto OTTransaction::SaveBoxReceipt(std::int64_t lLedgerType) -> bool
         strFilename->Get());
 
     if (!bSaved)
-        LogError()(OT_PRETTY_CLASS(__func__))("Error writing file: ")(
+        LogError()(OT_PRETTY_CLASS())("Error writing file: ")(
             strFolder1name)(api::Legacy::PathSeparator())(
             strFolder2name)(api::Legacy::PathSeparator())(
             strFolder3name)(api::Legacy::PathSeparator())(
@@ -3170,8 +3152,8 @@ auto OTTransaction::SaveBoxReceipt(Ledger& theLedger) -> bool
             lLedgerType = 6;
             break;
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Error: unknown box type. "
-                                                  "(This should never happen).")
+            LogError()(OT_PRETTY_CLASS())("Error: unknown box type. "
+                                          "(This should never happen).")
                 .Flush();
             return false;
     }
@@ -3181,7 +3163,7 @@ auto OTTransaction::SaveBoxReceipt(Ledger& theLedger) -> bool
 auto OTTransaction::VerifyBoxReceipt(OTTransaction& theFullVersion) -> bool
 {
     if (!m_bIsAbbreviated || theFullVersion.IsAbbreviated()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failure: This transaction "
             "isn't abbreviated (val: ")(m_bIsAbbreviated ? "IS" : "IS NOT")(
             "), or the purported full version erroneously is (val: ")(
@@ -3204,7 +3186,7 @@ auto OTTransaction::VerifyBoxReceipt(OTTransaction& theFullVersion) -> bool
     // compare it to the stored one.
     //
     if (m_Hash != idFullVersion) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failure: The purported 'full version' of the transaction, "
             "passed in for verification fails to match the stored hash "
             "value for trans num: ")(GetTransactionNum())(".")
@@ -3216,7 +3198,7 @@ auto OTTransaction::VerifyBoxReceipt(OTTransaction& theFullVersion) -> bool
     // But we check a few more things, just to be safe.
     // Such as the TRANSACTION NUMBER...
     if (GetTransactionNum() != theFullVersion.GetTransactionNum()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failure: The purported 'full version' of the transaction "
             "passed in (number ")(theFullVersion.GetTransactionNum())(
             ") fails to match the actual transaction number: ")(
@@ -3227,7 +3209,7 @@ auto OTTransaction::VerifyBoxReceipt(OTTransaction& theFullVersion) -> bool
 
     // THE "IN REFERENCE TO" NUMBER (DISPLAY VERSION)
     if (GetAbbrevInRefDisplay() != theFullVersion.GetReferenceNumForDisplay()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failure: The purported 'full version' of the transaction "
             "passed, GetReferenceNumForDisplay() (")(
             theFullVersion.GetReferenceNumForDisplay())(
@@ -3253,7 +3235,7 @@ auto OTTransaction::VerifyItems(
     const auto NYM_ID = Identifier::Factory(theNym);
 
     if (NYM_ID != GetNymID()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Wrong owner passed.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Wrong owner passed.").Flush();
         return false;
     }
 
@@ -3628,7 +3610,7 @@ auto OTTransaction::GetSuccess(
                     continue;
 
                 default:
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Wrong transaction type passed "
                         "for processNymbox or processInbox transaction.")
                         .Flush();
@@ -3869,8 +3851,7 @@ auto OTTransaction::GetSuccess(
                 return false;
             // -----------------------------------------------
             default:
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Wrong transaction type passed.")
+                LogError()(OT_PRETTY_CLASS())("Wrong transaction type passed.")
                     .Flush();
                 return false;
         }
@@ -3975,8 +3956,8 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         if (strHash->Exists())
             m_Hash->SetString(strHash);
         else
-            LogError()(OT_PRETTY_CLASS(__func__))("Missing receiptHash on "
-                                                  "abbreviated record.")
+            LogError()(OT_PRETTY_CLASS())("Missing receiptHash on "
+                                          "abbreviated record.")
                 .Flush();
 
         return 1;
@@ -3999,9 +3980,8 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         if (strType->Exists())
             m_Type = OTTransaction::GetTypeFromString(strType);
         else {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                "Failure: unknown "
-                "transaction type: ")(strType)(".")
+            LogConsole()(OT_PRETTY_CLASS())("Failure: unknown "
+                                            "transaction type: ")(strType)(".")
                 .Flush();
             return (-1);
         }
@@ -4028,8 +4008,7 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         if (!strAcctID->Exists() || !strNotaryID->Exists() ||
             !strNymID->Exists()) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
-                "Failure: missing strAcctID (")(
+            LogConsole()(OT_PRETTY_CLASS())("Failure: missing strAcctID (")(
                 strAcctID)(") or strNotaryID (")(
                 strNotaryID)(") or strNymID (")(strNymID)(").")
                 .Flush();
@@ -4046,8 +4025,8 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             String::Factory(xml->getAttributeValue("inReferenceTo"));
 
         if (!strTransNum->Exists() || !strInRefTo->Exists()) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))("Failure: missing "
-                                                    "strTransNum (")(
+            LogConsole()(OT_PRETTY_CLASS())("Failure: missing "
+                                            "strTransNum (")(
                 strTransNum)(") or strInRefTo (")(strInRefTo)(").")
                 .Flush();
             return (-1);
@@ -4132,7 +4111,7 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         SetTransactionNum(strTransNum->ToLong());
         SetReferenceToNum(strInRefTo->ToLong());
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Loaded transaction ")(
+        LogTrace()(OT_PRETTY_CLASS())("Loaded transaction ")(
             GetTransactionNum())(", in reference to: ")(GetReferenceToNum())(
             " type: ")(strType)
             .Flush();
@@ -4151,7 +4130,7 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
              (transactionType::basketReceipt == m_Type))) {
             m_lClosingTransactionNo = strClosingNumber->ToLong();
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: closingTransactionNumber field without value, or in "
                 "wrong transaction type.")
                 .Flush();
@@ -4161,8 +4140,8 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         return 1;
     } else if (!strcmp("cancelRequest", xml->getNodeName())) {
         if (false == LoadEncodedTextField(xml, m_ascCancellationRequest)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Error: cancelRequest "
-                                                  "field without value.")
+            LogError()(OT_PRETTY_CLASS())("Error: cancelRequest "
+                                          "field without value.")
                 .Flush();
             return (-1);  // error condition
         }
@@ -4170,8 +4149,8 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         return 1;
     } else if (!strcmp("inReferenceTo", xml->getNodeName())) {
         if (false == LoadEncodedTextField(xml, m_ascInReferenceTo)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Error: inReferenceTo "
-                                                  "field without value.")
+            LogError()(OT_PRETTY_CLASS())("Error: inReferenceTo "
+                                          "field without value.")
                 .Flush();
             return (-1);  // error condition
         }
@@ -4181,8 +4160,8 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         auto strData = String::Factory();
 
         if (!LoadEncodedTextField(xml, strData) || !strData->Exists()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Error: transaction item "
-                                                  "field without value.")
+            LogError()(OT_PRETTY_CLASS())("Error: transaction item "
+                                          "field without value.")
                 .Flush();
             return (-1);  // error condition
         } else {
@@ -4195,13 +4174,13 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             // it up as
             // a transaction, then add it to the ledger's list of transactions
             if (!pItem->LoadContractFromString(strData)) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "ERROR: OTTransaction failed loading item from "
                     "string: ")(strData->Exists() ? strData->Get() : " ")(".")
                     .Flush();
                 return (-1);
             } else if (!pItem->VerifyContractID()) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "ERROR: Failed verifying transaction Item: ")(strData)(".")
                     .Flush();
                 return (-1);
@@ -4314,7 +4293,7 @@ void OTTransaction::UpdateContents(const PasswordPrompt& reason)
                     break;
                 /* --- BREAK --- */
                 case ledgerType::message: {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Unexpected message ledger type in 'abbreviated' "
                         "block. (Error).")
                         .Flush();
@@ -4322,14 +4301,14 @@ void OTTransaction::UpdateContents(const PasswordPrompt& reason)
                     OT_FAIL
                 }
                 default:
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Unexpected ledger type in 'abbreviated' block. "
                         "(Error).")
                         .Flush();
                     break;
             } /*switch*/
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: Unable to save abbreviated receipt here, since "
                 "m_pParent is nullptr.")
                 .Flush();
@@ -4465,10 +4444,10 @@ void OTTransaction::SaveAbbrevPaymentInboxRecord(
                 lDisplayValue = GetAbbrevDisplayAmount();
             break;
         default:  // All other types are irrelevant for payment inbox reports
-            LogError()(OT_PRETTY_CLASS(__func__))("Unexpected ")(
-                GetTypeString())(" transaction "
-                                 "in payment inbox while making abbreviated "
-                                 "payment inbox record.")
+            LogError()(OT_PRETTY_CLASS())("Unexpected ")(GetTypeString())(
+                " transaction "
+                "in payment inbox while making abbreviated "
+                "payment inbox record.")
                 .Flush();
 
             OT_FAIL_MSG("ASSERT: OTTransaction::SaveAbbrevPaymentInboxRecord: "
@@ -4555,8 +4534,7 @@ void OTTransaction::SaveAbbrevExpiredBoxRecord(
             break;
         default:  // All other types are irrelevant for inbox reports
         {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unexpected ")(
-                GetTypeString())(
+            LogError()(OT_PRETTY_CLASS())("Unexpected ")(GetTypeString())(
                 " transaction "
                 "in expired box while making abbreviated expired-box "
                 "record.")
@@ -4769,8 +4747,7 @@ void OTTransaction::SaveAbbrevRecordBoxRecord(
             break;
         default:  // All other types are irrelevant for inbox reports
         {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unexpected ")(
-                GetTypeString())(
+            LogError()(OT_PRETTY_CLASS())("Unexpected ")(GetTypeString())(
                 " transaction "
                 "in record box while making abbreviated record-box "
                 "record.")
@@ -4903,8 +4880,7 @@ void OTTransaction::SaveAbbreviatedNymboxRecord(
             lDisplayValue = 0;
         } break;
         default: {  // All other types are irrelevant for nymbox reports.
-            LogError()(OT_PRETTY_CLASS(__func__))("Unexpected ")(
-                GetTypeString())(
+            LogError()(OT_PRETTY_CLASS())("Unexpected ")(GetTypeString())(
                 " transaction in nymbox while making abbreviated nymbox "
                 "record.")
                 .Flush();
@@ -5009,8 +4985,7 @@ void OTTransaction::SaveAbbreviatedOutboxRecord(
                     // (-500) Display amount (since I'm sending, not receiving
                     // it.)
         default: {  // All other types are irrelevant for outbox reports.
-            LogError()(OT_PRETTY_CLASS(__func__))("Unexpected ")(
-                GetTypeString())(
+            LogError()(OT_PRETTY_CLASS())("Unexpected ")(GetTypeString())(
                 " transaction "
                 "in outbox while making abbreviated outbox record.")
                 .Flush();
@@ -5166,8 +5141,7 @@ void OTTransaction::SaveAbbreviatedInboxRecord(
         } break;
         default:  // All other types are irrelevant for inbox reports
         {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unexpected ")(
-                GetTypeString())(
+            LogError()(OT_PRETTY_CLASS())("Unexpected ")(GetTypeString())(
                 " transaction "
                 "in inbox while making abbreviated inbox record.")
                 .Flush();
@@ -5249,7 +5223,7 @@ void OTTransaction::ProduceInboxReportItem(
 {
     itemType theItemType = itemType::error_state;
 
-    LogDebug()(OT_PRETTY_CLASS(__func__))(
+    LogDebug()(OT_PRETTY_CLASS())(
         "Producing statement report item for inbox item type: ")(
         GetTypeString())(".")
         .Flush();  // temp remove.
@@ -5291,7 +5265,7 @@ void OTTransaction::ProduceInboxReportItem(
             break;
         default:  // All other types are irrelevant for inbox reports
         {
-            LogDebug()(OT_PRETTY_CLASS(__func__))("Ignoring ")(GetTypeString())(
+            LogDebug()(OT_PRETTY_CLASS())("Ignoring ")(GetTypeString())(
                 " transaction in inbox while making balance statement. ")
                 .Flush();
         }
@@ -5396,8 +5370,8 @@ void OTTransaction::ProduceOutboxReportItem(
             theItemType = itemType::transfer;
             break;
         default:  // All other types are irrelevant for outbox reports.
-            LogError()(OT_PRETTY_CLASS(__func__))("Error, wrong item type. "
-                                                  "Returning.")
+            LogError()(OT_PRETTY_CLASS())("Error, wrong item type. "
+                                          "Returning.")
                 .Flush();
             return;
     }
@@ -5510,7 +5484,7 @@ auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason) -> Amount
     }
 
     if (false == bool(pOriginalItem)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Unable to find original item. Should never happen.")
             .Flush();
         return 0;  // Should never happen, since we always expect one based on
@@ -5526,8 +5500,7 @@ auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason) -> Amount
                                                // item, attached.)
         {
             if (pOriginalItem->GetType() != itemType::depositCheque) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Wrong item type attached to ")(
+                LogError()(OT_PRETTY_CLASS())("Wrong item type attached to ")(
                     (transactionType::chequeReceipt == GetType())
                         ? "chequeReceipt"
                         : "voucherReceipt")(". (Expected depositCheque).")
@@ -5547,7 +5520,7 @@ auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason) -> Amount
             if (!bLoadContractFromString) {
                 auto strCheque = String::Factory(*theCheque);
 
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "ERROR loading cheque from string: ")(strCheque)(".")
                     .Flush();
             } else {
@@ -5574,7 +5547,7 @@ auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason) -> Amount
                                                 // wrong amount on them.)
 
             if (pOriginalItem->GetType() != itemType::acceptPending) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to transferReceipt.")
                     .Flush();
             } else {  // If I transfer 100 clams to someone, then my account is
@@ -5607,7 +5580,7 @@ auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason) -> Amount
         case transactionType::pending:  // amount is stored on transfer item
 
             if (pOriginalItem->GetType() != itemType::transfer) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to pending transfer.")
                     .Flush();
             } else {
@@ -5622,7 +5595,7 @@ auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason) -> Amount
                                               // marketReceipt item
 
             if (pOriginalItem->GetType() != itemType::marketReceipt) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to marketReceipt.")
                     .Flush();
             } else {
@@ -5636,7 +5609,7 @@ auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason) -> Amount
                                                // paymentReceipt item
 
             if (pOriginalItem->GetType() != itemType::paymentReceipt) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to paymentReceipt.")
                     .Flush();
             } else {
@@ -5650,7 +5623,7 @@ auto OTTransaction::GetReceiptAmount(const PasswordPrompt& reason) -> Amount
                                               // basketReceipt item
 
             if (pOriginalItem->GetType() != itemType::basketReceipt) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to basketReceipt.")
                     .Flush();
             } else {
@@ -5692,7 +5665,7 @@ auto OTTransaction::GetNumberOfOrigin() -> std::int64_t
                                                         // one of these in YOUR
                                                         // paymentInbox.
             case transactionType::incomingCash: {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "In this case, you can't calculate the "
                     "origin number, you must set it "
                     "explicitly.")
@@ -5774,7 +5747,7 @@ void OTTransaction::CalculateNumberOfOrigin()
                                                       // invoice, you get one of
                                                       // these in YOUR
                                                       // paymentInbox.
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "In this case, you can't calculate the "
                 "origin number, you must set it explicitly.")
                 .Flush();
@@ -5811,7 +5784,7 @@ void OTTransaction::CalculateNumberOfOrigin()
             OT_ASSERT(nullptr != pOriginalItem);
 
             if (itemType::depositCheque != pOriginalItem->GetType()) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "ERROR: Wrong item type attached to ")(
                     (transactionType::chequeReceipt == GetType())
                         ? "chequeReceipt"
@@ -6069,7 +6042,7 @@ auto OTTransaction::GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool
                                                     // cron item, instead of the
                                                     // updated version.
             else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed trying to get notice item from notice "
                     "transaction. "
                     "Or couldn't find cron item within that we were "
@@ -6104,7 +6077,7 @@ auto OTTransaction::GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool
                 theReturnID.SetString(pCronItem->GetSenderNymID().str());
                 return !theReturnID.empty();
             } else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Unable to load Cron Item. Should never happen. "
                     "Receipt: ")(GetTransactionNum())(". Origin: ")(
                     GetNumberOfOrigin())(".")
@@ -6123,7 +6096,7 @@ auto OTTransaction::GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool
             if (false != bool(pItem))
                 pItem->GetAttachment(strUpdatedCronItem);
             else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed trying to get paymentReceipt item from "
                     "paymentReceipt transaction.")
                     .Flush();
@@ -6147,7 +6120,7 @@ auto OTTransaction::GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool
                 theReturnID.SetString(pCronItem->GetSenderNymID().str());
                 return !theReturnID.empty();
             } else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Unable to load Cron Item. Should never happen. "
                     "Receipt: ")(GetTransactionNum())(". Origin: ")(
                     GetNumberOfOrigin())(".")
@@ -6224,8 +6197,8 @@ auto OTTransaction::GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool
     }
 
     if (false == bool(pOriginalItem)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Original item not "
-                                              "found. Should never happen.")
+        LogError()(OT_PRETTY_CLASS())("Original item not "
+                                      "found. Should never happen.")
             .Flush();
         return false;  // Should never happen, since we always expect one based
                        // on the transaction type.
@@ -6240,8 +6213,7 @@ auto OTTransaction::GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool
                                                // item, attached.)
         {
             if (pOriginalItem->GetType() != itemType::depositCheque) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Wrong item type attached to ")(
+                LogError()(OT_PRETTY_CLASS())("Wrong item type attached to ")(
                     (transactionType::chequeReceipt == GetType())
                         ? "chequeReceipt"
                         : "voucherReceipt")(". (Expected depositCheque).")
@@ -6261,7 +6233,7 @@ auto OTTransaction::GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool
             if (!bLoadContractFromString) {
                 auto strCheque = String::Factory(*theCheque);
 
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "ERROR loading cheque or voucher from string: ")(
                     strCheque)(".")
                     .Flush();
@@ -6278,7 +6250,7 @@ auto OTTransaction::GetSenderNymIDForDisplay(Identifier& theReturnID) -> bool
         case transactionType::pending:  // amount is stored on transfer item
 
             if (pOriginalItem->GetType() != itemType::transfer) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to pending transfer.")
                     .Flush();
             } else {
@@ -6319,7 +6291,7 @@ auto OTTransaction::GetRecipientNymIDForDisplay(Identifier& theReturnID) -> bool
             // version of the payment plan, instead of
             // the updated version. (Or smart contract.)
             else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed trying to get notice item from notice "
                     "transaction, and couldn't find the instrument this "
                     "notice is about.")
@@ -6355,7 +6327,7 @@ auto OTTransaction::GetRecipientNymIDForDisplay(Identifier& theReturnID) -> bool
                 theReturnID.SetString(pPlan->GetRecipientNymID().str());
                 return !theReturnID.empty();
             } else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Unable to load Cron Item. Should never happen. "
                     "Receipt: ")(GetTransactionNum())(". Origin: ")(
                     GetNumberOfOrigin())(".")
@@ -6372,7 +6344,7 @@ auto OTTransaction::GetRecipientNymIDForDisplay(Identifier& theReturnID) -> bool
             if (false != bool(pItem))
                 pItem->GetAttachment(strUpdatedCronItem);
             else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed trying to get paymentReceipt item from "
                     "paymentReceipt transaction.")
                     .Flush();
@@ -6395,7 +6367,7 @@ auto OTTransaction::GetRecipientNymIDForDisplay(Identifier& theReturnID) -> bool
                 theReturnID.SetString(pPlan->GetRecipientNymID().str());
                 return !theReturnID.empty();
             } else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Unable to load Cron Item. Should never happen. "
                     "Receipt: ")(GetTransactionNum())("  Origin: ")(
                     GetNumberOfOrigin())(".")
@@ -6475,7 +6447,7 @@ auto OTTransaction::GetRecipientNymIDForDisplay(Identifier& theReturnID) -> bool
     switch (GetType()) {
         case transactionType::transferReceipt: {
             if (pOriginalItem->GetType() != itemType::acceptPending) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to transferReceipt.")
                     .Flush();
                 return false;
@@ -6499,8 +6471,7 @@ auto OTTransaction::GetRecipientNymIDForDisplay(Identifier& theReturnID) -> bool
                                                // item, attached.)
         {
             if (pOriginalItem->GetType() != itemType::depositCheque) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Wrong item type attached to ")(
+                LogError()(OT_PRETTY_CLASS())("Wrong item type attached to ")(
                     (transactionType::chequeReceipt == GetType())
                         ? "chequeReceipt"
                         : "voucherReceipt")(". (Expected depositCheque).")
@@ -6520,7 +6491,7 @@ auto OTTransaction::GetRecipientNymIDForDisplay(Identifier& theReturnID) -> bool
             if (!bLoadContractFromString) {
                 auto strCheque = String::Factory(*theCheque);
 
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "ERROR loading cheque or voucher from string: ")(
                     strCheque)(".")
                     .Flush();
@@ -6565,7 +6536,7 @@ auto OTTransaction::GetSenderAcctIDForDisplay(Identifier& theReturnID) -> bool
             if (false != bool(pItem))
                 pItem->GetAttachment(strUpdatedCronItem);
             else
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed trying to get paymentReceipt item from "
                     "paymentReceipt transaction.")
                     .Flush();
@@ -6586,7 +6557,7 @@ auto OTTransaction::GetSenderAcctIDForDisplay(Identifier& theReturnID) -> bool
                 theReturnID.SetString(pCronItem->GetSenderAcctID().str());
                 return true;
             } else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Unable to load Cron Item. Should never happen. "
                     "Receipt: ")(GetTransactionNum())(". Origin: ")(
                     GetNumberOfOrigin())(".")
@@ -6617,7 +6588,7 @@ auto OTTransaction::GetSenderAcctIDForDisplay(Identifier& theReturnID) -> bool
     }
 
     if (false == bool(pOriginalItem)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Couldn't load original item, should never happen.")
             .Flush();
         return false;  // Should never happen, since we always expect one based
@@ -6633,8 +6604,7 @@ auto OTTransaction::GetSenderAcctIDForDisplay(Identifier& theReturnID) -> bool
                                                // item, attached.)
         {
             if (pOriginalItem->GetType() != itemType::depositCheque) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Wrong item type attached to ")(
+                LogError()(OT_PRETTY_CLASS())("Wrong item type attached to ")(
                     (transactionType::chequeReceipt == GetType())
                         ? "chequeReceipt"
                         : "voucherReceipt")(". (Expected depositCheque).")
@@ -6654,7 +6624,7 @@ auto OTTransaction::GetSenderAcctIDForDisplay(Identifier& theReturnID) -> bool
             if (!bLoadContractFromString) {
                 auto strCheque = String::Factory(*theCheque);
 
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "ERROR loading cheque from string in transactionType: "
                     ". ")(strCheque)(".")
                     .Flush();
@@ -6671,7 +6641,7 @@ auto OTTransaction::GetSenderAcctIDForDisplay(Identifier& theReturnID) -> bool
         case transactionType::pending:  // amount is stored on transfer item
 
             if (pOriginalItem->GetType() != itemType::transfer) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to pending transfer.")
                     .Flush();
             } else {
@@ -6707,7 +6677,7 @@ auto OTTransaction::GetRecipientAcctIDForDisplay(Identifier& theReturnID)
             if (false != bool(pItem))
                 pItem->GetAttachment(strUpdatedCronItem);
             else
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed trying to get paymentReceipt item from "
                     "paymentReceipt transaction.")
                     .Flush();
@@ -6729,7 +6699,7 @@ auto OTTransaction::GetRecipientAcctIDForDisplay(Identifier& theReturnID)
                 return true;
             } else  // else if it is any other kind of cron item...
             {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Unable to load Cron Item. Should never happen. "
                     "Receipt: ")(GetTransactionNum())(". Origin: ")(
                     GetNumberOfOrigin())(".")
@@ -6761,7 +6731,7 @@ auto OTTransaction::GetRecipientAcctIDForDisplay(Identifier& theReturnID)
     switch (GetType()) {
         case transactionType::transferReceipt: {
             if (pOriginalItem->GetType() != itemType::acceptPending) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to transferReceipt.")
                     .Flush();
                 return false;
@@ -6774,8 +6744,7 @@ auto OTTransaction::GetRecipientAcctIDForDisplay(Identifier& theReturnID)
         case transactionType::chequeReceipt:
         case transactionType::voucherReceipt: {
             if (pOriginalItem->GetType() != itemType::depositCheque) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Wrong item type attached to ")(
+                LogError()(OT_PRETTY_CLASS())("Wrong item type attached to ")(
                     (transactionType::chequeReceipt == GetType())
                         ? "chequeReceipt"
                         : "voucherReceipt")(". (Expected depositCheque).")
@@ -6800,7 +6769,7 @@ auto OTTransaction::GetRecipientAcctIDForDisplay(Identifier& theReturnID)
         case transactionType::pending:  // amount is stored on transfer item
 
             if (pOriginalItem->GetType() != itemType::transfer) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to pending transfer.")
                     .Flush();
             } else {
@@ -6835,7 +6804,7 @@ auto OTTransaction::GetMemo(String& strMemo) -> bool
             if (false != bool(pItem))
                 pItem->GetAttachment(strUpdatedCronItem);
             else
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Failed trying to get paymentReceipt item from "
                     "paymentReceipt transaction.")
                     .Flush();
@@ -6858,7 +6827,7 @@ auto OTTransaction::GetMemo(String& strMemo) -> bool
                 return true;
             } else  // else if it's any other kind of cron item.
             {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Unable to load Cron Item. Should never happen. "
                     "Receipt: ")(GetTransactionNum())(". Origin: ")(
                     GetNumberOfOrigin())(".")
@@ -6890,7 +6859,7 @@ auto OTTransaction::GetMemo(String& strMemo) -> bool
     switch (GetType()) {
         case transactionType::transferReceipt: {
             if (pOriginalItem->GetType() != itemType::acceptPending) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to transferReceipt.")
                     .Flush();
                 return false;
@@ -6903,8 +6872,7 @@ auto OTTransaction::GetMemo(String& strMemo) -> bool
         case transactionType::chequeReceipt:
         case transactionType::voucherReceipt: {
             if (pOriginalItem->GetType() != itemType::depositCheque) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Wrong item type attached to ")(
+                LogError()(OT_PRETTY_CLASS())("Wrong item type attached to ")(
                     (transactionType::chequeReceipt == GetType())
                         ? "chequeReceipt"
                         : "voucherReceipt")(". (Expected depositCheque).")
@@ -6920,7 +6888,7 @@ auto OTTransaction::GetMemo(String& strMemo) -> bool
 
                 if (!((strCheque->GetLength() > 2) &&
                       theCheque->LoadContractFromString(strCheque))) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Error loading cheque or voucher from string: ")(
                         strCheque)(".")
                         .Flush();
@@ -6936,7 +6904,7 @@ auto OTTransaction::GetMemo(String& strMemo) -> bool
         case transactionType::pending:
 
             if (pOriginalItem->GetType() != itemType::transfer) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "Wrong item type attached to pending transfer.")
                     .Flush();
             } else {

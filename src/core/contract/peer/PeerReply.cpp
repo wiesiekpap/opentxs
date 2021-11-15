@@ -151,8 +151,7 @@ auto Reply::Finish(Reply& contract, const PasswordPrompt& reason) -> bool
 
         return true;
     } else {
-        LogError()(OT_PRETTY_STATIC(Reply, __func__))(
-            "Failed to finalize contract.")
+        LogError()(OT_PRETTY_STATIC(Reply))("Failed to finalize contract.")
             .Flush();
 
         return false;
@@ -213,12 +212,11 @@ auto Reply::LoadRequest(
             output);
 
         if (loaded) {
-            LogError()(OT_PRETTY_STATIC(Reply, __func__))(
+            LogError()(OT_PRETTY_STATIC(Reply))(
                 "Request has already been processed.")
                 .Flush();
         } else {
-            LogError()(OT_PRETTY_STATIC(Reply, __func__))(
-                "Request does not exist.")
+            LogError()(OT_PRETTY_STATIC(Reply))("Request does not exist.")
                 .Flush();
         }
     }
@@ -265,8 +263,7 @@ auto Reply::update_signature(const Lock& lock, const PasswordPrompt& reason)
     if (success) {
         signatures_.emplace_front(new proto::Signature(signature));
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create signature.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to create signature.").Flush();
     }
 
     return success;
@@ -279,13 +276,13 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (nym_) {
         validNym = nym_->VerifyPseudonym();
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing nym.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing nym.").Flush();
 
         return false;
     }
 
     if (false == validNym) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid nym.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid nym.").Flush();
 
         return false;
     }
@@ -293,13 +290,13 @@ auto Reply::validate(const Lock& lock) const -> bool
     const bool validSyntax = proto::Validate(contract(lock), VERBOSE);
 
     if (!validSyntax) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid syntax.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid syntax.").Flush();
 
         return false;
     }
 
     if (1 > signatures_.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing signature.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing signature.").Flush();
 
         return false;
     }
@@ -310,7 +307,7 @@ auto Reply::validate(const Lock& lock) const -> bool
     if (signature) { validSig = verify_signature(lock, *signature); }
 
     if (!validSig) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid signature.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid signature.").Flush();
     }
 
     return (validNym && validSyntax && validSig);

@@ -8,6 +8,7 @@
 #include "blockchain/node/wallet/NotificationStateData.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -18,7 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include "Proto.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -110,9 +110,8 @@ auto NotificationStateData::handle_confirmed_matches(
     const block::Matches& confirmed) noexcept -> void
 {
     const auto& [utxo, general] = confirmed;
-    LogVerbose()(OT_PRETTY_CLASS(__func__))(general.size())(
-        " confirmed matches for ")(code_.asBase58())(" on ")(
-        DisplayString(node_.Chain()))
+    LogVerbose()(OT_PRETTY_CLASS())(general.size())(" confirmed matches for ")(
+        code_.asBase58())(" on ")(DisplayString(node_.Chain()))
         .Flush();
 
     if (0u == general.size()) { return; }
@@ -122,7 +121,7 @@ auto NotificationStateData::handle_confirmed_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(DisplayString(node_.Chain()))(
+        LogVerbose()(OT_PRETTY_CLASS())(DisplayString(node_.Chain()))(
             " transaction ")(txid->asHex())(" contains a version ")(
             version)(" notification for ")(code_.asBase58())
             .Flush();
@@ -147,7 +146,7 @@ auto NotificationStateData::handle_mempool_matches(
     for (const auto& match : general) {
         const auto& [txid, elementID] = match;
         const auto& [version, subchainID] = elementID;
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(DisplayString(node_.Chain()))(
+        LogVerbose()(OT_PRETTY_CLASS())(DisplayString(node_.Chain()))(
             " mempool transaction ")(txid->asHex())(" contains a version ")(
             version)(" notification for ")(code_.asBase58())
             .Flush();
@@ -211,14 +210,13 @@ auto NotificationStateData::process(
             if (!pSender) { continue; }
 
             const auto& sender = *pSender;
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                "decoded incoming notification "
-                "from ")(sender.asBase58())(" on ")(
+            LogVerbose()(OT_PRETTY_CLASS())("decoded incoming notification "
+                                            "from ")(sender.asBase58())(" on ")(
                 DisplayString(node_.Chain()))(" for ")(code_.asBase58())
                 .Flush();
             const auto& account = crypto_.Internal().PaymentCodeSubaccount(
                 owner_, code_, sender, path_, node_.Chain(), reason);
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Created new account ")(
+            LogVerbose()(OT_PRETTY_CLASS())("Created new account ")(
                 account.ID())
                 .Flush();
         }

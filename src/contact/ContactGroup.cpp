@@ -294,7 +294,7 @@ auto ContactGroup::SerializeTo(
     const bool withIDs) const -> bool
 {
     if (translate(section.name()) != imp_->section_) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Trying to serialize to incorrect section.")
             .Flush();
 

@@ -103,8 +103,7 @@ struct Mempool::Imp {
 
         for (auto& tx : txns) {
             if (!tx) {
-                LogError()(OT_PRETTY_CLASS(__func__))("invalid transaction")
-                    .Flush();
+                LogError()(OT_PRETTY_CLASS())("invalid transaction").Flush();
 
                 continue;
             }
@@ -211,14 +210,14 @@ private:
 
         for (const auto& txid : wallet_.GetUnconfirmedTransactions()) {
             if (auto tx = crypto_.LoadTransactionBitcoin(txid); tx) {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                LogVerbose()(OT_PRETTY_CLASS())(
                     "adding unconfirmed transaction ")(txid->asHex())(
                     " to mempool")
                     .Flush();
                 transactions.emplace_back(std::move(tx));
             } else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "failed to load transaction ")(txid->asHex())
+                LogError()(OT_PRETTY_CLASS())("failed to load transaction ")(
+                    txid->asHex())
                     .Flush();
             }
         }

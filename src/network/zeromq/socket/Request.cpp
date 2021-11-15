@@ -63,14 +63,13 @@ auto Request::send_request(zeromq::Message& request) const noexcept
     auto& reply = output.second;
 
     if (false == send_message(lock, request)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to deliver message.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to deliver message.").Flush();
 
         return output;
     }
 
     if (false == wait(lock)) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Receive timeout.").Flush();
+        LogVerbose()(OT_PRETTY_CLASS())("Receive timeout.").Flush();
         status = opentxs::SendResult::TIMEOUT;
 
         return output;
@@ -79,8 +78,7 @@ auto Request::send_request(zeromq::Message& request) const noexcept
     if (receive_message(lock, reply)) {
         status = opentxs::SendResult::VALID_REPLY;
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to receive reply.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to receive reply.").Flush();
     }
 
     return output;
@@ -105,7 +103,7 @@ auto Request::wait(const Lock& lock) const noexcept -> bool
         const auto events = zmq_poll(poll, 1, POLL_MILLISECONDS);
 
         if (0 == events) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("No messages.").Flush();
+            LogVerbose()(OT_PRETTY_CLASS())("No messages.").Flush();
 
             const auto now = Clock::now();
 
@@ -119,8 +117,8 @@ auto Request::wait(const Lock& lock) const noexcept -> bool
 
         if (0 > events) {
             const auto error = zmq_errno();
-            LogError()(OT_PRETTY_CLASS(__func__))("Poll error: ")(
-                zmq_strerror(error))(".")
+            LogError()(OT_PRETTY_CLASS())("Poll error: ")(zmq_strerror(error))(
+                ".")
                 .Flush();
 
             return false;

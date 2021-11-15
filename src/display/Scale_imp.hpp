@@ -114,7 +114,7 @@ struct Scale::Imp {
                 output.convert_to<Amount::Imp::Backend>();
             return amount;
         } catch (const std::exception& e) {
-            LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             throw std::current_exception();
         }

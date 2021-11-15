@@ -102,7 +102,7 @@ auto Lucre::AddDenomination(
     const PasswordPrompt& reason) -> bool
 {
     if (std::numeric_limits<int>::max() < keySize) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid key size").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid key size").Flush();
         return false;
     }
 
@@ -112,13 +112,13 @@ auto Lucre::AddDenomination(
     // Let's make sure it doesn't already exist
     auto theArmor = Armored::Factory();
     if (GetPublic(theArmor, denomination)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error: Denomination public already exists in AddDenomination.")
             .Flush();
         return false;
     }
     if (GetPrivate(theArmor, denomination)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error: Denomination private already exists in "
             "AddDenomination.")
             .Flush();
@@ -127,15 +127,14 @@ auto Lucre::AddDenomination(
 
     if ((size / 8) < (MIN_COIN_LENGTH + DIGEST_LENGTH)) {
 
-        LogError()(OT_PRETTY_CLASS(__func__))("Prime must be at least ")(
+        LogError()(OT_PRETTY_CLASS())("Prime must be at least ")(
             (MIN_COIN_LENGTH + DIGEST_LENGTH) * 8)(" bits.")
             .Flush();
         return false;
     }
 
     if (size % 8) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Prime length must be a multiple of 8.")
+        LogError()(OT_PRETTY_CLASS())("Prime length must be a multiple of 8.")
             .Flush();
         return false;
     }
@@ -164,15 +163,14 @@ auto Lucre::AddDenomination(
     const auto strPublicBank = bioPublic.ToString();
 
     if (strPrivateBank->empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to generate private mint")
+        LogError()(OT_PRETTY_CLASS())("Failed to generate private mint")
             .Flush();
 
         return false;
     }
 
     if (strPublicBank->empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to generate public mint")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to generate public mint").Flush();
 
         return false;
     }
@@ -198,7 +196,7 @@ auto Lucre::AddDenomination(
     theNotary.GetIdentifier(m_ServerNymID);
     m_nDenominationCount++;
     bReturnValue = true;
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Successfully added denomination: ")(
+    LogDetail()(OT_PRETTY_CLASS())("Successfully added denomination: ")(
         denomination.str())
         .Flush();
 
@@ -219,11 +217,11 @@ auto Lucre::SignToken(
 #endif
 
     if (blind::CashType::Lucre != token.Type()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect token type").Flush();
+        LogError()(OT_PRETTY_CLASS())("Incorrect token type").Flush();
 
         return false;
     } else {
-        LogInsane()(OT_PRETTY_CLASS(__func__))("Signing a lucre token").Flush();
+        LogInsane()(OT_PRETTY_CLASS())("Signing a lucre token").Flush();
     }
 
     auto& lToken = dynamic_cast<blind::token::implementation::Lucre&>(token);
@@ -234,13 +232,11 @@ auto Lucre::SignToken(
     auto armoredPrivate = Armored::Factory();
 
     if (false == GetPrivate(armoredPrivate, lToken.Value())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load private key")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to load private key").Flush();
 
         return false;
     } else {
-        LogInsane()(OT_PRETTY_CLASS(__func__))("Loaded private mint key")
-            .Flush();
+        LogInsane()(OT_PRETTY_CLASS())("Loaded private mint key").Flush();
     }
 
     auto privateKey = String::Factory();
@@ -249,18 +245,16 @@ auto Lucre::SignToken(
         auto envelope = api_.Factory().Envelope(armoredPrivate);
 
         if (false == envelope->Open(notary, privateKey->WriteInto(), reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to decrypt private key")
+            LogError()(OT_PRETTY_CLASS())("Failed to decrypt private key")
                 .Flush();
 
             return false;
         } else {
-            LogInsane()(OT_PRETTY_CLASS(__func__))("Decrypted private mint key")
+            LogInsane()(OT_PRETTY_CLASS())("Decrypted private mint key")
                 .Flush();
         }
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to decode ciphertext")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to decode ciphertext").Flush();
 
         return false;
     }
@@ -270,12 +264,11 @@ auto Lucre::SignToken(
     auto prototoken = String::Factory();
 
     if (false == lToken.GetPublicPrototoken(prototoken, reason)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to extract prototoken")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to extract prototoken").Flush();
 
         return false;
     } else {
-        LogInsane()(OT_PRETTY_CLASS(__func__))("Extracted prototoken").Flush();
+        LogInsane()(OT_PRETTY_CLASS())("Extracted prototoken").Flush();
     }
 
     BIO_puts(bioRequest, prototoken->Get());
@@ -283,12 +276,11 @@ auto Lucre::SignToken(
     BIGNUM* bnSignature = bank.SignRequest(req);
 
     if (nullptr == bnSignature) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign prototoken")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to sign prototoken").Flush();
 
         return false;
     } else {
-        LogInsane()(OT_PRETTY_CLASS(__func__))("Signed prototoken").Flush();
+        LogInsane()(OT_PRETTY_CLASS())("Signed prototoken").Flush();
     }
 
     req.WriteBIO(bioSignature);
@@ -299,23 +291,21 @@ auto Lucre::SignToken(
     sig_buf[sig_len] = '\0';
 
     if (0 == sig_len) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to copy signature")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to copy signature").Flush();
 
         return false;
     } else {
-        LogInsane()(OT_PRETTY_CLASS(__func__))("Signature copied").Flush();
+        LogInsane()(OT_PRETTY_CLASS())("Signature copied").Flush();
     }
 
     auto signature = String::Factory(sig_buf);
 
     if (false == lToken.AddSignature(signature)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to set signature")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to set signature").Flush();
 
         return false;
     } else {
-        LogInsane()(OT_PRETTY_CLASS(__func__))("Signature serialized").Flush();
+        LogInsane()(OT_PRETTY_CLASS())("Signature serialized").Flush();
     }
 
     return true;
@@ -328,7 +318,7 @@ auto Lucre::VerifyToken(
 {
 
     if (blind::CashType::Lucre != token.Type()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect token type").Flush();
+        LogError()(OT_PRETTY_CLASS())("Incorrect token type").Flush();
 
         return false;
     }
@@ -345,7 +335,7 @@ auto Lucre::VerifyToken(
     auto spendable = String::Factory();
 
     if (false == lucreToken.GetSpendable(spendable, reason)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to extract").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to extract").Flush();
 
         return false;
     }
@@ -359,15 +349,14 @@ auto Lucre::VerifyToken(
         auto envelope = api_.Factory().Envelope(armoredPrivate);
 
         if (false == envelope->Open(notary, privateKey->WriteInto(), reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 ": Failed to decrypt private mint key")
                 .Flush();
 
             return false;
         }
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to decode private mint key")
+        LogError()(OT_PRETTY_CLASS())("Failed to decode private mint key")
             .Flush();
 
         return false;

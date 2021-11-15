@@ -61,8 +61,7 @@ void Root::init(const std::string& hash)
     auto data = std::shared_ptr<proto::StorageRoot>{};
 
     if (!driver_.LoadProto(hash, data)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to load root object file.")
+        LogError()(OT_PRETTY_CLASS())("Failed to load root object file.")
             .Flush();
         OT_FAIL;
     }
@@ -112,7 +111,7 @@ auto Root::Migrate(const Driver& to) const -> bool
             driver_.StoreRoot(true, root_);
         });
     } catch (const std::exception& e) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }

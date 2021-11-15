@@ -7,15 +7,18 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "otx/common/Contract.hpp"  // IWYU pragma: associated
 
+#include <irrxml/irrXML.hpp>
+#include <cstring>
 #include <fstream>  // IWYU pragma: keep
+#include <memory>
 #include <stdexcept>
+#include <utility>
 
 #include "core/OTStorage.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/OT.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -54,8 +57,7 @@ auto Contract::Imp::CalculateContractID(Identifier& newID) const noexcept
     auto strTemp = String::Factory(str_Trim2.c_str());
 
     if (!newID.CalculateDigest(strTemp->Bytes()))
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Error calculating Contract digest.")
+        LogError()(OT_PRETTY_CLASS())("Error calculating Contract digest.")
             .Flush();
 }
 
@@ -77,7 +79,7 @@ auto Contract::Imp::CreateContract(
     const std::uint32_t lLength = strContract.GetLength();
 
     if ((3 > lLength) || !strContract.At(lLength - 1, cNewline)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Invalid input: Contract is less than 3 bytes "
             "std::int64_t, or unable to read a byte from the end where a "
             "newline is meant to be.")
@@ -113,8 +115,7 @@ auto Contract::Imp::CreateContract(
                 (theSigner.HasCapability(NymCapability::SIGN_MESSAGE));
 
             if (!bHasCredentials) {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Signing nym has no credentials.")
+                LogError()(OT_PRETTY_CLASS())("Signing nym has no credentials.")
                     .Flush();
                 return false;
             } else  // theSigner has Credentials, so we'll add him to the
@@ -122,8 +123,7 @@ auto Contract::Imp::CreateContract(
             {
                 auto pNym = api_.Wallet().Nym(theSigner.ID());
                 if (nullptr == pNym) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
-                        "Failed to load signing nym.")
+                    LogError()(OT_PRETTY_CLASS())("Failed to load signing nym.")
                         .Flush();
                     return false;
                 }
@@ -140,8 +140,7 @@ auto Contract::Imp::CreateContract(
         CreateContents();
 
         if (!SignContract(theSigner, reason)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("SignContract failed.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("SignContract failed.").Flush();
             return false;
         }
 
@@ -159,9 +158,8 @@ auto Contract::Imp::CreateContract(
             return true;
         }
     } else
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "LoadContractXML failed. strContract "
-            "contents: ")(strContract)(".")
+        LogError()(OT_PRETTY_CLASS())("LoadContractXML failed. strContract "
+                                      "contents: ")(strContract)(".")
             .Flush();
 
     return false;
@@ -302,8 +300,7 @@ auto Contract::Imp::LoadContractFromString(const String& theStr) noexcept
     Release();
 
     if (!theStr.Exists()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "ERROR: Empty string passed in...")
+        LogError()(OT_PRETTY_CLASS())("ERROR: Empty string passed in...")
             .Flush();
         return false;
     }
@@ -313,7 +310,7 @@ auto Contract::Imp::LoadContractFromString(const String& theStr) noexcept
     if (false == strContract->DecodeIfArmored())  // bEscapedIsAllowed=true by
                                                   // default.
     {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "ERROR: Input string apparently was encoded "
             "and then failed decoding. "
             "Contents: ")(theStr)(".")
@@ -356,8 +353,8 @@ auto Contract::Imp::LoadContractRawFile() noexcept -> bool
 
     if (!OTDB::Exists(
             api_, api_.DataFolder(), szFoldername, szFilename, "", "")) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("File does not "
-                                                "exist: ")(
+        LogVerbose()(OT_PRETTY_CLASS())("File does not "
+                                        "exist: ")(
             szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
         return false;
@@ -371,8 +368,8 @@ auto Contract::Imp::LoadContractRawFile() noexcept -> bool
                                                                       // STORE.
 
     if (!strFileContents->Exists()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error reading "
-                                              "file: ")(
+        LogError()(OT_PRETTY_CLASS())("Error reading "
+                                      "file: ")(
             szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
             .Flush();
         return false;
@@ -381,7 +378,7 @@ auto Contract::Imp::LoadContractRawFile() noexcept -> bool
     if (false == strFileContents->DecodeIfArmored())  // bEscapedIsAllowed=true
                                                       // by default.
     {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Input string apparently was encoded and "
             "then failed decoding. Contents: ")(strFileContents)(".")
             .Flush();
@@ -453,7 +450,7 @@ auto Contract::Imp::LoadContractXML() noexcept -> bool
 
                 // an error was returned. file format or whatever.
                 if ((-1) == retProcess) {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "(Cancelling this "
                         "contract load; an error occurred).")
                         .Flush();
@@ -462,7 +459,7 @@ auto Contract::Imp::LoadContractXML() noexcept -> bool
                 // No error, but also the node wasn't found...
                 else if (0 == retProcess) {
                     // unknown element type
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "UNKNOWN element type in "
                         "Contract::LoadContractXML:"
                         " ")(xml->getNodeName())(", "
@@ -471,8 +468,7 @@ auto Contract::Imp::LoadContractXML() noexcept -> bool
                                                  " ")(xml->getNodeData())(".")
                         .Flush();
 
-                    LogError()(OT_PRETTY_CLASS(__func__))(m_xmlUnsigned)(".")
-                        .Flush();
+                    LogError()(OT_PRETTY_CLASS())(m_xmlUnsigned)(".").Flush();
                 }
                 // else if 1 was returned, that means the node was processed.
             } break;
@@ -499,7 +495,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
     bool bHaveEnteredContentMode = false;  // "have yet to enter content mode"
 
     if (!m_strRawFile->GetLength()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Empty m_strRawFile in Contract::ParseRawFile. "
             "Filename: ")(m_strFoldername)(api::Legacy::PathSeparator())(
             m_strFilename)(".")
@@ -576,7 +572,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
             // c. There is an error in the file!
             else if (
                 line.length() < 3 || line.at(1) != ' ' || line.at(2) != '-') {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Error in contract ")(
+                LogConsole()(OT_PRETTY_CLASS())("Error in contract ")(
                     m_strFilename)(": A dash at the "
                                    "beginning of the "
                                    "line should be "
@@ -601,12 +597,11 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
             if (bHaveEnteredContentMode) {
                 if (bSignatureMode) {
                     if (line.length() < 2) {
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
-                            "Skipping short line...")
+                        LogDebug()(OT_PRETTY_CLASS())("Skipping short line...")
                             .Flush();
 
                         if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
-                            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                            LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected EOF "
                                                             "after short line.")
@@ -616,12 +611,12 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
 
                         continue;
                     } else if (line.compare(0, 8, "Version:") == 0) {
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                        LogDebug()(OT_PRETTY_CLASS())(
                             "Skipping version section...")
                             .Flush();
 
                         if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
-                            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                            LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected EOF "
                                                             "after Version: .")
@@ -631,12 +626,12 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
 
                         continue;
                     } else if (line.compare(0, 8, "Comment:") == 0) {
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                        LogDebug()(OT_PRETTY_CLASS())(
                             "Skipping comment section..")
                             .Flush();
 
                         if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
-                            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                            LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected EOF "
                                                             "after Comment: .")
@@ -647,7 +642,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
                         continue;
                     }
                     if (line.compare(0, 5, "Meta:") == 0) {
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                        LogDebug()(OT_PRETTY_CLASS())(
                             "Collecting signature metadata...")
                             .Flush();
                         ;
@@ -659,7 +654,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
                         // Master Cred ID, and ChildCred ID. Key type is
                         // (A|E|S) and the others are base62.
                         {
-                            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                            LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected "
                                                             "length for "
@@ -669,7 +664,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
                         }
 
                         if (nullptr == pSig) {
-                            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                            LogConsole()(OT_PRETTY_CLASS())(
                                 "Corrupted signature")
                                 .Flush();
 
@@ -685,7 +680,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
                                          line.at(12)))  // "knms" from "Meta:
                                                         // knms"
                         {
-                            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                            LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected "
                                                             "metadata in the "
@@ -697,7 +692,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
                         }
 
                         if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
-                            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                            LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in signature for "
                                 "contract ")(m_strFilename)(": Unexpected EOF "
                                                             "after Meta: .")
@@ -710,7 +705,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
                 }
                 if (bContentMode) {
                     if (line.compare(0, 6, "Hash: ") == 0) {
-                        LogDebug()(OT_PRETTY_CLASS(__func__))(
+                        LogDebug()(OT_PRETTY_CLASS())(
                             "Collecting message digest algorithm from "
                             " contract header...")
                             .Flush();
@@ -724,7 +719,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
                                 strHashType);
 
                         if (bIsEOF || !m_strRawFile->sgets(buffer1, 2048)) {
-                            LogConsole()(OT_PRETTY_CLASS(__func__))(
+                            LogConsole()(OT_PRETTY_CLASS())(
                                 "Error in contract ")(m_strFilename)(": "
                                                                      "Unexpec"
                                                                      "ted "
@@ -744,8 +739,7 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
 
         if (bSignatureMode) {
             if (nullptr == pSig) {
-                LogConsole()(OT_PRETTY_CLASS(__func__))("Corrupted signature")
-                    .Flush();
+                LogConsole()(OT_PRETTY_CLASS())("Corrupted signature").Flush();
 
                 return false;
             }
@@ -757,32 +751,31 @@ auto Contract::Imp::ParseRawFile() noexcept -> bool
     } while (!bIsEOF);
 
     if (!bHaveEnteredContentMode) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error in Contract::ParseRawFile: Found no BEGIN for signed "
             "content.")
             .Flush();
         return false;
     } else if (bContentMode) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error in Contract::ParseRawFile: EOF while reading xml "
             "content.")
             .Flush();
         return false;
     } else if (bSignatureMode) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error in Contract::ParseRawFile: EOF while reading "
             "signature.")
             .Flush();
         return false;
     } else if (!LoadContractXML()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error in Contract::ParseRawFile: Unable to load XML "
             "portion of contract into memory.")
             .Flush();
         return false;
     } else if (crypto::HashType::Error == m_strSigHashType) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to set hash type.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to set hash type.").Flush();
 
         return false;
     } else {
@@ -810,7 +803,7 @@ auto Contract::Imp::ProcessXMLNode(irr::io::IrrXMLReader*& xml) noexcept
             String::Factory(xml->getAttributeValue("longname"));
         m_strEntityEmail = String::Factory(xml->getAttributeValue("email"));
 
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Loaded Entity, shortname: ")(
+        LogDetail()(OT_PRETTY_CLASS())("Loaded Entity, shortname: ")(
             m_strEntityShortName)(", "
                                   "Longname:"
                                   " ")(m_strEntityLongName)(", email: ")(
@@ -828,10 +821,9 @@ auto Contract::Imp::ProcessXMLNode(irr::io::IrrXMLReader*& xml) noexcept
         strConditionName = String::Factory(xml->getAttributeValue("name"));
 
         if (!SkipToTextField(xml)) {
-            LogDetail()(OT_PRETTY_CLASS(__func__))(
-                "Failure: Unable to find "
-                "expected text field for xml node "
-                "named: ")(xml->getNodeName())(".")
+            LogDetail()(OT_PRETTY_CLASS())("Failure: Unable to find "
+                                           "expected text field for xml node "
+                                           "named: ")(xml->getNodeName())(".")
                 .Flush();
             return (-1);  // error condition
         }
@@ -839,7 +831,7 @@ auto Contract::Imp::ProcessXMLNode(irr::io::IrrXMLReader*& xml) noexcept
         if (irr::io::EXN_TEXT == xml->getNodeType()) {
             strConditionValue = String::Factory(xml->getNodeData());
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error in Contract::ProcessXMLNode: Condition without "
                 "value: ")(strConditionName)(".")
                 .Flush();
@@ -851,7 +843,7 @@ auto Contract::Imp::ProcessXMLNode(irr::io::IrrXMLReader*& xml) noexcept
         m_mapConditions.insert(std::pair<std::string, std::string>(
             strConditionName->Get(), strConditionValue->Get()));
 
-        LogDetail()(OT_PRETTY_CLASS(__func__))("---- Loaded condition ")(
+        LogDetail()(OT_PRETTY_CLASS())("---- Loaded condition ")(
             strConditionName)
             .Flush();
         //        otWarn << "Loading condition \"%s\": %s----------(END
@@ -864,7 +856,7 @@ auto Contract::Imp::ProcessXMLNode(irr::io::IrrXMLReader*& xml) noexcept
             String::Factory(xml->getAttributeValue("nymID"));
 
         if (!strSignerNymID->Exists()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: Expected nymID attribute on signer element.")
                 .Flush();
             return (-1);  // error condition
@@ -874,8 +866,7 @@ auto Contract::Imp::ProcessXMLNode(irr::io::IrrXMLReader*& xml) noexcept
         const auto pNym = api_.Wallet().Nym(nymId);
 
         if (nullptr == pNym) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failure loading signing nym.")
+            LogError()(OT_PRETTY_CLASS())("Failure loading signing nym.")
                 .Flush();
 
             return (-1);
@@ -1002,8 +993,7 @@ auto Contract::Imp::SaveToContractFolder() noexcept -> bool
     //    m_strFoldername    = strFoldername;
     //    m_strFilename    = strFilename;
 
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Saving asset contract to ")(
-        "disk... ")
+    LogVerbose()(OT_PRETTY_CLASS())("Saving asset contract to ")("disk... ")
         .Flush();
 
     return SaveContract(strFoldername->Get(), strFilename->Get());
@@ -1049,8 +1039,7 @@ auto Contract::Imp::SignContract(
                      key.PrivateKey(reason),
                      hashType,
                      theSignature)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "engine.SignContract returned false.")
+        LogError()(OT_PRETTY_CLASS())("engine.SignContract returned false.")
             .Flush();
         return false;
     }
@@ -1079,8 +1068,8 @@ auto Contract::Imp::SignContract(
     if (bSigned) {
         m_listSignatures.emplace_back(std::move(sig));
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failure while calling "
-                                              "SignContract(nym, sig, reason).")
+        LogError()(OT_PRETTY_CLASS())("Failure while calling "
+                                      "SignContract(nym, sig, reason).")
             .Flush();
     }
 
@@ -1108,9 +1097,9 @@ auto Contract::Imp::SignContractAuthent(
     if (bSigned) {
         m_listSignatures.emplace_back(std::move(sig));
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failure while calling "
-                                              "SignContractAuthent(nym, sig, "
-                                              "reason).")
+        LogError()(OT_PRETTY_CLASS())("Failure while calling "
+                                      "SignContractAuthent(nym, sig, "
+                                      "reason).")
             .Flush();
     }
 
@@ -1128,7 +1117,7 @@ auto Contract::Imp::SignWithKey(
     if (bSigned) {
         m_listSignatures.emplace_back(std::move(sig));
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failure while calling SignContract(nym, sig).")
             .Flush();
     }
@@ -1158,8 +1147,7 @@ auto Contract::Imp::VerifyContract() const noexcept -> bool
     // Make sure that the supposed Contract ID that was set is actually
     // a hash of the contract file, signatures and all.
     if (!VerifyContractID()) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Failed verifying contract ID.")
-            .Flush();
+        LogDetail()(OT_PRETTY_CLASS())("Failed verifying contract ID.").Flush();
         return false;
     }
 
@@ -1168,7 +1156,7 @@ auto Contract::Imp::VerifyContract() const noexcept -> bool
     auto pNym = GetContractPublicNym();
 
     if (nullptr == pNym) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Failed retrieving public nym from contract.")
             .Flush();
         return false;
@@ -1177,7 +1165,7 @@ auto Contract::Imp::VerifyContract() const noexcept -> bool
     if (!VerifySignature(*pNym)) {
         const auto& nymID = pNym->ID();
         const auto strNymID = String::Factory(nymID);
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Failed verifying the contract's signature "
             "against the public key that was retrieved "
             "from the contract, with key ID: ")(strNymID)(".")
@@ -1185,7 +1173,7 @@ auto Contract::Imp::VerifyContract() const noexcept -> bool
         return false;
     }
 
-    LogDetail()(OT_PRETTY_CLASS(__func__))(
+    LogDetail()(OT_PRETTY_CLASS())(
         "Verified -- The Contract ID from the wallet matches the "
         "newly-calculated hash of the contract file. "
         "Verified -- A standard \"contract\" Public Key or x509 Cert WAS "
@@ -1212,7 +1200,7 @@ auto Contract::Imp::VerifyContractID() const noexcept -> bool
     if (!(m_ID == newID)) {
         auto str1 = String::Factory(m_ID), str2 = String::Factory(newID);
 
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Hashes do NOT match in Contract::VerifyContractID. "
             "Expected: ")(str1)(". ")("Actual: ")(str2)(".")
             .Flush();
@@ -1220,9 +1208,8 @@ auto Contract::Imp::VerifyContractID() const noexcept -> bool
     } else {
         auto str1 = String::Factory();
         newID->GetString(str1);
-        LogDetail()(OT_PRETTY_CLASS(__func__))(
-            "Contract ID *SUCCESSFUL* match to "
-            "hash of contract file: ")(str1)
+        LogDetail()(OT_PRETTY_CLASS())("Contract ID *SUCCESSFUL* match to "
+                                       "hash of contract file: ")(str1)
             .Flush();
         return true;
     }
@@ -1301,7 +1288,7 @@ auto Contract::Imp::VerifySignature(
                      key.PublicKey(),
                      theSignature,
                      hashType)) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))(
+        LogTrace()(OT_PRETTY_CLASS())(
             "engine.VerifyContractSignature returned false.")
             .Flush();
 
@@ -1333,7 +1320,7 @@ auto Contract::Imp::VerifySignature(
     } else {
         auto strNymID = String::Factory();
         nym.GetIdentifier(strNymID);
-        LogDetail()(OT_PRETTY_CLASS(__func__))(
+        LogDetail()(OT_PRETTY_CLASS())(
             "Tried to grab a list of keys from this Nym "
             "(")(strNymID)(") which might match this signature, "
                            "but recovered none. Therefore, will "
@@ -1400,7 +1387,7 @@ auto Contract::Imp::WriteContract(
     OT_ASSERT(filename.size() > 2);
 
     if (!m_strRawFile->Exists()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error saving file (contract contents are "
             "empty): ")(folder)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
@@ -1413,7 +1400,7 @@ auto Contract::Imp::WriteContract(
 
     if (false ==
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error saving file (failed writing armored "
             "string): ")(folder)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
@@ -1425,7 +1412,7 @@ auto Contract::Imp::WriteContract(
         api_, strFinal->Get(), api_.DataFolder(), folder, filename, "", "");
 
     if (!bSaved) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error saving file: ")(
+        LogError()(OT_PRETTY_CLASS())("Error saving file: ")(
             folder)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
 

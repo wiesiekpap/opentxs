@@ -126,8 +126,7 @@ auto Secondary::serialize(
         if (masterSignature) {
             *serializedCredential->add_signature() = *masterSignature;
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed to get master signature.")
+            LogError()(OT_PRETTY_CLASS())("Failed to get master signature.")
                 .Flush();
         }
     }

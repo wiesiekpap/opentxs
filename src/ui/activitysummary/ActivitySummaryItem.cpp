@@ -124,8 +124,7 @@ auto ActivitySummaryItem::find_text(
 
                 return *text;
             } else {
-                LogError()(OT_PRETTY_CLASS(__func__))(
-                    "Cheque item does not exist.")
+                LogError()(OT_PRETTY_CLASS())("Cheque item does not exist.")
                     .Flush();
             }
         } break;

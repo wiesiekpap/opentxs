@@ -57,8 +57,7 @@ auto Transactor::issueNextTransactionNumber(
 
     // Next, we save it to file.
     if (!server_.GetMainFile().SaveMainFile()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error saving main server file.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error saving main server file.").Flush();
         transactionNumber_--;
         return false;
     }
@@ -84,7 +83,7 @@ auto Transactor::issueNextTransactionNumberToNym(
     // is also recorded in his Nym file.)  That way the server always knows
     // which numbers are valid for each Nym.
     if (!context.IssueNumber(transactionNumber_)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             ": Error adding transaction number to Nym file.")
             .Flush();
         transactionNumber_--;
@@ -113,7 +112,7 @@ auto Transactor::addBasketAccountID(
 
     if (lookupBasketAccountID(BASKET_ID, theBasketAcctID)) {
         {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 ": User attempted to add Basket that already exists.")
                 .Flush();
         }
@@ -240,15 +239,15 @@ auto Transactor::getVoucherAccount(
         const auto strInstrumentDefinitionID =
             String::Factory(INSTRUMENT_DEFINITION_ID);
         {
-            LogConsole()(OT_PRETTY_CLASS(__func__))("Successfully created "
-                                                    "voucher account ID: ")(
+            LogConsole()(OT_PRETTY_CLASS())("Successfully created "
+                                            "voucher account ID: ")(
                 strAcctID)(" Instrument Definition "
                            "ID:"
                            " ")(strInstrumentDefinitionID)(".")
                 .Flush();
         }
         if (!server_.GetMainFile().SaveMainFile()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 ": Error saving main "
                 "server file containing new account ID!!")
                 .Flush();

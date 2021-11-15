@@ -9,12 +9,7 @@
 
 #include <zmq.h>
 #include <cassert>
-#include <chrono>
 #include <cstdint>
-#include <future>
-#include <iosfwd>
-#include <iostream>
-#include <thread>
 
 #include "PairEventListener.hpp"
 #include "internal/network/Factory.hpp"
@@ -62,15 +57,13 @@ auto Context::RawToZ85(
     const AllocateOutput destination) noexcept -> bool
 {
     if (0 != input.size() % 4) {
-        LogError()(OT_PRETTY_STATIC(Context, __func__))("Invalid input size.")
-            .Flush();
+        LogError()(OT_PRETTY_STATIC(Context))("Invalid input size.").Flush();
 
         return false;
     }
 
     if (false == bool(destination)) {
-        LogError()(OT_PRETTY_STATIC(Context, __func__))(
-            "Invalid output allocator.")
+        LogError()(OT_PRETTY_STATIC(Context))("Invalid output allocator.")
             .Flush();
 
         return false;
@@ -80,8 +73,7 @@ auto Context::RawToZ85(
     auto out = destination(target);
 
     if (false == out.valid(target)) {
-        LogError()(OT_PRETTY_STATIC(Context, __func__))(
-            "Failed to allocate output")
+        LogError()(OT_PRETTY_STATIC(Context))("Failed to allocate output")
             .Flush();
 
         return false;
@@ -98,15 +90,13 @@ auto Context::Z85ToRaw(
     const AllocateOutput destination) noexcept -> bool
 {
     if (0 != input.size() % 5) {
-        LogError()(OT_PRETTY_STATIC(Context, __func__))("Invalid input size.")
-            .Flush();
+        LogError()(OT_PRETTY_STATIC(Context))("Invalid input size.").Flush();
 
         return false;
     }
 
     if (false == bool(destination)) {
-        LogError()(OT_PRETTY_STATIC(Context, __func__))(
-            "Invalid output allocator.")
+        LogError()(OT_PRETTY_STATIC(Context))("Invalid output allocator.")
             .Flush();
 
         return false;
@@ -116,8 +106,7 @@ auto Context::Z85ToRaw(
     auto out = destination(target);
 
     if (false == out.valid(target)) {
-        LogError()(OT_PRETTY_STATIC(Context, __func__))(
-            "Failed to allocate output")
+        LogError()(OT_PRETTY_STATIC(Context))("Failed to allocate output")
             .Flush();
 
         return false;

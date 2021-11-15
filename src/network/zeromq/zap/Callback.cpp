@@ -84,8 +84,7 @@ auto Callback::Process(const zap::Request& request) const -> OTZMQZAPReply
     auto [valid, error] = request.Validate();
 
     if (false == valid) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Rejecting invalid request.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Rejecting invalid request.").Flush();
 
         return zap::Reply::Factory(request, Status::SystemError, error);
     }
@@ -102,14 +101,13 @@ auto Callback::SetDomain(
     Lock lock(domain_lock_);
 
     if (domain.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid domain.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid domain.").Flush();
 
         return false;
     }
 
     if (0 < domains_.count(domain)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Domain ")(
-            domain)(" already registered.")
+        LogError()(OT_PRETTY_CLASS())("Domain ")(domain)(" already registered.")
             .Flush();
 
         return false;

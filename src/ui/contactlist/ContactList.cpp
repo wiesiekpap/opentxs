@@ -161,7 +161,7 @@ auto ContactList::pipeline(const Message& in) noexcept -> void
     const auto body = in.Body();
 
     if (1 > body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
         OT_FAIL;
     }
@@ -191,7 +191,7 @@ auto ContactList::pipeline(const Message& in) noexcept -> void
             shutdown(shutdown_promise_);
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unhandled type").Flush();
+            LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
 
             OT_FAIL;
         }
@@ -227,8 +227,7 @@ auto ContactList::process_contact(const Identifier& contactID) noexcept -> void
 auto ContactList::startup() noexcept -> void
 {
     const auto contacts = Widget::api_.Contacts().ContactList();
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Loading ")(contacts.size())(
-        " contacts.")
+    LogVerbose()(OT_PRETTY_CLASS())("Loading ")(contacts.size())(" contacts.")
         .Flush();
 
     for (const auto& [id, alias] : contacts) {

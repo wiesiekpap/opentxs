@@ -176,8 +176,7 @@ auto Factory::Purse(
     const auto added = output->AddNym(owner, reason);
 
     if (false == added) {
-        LogError()(OT_PRETTY_STATIC(Factory, __func__))(
-            "Failed to encrypt purse")
+        LogError()(OT_PRETTY_STATIC(Factory))("Failed to encrypt purse")
             .Flush();
 
         return nullptr;
@@ -380,7 +379,7 @@ auto Purse::AddNym(const identity::Nym& nym, const PasswordPrompt& reason)
     -> bool
 {
     if (false == unlocked_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Purse is locked").Flush();
+        LogError()(OT_PRETTY_CLASS())("Purse is locked").Flush();
 
         return false;
     }
@@ -389,7 +388,7 @@ auto Purse::AddNym(const identity::Nym& nym, const PasswordPrompt& reason)
     auto& sessionKey = *primary_passwords_.rbegin();
 
     if (false == bool(primary_)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing primary key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing primary key").Flush();
 
         return false;
     }
@@ -399,7 +398,7 @@ auto Purse::AddNym(const identity::Nym& nym, const PasswordPrompt& reason)
     if (envelope->Seal(nym, primary_key_password_->Bytes(), reason)) {
         if (false == envelope->Serialize(sessionKey)) { return false; }
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to add nym").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to add nym").Flush();
         primary_passwords_.pop_back();
 
         return false;
@@ -429,7 +428,7 @@ auto Purse::deserialize_secondary_key(
                         ChaCha20Poly1305));
 
             if (false == bool(output)) {
-                LogError()(OT_PRETTY_STATIC(Purse, __func__))(
+                LogError()(OT_PRETTY_STATIC(Purse))(
                     "Invalid serialized secondary key")
                     .Flush();
 
@@ -441,8 +440,7 @@ auto Purse::deserialize_secondary_key(
         case blind::PurseType::Normal: {
         } break;
         default: {
-            LogError()(OT_PRETTY_STATIC(Purse, __func__))("Invalid purse state")
-                .Flush();
+            LogError()(OT_PRETTY_STATIC(Purse))("Invalid purse state").Flush();
 
             throw std::runtime_error("invalid purse state");
         }
@@ -462,7 +460,7 @@ auto Purse::deserialize_secondary_password(
                 api.Factory().Envelope(in.secondarypassword()));
 
             if (false == bool(output)) {
-                LogError()(OT_PRETTY_STATIC(Purse, __func__))(
+                LogError()(OT_PRETTY_STATIC(Purse))(
                     ": Invalid serialized secondary password")
                     .Flush();
 
@@ -475,8 +473,7 @@ auto Purse::deserialize_secondary_password(
         case blind::PurseType::Normal: {
         } break;
         default: {
-            LogError()(OT_PRETTY_STATIC(Purse, __func__))("Invalid purse state")
-                .Flush();
+            LogError()(OT_PRETTY_STATIC(Purse))("Invalid purse state").Flush();
 
             throw std::runtime_error("invalid purse state");
         }
@@ -512,7 +509,7 @@ auto Purse::GeneratePrototokens(
                 Factory::Token(api_, owner, mint, tokenAmount, *this, reason)};
 
             if (false == bool(pToken)) {
-                LogError()(OT_PRETTY_STATIC(Purse, __func__))(
+                LogError()(OT_PRETTY_STATIC(Purse))(
                     ": Failed to generate prototoken")
                     .Flush();
 
@@ -523,7 +520,7 @@ auto Purse::GeneratePrototokens(
 
             tokenAmount = mint.GetLargestDenomination(workingAmount);
         } catch (const std::exception& e) {
-            LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             return false;
         }
@@ -562,7 +559,7 @@ auto Purse::PrimaryKey(PasswordPrompt& password) -> crypto::key::Symmetric&
 auto Purse::Pop() -> std::shared_ptr<Token>
 {
     if (0 == tokens_.size()) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Purse is empty").Flush();
+        LogTrace()(OT_PRETTY_CLASS())("Purse is empty").Flush();
 
         return {};
     }
@@ -572,7 +569,7 @@ auto Purse::Pop() -> std::shared_ptr<Token>
     std::shared_ptr<Token> pToken{existing.clone()};
 
     if (false == bool(pToken)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to get token").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to get token").Flush();
 
         return {};
     }
@@ -591,7 +588,7 @@ auto Purse::Process(
     const opentxs::PasswordPrompt& reason) -> bool
 {
     if (blind::PurseType::Issue != state_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect purse state").Flush();
+        LogError()(OT_PRETTY_CLASS())("Incorrect purse state").Flush();
 
         return false;
     }
@@ -609,8 +606,7 @@ auto Purse::Process(
         const_cast<std::shared_ptr<const OTSymmetricKey>&>(secondary_).reset();
         secondary_key_password_ = api_.Factory().Secret(0);
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to process token")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to process token").Flush();
     }
 
     return processed;
@@ -621,19 +617,19 @@ auto Purse::Push(
     const opentxs::PasswordPrompt& reason) -> bool
 {
     if (false == bool(original)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid token").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid token").Flush();
 
         return false;
     }
 
     if (false == bool(primary_)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing primary key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing primary key").Flush();
 
         return false;
     }
 
     if (false == unlocked_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Purse is locked").Flush();
+        LogError()(OT_PRETTY_CLASS())("Purse is locked").Flush();
 
         return false;
     }
@@ -645,8 +641,7 @@ auto Purse::Push(
     auto& token = *copy;
 
     if (false == token.ChangeOwner(original->Owner(), *this, reason)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to encrypt token")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to encrypt token").Flush();
 
         return false;
     }
@@ -767,7 +762,7 @@ auto Purse::Serialize(proto::Purse& output) const noexcept -> bool
             }
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return false;
     }
@@ -789,13 +784,13 @@ auto Purse::Unlock(
     const opentxs::PasswordPrompt& reason) const -> bool
 {
     if (primary_passwords_.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("No session keys found").Flush();
+        LogError()(OT_PRETTY_CLASS())("No session keys found").Flush();
 
         return false;
     }
 
     if (false == bool(primary_)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing primary key").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing primary key").Flush();
 
         return false;
     }
@@ -819,21 +814,20 @@ auto Purse::Unlock(
                     primary_key_password_ = password;
                     break;
                 } else {
-                    LogError()(OT_PRETTY_CLASS(__func__))(
+                    LogError()(OT_PRETTY_CLASS())(
                         "Decrypted password does not unlock the primary key")
                         .Flush();
                 }
             }
         } catch (...) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid session key")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid session key").Flush();
 
             continue;
         }
     }
 
     if (false == unlocked_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(nym.ID())(
+        LogError()(OT_PRETTY_CLASS())("Nym ")(nym.ID())(
             " can not decrypt any session key in the purse.")
             .Flush();
     }
@@ -861,8 +855,7 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
             allowedStates.insert(blind::TokenState::Expired);
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid purse state.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid purse state.").Flush();
 
             return false;
         }
@@ -872,7 +865,7 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
         const auto& token = pToken.get();
 
         if (type_ != token.Type()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Token type does not match purse type.")
                 .Flush();
 
@@ -880,7 +873,7 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
         }
 
         if (notary_ != token.Notary()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Token notary does not match purse notary.")
                 .Flush();
 
@@ -888,7 +881,7 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
         }
 
         if (unit_ != token.Unit()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Token unit does not match purse unit.")
                 .Flush();
 
@@ -896,8 +889,7 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
         }
 
         if (0 == allowedStates.count(token.State())) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect token state")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Incorrect token state").Flush();
 
             return false;
         }
@@ -905,7 +897,7 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
         const auto series = token.Series();
 
         if (std::numeric_limits<std::uint32_t>::max() < series) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid series").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid series").Flush();
 
             return false;
         }
@@ -914,8 +906,7 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
             server.GetPrivateMint(unit_, static_cast<std::uint32_t>(series));
 
         if (false == bool(pMint)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect token series")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Incorrect token series").Flush();
 
             return false;
         }
@@ -923,21 +914,19 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
         auto& mint = *pMint;
 
         if (mint.Expired() && (token.State() != blind::TokenState::Expired)) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Token is expired").Flush();
+            LogError()(OT_PRETTY_CLASS())("Token is expired").Flush();
 
             return false;
         }
 
         if (token.ValidFrom() != mint.GetValidFrom()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect token valid from")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Incorrect token valid from").Flush();
 
             return false;
         }
 
         if (token.ValidTo() != mint.GetValidTo()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Incorrect token valid to")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Incorrect token valid to").Flush();
 
             return false;
         }
@@ -956,8 +945,7 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
             case blind::TokenState::Expired: {
             } break;
             default: {
-                LogError()(OT_PRETTY_CLASS(__func__))("Invalid token state")
-                    .Flush();
+                LogError()(OT_PRETTY_CLASS())("Invalid token state").Flush();
 
                 return false;
             }
@@ -965,22 +953,20 @@ auto Purse::Verify(const api::session::Notary& server) const -> bool
     }
 
     if (total_value_ != total) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect purse value").Flush();
+        LogError()(OT_PRETTY_CLASS())("Incorrect purse value").Flush();
 
         return false;
     }
 
     if (latest_valid_from_ != validFrom) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Incorrect purse latest valid from")
+        LogError()(OT_PRETTY_CLASS())("Incorrect purse latest valid from")
             .Flush();
 
         return false;
     }
 
     if (earliest_valid_to_ != validTo) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Incorrect purse earliest valid to")
+        LogError()(OT_PRETTY_CLASS())("Incorrect purse earliest valid to")
             .Flush();
 
         return false;

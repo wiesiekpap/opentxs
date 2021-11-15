@@ -8,6 +8,7 @@
 
 #include <robin_hood.h>
 #include <cstdint>
+#include <map>
 #include <mutex>
 #include <set>
 #include <utility>

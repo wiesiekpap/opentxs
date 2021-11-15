@@ -99,8 +99,7 @@
 #define CHECK_NYM(a)                                                           \
     {                                                                          \
         if (a.empty()) {                                                       \
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid ")(#a)(".")         \
-                .Flush();                                                      \
+            LogError()(OT_PRETTY_CLASS())("Invalid ")(#a)(".").Flush();        \
                                                                                \
             return error_task();                                               \
         }                                                                      \
@@ -111,8 +110,7 @@
         CHECK_NYM(a)                                                           \
                                                                                \
         if (b.empty()) {                                                       \
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid ")(#b)(".")         \
-                .Flush();                                                      \
+            LogError()(OT_PRETTY_CLASS())("Invalid ")(#b)(".").Flush();        \
                                                                                \
             return error_task();                                               \
         }                                                                      \
@@ -123,8 +121,7 @@
         CHECK_SERVER(a, b)                                                     \
                                                                                \
         if (c.empty()) {                                                       \
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid ")(#c)(".")         \
-                .Flush();                                                      \
+            LogError()(OT_PRETTY_CLASS())("Invalid ")(#c)(".").Flush();        \
                                                                                \
             return error_task();                                               \
         }                                                                      \
@@ -234,8 +231,7 @@ OTX::OTX(
           }))
     , account_subscriber_([&] {
         const auto endpoint = client_.Endpoints().AccountUpdate();
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Connecting to ")(endpoint)
-            .Flush();
+        LogDetail()(OT_PRETTY_CLASS())("Connecting to ")(endpoint).Flush();
         auto out = client_.Network().ZeroMQ().SubscribeSocket(
             account_subscriber_callback_.get());
         const auto start = out->Start(endpoint);
@@ -344,8 +340,7 @@ auto OTX::AcknowledgeBailment(
                      StorageBox::INCOMINGPEERREQUEST,
                      time,
                      serializedRequest)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load request.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to load request.").Flush();
 
         return error_task();
     }
@@ -372,7 +367,7 @@ auto OTX::AcknowledgeBailment(
              peerreply.as<contract::peer::Reply>(),
              instantiatedRequest.as<contract::peer::Request>()});
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return error_task();
     }
@@ -398,23 +393,20 @@ auto OTX::AcknowledgeConnection(
 
     if (ack) {
         if (url.empty()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Warning: url is empty.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Warning: url is empty.").Flush();
         }
 
         if (login.empty()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Warning: login is empty.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Warning: login is empty.").Flush();
         }
 
         if (password.empty()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Warning: password is empty.")
+            LogError()(OT_PRETTY_CLASS())("Warning: password is empty.")
                 .Flush();
         }
 
         if (key.empty()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Warning: key is empty.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Warning: key is empty.").Flush();
         }
     }
 
@@ -426,8 +418,7 @@ auto OTX::AcknowledgeConnection(
                      StorageBox::INCOMINGPEERREQUEST,
                      time,
                      serializedRequest)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load request.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to load request.").Flush();
 
         return error_task();
     }
@@ -458,7 +449,7 @@ auto OTX::AcknowledgeConnection(
              peerreply.as<contract::peer::Reply>(),
              instantiatedRequest.as<contract::peer::Request>()});
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return error_task();
     }
@@ -485,8 +476,7 @@ auto OTX::AcknowledgeNotice(
                      StorageBox::INCOMINGPEERREQUEST,
                      time,
                      serializedRequest)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load request.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to load request.").Flush();
 
         return error_task();
     }
@@ -514,7 +504,7 @@ auto OTX::AcknowledgeNotice(
              peerreply.as<contract::peer::Reply>(),
              instantiatedRequest.as<contract::peer::Request>()});
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return error_task();
     }
@@ -541,8 +531,7 @@ auto OTX::AcknowledgeOutbailment(
                      StorageBox::INCOMINGPEERREQUEST,
                      time,
                      serializedRequest)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load request.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to load request.").Flush();
 
         return error_task();
     }
@@ -569,7 +558,7 @@ auto OTX::AcknowledgeOutbailment(
              peerreply.as<contract::peer::Reply>(),
              instantiatedRequest.as<contract::peer::Request>()});
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return error_task();
     }
@@ -625,7 +614,7 @@ auto OTX::can_deposit(
 
     if (false == registered) {
         schedule_download_nymbox(recipient, depositServer);
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Recipient nym ")(
+        LogDetail()(OT_PRETTY_CLASS())("Recipient nym ")(
             recipient)(" not registered on "
                        "server ")(depositServer)(".")
             .Flush();
@@ -643,19 +632,19 @@ auto OTX::can_deposit(
 
     switch (output) {
         case Depositability::ACCOUNT_NOT_SPECIFIED: {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 ": Multiple valid accounts exist. "
                 "This payment can not be automatically deposited.")
                 .Flush();
         } break;
         case Depositability::WRONG_ACCOUNT: {
-            LogDetail()(OT_PRETTY_CLASS(__func__))(
+            LogDetail()(OT_PRETTY_CLASS())(
                 ": The specified account is not valid for this payment.")
                 .Flush();
         } break;
         case Depositability::NO_ACCOUNT: {
 
-            LogDetail()(OT_PRETTY_CLASS(__func__))("Recipient ")(
+            LogDetail()(OT_PRETTY_CLASS())("Recipient ")(
                 recipient)(" needs an account "
                            "for ")(unitID)(" on "
                                            "serve"
@@ -664,8 +653,7 @@ auto OTX::can_deposit(
                 .Flush();
         } break;
         case Depositability::READY: {
-            LogDetail()(OT_PRETTY_CLASS(__func__))("Payment can be deposited.")
-                .Flush();
+            LogDetail()(OT_PRETTY_CLASS())("Payment can be deposited.").Flush();
         } break;
         default: {
             OT_FAIL
@@ -687,7 +675,7 @@ auto OTX::can_message(
     auto senderNym = client_.Wallet().Nym(senderNymID);
 
     if (false == bool(senderNym)) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Unable to load sender nym ")(
+        LogDetail()(OT_PRETTY_CLASS())("Unable to load sender nym ")(
             senderNymID)
             .Flush();
 
@@ -697,7 +685,7 @@ auto OTX::can_message(
     const bool canSign = senderNym->HasCapability(NymCapability::SIGN_MESSAGE);
 
     if (false == canSign) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Sender nym ")(
+        LogDetail()(OT_PRETTY_CLASS())("Sender nym ")(
             senderNymID)(" can not sign messages (no private "
                          "key).")
             .Flush();
@@ -708,7 +696,7 @@ auto OTX::can_message(
     const auto contact = client_.Contacts().Contact(recipientContactID);
 
     if (false == bool(contact)) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Recipient contact ")(
+        LogDetail()(OT_PRETTY_CLASS())("Recipient contact ")(
             recipientContactID)(" does not exist.")
             .Flush();
 
@@ -718,7 +706,7 @@ auto OTX::can_message(
     const auto nyms = contact->Nyms();
 
     if (0 == nyms.size()) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Recipient contact ")(
+        LogDetail()(OT_PRETTY_CLASS())("Recipient contact ")(
             recipientContactID)(" does not have a nym.")
             .Flush();
 
@@ -741,7 +729,7 @@ auto OTX::can_message(
             outdated_nyms_.Push(next_task_id(), nymID);
         }
 
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Recipient contact ")(
+        LogDetail()(OT_PRETTY_CLASS())("Recipient contact ")(
             recipientContactID)(" credentials not "
                                 "available.")
             .Flush();
@@ -756,7 +744,7 @@ auto OTX::can_message(
 
     // TODO maybe some of the other nyms in this contact do specify a server
     if (serverID.empty()) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Recipient contact ")(
+        LogDetail()(OT_PRETTY_CLASS())("Recipient contact ")(
             recipientContactID)(", "
                                 "nym ")(
             recipientNymID)(": credentials do not specify a server.")
@@ -772,7 +760,7 @@ auto OTX::can_message(
 
     if (false == registered) {
         schedule_download_nymbox(senderNymID, serverID);
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Sender nym ")(
+        LogDetail()(OT_PRETTY_CLASS())("Sender nym ")(
             senderNymID)(" not registered on "
                          "server ")(serverID)
             .Flush();
@@ -817,13 +805,13 @@ auto OTX::CanMessage(
     if (startIntroductionServer) { start_introduction_server(sender); }
 
     if (sender.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid sender.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid sender.").Flush();
 
         return publish(Messagability::INVALID_SENDER);
     }
 
     if (contact.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid recipient.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid recipient.").Flush();
 
         return publish(Messagability::MISSING_CONTACT);
     }
@@ -842,7 +830,7 @@ auto OTX::CheckTransactionNumbers(
     auto context = client_.Wallet().ServerContext(nym, serverID);
 
     if (false == bool(context)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym is not registered").Flush();
+        LogError()(OT_PRETTY_CLASS())("Nym is not registered").Flush();
 
         return false;
     }
@@ -851,8 +839,7 @@ auto OTX::CheckTransactionNumbers(
 
     if (quantity <= available) { return true; }
 
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Asking server for more numbers.")
-        .Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Asking server for more numbers.").Flush();
 
     try {
         auto& queue = get_operations({nym, serverID});
@@ -959,7 +946,7 @@ auto OTX::DepositPayment(
     OT_ASSERT(payment)
 
     if (recipientNymID.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid recipient.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid recipient.").Flush();
 
         return error_task();
     }
@@ -981,7 +968,7 @@ auto OTX::DepositPayment(
                 return queue.payment_tasks_.Queue({unitID, accountID, payment});
             }
             default: {
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     ": Unable to queue payment for download (")(
                     static_cast<std::int8_t>(status))(")")
                     .Flush();
@@ -1085,7 +1072,7 @@ auto OTX::extract_payment_data(
     identifier::UnitDefinition& unitID) const -> bool
 {
     if (false == payment.GetRecipientNymID(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             ": Unable to load recipient nym from instrument.")
             .Flush();
 
@@ -1093,7 +1080,7 @@ auto OTX::extract_payment_data(
     }
 
     if (false == payment.GetNotaryID(serverID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             ": Unable to load recipient nym from instrument.")
             .Flush();
 
@@ -1103,7 +1090,7 @@ auto OTX::extract_payment_data(
     OT_ASSERT(false == serverID.empty())
 
     if (false == payment.GetInstrumentDefinitionID(unitID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             ": Unable to load recipient nym from instrument.")
             .Flush();
 
@@ -1127,7 +1114,7 @@ void OTX::find_nym(const opentxs::network::zeromq::Message& message) const
     const auto body = message.Body();
 
     if (1 >= body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
         return;
     }
@@ -1140,7 +1127,7 @@ void OTX::find_nym(const opentxs::network::zeromq::Message& message) const
     }();
 
     if (id->empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid id").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid id").Flush();
 
         return;
     }
@@ -1155,7 +1142,7 @@ void OTX::find_server(const opentxs::network::zeromq::Message& message) const
     const auto body = message.Body();
 
     if (1 >= body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
         return;
     }
@@ -1168,7 +1155,7 @@ void OTX::find_server(const opentxs::network::zeromq::Message& message) const
     }();
 
     if (id->empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid id").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid id").Flush();
 
         return;
     }
@@ -1187,7 +1174,7 @@ void OTX::find_unit(const opentxs::network::zeromq::Message& message) const
     const auto body = message.Body();
 
     if (1 >= body.size()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
         return;
     }
@@ -1200,7 +1187,7 @@ void OTX::find_unit(const opentxs::network::zeromq::Message& message) const
     }();
 
     if (id->empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid id").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid id").Flush();
 
         return;
     }
@@ -1377,7 +1364,7 @@ auto OTX::InitiateBailment(
         return queue.StartTask<otx::client::PeerRequestTask>(
             {targetNymID, peerrequest.as<contract::peer::Request>()});
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return error_task();
     }
@@ -1415,7 +1402,7 @@ auto OTX::InitiateOutbailment(
         return queue.StartTask<otx::client::PeerRequestTask>(
             {targetNymID, peerrequest.as<contract::peer::Request>()});
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return error_task();
     }
@@ -1445,7 +1432,7 @@ auto OTX::InitiateRequestConnection(
         return queue.StartTask<otx::client::PeerRequestTask>(
             {targetNymID, peerrequest.as<contract::peer::Request>()});
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return error_task();
     }
@@ -1466,13 +1453,11 @@ auto OTX::InitiateStoreSecret(
     const auto nym = client_.Wallet().Nym(localNymID);
 
     if (primary.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Warning: primary is empty.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Warning: primary is empty.").Flush();
     }
 
     if (secondary.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Warning: secondary is empty.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Warning: secondary is empty.").Flush();
     }
 
     try {
@@ -1486,7 +1471,7 @@ auto OTX::InitiateStoreSecret(
         return queue.StartTask<otx::client::PeerRequestTask>(
             {targetNymID, peerrequest.as<contract::peer::Request>()});
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return error_task();
     }
@@ -1619,7 +1604,7 @@ auto OTX::NotifyBailment(
         return queue.StartTask<otx::client::PeerRequestTask>(
             {targetNymID, peerrequest.as<contract::peer::Request>()});
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))(e.what()).Flush();
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return error_task();
     }
@@ -1711,8 +1696,8 @@ void OTX::process_account(const zmq::Message& message) const
     auto accountID = client_.Factory().Identifier();
     accountID->Assign(body.at(1).Bytes());
     const auto balance = Amount{body.at(2)};
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Account ")(accountID->str())(
-        " balance: ")(balance.str())
+    LogVerbose()(OT_PRETTY_CLASS())("Account ")(accountID->str())(" balance: ")(
+        balance.str())
         .Flush();
 }
 
@@ -1727,7 +1712,7 @@ void OTX::process_notification(const zmq::Message& message) const
     const auto& serverID = notification->Server();
 
     if (false == valid_context(nymID, serverID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             ": No context available to handle notification.")
             .Flush();
 
@@ -1742,8 +1727,7 @@ void OTX::process_notification(const zmq::Message& message) const
             context.get().ProcessNotification(client_, notification, reason_);
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                ": Unsupported server reply type: ")(
+            LogError()(OT_PRETTY_CLASS())(": Unsupported server reply type: ")(
                 value(notification->Type()))(".")
                 .Flush();
         }
@@ -1834,7 +1818,7 @@ auto OTX::RefreshCount() const -> std::uint64_t
 
 auto OTX::refresh_accounts() const -> bool
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("Begin").Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("Begin").Flush();
     const auto serverList = client_.Wallet().ServerList();
     const auto accounts = client_.Storage().AccountList();
 
@@ -1842,8 +1826,7 @@ auto OTX::refresh_accounts() const -> bool
         SHUTDOWN()
 
         const auto serverID = identifier::Server::Factory(server.first);
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Considering server ")(serverID)
-            .Flush();
+        LogDetail()(OT_PRETTY_CLASS())("Considering server ")(serverID).Flush();
 
         for (const auto& nymID : client_.Wallet().LocalNyms()) {
             SHUTDOWN()
@@ -1867,7 +1850,7 @@ auto OTX::refresh_accounts() const -> bool
             }
 
             logStr->Concatenate("%s", " registered here.");
-            LogDetail()(OT_PRETTY_CLASS(__func__))(logStr).Flush();
+            LogDetail()(OT_PRETTY_CLASS())(logStr).Flush();
         }
     }
 
@@ -1878,7 +1861,7 @@ auto OTX::refresh_accounts() const -> bool
         const auto accountID = Identifier::Factory(it.first);
         const auto nymID = client_.Storage().AccountOwner(accountID);
         const auto serverID = client_.Storage().AccountServer(accountID);
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Account ")(accountID)(": ")(
+        LogDetail()(OT_PRETTY_CLASS())("Account ")(accountID)(": ")(
             "  * Owned by nym: ")(nymID)("  * "
                                          "On "
                                          "server"
@@ -1899,7 +1882,7 @@ auto OTX::refresh_accounts() const -> bool
         }
     }
 
-    LogVerbose()(OT_PRETTY_CLASS(__func__))("End").Flush();
+    LogVerbose()(OT_PRETTY_CLASS())("End").Flush();
 
     return true;
 }
@@ -1910,8 +1893,7 @@ auto OTX::refresh_contacts() const -> bool
         SHUTDOWN()
 
         const auto& contactID = it.first;
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Considering contact: ")(
-            contactID)
+        LogVerbose()(OT_PRETTY_CLASS())("Considering contact: ")(contactID)
             .Flush();
         const auto contact =
             client_.Contacts().Contact(Identifier::Factory(contactID));
@@ -1924,7 +1906,7 @@ auto OTX::refresh_contacts() const -> bool
         const auto nymList = contact->Nyms();
 
         if (nymList.empty()) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))(
+            LogVerbose()(OT_PRETTY_CLASS())(
                 ": No nyms associated with this contact.")
                 .Flush();
 
@@ -1935,13 +1917,12 @@ auto OTX::refresh_contacts() const -> bool
             SHUTDOWN()
 
             const auto nym = client_.Wallet().Nym(nymID);
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Considering nym: ")(nymID)
-                .Flush();
+            LogVerbose()(OT_PRETTY_CLASS())("Considering nym: ")(nymID).Flush();
 
             if (nym) {
                 client_.Contacts().Update(*nym);
             } else {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                LogVerbose()(OT_PRETTY_CLASS())(
                     ": We don't have credentials for this nym. "
                     " Will search on all servers.")
                     .Flush();
@@ -1952,7 +1933,7 @@ auto OTX::refresh_contacts() const -> bool
             }
 
             if (interval > limit) {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))(
+                LogVerbose()(OT_PRETTY_CLASS())(
                     ": Hours since last update "
                     "(")(interval.count())(") exceeds "
                                            "the limit "
@@ -1985,17 +1966,16 @@ auto OTX::refresh_contacts() const -> bool
 
                     if (serverID->empty()) { continue; }
 
-                    LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                        "Will download nym ")(nymID)(" from "
-                                                     "server ")(serverID)
+                    LogVerbose()(OT_PRETTY_CLASS())("Will download nym ")(
+                        nymID)(" from "
+                               "server ")(serverID)
                         .Flush();
                     auto& serverQueue = get_nym_fetch(serverID);
                     const auto taskID{next_task_id()};
                     serverQueue.Push(taskID, nymID);
                 }
             } else {
-                LogVerbose()(OT_PRETTY_CLASS(__func__))(
-                    ": No need to update this nym.")
+                LogVerbose()(OT_PRETTY_CLASS())(": No need to update this nym.")
                     .Flush();
             }
         }
@@ -2114,14 +2094,13 @@ auto OTX::SendCheque(
                              (Messagability::UNREGISTERED == canMessage);
 
     if (false == closeEnough) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to message contact.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Unable to message contact.").Flush();
 
         return error_task();
     }
 
     if (0 >= value) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid amount.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid amount.").Flush();
 
         return error_task();
     }
@@ -2129,7 +2108,7 @@ auto OTX::SendCheque(
     auto account = client_.Wallet().Internal().Account(sourceAccountID);
 
     if (false == bool(account)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid account.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid account.").Flush();
 
         return error_task();
     }
@@ -2159,21 +2138,19 @@ auto OTX::SendExternalTransfer(
     auto sourceAccount = client_.Wallet().Internal().Account(sourceAccountID);
 
     if (false == bool(sourceAccount)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid source account.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid source account.").Flush();
 
         return error_task();
     }
 
     if (sourceAccount.get().GetNymID() != localNymID) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Wrong owner on source account.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Wrong owner on source account.").Flush();
 
         return error_task();
     }
 
     if (sourceAccount.get().GetRealNotaryID() != serverID) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Wrong notary on source account.")
+        LogError()(OT_PRETTY_CLASS())("Wrong notary on source account.")
             .Flush();
 
         return error_task();
@@ -2204,21 +2181,19 @@ auto OTX::SendTransfer(
     auto sourceAccount = client_.Wallet().Internal().Account(sourceAccountID);
 
     if (false == bool(sourceAccount)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid source account.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid source account.").Flush();
 
         return error_task();
     }
 
     if (sourceAccount.get().GetNymID() != localNymID) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Wrong owner on source account.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Wrong owner on source account.").Flush();
 
         return error_task();
     }
 
     if (sourceAccount.get().GetRealNotaryID() != serverID) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Wrong notary on source account.")
+        LogError()(OT_PRETTY_CLASS())("Wrong notary on source account.")
             .Flush();
 
         return error_task();
@@ -2256,7 +2231,7 @@ auto OTX::set_introduction_server(
     try {
         auto serialized = proto::ServerContract{};
         if (false == contract.Serialize(serialized, true)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed to serialize server contract.")
                 .Flush();
         }
@@ -2304,13 +2279,13 @@ auto OTX::start_task(const TaskID taskID, bool success) const
     -> OTX::BackgroundTask
 {
     if (0 == taskID) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Empty task ID").Flush();
+        LogTrace()(OT_PRETTY_CLASS())("Empty task ID").Flush();
 
         return error_task();
     }
 
     if (false == success) {
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Task already queued").Flush();
+        LogTrace()(OT_PRETTY_CLASS())("Task already queued").Flush();
 
         return error_task();
     }
@@ -2407,7 +2382,7 @@ void OTX::update_task(
             socket.Send(work);
         }
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Tried to finish an already-finished task (")(taskID)(")")
             .Flush();
     }
@@ -2472,7 +2447,7 @@ auto OTX::valid_context(
     const auto nyms = client_.Wallet().LocalNyms();
 
     if (0 == nyms.count(nymID)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Nym ")(
+        LogError()(OT_PRETTY_CLASS())("Nym ")(
             nymID)(" does not belong to this wallet.")
             .Flush();
 
@@ -2480,7 +2455,7 @@ auto OTX::valid_context(
     }
 
     if (serverID.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid server.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid server.").Flush();
 
         return false;
     }
@@ -2488,15 +2463,13 @@ auto OTX::valid_context(
     const auto context = client_.Wallet().ServerContext(nymID, serverID);
 
     if (false == bool(context)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Context does not exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Context does not exist.").Flush();
 
         return false;
     }
 
     if (0 == context->Request()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Nym is not registered at this server.")
+        LogError()(OT_PRETTY_CLASS())("Nym is not registered at this server.")
             .Flush();
 
         return false;
@@ -2511,8 +2484,7 @@ auto OTX::valid_recipient(
     const identifier::Nym& recipient) const -> Depositability
 {
     if (specified.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Payment can be accepted by any nym.")
+        LogError()(OT_PRETTY_CLASS())("Payment can be accepted by any nym.")
             .Flush();
 
         return Depositability::READY;

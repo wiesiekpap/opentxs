@@ -8,12 +8,12 @@
 #include "internal/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 #include "internal/blockchain/Params.hpp"      // IWYU pragma: associated
 
-#include <robin_hood.h>
 #include <boost/container/vector.hpp>
-#include <boost/move/algo/detail/set_difference.hpp>
-#include <boost/move/algo/move.hpp>
+#include <robin_hood.h>
+#include <iosfwd>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <type_traits>
 
 #include "display/Scale.hpp"
@@ -104,6 +104,17 @@ auto print(Code code) noexcept -> std::string
 auto print(blockchain::Type type) noexcept -> std::string
 {
     return blockchain::DisplayString(type);
+}
+
+auto print(const blockchain::block::Position& in) noexcept -> std::string
+{
+    const auto& [height, hash] = in;
+    auto out = std::stringstream{};
+    out << hash->asHex();
+    out << " at height ";
+    out << std::to_string(height);
+
+    return out.str();
 }
 }  // namespace opentxs
 

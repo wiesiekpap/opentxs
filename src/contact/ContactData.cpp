@@ -87,9 +87,8 @@ struct ContactData::Imp {
         , sections_(sections)
     {
         if (0 == version) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Warning: malformed version. "
-                "Setting to ")(targetVersion)(".")
+            LogError()(OT_PRETTY_CLASS())("Warning: malformed version. "
+                                          "Setting to ")(targetVersion)(".")
                 .Flush();
         }
     }
@@ -366,7 +365,7 @@ auto ContactData::AddPaymentCode(
         translate(section), translate(UnitToClaim(currency)), imp_->version_);
 
     if (0 == version) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "This currency is not allowed to set a procedure")
             .Flush();
 
@@ -1025,7 +1024,7 @@ auto ContactData::SetScope(
 
         return ContactData(imp_->api_, imp_->nym_, version, version, mapCopy);
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Scope already set.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Scope already set.").Flush();
 
         return *this;
     }

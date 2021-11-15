@@ -29,6 +29,7 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
+#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -116,18 +117,42 @@ auto SubchainStateData::do_reorg(
     std::atomic_int& errors,
     const block::Position ancestor) noexcept -> void
 {
+    LogTrace()(OT_PRETTY_CLASS())(name_)(" processing reorg to ")(
+        ancestor.second->asHex())(" at height ")(ancestor.first)
+        .Flush();
     const auto tip = db_.SubchainLastScanned(db_key_);
     // TODO use ancestor
     const auto& headers = node_.HeaderOracleInternal();
-    const auto reorg = headers.CalculateReorg(tip);
 
-    if (db_.ReorgTo(tx, headers, id_, subchain_, db_key_, reorg)) {
-        scan_.Reorg(ancestor);
-        rescan_.Reorg(ancestor);
-        process_.Reorg(ancestor);
-        progress_.Reorg(ancestor);
-    } else {
+    try {
+        const auto reorg = headers.CalculateReorg(tip);
 
+        if (0u == reorg.size()) {
+            LogTrace()(OT_PRETTY_CLASS())(
+                name_)(" no action required for this subchain")
+                .Flush();
+
+            return;
+        } else {
+            LogTrace()(OT_PRETTY_CLASS())(name_)(" ")(reorg.size())(
+                " previously mined blocks have been invalidated")
+                .Flush();
+        }
+
+        if (db_.ReorgTo(tx, headers, id_, subchain_, db_key_, reorg)) {
+            scan_.Reorg(ancestor);
+            rescan_.Reorg(ancestor);
+            process_.Reorg(ancestor);
+            progress_.Reorg(ancestor);
+        } else {
+
+            ++errors;
+        }
+    } catch (...) {
+        LogError()(OT_PRETTY_CLASS())(
+            name_)(" header oracle claims existing tip ")(tip.second->asHex())(
+            " at height ")(tip.first)(" is invalid")
+            .Flush();
         ++errors;
     }
 }
@@ -226,7 +251,7 @@ auto SubchainStateData::index_element(
     const Bip32Index index,
     WalletDatabase::ElementMap& output) const noexcept -> void
 {
-    LogVerbose()(OT_PRETTY_CLASS(__func__))(name_)(" element ")(
+    LogVerbose()(OT_PRETTY_CLASS())(name_)(" element ")(
         index)(" extracting filter matching patterns")
         .Flush();
     auto& list = output[index];
@@ -265,27 +290,28 @@ auto SubchainStateData::init() noexcept -> void
     }
 
     mempool_.Queue(std::move(transactions));
+    progress_.Init();
 }
 
 auto SubchainStateData::ProcessBlockAvailable(const block::Hash& block) noexcept
     -> void
 {
     if (block_index_.Query(block)) {
-        LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
+        LogInsane()(OT_PRETTY_CLASS())(name_).Flush();
         process_.Run();
     }
 }
 
 auto SubchainStateData::ProcessKey() noexcept -> void
 {
-    LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
+    LogInsane()(OT_PRETTY_CLASS())(name_).Flush();
     get_index().Run();
 }
 
 auto SubchainStateData::ProcessMempool(
     std::shared_ptr<const block::bitcoin::Transaction> tx) noexcept -> void
 {
-    LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
+    LogInsane()(OT_PRETTY_CLASS())(name_).Flush();
 
     if (mempool_.Queue(tx)) { mempool_.Run(); }
 }
@@ -293,7 +319,7 @@ auto SubchainStateData::ProcessMempool(
 auto SubchainStateData::ProcessNewFilter(const block::Position& tip) noexcept
     -> void
 {
-    LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
+    LogInsane()(OT_PRETTY_CLASS())(name_).Flush();
     rescan_.UpdateTip(tip);
     scan_.Run(tip);
 }
@@ -303,7 +329,7 @@ auto SubchainStateData::ProcessReorg(
     std::atomic_int& errors,
     const block::Position& ancestor) noexcept -> bool
 {
-    LogInsane()(OT_PRETTY_CLASS(__func__))(name_).Flush();
+    LogInsane()(OT_PRETTY_CLASS())(name_).Flush();
     ++job_counter_;
     const auto queued =
         api_.Network().Asio().Internal().Post(ThreadPool::General, [&] {
@@ -313,11 +339,9 @@ auto SubchainStateData::ProcessReorg(
         });
 
     if (queued) {
-        LogDebug()(OT_PRETTY_CLASS(__func__))(name_)(" reorg job queued")
-            .Flush();
+        LogDebug()(OT_PRETTY_CLASS())(name_)(" reorg job queued").Flush();
     } else {
-        LogDebug()(OT_PRETTY_CLASS(__func__))(
-            name_)(" failed to queue reorg job")
+        LogDebug()(OT_PRETTY_CLASS())(name_)(" failed to queue reorg job")
             .Flush();
         --job_counter_;
         ++errors;
@@ -346,10 +370,16 @@ auto SubchainStateData::ProcessTaskComplete(
     bool enabled) noexcept -> void
 {
     if (id == db_key_) {
-        LogInsane()(OT_PRETTY_CLASS(__func__))(type)(" ")(name_)(" complete")
-            .Flush();
+        LogInsane()(OT_PRETTY_CLASS())(type)(" ")(name_)(" complete").Flush();
         ProcessStateMachine(enabled);
     }
+}
+
+auto SubchainStateData::report_scan(const block::Position& pos) const noexcept
+    -> void
+{
+    crypto_.Internal().ReportScan(
+        node_.Chain(), owner_, account_type_, id_, subchain_, pos);
 }
 
 auto SubchainStateData::set_key_data(
@@ -425,8 +455,7 @@ auto SubchainStateData::update_scan(const block::Position& pos, bool reorg)
 {
     if (false == reorg) { db_.SubchainSetLastScanned(db_key_, pos); }
 
-    crypto_.Internal().ReportScan(
-        node_.Chain(), owner_, account_type_, id_, subchain_, pos);
+    report_scan(pos);
 }
 
 SubchainStateData::~SubchainStateData() { FinishBackgroundTasks(); }

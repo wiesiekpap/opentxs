@@ -218,14 +218,14 @@ auto ClientContext::Verify(
         const bool inserted = effective.insert(number).second;
 
         if (!inserted) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))("New transaction # ")(
+            LogConsole()(OT_PRETTY_CLASS())("New transaction # ")(
                 number)(" already exists in context.")
                 .Flush();
 
             return false;
         }
 
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Transaction statement MUST ")(
+        LogDetail()(OT_PRETTY_CLASS())("Transaction statement MUST ")(
             "include number ")(number)(" which IS NOT currently in "
                                        "the context. ")
             .Flush();
@@ -235,14 +235,14 @@ auto ClientContext::Verify(
         const bool removed = (1 == effective.erase(number));
 
         if (!removed) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))("Burned transaction # ")(
+            LogConsole()(OT_PRETTY_CLASS())("Burned transaction # ")(
                 number)(" does not exist in context.")
                 .Flush();
 
             return false;
         }
 
-        LogDetail()(OT_PRETTY_CLASS(__func__))(
+        LogDetail()(OT_PRETTY_CLASS())(
             "Transaction statement MUST NOT include number ")(
             number)(" which IS currently in the context.")
             .Flush();
@@ -252,7 +252,7 @@ auto ClientContext::Verify(
         const bool found = (1 == effective.count(number));
 
         if (!found) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))("Issued transaction # ")(
+            LogConsole()(OT_PRETTY_CLASS())("Issued transaction # ")(
                 number)(" from statement not found on context.")
                 .Flush();
 
@@ -264,7 +264,7 @@ auto ClientContext::Verify(
         const bool found = (1 == statement.Issued().count(number));
 
         if (!found) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))("Issued transaction # ")(
+            LogConsole()(OT_PRETTY_CLASS())("Issued transaction # ")(
                 number)(" from context not found on statement.")
                 .Flush();
 
@@ -287,7 +287,7 @@ auto ClientContext::VerifyIssuedNumber(
     const bool excluded = (1 == exclude.count(number));
 
     if (excluded) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Transaction number ")(
+        LogVerbose()(OT_PRETTY_CLASS())("Transaction number ")(
             number)(" appears on the list of numbers which are being removed")
             .Flush();
 

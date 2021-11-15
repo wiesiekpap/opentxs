@@ -15,6 +15,11 @@
 
 namespace opentxs::blockchain::database::wallet::db
 {
+auto operator==(const Pattern& lhs, const Pattern& rhs) noexcept -> bool
+{
+    return lhs.data_ == rhs.data_;
+}
+
 Pattern::Pattern(const Bip32Index index, const ReadView data) noexcept
     : data_([&] {
         auto out = space(fixed_ + data.size());
@@ -35,6 +40,12 @@ Pattern::Pattern(const ReadView bytes) noexcept(false)
     if (data_.size() <= fixed_) {
         throw std::runtime_error{"Input byte range too small for Pattern"};
     }
+}
+
+Pattern::Pattern(Pattern&& rhs) noexcept
+    : data_()
+{
+    const_cast<Space&>(data_).swap(const_cast<Space&>(rhs.data_));
 }
 
 auto Pattern::Data() const noexcept -> ReadView

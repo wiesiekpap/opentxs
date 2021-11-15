@@ -20,6 +20,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "Proto.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -389,7 +390,7 @@ auto Output::FindMatches(
 {
     const auto output = block::internal::SetIntersection(
         api_, txid, patterns, ExtractElements(type));
-    LogTrace()(OT_PRETTY_CLASS(__func__))("Verified ")(output.second.size())(
+    LogTrace()(OT_PRETTY_CLASS())("Verified ")(output.second.size())(
         " pattern matches")
         .Flush();
     std::for_each(
@@ -428,8 +429,7 @@ auto Output::index_elements() noexcept -> void
     auto& hashes =
         const_cast<boost::container::flat_set<PatternID>&>(pubkey_hashes_);
     const auto patterns = script_->ExtractPatterns(api_, crypto_);
-    LogTrace()(OT_PRETTY_CLASS(__func__))(patterns.size())(
-        " pubkey hashes found:")
+    LogTrace()(OT_PRETTY_CLASS())(patterns.size())(" pubkey hashes found:")
         .Flush();
     std::for_each(
         std::begin(patterns), std::end(patterns), [&](const auto& id) -> auto {
@@ -504,8 +504,7 @@ auto Output::Serialize(const AllocateOutput destination) const noexcept
     -> std::optional<std::size_t>
 {
     if (!destination) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid output allocator")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid output allocator").Flush();
 
         return std::nullopt;
     }
@@ -514,7 +513,7 @@ auto Output::Serialize(const AllocateOutput destination) const noexcept
     auto output = destination(size);
 
     if (false == output.valid(size)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to allocate output bytes")
+        LogError()(OT_PRETTY_CLASS())("Failed to allocate output bytes")
             .Flush();
 
         return std::nullopt;
@@ -533,8 +532,7 @@ auto Output::Serialize(const AllocateOutput destination) const noexcept
 
         return size;
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize script")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize script").Flush();
 
         return std::nullopt;
     }

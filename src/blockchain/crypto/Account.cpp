@@ -174,8 +174,7 @@ auto Account::AssociateTransaction(
         auto* pNode = node_index_.Find(accountID);
 
         if (nullptr == pNode) {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Account ")(
-                accountID)(" not found")
+            LogVerbose()(OT_PRETTY_CLASS())("Account ")(accountID)(" not found")
                 .Flush();
 
             continue;
@@ -200,8 +199,7 @@ auto Account::AssociateTransaction(
                     std::forward_as_tuple(key, amount));
             }
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed processing transaction")
+            LogError()(OT_PRETTY_CLASS())("Failed processing transaction")
                 .Flush();
 
             return false;

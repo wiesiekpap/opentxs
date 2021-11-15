@@ -14,11 +14,11 @@
 #include <vector>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/Context.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -77,7 +77,7 @@ private:
 
         const auto& frame = in.at(0);
         const auto id = api_.Factory().Identifier(frame);
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Widget ")(id->str())(" updated.")
+        LogTrace()(OT_PRETTY_CLASS())("Widget ")(id->str())(" updated.")
             .Flush();
         auto lock = Lock{lock_};
         auto it = map_.find(id);

@@ -72,7 +72,7 @@ auto PayDividendVisitor::Trigger(
 
     if (lPayoutAmount <= 0) {
         {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Nothing to pay, "
                 "since this account owns no shares. (Returning "
                 "true.")
@@ -190,7 +190,7 @@ auto PayDividendVisitor::Trigger(
         } else {
             const auto strPayoutUnitTypeId = String::Factory(payoutUnitTypeId),
                        strRecipientNymID = String::Factory(RECIPIENT_ID);
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "ERROR failed issuing "
                 "voucher (to send to dividend payout recipient). WAS "
                 "TRYING TO PAY ")(lPayoutAmount.str())(
@@ -260,7 +260,7 @@ auto PayDividendVisitor::Trigger(
                 const auto strPayoutUnitTypeId =
                                String::Factory(payoutUnitTypeId),
                            strSenderNymID = String::Factory(theSenderNymID);
-                LogError()(OT_PRETTY_CLASS(__func__))(
+                LogError()(OT_PRETTY_CLASS())(
                     "ERROR! Failed issuing voucher (to return back to "
                     "the dividend payout initiator, after a failed "
                     "payment attempt to the originally intended "
@@ -275,7 +275,7 @@ auto PayDividendVisitor::Trigger(
     {
         const auto strPayoutUnitTypeId = String::Factory(payoutUnitTypeId),
                    strRecipientNymID = String::Factory(RECIPIENT_ID);
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "ERROR! Failed issuing next transaction number while "
             "trying to send a voucher (while paying dividends). "
             "WAS TRYING TO PAY ")(lPayoutAmount.str())(

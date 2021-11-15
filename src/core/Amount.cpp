@@ -385,8 +385,7 @@ auto Amount::SerializeBitcoin(const AllocateOutput dest) const noexcept -> bool
     try {
         amount = imp_->amount_.convert_to<std::int64_t>();
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error serializing amount: ")(
-            e.what())
+        LogError()(OT_PRETTY_CLASS())("Error serializing amount: ")(e.what())
             .Flush();
         return false;
     }

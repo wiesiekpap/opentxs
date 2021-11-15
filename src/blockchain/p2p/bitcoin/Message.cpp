@@ -255,7 +255,7 @@ auto Message::verify_checksum() const noexcept(false) -> void
     const auto& header = header_->Checksum();
 
     if (header != calculated) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Checksum failure").Flush();
+        LogError()(OT_PRETTY_CLASS())("Checksum failure").Flush();
         LogError()("*  Calculated Payload:  ")(payload()->asHex()).Flush();
         LogError()("*  Calculated Checksum: ")(calculated->asHex()).Flush();
         LogError()("*  Provided Checksum:   ")(header.asHex()).Flush();

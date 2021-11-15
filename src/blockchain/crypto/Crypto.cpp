@@ -8,9 +8,6 @@
 #include "internal/blockchain/crypto/Crypto.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
-#include <boost/intrusive/detail/iterator.hpp>
-#include <boost/move/algo/detail/set_difference.hpp>
-#include <boost/move/algo/move.hpp>
 #include <memory>
 
 #include "internal/util/LogMacros.hpp"

@@ -151,14 +151,14 @@ auto Account::ConsensusHash(
     if (false == nymid.empty()) {
         preimage->Concatenate(nymid.data(), nymid.size());
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing nym id.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing nym id.").Flush();
     }
 
     auto& serverid = context.Notary();
     if (false == serverid.empty()) {
         preimage->Concatenate(serverid.data(), serverid.size());
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing server id.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing server id.").Flush();
     }
 
     auto accountid{api_.Factory().Identifier()};
@@ -166,14 +166,14 @@ auto Account::ConsensusHash(
     if (false == accountid->empty()) {
         preimage->Concatenate(accountid->data(), accountid->size());
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Missing account id.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Missing account id.").Flush();
     }
 
     if (false == balanceAmount_->empty()) {
         preimage->Concatenate(
             balanceAmount_->Get(), balanceAmount_->GetLength());
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("No account balance.").Flush();
+        LogError()(OT_PRETTY_CLASS())("No account balance.").Flush();
     }
 
     const auto nymfile = context.Nymfile(reason);
@@ -186,7 +186,7 @@ auto Account::ConsensusHash(
     if (false == inboxhash->empty()) {
         preimage->Concatenate(inboxhash->data(), inboxhash->size());
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Empty inbox hash.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Empty inbox hash.").Flush();
     }
 
     auto outboxhash{api_.Factory().Identifier()};
@@ -197,7 +197,7 @@ auto Account::ConsensusHash(
     if (false == outboxhash->empty()) {
         preimage->Concatenate(outboxhash->data(), outboxhash->size());
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Empty outbox hash.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Empty outbox hash.").Flush();
     }
 
     const auto& issuednumbers = context.IssuedNumbers();
@@ -211,7 +211,7 @@ auto Account::ConsensusHash(
 
     if (false == bCalcDigest) {
         theOutput.Release();
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed trying to calculate hash (for a ")(GetTypeString())(").")
             .Flush();
     }
@@ -231,8 +231,7 @@ auto Account::create_box(
     box.reset(api_.Factory().Ledger(nymID, accountID, serverID).release());
 
     if (false == bool(box)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to construct ledger.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to construct ledger.").Flush();
 
         return false;
     }
@@ -241,8 +240,7 @@ auto Account::create_box(
         box->CreateLedger(nymID, accountID, serverID, type, true);
 
     if (false == created) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to generate box.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to generate box.").Flush();
 
         return false;
     }
@@ -250,7 +248,7 @@ auto Account::create_box(
     const auto signature = box->SignContract(signer, reason);
 
     if (false == signature) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to sign box.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to sign box.").Flush();
 
         return false;
     }
@@ -258,8 +256,7 @@ auto Account::create_box(
     const auto serialized = box->SaveContract();
 
     if (false == serialized) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize box.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize box.").Flush();
 
         return false;
     }
@@ -285,12 +282,10 @@ auto Account::LoadInbox(const identity::Nym& nym) const
     auto strNymID = String::Factory(GetNymID()),
          strAcctID = String::Factory(GetRealAccountID());
     {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(
-            "Unable to load or verify inbox: ")
+        LogVerbose()(OT_PRETTY_CLASS())("Unable to load or verify inbox: ")
             .Flush();
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(strAcctID)("  For user: ")
-            .Flush();
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(strNymID).Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(strAcctID)("  For user: ").Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(strNymID).Flush();
     }
     return nullptr;
 }
@@ -308,12 +303,10 @@ auto Account::LoadOutbox(const identity::Nym& nym) const
     auto strNymID = String::Factory(GetNymID()),
          strAcctID = String::Factory(GetRealAccountID());
     {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(
-            "Unable to load or verify outbox: ")
+        LogVerbose()(OT_PRETTY_CLASS())("Unable to load or verify outbox: ")
             .Flush();
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(strAcctID)(" For user: ")
-            .Flush();
-        LogVerbose()(OT_PRETTY_CLASS(__func__))(strNymID).Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(strAcctID)(" For user: ").Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(strNymID).Flush();
     }
     return nullptr;
 }
@@ -325,7 +318,7 @@ auto Account::save_box(
     void (Account::*set)(const Identifier&)) -> bool
 {
     if (!IsSameAccount(box)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "ERROR: The ledger passed in, "
             "isn't even for this account! Acct ID: ")(GetRealAccountID())(
             ". Other ID: ")(box.GetRealAccountID())(". Notary ID: ")(
@@ -422,19 +415,18 @@ auto Account::InitBoxes(
     const identity::Nym& signer,
     const PasswordPrompt& reason) -> bool
 {
-    LogDetail()(OT_PRETTY_CLASS(__func__))("Generating inbox/outbox.").Flush();
+    LogDetail()(OT_PRETTY_CLASS())("Generating inbox/outbox.").Flush();
     std::unique_ptr<Ledger> inbox{LoadInbox(signer)};
     std::unique_ptr<Ledger> outbox{LoadInbox(signer)};
 
     if (inbox) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Inbox already exists.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Inbox already exists.").Flush();
 
         return false;
     }
 
     if (false == create_box(inbox, signer, ledgerType::inbox, reason)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create inbox.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to create inbox.").Flush();
 
         return false;
     }
@@ -442,20 +434,19 @@ auto Account::InitBoxes(
     OT_ASSERT(inbox);
 
     if (false == SaveInbox(*inbox)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save inbox.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to save inbox.").Flush();
 
         return false;
     }
 
     if (outbox) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Inbox already exists.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Inbox already exists.").Flush();
 
         return false;
     }
 
     if (false == create_box(outbox, signer, ledgerType::outbox, reason)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to create outbox.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to create outbox.").Flush();
 
         return false;
     }
@@ -463,7 +454,7 @@ auto Account::InitBoxes(
     OT_ASSERT(outbox);
 
     if (false == SaveOutbox(*outbox)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to save outbox.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to save outbox.").Flush();
 
         return false;
     }
@@ -611,7 +602,7 @@ auto Account::LoadExistingAccount(
     }
 
     if (!api.Internal().Legacy().ConfirmCreateFolder(strAccountPath)) {
-        LogError()(OT_PRETTY_STATIC(Account, __func__))(
+        LogError()(OT_PRETTY_STATIC(Account))(
             "Unable to find or create accounts folder: ")(
             api.Internal().Legacy().Account())(".")
             .Flush();
@@ -636,9 +627,9 @@ auto Account::LoadExistingAccount(
             account->m_strFilename->Get(),
             "",
             "")) {
-        LogVerbose()(OT_PRETTY_STATIC(Account, __func__))(
-            "File does not exist: ")(account->m_strFoldername)(
-            api::Legacy::PathSeparator())(account->m_strFilename)(".")
+        LogVerbose()(OT_PRETTY_STATIC(Account))("File does not exist: ")(
+            account->m_strFoldername)(api::Legacy::PathSeparator())(
+            account->m_strFilename)(".")
             .Flush();
 
         return nullptr;
@@ -700,7 +691,7 @@ auto Account::GenerateNewAccount(
     auto payload = Data::Factory();
     // TODO: hardcoding. Plus: is 100 bytes of random a little much here?
     if (!payload->Randomize(100)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Failed trying to acquire random numbers.")
             .Flush();
         return false;
@@ -710,8 +701,7 @@ auto Account::GenerateNewAccount(
     // OTIdentifier).
     auto newID = api_.Factory().Identifier();
     if (!newID->CalculateDigest(payload->Bytes())) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Error generating new account ID.")
+        LogError()(OT_PRETTY_CLASS())("Error generating new account ID.")
             .Flush();
         return false;
     }
@@ -741,7 +731,7 @@ auto Account::GenerateNewAccount(
             m_strFilename->Get(),
             "",
             "")) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Account already exists: ")(
+        LogError()(OT_PRETTY_CLASS())("Account already exists: ")(
             m_strFilename)(".")
             .Flush();
         return false;
@@ -763,7 +753,7 @@ auto Account::GenerateNewAccount(
     acctInstrumentDefinitionID_->SetString(
         String::Factory(instrumentDefinitionID));
 
-    LogDebug()(OT_PRETTY_CLASS(__func__))("Creating new account, type: ")(
+    LogDebug()(OT_PRETTY_CLASS())("Creating new account, type: ")(
         instrumentDefinitionID)(".")
         .Flush();
 
@@ -976,8 +966,8 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         acctType = String::Factory(xml->getAttributeValue("type"));
 
         if (!acctType->Exists()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed: Empty account "
-                                                  "'type' attribute.")
+            LogError()(OT_PRETTY_CLASS())("Failed: Empty account "
+                                          "'type' attribute.")
                 .Flush();
             return -1;
         }
@@ -985,9 +975,8 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         acctType_ = TranslateAccountTypeStringToEnum(acctType);
 
         if (Account::err_acct == acctType_) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Failed: account 'type' "
-                "attribute contains unknown value.")
+            LogError()(OT_PRETTY_CLASS())("Failed: account 'type' "
+                                          "attribute contains unknown value.")
                 .Flush();
             return -1;
         }
@@ -998,8 +987,8 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         if (strAcctAssetType->Exists()) {
             acctInstrumentDefinitionID_->SetString(strAcctAssetType);
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))("Failed: missing "
-                                                  "instrumentDefinitionID.")
+            LogError()(OT_PRETTY_CLASS())("Failed: missing "
+                                          "instrumentDefinitionID.")
                 .Flush();
             return -1;
         }
@@ -1018,36 +1007,31 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
 
         auto strInstrumentDefinitionID =
             String::Factory(acctInstrumentDefinitionID_);
-        LogDebug()(OT_PRETTY_CLASS(__func__))("Account Type: ")(acctType)
-            .Flush();
-        LogDebug()(OT_PRETTY_CLASS(__func__))("AccountID: ")(strAccountID)
-            .Flush();
-        LogDebug()(OT_PRETTY_CLASS(__func__))("NymID: ")(strAcctNymID).Flush();
-        LogDebug()(OT_PRETTY_CLASS(__func__))("Unit Type ID: ")(
+        LogDebug()(OT_PRETTY_CLASS())("Account Type: ")(acctType).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("AccountID: ")(strAccountID).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("NymID: ")(strAcctNymID).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("Unit Type ID: ")(
             strInstrumentDefinitionID)
             .Flush();
-        LogDebug()(OT_PRETTY_CLASS(__func__))("NotaryID: ")(strNotaryID)
-            .Flush();
+        LogDebug()(OT_PRETTY_CLASS())("NotaryID: ")(strNotaryID).Flush();
 
         retval = 1;
     } else if (strNodeName->Compare("inboxHash")) {
 
         auto strHash = String::Factory(xml->getAttributeValue("value"));
         if (strHash->Exists()) { inboxHash_->SetString(strHash); }
-        LogDebug()(OT_PRETTY_CLASS(__func__))("Account inboxHash: ")(strHash)
-            .Flush();
+        LogDebug()(OT_PRETTY_CLASS())("Account inboxHash: ")(strHash).Flush();
         retval = 1;
     } else if (strNodeName->Compare("outboxHash")) {
 
         auto strHash = String::Factory(xml->getAttributeValue("value"));
         if (strHash->Exists()) { outboxHash_->SetString(strHash); }
-        LogDebug()(OT_PRETTY_CLASS(__func__))("Account outboxHash: ")(strHash)
-            .Flush();
+        LogDebug()(OT_PRETTY_CLASS())("Account outboxHash: ")(strHash).Flush();
 
         retval = 1;
     } else if (strNodeName->Compare("MARKED_FOR_DELETION")) {
         markForDeletion_ = true;
-        LogDebug()(OT_PRETTY_CLASS(__func__))(
+        LogDebug()(OT_PRETTY_CLASS())(
             "This asset account has been MARKED_FOR_DELETION at some point"
             "prior. ")
             .Flush();
@@ -1066,15 +1050,13 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         balanceDate_->Set(String::Factory(formatTimestamp(date)));
         balanceAmount_->Format("%s", amount.str().c_str());
 
-        LogDebug()(OT_PRETTY_CLASS(__func__))("BALANCE  -- ")(balanceAmount_)
-            .Flush();
-        LogDebug()(OT_PRETTY_CLASS(__func__))("DATE     --")(balanceDate_)
-            .Flush();
+        LogDebug()(OT_PRETTY_CLASS())("BALANCE  -- ")(balanceAmount_).Flush();
+        LogDebug()(OT_PRETTY_CLASS())("DATE     --")(balanceDate_).Flush();
 
         retval = 1;
     } else if (strNodeName->Compare("stashinfo")) {
         if (!IsStashAcct()) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: Encountered stashinfo "
                 "tag while loading NON-STASH account.")
                 .Flush();
@@ -1087,7 +1069,7 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         if (!strStashTransNum->Exists() ||
             ((lTransNum = strStashTransNum->ToLong()) <= 0)) {
             stashTransNum_ = 0;
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: Bad transaction number "
                 "for supposed corresponding cron item: ")(lTransNum)(".")
                 .Flush();
@@ -1096,8 +1078,8 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
             stashTransNum_ = lTransNum;
         }
 
-        LogDebug()(OT_PRETTY_CLASS(__func__))(
-            "STASH INFO:   CronItemNum     --")(stashTransNum_)
+        LogDebug()(OT_PRETTY_CLASS())("STASH INFO:   CronItemNum     --")(
+            stashTransNum_)
             .Flush();
 
         retval = 1;
@@ -1119,8 +1101,7 @@ auto Account::IsInternalServerAcct() const -> bool
         case Account::stash:
             return true;
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Unknown account type.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unknown account type.").Flush();
             return false;
     }
 }
@@ -1138,8 +1119,7 @@ auto Account::IsOwnedByUser() const -> bool
         case Account::stash:
             return false;
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Unknown account type.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unknown account type.").Flush();
             return false;
     }
 }
@@ -1170,8 +1150,7 @@ auto Account::IsAllowedToGoNegative() const -> bool
         case Account::stash:
             return false;
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))("Unknown account type.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unknown account type.").Flush();
             return false;
     }
 }

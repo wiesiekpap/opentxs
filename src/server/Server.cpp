@@ -105,11 +105,9 @@ Server::Server(
 void Server::ActivateCron()
 {
     if (m_Cron->ActivateCron()) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Activate Cron. (STARTED)")
-            .Flush();
+        LogVerbose()(OT_PRETTY_CLASS())("Activate Cron. (STARTED)").Flush();
     } else {
-        LogConsole()(OT_PRETTY_CLASS(__func__))("Activate Cron. (FAILED)")
-            .Flush();
+        LogConsole()(OT_PRETTY_CLASS())("Activate Cron. (FAILED)").Flush();
     }
 }
 
@@ -187,8 +185,7 @@ void Server::CreateMainFile(bool& mainFileExists)
     std::string seed{};
 
     if (false == backup.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Seed backup found. Restoring.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Seed backup found. Restoring.").Flush();
         auto parsed = parse_seed_backup(backup);
         auto phrase = manager_.Factory().SecretFromText(parsed.first);
         auto words = manager_.Factory().SecretFromText(parsed.second);
@@ -200,11 +197,9 @@ void Server::CreateMainFile(bool& mainFileExists)
             reason_);
 
         if (seed.empty()) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Seed restoration failed.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Seed restoration failed.").Flush();
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))("Seed ")(seed)(" restored.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Seed ")(seed)(" restored.").Flush();
         }
     }
 #endif
@@ -225,8 +220,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         reason_, name, nymParameters, contact::ClaimType::Server);
 
     if (false == bool(m_nymServer)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Error: Failed to create server nym.")
+        LogError()(OT_PRETTY_CLASS())("Error: Failed to create server nym.")
             .Flush();
         OT_FAIL;
     }
@@ -355,8 +349,7 @@ void Server::CreateMainFile(bool& mainFileExists)
             .data());
 
     if (false == existing->empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Existing contract found. Restoring.")
+        LogError()(OT_PRETTY_CLASS())("Existing contract found. Restoring.")
             .Flush();
     }
 
@@ -381,7 +374,7 @@ void Server::CreateMainFile(bool& mainFileExists)
     core::AddressType type{};
 
     if (!contract->ConnectInfo(strHostname, nPort, type, type)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
+        LogConsole()(OT_PRETTY_CLASS())(
             "Unable to retrieve connection info from this contract.")
             .Flush();
 
@@ -406,8 +399,7 @@ void Server::CreateMainFile(bool& mainFileExists)
 
     auto proto = proto::ServerContract{};
     if (false == contract->Serialize(proto, true)) {
-        LogConsole()(OT_PRETTY_CLASS(__func__))(
-            "Failed to serialize server contract.")
+        LogConsole()(OT_PRETTY_CLASS())("Failed to serialize server contract.")
             .Flush();
 
         OT_FAIL;
@@ -460,8 +452,7 @@ void Server::Init(bool readOnly)
     m_bReadOnly = readOnly;
 
     if (!ConfigLoader::load(manager_, manager_.Config(), WalletFilename())) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to Load Config File!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Unable to Load Config File!").Flush();
         OT_FAIL;
     }
 
@@ -480,7 +471,7 @@ void Server::Init(bool readOnly)
 
     if (false == mainFileExists) {
         if (readOnly) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error: Main file non-existent "
                 "(")(WalletFilename().Get())("). Plus, unable to "
                                              "create, since read-only "
@@ -494,7 +485,7 @@ void Server::Init(bool readOnly)
 
     if (mainFileExists) {
         if (false == mainFile_.LoadMainFile(readOnly)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Error in Loading Main File, re-creating.")
                 .Flush();
             OTDB::EraseValueByKey(
@@ -533,8 +524,7 @@ auto Server::LoadServerNym(const identifier::Nym& nymID) -> bool
     auto nym = manager_.Wallet().Nym(nymID);
 
     if (false == bool(nym)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Server nym does not exist.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Server nym does not exist.").Flush();
 
         return false;
     }
@@ -567,8 +557,7 @@ auto Server::SendInstrumentToNym(
     const bool bGotPaymentContents = pPayment.GetPaymentContents(strPayment);
 
     if (!bGotPaymentContents) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Error GetPaymentContents Failed!")
+        LogError()(OT_PRETTY_CLASS())("Error GetPaymentContents Failed!")
             .Flush();
     }
 
@@ -692,7 +681,7 @@ auto Server::DropMessageToNymbox(
         transactor_.issueNextTransactionNumber(lTransNum);
 
     if (!bGotNextTransNum) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Error: Failed trying to get next transaction number.")
             .Flush();
         return false;
@@ -703,7 +692,7 @@ auto Server::DropMessageToNymbox(
         case transactionType::instrumentNotice:
             break;
         default:
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Unexpected transactionType passed here (Expected message "
                 "or instrumentNotice).")
                 .Flush();
@@ -767,7 +756,7 @@ auto Server::DropMessageToNymbox(
             theMsgAngel->SignContract(*m_nymServer, reason_);
             theMsgAngel->SaveContract();
         } else {
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed trying to seal envelope containing theMsgAngel "
                 "(or while grabbing the base64-encoded result).")
                 .Flush();
@@ -864,16 +853,15 @@ auto Server::DropMessageToNymbox(
         } else  // should never happen
         {
             const auto strRecipientNymID = String::Factory(RECIPIENT_NYM_ID);
-            LogError()(OT_PRETTY_CLASS(__func__))(
+            LogError()(OT_PRETTY_CLASS())(
                 "Failed while trying to generate transaction in order to "
                 "add a message to Nymbox: ")(strRecipientNymID->Get())(".")
                 .Flush();
         }
     } else {
         const auto strRecipientNymID = String::Factory(RECIPIENT_NYM_ID);
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed while trying to load or verify "
-            "Nymbox: ")(strRecipientNymID->Get())(".")
+        LogError()(OT_PRETTY_CLASS())("Failed while trying to load or verify "
+                                      "Nymbox: ")(strRecipientNymID->Get())(".")
             .Flush();
     }
 

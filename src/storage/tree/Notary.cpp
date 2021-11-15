@@ -67,16 +67,14 @@ auto Notary::CheckSpent(
 
     for (const auto& spent : list.spent()) {
         if (spent == key) {
-            LogTrace()(OT_PRETTY_CLASS(__func__))("Token ")(
-                key)(" is already spent.")
+            LogTrace()(OT_PRETTY_CLASS())("Token ")(key)(" is already spent.")
                 .Flush();
 
             return true;
         }
     }
 
-    LogTrace()(OT_PRETTY_CLASS(__func__))("Token ")(
-        key)(" has never been spent.")
+    LogTrace()(OT_PRETTY_CLASS())("Token ")(key)(" has never been spent.")
         .Flush();
 
     return false;
@@ -137,8 +135,7 @@ void Notary::init(const std::string& hash)
     driver_.LoadProto(hash, serialized);
 
     if (false == bool(serialized)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load index file")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to load index file").Flush();
 
         OT_FAIL;
     }
@@ -165,7 +162,7 @@ auto Notary::MarkSpent(
     const std::string& key) -> bool
 {
     if (key.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid key ").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid key ").Flush();
 
         return false;
     }
@@ -177,8 +174,7 @@ auto Notary::MarkSpent(
     OT_ASSERT(proto::Validate(list, VERBOSE));
 
     auto& hash = mint_map_[unit.str()][series];
-    LogTrace()(OT_PRETTY_CLASS(__func__))("Token ")(key)(" marked as spent.")
-        .Flush();
+    LogTrace()(OT_PRETTY_CLASS())("Token ")(key)(" marked as spent.").Flush();
 
     return driver_.StoreProto(list, hash);
 }
@@ -187,7 +183,7 @@ auto Notary::MarkSpent(
 auto Notary::save(const Lock& lock) const -> bool
 {
     if (false == verify_write_lock(lock)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock failure").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock failure").Flush();
 
         OT_FAIL;
     }

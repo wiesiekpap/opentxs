@@ -329,4 +329,6 @@ using pHeader = pHash;
 
 using SendOutcome = std::pair<SendResult, block::pTxid>;
 }  // namespace blockchain
+
+auto print(const blockchain::block::Position&) noexcept -> std::string;
 }  // namespace opentxs

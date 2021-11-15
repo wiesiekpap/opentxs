@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "Proto.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Contacts.hpp"

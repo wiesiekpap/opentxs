@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "blockchain/node/wallet/Progress.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
@@ -65,7 +66,7 @@ auto NotificationStateData::Index::Do(
         }
     }
 
-    LogTrace()(OT_PRETTY_CLASS(__func__))("Payment code ")(code_->asBase58())(
+    LogTrace()(OT_PRETTY_CLASS())("Payment code ")(code_->asBase58())(
         " indexed")
         .Flush();
 }
@@ -77,15 +78,14 @@ auto NotificationStateData::Index::need_index(
     const auto version = code_->Version();
 
     if (current.value_or(0) < version) {
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("Payment code ")(
-            code_->asBase58())(
+        LogVerbose()(OT_PRETTY_CLASS())("Payment code ")(code_->asBase58())(
             " notification elements not yet indexed for version ")(version)
             .Flush();
 
         return static_cast<Bip32Index>(version);
     } else {
-        LogTrace()(OT_PRETTY_CLASS(__func__))("Payment code ")(
-            code_->asBase58())(" already indexed")
+        LogTrace()(OT_PRETTY_CLASS())("Payment code ")(code_->asBase58())(
+            " already indexed")
             .Flush();
 
         return std::nullopt;

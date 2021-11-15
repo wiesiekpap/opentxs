@@ -211,15 +211,13 @@ auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
         notUsed);
 
     if (false == set) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to set socks proxy.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Unable to set socks proxy.").Flush();
 
         return false;
     }
 
     if (false == api_.Config().Save()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to set save config.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Unable to set save config.").Flush();
 
         return false;
     }
@@ -238,8 +236,7 @@ auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
     }
 
     if (false == set) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to reset connection.")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Unable to reset connection.").Flush();
     }
 
     return set;
@@ -284,13 +281,13 @@ auto ZMQ::Status(const std::string& server) const -> ConnectionState
 auto ZMQ::verify_lock(const Lock& lock) const -> bool
 {
     if (lock.mutex() != &lock_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Incorrect mutex.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Incorrect mutex.").Flush();
 
         return false;
     }
 
     if (false == lock.owns_lock()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Lock not owned.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Lock not owned.").Flush();
 
         return false;
     }

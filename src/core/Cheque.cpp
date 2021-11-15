@@ -16,7 +16,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
@@ -188,9 +187,8 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
             m_REMITTER_ACCT_ID->Release();
         }
         {
-            LogVerbose()(OT_PRETTY_CLASS(__func__))("Cheque Amount: ")(
-                m_lAmount.str())(". Transaction Number: ")(
-                m_lTransactionNum)(" Valid From: ")(
+            LogVerbose()(OT_PRETTY_CLASS())("Cheque Amount: ")(m_lAmount.str())(
+                ". Transaction Number: ")(m_lTransactionNum)(" Valid From: ")(
                 str_valid_from)(" Valid To: ")(
                 str_valid_to)(" InstrumentDefinitionID: ")(
                 strInstrumentDefinitionID)(" NotaryID: ")(
@@ -208,8 +206,7 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         nReturnVal = 1;
     } else if (!strcmp("memo", xml->getNodeName())) {
         if (!LoadEncodedTextField(xml, m_strMemo)) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Error: Memo field without value.")
+            LogError()(OT_PRETTY_CLASS())("Error: Memo field without value.")
                 .Flush();
             return (-1);  // error condition
         }

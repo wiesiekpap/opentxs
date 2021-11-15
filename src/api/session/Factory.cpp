@@ -405,13 +405,13 @@ auto Factory::BitcoinScriptP2MS(
     namespace bb = opentxs::blockchain::block::bitcoin;
 
     if ((0u == M) || (16u < M)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid M").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid M").Flush();
 
         return {};
     }
 
     if ((0u == N) || (16u < N)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid N").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid N").Flush();
 
         return {};
     }
@@ -421,7 +421,7 @@ auto Factory::BitcoinScriptP2MS(
 
     for (const auto& pKey : publicKeys) {
         if (nullptr == pKey) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid key").Flush();
 
             return {};
         }
@@ -463,7 +463,7 @@ auto Factory::BitcoinScriptP2PKH(
     auto hash = Space{};
 
     if (false == b::PubkeyHash(api_, chain, key.PublicKey(), writer(hash))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate pubkey hash")
+        LogError()(OT_PRETTY_CLASS())("Failed to calculate pubkey hash")
             .Flush();
 
         return {};
@@ -492,14 +492,13 @@ auto Factory::BitcoinScriptP2SH(
     auto hash = Space{};
 
     if (false == script.Serialize(writer(bytes))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize script")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize script").Flush();
 
         return {};
     }
 
     if (false == b::ScriptHash(api_, chain, reader(bytes), writer(hash))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate script hash")
+        LogError()(OT_PRETTY_CLASS())("Failed to calculate script hash")
             .Flush();
 
         return {};
@@ -525,7 +524,7 @@ auto Factory::BitcoinScriptP2WPKH(
     auto hash = Space{};
 
     if (false == b::PubkeyHash(api_, chain, key.PublicKey(), writer(hash))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate pubkey hash")
+        LogError()(OT_PRETTY_CLASS())("Failed to calculate pubkey hash")
             .Flush();
 
         return {};
@@ -551,15 +550,14 @@ auto Factory::BitcoinScriptP2WSH(
     auto hash = Space{};
 
     if (false == script.Serialize(writer(bytes))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to serialize script")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to serialize script").Flush();
 
         return {};
     }
 
     if (false ==
         b::ScriptHashSegwit(api_, chain, reader(bytes), writer(hash))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to calculate script hash")
+        LogError()(OT_PRETTY_CLASS())("Failed to calculate script hash")
             .Flush();
 
         return {};
@@ -626,7 +624,7 @@ auto Factory::Cheque(const OTTransaction& receipt) const
     const auto loaded = output->LoadContractFromString(serializedCheque);
 
     if (false == loaded) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to load cheque.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to load cheque.").Flush();
     }
 
     return output;
@@ -792,13 +790,13 @@ auto Factory::Contract(const opentxs::String& strInput) const
         // The string didn't match any of the options in the factory.
         //
         if (!pContract) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Object type not yet supported by class "
                 "factory: ")(strFirstLine)
                 .Flush();
             // Does the contract successfully load from the string passed in?
         } else if (!pContract->LoadContractFromString(strContract)) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Failed loading contract from string (first "
                 "line): ")(strFirstLine)
                 .Flush();
@@ -817,7 +815,7 @@ auto Factory::CronItem(const String& strCronItem) const
     std::array<char, 45> buf{};
 
     if (!strCronItem.Exists()) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Empty string was passed in (returning nullptr).")
             .Flush();
         return nullptr;
@@ -826,7 +824,7 @@ auto Factory::CronItem(const String& strCronItem) const
     auto strContract = String::Factory(strCronItem.Get());
 
     if (!strContract->DecodeIfArmored(false)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Input string apparently was encoded and "
             "then failed decoding. Contents: ")(strCronItem)(".")
             .Flush();
@@ -1112,12 +1110,11 @@ auto Factory::Item(const String& serialized) const
         const auto loaded = output->LoadContractFromString(serialized);
 
         if (false == loaded) {
-            LogError()(OT_PRETTY_CLASS(__func__))("Unable to deserialize.")
-                .Flush();
+            LogError()(OT_PRETTY_CLASS())("Unable to deserialize.").Flush();
             output.reset();
         }
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))("Unable to instantiate.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Unable to instantiate.").Flush();
     }
 
     return output;
@@ -1170,8 +1167,8 @@ auto Factory::Item(
     std::int64_t lTransactionNumber) const -> std::unique_ptr<opentxs::Item>
 {
     if (!strItem.Exists()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("strItem is empty. (Expected an "
-                                              "item).")
+        LogError()(OT_PRETTY_CLASS())("strItem is empty. (Expected an "
+                                      "item).")
             .Flush();
         return nullptr;
     }
@@ -1238,8 +1235,7 @@ auto Factory::Keypair(
     auto pPrivateKey = asymmetric_.NewKey(params, role, version, reason);
 
     if (false == bool(pPrivateKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to derive private key")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to derive private key").Flush();
 
         return OTKeypair{factory::Keypair()};
     }
@@ -1248,8 +1244,7 @@ auto Factory::Keypair(
     auto pPublicKey = privateKey.asPublic();
 
     if (false == bool(pPublicKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to derive public key")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to derive public key").Flush();
 
         return OTKeypair{factory::Keypair()};
     }
@@ -1269,8 +1264,7 @@ auto Factory::Keypair(
     auto pPrivateKey = asymmetric_.Internal().InstantiateKey(serializedPrivkey);
 
     if (false == bool(pPrivateKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to instantiate private key")
+        LogError()(OT_PRETTY_CLASS())("Failed to instantiate private key")
             .Flush();
 
         return OTKeypair{factory::Keypair()};
@@ -1279,8 +1273,7 @@ auto Factory::Keypair(
     auto pPublicKey = asymmetric_.Internal().InstantiateKey(serializedPubkey);
 
     if (false == bool(pPublicKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to instantiate public key")
+        LogError()(OT_PRETTY_CLASS())("Failed to instantiate public key")
             .Flush();
 
         return OTKeypair{factory::Keypair()};
@@ -1303,8 +1296,7 @@ auto Factory::Keypair(const proto::AsymmetricKey& serializedPubkey) const
     auto pPublicKey = asymmetric_.Internal().InstantiateKey(serializedPubkey);
 
     if (false == bool(pPublicKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed to instantiate public key")
+        LogError()(OT_PRETTY_CLASS())("Failed to instantiate public key")
             .Flush();
 
         return OTKeypair{factory::Keypair()};
@@ -1344,7 +1336,7 @@ auto Factory::Keypair(
             roleIndex = HDIndex{Bip32Child::SIGN_KEY, Bip32Child::HARDENED};
         } break;
         default: {
-            LogError()(OT_PRETTY_CLASS(__func__))("Invalid key role").Flush();
+            LogError()(OT_PRETTY_CLASS())("Invalid key role").Flush();
 
             return OTKeypair{factory::Keypair()};
         }
@@ -1360,8 +1352,7 @@ auto Factory::Keypair(
         api_.Crypto().Seed().GetHDKey(input, curve, path, role, reason);
 
     if (false == bool(pPrivateKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to derive private key")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to derive private key").Flush();
 
         return OTKeypair{factory::Keypair()};
     }
@@ -1370,8 +1361,7 @@ auto Factory::Keypair(
     auto pPublicKey = privateKey.asPublic();
 
     if (false == bool(pPublicKey)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to derive public key")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to derive public key").Flush();
 
         return OTKeypair{factory::Keypair()};
     }
@@ -1472,7 +1462,7 @@ auto Factory::Mint() const -> std::unique_ptr<blind::Mint>
     OT_ASSERT(false != bool(pMint));
 
 #else
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Open-Transactions isn't built with any digital cash algorithms, "
         "so it's impossible to instantiate a mint.")
         .Flush();
@@ -1494,7 +1484,7 @@ auto Factory::Mint(
 
     OT_ASSERT(false != bool(pMint));
 #else
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Open-Transactions isn't built with any digital cash algorithms, "
         "so it's impossible to instantiate a mint.")
         .Flush();
@@ -1517,7 +1507,7 @@ auto Factory::Mint(
 
     OT_ASSERT(false != bool(pMint));
 #else
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Open-Transactions isn't built with any digital cash algorithms, "
         "so it's impossible to instantiate a mint.")
         .Flush();
@@ -1859,7 +1849,7 @@ auto Factory::PeerObject(
     [[maybe_unused]] const std::string& message) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Peer objects are only supported in client sessions")
         .Flush();
 
@@ -1872,7 +1862,7 @@ auto Factory::PeerObject(
     [[maybe_unused]] const bool isPayment) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Peer objects are only supported in client sessions")
         .Flush();
 
@@ -1885,7 +1875,7 @@ auto Factory::PeerObject(
     [[maybe_unused]] const std::shared_ptr<blind::Purse> purse) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Peer objects are only supported in client sessions")
         .Flush();
 
@@ -1899,7 +1889,7 @@ auto Factory::PeerObject(
     [[maybe_unused]] const VersionNumber version) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Peer objects are only supported in client sessions")
         .Flush();
 
@@ -1911,7 +1901,7 @@ auto Factory::PeerObject(
     [[maybe_unused]] const VersionNumber version) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Peer objects are only supported in client sessions")
         .Flush();
 
@@ -1923,7 +1913,7 @@ auto Factory::PeerObject(
     [[maybe_unused]] const proto::PeerObject& serialized) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Peer objects are only supported in client sessions")
         .Flush();
 
@@ -1936,7 +1926,7 @@ auto Factory::PeerObject(
     [[maybe_unused]] const opentxs::PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
-    LogError()(OT_PRETTY_CLASS(__func__))(
+    LogError()(OT_PRETTY_CLASS())(
         "Peer objects are only supported in client sessions")
         .Flush();
 
@@ -2107,7 +2097,7 @@ auto Factory::Scriptable(const String& strInput) const
     std::array<char, 45> buf{};
 
     if (!strInput.Exists()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failure: Input string is empty.")
+        LogError()(OT_PRETTY_CLASS())("Failure: Input string is empty.")
             .Flush();
         return nullptr;
     }
@@ -2117,7 +2107,7 @@ auto Factory::Scriptable(const String& strInput) const
     if (!strContract->DecodeIfArmored(false))  // bEscapedIsAllowed=true
                                                // by default.
     {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Input string apparently was encoded and then failed decoding. "
             "Contents: ")(strInput)
             .Flush();
@@ -2448,7 +2438,7 @@ auto Factory::Transaction(const String& strInput) const
         //        const char* szFunc = "OTTransactionType::TransactionFactory";
         // The string didn't match any of the options in the factory.
         if (nullptr == pContract) {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Object type not yet supported by class "
                 "factory: ")(strFirstLine)
                 .Flush();
@@ -2477,7 +2467,7 @@ auto Factory::Transaction(const String& strInput) const
 
             return pContract;
         } else {
-            LogConsole()(OT_PRETTY_CLASS(__func__))(
+            LogConsole()(OT_PRETTY_CLASS())(
                 "Failed loading contract from string (first "
                 "line): ")(strFirstLine)
                 .Flush();

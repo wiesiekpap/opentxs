@@ -613,7 +613,7 @@ auto QueryString(
          ot_threeStr = String::Factory(threeStr);
 
     if (!CheckStringsExistInOrder(
-            dataFolder, strFolder, oneStr, twoStr, threeStr, __func__))
+            dataFolder, strFolder, oneStr, twoStr, threeStr))
         return std::string("");
 
     if (!ot_oneStr->Exists()) {
@@ -1473,7 +1473,7 @@ auto BufferPB::WriteToOStream(std::ostream& outStream) -> bool
         outStream.write(m_buffer.c_str(), m_buffer.length());
         return outStream.good() ? true : false;
     } else {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             "Buffer had zero length in BufferPB::WriteToOStream.")
             .Flush();
     }
@@ -2129,8 +2129,8 @@ auto Storage::CreateObject(const StoredObjectType& eType) -> Storable*
     OTPacker* pPacker = GetPacker();
 
     if (nullptr == pPacker) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed, since GetPacker() "
-                                              "returned nullptr.")
+        LogError()(OT_PRETTY_CLASS())("Failed, since GetPacker() "
+                                      "returned nullptr.")
             .Flush();
         return nullptr;
     }
@@ -2157,7 +2157,7 @@ auto Storage::Create(const StorageType& eStorageType, const PackType& ePackType)
         //                pStore);
         // break;
         default:
-            LogError()(OT_PRETTY_STATIC(Storage, __func__))(
+            LogError()(OT_PRETTY_STATIC(Storage))(
                 "Failed: Unknown storage type.")
                 .Flush();
             break;
@@ -2171,7 +2171,7 @@ auto Storage::Create(const StorageType& eStorageType, const PackType& ePackType)
         OTPacker* pPacker = OTPacker::Create(ePackType);
 
         if (nullptr == pPacker) {
-            LogError()(OT_PRETTY_STATIC(Storage, __func__))(
+            LogError()(OT_PRETTY_STATIC(Storage))(
                 "Failed while creating packer.")
                 .Flush();
 
@@ -2184,7 +2184,7 @@ auto Storage::Create(const StorageType& eStorageType, const PackType& ePackType)
         // Now they're married.
         pStore->SetPacker(*pPacker);
     } else
-        LogError()(OT_PRETTY_STATIC(Storage, __func__))(
+        LogError()(OT_PRETTY_STATIC(Storage))(
             "Failed, since pStore is nullptr.")
             .Flush();
 
@@ -2349,7 +2349,7 @@ auto Storage::StoreObject(
 
     if (nullptr == pPacker) {
 
-        LogError()(OT_PRETTY_CLASS(__func__))("No packer allocated.").Flush();
+        LogError()(OT_PRETTY_CLASS())("No packer allocated.").Flush();
 
         return false;
     }
@@ -2357,7 +2357,7 @@ auto Storage::StoreObject(
     PackedBuffer* pBuffer = pPacker->Pack(theContents);
 
     if (nullptr == pBuffer) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Packing failed.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Packing failed.").Flush();
         return false;
     }
 
@@ -2365,8 +2365,8 @@ auto Storage::StoreObject(
         api, *pBuffer, dataFolder, strFolder, oneStr, twoStr, threeStr);
 
     if (!bSuccess) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Storing failed calling "
-                                              "onStorePackedBuffer.")
+        LogError()(OT_PRETTY_CLASS())("Storing failed calling "
+                                      "onStorePackedBuffer.")
             .Flush();
         return false;
     }
@@ -2445,14 +2445,14 @@ auto Storage::EncodeObject(const api::Session& api, Storable& theContents)
     OTPacker* pPacker = GetPacker();
 
     if (nullptr == pPacker) {
-        LogError()(OT_PRETTY_CLASS(__func__))("No packer allocated.").Flush();
+        LogError()(OT_PRETTY_CLASS())("No packer allocated.").Flush();
         return strReturnValue;
     }
 
     PackedBuffer* pBuffer = pPacker->Pack(theContents);
 
     if (nullptr == pBuffer) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Packing failed.").Flush();
+        LogError()(OT_PRETTY_CLASS())("Packing failed.").Flush();
         return strReturnValue;
     }
 
@@ -2467,7 +2467,7 @@ auto Storage::EncodeObject(const api::Session& api, Storable& theContents)
         delete pBuffer;
         pBuffer = nullptr;
 
-        LogError()(OT_PRETTY_CLASS(__func__))("Packing failed (2).").Flush();
+        LogError()(OT_PRETTY_CLASS())("Packing failed (2).").Flush();
         return strReturnValue;
     }
 
@@ -2551,9 +2551,8 @@ auto Storage::EraseValueByKey(
         onEraseValueByKey(api, dataFolder, strFolder, oneStr, twoStr, threeStr);
 
     if (!bSuccess)
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "Failed trying to erase a value "
-            "(while calling onEraseValueByKey).")
+        LogError()(OT_PRETTY_CLASS())("Failed trying to erase a value "
+                                      "(while calling onEraseValueByKey).")
             .Flush();
 
     return bSuccess;
@@ -2620,23 +2619,22 @@ auto StorageFS::ConstructAndConfirmPathImp(
 
     // must be 3chars in length, or equal to "."
     if (strZero.empty() && (0 != zeroStr.compare("."))) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Empty: zeroStr"
-                                              " is too short (and not)! "
-                                              "zeroStr was: ")(zeroStr)(".")
+        LogError()(OT_PRETTY_CLASS())("Empty: zeroStr"
+                                      " is too short (and not)! "
+                                      "zeroStr was: ")(zeroStr)(".")
             .Flush();
         return -1;
     }
 
     // the first string must not be empty
     if (strOne.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Empty: oneStr is passed in!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Empty: oneStr is passed in!").Flush();
         return -2;
     }
 
     // if the second string is empty, so must the third.
     if (strTwo.empty() && !strThree.empty()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error: strThree passed in: ")(
+        LogError()(OT_PRETTY_CLASS())("Error: strThree passed in: ")(
             strThree)(" while strTwo is empty!")
             .Flush();
         return -3;
@@ -2708,15 +2706,14 @@ ot_exit_block:
             String::Factory(strFolder.c_str()));
 
         if (bMakePath && !bFolderExists) {
-            LogError()(OT_PRETTY_CLASS(__func__))(
-                "Error: was told to make path (")(
+            LogError()(OT_PRETTY_CLASS())("Error: was told to make path (")(
                 strFolder)("), however cannot confirm the path!")
                 .Flush();
             return -4;
         }
         if (!bMakePath && !bFolderExists) {
-            LogDetail()(OT_PRETTY_CLASS(__func__))(
-                "Debug: Cannot find Folder: ")(strFolder)
+            LogDetail()(OT_PRETTY_CLASS())("Debug: Cannot find Folder: ")(
+                strFolder)
                 .Flush();
         }
     }
@@ -2749,8 +2746,7 @@ auto StorageFS::onStorePackedBuffer(
     if (0 >
         ConstructAndCreatePath(
             api, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error writing to ")(
-            strOutput)(".")
+        LogError()(OT_PRETTY_CLASS())("Error writing to ")(strOutput)(".")
             .Flush();
         return false;
     }
@@ -2764,8 +2760,7 @@ auto StorageFS::onStorePackedBuffer(
     std::ofstream ofs(strOutput.c_str(), std::ios::out | std::ios::binary);
 
     if (ofs.fail()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error opening file: ")(
-            strOutput)(".")
+        LogError()(OT_PRETTY_CLASS())("Error opening file: ")(strOutput)(".")
             .Flush();
         return false;
     }
@@ -2794,11 +2789,10 @@ auto StorageFS::onQueryPackedBuffer(
         api, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr);
 
     if (0 > lRet) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error with ")(strOutput)(".")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error with ")(strOutput)(".").Flush();
         return false;
     } else if (0 == lRet) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Failure reading from ")(
+        LogDetail()(OT_PRETTY_CLASS())("Failure reading from ")(
             strOutput)(": file does not exist.")
             .Flush();
         return false;
@@ -2809,8 +2803,7 @@ auto StorageFS::onQueryPackedBuffer(
     std::ifstream fin(strOutput.c_str(), std::ios::in | std::ios::binary);
 
     if (!fin.is_open()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error opening file: ")(
-            strOutput)(".")
+        LogError()(OT_PRETTY_CLASS())("Error opening file: ")(strOutput)(".")
             .Flush();
         return false;
     }
@@ -2838,8 +2831,7 @@ auto StorageFS::onStorePlainString(
     if (0 >
         ConstructAndCreatePath(
             api, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr)) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error writing to ")(
-            strOutput)(".")
+        LogError()(OT_PRETTY_CLASS())("Error writing to ")(strOutput)(".")
             .Flush();
         return false;
     }
@@ -2859,8 +2851,7 @@ auto StorageFS::onStorePlainString(
     std::ofstream ofs(strOutput.c_str(), std::ios::out | std::ios::binary);
 
     if (ofs.fail()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error opening file: ")(
-            strOutput)(".")
+        LogError()(OT_PRETTY_CLASS())("Error opening file: ")(strOutput)(".")
             .Flush();
         return false;
     }
@@ -2890,11 +2881,10 @@ auto StorageFS::onQueryPlainString(
         api, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr);
 
     if (0 > lRet) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error with ")(strOutput)(".")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Error with ")(strOutput)(".").Flush();
         return false;
     } else if (0 == lRet) {
-        LogDetail()(OT_PRETTY_CLASS(__func__))("Failure reading from ")(
+        LogDetail()(OT_PRETTY_CLASS())("Failure reading from ")(
             strOutput)(": file does not exist.")
             .Flush();
         return false;
@@ -2905,8 +2895,7 @@ auto StorageFS::onQueryPlainString(
     std::ifstream fin(strOutput.c_str(), std::ios::in | std::ios::binary);
 
     if (!fin.is_open()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error opening file: ")(
-            strOutput)(".")
+        LogError()(OT_PRETTY_CLASS())("Error opening file: ")(strOutput)(".")
             .Flush();
         return false;
     }
@@ -2947,7 +2936,7 @@ auto StorageFS::onEraseValueByKey(
     if (0 >
         ConstructAndConfirmPath(
             api, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr)) {
-        LogError()(OT_PRETTY_CLASS(__func__))(
+        LogError()(OT_PRETTY_CLASS())(
             ":Error: "
             "Failed calling ConstructAndConfirmPath with: "
             "strOutput: ")(strOutput)(" | strFolder: ")(
@@ -2973,8 +2962,7 @@ auto StorageFS::onEraseValueByKey(
     std::ofstream ofs(strOutput.c_str(), std::ios::out | std::ios::binary);
 
     if (ofs.fail()) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Error opening file: ")(
-            strOutput)(".")
+        LogError()(OT_PRETTY_CLASS())("Error opening file: ")(strOutput)(".")
             .Flush();
         return false;
     }
@@ -2990,12 +2978,12 @@ auto StorageFS::onEraseValueByKey(
 
     if (remove(strOutput.c_str()) != 0) {
         bSuccess = false;
-        LogError()(OT_PRETTY_CLASS(__func__))(
-            "** Failed trying to delete file: ")(strOutput)(".")
+        LogError()(OT_PRETTY_CLASS())("** Failed trying to delete file: ")(
+            strOutput)(".")
             .Flush();
     } else {
         bSuccess = true;
-        LogVerbose()(OT_PRETTY_CLASS(__func__))("** Success deleting file:  ")(
+        LogVerbose()(OT_PRETTY_CLASS())("** Success deleting file:  ")(
             strOutput)
             .Flush();
     }

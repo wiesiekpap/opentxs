@@ -7,8 +7,7 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "opentxs/network/blockchain/sync/Base.hpp"  // IWYU pragma: associated
 
-#include <boost/container/vector.hpp>
-#include <functional>
+#include <robin_hood.h>
 #include <stdexcept>
 #include <utility>
 
@@ -165,7 +164,7 @@ auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
 auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
 {
     if (MessageType::error == type_) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid type").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid type").Flush();
 
         return false;
     }
@@ -175,7 +174,7 @@ auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
     } else if (0u != out.at(out.size() - 1u).size()) {
         // NOTE supplied message should either be empty or else have header
         // frames followed by an empty delimiter frame.
-        LogError()(OT_PRETTY_CLASS(__func__))("Invalid message").Flush();
+        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
 
         return false;
     }

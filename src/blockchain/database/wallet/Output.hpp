@@ -3,7 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/node/TxoTag.hpp"
 
 #pragma once
 
@@ -20,11 +22,9 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "util/LMDB.hpp"
@@ -88,16 +88,16 @@ typedef struct MDB_txn MDB_txn;
 
 namespace opentxs::blockchain::database::wallet
 {
+using AccountID = Identifier;
+using SubchainID = Identifier;
+using Parent = node::internal::WalletDatabase;
+using NodeID = Parent::NodeID;
+using Subchain = Parent::Subchain;
+using UTXO = Parent::UTXO;
+
 class Output
 {
 public:
-    using AccountID = Identifier;
-    using SubchainID = Identifier;
-    using Parent = node::internal::WalletDatabase;
-    using NodeID = Parent::NodeID;
-    using Subchain = Parent::Subchain;
-    using UTXO = Parent::UTXO;
-
     auto CancelProposal(const Identifier& id) noexcept -> bool;
     auto GetBalance() const noexcept -> Balance;
     auto GetBalance(const identifier::Nym& owner) const noexcept -> Balance;

@@ -26,6 +26,7 @@
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace be = boost::endian;
@@ -211,8 +212,7 @@ auto NumericHash::asHex(const std::size_t minimumBytes) const noexcept
         // Export as big endian
         bmp::export_bits(data_, std::back_inserter(bytes), 8, true);
     } catch (...) {
-        LogError()(OT_PRETTY_CLASS(__func__))("Failed to encode number")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("Failed to encode number").Flush();
 
         return {};
     }
