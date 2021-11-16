@@ -17,13 +17,13 @@ extern "C" {
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::crypto::implementation
 {
-auto OpenSSL::generate_dh(const NymParameters& options, ::EVP_PKEY* output)
+auto OpenSSL::generate_dh(const Parameters& options, ::EVP_PKEY* output)
     const noexcept -> bool
 {
     auto context = OpenSSL_EVP_PKEY_CTX{
@@ -61,7 +61,7 @@ auto OpenSSL::generate_dh(const NymParameters& options, ::EVP_PKEY* output)
 
 auto OpenSSL::get_params(
     const AllocateOutput params,
-    const NymParameters& options,
+    const Parameters& options,
     ::EVP_PKEY* output) const noexcept -> bool
 {
     const auto existing = options.DHParams();
@@ -141,7 +141,7 @@ auto OpenSSL::make_dh_key(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey,
     const AllocateOutput dhParams,
-    const NymParameters& options) const noexcept -> bool
+    const Parameters& options) const noexcept -> bool
 {
     struct Key {
         ::EVP_PKEY* key_;
@@ -203,7 +203,7 @@ auto OpenSSL::make_dh_key(
 auto OpenSSL::make_signing_key(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey,
-    const NymParameters& options) const noexcept -> bool
+    const Parameters& options) const noexcept -> bool
 {
     auto evp = OpenSSL_EVP_PKEY{::EVP_PKEY_new(), ::EVP_PKEY_free};
 
@@ -266,7 +266,7 @@ auto OpenSSL::RandomKeypair(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey,
     const crypto::key::asymmetric::Role role,
-    const NymParameters& options,
+    const Parameters& options,
     const AllocateOutput params) const noexcept -> bool
 {
     if (crypto::key::asymmetric::Role::Encrypt == role) {

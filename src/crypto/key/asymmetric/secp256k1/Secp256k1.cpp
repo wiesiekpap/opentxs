@@ -62,7 +62,6 @@ Secp256k1::Secp256k1(
 {
 }
 
-#if OT_CRYPTO_WITH_BIP32
 Secp256k1::Secp256k1(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
@@ -114,7 +113,6 @@ Secp256k1::Secp256k1(
           version)
 {
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 Secp256k1::Secp256k1(const Secp256k1& rhs) noexcept
     : key::Secp256k1()

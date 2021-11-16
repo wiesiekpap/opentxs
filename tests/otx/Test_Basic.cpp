@@ -80,6 +80,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
@@ -300,9 +301,9 @@ public:
                 "palm guilt pudding laundry stay axis prosper",
                 "");
         const_cast<OTNymID&>(alice_nym_id_) =
-            client_1_.Wallet().Nym(reason_c1_, "Alice", {SeedA_, 0})->ID();
+            client_1_.Wallet().Nym({SeedA_, 0}, reason_c1_, "Alice")->ID();
         const_cast<OTNymID&>(bob_nym_id_) =
-            client_2_.Wallet().Nym(reason_c2_, "Bob", {SeedB_, 0})->ID();
+            client_2_.Wallet().Nym({SeedB_, 0}, reason_c2_, "Bob")->ID();
 
         OT_ASSERT(false == server_1_id_.empty());
 

@@ -22,6 +22,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"

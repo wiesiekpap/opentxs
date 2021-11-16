@@ -26,7 +26,6 @@
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Numbers.hpp"

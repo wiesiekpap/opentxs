@@ -15,9 +15,9 @@
 
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
@@ -49,6 +49,8 @@ namespace ottest
 class Test_Bitcoin_Providers : public ::testing::Test
 {
 public:
+    static const bool have_hd_;
+
     const ot::api::session::Client& client_;
     ot::OTPasswordPrompt reason_;
     const ot::api::Crypto& crypto_;
@@ -445,7 +447,6 @@ public:
         return true;
     }
 
-#if OT_CRYPTO_WITH_BIP32
     auto get_seed(const std::string& hex) const -> ot::OTSecret
     {
         auto data = client_.Factory().Data();
@@ -615,7 +616,6 @@ public:
 
         return true;
     }
-#endif
 
     bool test_bip39(const ot::crypto::Bip32& library)
     {
@@ -656,15 +656,23 @@ public:
     }
 };
 
+const bool Test_Bitcoin_Providers::have_hd_{
+    ot::api::crypto::HaveHDKeys() &&
+    ot::api::crypto::HaveSupport(
+        ot::crypto::key::asymmetric::Algorithm::Secp256k1)
+
+};
+
 TEST_F(Test_Bitcoin_Providers, Common)
 {
     EXPECT_TRUE(test_base58_encode());
     EXPECT_TRUE(test_base58_decode());
     EXPECT_TRUE(test_ripemd160());
     EXPECT_TRUE(test_bip39(crypto_.BIP32()));
-#if OT_CRYPTO_WITH_BIP32
-    EXPECT_TRUE(test_bip32_seed(crypto_.BIP32()));
-    EXPECT_TRUE(test_bip32_child_key(crypto_.BIP32()));
-#endif  // OT_CRYPTO_WITH_BIP32
+
+    if (have_hd_) {
+        EXPECT_TRUE(test_bip32_seed(crypto_.BIP32()));
+        EXPECT_TRUE(test_bip32_child_key(crypto_.BIP32()));
+    }
 }
 }  // namespace ottest

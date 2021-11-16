@@ -23,7 +23,7 @@
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -111,20 +111,20 @@ auto ContactList::ParsedArgs::extract_nymid(
 auto ContactList::ParsedArgs::extract_paymentcode(
     const api::Session& api,
     const std::string& purportedID,
-    const std::string& purportedPaymentCode) noexcept -> OTPaymentCode
+    const std::string& purportedPaymentCode) noexcept -> PaymentCode
 {
     if (false == purportedPaymentCode.empty()) {
         // Case 1: purportedPaymentCode is a payment code
         auto output = api.Factory().PaymentCode(purportedPaymentCode);
 
-        if (output->Valid()) { return output; }
+        if (output.Valid()) { return output; }
     }
 
     if (false == purportedID.empty()) {
         // Case 2: purportedID is a payment code
         auto output = api.Factory().PaymentCode(purportedID);
 
-        if (output->Valid()) { return output; }
+        if (output.Valid()) { return output; }
     }
 
     // Case 3: not possible to extract a payment code

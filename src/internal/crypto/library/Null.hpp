@@ -17,8 +17,31 @@ public:
     auto RandomKeypair(
         const AllocateOutput,
         const AllocateOutput,
+        const AllocateOutput) const noexcept -> bool final
+    {
+        return false;
+    }
+    auto RandomKeypair(
+        const AllocateOutput,
+        const AllocateOutput,
+        const Parameters&,
+        const AllocateOutput) const noexcept -> bool final
+    {
+        return false;
+    }
+    auto RandomKeypair(
+        const AllocateOutput,
+        const AllocateOutput,
         const opentxs::crypto::key::asymmetric::Role,
-        const NymParameters&,
+        const AllocateOutput) const noexcept -> bool final
+    {
+        return false;
+    }
+    auto RandomKeypair(
+        const AllocateOutput,
+        const AllocateOutput,
+        const opentxs::crypto::key::asymmetric::Role,
+        const Parameters&,
         const AllocateOutput) const noexcept -> bool final
     {
         return false;

@@ -41,6 +41,11 @@ class Factory;
 }  // namespace session
 }  // namespace api
 
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
+
 namespace identifier
 {
 class UnitDefinition;
@@ -53,7 +58,6 @@ class ContactData;
 
 class ContactData;
 class Identifier;
-class NymParameters;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -93,7 +97,7 @@ public:
 
     auto AddChildKeyCredential(
         const Identifier& strMasterID,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const PasswordPrompt& reason) -> std::string;
     auto AddClaim(const Claim& claim, const PasswordPrompt& reason) -> bool;
     auto AddContract(

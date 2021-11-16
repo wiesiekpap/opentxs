@@ -26,8 +26,8 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Language.hpp"
@@ -84,8 +84,8 @@ struct PaymentCodeFixture {
 
 private:
     std::optional<std::string> seed_{};
-    std::optional<ot::OTPaymentCode> pc_secret_{};
-    std::optional<ot::OTPaymentCode> pc_public_{};
+    std::optional<ot::PaymentCode> pc_secret_{};
+    std::optional<ot::PaymentCode> pc_public_{};
     std::unique_ptr<const ot::crypto::key::EllipticCurve> blind_key_secret_{};
     std::unique_ptr<const ot::crypto::key::EllipticCurve> blind_key_public_{};
 

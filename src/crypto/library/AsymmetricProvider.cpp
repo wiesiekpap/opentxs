@@ -26,7 +26,10 @@ extern "C" {
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
+#include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Sodium.hpp"
@@ -86,6 +89,42 @@ namespace opentxs::crypto::implementation
 AsymmetricProvider::AsymmetricProvider() noexcept
 {
     if (0 > ::sodium_init()) { OT_FAIL; }
+}
+
+auto AsymmetricProvider::RandomKeypair(
+    const AllocateOutput privateKey,
+    const AllocateOutput publicKey,
+    const AllocateOutput params) const noexcept -> bool
+{
+    return RandomKeypair(
+        privateKey,
+        publicKey,
+        opentxs::crypto::key::asymmetric::Role::Sign,
+        Parameters{},
+        params);
+}
+
+auto AsymmetricProvider::RandomKeypair(
+    const AllocateOutput privateKey,
+    const AllocateOutput publicKey,
+    const opentxs::crypto::key::asymmetric::Role role,
+    const AllocateOutput params) const noexcept -> bool
+{
+    return RandomKeypair(privateKey, publicKey, role, Parameters{}, params);
+}
+
+auto AsymmetricProvider::RandomKeypair(
+    const AllocateOutput privateKey,
+    const AllocateOutput publicKey,
+    const Parameters& options,
+    const AllocateOutput params) const noexcept -> bool
+{
+    return RandomKeypair(
+        privateKey,
+        publicKey,
+        opentxs::crypto::key::asymmetric::Role::Sign,
+        options,
+        params);
 }
 
 auto AsymmetricProvider::SeedToCurveKey(

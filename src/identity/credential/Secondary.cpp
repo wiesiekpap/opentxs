@@ -28,7 +28,7 @@ auto Factory::SecondaryCredential(
     identity::internal::Authority& parent,
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
-    const NymParameters& parameters,
+    const crypto::Parameters& parameters,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason)
     -> identity::credential::internal::Secondary*
@@ -74,7 +74,7 @@ Secondary::Secondary(
     const identity::internal::Authority& owner,
     const identity::Source& source,
     const internal::Primary& master,
-    const NymParameters& nymParameters,
+    const crypto::Parameters& nymParameters,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept(false)
     : credential::implementation::Key(

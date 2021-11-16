@@ -152,13 +152,6 @@ enum class EcdsaCurve : std::uint8_t {
     ed25519 = 2,
 };
 
-enum class NymParameterType : std::uint8_t {
-    invalid = 0,
-    rsa = 1,
-    secp256k1 = 2,
-    ed25519 = 3
-};
-
 enum class NymCapability : std::uint8_t {
     SIGN_MESSAGE = 0,
     ENCRYPT_MESSAGE = 1,

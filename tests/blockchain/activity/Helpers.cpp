@@ -225,7 +225,7 @@ auto Test_BlockchainActivity::nym_1_id() const noexcept
     -> const ot::identifier::Nym&
 {
     static const auto output =
-        api_.Wallet().Nym(reason_, nym_1_name_, {seed(), 0});
+        api_.Wallet().Nym({seed(), 0}, reason_, nym_1_name_);
 
     return output->ID();
 }
@@ -234,7 +234,7 @@ auto Test_BlockchainActivity::nym_2_id() const noexcept
     -> const ot::identifier::Nym&
 {
     static const auto output =
-        api_.Wallet().Nym(reason_, nym_2_name_, {seed(), 1});
+        api_.Wallet().Nym({seed(), 1}, reason_, nym_2_name_);
 
     return output->ID();
 }

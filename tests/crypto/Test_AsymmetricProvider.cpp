@@ -14,8 +14,8 @@
 #include "internal/util/LogMacros.hpp"  // IWYU pragma: keep
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -24,10 +24,11 @@
 #include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/ParameterType.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
@@ -51,10 +52,13 @@ public:
     using Role = ot::crypto::key::asymmetric::Role;
     using Type = ot::crypto::key::asymmetric::Algorithm;
 
+    static const bool have_hd_;
+    static const bool have_rsa_;
+    static const bool have_secp256k1_;
+    static const bool have_ed25519_;
+
     const ot::api::session::Client& api_;
-#if OT_CRYPTO_WITH_BIP32
     const std::string fingerprint_;
-#endif  // OT_CRYPTO_WITH_BIP32
     const crypto::HashType sha256_{crypto::HashType::Sha256};
     const crypto::HashType sha512_{crypto::HashType::Sha512};
     const crypto::HashType blake160_{crypto::HashType::Blake2b160};
@@ -67,60 +71,65 @@ public:
         Data::Factory(plaintext_string_1_.data(), plaintext_string_1_.size())};
     const OTData plaintext_2{
         Data::Factory(plaintext_string_2_.data(), plaintext_string_2_.size())};
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
     OTAsymmetricKey ed_;
-#if OT_CRYPTO_WITH_BIP32
     OTAsymmetricKey ed_hd_;
-#endif  // OT_CRYPTO_WITH_BIP32
     OTAsymmetricKey ed_2_;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     OTAsymmetricKey secp_;
-#if OT_CRYPTO_WITH_BIP32
     OTAsymmetricKey secp_hd_;
-#endif  // OT_CRYPTO_WITH_BIP32
     OTAsymmetricKey secp_2_;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
     OTAsymmetricKey rsa_sign_1_;
     OTAsymmetricKey rsa_sign_2_;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
     [[maybe_unused]] Test_Signatures()
         : api_(dynamic_cast<const ot::api::session::Client&>(
               ot::Context().StartClientSession(0)))
-#if OT_CRYPTO_WITH_BIP32
         , fingerprint_(api_.InternalClient().Exec().Wallet_ImportSeed(
               "response seminar brave tip suit recall often sound stick owner "
               "lottery motion",
               ""))
-#endif  // OT_CRYPTO_WITH_BIP32
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
         , ed_(get_key(api_, EcdsaCurve::ed25519, Role::Sign))
-#if OT_CRYPTO_WITH_BIP32
-        , ed_hd_(get_hd_key(api_, fingerprint_, EcdsaCurve::ed25519))
-        , ed_2_(get_hd_key(api_, fingerprint_, EcdsaCurve::ed25519, 1))
-#else
-        , ed_2_(get_key(api_, EcdsaCurve::ed25519, Role::Sign))
-#endif  // OT_CRYPTO_WITH_BIP32
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
+        , ed_hd_([&] {
+            if (have_hd_) {
+
+                return get_hd_key(api_, fingerprint_, EcdsaCurve::ed25519);
+            } else {
+
+                return get_key(api_, EcdsaCurve::ed25519, Role::Sign);
+            }
+        }())
+        , ed_2_([&] {
+            if (have_hd_) {
+
+                return get_hd_key(api_, fingerprint_, EcdsaCurve::ed25519, 1);
+            } else {
+
+                return get_key(api_, EcdsaCurve::ed25519, Role::Sign);
+            }
+        }())
         , secp_(get_key(api_, EcdsaCurve::secp256k1, Role::Sign))
-#if OT_CRYPTO_WITH_BIP32
-        , secp_hd_(get_hd_key(api_, fingerprint_, EcdsaCurve::secp256k1))
-        , secp_2_(get_hd_key(api_, fingerprint_, EcdsaCurve::secp256k1, 1))
-#else
-        , secp_2_(get_key(api_, EcdsaCurve::secp256k1, Role::Sign))
-#endif  // OT_CRYPTO_WITH_BIP32
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
+        , secp_hd_([&] {
+            if (have_hd_) {
+
+                return get_hd_key(api_, fingerprint_, EcdsaCurve::secp256k1);
+            } else {
+
+                return get_key(api_, EcdsaCurve::secp256k1, Role::Sign);
+            }
+        }())
+        , secp_2_([&] {
+            if (have_hd_) {
+
+                return get_hd_key(api_, fingerprint_, EcdsaCurve::secp256k1, 1);
+            } else {
+
+                return get_key(api_, EcdsaCurve::secp256k1, Role::Sign);
+            }
+        }())
         , rsa_sign_1_(get_key(api_, EcdsaCurve::invalid, Role::Sign))
         , rsa_sign_2_(get_key(api_, EcdsaCurve::invalid, Role::Sign))
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
     {
     }
 
-#if OT_CRYPTO_WITH_BIP32
     static OTAsymmetricKey get_hd_key(
         const ot::api::session::Client& api,
         const std::string& fingerprint,
@@ -140,14 +149,10 @@ public:
                      HDIndex{0, Bip32Child::HARDENED},
                      HDIndex{0, Bip32Child::HARDENED},
                      HDIndex{index, Bip32Child::HARDENED},
-                     HDIndex {
-                         Bip32Child::SIGN_KEY,
-                         Bip32Child::HARDENED
-                     }},
+                     HDIndex{Bip32Child::SIGN_KEY, Bip32Child::HARDENED}},
                     reason)
                 .release()};
     }
-#endif  // OT_CRYPTO_WITH_BIP32
     [[maybe_unused]] static OTAsymmetricKey get_key(
         const ot::api::session::Client& api,
         const EcdsaCurve curve,
@@ -157,17 +162,13 @@ public:
         const auto params = [&] {
             if (EcdsaCurve::secp256k1 == curve) {
 
-                return NymParameters{NymParameterType::secp256k1};
+                return ot::crypto::Parameters{crypto::ParameterType::secp256k1};
             } else if (EcdsaCurve::ed25519 == curve) {
 
-                return NymParameters{NymParameterType::ed25519};
+                return ot::crypto::Parameters{crypto::ParameterType::ed25519};
             } else {
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
 
-                return NymParameters{1024};
-#else
-                OT_FAIL;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
+                return ot::crypto::Parameters{1024};
             }
         }();
 
@@ -266,154 +267,231 @@ public:
     }
 };
 
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
+const bool Test_Signatures::have_hd_{ot::api::crypto::HaveHDKeys()};
+const bool Test_Signatures::have_rsa_{ot::api::crypto::HaveSupport(
+    ot::crypto::key::asymmetric::Algorithm::Legacy)};
+const bool Test_Signatures::have_secp256k1_{ot::api::crypto::HaveSupport(
+    ot::crypto::key::asymmetric::Algorithm::Secp256k1)};
+const bool Test_Signatures::have_ed25519_{ot::api::crypto::HaveSupport(
+    ot::crypto::key::asymmetric::Algorithm::ED25519)};
+
 TEST_F(Test_Signatures, RSA_unsupported_hash)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::Legacy);
+    if (have_rsa_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::Legacy);
 
-    EXPECT_FALSE(test_signature(plaintext_1, provider, rsa_sign_1_, blake160_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, rsa_sign_1_, blake256_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, rsa_sign_1_, blake512_));
+        EXPECT_FALSE(
+            test_signature(plaintext_1, provider, rsa_sign_1_, blake160_));
+        EXPECT_FALSE(
+            test_signature(plaintext_1, provider, rsa_sign_1_, blake256_));
+        EXPECT_FALSE(
+            test_signature(plaintext_1, provider, rsa_sign_1_, blake512_));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Signatures, RSA_detect_invalid_signature)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::Legacy);
+    if (have_rsa_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::Legacy);
 
-    EXPECT_TRUE(bad_signature(provider, rsa_sign_1_, sha256_));
-    EXPECT_TRUE(bad_signature(provider, rsa_sign_1_, sha512_));
-    EXPECT_TRUE(bad_signature(provider, rsa_sign_1_, ripemd160_));
+        EXPECT_TRUE(bad_signature(provider, rsa_sign_1_, sha256_));
+        EXPECT_TRUE(bad_signature(provider, rsa_sign_1_, sha512_));
+        EXPECT_TRUE(bad_signature(provider, rsa_sign_1_, ripemd160_));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Signatures, RSA_supported_hashes)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::Legacy);
+    if (have_rsa_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::Legacy);
 
-    EXPECT_TRUE(test_signature(plaintext_1, provider, rsa_sign_1_, sha256_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, rsa_sign_1_, sha512_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, rsa_sign_1_, ripemd160_));
+        EXPECT_TRUE(
+            test_signature(plaintext_1, provider, rsa_sign_1_, sha256_));
+        EXPECT_TRUE(
+            test_signature(plaintext_1, provider, rsa_sign_1_, sha512_));
+        EXPECT_TRUE(
+            test_signature(plaintext_1, provider, rsa_sign_1_, ripemd160_));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Signatures, RSA_DH)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::Legacy);
-    const auto expected = api_.Factory().Data();
+    if (have_rsa_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::Legacy);
+        const auto expected = api_.Factory().Data();
 
-    // RSA does not use the same key for encryption/signing and DH so this
-    // test should fail
-    EXPECT_FALSE(test_dh(provider, rsa_sign_1_, rsa_sign_2_, expected));
+        // RSA does not use the same key for encryption/signing and DH so this
+        // test should fail
+        EXPECT_FALSE(test_dh(provider, rsa_sign_1_, rsa_sign_2_, expected));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
 TEST_F(Test_Signatures, Ed25519_unsupported_hash)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::ED25519);
+    if (have_ed25519_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::ED25519);
 
-#if OT_CRYPTO_WITH_BIP32
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_hd_, sha256_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_hd_, sha512_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_hd_, ripemd160_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_hd_, blake160_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_hd_, blake512_));
-#endif  // OT_CRYPTO_WITH_BIP32
+        if (have_hd_) {
+            EXPECT_FALSE(
+                test_signature(plaintext_1, provider, ed_hd_, sha256_));
+            EXPECT_FALSE(
+                test_signature(plaintext_1, provider, ed_hd_, sha512_));
+            EXPECT_FALSE(
+                test_signature(plaintext_1, provider, ed_hd_, ripemd160_));
+            EXPECT_FALSE(
+                test_signature(plaintext_1, provider, ed_hd_, blake160_));
+            EXPECT_FALSE(
+                test_signature(plaintext_1, provider, ed_hd_, blake512_));
+        } else {
+            // TODO
+        }
 
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, sha256_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, sha512_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, ripemd160_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, blake160_));
-    EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, blake512_));
+        EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, sha256_));
+        EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, sha512_));
+        EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, ripemd160_));
+        EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, blake160_));
+        EXPECT_FALSE(test_signature(plaintext_1, provider, ed_, blake512_));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Signatures, Ed25519_detect_invalid_signature)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::ED25519);
+    if (have_ed25519_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::ED25519);
 
-#if OT_CRYPTO_WITH_BIP32
-    EXPECT_TRUE(bad_signature(provider, ed_hd_, blake256_));
-#endif  // OT_CRYPTO_WITH_BIP32
-    EXPECT_TRUE(bad_signature(provider, ed_, blake256_));
+        if (have_hd_) {
+            EXPECT_TRUE(bad_signature(provider, ed_hd_, blake256_));
+        } else {
+            // TODO
+        }
+
+        EXPECT_TRUE(bad_signature(provider, ed_, blake256_));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Signatures, Ed25519_supported_hashes)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::ED25519);
+    if (have_ed25519_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::ED25519);
 
-#if OT_CRYPTO_WITH_BIP32
-    EXPECT_TRUE(test_signature(plaintext_1, provider, ed_hd_, blake256_));
-#endif  // OT_CRYPTO_WITH_BIP32
-    EXPECT_TRUE(test_signature(plaintext_1, provider, ed_, blake256_));
+        if (have_hd_) {
+            EXPECT_TRUE(
+                test_signature(plaintext_1, provider, ed_hd_, blake256_));
+        } else {
+            // TODO
+        }
+
+        EXPECT_TRUE(test_signature(plaintext_1, provider, ed_, blake256_));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Signatures, Ed25519_ECDH)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::ED25519);
-    const auto expected = api_.Factory().Data();
+    if (have_ed25519_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::ED25519);
+        const auto expected = api_.Factory().Data();
 
-    EXPECT_TRUE(test_dh(provider, ed_, ed_2_, expected));
+        EXPECT_TRUE(test_dh(provider, ed_, ed_2_, expected));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 TEST_F(Test_Signatures, Secp256k1_detect_invalid_signature)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::Secp256k1);
+    if (have_secp256k1_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::Secp256k1);
 
-#if OT_CRYPTO_WITH_BIP32
-    EXPECT_TRUE(bad_signature(provider, secp_hd_, sha256_));
-    EXPECT_TRUE(bad_signature(provider, secp_hd_, sha512_));
-    EXPECT_TRUE(bad_signature(provider, secp_hd_, blake160_));
-    EXPECT_TRUE(bad_signature(provider, secp_hd_, blake256_));
-    EXPECT_TRUE(bad_signature(provider, secp_hd_, blake512_));
-    EXPECT_TRUE(bad_signature(provider, secp_hd_, ripemd160_));
-#endif  // OT_CRYPTO_WITH_BIP32
-    EXPECT_TRUE(bad_signature(provider, secp_, sha256_));
-    EXPECT_TRUE(bad_signature(provider, secp_, sha512_));
-    EXPECT_TRUE(bad_signature(provider, secp_, blake160_));
-    EXPECT_TRUE(bad_signature(provider, secp_, blake256_));
-    EXPECT_TRUE(bad_signature(provider, secp_, blake512_));
-    EXPECT_TRUE(bad_signature(provider, secp_, ripemd160_));
+        if (have_hd_) {
+            EXPECT_TRUE(bad_signature(provider, secp_hd_, sha256_));
+            EXPECT_TRUE(bad_signature(provider, secp_hd_, sha512_));
+            EXPECT_TRUE(bad_signature(provider, secp_hd_, blake160_));
+            EXPECT_TRUE(bad_signature(provider, secp_hd_, blake256_));
+            EXPECT_TRUE(bad_signature(provider, secp_hd_, blake512_));
+            EXPECT_TRUE(bad_signature(provider, secp_hd_, ripemd160_));
+        } else {
+            // TODO
+        }
+
+        EXPECT_TRUE(bad_signature(provider, secp_, sha256_));
+        EXPECT_TRUE(bad_signature(provider, secp_, sha512_));
+        EXPECT_TRUE(bad_signature(provider, secp_, blake160_));
+        EXPECT_TRUE(bad_signature(provider, secp_, blake256_));
+        EXPECT_TRUE(bad_signature(provider, secp_, blake512_));
+        EXPECT_TRUE(bad_signature(provider, secp_, ripemd160_));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Signatures, Secp256k1_supported_hashes)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::Secp256k1);
+    if (have_secp256k1_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::Secp256k1);
 
-#if OT_CRYPTO_WITH_BIP32
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_hd_, sha256_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_hd_, sha512_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_hd_, blake160_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_hd_, blake256_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_hd_, blake512_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_hd_, ripemd160_));
-#endif  // OT_CRYPTO_WITH_BIP32
+        if (have_hd_) {
+            EXPECT_TRUE(
+                test_signature(plaintext_1, provider, secp_hd_, sha256_));
+            EXPECT_TRUE(
+                test_signature(plaintext_1, provider, secp_hd_, sha512_));
+            EXPECT_TRUE(
+                test_signature(plaintext_1, provider, secp_hd_, blake160_));
+            EXPECT_TRUE(
+                test_signature(plaintext_1, provider, secp_hd_, blake256_));
+            EXPECT_TRUE(
+                test_signature(plaintext_1, provider, secp_hd_, blake512_));
+            EXPECT_TRUE(
+                test_signature(plaintext_1, provider, secp_hd_, ripemd160_));
+        } else {
+            // TODO
+        }
 
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, sha256_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, sha512_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, blake256_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, blake512_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, blake160_));
-    EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, ripemd160_));
+        EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, sha256_));
+        EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, sha512_));
+        EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, blake256_));
+        EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, blake512_));
+        EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, blake160_));
+        EXPECT_TRUE(test_signature(plaintext_1, provider, secp_, ripemd160_));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Signatures, Secp256k1_ECDH)
 {
-    const auto& provider =
-        api_.Crypto().Internal().AsymmetricProvider(Type::Secp256k1);
+    if (have_secp256k1_) {
+        const auto& provider =
+            api_.Crypto().Internal().AsymmetricProvider(Type::Secp256k1);
 
-    const auto expected = api_.Factory().Data();
+        const auto expected = api_.Factory().Data();
 
-    EXPECT_TRUE(test_dh(provider, secp_, secp_2_, expected));
+        EXPECT_TRUE(test_dh(provider, secp_, secp_2_, expected));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 }  // namespace ottest

@@ -21,6 +21,11 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
+
 namespace identity
 {
 namespace internal
@@ -37,7 +42,6 @@ class Credential;
 }  // namespace proto
 
 class Factory;
-class NymParameters;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -69,7 +73,7 @@ private:
         const identity::internal::Authority& parent,
         const identity::Source& source,
         const internal::Primary& master,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     Verification(

@@ -35,6 +35,7 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -458,7 +459,7 @@ TEST_F(Test_BIP39, pkt_seed_import)
     EXPECT_EQ(entropy, expected_seed_bytes_);
 
     static constexpr auto index{0u};
-    const auto pNym = api_.Wallet().Nym(reason_, "pkt", {seed, index});
+    const auto pNym = api_.Wallet().Nym({seed, index}, reason_, "pkt");
 
     ASSERT_TRUE(pNym);
 

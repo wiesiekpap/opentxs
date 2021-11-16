@@ -20,7 +20,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -223,8 +223,8 @@ TEST_F(Test_PaymentCode_v1_v3, blind_alice)
         const auto alice = bob_pc_secret_.UnblindV3(
             alice_version_, blinded->Bytes(), alice_blind_public_, reason_);
 
-        ASSERT_TRUE(alice);
-        EXPECT_EQ(alice->asBase58(), GetVectors3().chris_.payment_code_);
+        EXPECT_GT(alice.Version(), 0u);
+        EXPECT_EQ(alice.asBase58(), GetVectors3().chris_.payment_code_);
     }
 
     const auto elements = alice_pc_secret_.GenerateNotificationElements(
@@ -260,13 +260,13 @@ TEST_F(Test_PaymentCode_v1_v3, blind_alice)
         EXPECT_EQ(v1, v2);
     }
 
-    using Elements = ot::PaymentCode::Elements;
+    using Elements = std::vector<ot::Space>;
     {
         const auto alice = bob_pc_secret_.DecodeNotificationElements(
             alice_version_, Elements{A, F, G}, reason_);
 
-        ASSERT_TRUE(alice);
-        EXPECT_EQ(alice->asBase58(), GetVectors3().chris_.payment_code_);
+        EXPECT_GT(alice.Version(), 0u);
+        EXPECT_EQ(alice.asBase58(), GetVectors3().chris_.payment_code_);
     }
 }
 
@@ -317,8 +317,8 @@ TEST_F(Test_PaymentCode_v1_v3, blind_bob)
         const auto pPC = alice_pc_secret_.Unblind(
             blinded->Bytes(), bob_blind_public_, outpoint->Bytes(), reason_);
 
-        ASSERT_TRUE(pPC);
-        EXPECT_EQ(pPC->asBase58(), GetVectors3().daniel_.payment_code_);
+        EXPECT_GT(pPC.Version(), 0u);
+        EXPECT_EQ(pPC.asBase58(), GetVectors3().daniel_.payment_code_);
     }
 }
 

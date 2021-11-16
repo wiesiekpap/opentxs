@@ -6,6 +6,7 @@
 add_subdirectory(bip32)
 add_subdirectory(key)
 add_subdirectory(library)
+add_subdirectory(parameters)
 
 target_sources(
   opentxs-common

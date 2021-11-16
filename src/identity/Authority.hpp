@@ -20,6 +20,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
@@ -49,6 +50,7 @@ namespace crypto
 namespace key
 {
 class Asymmetric;
+class Parameters;
 class Symmetric;
 }  // namespace key
 }  // namespace crypto
@@ -75,7 +77,6 @@ class VerificationSet;
 
 class Data;
 class Factory;
-class NymParameters;
 class OTPassword;
 class PasswordPrompt;
 class Secret;
@@ -181,7 +182,7 @@ public:
     auto VerifyInternally() const -> bool final;
 
     auto AddChildKeyCredential(
-        const NymParameters& parameters,
+        const crypto::Parameters& parameters,
         const PasswordPrompt& reason) -> std::string final;
     auto AddVerificationCredential(
         const proto::VerificationSet& verificationSet,
@@ -234,7 +235,7 @@ private:
         const String::List* plistRevokedIDs) -> bool;
     static auto create_child_credential(
         const api::Session& api,
-        const NymParameters& parameters,
+        const crypto::Parameters& parameters,
         const identity::Source& source,
         const credential::internal::Primary& master,
         internal::Authority& parent,
@@ -244,7 +245,7 @@ private:
         -> KeyCredentialMap;
     static auto create_contact_credental(
         const api::Session& api,
-        const NymParameters& parameters,
+        const crypto::Parameters& parameters,
         const identity::Source& source,
         const credential::internal::Primary& master,
         internal::Authority& parent,
@@ -253,7 +254,7 @@ private:
         -> ContactCredentialMap;
     static auto create_key_credential(
         const api::Session& api,
-        const NymParameters& parameters,
+        const crypto::Parameters& parameters,
         const identity::Source& source,
         const credential::internal::Primary& master,
         internal::Authority& parent,
@@ -266,7 +267,7 @@ private:
         identity::internal::Authority& owner,
         const identity::Source& source,
         const VersionNumber version,
-        const NymParameters& parameters,
+        const crypto::Parameters& parameters,
         const Bip32Index index,
         const opentxs::PasswordPrompt& reason) noexcept(false)
         -> std::unique_ptr<credential::internal::Primary>;
@@ -325,7 +326,7 @@ private:
         const api::Session& api,
         const identity::Nym& parent,
         const identity::Source& source,
-        const NymParameters& parameters,
+        const crypto::Parameters& parameters,
         VersionNumber nymVersion,
         const PasswordPrompt& reason) noexcept(false);
     Authority() = delete;

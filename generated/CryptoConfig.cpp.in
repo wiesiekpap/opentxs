@@ -1,0 +1,58 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#include "0_stdafx.hpp"           // IWYU pragma: associated
+#include "1_Internal.hpp"         // IWYU pragma: associated
+#include "api/crypto/Config.hpp"  // IWYU pragma: associated
+
+#include <map>
+
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/crypto/ParameterType.hpp"
+
+namespace opentxs::api::crypto
+{
+auto HaveHDKeys() noexcept -> bool { return @OPENTXS_HAVE_HD_KEYS@; }
+
+auto HaveSupport(opentxs::crypto::ParameterType val) noexcept -> bool
+{
+    using Type = opentxs::crypto::ParameterType;
+    static const auto map = std::map<Type, bool>{
+        {Type::invalid, false},
+        {Type::rsa, @OPENTXS_CRYPTO_HAVE_RSA@},
+        {Type::secp256k1, @OPENTXS_CRYPTO_HAVE_SECP256K1@},
+        {Type::ed25519, @OPENTXS_CRYPTO_HAVE_ED25519@},
+    };
+
+    try {
+
+        return map.at(val);
+    } catch (...) {
+
+        return false;
+    }
+}
+
+auto HaveSupport(opentxs::crypto::key::asymmetric::Algorithm val) noexcept
+    -> bool
+{
+    using Type = opentxs::crypto::key::asymmetric::Algorithm;
+    static const auto map = std::map<Type, bool>{
+        {Type::Error, false},
+        {Type::Null, true},
+        {Type::Legacy, @OPENTXS_CRYPTO_HAVE_RSA@},
+        {Type::Secp256k1, @OPENTXS_CRYPTO_HAVE_SECP256K1@},
+        {Type::ED25519, @OPENTXS_CRYPTO_HAVE_ED25519@},
+    };
+
+    try {
+
+        return map.at(val);
+    } catch (...) {
+
+        return false;
+    }
+}
+}  // namespace opentxs::api::crypto

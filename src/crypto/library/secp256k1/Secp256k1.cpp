@@ -29,6 +29,7 @@ extern "C" {
 #include "opentxs/api/crypto/Util.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -163,7 +164,7 @@ auto Secp256k1::RandomKeypair(
     const AllocateOutput privateKey,
     const AllocateOutput publicKey,
     const opentxs::crypto::key::asymmetric::Role,
-    const NymParameters&,
+    const Parameters&,
     const AllocateOutput) const noexcept -> bool
 {
     if (nullptr == context_) { return false; }

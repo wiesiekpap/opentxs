@@ -28,9 +28,9 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
@@ -117,7 +117,7 @@ struct User {
         -> const ot::Identifier&;
     auto Contact(const std::string& contact) const noexcept
         -> const ot::Identifier&;
-    auto PaymentCode() const -> ot::OTPaymentCode;
+    auto PaymentCode() const -> ot::PaymentCode;
     auto Reason() const noexcept -> ot::OTPasswordPrompt;
     auto SetAccount(const std::string& type, const std::string& id)
         const noexcept -> bool;

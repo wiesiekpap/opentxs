@@ -40,6 +40,7 @@
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -62,13 +63,14 @@
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/OTTransaction.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -121,9 +123,7 @@
 
 #define ACCOUNTEVENT_VERSION 2
 #define RPCTASK_VERSION 1
-#if OT_CRYPTO_WITH_BIP32
 #define SEED_VERSION 1
-#endif  // OT_CRYPTO_WITH_BIP32
 #define SESSION_DATA_VERSION 1
 #define RPCPUSH_VERSION 3
 #define TASKCOMPLETE_VERSION 2
@@ -638,10 +638,10 @@ auto RPC::create_nym(const proto::RPCCommand& command) const
 
     const auto& createnym = command.createnym();
     const auto pNym = client.Wallet().Nym(
-        reason,
-        createnym.name(),
         {createnym.seedid(), createnym.index()},
-        translate(createnym.type()));
+        translate(createnym.type()),
+        reason,
+        createnym.name());
 
     if (false == bool(pNym)) {
         add_output_status(output, proto::RPCRESPONSE_CREATE_NYM_FAILED);
@@ -1087,25 +1087,25 @@ auto RPC::get_seeds(const proto::RPCCommand& command) const
     INIT_SESSION();
     CHECK_INPUT(identifier, proto::RPCRESPONSE_INVALID);
 
-#if OT_CRYPTO_WITH_BIP32
-    const auto& hdseeds = session.Crypto().Seed();
+    if (api::crypto::HaveHDKeys()) {
+        const auto& hdseeds = session.Crypto().Seed();
 
-    for (const auto& id : command.identifier()) {
-        auto words = hdseeds.Words(id, reason);
-        auto passphrase = hdseeds.Passphrase(id, reason);
+        for (const auto& id : command.identifier()) {
+            auto words = hdseeds.Words(id, reason);
+            auto passphrase = hdseeds.Passphrase(id, reason);
 
-        if (false == words.empty() || false == passphrase.empty()) {
-            auto& seed = *output.add_seed();
-            seed.set_version(SEED_VERSION);
-            seed.set_id(id);
-            seed.set_words(words);
-            seed.set_passphrase(passphrase);
-            add_output_status(output, proto::RPCRESPONSE_SUCCESS);
-        } else {
-            add_output_status(output, proto::RPCRESPONSE_NONE);
+            if (false == words.empty() || false == passphrase.empty()) {
+                auto& seed = *output.add_seed();
+                seed.set_version(SEED_VERSION);
+                seed.set_id(id);
+                seed.set_words(words);
+                seed.set_passphrase(passphrase);
+                add_output_status(output, proto::RPCRESPONSE_SUCCESS);
+            } else {
+                add_output_status(output, proto::RPCRESPONSE_NONE);
+            }
         }
     }
-#endif  // OT_CRYPTO_WITH_BIP32
 
     return output;
 }
@@ -1324,24 +1324,24 @@ auto RPC::import_seed(const proto::RPCCommand& command) const
 {
     INIT_SESSION();
 
-#if OT_CRYPTO_WITH_BIP32
-    auto& seed = command.hdseed();
-    auto words = ot_.Factory().SecretFromText(seed.words());
-    auto passphrase = ot_.Factory().SecretFromText(seed.passphrase());
-    const auto identifier = session.Crypto().Seed().ImportSeed(
-        words,
-        passphrase,
-        crypto::SeedStyle::BIP39,
-        crypto::Language::en,
-        reason);
+    if (api::crypto::HaveHDKeys()) {
+        auto& seed = command.hdseed();
+        auto words = ot_.Factory().SecretFromText(seed.words());
+        auto passphrase = ot_.Factory().SecretFromText(seed.passphrase());
+        const auto identifier = session.Crypto().Seed().ImportSeed(
+            words,
+            passphrase,
+            crypto::SeedStyle::BIP39,
+            crypto::Language::en,
+            reason);
 
-    if (identifier.empty()) {
-        add_output_status(output, proto::RPCRESPONSE_INVALID);
-    } else {
-        output.add_identifier(identifier);
-        add_output_status(output, proto::RPCRESPONSE_SUCCESS);
+        if (identifier.empty()) {
+            add_output_status(output, proto::RPCRESPONSE_INVALID);
+        } else {
+            output.add_identifier(identifier);
+            add_output_status(output, proto::RPCRESPONSE_SUCCESS);
+        }
     }
-#endif  // OT_CRYPTO_WITH_BIP32
 
     return output;
 }

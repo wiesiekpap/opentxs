@@ -10,7 +10,6 @@
 #include "internal/api/session/Client.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -20,6 +19,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -30,7 +30,6 @@ namespace ot = opentxs;
 
 namespace ottest
 {
-#if OT_CRYPTO_WITH_BIP32
 class Test_CreateNymHD : public ::testing::Test
 {
 public:
@@ -66,29 +65,27 @@ public:
         , EveID("otwz4jCuiVg7UF2i1NgCSvTWeDS29EAHeL6")
         , FrankID("otogQecfWnoJn5Juy5z5Si3mS53rTb7LgGe")
         , Alice(client_.Wallet()
-                    .Nym(reason_, "Alice", {SeedA_, 0, 1})
+                    .Nym({SeedA_, 0, 1}, reason_, "Alice")
                     ->ID()
                     .str())
-        , Bob(client_.Wallet().Nym(reason_, "Bob", {SeedB_, 0, 1})->ID().str())
+        , Bob(client_.Wallet().Nym({SeedB_, 0, 1}, reason_, "Bob")->ID().str())
     {
     }
 };
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 TEST_F(Test_CreateNymHD, TestNym_DeterministicIDs)
 {
 
     EXPECT_STREQ(AliceID.c_str(), Alice.c_str());
     EXPECT_STREQ(BobID.c_str(), Bob.c_str());
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
 TEST_F(Test_CreateNymHD, TestNym_ABCD)
 {
     const auto NymA = client_.Wallet().Nym(identifier::Nym::Factory(Alice));
     const auto NymB = client_.Wallet().Nym(identifier::Nym::Factory(Bob));
-    const auto NymC = client_.Wallet().Nym(reason_, "Charly", {SeedA_, 1});
-    const auto NymD = client_.Wallet().Nym(reason_, "Dave", {SeedB_, 1});
+    const auto NymC = client_.Wallet().Nym({SeedA_, 1}, reason_, "Charly");
+    const auto NymD = client_.Wallet().Nym({SeedB_, 1}, reason_, "Dave");
 
     // Alice
     EXPECT_TRUE(NymA->HasPath());
@@ -132,7 +129,7 @@ TEST_F(Test_CreateNymHD, TestNym_ABCD)
 
 TEST_F(Test_CreateNymHD, TestNym_Dave)
 {
-    const auto NymD = client_.Wallet().Nym(reason_, "Dave", {SeedB_, 1});
+    const auto NymD = client_.Wallet().Nym({SeedB_, 1}, reason_, "Dave");
 
     ASSERT_TRUE(NymD);
 
@@ -151,13 +148,11 @@ TEST_F(Test_CreateNymHD, TestNym_Dave)
 
 TEST_F(Test_CreateNymHD, TestNym_Eve)
 {
-    const auto NymE = client_.Wallet().Nym(reason_, "Eve", {SeedB_, 2, 1});
+    const auto NymE = client_.Wallet().Nym({SeedB_, 2, 1}, reason_, "Eve");
 
     ASSERT_TRUE(NymE);
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     EXPECT_EQ(EveID, NymE->ID().str());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
     EXPECT_TRUE(NymE->HasPath());
     EXPECT_STREQ(NymE->PathRoot().c_str(), SeedB_.c_str());
@@ -174,14 +169,12 @@ TEST_F(Test_CreateNymHD, TestNym_Eve)
 
 TEST_F(Test_CreateNymHD, TestNym_Frank)
 {
-    const auto NymF = client_.Wallet().Nym(reason_, "Frank", {SeedB_, 3, 3});
-    const auto NymF2 = client_.Wallet().Nym(reason_, "Frank", {SeedA_, 3, 3});
+    const auto NymF = client_.Wallet().Nym({SeedB_, 3, 3}, reason_, "Frank");
+    const auto NymF2 = client_.Wallet().Nym({SeedA_, 3, 3}, reason_, "Frank");
 
     EXPECT_NE(NymF->ID(), NymF2->ID());
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     EXPECT_EQ(FrankID, NymF->ID().str());
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
 
     EXPECT_TRUE(NymF->HasPath());
     EXPECT_TRUE(NymF2->HasPath());
@@ -205,8 +198,8 @@ TEST_F(Test_CreateNymHD, TestNym_Frank)
 
 TEST_F(Test_CreateNymHD, TestNym_NonnegativeIndex)
 {
-    const auto Nym1 = client_.Wallet().Nym(reason_, "Nym1", {SeedC_, 0});
-    const auto Nym2 = client_.Wallet().Nym(reason_, "Nym2", {SeedC_, 0});
+    const auto Nym1 = client_.Wallet().Nym({SeedC_, 0}, reason_, "Nym1");
+    const auto Nym2 = client_.Wallet().Nym({SeedC_, 0}, reason_, "Nym2");
 
     EXPECT_TRUE(Nym1->HasPath());
     EXPECT_TRUE(Nym2->HasPath());
@@ -219,8 +212,8 @@ TEST_F(Test_CreateNymHD, TestNym_NonnegativeIndex)
 
 TEST_F(Test_CreateNymHD, TestNym_NegativeIndex)
 {
-    const auto Nym1 = client_.Wallet().Nym(reason_, "Nym1", {SeedD_, -1});
-    const auto Nym2 = client_.Wallet().Nym(reason_, "Nym2", {SeedD_, -1});
+    const auto Nym1 = client_.Wallet().Nym({SeedD_, -1}, reason_, "Nym1");
+    const auto Nym2 = client_.Wallet().Nym({SeedD_, -1}, reason_, "Nym2");
 
     EXPECT_TRUE(Nym1->HasPath());
     EXPECT_TRUE(Nym2->HasPath());
@@ -230,5 +223,4 @@ TEST_F(Test_CreateNymHD, TestNym_NegativeIndex)
 
     ASSERT_NE(nym1Index, nym2Index);
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 }  // namespace ottest

@@ -10,8 +10,10 @@
 #include <exception>
 
 #include "crypto/key/asymmetric/secp256k1/Secp256k1.hpp"
+#include "internal/api/Crypto.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -86,5 +88,27 @@ auto Secp256k1Key(
 
         return nullptr;
     }
+}
+
+auto Secp256k1Key(
+    const api::Session& api,
+    const ReadView key,
+    const ReadView chaincode) noexcept
+    -> std::unique_ptr<crypto::key::Secp256k1>
+{
+    static const auto blank = api.Factory().Secret(0);
+    static const auto path = proto::HDPath{};
+    using Type = opentxs::crypto::key::asymmetric::Algorithm;
+
+    return factory::Secp256k1Key(
+        api,
+        api.Crypto().Internal().EllipticProvider(Type::Secp256k1),
+        blank,
+        api.Factory().SecretFromBytes(chaincode),
+        api.Factory().Data(key),
+        path,
+        {},
+        opentxs::crypto::key::asymmetric::Role::Sign,
+        opentxs::crypto::key::EllipticCurve::DefaultVersion);
 }
 }  // namespace opentxs::factory

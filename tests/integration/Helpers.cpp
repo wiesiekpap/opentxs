@@ -272,18 +272,16 @@ auto User::init_basic(
         Reason());
     index_ = index;
     nym_ = api.Wallet().Nym(
-        Reason(), name_, {seed_id_, static_cast<int>(index_)}, type);
+        {seed_id_, static_cast<int>(index_)}, type, Reason(), name_);
 
     OT_ASSERT(nym_);
 
     nym_id_ = nym_->ID();
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
     payment_code_ =
         api.Factory()
             .PaymentCode(
-                seed_id_, index_, ot::PaymentCode::DefaultVersion, Reason())
-            ->asBase58();
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+                seed_id_, index_, ot::PaymentCode::DefaultVersion(), Reason())
+            .asBase58();
 
     if (false == name_.empty()) {
         contacts_.emplace(name_, api.Contacts().NymToContact(nym_id_));
@@ -349,7 +347,7 @@ auto User::init_custom(
     }
 }
 
-auto User::PaymentCode() const -> ot::OTPaymentCode
+auto User::PaymentCode() const -> ot::PaymentCode
 {
     OT_ASSERT(nullptr != api_);
 

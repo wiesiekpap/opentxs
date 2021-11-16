@@ -105,7 +105,6 @@ auto Deterministic::ChainData::Get(Subchain type) noexcept(false)
     }
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto Deterministic::accept(
     const rLock& lock,
     const Subchain type,
@@ -125,7 +124,6 @@ auto Deterministic::accept(
 
     return index;
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 auto Deterministic::AllowedSubchains() const noexcept -> std::set<Subchain>
 {
@@ -140,7 +138,6 @@ auto Deterministic::BalanceElement(const Subchain type, const Bip32Index index)
     return element(lock, type, index);
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto Deterministic::check(
     const rLock& lock,
     const Subchain type,
@@ -225,7 +222,6 @@ auto Deterministic::check(
         return accept(candidate);
     }
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 auto Deterministic::check_activity(
     const rLock& lock,
@@ -268,10 +264,8 @@ void Deterministic::check_lookahead(
     Batch& generated,
     const PasswordPrompt& reason) const noexcept(false)
 {
-#if OT_CRYPTO_WITH_BIP32
     check_lookahead(lock, data_.internal_.type_, generated, reason);
     check_lookahead(lock, data_.external_.type_, generated, reason);
-#endif  // OT_CRYPTO_WITH_BIP32
 }
 
 auto Deterministic::check_lookahead(
@@ -280,14 +274,12 @@ auto Deterministic::check_lookahead(
     Batch& generated,
     const PasswordPrompt& reason) const noexcept(false) -> void
 {
-#if OT_CRYPTO_WITH_BIP32
     auto needed = need_lookahead(lock, type);
 
     while (0u < needed) {
         generated.emplace_back(generate_next(lock, type, reason));
         --needed;
     }
-#endif  // OT_CRYPTO_WITH_BIP32
 }
 
 auto Deterministic::confirm(
@@ -381,7 +373,6 @@ auto Deterministic::GenerateNext(
     const Subchain type,
     const PasswordPrompt& reason) const noexcept -> std::optional<Bip32Index>
 {
-#if OT_CRYPTO_WITH_BIP32
     auto lock = rLock{lock_};
 
     if (0 == generated_.count(type)) { return {}; }
@@ -403,10 +394,6 @@ auto Deterministic::GenerateNext(
 
         return std::nullopt;
     }
-#else
-
-    return std::nullopt;
-#endif  // OT_CRYPTO_WITH_BIP32
 }
 
 auto Deterministic::generate(
@@ -415,7 +402,6 @@ auto Deterministic::generate(
     const Bip32Index desired,
     const PasswordPrompt& reason) const noexcept(false) -> Bip32Index
 {
-#if OT_CRYPTO_WITH_BIP32
     auto& index = generated_.at(type);
 
     OT_ASSERT(desired == index);
@@ -440,9 +426,6 @@ auto Deterministic::generate(
     if (false == added) { throw std::runtime_error("Failed to add key"); }
 
     return index++;
-#else
-    return {};
-#endif  // OT_CRYPTO_WITH_BIP32
 }
 
 auto Deterministic::generate_next(
@@ -513,7 +496,6 @@ auto Deterministic::mutable_element(
     return *data_.Get(type).map_.at(index);
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto Deterministic::need_lookahead(const rLock& lock, const Subchain type)
     const noexcept -> Bip32Index
 {
@@ -537,7 +519,6 @@ auto Deterministic::need_lookahead(const rLock& lock, const Subchain type)
 
     return effective - capacity;
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 auto Deterministic::Reserve(
     const Subchain type,
@@ -563,7 +544,6 @@ auto Deterministic::Reserve(
 {
     auto output = Batch{};
     output.reserve(batch);
-#if OT_CRYPTO_WITH_BIP32
     auto lock = rLock{lock_};
     auto gen = Batch{};
 
@@ -579,7 +559,6 @@ auto Deterministic::Reserve(
 
         return {};
     }
-#endif  // OT_CRYPTO_WITH_BIP32
 
     return output;
 }
@@ -677,7 +656,6 @@ auto Deterministic::unconfirm(
     }
 }
 
-#if OT_CRYPTO_WITH_BIP32
 auto Deterministic::use_next(
     const rLock& lock,
     const Subchain type,
@@ -761,5 +739,4 @@ auto Deterministic::use_next(
         return {};
     }
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 }  // namespace opentxs::blockchain::crypto::implementation

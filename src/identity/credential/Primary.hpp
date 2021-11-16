@@ -29,6 +29,11 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
+
 namespace identity
 {
 namespace internal
@@ -48,7 +53,6 @@ class Signature;
 
 class Factory;
 class Identifier;
-class NymParameters;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -82,7 +86,8 @@ private:
 
     const proto::SourceProof source_proof_;
 
-    static auto source_proof(const NymParameters& params) -> proto::SourceProof;
+    static auto source_proof(const crypto::Parameters& params)
+        -> proto::SourceProof;
     static auto sourceprooftype_map() noexcept -> const SourceProofTypeMap&;
     static auto translate(const identity::SourceProofType in) noexcept
         -> proto::SourceProofType;
@@ -105,7 +110,7 @@ private:
         const api::Session& api,
         const identity::internal::Authority& parent,
         const identity::Source& source,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber version,
         const PasswordPrompt& reason) noexcept(false);
     Primary(

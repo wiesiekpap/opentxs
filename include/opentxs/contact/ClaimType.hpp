@@ -239,7 +239,7 @@ enum class ClaimType : std::uint32_t {
     HBAR = 222,   // Hedera
     XTZ = 223,    // Tezos
     MANA = 224,   // Decentraland
-    NEAR = 225,   // NEAR Protocol
+    Near = 225,   // NEAR Protocol
     GRT = 226,    // The Graph
     CAKE = 227,   // PancakeSwap
     EOS = 228,    // EOS

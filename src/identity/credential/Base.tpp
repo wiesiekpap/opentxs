@@ -21,6 +21,11 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
+
 namespace identity
 {
 namespace internal
@@ -31,7 +36,6 @@ struct Authority;
 class Source;
 }  // namespace identity
 
-class NymParameters;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -43,7 +47,7 @@ template identity::credential::internal::Secondary* Factory::Credential(
     const identity::Source&,
     const identity::credential::internal::Primary&,
     const std::uint32_t,
-    const NymParameters&,
+    const crypto::Parameters&,
     const proto::CredentialRole,
     const opentxs::PasswordPrompt&);
 template identity::credential::internal::Contact* Factory::Credential(
@@ -52,7 +56,7 @@ template identity::credential::internal::Contact* Factory::Credential(
     const identity::Source&,
     const identity::credential::internal::Primary& master,
     const std::uint32_t,
-    const NymParameters&,
+    const crypto::Parameters&,
     const proto::CredentialRole,
     const opentxs::PasswordPrompt&);
 template identity::credential::internal::Verification* Factory::Credential(
@@ -61,7 +65,7 @@ template identity::credential::internal::Verification* Factory::Credential(
     const identity::Source&,
     const identity::credential::internal::Primary& master,
     const std::uint32_t,
-    const NymParameters&,
+    const crypto::Parameters&,
     const proto::CredentialRole,
     const opentxs::PasswordPrompt&);
 template identity::credential::internal::Secondary* Factory::Credential(
@@ -106,7 +110,7 @@ struct make_credential {
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
         const std::uint32_t version,
-        const NymParameters& nymParameter,
+        const crypto::Parameters& nymParameter,
         const opentxs::PasswordPrompt& reason) -> C*;
 };
 
@@ -160,7 +164,7 @@ struct make_credential<identity::credential::internal::Contact> {
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
         const std::uint32_t version,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Contact*
     {
@@ -176,7 +180,7 @@ struct make_credential<identity::credential::internal::Secondary> {
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
         const std::uint32_t version,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Secondary*
     {
@@ -192,7 +196,7 @@ struct make_credential<identity::credential::internal::Verification> {
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
         const std::uint32_t version,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Verification*
     {
@@ -208,7 +212,7 @@ auto Factory::Credential(
     const identity::Source& source,
     const identity::credential::internal::Primary& master,
     const std::uint32_t version,
-    const NymParameters& nymParameters,
+    const crypto::Parameters& nymParameters,
     const proto::CredentialRole role,
     const opentxs::PasswordPrompt& reason) -> C*
 {

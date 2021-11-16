@@ -21,8 +21,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/crypto/Bip32.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Ed25519.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -462,7 +462,7 @@ auto Asymmetric::NewHDKey(
 }
 
 auto Asymmetric::NewKey(
-    const NymParameters& params,
+    const opentxs::crypto::Parameters& params,
     const PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::crypto::key::Asymmetric>
 {
@@ -474,7 +474,7 @@ auto Asymmetric::NewKey(
 }
 
 auto Asymmetric::NewKey(
-    const NymParameters& params,
+    const opentxs::crypto::Parameters& params,
     const opentxs::crypto::key::asymmetric::Role role,
     const PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::crypto::key::Asymmetric>
@@ -484,7 +484,7 @@ auto Asymmetric::NewKey(
 }
 
 auto Asymmetric::NewKey(
-    const NymParameters& params,
+    const opentxs::crypto::Parameters& params,
     const VersionNumber version,
     const PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::crypto::key::Asymmetric>
@@ -494,7 +494,7 @@ auto Asymmetric::NewKey(
 }
 
 auto Asymmetric::NewKey(
-    const NymParameters& params,
+    const opentxs::crypto::Parameters& params,
     const opentxs::crypto::key::asymmetric::Role role,
     const VersionNumber version,
     const PasswordPrompt& reason) const

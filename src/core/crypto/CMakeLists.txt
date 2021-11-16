@@ -8,23 +8,18 @@ target_sources(
   PRIVATE
     "NullCallback.cpp"
     "NullCallback.hpp"
-    "NymParameters.cpp"
     "OTCallback.cpp"
     "OTCaller.cpp"
     "OTSignatureMetadata.cpp"
     "OTSignedFile.cpp"
-    "PaymentCode.cpp"
-    "PaymentCode.hpp"
     "Signature.cpp"
     "Signature.hpp"
 )
 set(cxx-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/crypto/NymParameters.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/crypto/OTCallback.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/crypto/OTCaller.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/crypto/OTSignatureMetadata.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/crypto/OTSignedFile.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/crypto/PaymentCode.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/crypto/Signature.hpp"
 )
 target_sources(opentxs-common PRIVATE ${cxx-install-headers})

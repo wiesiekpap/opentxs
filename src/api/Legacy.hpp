@@ -98,7 +98,10 @@ private:
 
     static auto get_app_data_folder(const std::string& home) noexcept
         -> fs::path;
+    static auto get_home_platform() noexcept -> std::string;
     static auto get_suffix() noexcept -> fs::path;
+    static auto prepend() noexcept -> std::string;
+    static auto use_dot() noexcept -> bool;
 
     auto get_path(const std::string& fragment, const int instance = 0)
         const noexcept -> std::string;

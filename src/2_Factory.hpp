@@ -164,6 +164,7 @@ class OpenSSL;
 class Bip39;
 class Bitcoin;
 class Envelope;
+class Parameters;
 class Pbkdf2;
 class Ripemd160;
 class Scrypt;
@@ -319,12 +320,10 @@ class DhtConfig;
 class Flag;
 class Libsecp256k1;
 class Libsodium;
-class NymParameters;
 class OTCallback;
 class OpenSSL;
 class Options;
 class PasswordPrompt;
-class PaymentCode;
 class PeerObject;
 class Secret;
 }  // namespace opentxs
@@ -349,7 +348,7 @@ public:
         const api::Session& api,
         const identity::Nym& parent,
         const identity::Source& source,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber nymVersion,
         const opentxs::PasswordPrompt& reason)
         -> identity::internal::Authority*;
@@ -451,7 +450,7 @@ public:
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Contact*;
@@ -469,7 +468,7 @@ public:
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
         const VersionNumber version,
-        const NymParameters& parameters,
+        const crypto::Parameters& parameters,
         const proto::CredentialRole role,
         const opentxs::PasswordPrompt& reason) -> C*;
     template <class C>
@@ -540,7 +539,7 @@ public:
     static auto NullCallback() -> OTCallback*;
     static auto Nym(
         const api::Session& api,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const contact::ClaimType type,
         const std::string name,
         const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*;
@@ -558,7 +557,7 @@ public:
         Nym_p signerNym) -> internal::NymFile*;
     static auto NymIDSource(
         const api::Session& api,
-        NymParameters& parameters,
+        crypto::Parameters& parameters,
         const opentxs::PasswordPrompt& reason) -> identity::Source*;
     static auto NymIDSource(
         const api::Session& api,
@@ -600,24 +599,11 @@ public:
         -> std::shared_ptr<contract::peer::request::Outbailment>;
     static auto PasswordPrompt(const api::Session& api, const std::string& text)
         -> opentxs::PasswordPrompt*;
-    static auto PaymentCode(
-        const api::Session& api,
-        const std::uint8_t version,
-        const bool hasBitmessage,
-        const ReadView pubkey,
-        const ReadView chaincode,
-        const std::uint8_t bitmessageVersion,
-        const std::uint8_t bitmessageStream
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-        ,
-        std::unique_ptr<crypto::key::Secp256k1> key
-#endif
-        ) noexcept -> std::unique_ptr<opentxs::PaymentCode>;
     static auto PrimaryCredential(
         const api::Session& api,
         identity::internal::Authority& parent,
         const identity::Source& source,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Primary*;
@@ -667,7 +653,7 @@ public:
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Secondary*;
@@ -754,7 +740,7 @@ public:
         identity::internal::Authority& parent,
         const identity::Source& source,
         const identity::credential::internal::Primary& master,
-        const NymParameters& nymParameters,
+        const crypto::Parameters& nymParameters,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason)
         -> identity::credential::internal::Verification*;

@@ -74,18 +74,12 @@ private:
 protected:
     const api::session::Factory& factory_;
     session::Crypto& crypto_;
-#if OT_CRYPTO_WITH_BIP32
     OTSymmetricKey storage_encryption_key_;
-#endif
 
     virtual auto cleanup() noexcept -> void;
     auto init(
-        const api::session::Factory& factory
-#if OT_CRYPTO_WITH_BIP32
-        ,
-        const api::crypto::Seed& seeds
-#endif  // OT_CRYPTO_WITH_BIP32
-        ) noexcept -> void;
+        const api::session::Factory& factory,
+        const api::crypto::Seed& seeds) noexcept -> void;
     auto start() noexcept -> void;
 
     Storage(

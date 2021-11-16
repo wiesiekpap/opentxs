@@ -17,9 +17,10 @@ namespace crypto
 {
 enum class HashType : std::uint8_t;
 enum class Language : std::uint8_t;
+enum class ParameterType : std::uint8_t;
+enum class SecretStyle : std::uint8_t;
 enum class SeedStrength : std::size_t;
 enum class SeedStyle : std::uint8_t;
-enum class SecretStyle : std::uint8_t;
 enum class SignatureRole : std::uint16_t;
 }  // namespace crypto
 
@@ -28,9 +29,9 @@ using Bip32Depth = std::uint8_t;
 using Bip32Fingerprint = std::uint32_t;
 using Bip32Index = std::uint32_t;
 
+enum class Bip32Child : Bip32Index;
 enum class Bip43Purpose : Bip32Index;
 enum class Bip44Type : Bip32Index;
-enum class Bip32Child : Bip32Index;
 
 auto print(crypto::SeedStyle) noexcept -> std::string;
 }  // namespace opentxs

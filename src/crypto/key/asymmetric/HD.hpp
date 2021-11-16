@@ -69,7 +69,7 @@ public:
     auto Xpub(const PasswordPrompt& reason) const noexcept -> std::string final;
 
 protected:
-    void erase_private_data(const Lock& lock) final;
+    auto erase_private_data(const Lock& lock) -> void final;
 
     HD(const api::Session& api,
        const crypto::EcdsaProvider& ecdsa,
@@ -92,7 +92,6 @@ protected:
        key::Symmetric& sessionKey,
        const PasswordPrompt& reason)
     noexcept(false);
-#if OT_CRYPTO_WITH_BIP32
     HD(const api::Session& api,
        const crypto::EcdsaProvider& ecdsa,
        const crypto::key::asymmetric::Algorithm keyType,
@@ -117,7 +116,6 @@ protected:
        const crypto::key::asymmetric::Role role,
        const VersionNumber version)
     noexcept(false);
-#endif  // OT_CRYPTO_WITH_BIP32
     HD(const HD&) noexcept;
     HD(const HD& rhs, const ReadView newPublic) noexcept;
     HD(const HD& rhs, OTSecret&& newSecretKey) noexcept;

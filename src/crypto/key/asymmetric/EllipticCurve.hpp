@@ -72,7 +72,7 @@ public:
     {
         return std::unique_ptr<key::EllipticCurve>{clone_ec()};
     }
-    virtual auto CreateType() const -> NymParameterType = 0;
+    virtual auto CreateType() const -> ParameterType = 0;
     auto ECDSA() const noexcept -> const crypto::EcdsaProvider& final
     {
         return ecdsa_;

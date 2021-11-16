@@ -42,6 +42,8 @@ namespace key
 {
 class Symmetric;
 }  // namespace key
+
+class Parameters;
 }  // namespace crypto
 
 namespace identity
@@ -57,7 +59,6 @@ class HDPath;
 }  // namespace proto
 
 class Identifier;
-class NymParameters;
 class OTSignatureMetadata;
 class PasswordPrompt;
 }  // namespace opentxs
@@ -165,7 +166,7 @@ protected:
     static auto create_key(
         const api::Session& api,
         const crypto::AsymmetricProvider& provider,
-        const NymParameters& options,
+        const Parameters& options,
         const crypto::key::asymmetric::Role role,
         const AllocateOutput publicKey,
         const AllocateOutput privateKey,
@@ -192,7 +193,7 @@ protected:
         proto::Ciphertext& ciphertext) noexcept -> bool;
     static auto generate_key(
         const crypto::AsymmetricProvider& provider,
-        const NymParameters& options,
+        const Parameters& options,
         const crypto::key::asymmetric::Role role,
         const AllocateOutput publicKey,
         const AllocateOutput privateKey,

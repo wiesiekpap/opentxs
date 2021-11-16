@@ -13,8 +13,8 @@
 #include "internal/identity/Identity.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Storage.hpp"
@@ -27,8 +27,10 @@
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/crypto/NymParameters.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/ParameterType.hpp"
+#include "opentxs/crypto/Parameters.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
@@ -44,6 +46,11 @@ namespace
 class Test_Nym : public ::testing::Test
 {
 public:
+    static const bool have_hd_;
+    static const bool have_rsa_;
+    static const bool have_secp256k1_;
+    static const bool have_ed25519_;
+
     const ot::api::session::Client& client_;
 #if OT_STORAGE_FS
     const ot::api::session::Client& client_fs_;
@@ -57,13 +64,13 @@ public:
     const ot::OTPasswordPrompt reason_;
 
     bool test_nym(
-        const ot::NymParameterType type,
+        const ot::crypto::ParameterType type,
         const ot::identity::CredentialType cred,
         const ot::identity::SourceType source,
         const std::string& name = "Nym")
     {
-        const auto params = ot::NymParameters{type, cred, source};
-        const auto pNym = client_.Wallet().Nym(reason_, name, params);
+        const auto params = ot::crypto::Parameters{type, cred, source};
+        const auto pNym = client_.Wallet().Nym(params, reason_, name);
 
         if (false == bool(pNym)) { return false; }
 
@@ -202,6 +209,14 @@ public:
     }
 };
 
+const bool Test_Nym::have_hd_{ot::api::crypto::HaveHDKeys()};
+const bool Test_Nym::have_rsa_{ot::api::crypto::HaveSupport(
+    ot::crypto::key::asymmetric::Algorithm::Legacy)};
+const bool Test_Nym::have_secp256k1_{ot::api::crypto::HaveSupport(
+    ot::crypto::key::asymmetric::Algorithm::Secp256k1)};
+const bool Test_Nym::have_ed25519_{ot::api::crypto::HaveSupport(
+    ot::crypto::key::asymmetric::Algorithm::ED25519)};
+
 TEST_F(Test_Nym, init_ot) {}
 
 TEST_F(Test_Nym, storage_memdb) { EXPECT_TRUE(test_storage(client_)); }
@@ -238,87 +253,111 @@ TEST_F(Test_Nym, default_params)
     EXPECT_FALSE(pSection);
 }
 
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
-#if OT_CRYPTO_WITH_BIP32
 TEST_F(Test_Nym, secp256k1_hd_bip47)
 {
-    EXPECT_TRUE(test_nym(
-        ot::NymParameterType::secp256k1,
-        ot::identity::CredentialType::HD,
-        ot::identity::SourceType::Bip47));
+    if (have_secp256k1_ && have_hd_) {
+        EXPECT_TRUE(test_nym(
+            ot::crypto::ParameterType::secp256k1,
+            ot::identity::CredentialType::HD,
+            ot::identity::SourceType::Bip47));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Nym, secp256k1_hd_self_signed)
 {
-    EXPECT_TRUE(test_nym(
-        ot::NymParameterType::secp256k1,
-        ot::identity::CredentialType::HD,
-        ot::identity::SourceType::PubKey));
+    if (have_secp256k1_ && have_hd_) {
+        EXPECT_TRUE(test_nym(
+            ot::crypto::ParameterType::secp256k1,
+            ot::identity::CredentialType::HD,
+            ot::identity::SourceType::PubKey));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Nym, secp256k1_legacy_bip47)
 {
-    EXPECT_FALSE(test_nym(
-        ot::NymParameterType::secp256k1,
-        ot::identity::CredentialType::Legacy,
-        ot::identity::SourceType::Bip47));
+    if (have_secp256k1_ && have_hd_) {
+        EXPECT_FALSE(test_nym(
+            ot::crypto::ParameterType::secp256k1,
+            ot::identity::CredentialType::Legacy,
+            ot::identity::SourceType::Bip47));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 TEST_F(Test_Nym, secp256k1_legacy_self_signed)
 {
-    EXPECT_TRUE(test_nym(
-        ot::NymParameterType::secp256k1,
-        ot::identity::CredentialType::Legacy,
-        ot::identity::SourceType::PubKey));
+    if (have_secp256k1_) {
+        EXPECT_TRUE(test_nym(
+            ot::crypto::ParameterType::secp256k1,
+            ot::identity::CredentialType::Legacy,
+            ot::identity::SourceType::PubKey));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
-#if OT_CRYPTO_SUPPORTED_KEY_ED25519
-#if OT_CRYPTO_WITH_BIP32
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 TEST_F(Test_Nym, ed25519_hd_bip47)
 {
-    EXPECT_TRUE(test_nym(
-        ot::NymParameterType::ed25519,
-        ot::identity::CredentialType::HD,
-        ot::identity::SourceType::Bip47));
+    if (have_ed25519_ && have_hd_ && have_secp256k1_) {
+        EXPECT_TRUE(test_nym(
+            ot::crypto::ParameterType::ed25519,
+            ot::identity::CredentialType::HD,
+            ot::identity::SourceType::Bip47));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
 TEST_F(Test_Nym, ed25519_hd_self_signed)
 {
-    EXPECT_TRUE(test_nym(
-        ot::NymParameterType::ed25519,
-        ot::identity::CredentialType::HD,
-        ot::identity::SourceType::PubKey));
+    if (have_ed25519_ && have_hd_) {
+        EXPECT_TRUE(test_nym(
+            ot::crypto::ParameterType::ed25519,
+            ot::identity::CredentialType::HD,
+            ot::identity::SourceType::PubKey));
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Nym, ed25519_legacy_bip47)
 {
-    EXPECT_FALSE(test_nym(
-        ot::NymParameterType::ed25519,
-        ot::identity::CredentialType::Legacy,
-        ot::identity::SourceType::Bip47));
+    if (have_ed25519_ && have_hd_) {
+        EXPECT_FALSE(test_nym(
+            ot::crypto::ParameterType::ed25519,
+            ot::identity::CredentialType::Legacy,
+            ot::identity::SourceType::Bip47));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 
 TEST_F(Test_Nym, ed25519_legacy_self_signed)
 {
-    EXPECT_TRUE(test_nym(
-        ot::NymParameterType::ed25519,
-        ot::identity::CredentialType::Legacy,
-        ot::identity::SourceType::PubKey));
+    if (have_ed25519_) {
+        EXPECT_TRUE(test_nym(
+            ot::crypto::ParameterType::ed25519,
+            ot::identity::CredentialType::Legacy,
+            ot::identity::SourceType::PubKey));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_ED25519
 
-#if OT_CRYPTO_SUPPORTED_KEY_RSA
 TEST_F(Test_Nym, rsa_legacy_self_signed)
 {
-    EXPECT_TRUE(test_nym(
-        ot::NymParameterType::rsa,
-        ot::identity::CredentialType::Legacy,
-        ot::identity::SourceType::PubKey));
+    if (have_rsa_) {
+        EXPECT_TRUE(test_nym(
+            ot::crypto::ParameterType::rsa,
+            ot::identity::CredentialType::Legacy,
+            ot::identity::SourceType::PubKey));
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_SUPPORTED_KEY_RSA
 }  // namespace

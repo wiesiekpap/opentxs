@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+
 #pragma once
 
 #include <chrono>
@@ -30,7 +32,6 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/client/NymData.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -67,6 +68,11 @@ namespace blind
 {
 class Purse;
 }  // namespace blind
+
+namespace crypto
+{
+class Parameters;
+}  // namespace crypto
 
 namespace identity
 {
@@ -107,7 +113,6 @@ class Server;
 
 class Context;
 class NymFile;
-class NymParameters;
 class PasswordPrompt;
 class PeerObject;
 class String;
@@ -182,10 +187,20 @@ public:
     auto Nym(const proto::Nym& nym) const -> Nym_p final;
     auto Nym(const ReadView& bytes) const -> Nym_p final;
     auto Nym(
+        const contact::ClaimType type,
         const PasswordPrompt& reason,
-        const std::string name,
-        const NymParameters& parameters,
-        const contact::ClaimType type) const -> Nym_p final;
+        const std::string& name) const -> Nym_p final;
+    auto Nym(
+        const opentxs::crypto::Parameters& parameters,
+        const PasswordPrompt& reason,
+        const std::string& name) const -> Nym_p final;
+    auto Nym(const PasswordPrompt& reason, const std::string& name) const
+        -> Nym_p final;
+    auto Nym(
+        const opentxs::crypto::Parameters& parameters,
+        const contact::ClaimType type,
+        const PasswordPrompt& reason,
+        const std::string& name) const -> Nym_p final;
     auto mutable_Nym(const identifier::Nym& id, const PasswordPrompt& reason)
         const -> NymData final;
     auto Nymfile(const identifier::Nym& id, const PasswordPrompt& reason) const

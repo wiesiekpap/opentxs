@@ -48,6 +48,7 @@
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
@@ -69,7 +70,6 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -124,6 +124,7 @@ class EllipticCurve;
 class Secp256k1;
 }  // namespace key
 
+class Parameters;
 class SymmetricProvider;
 }  // namespace crypto
 
@@ -167,7 +168,6 @@ class Cheque;
 class Contract;
 class Message;
 class NumList;
-class NymParameters;
 class OTCron;
 class OTCronItem;
 class OTMarket;
@@ -202,7 +202,7 @@ public:
         return asymmetric_;
     }
     auto AsymmetricKey(
-        const NymParameters& params,
+        const opentxs::crypto::Parameters& params,
         const opentxs::PasswordPrompt& reason,
         const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version) const -> OTAsymmetricKey final;
@@ -485,7 +485,7 @@ public:
         const opentxs::Identifier& pDestinationAcctID) const
         -> std::unique_ptr<opentxs::Item> final;
     auto Keypair(
-        const NymParameters& nymParameters,
+        const opentxs::crypto::Parameters& nymParameters,
         const VersionNumber version,
         const opentxs::crypto::key::asymmetric::Role role,
         const opentxs::PasswordPrompt& reason) const -> OTKeypair final;
@@ -588,12 +588,11 @@ public:
         const opentxs::PasswordPrompt& reason) const
         -> std::unique_ptr<OTPayment> final;
     auto PaymentCode(const std::string& base58) const noexcept
-        -> OTPaymentCode final;
+        -> opentxs::PaymentCode final;
     auto PaymentCode(const proto::PaymentCode& serialized) const noexcept
-        -> OTPaymentCode final;
+        -> opentxs::PaymentCode final;
     auto PaymentCode(const ReadView& serialized) const noexcept
-        -> OTPaymentCode final;
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+        -> opentxs::PaymentCode final;
     auto PaymentCode(
         const std::string& seed,
         const Bip32Index nym,
@@ -602,8 +601,7 @@ public:
         const bool bitmessage,
         const std::uint8_t bitmessageVersion,
         const std::uint8_t bitmessageStream) const noexcept
-        -> OTPaymentCode final;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1 && OT_CRYPTO_WITH_BIP32
+        -> opentxs::PaymentCode final;
     auto PaymentPlan() const -> std::unique_ptr<OTPaymentPlan> final;
     auto PaymentPlan(
         const identifier::Server& NOTARY_ID,
@@ -858,10 +856,8 @@ protected:
     Factory(const api::Session& api);
 
 private:
-#if OT_CRYPTO_SUPPORTED_KEY_SECP256K1
     auto instantiate_secp256k1(const ReadView key, const ReadView chaincode)
         const noexcept -> std::unique_ptr<opentxs::crypto::key::Secp256k1>;
-#endif  // OT_CRYPTO_SUPPORTED_KEY_SECP256K1
 
     Factory() = delete;
     Factory(const Factory&) = delete;

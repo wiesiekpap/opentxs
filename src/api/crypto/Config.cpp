@@ -7,13 +7,16 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "api/crypto/Config.hpp"  // IWYU pragma: associated
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 #ifdef __APPLE__
@@ -48,6 +51,27 @@ auto CryptoConfig(const api::Settings& settings) noexcept
     return std::make_unique<ReturnType>(settings);
 }
 }  // namespace opentxs::factory
+
+namespace opentxs::api::crypto
+{
+auto HaveSupport(opentxs::crypto::key::symmetric::Algorithm val) noexcept
+    -> bool
+{
+    using Type = opentxs::crypto::key::symmetric::Algorithm;
+    static const auto map = std::map<Type, bool>{
+        {Type::Error, false},
+        {Type::ChaCha20Poly1305, true},
+    };
+
+    try {
+
+        return map.at(val);
+    } catch (...) {
+
+        return false;
+    }
+}
+}  // namespace opentxs::api::crypto
 
 namespace opentxs::api::crypto::implementation
 {

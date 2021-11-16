@@ -22,6 +22,7 @@
 #include "blockchain/crypto/Element.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
+#include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -151,7 +152,7 @@ PaymentCode::PaymentCode(
     const auto test_path = [&] {
         auto seed{path_.root()};
 
-        return local_.get().AddPrivateKeys(
+        return local_.get().Internal().AddPrivateKeys(
             seed, *path_.child().rbegin(), reason);
     };
 
@@ -288,7 +289,8 @@ auto PaymentCode::has_private(const PasswordPrompt& reason) const noexcept
 
     auto seed{path_.root()};
 
-    return local_.get().AddPrivateKeys(seed, *path_.child().rbegin(), reason);
+    return local_.get().Internal().AddPrivateKeys(
+        seed, *path_.child().rbegin(), reason);
 }
 
 auto PaymentCode::IsNotified() const noexcept -> bool
@@ -356,7 +358,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
     serialized.set_version(version_);
     serialize_deterministic(lock, *serialized.mutable_deterministic());
     auto local = proto::PaymentCode{};
-    if (false == local_.get().Serialize(local)) {
+    if (false == local_.get().Internal().Serialize(local)) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize local paymentcode")
             .Flush();
 
@@ -364,7 +366,7 @@ auto PaymentCode::save(const rLock& lock) const noexcept -> bool
     }
     *serialized.mutable_local() = local;
     auto remote = proto::PaymentCode{};
-    if (false == remote_.get().Serialize(remote)) {
+    if (false == remote_.get().Internal().Serialize(remote)) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize remote paymentcode")
             .Flush();
 

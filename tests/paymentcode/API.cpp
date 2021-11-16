@@ -25,8 +25,9 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -73,7 +74,7 @@ TEST_F(Test_PaymentCodeAPI, alice)
 
     EXPECT_FALSE(seedID.empty());
 
-    const auto pNym = alice_.Wallet().Nym(reason, "Alice", {seedID, 0});
+    const auto pNym = alice_.Wallet().Nym({seedID, 0}, reason, "Alice");
 
     ASSERT_TRUE(pNym);
 
@@ -81,9 +82,9 @@ TEST_F(Test_PaymentCodeAPI, alice)
     const auto localPC = alice_.Factory().PaymentCode(nym.PaymentCode());
     const auto remotePC = alice_.Factory().PaymentCode(remote.payment_code_);
 
-    EXPECT_EQ(localPC->Version(), 3);
-    EXPECT_EQ(remotePC->Version(), 3);
-    EXPECT_EQ(localPC->asBase58(), vector.payment_code_);
+    EXPECT_EQ(localPC.Version(), 3);
+    EXPECT_EQ(remotePC.Version(), 3);
+    EXPECT_EQ(localPC.asBase58(), vector.payment_code_);
 
     const auto path = [&] {
         auto out = ot::Space{};
@@ -177,7 +178,7 @@ TEST_F(Test_PaymentCodeAPI, bob)
 
     EXPECT_FALSE(seedID.empty());
 
-    const auto pNym = bob_.Wallet().Nym(reason, "Bob", {seedID, 0});
+    const auto pNym = bob_.Wallet().Nym({seedID, 0}, reason, "Bob");
 
     ASSERT_TRUE(pNym);
 
@@ -185,9 +186,9 @@ TEST_F(Test_PaymentCodeAPI, bob)
     const auto localPC = bob_.Factory().PaymentCode(nym.PaymentCode());
     const auto remotePC = bob_.Factory().PaymentCode(remote.payment_code_);
 
-    EXPECT_EQ(localPC->Version(), 3);
-    EXPECT_EQ(remotePC->Version(), 3);
-    EXPECT_EQ(localPC->asBase58(), vector.payment_code_);
+    EXPECT_EQ(localPC.Version(), 3);
+    EXPECT_EQ(remotePC.Version(), 3);
+    EXPECT_EQ(localPC.asBase58(), vector.payment_code_);
 
     const auto path = [&] {
         auto out = ot::Space{};

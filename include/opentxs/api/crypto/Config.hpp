@@ -3,11 +3,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/crypto/ParameterType.hpp"
+// IWYU pragma: no_include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+// IWYU pragma: no_include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+
+#include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/Types.hpp"
 
 namespace opentxs
 {
@@ -29,6 +36,11 @@ namespace api
 {
 namespace crypto
 {
+auto HaveHDKeys() noexcept -> bool;
+auto HaveSupport(opentxs::crypto::ParameterType) noexcept -> bool;
+auto HaveSupport(opentxs::crypto::key::asymmetric::Algorithm) noexcept -> bool;
+auto HaveSupport(opentxs::crypto::key::symmetric::Algorithm) noexcept -> bool;
+
 class OPENTXS_EXPORT Config
 {
 public:

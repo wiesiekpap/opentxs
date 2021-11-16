@@ -41,6 +41,7 @@ class Symmetric;
 
 class AsymmetricProvider;
 class EcdsaProvider;
+class Parameters;
 class SymmetricProvider;
 }  // namespace crypto
 
@@ -52,7 +53,6 @@ class SymmetricKey;
 }  // namespace proto
 
 class Data;
-class NymParameters;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
@@ -100,7 +100,7 @@ auto RSAKey(
     const crypto::AsymmetricProvider& engine,
     const crypto::key::asymmetric::Role input,
     const VersionNumber version,
-    const NymParameters& options,
+    const crypto::Parameters& options,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::RSA>;
 auto Secp256k1Key(
@@ -146,6 +146,11 @@ auto Secp256k1Key(
     const Bip32Fingerprint parent,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version) noexcept
+    -> std::unique_ptr<crypto::key::Secp256k1>;
+auto Secp256k1Key(
+    const api::Session& api,
+    const ReadView key,
+    const ReadView chaincode) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>;
 auto SymmetricKey() noexcept -> std::unique_ptr<crypto::key::Symmetric>;
 auto SymmetricKey(

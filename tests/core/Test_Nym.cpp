@@ -21,6 +21,7 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -75,8 +76,8 @@ struct Test_Symmetric : public ::testing::Test {
             "anchor skate property fringe obey butter text tank drama "
             "palm guilt pudding laundry stay axis prosper",
             "");
-        alice_nym_id_ = api_.Wallet().Nym(reason_, "Alice", {seedA, 0})->ID();
-        bob_nym_id_ = api_.Wallet().Nym(reason_, "Bob", {seedB, 0})->ID();
+        alice_nym_id_ = api_.Wallet().Nym({seedA, 0}, reason_, "Alice")->ID();
+        bob_nym_id_ = api_.Wallet().Nym({seedB, 0}, reason_, "Bob")->ID();
         key_password_ = api_.Factory().SecretFromText(TEST_MASTER_PASSWORD);
         init_ = true;
     }

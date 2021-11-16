@@ -35,9 +35,10 @@ class Asymmetric;
 class HD;
 class Secp256k1;
 }  // namespace key
+
+class Parameters;
 }  // namespace crypto
 
-class NymParameters;
 class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
@@ -154,21 +155,21 @@ public:
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::HD> = 0;
     virtual auto NewKey(
-        const NymParameters& params,
+        const opentxs::crypto::Parameters& params,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::Asymmetric> = 0;
     virtual auto NewKey(
-        const NymParameters& params,
+        const opentxs::crypto::Parameters& params,
         const opentxs::crypto::key::asymmetric::Role role,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::Asymmetric> = 0;
     virtual auto NewKey(
-        const NymParameters& params,
+        const opentxs::crypto::Parameters& params,
         const VersionNumber version,
         const PasswordPrompt& reason) const
         -> std::unique_ptr<opentxs::crypto::key::Asymmetric> = 0;
     virtual auto NewKey(
-        const NymParameters& params,
+        const opentxs::crypto::Parameters& params,
         const opentxs::crypto::key::asymmetric::Role role,
         const VersionNumber version,
         const PasswordPrompt& reason) const

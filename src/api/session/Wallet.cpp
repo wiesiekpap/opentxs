@@ -43,6 +43,7 @@
 #endif
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/client/NymData.hpp"
+#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -58,6 +59,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
@@ -1179,10 +1181,32 @@ auto Wallet::Nym(const ReadView& bytes) const -> Nym_p
 }
 
 auto Wallet::Nym(
+    const contact::ClaimType type,
     const PasswordPrompt& reason,
-    const std::string name,
-    const NymParameters& parameters,
-    const contact::ClaimType type) const -> Nym_p
+    const std::string& name) const -> Nym_p
+{
+    return Nym({}, type, reason, name);
+}
+
+auto Wallet::Nym(
+    const opentxs::crypto::Parameters& parameters,
+    const PasswordPrompt& reason,
+    const std::string& name) const -> Nym_p
+{
+    return Nym(parameters, contact::ClaimType::Individual, reason, name);
+}
+
+auto Wallet::Nym(const PasswordPrompt& reason, const std::string& name) const
+    -> Nym_p
+{
+    return Nym({}, contact::ClaimType::Individual, reason, name);
+}
+
+auto Wallet::Nym(
+    const opentxs::crypto::Parameters& parameters,
+    const contact::ClaimType type,
+    const PasswordPrompt& reason,
+    const std::string& name) const -> Nym_p
 {
     std::shared_ptr<identity::internal::Nym> pNym(
         opentxs::Factory::Nym(api_, parameters, type, name, reason));

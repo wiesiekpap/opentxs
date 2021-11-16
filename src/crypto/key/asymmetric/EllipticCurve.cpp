@@ -17,6 +17,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
 #include "opentxs/protobuf/AsymmetricKey.pb.h"

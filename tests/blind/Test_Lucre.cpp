@@ -33,6 +33,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -92,8 +93,8 @@ public:
             "anchor skate property fringe obey butter text tank drama "
             "palm guilt pudding laundry stay axis prosper",
             "");
-        alice_nym_id_ = api_.Wallet().Nym(reason_, "Alice", {seedA, 0})->ID();
-        bob_nym_id_ = api_.Wallet().Nym(reason_, "Bob", {seedB, 0})->ID();
+        alice_nym_id_ = api_.Wallet().Nym({seedA, 0}, reason_, "Alice")->ID();
+        bob_nym_id_ = api_.Wallet().Nym({seedB, 0}, reason_, "Bob")->ID();
         const_cast<ot::identifier::UnitDefinition&>(unit_id_.get())
             .SetString(ot::Identifier::Random()->str());
         const_cast<ot::identifier::Server&>(server_id_.get())

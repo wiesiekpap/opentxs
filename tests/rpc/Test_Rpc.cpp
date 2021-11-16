@@ -25,6 +25,7 @@
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
@@ -76,11 +77,9 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
-#if OT_CRYPTO_WITH_BIP32
 #define TEST_SEED                                                              \
     "one two three four five six seven eight nine ten eleven twelve"
 #define TEST_SEED_PASSPHRASE "seed passphrase"
-#endif  // OT_CRYPTO_WITH_BIP32
 #define ISSUER_ACCOUNT_LABEL "issuer account"
 #define USER_ACCOUNT_LABEL "user account"
 #define RENAMED_ACCOUNT_LABEL "renamed"
@@ -1497,137 +1496,159 @@ TEST_F(Test_Rpc, Get_Nyms)
     EXPECT_EQ(credentialindex.revokedcredentials_size(), 0);
 }
 
-#if OT_CRYPTO_WITH_BIP32
 TEST_F(Test_Rpc, Import_Seed_Invalid)
 {
-    auto command = init(proto::RPCCOMMAND_IMPORTHDSEED);
-    command.set_session(0);
-    auto& seed = *command.mutable_hdseed();
-    seed.set_version(1);
-    seed.set_words("bad seed words");
-    seed.set_passphrase(TEST_SEED_PASSPHRASE);
+    if (ot::api::crypto::HaveHDKeys()) {
+        auto command = init(proto::RPCCOMMAND_IMPORTHDSEED);
+        command.set_session(0);
+        auto& seed = *command.mutable_hdseed();
+        seed.set_version(1);
+        seed.set_words("bad seed words");
+        seed.set_passphrase(TEST_SEED_PASSPHRASE);
 
-    auto response = ot_.RPC(command);
+        auto response = ot_.RPC(command);
 
-    EXPECT_TRUE(proto::Validate(response, VERBOSE));
+        EXPECT_TRUE(proto::Validate(response, VERBOSE));
 
-    EXPECT_EQ(1, response.status_size());
-    EXPECT_EQ(proto::RPCRESPONSE_INVALID, response.status(0).code());
-    EXPECT_EQ(RESPONSE_VERSION, response.version());
-    EXPECT_EQ(command.cookie(), response.cookie());
-    EXPECT_EQ(command.type(), response.type());
+        EXPECT_EQ(1, response.status_size());
+        EXPECT_EQ(proto::RPCRESPONSE_INVALID, response.status(0).code());
+        EXPECT_EQ(RESPONSE_VERSION, response.version());
+        EXPECT_EQ(command.cookie(), response.cookie());
+        EXPECT_EQ(command.type(), response.type());
 
-    EXPECT_EQ(response.identifier_size(), 0);
+        EXPECT_EQ(response.identifier_size(), 0);
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Rpc, Import_Seed)
 {
-    auto command = init(proto::RPCCOMMAND_IMPORTHDSEED);
-    command.set_session(0);
-    auto& seed = *command.mutable_hdseed();
-    seed.set_version(1);
-    seed.set_words(TEST_SEED);
-    seed.set_passphrase(TEST_SEED_PASSPHRASE);
+    if (ot::api::crypto::HaveHDKeys()) {
+        auto command = init(proto::RPCCOMMAND_IMPORTHDSEED);
+        command.set_session(0);
+        auto& seed = *command.mutable_hdseed();
+        seed.set_version(1);
+        seed.set_words(TEST_SEED);
+        seed.set_passphrase(TEST_SEED_PASSPHRASE);
 
-    auto response = ot_.RPC(command);
+        auto response = ot_.RPC(command);
 
-    EXPECT_TRUE(proto::Validate(response, VERBOSE));
+        EXPECT_TRUE(proto::Validate(response, VERBOSE));
 
-    EXPECT_EQ(1, response.status_size());
-    EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
-    EXPECT_EQ(RESPONSE_VERSION, response.version());
-    EXPECT_EQ(command.cookie(), response.cookie());
-    EXPECT_EQ(command.type(), response.type());
+        EXPECT_EQ(1, response.status_size());
+        EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
+        EXPECT_EQ(RESPONSE_VERSION, response.version());
+        EXPECT_EQ(command.cookie(), response.cookie());
+        EXPECT_EQ(command.type(), response.type());
 
-    EXPECT_EQ(1, response.identifier_size());
+        EXPECT_EQ(1, response.identifier_size());
 
-    seed_id_ = response.identifier(0);
+        seed_id_ = response.identifier(0);
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Rpc, List_Seeds)
 {
-    auto command = init(proto::RPCCOMMAND_LISTHDSEEDS);
-    command.set_session(0);
+    if (ot::api::crypto::HaveHDKeys()) {
+        auto command = init(proto::RPCCOMMAND_LISTHDSEEDS);
+        command.set_session(0);
 
-    auto response = ot_.RPC(command);
+        auto response = ot_.RPC(command);
 
-    EXPECT_TRUE(proto::Validate(response, VERBOSE));
+        EXPECT_TRUE(proto::Validate(response, VERBOSE));
 
-    EXPECT_EQ(1, response.status_size());
-    EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
-    EXPECT_EQ(RESPONSE_VERSION, response.version());
-    EXPECT_EQ(command.cookie(), response.cookie());
-    EXPECT_EQ(command.type(), response.type());
+        EXPECT_EQ(1, response.status_size());
+        EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
+        EXPECT_EQ(RESPONSE_VERSION, response.version());
+        EXPECT_EQ(command.cookie(), response.cookie());
+        EXPECT_EQ(command.type(), response.type());
 
-    EXPECT_EQ(2, response.identifier_size());
+        EXPECT_EQ(2, response.identifier_size());
 
-    if (seed_id_ == response.identifier(0)) {
-        seed2_id_ = response.identifier(1);
-    } else if (seed_id_ == response.identifier(1)) {
-        seed2_id_ = response.identifier(0);
+        if (seed_id_ == response.identifier(0)) {
+            seed2_id_ = response.identifier(1);
+        } else if (seed_id_ == response.identifier(1)) {
+            seed2_id_ = response.identifier(0);
+        } else {
+            FAIL();
+        }
     } else {
-        FAIL();
+        // TODO
     }
 }
 
 TEST_F(Test_Rpc, Get_Seed)
 {
-    auto command = init(proto::RPCCOMMAND_GETHDSEED);
-    command.set_session(0);
-    command.add_identifier(seed_id_);
-    auto response = ot_.RPC(command);
+    if (ot::api::crypto::HaveHDKeys()) {
+        auto command = init(proto::RPCCOMMAND_GETHDSEED);
+        command.set_session(0);
+        command.add_identifier(seed_id_);
+        auto response = ot_.RPC(command);
 
-    EXPECT_TRUE(proto::Validate(response, VERBOSE));
-    EXPECT_EQ(1, response.status_size());
-    EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
-    EXPECT_EQ(RESPONSE_VERSION, response.version());
-    EXPECT_EQ(command.cookie(), response.cookie());
-    EXPECT_EQ(command.type(), response.type());
-    EXPECT_EQ(1, response.seed_size());
+        EXPECT_TRUE(proto::Validate(response, VERBOSE));
+        EXPECT_EQ(1, response.status_size());
+        EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
+        EXPECT_EQ(RESPONSE_VERSION, response.version());
+        EXPECT_EQ(command.cookie(), response.cookie());
+        EXPECT_EQ(command.type(), response.type());
+        EXPECT_EQ(1, response.seed_size());
 
-    auto seed = response.seed(0);
+        auto seed = response.seed(0);
 
-    EXPECT_STREQ(seed_id_.c_str(), seed.id().c_str());
-    EXPECT_STREQ(TEST_SEED, seed.words().c_str());
-    EXPECT_STREQ(TEST_SEED_PASSPHRASE, seed.passphrase().c_str());
+        EXPECT_STREQ(seed_id_.c_str(), seed.id().c_str());
+        EXPECT_STREQ(TEST_SEED, seed.words().c_str());
+        EXPECT_STREQ(TEST_SEED_PASSPHRASE, seed.passphrase().c_str());
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Rpc, Get_Seeds)
 {
-    auto command = init(proto::RPCCOMMAND_GETHDSEED);
-    command.set_session(0);
-    command.add_identifier(seed_id_);
-    command.add_identifier(seed2_id_);
-    auto response = ot_.RPC(command);
+    if (ot::api::crypto::HaveHDKeys()) {
+        auto command = init(proto::RPCCOMMAND_GETHDSEED);
+        command.set_session(0);
+        command.add_identifier(seed_id_);
+        command.add_identifier(seed2_id_);
+        auto response = ot_.RPC(command);
 
-    EXPECT_TRUE(proto::Validate(response, VERBOSE));
-    EXPECT_EQ(2, response.status_size());
-    EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
-    EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(1).code());
-    EXPECT_EQ(RESPONSE_VERSION, response.version());
-    EXPECT_EQ(command.cookie(), response.cookie());
-    EXPECT_EQ(command.type(), response.type());
-    EXPECT_EQ(2, response.seed_size());
+        EXPECT_TRUE(proto::Validate(response, VERBOSE));
+        EXPECT_EQ(2, response.status_size());
+        EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(0).code());
+        EXPECT_EQ(proto::RPCRESPONSE_SUCCESS, response.status(1).code());
+        EXPECT_EQ(RESPONSE_VERSION, response.version());
+        EXPECT_EQ(command.cookie(), response.cookie());
+        EXPECT_EQ(command.type(), response.type());
+        EXPECT_EQ(2, response.seed_size());
 
-    auto seed = response.seed(0);
+        auto seed = response.seed(0);
 
-    if (seed.id() != seed_id_) { seed = response.seed(1); }
+        if (seed.id() != seed_id_) { seed = response.seed(1); }
 
-    EXPECT_STREQ(seed_id_.c_str(), seed.id().c_str());
-    EXPECT_STREQ(TEST_SEED, seed.words().c_str());
-    EXPECT_STREQ(TEST_SEED_PASSPHRASE, seed.passphrase().c_str());
+        EXPECT_STREQ(seed_id_.c_str(), seed.id().c_str());
+        EXPECT_STREQ(TEST_SEED, seed.words().c_str());
+        EXPECT_STREQ(TEST_SEED_PASSPHRASE, seed.passphrase().c_str());
+    } else {
+        // TODO
+    }
 }
 
 TEST_F(Test_Rpc, Get_Transaction_Data)
 {
-    auto command = init(proto::RPCCOMMAND_GETTRANSACTIONDATA);
-    command.set_session(0);
-    command.add_identifier(seed_id_);  // Not a real uuid
-    auto response = ot_.RPC(command);
+    if (ot::api::crypto::HaveHDKeys()) {
+        auto command = init(proto::RPCCOMMAND_GETTRANSACTIONDATA);
+        command.set_session(0);
+        command.add_identifier(seed_id_);  // Not a real uuid
+        auto response = ot_.RPC(command);
 
-    EXPECT_TRUE(proto::Validate(response, VERBOSE));
-    EXPECT_EQ(1, response.status_size());
-    EXPECT_EQ(proto::RPCRESPONSE_UNIMPLEMENTED, response.status(0).code());
+        EXPECT_TRUE(proto::Validate(response, VERBOSE));
+        EXPECT_EQ(1, response.status_size());
+        EXPECT_EQ(proto::RPCRESPONSE_UNIMPLEMENTED, response.status(0).code());
+    } else {
+        // TODO
+    }
 }
-#endif  // OT_CRYPTO_WITH_BIP32
 }  // namespace

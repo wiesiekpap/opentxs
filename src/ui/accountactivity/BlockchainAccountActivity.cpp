@@ -38,7 +38,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -468,7 +468,7 @@ auto BlockchainAccountActivity::Send(
             Widget::api_.Network().Blockchain().GetChain(chain_);
         const auto recipient = Widget::api_.Factory().PaymentCode(address);
 
-        if (0 < recipient->Version()) {
+        if (0 < recipient.Version()) {
             network.SendToPaymentCode(primary_id_, recipient, amount, memo);
         } else {
             network.SendToAddress(primary_id_, address, amount, memo);
@@ -504,7 +504,7 @@ auto BlockchainAccountActivity::ValidateAddress(
     {
         const auto code = Widget::api_.Factory().PaymentCode(in);
 
-        if (0 < code->Version()) { return true; }
+        if (0 < code.Version()) { return true; }
     }
 
     using Style = blockchain::crypto::AddressStyle;

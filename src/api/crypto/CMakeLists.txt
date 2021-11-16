@@ -10,6 +10,7 @@ add_subdirectory(blockchain)
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_BINARY_DIR}/src/api/crypto/Config_generated.cpp"
     "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Asymmetric.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Config.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/api/crypto/Encode.hpp"

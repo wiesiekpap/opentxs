@@ -16,7 +16,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "ui/Helpers.hpp"
 
 namespace ottest
@@ -42,8 +42,8 @@ public:
 
     const ot::api::session::Client& api_;
     ot::OTPasswordPrompt reason_;
-    const ot::OTPaymentCode bob_payment_code_;
-    const ot::OTPaymentCode chris_payment_code_;
+    const ot::PaymentCode bob_payment_code_;
+    const ot::PaymentCode chris_payment_code_;
 
     Test_ContactList()
         : api_(ot::Context().StartClientSession(0))
@@ -63,8 +63,8 @@ TEST_F(Test_ContactList, initialize_opentxs)
 {
     init_contact_list(alice_, counter_);
 
-    ASSERT_TRUE(bob_payment_code_->Valid());
-    ASSERT_TRUE(chris_payment_code_->Valid());
+    ASSERT_TRUE(bob_payment_code_.Valid());
+    ASSERT_TRUE(chris_payment_code_.Valid());
 }
 
 TEST_F(Test_ContactList, initial_state)
@@ -84,7 +84,7 @@ TEST_F(Test_ContactList, add_chris)
 {
     counter_.expected_ += 1;
     const auto chris = api_.Contacts().NewContact(
-        chris_, chris_payment_code_->ID(), chris_payment_code_);
+        chris_, chris_payment_code_.ID(), chris_payment_code_);
 
     ASSERT_TRUE(chris);
 
@@ -109,7 +109,7 @@ TEST_F(Test_ContactList, add_bob)
 {
     counter_.expected_ += 1;
     const auto bob = api_.Contacts().NewContact(
-        bob_, bob_payment_code_->ID(), bob_payment_code_);
+        bob_, bob_payment_code_.ID(), bob_payment_code_);
 
     ASSERT_TRUE(bob);
 

@@ -1,0 +1,63 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#pragma once
+
+#include <optional>
+
+#include "internal/crypto/Parameters.hpp"
+#include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/Parameters.hpp"
+
+namespace opentxs::crypto
+{
+class Parameters::Imp final : public internal::Parameters
+{
+public:
+    const ParameterType nymType_;
+    const identity::CredentialType credentialType_;
+    const identity::SourceType sourceType_;
+    const identity::SourceProofType sourceProofType_;
+    std::uint8_t payment_code_version_;
+    crypto::SeedStyle seed_style_;
+    crypto::Language seed_language_;
+    crypto::SeedStrength seed_strength_;
+    OTSecret entropy_;
+    std::string seed_;
+    Bip32Index nym_;
+    Bip32Index credset_;
+    Bip32Index cred_index_;
+    bool default_;
+    bool use_auto_index_;
+    std::int32_t nBits_;
+    Space params_;
+    OTKeypair source_keypair_;
+    std::shared_ptr<proto::ContactData> contact_data_;
+    std::shared_ptr<proto::VerificationSet> verification_set_;
+    mutable std::optional<OTData> hashed_;
+
+    auto operator<(const Parameters& rhs) const noexcept -> bool final;
+    auto operator==(const Parameters& rhs) const noexcept -> bool final;
+
+    auto GetContactData(proto::ContactData& serialized) const noexcept
+        -> bool final;
+    auto GetVerificationSet(proto::VerificationSet& serialized) const noexcept
+        -> bool final;
+    auto Hash() const noexcept -> OTData final;
+    auto clone() const noexcept -> Imp*;
+
+    auto SetContactData(const proto::ContactData& contactData) noexcept
+        -> void final;
+    auto SetVerificationSet(
+        const proto::VerificationSet& verificationSet) noexcept -> void final;
+
+    Imp(const ParameterType type,
+        const identity::CredentialType credential,
+        const identity::SourceType source,
+        const std::uint8_t pcVersion) noexcept;
+    Imp() noexcept;
+    Imp(const Imp& rhs) noexcept;
+};
+}  // namespace opentxs::crypto

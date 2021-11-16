@@ -20,7 +20,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/crypto/PaymentCode.hpp"
+#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -255,8 +255,8 @@ TEST_F(Test_PaymentCode_v3, blind_alice)
         const auto alice = bob_pc_secret_.UnblindV3(
             version_, blinded->Bytes(), alice_blind_public_, reason_);
 
-        ASSERT_TRUE(alice);
-        EXPECT_EQ(alice->asBase58(), GetVectors3().alice_.payment_code_);
+        EXPECT_GT(alice.Version(), 0u);
+        EXPECT_EQ(alice.asBase58(), GetVectors3().alice_.payment_code_);
     }
 
     const auto elements = alice_pc_secret_.GenerateNotificationElements(
@@ -292,43 +292,43 @@ TEST_F(Test_PaymentCode_v3, blind_alice)
         EXPECT_EQ(v1, v2);
     }
 
-    using Elements = ot::PaymentCode::Elements;
+    using Elements = std::vector<ot::Space>;
     {
         const auto alice = bob_pc_secret_.DecodeNotificationElements(
             version_, Elements{A, F, G}, reason_);
 
-        ASSERT_TRUE(alice);
-        EXPECT_EQ(alice->asBase58(), GetVectors3().alice_.payment_code_);
+        EXPECT_GT(alice.Version(), 0u);
+        EXPECT_EQ(alice.asBase58(), GetVectors3().alice_.payment_code_);
     }
     {
         const auto alice = bob_pc_secret_.DecodeNotificationElements(
             version_, Elements{A, G, F}, reason_);
 
-        EXPECT_FALSE(alice);
+        EXPECT_EQ(alice.Version(), 0u);
     }
     {
         const auto alice = bob_pc_secret_.DecodeNotificationElements(
             version_, Elements{F, G, A}, reason_);
 
-        EXPECT_FALSE(alice);
+        EXPECT_EQ(alice.Version(), 0u);
     }
     {
         const auto alice = bob_pc_secret_.DecodeNotificationElements(
             version_, Elements{F, A, G}, reason_);
 
-        EXPECT_FALSE(alice);
+        EXPECT_EQ(alice.Version(), 0u);
     }
     {
         const auto alice = bob_pc_secret_.DecodeNotificationElements(
             version_, Elements{G, A, F}, reason_);
 
-        EXPECT_FALSE(alice);
+        EXPECT_EQ(alice.Version(), 0u);
     }
     {
         const auto alice = bob_pc_secret_.DecodeNotificationElements(
             version_, Elements{G, F, A}, reason_);
 
-        EXPECT_FALSE(alice);
+        EXPECT_EQ(alice.Version(), 0u);
     }
 }
 
@@ -358,8 +358,8 @@ TEST_F(Test_PaymentCode_v3, blind_bob)
         const auto bob = alice_pc_secret_.UnblindV3(
             version_, blinded->Bytes(), bob_blind_public_, reason_);
 
-        ASSERT_TRUE(bob);
-        EXPECT_EQ(bob->asBase58(), GetVectors3().bob_.payment_code_);
+        EXPECT_GT(bob.Version(), 0u);
+        EXPECT_EQ(bob.asBase58(), GetVectors3().bob_.payment_code_);
     }
 
     const auto elements = bob_pc_secret_.GenerateNotificationElements(
@@ -395,43 +395,43 @@ TEST_F(Test_PaymentCode_v3, blind_bob)
         EXPECT_EQ(v1, v2);
     }
 
-    using Elements = ot::PaymentCode::Elements;
+    using Elements = std::vector<ot::Space>;
     {
         const auto bob = alice_pc_secret_.DecodeNotificationElements(
             version_, Elements{A, F, G}, reason_);
 
-        ASSERT_TRUE(bob);
-        EXPECT_EQ(bob->asBase58(), GetVectors3().bob_.payment_code_);
+        EXPECT_GT(bob.Version(), 0u);
+        EXPECT_EQ(bob.asBase58(), GetVectors3().bob_.payment_code_);
     }
     {
         const auto bob = alice_pc_secret_.DecodeNotificationElements(
             version_, Elements{A, G, F}, reason_);
 
-        EXPECT_FALSE(bob);
+        EXPECT_EQ(bob.Version(), 0u);
     }
     {
         const auto bob = alice_pc_secret_.DecodeNotificationElements(
             version_, Elements{F, G, A}, reason_);
 
-        EXPECT_FALSE(bob);
+        EXPECT_EQ(bob.Version(), 0u);
     }
     {
         const auto bob = alice_pc_secret_.DecodeNotificationElements(
             version_, Elements{F, A, G}, reason_);
 
-        EXPECT_FALSE(bob);
+        EXPECT_EQ(bob.Version(), 0u);
     }
     {
         const auto bob = alice_pc_secret_.DecodeNotificationElements(
             version_, Elements{G, A, F}, reason_);
 
-        EXPECT_FALSE(bob);
+        EXPECT_EQ(bob.Version(), 0u);
     }
     {
         const auto bob = alice_pc_secret_.DecodeNotificationElements(
             version_, Elements{G, F, A}, reason_);
 
-        EXPECT_FALSE(bob);
+        EXPECT_EQ(bob.Version(), 0u);
     }
 }
 

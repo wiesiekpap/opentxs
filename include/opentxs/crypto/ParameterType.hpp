@@ -3,14 +3,21 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"     // IWYU pragma: associated
-#include "1_Internal.hpp"   // IWYU pragma: associated
-#include "util/Thread.hpp"  // IWYU pragma: associated
+#pragma once
+
+#include "opentxs/crypto/Types.hpp"  // IWYU pragma: associated
+
+#include <cstdint>
 
 namespace opentxs
 {
-auto SetThisThreadsPriority(ThreadPriority) noexcept -> void
+namespace crypto
 {
-    // TODO
-}
+enum class ParameterType : std::uint8_t {
+    invalid = 0,
+    rsa = 1,
+    secp256k1 = 2,
+    ed25519 = 3
+};
+}  // namespace crypto
 }  // namespace opentxs

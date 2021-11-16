@@ -232,13 +232,7 @@ auto Client::Init() -> void
     crypto_.InternalSession().Init(blockchain_);
 #endif  // OT_BLOCKCHAIN
 
-    Storage::init(
-        factory_
-#if OT_CRYPTO_WITH_BIP32
-        ,
-        crypto_.Seed()
-#endif  // OT_CRYPTO_WITH_BIP32
-    );
+    Storage::init(factory_, crypto_.Seed());
     StartContacts();
     StartActivity();
     pair_->init();

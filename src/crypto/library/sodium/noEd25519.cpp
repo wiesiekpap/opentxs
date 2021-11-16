@@ -19,7 +19,7 @@ auto Sodium::RandomKeypair(
     const AllocateOutput,
     const AllocateOutput,
     const opentxs::crypto::key::asymmetric::Role,
-    const NymParameters&,
+    const Parameters&,
     const AllocateOutput) const noexcept -> bool
 {
     return {};
