@@ -26,6 +26,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
@@ -41,7 +42,7 @@ namespace opentxs::blockchain::node::implementation
 FilterOracle::BlockIndexer::BlockIndexer(
     const api::Session& api,
     const internal::FilterDatabase& db,
-    const internal::HeaderOracle& header,
+    const HeaderOracle& header,
     const internal::BlockOracle& block,
     const internal::Network& node,
     FilterOracle& parent,

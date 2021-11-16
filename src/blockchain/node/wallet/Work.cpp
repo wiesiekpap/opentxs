@@ -26,6 +26,7 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -90,7 +91,7 @@ auto Work::Do(SubchainStateData& parent) noexcept -> bool
         block.Internal().FindMatches(type, outpoints, potential);
     const auto& [utxo, general] = confirmed;
     match_count_ = general.size();
-    const auto& oracle = node.HeaderOracleInternal();
+    const auto& oracle = node.HeaderOracle();
     const auto pHeader = oracle.LoadHeader(blockHash);
 
     OT_ASSERT(pHeader);

@@ -42,6 +42,7 @@ public:
     virtual auto ProcessNewFilter(const block::Position& tip) noexcept
         -> void = 0;
     virtual auto ProcessReorg(
+        const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
         const block::Position& ancestor) noexcept -> bool = 0;

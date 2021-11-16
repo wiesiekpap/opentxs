@@ -14,6 +14,7 @@
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -41,7 +42,7 @@ public:
     BlockDownloader(
         const api::Session& api,
         const internal::BlockDatabase& db,
-        const internal::HeaderOracle& header,
+        const HeaderOracle& header,
         const internal::Network& node,
         const blockchain::Type chain,
         const std::string& shutdown) noexcept
@@ -77,7 +78,7 @@ private:
     friend BlockWorker;
 
     const internal::BlockDatabase& db_;
-    const internal::HeaderOracle& header_;
+    const HeaderOracle& header_;
     const internal::Network& node_;
     const blockchain::Type chain_;
     OTZMQPublishSocket socket_;

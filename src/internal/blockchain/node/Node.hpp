@@ -114,6 +114,11 @@ struct Database;
 
 namespace node
 {
+namespace internal
+{
+class HeaderOracle;
+}  // namespace internal
+
 class HeaderOracle;
 class UpdateTransaction;
 }  // namespace node
@@ -344,29 +349,6 @@ struct FilterOracle : virtual public node::FilterOracle {
     ~FilterOracle() override = default;
 };
 
-struct HeaderOracle : virtual public node::HeaderOracle {
-    using CheckpointBlockHash = block::pHash;
-    using PreviousBlockHash = block::pHash;
-    using CheckpointFilterHash = block::pHash;
-    using CheckpointData = std::tuple<
-        block::Height,
-        CheckpointBlockHash,
-        PreviousBlockHash,
-        CheckpointFilterHash>;
-
-    virtual auto GetDefaultCheckpoint() const noexcept -> CheckpointData = 0;
-    virtual auto Init() noexcept -> void = 0;
-    virtual auto LoadBitcoinHeader(const block::Hash& hash) const noexcept
-        -> std::unique_ptr<block::bitcoin::Header> = 0;
-    virtual auto ProcessSyncData(
-        block::Hash& prior,
-        std::vector<block::pHash>& hashes,
-        const network::blockchain::sync::Data& data) noexcept
-        -> std::size_t = 0;
-
-    ~HeaderOracle() override = default;
-};
-
 struct HeaderDatabase {
     virtual auto ApplyUpdate(const UpdateTransaction& update) const noexcept
         -> bool = 0;
@@ -513,12 +495,6 @@ struct Network : virtual public node::Manager {
         -> std::vector<block::pTxid> = 0;
     virtual auto GetTransactions(const identifier::Nym& account) const noexcept
         -> std::vector<block::pTxid> = 0;
-    auto HeaderOracle() const noexcept -> const node::HeaderOracle& final
-    {
-        return HeaderOracleInternal();
-    }
-    virtual auto HeaderOracleInternal() const noexcept
-        -> const internal::HeaderOracle& = 0;
     virtual auto Heartbeat() const noexcept -> void = 0;
     virtual auto IsSynchronized() const noexcept -> bool = 0;
     virtual auto JobReady(const PeerManager::Task type) const noexcept
@@ -539,7 +515,6 @@ struct Network : virtual public node::Manager {
     virtual auto UpdateLocalHeight(
         const block::Position position) const noexcept -> void = 0;
 
-    virtual auto HeaderOracleInternal() noexcept -> internal::HeaderOracle& = 0;
     virtual auto FilterOracleInternal() noexcept -> internal::FilterOracle& = 0;
     virtual auto Shutdown() noexcept -> std::shared_future<void> = 0;
 
@@ -682,6 +657,7 @@ struct WalletDatabase {
     virtual auto LookupContact(const Data& pubkeyHash) const noexcept
         -> std::set<OTIdentifier> = 0;
     virtual auto ReorgTo(
+        const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         const node::HeaderOracle& headers,
         const NodeID& balanceNode,

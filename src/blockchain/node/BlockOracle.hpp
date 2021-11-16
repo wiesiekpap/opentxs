@@ -122,7 +122,7 @@ public:
         const api::Session& api,
         const api::network::internal::Blockchain& network,
         const internal::Network& node,
-        const internal::HeaderOracle& header,
+        const HeaderOracle& header,
         const internal::BlockDatabase& db,
         const blockchain::Type chain,
         const std::string& shutdown) noexcept;

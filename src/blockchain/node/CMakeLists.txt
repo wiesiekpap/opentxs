@@ -11,8 +11,9 @@ add_subdirectory(wallet)
 target_sources(
   opentxs-common
   PRIVATE
-    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Node.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/HeaderOracle.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blockchain/node/Node.hpp"
     "blockoracle/Cache.cpp"
     "blockoracle/Mem.cpp"
     "filteroracle/BlockIndexer.cpp"

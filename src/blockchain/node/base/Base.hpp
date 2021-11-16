@@ -21,6 +21,7 @@
 #include "core/Worker.hpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
@@ -30,6 +31,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -181,8 +183,7 @@ public:
         -> std::vector<block::pTxid> final;
     auto GetType() const noexcept -> Type final { return chain_; }
     auto GetVerifiedPeerCount() const noexcept -> std::size_t final;
-    auto HeaderOracleInternal() const noexcept
-        -> const node::internal::HeaderOracle& final
+    auto HeaderOracle() const noexcept -> const node::HeaderOracle& final
     {
         return header_;
     }
@@ -239,10 +240,6 @@ public:
     {
         return filters_;
     }
-    auto HeaderOracleInternal() noexcept -> node::internal::HeaderOracle& final
-    {
-        return header_;
-    }
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
         return stop_worker();
@@ -260,7 +257,7 @@ private:
     std::unique_ptr<blockchain::internal::Database> database_p_;
     const node::internal::Config& config_;
     node::Mempool mempool_;
-    std::unique_ptr<node::internal::HeaderOracle> header_p_;
+    std::unique_ptr<node::HeaderOracle> header_p_;
     std::unique_ptr<node::internal::BlockOracle> block_p_;
     std::unique_ptr<node::internal::FilterOracle> filter_p_;
     std::unique_ptr<node::internal::PeerManager> peer_p_;
@@ -269,7 +266,7 @@ private:
 protected:
     blockchain::internal::Database& database_;
     node::internal::FilterOracle& filters_;
-    node::internal::HeaderOracle& header_;
+    node::HeaderOracle& header_;
     node::internal::PeerManager& peer_;
     node::internal::BlockOracle& block_;
     node::internal::Wallet& wallet_;

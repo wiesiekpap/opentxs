@@ -91,6 +91,7 @@ public:
         -> void final;
     auto ProcessNewFilter(const block::Position& tip) noexcept -> void final;
     auto ProcessReorg(
+        const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
         const block::Position& parent) noexcept -> bool final;

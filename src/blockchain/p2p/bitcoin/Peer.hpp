@@ -53,11 +53,12 @@ namespace internal
 struct BlockOracle;
 struct Config;
 struct FilterOracle;
-struct HeaderOracle;
 struct Mempool;
 struct Network;
 struct PeerManager;
 }  // namespace internal
+
+class HeaderOracle;
 }  // namespace node
 
 namespace p2p
@@ -92,7 +93,7 @@ public:
         const node::internal::Config& config,
         const node::internal::Mempool& mempool,
         const node::internal::Network& network,
-        const node::internal::HeaderOracle& header,
+        const node::HeaderOracle& header,
         const node::internal::FilterOracle& filter,
         const node::internal::BlockOracle& block,
         const node::internal::PeerManager& manager,
@@ -148,7 +149,7 @@ private:
     static const ProtocolVersion default_protocol_version_{70015};
     static const std::string user_agent_;
 
-    const node::internal::HeaderOracle& headers_;
+    const node::HeaderOracle& headers_;
     std::atomic<ProtocolVersion> protocol_;
     const Nonce nonce_;
     const std::set<p2p::Service> local_services_;

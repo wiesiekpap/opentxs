@@ -40,6 +40,7 @@
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
@@ -59,7 +60,7 @@ auto BlockchainFilterOracle(
     const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Network& node,
-    const blockchain::node::internal::HeaderOracle& header,
+    const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::FilterDatabase& database,
     const blockchain::Type chain,
@@ -121,7 +122,7 @@ FilterOracle::FilterOracle(
     const api::network::internal::Blockchain& network,
     const internal::Config& config,
     const internal::Network& node,
-    const internal::HeaderOracle& header,
+    const HeaderOracle& header,
     const internal::BlockOracle& block,
     const internal::FilterDatabase& database,
     const blockchain::Type chain,

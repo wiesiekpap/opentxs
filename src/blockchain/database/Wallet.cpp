@@ -232,6 +232,7 @@ auto Wallet::LookupContact(const Data& pubkeyHash) const noexcept
 }
 
 auto Wallet::ReorgTo(
+    const Lock& headerOracleLock,
     storage::lmdb::LMDB::Transaction& tx,
     const node::HeaderOracle& headers,
     const NodeID& balanceNode,
@@ -246,7 +247,8 @@ auto Wallet::ReorgTo(
     const auto subchainID = subchains_.GetSubchainID(balanceNode, subchain, tx);
 
     try {
-        if (subchains_.Reorg(tx, headers, index, lastGoodHeight)) {
+        if (subchains_.Reorg(
+                headerOracleLock, tx, headers, index, lastGoodHeight)) {
             return true;
         }
     } catch (const std::exception& e) {

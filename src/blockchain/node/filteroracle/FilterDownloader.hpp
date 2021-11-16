@@ -11,6 +11,7 @@
 
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
@@ -64,7 +65,7 @@ public:
     FilterDownloader(
         const api::Session& api,
         const internal::FilterDatabase& db,
-        const internal::HeaderOracle& header,
+        const HeaderOracle& header,
         const internal::Network& node,
         const blockchain::Type chain,
         const filter::Type type,
@@ -101,7 +102,7 @@ private:
     friend FilterWorker;
 
     const internal::FilterDatabase& db_;
-    const internal::HeaderOracle& header_;
+    const HeaderOracle& header_;
     const internal::Network& node_;
     const blockchain::Type chain_;
     const filter::Type type_;

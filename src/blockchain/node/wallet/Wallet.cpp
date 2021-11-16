@@ -17,13 +17,16 @@
 #include "core/Worker.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -389,8 +392,10 @@ auto Wallet::process_reorg(const zmq::Message& in) noexcept -> void
     accounts_.FinishBackgroundTasks();
     auto errors = std::atomic_int{};
     {
+        auto headerOracleLock =
+            Lock{parent_.HeaderOracle().Internal().GetMutex()};
         auto tx = db_.StartReorg();
-        accounts_.ProcessReorg(tx, errors, ancestor);
+        accounts_.ProcessReorg(headerOracleLock, tx, errors, ancestor);
         accounts_.FinishBackgroundTasks();
 
         if (false == db_.FinalizeReorg(tx, ancestor)) { ++errors; }

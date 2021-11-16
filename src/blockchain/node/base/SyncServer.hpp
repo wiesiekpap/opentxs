@@ -69,7 +69,7 @@ public:
     SyncServer(
         const api::Session& api,
         const node::internal::SyncDatabase& db,
-        const node::internal::HeaderOracle& header,
+        const node::HeaderOracle& header,
         const node::internal::FilterOracle& filter,
         const node::internal::Network& node,
         const blockchain::Type chain,
@@ -119,7 +119,7 @@ private:
     using Work = node::implementation::Base::Work;
 
     const node::internal::SyncDatabase& db_;
-    const node::internal::HeaderOracle& header_;
+    const node::HeaderOracle& header_;
     const node::internal::FilterOracle& filter_;
     const node::internal::Network& node_;
     const blockchain::Type chain_;
@@ -347,8 +347,8 @@ private:
 
         for (const auto& task : data) {
             try {
-                const auto pHeader =
-                    header_.LoadBitcoinHeader(task->position_.second);
+                const auto pHeader = header_.Internal().LoadBitcoinHeader(
+                    task->position_.second);
 
                 if (false == bool(pHeader)) {
                     throw std::runtime_error(

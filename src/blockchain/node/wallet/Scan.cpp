@@ -59,7 +59,7 @@ auto Scan::Do(
     const auto& name = parent_.name_;
     const auto& node = parent_.node_;
     const auto& type = parent_.filter_type_;
-    const auto& headers = node.HeaderOracleInternal();
+    const auto& headers = node.HeaderOracle();
     const auto& filters = node.FilterOracleInternal();
     const auto start = Clock::now();
     const auto startHeight = highestTested.first + 1;

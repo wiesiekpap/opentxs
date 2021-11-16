@@ -84,6 +84,7 @@ public:
     auto ProcessNym(const identifier::Nym& nym) noexcept -> bool;
     auto ProcessNym(const network::zeromq::Frame& message) noexcept -> bool;
     auto ProcessReorg(
+        const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
         const block::Position& parent) noexcept -> bool final;

@@ -18,6 +18,7 @@
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/network/Network.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Asio.hpp"
@@ -29,6 +30,7 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
+#include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
@@ -113,6 +115,7 @@ auto SubchainStateData::describe() const noexcept -> std::string
 }
 
 auto SubchainStateData::do_reorg(
+    const Lock& headerOracleLock,
     storage::lmdb::LMDB::Transaction& tx,
     std::atomic_int& errors,
     const block::Position ancestor) noexcept -> void
@@ -122,10 +125,11 @@ auto SubchainStateData::do_reorg(
         .Flush();
     const auto tip = db_.SubchainLastScanned(db_key_);
     // TODO use ancestor
-    const auto& headers = node_.HeaderOracleInternal();
+    const auto& headers = node_.HeaderOracle();
 
     try {
-        const auto reorg = headers.CalculateReorg(tip);
+        const auto reorg =
+            headers.Internal().CalculateReorg(headerOracleLock, tip);
 
         if (0u == reorg.size()) {
             LogTrace()(OT_PRETTY_CLASS())(
@@ -139,7 +143,14 @@ auto SubchainStateData::do_reorg(
                 .Flush();
         }
 
-        if (db_.ReorgTo(tx, headers, id_, subchain_, db_key_, reorg)) {
+        if (db_.ReorgTo(
+                headerOracleLock,
+                tx,
+                headers,
+                id_,
+                subchain_,
+                db_key_,
+                reorg)) {
             scan_.Reorg(ancestor);
             rescan_.Reorg(ancestor);
             process_.Reorg(ancestor);
@@ -325,6 +336,7 @@ auto SubchainStateData::ProcessNewFilter(const block::Position& tip) noexcept
 }
 
 auto SubchainStateData::ProcessReorg(
+    const Lock& headerOracleLock,
     storage::lmdb::LMDB::Transaction& tx,
     std::atomic_int& errors,
     const block::Position& ancestor) noexcept -> bool
@@ -335,7 +347,7 @@ auto SubchainStateData::ProcessReorg(
         api_.Network().Asio().Internal().Post(ThreadPool::General, [&] {
             auto post = ScopeGuard{[this] { --job_counter_; }};
 
-            do_reorg(tx, errors, ancestor);
+            do_reorg(headerOracleLock, tx, errors, ancestor);
         });
 
     if (queued) {

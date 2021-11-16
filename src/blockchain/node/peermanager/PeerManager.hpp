@@ -79,6 +79,8 @@ namespace internal
 {
 struct Mempool;
 }  // namespace internal
+
+class HeaderOracle;
 }  // namespace node
 
 namespace p2p
@@ -155,7 +157,7 @@ public:
             const node::internal::Config& config,
             const node::internal::Mempool& mempool,
             const node::internal::Network& node,
-            const node::internal::HeaderOracle& headers,
+            const node::HeaderOracle& headers,
             const node::internal::FilterOracle& filter,
             const node::internal::BlockOracle& block,
             const node::internal::PeerDatabase& database,
@@ -178,7 +180,7 @@ public:
         const node::internal::Config& config_;
         const node::internal::Mempool& mempool_;
         const node::internal::Network& node_;
-        const node::internal::HeaderOracle& headers_;
+        const node::HeaderOracle& headers_;
         const node::internal::FilterOracle& filter_;
         const node::internal::BlockOracle& block_;
         const node::internal::PeerDatabase& database_;
@@ -287,7 +289,7 @@ public:
         const node::internal::Config& config,
         const node::internal::Mempool& mempool,
         const node::internal::Network& node,
-        const node::internal::HeaderOracle& headers,
+        const node::HeaderOracle& headers,
         const node::internal::FilterOracle& filter,
         const node::internal::BlockOracle& block,
         const node::internal::PeerDatabase& database,
