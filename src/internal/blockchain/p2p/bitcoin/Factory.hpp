@@ -32,7 +32,7 @@ namespace internal
 struct BlockOracle;
 struct Config;
 struct FilterOracle;
-struct HeaderOracle;
+class HeaderOracle;
 struct Network;
 struct PeerManager;
 }  // namespace internal
@@ -45,7 +45,7 @@ namespace internal
 struct BlockOracle;
 struct Config;
 struct FilterOracle;
-struct HeaderOracle;
+class HeaderOracle;
 struct Mempool;
 struct Network;
 struct PeerManager;
@@ -92,7 +92,7 @@ auto BitcoinP2PPeerLegacy(
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::node::internal::Network& network,
-    const blockchain::node::internal::HeaderOracle& header,
+    const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::FilterOracle& filter,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::PeerManager& manager,

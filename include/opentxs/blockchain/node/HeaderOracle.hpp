@@ -23,6 +23,14 @@ namespace block
 {
 class Header;
 }  // namespace block
+
+namespace node
+{
+namespace internal
+{
+class HeaderOracle;
+}  // namespace internal
+}  // namespace node
 }  // namespace blockchain
 }  // namespace opentxs
 
@@ -115,8 +123,8 @@ public:
      *  \throws std::runtime_error if the provided position is not a descendant
      *  of this chain's genesis block
      */
-    virtual auto CalculateReorg(const block::Position tip) const noexcept(false)
-        -> Positions = 0;
+    virtual auto CalculateReorg(const block::Position& tip) const
+        noexcept(false) -> Positions = 0;
     /** Test block position for membership in the best chain
      *
      *  returns {parent position, best position}
@@ -130,6 +138,8 @@ public:
     virtual auto GetCheckpoint() const noexcept -> block::Position = 0;
     virtual auto GetPosition(const block::Height height) const noexcept
         -> block::Position = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::HeaderOracle& = 0;
     virtual auto IsInBestChain(const block::Hash& hash) const noexcept
         -> bool = 0;
     virtual auto IsInBestChain(const block::Position& position) const noexcept
@@ -146,6 +156,9 @@ public:
     virtual auto AddHeaders(
         std::vector<std::unique_ptr<block::Header>>&) noexcept -> bool = 0;
     virtual auto DeleteCheckpoint() noexcept -> bool = 0;
+
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept
+        -> internal::HeaderOracle& = 0;
 
     virtual ~HeaderOracle() = default;
 

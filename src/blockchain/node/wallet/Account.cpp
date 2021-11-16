@@ -70,6 +70,7 @@ struct Account::Imp {
         for_each_subchain([&](auto& s) { s.ProcessKey(); });
     }
     auto reorg(
+        const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
         const block::Position& parent) noexcept -> bool
@@ -80,8 +81,9 @@ struct Account::Imp {
 
         auto output{false};
 
-        for_each_subchain(
-            [&](auto& s) { output |= s.ProcessReorg(tx, errors, parent); });
+        for_each_subchain([&](auto& s) {
+            output |= s.ProcessReorg(headerOracleLock, tx, errors, parent);
+        });
 
         return output;
     }
@@ -297,11 +299,12 @@ auto Account::ProcessNewFilter(const block::Position& tip) noexcept -> void
 }
 
 auto Account::ProcessReorg(
+    const Lock& headerOracleLock,
     storage::lmdb::LMDB::Transaction& tx,
     std::atomic_int& errors,
     const block::Position& parent) noexcept -> bool
 {
-    return imp_->reorg(tx, errors, parent);
+    return imp_->reorg(headerOracleLock, tx, errors, parent);
 }
 
 auto Account::ProcessStateMachine(bool enabled) noexcept -> bool

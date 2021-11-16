@@ -117,6 +117,7 @@ struct Accounts::Imp {
         for_each([](auto& a) { a.ProcessKey(); });
     }
     auto Reorg(
+        const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         std::atomic_int& errors,
         const block::Position& parent) noexcept -> bool
@@ -127,8 +128,9 @@ struct Accounts::Imp {
 
         auto output{false};
 
-        for_each(
-            [&](auto& a) { output |= a.ProcessReorg(tx, errors, parent); });
+        for_each([&](auto& a) {
+            output |= a.ProcessReorg(headerOracleLock, tx, errors, parent);
+        });
 
         return output;
     }
@@ -318,11 +320,12 @@ auto Accounts::ProcessNym(const zmq::Frame& message) noexcept -> bool
 }
 
 auto Accounts::ProcessReorg(
+    const Lock& headerOracleLock,
     storage::lmdb::LMDB::Transaction& tx,
     std::atomic_int& errors,
     const block::Position& parent) noexcept -> bool
 {
-    return imp_->Reorg(tx, errors, parent);
+    return imp_->Reorg(headerOracleLock, tx, errors, parent);
 }
 
 auto Accounts::ProcessStateMachine(bool enabled) noexcept -> bool

@@ -427,6 +427,7 @@ public:
         return sync_.Reorg(height);
     }
     auto ReorgTo(
+        const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         const node::HeaderOracle& headers,
         const NodeID& balanceNode,
@@ -435,7 +436,7 @@ public:
         const std::vector<block::Position>& reorg) const noexcept -> bool final
     {
         return wallet_.ReorgTo(
-            tx, headers, balanceNode, subchain, index, reorg);
+            headerOracleLock, tx, headers, balanceNode, subchain, index, reorg);
     }
     auto ReserveUTXO(
         const identifier::Nym& spender,

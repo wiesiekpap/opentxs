@@ -18,6 +18,7 @@
 #include <utility>
 #include <vector>
 
+#include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -95,14 +96,29 @@ public:
         const Hashes& previous,
         const block::Hash& stop,
         const std::size_t limit) const noexcept -> Hashes final;
-    auto CalculateReorg(const block::Position tip) const noexcept(false)
+    auto CalculateReorg(const block::Position& tip) const noexcept(false)
         -> Positions final;
+    auto CalculateReorg(const Lock& lock, const block::Position& tip) const
+        noexcept(false) -> Positions final
+    {
+        return calculate_reorg(lock, tip);
+    }
     auto CommonParent(const block::Position& position) const noexcept
         -> std::pair<block::Position, block::Position> final;
     auto GetCheckpoint() const noexcept -> block::Position final;
     auto GetDefaultCheckpoint() const noexcept -> CheckpointData final;
+    auto GetMutex() const noexcept -> std::mutex& final { return lock_; }
     auto GetPosition(const block::Height height) const noexcept
         -> block::Position final;
+    auto GetPosition(const Lock& lock, const block::Height height)
+        const noexcept -> block::Position final
+    {
+        return get_position(lock, height);
+    }
+    auto Internal() const noexcept -> const internal::HeaderOracle& final
+    {
+        return *this;
+    }
     auto IsInBestChain(const block::Hash& hash) const noexcept -> bool final;
     auto IsInBestChain(const block::Position& position) const noexcept
         -> bool final;
@@ -125,6 +141,7 @@ public:
         -> bool final;
     auto DeleteCheckpoint() noexcept -> bool final;
     auto Init() noexcept -> void final;
+    auto Internal() noexcept -> internal::HeaderOracle& final { return *this; }
     auto ProcessSyncData(
         block::Hash& prior,
         std::vector<block::pHash>& hashes,
@@ -160,6 +177,8 @@ private:
         const Lock& lock,
         const block::Position& tip,
         const std::size_t limit) const noexcept -> Positions;
+    auto best_hash(const Lock& lock, const block::Height height) const noexcept
+        -> block::pHash;
     auto best_hashes(
         const Lock& lock,
         const block::Height start,
@@ -167,8 +186,12 @@ private:
         const std::size_t limit) const noexcept -> Hashes;
     auto blank_hash() const noexcept -> const block::pHash&;
     auto blank_position() const noexcept -> const block::Position&;
+    auto calculate_reorg(const Lock& lock, const block::Position& tip) const
+        noexcept(false) -> Positions;
     auto common_parent(const Lock& lock, const block::Position& position)
         const noexcept -> std::pair<block::Position, block::Position>;
+    auto get_position(const Lock& lock, const block::Height height)
+        const noexcept -> block::Position;
     auto is_in_best_chain(const Lock& lock, const block::Hash& hash)
         const noexcept -> std::pair<bool, block::Height>;
     auto is_in_best_chain(const Lock& lock, const block::Position& position)
@@ -190,12 +213,12 @@ private:
         const block::Header& current,
         const Candidates& candidates,
         UpdateTransaction& update) noexcept(false) -> std::pair<bool, bool>;
-    void connect_children(
+    auto connect_children(
         const Lock& lock,
         block::Header& parentHeader,
         Candidates& candidates,
         Candidate& candidate,
-        UpdateTransaction& update);
+        UpdateTransaction& update) -> void;
     // Returns true if the child is checkpoint blacklisted
     auto connect_to_parent(
         const Lock& lock,
@@ -214,12 +237,12 @@ private:
     auto is_disconnected(
         const block::Hash& parent,
         UpdateTransaction& update) noexcept -> const block::Header*;
-    void stage_candidate(
+    auto stage_candidate(
         const Lock& lock,
         const block::Header& best,
         Candidates& candidates,
         UpdateTransaction& update,
-        block::Header& child) noexcept(false);
+        block::Header& child) noexcept(false) -> void;
 
     HeaderOracle() = delete;
     HeaderOracle(const HeaderOracle&) = delete;

@@ -34,7 +34,7 @@ auto BlockOracle(
     const api::Session& api,
     const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Network& node,
-    const blockchain::node::internal::HeaderOracle& header,
+    const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::BlockDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown) noexcept
@@ -53,7 +53,7 @@ BlockOracle::BlockOracle(
     const api::Session& api,
     const api::network::internal::Blockchain& network,
     const internal::Network& node,
-    const internal::HeaderOracle& header,
+    const HeaderOracle& header,
     const internal::BlockDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown) noexcept

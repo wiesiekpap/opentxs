@@ -52,6 +52,8 @@ namespace implementation
 {
 class FilterOracle;
 }  // namespace implementation
+
+class HeaderOracle;
 }  // namespace node
 }  // namespace blockchain
 
@@ -86,7 +88,7 @@ public:
     BlockIndexer(
         const api::Session& api,
         const internal::FilterDatabase& db,
-        const internal::HeaderOracle& header,
+        const HeaderOracle& header,
         const internal::BlockOracle& block,
         const internal::Network& node,
         FilterOracle& parent,
@@ -102,7 +104,7 @@ private:
     friend BlockWorker;
 
     const internal::FilterDatabase& db_;
-    const internal::HeaderOracle& header_;
+    const HeaderOracle& header_;
     const internal::BlockOracle& block_;
     const internal::Network& node_;
     FilterOracle& parent_;

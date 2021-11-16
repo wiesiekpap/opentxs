@@ -30,6 +30,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
+#include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "opentxs/api/client/Contacts.hpp"
@@ -315,7 +316,7 @@ Base::Base(
     OT_ASSERT(block_p_);
     OT_ASSERT(wallet_p_);
 
-    header_.Init();
+    header_.Internal().Init();
     init_executor({api_.Endpoints().InternalBlockchainFilterUpdated(chain_)});
     LogVerbose()(config_.print()).Flush();
 
@@ -1004,7 +1005,8 @@ auto Base::process_sync_data(network::zeromq::Message& in) noexcept -> void
 
     auto prior = block::BlankHash();
     auto hashes = std::vector<block::pHash>{};
-    const auto accepted = header_.ProcessSyncData(prior, hashes, data);
+    const auto accepted =
+        header_.Internal().ProcessSyncData(prior, hashes, data);
 
     if (0u < accepted) {
         const auto& blocks = data.Blocks();

@@ -51,7 +51,6 @@ struct Config;
 struct FilterDatabase;
 struct FilterOracle;
 struct HeaderDatabase;
-struct HeaderOracle;
 struct Mempool;
 struct Network;
 struct PeerDatabase;
@@ -59,6 +58,8 @@ struct PeerManager;
 struct Wallet;
 struct WalletDatabase;
 }  // namespace internal
+
+class HeaderOracle;
 }  // namespace node
 
 namespace internal
@@ -83,7 +84,7 @@ auto BlockchainFilterOracle(
     const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Network& node,
-    const blockchain::node::internal::HeaderOracle& header,
+    const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::FilterDatabase& database,
     const blockchain::Type chain,
@@ -113,7 +114,7 @@ auto BlockchainPeerManager(
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::node::internal::Network& node,
-    const blockchain::node::internal::HeaderOracle& headers,
+    const blockchain::node::HeaderOracle& headers,
     const blockchain::node::internal::FilterOracle& filter,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::PeerDatabase& database,
@@ -135,7 +136,7 @@ auto BlockOracle(
     const api::Session& api,
     const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Network& node,
-    const blockchain::node::internal::HeaderOracle& header,
+    const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::BlockDatabase& db,
     const blockchain::Type chain,
     const std::string& shutdown) noexcept
@@ -144,5 +145,5 @@ auto HeaderOracle(
     const api::Session& api,
     const blockchain::node::internal::HeaderDatabase& database,
     const blockchain::Type type) noexcept
-    -> std::unique_ptr<blockchain::node::internal::HeaderOracle>;
+    -> std::unique_ptr<blockchain::node::HeaderOracle>;
 }  // namespace opentxs::factory

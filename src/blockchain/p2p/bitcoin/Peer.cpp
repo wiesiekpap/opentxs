@@ -30,6 +30,7 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
@@ -71,7 +72,7 @@ auto BitcoinP2PPeerLegacy(
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::node::internal::Network& network,
-    const blockchain::node::internal::HeaderOracle& header,
+    const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::FilterOracle& filter,
     const blockchain::node::internal::BlockOracle& block,
     const blockchain::node::internal::PeerManager& manager,
@@ -167,7 +168,7 @@ Peer::Peer(
     const node::internal::Config& config,
     const node::internal::Mempool& mempool,
     const node::internal::Network& network,
-    const node::internal::HeaderOracle& header,
+    const node::HeaderOracle& header,
     const node::internal::FilterOracle& filter,
     const node::internal::BlockOracle& block,
     const node::internal::PeerManager& manager,
@@ -560,7 +561,7 @@ auto Peer::process_cfheaders(
             return;
         }
 
-        const auto checkpointData = headers_.GetDefaultCheckpoint();
+        const auto checkpointData = headers_.Internal().GetDefaultCheckpoint();
         const auto& [height, checkpointHash, parentHash, filterHash] =
             checkpointData;
         const auto receivedFilterHeader =
@@ -1178,7 +1179,7 @@ auto Peer::process_getheaders(
         hashes.end(),
         std::back_inserter(headers),
         [&](const auto& hash) -> auto {
-            return headers_.LoadBitcoinHeader(hash);
+            return headers_.Internal().LoadBitcoinHeader(hash);
         });
     auto pOut = std::unique_ptr<message::internal::Headers>{
         factory::BitcoinP2PHeaders(api_, chain_, std::move(headers))};
@@ -1237,7 +1238,7 @@ auto Peer::process_headers(
             return;
         }
 
-        const auto checkpointData = headers_.GetDefaultCheckpoint();
+        const auto checkpointData = headers_.Internal().GetDefaultCheckpoint();
         const auto& [height, checkpointHash, parentHash, filterHash] =
             checkpointData;
         const auto& receivedBlockHash = message.at(0).Hash();
@@ -1890,7 +1891,7 @@ auto Peer::request_checkpoint_block_header() noexcept -> void
     }};
 
     try {
-        auto checkpointData = headers_.GetDefaultCheckpoint();
+        auto checkpointData = headers_.Internal().GetDefaultCheckpoint();
         auto [height, checkpointBlockHash, parentBlockHash, filterHash] =
             checkpointData;
         auto pMessage = std::unique_ptr<Message>{factory::BitcoinP2PGetheaders(
@@ -1932,7 +1933,7 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
     }};
 
     try {
-        auto checkpointData = headers_.GetDefaultCheckpoint();
+        auto checkpointData = headers_.Internal().GetDefaultCheckpoint();
         auto [height, checkpointBlockHash, parentBlockHash, filterHash] =
             checkpointData;
         auto pMessage =

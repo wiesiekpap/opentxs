@@ -42,7 +42,7 @@ public:
     HeaderDownloader(
         const api::Session& api,
         const internal::FilterDatabase& db,
-        const internal::HeaderOracle& header,
+        const HeaderOracle& header,
         const internal::Network& node,
         FilterOracle::FilterDownloader& filter,
         const blockchain::Type chain,
@@ -83,7 +83,7 @@ private:
     friend HeaderWorker;
 
     const internal::FilterDatabase& db_;
-    const internal::HeaderOracle& header_;
+    const HeaderOracle& header_;
     const internal::Network& node_;
     FilterOracle::FilterDownloader& filter_;
     const blockchain::Type chain_;

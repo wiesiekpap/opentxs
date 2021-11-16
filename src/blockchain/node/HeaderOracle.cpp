@@ -38,7 +38,7 @@ auto HeaderOracle(
     const api::Session& api,
     const blockchain::node::internal::HeaderDatabase& database,
     const blockchain::Type type) noexcept
-    -> std::unique_ptr<blockchain::node::internal::HeaderOracle>
+    -> std::unique_ptr<blockchain::node::HeaderOracle>
 {
     using ReturnType = blockchain::node::implementation::HeaderOracle;
 
@@ -381,6 +381,12 @@ auto HeaderOracle::BestHash(const block::Height height) const noexcept
 {
     auto lock = Lock{lock_};
 
+    return best_hash(lock, height);
+}
+
+auto HeaderOracle::best_hash(const Lock& lock, const block::Height height)
+    const noexcept -> block::pHash
+{
     try {
         return database_.BestBlock(height);
     } catch (...) {
@@ -494,11 +500,18 @@ auto HeaderOracle::blank_position() const noexcept -> const block::Position&
     return blank;
 }
 
-auto HeaderOracle::CalculateReorg(const block::Position tip) const
+auto HeaderOracle::CalculateReorg(const block::Position& tip) const
     noexcept(false) -> Positions
 {
-    auto output = Positions{};
     auto lock = Lock{lock_};
+
+    return calculate_reorg(lock, tip);
+}
+
+auto HeaderOracle::calculate_reorg(const Lock& lock, const block::Position& tip)
+    const noexcept(false) -> Positions
+{
+    auto output = Positions{};
 
     if (is_in_best_chain(lock, tip)) { return output; }
 
@@ -759,7 +772,15 @@ auto HeaderOracle::GetCheckpoint() const noexcept -> block::Position
 auto HeaderOracle::GetPosition(const block::Height height) const noexcept
     -> block::Position
 {
-    auto hash = BestHash(height);
+    auto lock = Lock{lock_};
+
+    return get_position(lock, height);
+}
+
+auto HeaderOracle::get_position(const Lock& lock, const block::Height height)
+    const noexcept -> block::Position
+{
+    auto hash = best_hash(lock, height);
 
     if (hash == blank_hash()) {
 

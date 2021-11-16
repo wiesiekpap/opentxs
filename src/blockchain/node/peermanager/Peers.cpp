@@ -50,7 +50,7 @@ PeerManager::Peers::Peers(
     const internal::Config& config,
     const node::internal::Mempool& mempool,
     const internal::Network& node,
-    const internal::HeaderOracle& headers,
+    const HeaderOracle& headers,
     const internal::FilterOracle& filter,
     const internal::BlockOracle& block,
     const internal::PeerDatabase& database,

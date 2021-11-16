@@ -65,6 +65,7 @@ public:
         const SubchainIndex& subchain,
         const ReadView blockID) const noexcept -> Patterns;
     auto Reorg(
+        const Lock& headerOracleLock,
         MDB_txn* tx,
         const node::HeaderOracle& headers,
         const SubchainIndex& subchain,

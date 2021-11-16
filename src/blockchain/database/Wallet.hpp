@@ -190,6 +190,7 @@ public:
     auto LookupContact(const Data& pubkeyHash) const noexcept
         -> std::set<OTIdentifier>;
     auto ReorgTo(
+        const Lock& headerOracleLock,
         storage::lmdb::LMDB::Transaction& tx,
         const node::HeaderOracle& headers,
         const NodeID& balanceNode,
