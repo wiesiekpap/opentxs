@@ -7,7 +7,7 @@ target_sources(opentxs-test-helpers PRIVATE "Helpers.hpp" "Helpers.cpp")
 
 if(OT_QT_EXPORT)
   target_sources(opentxs-test-helpers PRIVATE "Helpers-qt.cpp")
-  target_link_libraries(opentxs-test-helpers PRIVATE Qt5::Gui)
+  target_link_libraries(opentxs-test-helpers PRIVATE Qt::Gui)
 else()
   target_sources(opentxs-test-helpers PRIVATE "Helpers-noqt.cpp")
 endif()

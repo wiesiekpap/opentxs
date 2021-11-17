@@ -6,7 +6,7 @@
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/SeedValidator.hpp"
 )
-qt5_wrap_cpp(MOC_SRCS ${cxx-install-headers})
+qt_wrap_cpp(MOC_SRCS ${cxx-install-headers})
 add_library(
   opentxs-ui-seedvalidator OBJECT
   "SeedValidator.cpp"
@@ -14,9 +14,9 @@ add_library(
   ${MOC_SRCS}
 )
 target_link_libraries(
-  opentxs-ui-seedvalidator PRIVATE Qt5::Gui opentxs::messages
+  opentxs-ui-seedvalidator PRIVATE Qt::Gui opentxs::messages
 )
-target_link_libraries(opentxs PUBLIC Qt5::Gui)
+target_link_libraries(opentxs PUBLIC Qt::Gui)
 target_include_directories(
   opentxs-ui-seedvalidator SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )

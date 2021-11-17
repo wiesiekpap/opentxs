@@ -525,14 +525,20 @@ endif()
 
 if(OT_WITH_QT)
   find_package(
-    Qt5
+    QT
+    NAMES Qt6 Qt5
+    COMPONENTS Core Gui
+    REQUIRED
+  )
+  find_package(
+    Qt${QT_VERSION_MAJOR}
     COMPONENTS Core Gui
     REQUIRED
   )
 
   if(OT_WITH_QML)
     find_package(
-      Qt5
+      Qt${QT_VERSION_MAJOR}
       COMPONENTS Qml
       REQUIRED
     )

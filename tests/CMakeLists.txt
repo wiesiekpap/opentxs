@@ -27,7 +27,7 @@ function(
 
   if(OT_QT_EXPORT)
     target_sources(${target_name} PRIVATE "${opentxs_SOURCE_DIR}/tests/Qt.cpp")
-    target_link_libraries(${target_name} PRIVATE Qt5::Core)
+    target_link_libraries(${target_name} PRIVATE Qt::Core)
   else()
     target_sources(
       ${target_name} PRIVATE "${opentxs_SOURCE_DIR}/tests/no-Qt.cpp"
@@ -124,7 +124,7 @@ target_link_libraries(
 )
 
 if(OT_QT_EXPORT)
-  target_link_libraries(opentxs-test-helpers PRIVATE Qt5::Core)
+  target_link_libraries(opentxs-test-helpers PRIVATE Qt::Core)
 endif()
 
 if(OT_USE_VCPKG_TARGETS)

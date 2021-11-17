@@ -6,7 +6,7 @@
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/DisplayScale.hpp"
 )
-qt5_wrap_cpp(MOC_SRCS ${cxx-install-headers})
+qt_wrap_cpp(MOC_SRCS ${cxx-install-headers})
 add_library(
   opentxs-ui-displayscale OBJECT
   "DisplayScale.cpp"
@@ -14,9 +14,9 @@ add_library(
   ${cxx-install-headers}
 )
 target_link_libraries(
-  opentxs-ui-displayscale PRIVATE Qt5::Core opentxs::messages
+  opentxs-ui-displayscale PRIVATE Qt::Core opentxs::messages
 )
-target_link_libraries(opentxs PRIVATE Qt5::Core)
+target_link_libraries(opentxs PRIVATE Qt::Core)
 target_include_directories(
   opentxs-ui-displayscale SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
 )
