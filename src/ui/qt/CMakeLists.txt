@@ -33,7 +33,7 @@ if(OT_QT_EXPORT)
       "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/Profile.hpp"
       "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/UnitList.hpp"
   )
-  qt5_wrap_cpp(
+  qt_wrap_cpp(
     MOC_SRCS
     ${ot-qobject-install-headers}
     "DraftValidator.hpp"
@@ -72,8 +72,8 @@ if(OT_QT_EXPORT)
     target_sources(opentxs-ui-qt PRIVATE "Blockchain.cpp")
   endif()
 
-  target_link_libraries(opentxs-ui-qt PRIVATE Qt5::Core Qt5::Gui)
-  target_link_libraries(opentxs PUBLIC Qt5::Core Qt5::Gui)
+  target_link_libraries(opentxs-ui-qt PRIVATE Qt::Core Qt::Gui)
+  target_link_libraries(opentxs PUBLIC Qt::Core Qt::Gui)
   target_sources(opentxs-ui-qt PRIVATE ${cxx-install-headers})
   add_dependencies(opentxs-ui-qt generated_code)
 
