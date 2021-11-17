@@ -64,24 +64,41 @@ auto Scan::Do(
     const auto start = Clock::now();
     const auto startHeight = highestTested.first + 1;
     const auto stopHeight =
-        std::min(std::min(startHeight + 9999, best.first), stop);
+        std::min(std::min(startHeight + 999, best.first), stop);
     auto atLeastOnce{false};
     auto highestClean = std::optional<block::Position>{std::nullopt};
     auto batches = std::vector<std::unique_ptr<Batch>>{};
     auto jobs = std::vector<Work*>{};
     auto blocks = std::vector<block::Position>{};
     auto postcondition = ScopeGuard{[&] {
+        const auto& log = LogTrace();
+        const auto start = Clock::now();
+        log(OT_PRETTY_CLASS())(name)(" ")(this->type())(" finalizing ")(
+            batches.size())(" batches")
+            .Flush();
+
         for (auto& batch : batches) { batch->Finalize(); }
+
+        const auto finalized = Clock::now();
+        auto elapsed = std::chrono::nanoseconds{finalized - start};
+        log(OT_PRETTY_CLASS())(name)(" ")(this->type())(" finalized in ")(
+            elapsed)
+            .Flush();
 
         auto lock = Lock{lock_, std::defer_lock};
 
         if (atLeastOnce) {
             process_.Request(
                 highestClean, blocks, std::move(batches), std::move(jobs));
+            const auto requested = Clock::now();
+            elapsed = std::chrono::nanoseconds{requested - finalized};
+            log(OT_PRETTY_CLASS())(name)(" ")(this->type())(
+                " blocks requested in ")(elapsed)
+                .Flush();
             lock.lock();
             last_scanned_ = highestTested;
         } else {
-            LogTrace()(OT_PRETTY_CLASS())(name)(" ")(this->type())(
+            log(OT_PRETTY_CLASS())(name)(" ")(this->type())(
                 " job had no work to do. Start height: ")(
                 startHeight)(", stop height: ")(stopHeight)
                 .Flush();
@@ -93,8 +110,9 @@ auto Scan::Do(
 
     if (startHeight > stopHeight) { return; }
 
-    LogVerbose()(OT_PRETTY_CLASS())(name)(" ")(this->type())(
-        "ning filters from ")(startHeight)(" to ")(stopHeight)
+    const auto& log = LogVerbose();
+    log(OT_PRETTY_CLASS())(name)(" ")(this->type())("ning filters from ")(
+        startHeight)(" to ")(stopHeight)
         .Flush();
     const auto [elements, utxos, patterns] = parent_.get_account_targets();
     auto blockHash = api.Factory().Data();
@@ -105,8 +123,8 @@ auto Scan::Do(
         blockHash = headers.BestHash(i, best);
 
         if (blockHash->empty()) {
-            LogVerbose()(OT_PRETTY_CLASS())(name)(" interrupting ")(
-                this->type())(" due to chain reorg")
+            log(OT_PRETTY_CLASS())(name)(" interrupting ")(this->type())(
+                " due to chain reorg")
                 .Flush();
 
             break;
@@ -116,8 +134,7 @@ auto Scan::Do(
         const auto pFilter = filters.LoadFilterOrResetTip(type, testPosition);
 
         if (false == bool(pFilter)) {
-            LogVerbose()(OT_PRETTY_CLASS())(name)(" filter at height ")(
-                i)(" not found ")
+            log(OT_PRETTY_CLASS())(name)(" filter at height ")(i)(" not found ")
                 .Flush();
 
             break;
@@ -134,7 +151,7 @@ auto Scan::Do(
             matches = filter.Match(retest);
 
             if (0 < matches.size()) {
-                LogVerbose()(OT_PRETTY_CLASS())(name)(" GCS ")(this->type())(
+                log(OT_PRETTY_CLASS())(name)(" GCS ")(this->type())(
                     " for block ")(blockHash->asHex())(" at height ")(
                     i)(" found ")(matches.size())(
                     " new potential matches for the ")(patterns.size())(
@@ -161,15 +178,13 @@ auto Scan::Do(
 
     if (atLeastOnce) {
         const auto count = jobs.size();
-        LogVerbose()(OT_PRETTY_CLASS())(name)(" ")(this->type())(" found ")(
+        log(OT_PRETTY_CLASS())(name)(" ")(this->type())(" found ")(
             count)(" new potential matches between blocks ")(
             startHeight)(" and ")(highestTested.first)(" in ")(
-            std::chrono::duration_cast<std::chrono::milliseconds>(
-                Clock::now() - start)
-                .count())(" milliseconds")
+            std::chrono::nanoseconds{Clock::now() - start})
             .Flush();
     } else {
-        LogVerbose()(OT_PRETTY_CLASS())(name)(" ")(this->type())(
+        log(OT_PRETTY_CLASS())(name)(" ")(this->type())(
             " interrupted due to missing filter")
             .Flush();
     }

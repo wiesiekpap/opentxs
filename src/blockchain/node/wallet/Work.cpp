@@ -101,12 +101,11 @@ auto Work::Do(SubchainStateData& parent) noexcept -> bool
     OT_ASSERT(position == header.Position());
 
     parent.handle_confirmed_matches(block, position, confirmed);
-    LogVerbose()(OT_PRETTY_CLASS())(name)(" block ")(block.ID().asHex())(
-        " at height ")(position.first)(" processed in ")(
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            Clock::now() - start)
-            .count())(" milliseconds. ")(match_count_)(" of ")(
-        potential.size())(" potential matches confirmed.")
+    const auto& log = LogVerbose();
+    log(OT_PRETTY_CLASS())(name)(" block ")(block.ID().asHex())(" at height ")(
+        position.first)(" processed in ")(
+        std::chrono::nanoseconds{Clock::now() - start})(". ")(
+        match_count_)(" of ")(potential.size())(" potential matches confirmed.")
         .Flush();
 
     return true;
@@ -114,7 +113,12 @@ auto Work::Do(SubchainStateData& parent) noexcept -> bool
 
 auto Work::DownloadBlock(const BlockOracle& oracle) noexcept -> void
 {
+    const auto& log = LogTrace();
+    const auto start = Clock::now();
     block_ = oracle.LoadBitcoin(position_.second);
+    log(OT_PRETTY_CLASS())(" block requested from oracle in ")(
+        std::chrono::nanoseconds{Clock::now() - start})
+        .Flush();
 
     OT_ASSERT(block_.valid());
 }

@@ -1006,7 +1006,7 @@ auto HeaderOracle::ProcessSyncData(
             previous = std::move(hash);
         }
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+        LogVerbose()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
 
     if ((0u < output) && database_.ApplyUpdate(update)) {
