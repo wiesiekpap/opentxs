@@ -8,6 +8,7 @@
 #include "blockchain/node/BlockOracle.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <chrono>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -139,6 +140,7 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
 {
     auto output = BitcoinBlockFutures{};
     output.reserve(hashes.size());
+    auto ready = std::vector<const block::Hash*>{};
     auto download = std::map<block::pHash, BitcoinBlockFutures::iterator>{};
     auto lock = Lock{lock_};
 
@@ -153,14 +155,25 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
     }
 
     for (const auto& block : hashes) {
+        const auto& log = LogTrace();
+        const auto start = Clock::now();
         auto found{false};
 
         if (auto future = mem_.find(block->Bytes()); future.valid()) {
             output.emplace_back(std::move(future));
+            ready.emplace_back(&block.get());
             found = true;
         }
 
-        if (found) { continue; }
+        const auto mem = Clock::now();
+
+        if (found) {
+            log(OT_PRETTY_CLASS())(" block is cached in memory. Found in ")(
+                std::chrono::nanoseconds{mem - start})
+                .Flush();
+
+            continue;
+        }
 
         {
             auto it = pending_.find(block);
@@ -172,7 +185,16 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
             }
         }
 
-        if (found) { continue; }
+        const auto pending = Clock::now();
+
+        if (found) {
+            log(OT_PRETTY_CLASS())(
+                " block is already in download queue. Found in ")(
+                std::chrono::nanoseconds{pending - mem})
+                .Flush();
+
+            continue;
+        }
 
         if (auto pBlock = db_.BlockLoadBitcoin(block); bool(pBlock)) {
             // TODO this should be checked in the block factory function
@@ -182,15 +204,29 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
             promise.set_value(std::move(pBlock));
             mem_.push(OTData{block}, promise.get_future());
             output.emplace_back(mem_.find(block->Bytes()));
+            ready.emplace_back(&block.get());
             found = true;
         }
 
-        if (found) { continue; }
+        const auto disk = Clock::now();
+
+        if (found) {
+            log(OT_PRETTY_CLASS())(
+                " block is already downloaded. Loaded from storage in ")(
+                std::chrono::nanoseconds{disk - pending})
+                .Flush();
+
+            continue;
+        }
 
         output.emplace_back();
         auto it = output.begin();
         std::advance(it, output.size() - 1);
         download.emplace(block, it);
+
+        log(OT_PRETTY_CLASS())(" block queued for download in ")(
+            std::chrono::nanoseconds{Clock::now() - pending})
+            .Flush();
     }
 
     OT_ASSERT(output.size() == hashes.size());
@@ -221,6 +257,8 @@ auto BlockOracle::Cache::Request(const BlockHashes& hashes) const noexcept
 
         publish(pending_.size());
     }
+
+    for (const auto* hash : ready) { publish(*hash); }
 
     return output;
 }
@@ -259,7 +297,7 @@ auto BlockOracle::Cache::StateMachine() const noexcept -> bool
         auto& [time, promise, future, queued] = item;
         const auto now = Clock::now();
         namespace c = std::chrono;
-        const auto elapsed = c::duration_cast<c::milliseconds>(now - time);
+        const auto elapsed = std::chrono::nanoseconds{now - time};
         const auto timeout = download_timeout_ <= elapsed;
 
         if (timeout || (false == queued)) {
@@ -270,9 +308,8 @@ auto BlockOracle::Cache::StateMachine() const noexcept -> bool
             queued = true;
             time = now;
         } else {
-            LogVerbose()(OT_PRETTY_CLASS())(elapsed.count())(
-                " milliseconds elapsed waiting for ")(DisplayString(chain_))(
-                " block ")(hash->asHex())
+            LogVerbose()(OT_PRETTY_CLASS())(elapsed)(" elapsed waiting for ")(
+                DisplayString(chain_))(" block ")(hash->asHex())
                 .Flush();
         }
     }

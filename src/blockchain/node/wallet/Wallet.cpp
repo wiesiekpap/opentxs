@@ -37,6 +37,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::factory
@@ -206,43 +207,56 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
             OT_FAIL;
         }
     }();
+    const auto start = Clock::now();
+    auto type = std::string{};
 
     switch (work) {
         case Work::shutdown: {
+            type = "shutdown";
             shutdown(shutdown_promise_);
         } break;
         case Work::nym: {
+            type = "nym";
             process_nym(in);
             process_wallet();
         } break;
         case Work::header: {
+            type = "header";
             process_block_header(in);
         } break;
         case Work::reorg: {
+            type = "reorg";
             process_reorg(in);
             // TODO ensure filter oracle has processed the reorg before running
             // state machine again
             process_wallet();
         } break;
         case Work::mempool: {
+            type = "mempool";
             process_mempool(in);
         } break;
         case Work::block: {
+            type = "block";
             process_block_download(in);
         } break;
         case Work::job_finished: {
+            type = "job_finished";
             process_job_finished(in);
         } break;
         case Work::init_wallet: {
+            type = "init_wallet";
             process_wallet();
         } break;
         case Work::key: {
+            type = "key";
             process_key(in);
         } break;
         case Work::filter: {
+            type = "filter";
             process_filter(in);
         } break;
         case Work::statemachine: {
+            type = "statemachine";
             do_work();
         } break;
         default: {
@@ -252,6 +266,15 @@ auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 
             OT_FAIL;
         }
+    }
+
+    static constexpr auto limit = std::chrono::seconds{1};
+    const auto elapsed = std::chrono::nanoseconds{Clock::now() - start};
+
+    if (elapsed > limit) {
+        LogTrace()(OT_PRETTY_CLASS())(DisplayString(chain_))(": spent ")(
+            elapsed)(" processing ")(type)(" signal")
+            .Flush();
     }
 }
 

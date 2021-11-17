@@ -7,6 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <chrono>
 #include <cstddef>
 #include <string>
 #include <utility>
@@ -49,6 +50,8 @@ public:
     auto operator()(const char* in) const noexcept -> const Log&;
     auto operator()(char* in) const noexcept -> const Log&;
     auto operator()(const std::string& in) const noexcept -> const Log&;
+    auto operator()(const std::chrono::nanoseconds& in) const noexcept
+        -> const Log&;
     auto operator()(const OTString& in) const noexcept -> const Log&;
     auto operator()(const OTStringXML& in) const noexcept -> const Log&;
     auto operator()(const OTArmored& in) const noexcept -> const Log&;

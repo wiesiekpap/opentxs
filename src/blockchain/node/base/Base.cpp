@@ -1023,7 +1023,7 @@ auto Base::process_sync_data(network::zeromq::Message& in) noexcept -> void
             blocks.size() * 1000000 / elapsed.count())(" blocks/sec)")
             .Flush();
     } else {
-        LogError()("Invalid ")(DisplayString(chain_))(" sync data").Flush();
+        LogVerbose()("Invalid ")(DisplayString(chain_))(" sync data").Flush();
     }
 
     notify_sync_client();

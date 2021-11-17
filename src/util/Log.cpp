@@ -231,6 +231,38 @@ auto Log::operator()(const std::string& in) const noexcept -> const Log&
     return operator()(in.c_str());
 }
 
+auto Log::operator()(const std::chrono::nanoseconds& in) const noexcept
+    -> const Log&
+{
+    auto value = std::stringstream{};
+    static constexpr auto nanoThreshold = std::chrono::microseconds{2};
+    static constexpr auto microThreshold = std::chrono::milliseconds{2};
+    static constexpr auto milliThreshold = std::chrono::seconds{2};
+    static constexpr auto threshold = std::chrono::minutes{2};
+    static constexpr auto minThreshold = std::chrono::hours{2};
+    static constexpr auto usRatio = 1000ull;
+    static constexpr auto msRatio = 1000ull * usRatio;
+    static constexpr auto ratio = 1000ull * msRatio;
+    static constexpr auto minRatio = 60ull * ratio;
+    static constexpr auto hourRatio = 60ull * minRatio;
+
+    if (in < nanoThreshold) {
+        value << std::to_string(in.count()) << " nanoseconds";
+    } else if (in < microThreshold) {
+        value << std::to_string(in.count() / usRatio) << " microseconds";
+    } else if (in < milliThreshold) {
+        value << std::to_string(in.count() / msRatio) << " milliseconds";
+    } else if (in < threshold) {
+        value << std::to_string(in.count() / ratio) << " seconds";
+    } else if (in < minThreshold) {
+        value << std::to_string(in.count() / minRatio) << " minutes";
+    } else {
+        value << std::to_string(in.count() / hourRatio) << " hours";
+    }
+
+    return operator()(value.str());
+}
+
 auto Log::operator()(const OTString& in) const noexcept -> const Log&
 {
     return operator()(in.get());

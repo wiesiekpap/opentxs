@@ -9,6 +9,7 @@
 
 #include <chrono>
 #include <functional>
+#include <string>
 #include <utility>
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
@@ -17,6 +18,7 @@
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/Identifier.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "util/JobCounter.hpp"
@@ -61,7 +63,7 @@ auto Job::is_running(Lock& lock) const noexcept -> bool
 
 auto Job::queue_work(
     SimpleCallback cb,
-    const char* log,
+    const char* msg,
     bool lockIsHeld) noexcept -> bool
 {
     OT_ASSERT(cb);
@@ -76,10 +78,16 @@ auto Job::queue_work(
         ++running_;
     }
 
+    const auto& log = LogTrace();
     const auto queued = parent_.api_.Network().Asio().Internal().Post(
-        thread_pool_, [this, job = std::move(cb)] {
-            auto post = ScopeGuard{[this] {
-                parent_.task_finished_(parent_.db_key_, type());
+        thread_pool_,
+        [this, &log, job = std::move(cb), kind = std::string{msg}] {
+            auto post = ScopeGuard{[&] {
+                log(OT_PRETTY_CLASS())(parent_.name_)(" ")(kind)(" job for ")(
+                    parent_.db_key_->str())(" complete. Sending ")(
+                    this->type())(" notification.")
+                    .Flush();
+                parent_.task_finished_(parent_.db_key_, this->type());
                 --parent_.job_counter_;
             }};
 
@@ -87,11 +95,9 @@ auto Job::queue_work(
         });
 
     if (queued) {
-        LogDebug()(OT_PRETTY_CLASS())(parent_.name_)(" ")(log)(" job queued")
-            .Flush();
+        log(OT_PRETTY_CLASS())(parent_.name_)(" ")(msg)(" job queued").Flush();
     } else {
-        LogDebug()(OT_PRETTY_CLASS())(parent_.name_)(" failed to queue ")(
-            log)(" job")
+        log(OT_PRETTY_CLASS())(parent_.name_)(" failed to queue ")(msg)(" job")
             .Flush();
         --parent_.job_counter_;
     }

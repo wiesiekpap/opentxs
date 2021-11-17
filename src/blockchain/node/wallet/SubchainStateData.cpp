@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/SubchainStateData.hpp"  // IWYU pragma: associated
 
+#include <chrono>
 #include <map>
 #include <memory>
 #include <set>
@@ -35,6 +36,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/JobCounter.hpp"
 #include "util/ScopeGuard.hpp"
 
@@ -309,7 +311,20 @@ auto SubchainStateData::ProcessBlockAvailable(const block::Hash& block) noexcept
 {
     if (block_index_.Query(block)) {
         LogInsane()(OT_PRETTY_CLASS())(name_).Flush();
-        process_.Run();
+        auto again{true};
+        const auto start = Clock::now();
+        static constexpr auto limit = std::chrono::minutes{1};
+
+        while (again && ((Clock::now() - start) < limit)) {
+            again = process_.Run();
+        }
+
+        if (again) {
+            LogError()(OT_PRETTY_CLASS())(
+                name_)(" failed to obtain lock after ")(
+                std::chrono::nanoseconds{Clock::now() - start})
+                .Flush();
+        }
     }
 }
 
@@ -364,16 +379,17 @@ auto SubchainStateData::ProcessReorg(
 
 auto SubchainStateData::ProcessStateMachine(bool enabled) noexcept -> bool
 {
+    auto again{false};
     get_index().Run();
     mempool_.Run();
 
     if (enabled) {
         scan_.Run();
         rescan_.Run();
-        process_.Run();
+        again = process_.Run();
     }
 
-    return false;
+    return again;
 }
 
 auto SubchainStateData::ProcessTaskComplete(
@@ -381,9 +397,23 @@ auto SubchainStateData::ProcessTaskComplete(
     const char* type,
     bool enabled) noexcept -> void
 {
-    if (id == db_key_) {
-        LogInsane()(OT_PRETTY_CLASS())(type)(" ")(name_)(" complete").Flush();
-        ProcessStateMachine(enabled);
+    auto again{true};
+    const auto& log = LogTrace();
+
+    if (id != db_key_) { return; }
+
+    log(OT_PRETTY_CLASS())(name_)(" ")(type)(" job complete").Flush();
+    const auto start = Clock::now();
+    static constexpr auto limit = std::chrono::minutes{1};
+
+    while (again && ((Clock::now() - start) < limit)) {
+        again = ProcessStateMachine(enabled);
+    }
+
+    if (again) {
+        log(OT_PRETTY_CLASS())(name_)(" failed to obtain lock after ")(
+            std::chrono::nanoseconds{Clock::now() - start})
+            .Flush();
     }
 }
 

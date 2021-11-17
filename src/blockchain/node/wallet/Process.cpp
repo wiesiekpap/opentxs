@@ -8,6 +8,7 @@
 #include "blockchain/node/wallet/Process.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -25,6 +26,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::blockchain::node::wallet
@@ -72,6 +74,8 @@ auto Process::Cache::Flush() noexcept -> std::vector<BatchMap::iterator>
 
 auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
 {
+    const auto& log = LogInsane();
+
     if (auto lock = Lock{lock_, std::defer_lock}; lock.try_lock()) {
         auto hashes = std::vector<block::pHash>{};
         move_nodes(
@@ -83,13 +87,13 @@ auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
                 const auto& [height, hash] = position;
 
                 if (job->IsReady()) {
-                    LogVerbose()(OT_PRETTY_CLASS())(parent_.name_)(
+                    log()(OT_PRETTY_CLASS())(parent_.name_)(
                         " ready to process block ")(hash->asHex())
                         .Flush();
 
                     return true;
                 } else {
-                    LogVerbose()(OT_PRETTY_CLASS())(parent_.name_)(
+                    log()(OT_PRETTY_CLASS())(parent_.name_)(
                         " waiting for block ")(hash->asHex())(" to download")
                         .Flush();
 
@@ -111,17 +115,17 @@ auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
         if (0u < hashes.size()) { parent_.block_index_.Forget(hashes); }
 
         download(lock);
-        LogInsane()(OT_PRETTY_CLASS())(parent_.name_)(
-            " staged block count:      ")(pending_.size())
+        log()(OT_PRETTY_CLASS())(parent_.name_)(" staged block count:      ")(
+            pending_.size())
             .Flush();
-        LogInsane()(OT_PRETTY_CLASS())(parent_.name_)(
-            " downloading block count: ")(downloading_.size())
+        log()(OT_PRETTY_CLASS())(parent_.name_)(" downloading block count: ")(
+            downloading_.size())
             .Flush();
-        LogInsane()(OT_PRETTY_CLASS())(parent_.name_)(
-            " downloaded block count:  ")(dest.size())
+        log()(OT_PRETTY_CLASS())(parent_.name_)(" downloaded block count:  ")(
+            dest.size())
             .Flush();
 
-        return 0u < downloading_.size();
+        return false;
     } else {
 
         return true;
@@ -130,35 +134,81 @@ auto Process::Cache::Pop(BlockMap& dest) noexcept -> bool
 
 auto Process::Cache::download(const Lock& lock) noexcept -> void
 {
+    const auto& name = parent_.name_;
+    const auto& log = LogTrace();
+    const auto start = Clock::now();
     auto positions = std::vector<block::Position>{};
     auto jobs = std::vector<Work*>{};
-    auto count{downloading_.size()};
 
-    while ((0 < pending_.size()) && (limit_ > count)) {
-        ++count;
-        auto& job = *jobs.emplace_back(pending_.front());
-        positions.emplace_back(job.position_);
-        pending_.pop_front();
+    {
+        auto count{downloading_.size()};
+        log()(OT_PRETTY_CLASS())(name)(" ")(pending_.size())(
+            " positions in pending queue")
+            .Flush();
+
+        while ((0 < pending_.size()) && (limit_ > count)) {
+            ++count;
+            auto& job = *jobs.emplace_back(pending_.front());
+            positions.emplace_back(job.position_);
+            pending_.pop_front();
+        }
     }
+
+    const auto count = positions.size();
+    const auto selected = Clock::now();
+    log()(OT_PRETTY_CLASS())(name)(" selected ")(
+        count)(" positions to be requested in ")(
+        std::chrono::nanoseconds{selected - start})
+        .Flush();
 
     if (0u < jobs.size()) { parent_.block_index_.Add(positions); }
 
+    const auto indexed = Clock::now();
+    log()(OT_PRETTY_CLASS())(name)(" added ")(
+        count)(" positions to block index in ")(
+        std::chrono::nanoseconds{indexed - selected})
+        .Flush();
+
     for (auto* job : jobs) { request(lock, job); }
+
+    const auto requested = Clock::now();
+    log()(OT_PRETTY_CLASS())(name)(" requested blocks for ")(jobs.size())(
+        " jobs in ")(std::chrono::nanoseconds{requested - indexed})
+        .Flush();
 }
 
 auto Process::Cache::Push(
     std::vector<std::unique_ptr<Batch>>&& batches,
     std::vector<Work*>&& jobs) noexcept -> void
 {
+    const auto& name = parent_.name_;
+    const auto& log = LogTrace();
+    const auto start = Clock::now();
     auto lock = Lock{lock_};
+    const auto locked = Clock::now();
+    log()(OT_PRETTY_CLASS())(name)(" lock obtained in ")(
+        std::chrono::nanoseconds{locked - start})
+        .Flush();
 
     for (auto& batch : batches) {
         auto id = batch->id_;
         batches_.emplace(std::move(id), std::move(batch));
     }
 
+    const auto queuedB = Clock::now();
+    log()(OT_PRETTY_CLASS())(name)(" batches queued in ")(
+        std::chrono::nanoseconds{queuedB - locked})
+        .Flush();
     std::move(jobs.begin(), jobs.end(), std::back_inserter(pending_));
+    const auto queuedJ = Clock::now();
+    log()(OT_PRETTY_CLASS())(name)(" jobs queued in ")(
+        std::chrono::nanoseconds{queuedJ - queuedB})
+        .Flush();
     download(lock);
+    const auto downloaded = Clock::now();
+    log()(OT_PRETTY_CLASS())(name)(" download queues updated in ")(
+        std::chrono::nanoseconds{downloaded - queuedJ})
+        .Flush();
 }
 
 auto Process::Cache::Reorg(const block::Position& parent) noexcept -> void
@@ -227,7 +277,7 @@ auto Process::limit(const Lock& lock, const std::size_t outstanding)
 {
     const auto running = processing_.size() + outstanding;
     const auto limit = [&]() -> std::size_t {
-        const auto cores = std::min<std::size_t>(
+        const auto cores = std::max<std::size_t>(
             std::max(std::thread::hardware_concurrency(), 1u) - 1u, 1u);
 
         return cores;
@@ -312,15 +362,36 @@ auto Process::Request(
     std::vector<std::unique_ptr<Batch>>&& batches,
     std::vector<Work*>&& jobs) noexcept -> void
 {
+    const auto& name = parent_.name_;
+    const auto& log = LogTrace();
+    const auto start = Clock::now();
     progress_.UpdateScan(highestClean, blocks);
+    const auto progress = Clock::now();
+    log()(OT_PRETTY_CLASS())(name)(" progress updated in ")(
+        std::chrono::nanoseconds{progress - start})
+        .Flush();
     cache_.Push(std::move(batches), std::move(jobs));
+    const auto done = Clock::now();
+    log()(OT_PRETTY_CLASS())(name)(" batches cached in ")(
+        std::chrono::nanoseconds{done - progress})
+        .Flush();
 }
 
 auto Process::Run() noexcept -> bool
 {
-    auto again = FinishBatches();
+    const auto& name = parent_.name_;
+    const auto& log = LogTrace();
+    FinishBatches();
     auto lock = Lock{lock_};
-    again |= cache_.Pop(waiting_);
+    auto again = cache_.Pop(waiting_);
+    const auto waiting = waiting_.size();
+
+    if (0 < waiting) {
+        log()(OT_PRETTY_CLASS())(name)(" ")(
+            waiting)(" downloaded blocks ready for processing")
+            .Flush();
+    }
+
     move_nodes(
         waiting_,
         processing_,
@@ -332,8 +403,14 @@ auto Process::Run() noexcept -> bool
             static constexpr auto job{"process position"};
             queue_work([=] { ProcessPosition(key, work); }, job, true);
         });
-    again |= (0u < waiting_.size());
-    again |= (0u < processing_.size());
+    const auto processing{waiting - waiting_.size()};
+
+    if (0 < waiting) {
+        log()(OT_PRETTY_CLASS())(name)(" ")(
+            processing)(" blocks added to processing queue. ")(
+            processing_.size())(" block total in queue.")
+            .Flush();
+    }
 
     return again;
 }
