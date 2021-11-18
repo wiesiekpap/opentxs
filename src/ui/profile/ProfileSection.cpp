@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "internal/contact/Contact.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
@@ -24,9 +25,8 @@
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
+#include "serialization/protobuf/ContactEnums.pb.h"
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
 

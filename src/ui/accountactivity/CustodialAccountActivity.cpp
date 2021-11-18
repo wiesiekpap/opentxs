@@ -38,12 +38,12 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/protobuf/PaymentEvent.pb.h"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/PaymentEvent.pb.h"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "ui/base/Widget.hpp"
 
 namespace opentxs::factory

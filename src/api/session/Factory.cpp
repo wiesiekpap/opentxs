@@ -28,7 +28,11 @@
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
 #include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/XML.hpp"
+#include "internal/otx/smartcontract/OTSmartContract.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/Envelope.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"  // TODO remove
 #include "opentxs/Version.hpp"
@@ -48,8 +52,6 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #endif  // OT_BLOCKCHAIN
-#include "internal/otx/client/OTPayment.hpp"
-#include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -99,20 +101,18 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/protobuf/AsymmetricKey.pb.h"
-#include "opentxs/protobuf/BlockchainPeerAddress.pb.h"  // IWYU pragma: keep
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/Envelope.pb.h"  // IWYU pragma: keep
-#include "opentxs/protobuf/HDPath.pb.h"
-#include "opentxs/protobuf/PaymentCode.pb.h"
-#include "opentxs/protobuf/PeerReply.pb.h"
-#include "opentxs/protobuf/PeerRequest.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
-#include "opentxs/protobuf/verify/Envelope.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/AsymmetricKey.pb.h"
+#include "serialization/protobuf/BlockchainPeerAddress.pb.h"  // IWYU pragma: keep
+#include "serialization/protobuf/Ciphertext.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Envelope.pb.h"  // IWYU pragma: keep
+#include "serialization/protobuf/HDPath.pb.h"
+#include "serialization/protobuf/PaymentCode.pb.h"
+#include "serialization/protobuf/PeerReply.pb.h"
+#include "serialization/protobuf/PeerRequest.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/HDIndex.hpp"
 
 namespace opentxs::api::session::implementation

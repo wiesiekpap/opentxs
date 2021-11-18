@@ -12,8 +12,8 @@
 #pragma once
 
 #include "opentxs/otx/Types.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
-#include "opentxs/protobuf/OTXEnums.pb.h"
+#include "serialization/protobuf/ConsensusEnums.pb.h"
+#include "serialization/protobuf/OTXEnums.pb.h"
 
 namespace opentxs
 {

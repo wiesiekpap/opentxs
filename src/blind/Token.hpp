@@ -16,9 +16,9 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/Token.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Token.pb.h"
 
 namespace opentxs
 {

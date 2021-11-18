@@ -29,11 +29,11 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
-#include "opentxs/protobuf/AsymmetricKey.pb.h"
-#include "opentxs/protobuf/BlockchainAddress.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/AsymmetricKey.pb.h"
+#include "serialization/protobuf/BlockchainAddress.pb.h"
 
 namespace opentxs::blockchain::crypto::implementation
 {

@@ -19,9 +19,9 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
-#include "opentxs/protobuf/ContactItem.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/ContactItem.pb.h"
 
 namespace opentxs
 {

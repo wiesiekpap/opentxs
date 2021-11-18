@@ -15,7 +15,6 @@
 
 #include "Proto.hpp"
 #include "internal/rpc/RPC.hpp"
-#include "opentxs/protobuf/RPCCommand.pb.h"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/request/GetAccountActivity.hpp"
 #include "opentxs/rpc/request/GetAccountBalance.hpp"
@@ -23,6 +22,7 @@
 #include "opentxs/rpc/request/ListNyms.hpp"
 #include "opentxs/rpc/request/SendPayment.hpp"
 #include "rpc/request/Base.hpp"
+#include "serialization/protobuf/RPCCommand.pb.h"
 #include "util/Container.hpp"
 #include "util/Random.hpp"
 

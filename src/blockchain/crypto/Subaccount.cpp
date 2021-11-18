@@ -27,8 +27,8 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
-#include "opentxs/protobuf/BlockchainAccountData.pb.h"
-#include "opentxs/protobuf/BlockchainActivity.pb.h"
+#include "serialization/protobuf/BlockchainAccountData.pb.h"
+#include "serialization/protobuf/BlockchainActivity.pb.h"
 
 // "opentxs::blockchain::crypto::implementation::Subaccount::"
 

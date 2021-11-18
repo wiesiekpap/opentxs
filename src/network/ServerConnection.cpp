@@ -17,6 +17,8 @@
 #include <thread>
 
 #include "Proto.tpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/ServerReply.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
@@ -50,13 +52,11 @@
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ServerReply.pb.h"
-#include "opentxs/protobuf/ServerRequest.pb.h"
-#include "opentxs/protobuf/verify/ServerReply.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/ServerReply.pb.h"
+#include "serialization/protobuf/ServerRequest.pb.h"
 
 namespace zmq = opentxs::network::zeromq;
 

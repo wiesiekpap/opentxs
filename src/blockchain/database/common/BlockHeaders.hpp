@@ -13,7 +13,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs

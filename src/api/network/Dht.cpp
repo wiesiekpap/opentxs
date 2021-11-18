@@ -40,12 +40,12 @@
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
-#include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace zmq = opentxs::network::zeromq;
 

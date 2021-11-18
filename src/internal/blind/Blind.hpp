@@ -10,7 +10,7 @@
 #pragma once
 
 #include "opentxs/blind/Types.hpp"
-#include "opentxs/protobuf/CashEnums.pb.h"
+#include "serialization/protobuf/CashEnums.pb.h"
 
 namespace opentxs
 {

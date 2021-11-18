@@ -47,10 +47,10 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/BlockchainP2PChainState.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/BlockchainP2PChainState.pb.h"
 
 namespace bc = opentxs::blockchain;
 

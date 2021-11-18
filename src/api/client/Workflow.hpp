@@ -30,10 +30,10 @@
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
-#include "opentxs/protobuf/RPCEnums.pb.h"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
+#include "serialization/protobuf/RPCEnums.pb.h"
 
 namespace opentxs
 {

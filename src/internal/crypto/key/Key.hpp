@@ -10,7 +10,7 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

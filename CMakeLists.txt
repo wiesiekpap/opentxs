@@ -526,7 +526,9 @@ endif()
 if(OT_WITH_QT)
   find_package(
     QT
-    NAMES Qt6 Qt5
+    NAMES
+    Qt6
+    Qt5
     COMPONENTS Core Gui
     REQUIRED
   )
@@ -752,7 +754,6 @@ add_subdirectory(generated)
 
 include_directories(
   "${opentxs_BINARY_DIR}/include"
-  "${opentxs_BINARY_DIR}/serialization"
   "${opentxs_BINARY_DIR}/src"
   "${opentxs_SOURCE_DIR}/include"
   "${opentxs_SOURCE_DIR}/src"
@@ -771,7 +772,6 @@ else()
     opentxs
     INTERFACE
       $<BUILD_INTERFACE:${opentxs_BINARY_DIR}/include>
-      $<BUILD_INTERFACE:${opentxs_BINARY_DIR}/serialization>
       $<BUILD_INTERFACE:${opentxs_BINARY_DIR}/src>
       $<BUILD_INTERFACE:${opentxs_SOURCE_DIR}/deps>
       $<BUILD_INTERFACE:${opentxs_SOURCE_DIR}/include>
@@ -785,7 +785,6 @@ add_library(
 )
 
 add_subdirectory(deps)
-add_subdirectory(serialization)
 add_subdirectory(src)
 
 if(OPENTXS_BUILD_TESTS)

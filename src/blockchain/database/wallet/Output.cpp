@@ -51,10 +51,10 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database::wallet

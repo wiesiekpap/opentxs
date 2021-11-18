@@ -44,10 +44,10 @@
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/Envelope.pb.h"
-#include "opentxs/protobuf/Purse.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Envelope.pb.h"
+#include "serialization/protobuf/Purse.pb.h"
 
 #define OT_PURSE_VERSION 1
 

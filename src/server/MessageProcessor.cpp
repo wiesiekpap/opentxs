@@ -17,6 +17,8 @@
 #include <utility>
 
 #include "Proto.tpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/ServerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -46,14 +48,12 @@
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/OTXPush.pb.h"
-#include "opentxs/protobuf/ServerReply.pb.h"
-#include "opentxs/protobuf/ServerRequest.pb.h"
-#include "opentxs/protobuf/verify/ServerRequest.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/OTXPush.pb.h"
+#include "serialization/protobuf/ServerReply.pb.h"
+#include "serialization/protobuf/ServerRequest.pb.h"
 #include "server/Server.hpp"
 #include "server/UserCommandProcessor.hpp"
 

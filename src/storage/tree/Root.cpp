@@ -11,12 +11,12 @@
 #include <memory>
 #include <stdexcept>
 
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/StorageRoot.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/StorageRoot.pb.h"
-#include "opentxs/protobuf/verify/StorageRoot.hpp"
 #include "opentxs/storage/Driver.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/StorageRoot.pb.h"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 #include "storage/tree/Tree.hpp"

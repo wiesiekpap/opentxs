@@ -17,10 +17,10 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/Verification.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Signature.pb.h"
+#include "serialization/protobuf/Verification.pb.h"
 
 namespace opentxs
 {

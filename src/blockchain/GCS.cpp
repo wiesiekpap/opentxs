@@ -29,6 +29,8 @@
 #include "Proto.tpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/GCS.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
@@ -41,11 +43,9 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/GCS.pb.h"
-#include "opentxs/protobuf/verify/GCS.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/GCS.pb.h"
 #include "util/Container.hpp"
 
 namespace be = boost::endian;

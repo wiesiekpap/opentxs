@@ -70,15 +70,15 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
-#include "opentxs/protobuf/BlockchainTransactionProposedNotification.pb.h"
-#include "opentxs/protobuf/BlockchainTransactionProposedOutput.pb.h"
-#include "opentxs/protobuf/HDPath.pb.h"
-#include "opentxs/protobuf/PaymentCode.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
+#include "serialization/protobuf/BlockchainTransactionProposedNotification.pb.h"
+#include "serialization/protobuf/BlockchainTransactionProposedOutput.pb.h"
+#include "serialization/protobuf/HDPath.pb.h"
+#include "serialization/protobuf/PaymentCode.pb.h"
 
 namespace opentxs::blockchain::node::implementation
 {

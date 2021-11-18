@@ -23,9 +23,9 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/Types.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

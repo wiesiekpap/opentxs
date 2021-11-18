@@ -29,10 +29,10 @@
 #include "opentxs/core/crypto/OTCaller.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
 #include "util/ScopeGuard.hpp"
 
 namespace

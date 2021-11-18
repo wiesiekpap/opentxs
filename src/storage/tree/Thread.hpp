@@ -17,8 +17,8 @@
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/protobuf/StorageThread.pb.h"
-#include "opentxs/protobuf/StorageThreadItem.pb.h"
+#include "serialization/protobuf/StorageThread.pb.h"
+#include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs

@@ -13,6 +13,8 @@
 #include <utility>
 
 #include "Proto.tpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/BlockchainP2PSync.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/blockchain/sync/Base.hpp"
 #include "opentxs/Types.hpp"
@@ -22,10 +24,8 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/verify/BlockchainP2PSync.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainP2PSync.pb.h"
 
 namespace opentxs::network::blockchain::sync
 {

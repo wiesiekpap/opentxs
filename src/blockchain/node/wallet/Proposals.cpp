@@ -38,12 +38,12 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/BlockchainTransaction.pb.h"
-#include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
-#include "opentxs/protobuf/BlockchainTransactionProposedNotification.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/BlockchainTransaction.pb.h"
+#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
+#include "serialization/protobuf/BlockchainTransactionProposedNotification.pb.h"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::blockchain::node::wallet

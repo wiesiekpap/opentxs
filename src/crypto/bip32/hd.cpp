@@ -23,8 +23,8 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::crypto
 {

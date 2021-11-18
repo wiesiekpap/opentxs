@@ -23,8 +23,8 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
 #include "opentxs/util/Bytes.hpp"
+#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
 
 namespace opentxs
 {

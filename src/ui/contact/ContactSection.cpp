@@ -20,7 +20,7 @@
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
+#include "serialization/protobuf/ContactEnums.pb.h"
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
 

@@ -86,15 +86,15 @@
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/PeerRequest.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/ServerReply.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "otx/client/PaymentTasks.hpp"
 #include "otx/client/StateMachine.hpp"
+#include "serialization/protobuf/PeerRequest.pb.h"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/ServerReply.pb.h"
 
 #define CHECK_NYM(a)                                                           \
     {                                                                          \

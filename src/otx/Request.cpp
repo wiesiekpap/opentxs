@@ -14,6 +14,8 @@
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "internal/otx/OTX.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/ServerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -24,13 +26,11 @@
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/Request.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/ServerRequest.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/verify/ServerRequest.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/ServerRequest.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 template class opentxs::Pimpl<opentxs::otx::Request>;
 

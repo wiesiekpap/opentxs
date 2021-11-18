@@ -19,9 +19,9 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 

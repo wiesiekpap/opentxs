@@ -18,10 +18,10 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
 #include "storage/Config.hpp"
 
 #define ROOT_FILE_EXTENSION ".hash"

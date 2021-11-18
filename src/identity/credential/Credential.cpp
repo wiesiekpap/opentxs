@@ -12,7 +12,7 @@
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/CredentialType.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::identity::credential

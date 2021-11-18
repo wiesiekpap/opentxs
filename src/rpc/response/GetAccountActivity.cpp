@@ -14,8 +14,8 @@
 #include <utility>
 
 #include "Proto.hpp"
-#include "opentxs/protobuf/RPCResponse.pb.h"
 #include "opentxs/rpc/request/GetAccountActivity.hpp"
+#include "serialization/protobuf/RPCResponse.pb.h"
 
 namespace opentxs::rpc::response::implementation
 {

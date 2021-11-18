@@ -43,8 +43,8 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
 #include "ui/base/List.hpp"
 
 namespace opentxs::factory

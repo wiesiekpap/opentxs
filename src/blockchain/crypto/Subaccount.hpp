@@ -30,11 +30,11 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/protobuf/BlockchainAccountData.pb.h"
-#include "opentxs/protobuf/BlockchainActivity.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/BlockchainAccountData.pb.h"
+#include "serialization/protobuf/BlockchainActivity.pb.h"
 
 namespace opentxs
 {

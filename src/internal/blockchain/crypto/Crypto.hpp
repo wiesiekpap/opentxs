@@ -42,9 +42,9 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/protobuf/BlockchainAddress.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/BlockchainAddress.pb.h"
 
 namespace std
 {

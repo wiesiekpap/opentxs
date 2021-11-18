@@ -22,8 +22,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/rpc/AccountEventType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"
@@ -35,6 +33,8 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "rpc/RPC.hpp"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 
 namespace opentxs::rpc::implementation
 {

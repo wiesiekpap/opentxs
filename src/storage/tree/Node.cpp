@@ -7,13 +7,13 @@
 #include "1_Internal.hpp"         // IWYU pragma: associated
 #include "storage/tree/Node.hpp"  // IWYU pragma: associated
 
-#include "opentxs/protobuf/Contact.pb.h"
-#include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/Seed.pb.h"
-#include "opentxs/protobuf/StorageEnums.pb.h"
-#include "opentxs/protobuf/StorageItemHash.pb.h"
 #include "opentxs/storage/Driver.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/Contact.pb.h"
+#include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/Seed.pb.h"
+#include "serialization/protobuf/StorageEnums.pb.h"
+#include "serialization/protobuf/StorageItemHash.pb.h"
 
 namespace opentxs::storage
 {

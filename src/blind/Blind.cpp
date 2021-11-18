@@ -12,7 +12,7 @@
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/PurseType.hpp"
 #include "opentxs/blind/TokenState.hpp"
-#include "opentxs/protobuf/CashEnums.pb.h"
+#include "serialization/protobuf/CashEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::blind

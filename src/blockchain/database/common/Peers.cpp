@@ -17,13 +17,13 @@
 
 #include "Proto.tpp"
 #include "internal/blockchain/p2p/P2P.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/BlockchainPeerAddress.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/BlockchainPeerAddress.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/verify/BlockchainPeerAddress.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainPeerAddress.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database::common

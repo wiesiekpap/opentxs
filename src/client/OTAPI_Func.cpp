@@ -32,9 +32,9 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/recurring/OTPaymentPlan.hpp"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 auto VerifyStringVal(const std::string& nValue) -> bool
 {

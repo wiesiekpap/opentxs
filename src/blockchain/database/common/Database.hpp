@@ -31,9 +31,9 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
-#include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "opentxs/util/Bytes.hpp"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
+#include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs

@@ -14,8 +14,8 @@
 #include "opentxs/otx/OTXPushType.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
-#include "opentxs/protobuf/OTXEnums.pb.h"
+#include "serialization/protobuf/ConsensusEnums.pb.h"
+#include "serialization/protobuf/OTXEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::otx

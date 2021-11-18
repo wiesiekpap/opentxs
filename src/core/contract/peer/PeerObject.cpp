@@ -14,6 +14,8 @@
 #include "Proto.tpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/PeerObject.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -30,13 +32,11 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/PeerObject.pb.h"
-#include "opentxs/protobuf/PeerRequest.pb.h"
-#include "opentxs/protobuf/verify/PeerObject.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/PeerObject.pb.h"
+#include "serialization/protobuf/PeerRequest.pb.h"
 
 namespace opentxs::factory
 {

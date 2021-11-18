@@ -29,6 +29,9 @@
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/Client.hpp"
+#include "internal/otx/client/OTPayment.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/UnitDefinition.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/Version.hpp"
@@ -42,7 +45,6 @@
 #include "opentxs/blind/Mint.hpp"
 #include "opentxs/blind/Purse.hpp"
 #endif  // OT_CASH
-#include "internal/otx/client/OTPayment.hpp"
 #include "opentxs/client/OT_API.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -73,21 +75,19 @@
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/PeerObject.pb.h"
-#include "opentxs/protobuf/PeerReply.pb.h"
-#include "opentxs/protobuf/PeerRequest.pb.h"
-#include "opentxs/protobuf/Purse.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"  // IWYU pragma: keep
-#include "opentxs/protobuf/verify/UnitDefinition.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
+#include "serialization/protobuf/PeerObject.pb.h"
+#include "serialization/protobuf/PeerReply.pb.h"
+#include "serialization/protobuf/PeerRequest.pb.h"
+#include "serialization/protobuf/Purse.pb.h"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"  // IWYU pragma: keep
 
 #define START()                                                                \
     Lock lock(decision_lock_);                                                 \

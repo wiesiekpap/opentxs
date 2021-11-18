@@ -29,13 +29,13 @@
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
-#include "opentxs/protobuf/Claim.pb.h"
-#include "opentxs/protobuf/ContactData.pb.h"
-#include "opentxs/protobuf/ContactItem.pb.h"
-#include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Claim.pb.h"
+#include "serialization/protobuf/ContactData.pb.h"
+#include "serialization/protobuf/ContactItem.pb.h"
+#include "serialization/protobuf/Credential.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs
 {

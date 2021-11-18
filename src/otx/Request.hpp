@@ -18,10 +18,10 @@
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/otx/Types.hpp"
-#include "opentxs/protobuf/OTXEnums.pb.h"
-#include "opentxs/protobuf/ServerRequest.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/OTXEnums.pb.h"
+#include "serialization/protobuf/ServerRequest.pb.h"
 
 namespace opentxs
 {

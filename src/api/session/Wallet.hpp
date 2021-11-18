@@ -48,9 +48,9 @@
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Request.tpp"
 #include "opentxs/network/zeromq/socket/Sender.tpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/ContactEnums.pb.h"
 
 namespace opentxs
 {

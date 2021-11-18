@@ -18,7 +18,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/protobuf/StorageAccounts.pb.h"
+#include "serialization/protobuf/StorageAccounts.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs

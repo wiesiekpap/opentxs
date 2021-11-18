@@ -10,17 +10,17 @@
 #include <stdexcept>
 
 #include "Proto.tpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/RPCCommand.hpp"
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/RPCCommand.pb.h"
-#include "opentxs/protobuf/verify/RPCCommand.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/request/GetAccountActivity.hpp"
 #include "opentxs/rpc/request/GetAccountBalance.hpp"
 #include "opentxs/rpc/request/ListAccounts.hpp"
 #include "opentxs/rpc/request/ListNyms.hpp"
 #include "opentxs/rpc/request/SendPayment.hpp"
+#include "serialization/protobuf/RPCCommand.pb.h"
 
 namespace opentxs::rpc::request
 {

@@ -15,6 +15,8 @@
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/PeerReply.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -26,12 +28,10 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/PeerReply.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/verify/PeerReply.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/PeerReply.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs::factory
 {

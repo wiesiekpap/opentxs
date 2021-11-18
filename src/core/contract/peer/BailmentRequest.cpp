@@ -13,6 +13,8 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -20,11 +22,9 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/protobuf/Bailment.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/PeerRequest.pb.h"
-#include "opentxs/protobuf/verify/PeerRequest.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/Bailment.pb.h"
+#include "serialization/protobuf/PeerRequest.pb.h"
 
 #define CURRENT_VERSION 4
 

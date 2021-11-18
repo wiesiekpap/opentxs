@@ -14,9 +14,6 @@
 
 #include "Proto.hpp"
 #include "internal/rpc/RPC.hpp"
-#include "opentxs/protobuf/RPCResponse.pb.h"
-#include "opentxs/protobuf/RPCStatus.pb.h"
-#include "opentxs/protobuf/RPCTask.pb.h"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/response/GetAccountActivity.hpp"
@@ -25,6 +22,9 @@
 #include "opentxs/rpc/response/ListNyms.hpp"
 #include "opentxs/rpc/response/SendPayment.hpp"
 #include "rpc/response/Base.hpp"
+#include "serialization/protobuf/RPCResponse.pb.h"
+#include "serialization/protobuf/RPCStatus.pb.h"
+#include "serialization/protobuf/RPCTask.pb.h"
 
 namespace opentxs::rpc::response
 {

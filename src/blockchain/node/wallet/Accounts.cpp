@@ -28,9 +28,9 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
 #include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
 

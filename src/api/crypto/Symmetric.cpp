@@ -17,7 +17,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
+#include "serialization/protobuf/Ciphertext.pb.h"
 
 namespace opentxs::factory
 {

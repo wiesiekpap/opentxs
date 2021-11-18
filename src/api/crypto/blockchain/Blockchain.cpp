@@ -25,7 +25,7 @@
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
+#include "serialization/protobuf/HDPath.pb.h"
 
 namespace zmq = opentxs::network::zeromq;
 

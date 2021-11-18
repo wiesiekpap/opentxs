@@ -42,11 +42,11 @@
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
-#include "opentxs/protobuf/BlockchainAddress.pb.h"
-#include "opentxs/protobuf/BlockchainHDAccountData.pb.h"
-#include "opentxs/protobuf/HDAccount.pb.h"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainAddress.pb.h"
+#include "serialization/protobuf/BlockchainHDAccountData.pb.h"
+#include "serialization/protobuf/HDAccount.pb.h"
+#include "serialization/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"
 
 namespace opentxs::factory

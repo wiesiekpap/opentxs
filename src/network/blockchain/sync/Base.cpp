@@ -20,9 +20,9 @@
 #include "opentxs/network/blockchain/sync/Request.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/BlockchainP2PHello.pb.h"
-#include "opentxs/protobuf/BlockchainP2PSync.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainP2PHello.pb.h"
+#include "serialization/protobuf/BlockchainP2PSync.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::network::blockchain::sync

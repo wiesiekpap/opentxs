@@ -24,8 +24,8 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/Types.hpp"
-#include "opentxs/protobuf/Context.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Context.pb.h"
 
 namespace opentxs
 {

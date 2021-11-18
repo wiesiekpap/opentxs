@@ -14,14 +14,14 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/PeerReply.hpp"
+#include "internal/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/PeerReply.pb.h"
-#include "opentxs/protobuf/StorageItemHash.pb.h"
-#include "opentxs/protobuf/StorageNymList.pb.h"
-#include "opentxs/protobuf/verify/PeerReply.hpp"
-#include "opentxs/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "serialization/protobuf/PeerReply.pb.h"
+#include "serialization/protobuf/StorageItemHash.pb.h"
+#include "serialization/protobuf/StorageNymList.pb.h"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 

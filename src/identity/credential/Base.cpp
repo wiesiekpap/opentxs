@@ -34,11 +34,11 @@
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/credential/Primary.hpp"
-#include "opentxs/protobuf/ChildCredentialParameters.pb.h"
-#include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/ChildCredentialParameters.pb.h"
+#include "serialization/protobuf/Credential.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs::identity::credential::implementation
 {

@@ -15,13 +15,13 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/StorageEnums.pb.h"
-#include "opentxs/protobuf/StorageItemHash.pb.h"
-#include "opentxs/protobuf/StorageNymList.pb.h"
-#include "opentxs/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "serialization/protobuf/StorageEnums.pb.h"
+#include "serialization/protobuf/StorageItemHash.pb.h"
+#include "serialization/protobuf/StorageNymList.pb.h"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 

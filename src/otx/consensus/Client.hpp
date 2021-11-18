@@ -19,10 +19,10 @@
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
-#include "opentxs/protobuf/Context.pb.h"
 #include "opentxs/util/Numbers.hpp"
 #include "otx/consensus/Base.hpp"
+#include "serialization/protobuf/ConsensusEnums.pb.h"
+#include "serialization/protobuf/Context.pb.h"
 
 namespace opentxs
 {

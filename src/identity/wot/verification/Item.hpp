@@ -10,9 +10,9 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
-#include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs
 {

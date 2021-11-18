@@ -35,11 +35,11 @@
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/protobuf/RPCResponse.pb.h"
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Options.hpp"
+#include "serialization/protobuf/RPCResponse.pb.h"
 
 class QObject;
 

@@ -12,9 +12,9 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/PairEventCallbackSwig.hpp"
-#include "opentxs/protobuf/PairEvent.pb.h"
-#include "opentxs/protobuf/ZMQEnums.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/PairEvent.pb.h"
+#include "serialization/protobuf/ZMQEnums.pb.h"
 
 namespace opentxs::network::zeromq
 {

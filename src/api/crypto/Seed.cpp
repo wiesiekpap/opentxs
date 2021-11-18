@@ -51,10 +51,10 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
-#include "opentxs/protobuf/Seed.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
+#include "serialization/protobuf/Seed.pb.h"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
 
 namespace opentxs::factory

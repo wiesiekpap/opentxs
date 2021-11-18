@@ -14,6 +14,7 @@
 
 #include "1_Internal.hpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/protobuf/Contact.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
@@ -33,7 +34,6 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
-#include "opentxs/protobuf/Contact.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

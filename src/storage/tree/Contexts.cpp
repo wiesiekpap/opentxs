@@ -12,16 +12,16 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/Context.hpp"
+#include "internal/protobuf/verify/StorageNymList.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Context.pb.h"
-#include "opentxs/protobuf/StorageItemHash.pb.h"
-#include "opentxs/protobuf/StorageNymList.pb.h"
-#include "opentxs/protobuf/verify/Context.hpp"
-#include "opentxs/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/storage/Driver.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/Context.pb.h"
+#include "serialization/protobuf/StorageItemHash.pb.h"
+#include "serialization/protobuf/StorageNymList.pb.h"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 

@@ -12,10 +12,10 @@
 
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/protobuf/RPCCommand.pb.h"
-#include "opentxs/protobuf/SendPayment.pb.h"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/PaymentType.hpp"
+#include "serialization/protobuf/RPCCommand.pb.h"
+#include "serialization/protobuf/SendPayment.pb.h"
 
 namespace opentxs::rpc::request::implementation
 {

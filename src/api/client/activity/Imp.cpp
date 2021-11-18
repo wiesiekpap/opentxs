@@ -45,12 +45,12 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/StorageThread.pb.h"
-#include "opentxs/protobuf/StorageThreadItem.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
+#include "serialization/protobuf/StorageThread.pb.h"
+#include "serialization/protobuf/StorageThreadItem.pb.h"
 
 namespace opentxs::api::client
 {

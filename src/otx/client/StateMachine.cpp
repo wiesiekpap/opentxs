@@ -52,11 +52,11 @@
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "otx/client/StateMachine.hpp"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Blank.hpp"
 
 #define CONTRACT_DOWNLOAD_MILLISECONDS 10000

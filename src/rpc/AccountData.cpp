@@ -14,9 +14,9 @@
 
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/protobuf/AccountData.pb.h"
 #include "opentxs/rpc/AccountType.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/AccountData.pb.h"
 
 namespace opentxs::rpc
 {

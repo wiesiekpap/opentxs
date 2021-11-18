@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "internal/contact/Contact.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
@@ -35,7 +36,6 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "opentxs/util/Log.hpp"

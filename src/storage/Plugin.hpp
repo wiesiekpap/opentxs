@@ -12,10 +12,10 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
+#include "internal/protobuf/Check.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/protobuf/Check.hpp"
 #include "opentxs/storage/Driver.hpp"
 #include "opentxs/storage/Plugin.hpp"
 #include "opentxs/util/Bytes.hpp"

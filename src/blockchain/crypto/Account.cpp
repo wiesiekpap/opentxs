@@ -40,10 +40,10 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
-#include "opentxs/protobuf/Bip47Channel.pb.h"
-#include "opentxs/protobuf/HDAccount.pb.h"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/Bip47Channel.pb.h"
+#include "serialization/protobuf/HDAccount.pb.h"
 
 namespace opentxs::factory
 {

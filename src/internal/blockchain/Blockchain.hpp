@@ -27,8 +27,8 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/protobuf/GCS.pb.h"
 #include "opentxs/util/Bytes.hpp"
+#include "serialization/protobuf/GCS.pb.h"
 
 namespace opentxs
 {

@@ -24,10 +24,10 @@
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
-#include "opentxs/protobuf/BlockchainBlockLocalData.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
+#include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 
 namespace opentxs::factory
 {

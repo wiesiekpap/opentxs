@@ -35,11 +35,11 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
-#include "opentxs/protobuf/BlockchainBlockLocalData.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
+#include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database

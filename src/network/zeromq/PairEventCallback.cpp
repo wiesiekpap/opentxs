@@ -11,8 +11,8 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/PairEvent.pb.h"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/PairEvent.pb.h"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>;
 

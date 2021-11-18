@@ -14,9 +14,9 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/protobuf/GCS.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/GCS.pb.h"
 
 namespace opentxs
 {

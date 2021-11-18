@@ -15,7 +15,7 @@
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/protobuf/AsymmetricKey.pb.h"
+#include "serialization/protobuf/AsymmetricKey.pb.h"
 
 namespace opentxs::crypto::key::blank
 {

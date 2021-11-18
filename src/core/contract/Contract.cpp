@@ -10,9 +10,9 @@
 
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
-#include "opentxs/protobuf/ContractEnums.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
+#include "serialization/protobuf/ContractEnums.pb.h"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::contract::peer::blank

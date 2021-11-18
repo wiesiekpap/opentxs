@@ -49,11 +49,11 @@
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/protobuf/StorageThread.pb.h"
-#include "opentxs/protobuf/StorageThreadItem.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/StorageThread.pb.h"
+#include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "ui/base/List.hpp"
 
 template class std::

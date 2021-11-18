@@ -34,9 +34,9 @@
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/Nym.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Nym.pb.h"
 
 namespace opentxs::otx
 {

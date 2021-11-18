@@ -24,6 +24,8 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "internal/core/contract/peer/Factory.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/BlockchainBlockHeader.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -37,10 +39,8 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/verify/BlockchainBlockHeader.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 
 namespace opentxs::factory
 {

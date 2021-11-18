@@ -20,10 +20,10 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/ui/BlockchainSelectionItem.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+#include "serialization/protobuf/ContactEnums.pb.h"
 #include "ui/base/Row.hpp"
 
 class QVariant;

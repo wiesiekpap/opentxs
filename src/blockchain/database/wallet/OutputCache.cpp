@@ -40,11 +40,11 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"  // IWYU pragma: keep
+#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "util/LMDB.hpp"
 
 namespace opentxs

@@ -15,15 +15,15 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
+#include "internal/protobuf/Basic.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/verification/Nym.hpp"
-#include "opentxs/protobuf/Basic.hpp"
-#include "opentxs/protobuf/VerificationGroup.pb.h"
-#include "opentxs/protobuf/VerificationIdentity.pb.h"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/VerificationGroup.pb.h"
+#include "serialization/protobuf/VerificationIdentity.pb.h"
 
 namespace opentxs
 {

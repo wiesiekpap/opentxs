@@ -13,13 +13,13 @@
 #include "2_Factory.hpp"
 #include "core/contract/UnitDefinition.hpp"
 #include "internal/core/contract/Contract.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/CurrencyParams.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
-#include "opentxs/protobuf/verify/UnitDefinition.hpp"
+#include "serialization/protobuf/CurrencyParams.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
 {

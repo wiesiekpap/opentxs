@@ -24,10 +24,10 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/identity/Types.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs
 {

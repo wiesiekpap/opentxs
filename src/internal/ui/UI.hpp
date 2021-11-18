@@ -32,7 +32,6 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/AccountList.hpp"
 #include "opentxs/ui/AccountListItem.hpp"
@@ -73,6 +72,7 @@
 #include "opentxs/ui/Widget.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "ui/qt/SendMonitor.hpp"
 #include "util/Blank.hpp"
 

@@ -15,8 +15,8 @@
 
 #include <memory>
 
-#include "opentxs/protobuf/RPCEnums.pb.h"
 #include "opentxs/rpc/Types.hpp"
+#include "serialization/protobuf/RPCEnums.pb.h"
 
 namespace opentxs
 {

@@ -41,11 +41,11 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/protobuf/Contact.pb.h"  // IWYU pragma: keep
-#include "opentxs/protobuf/Nym.pb.h"      // IWYU pragma: keep
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/Contact.pb.h"  // IWYU pragma: keep
+#include "serialization/protobuf/Nym.pb.h"      // IWYU pragma: keep
 
 namespace opentxs::factory
 {

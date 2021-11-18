@@ -59,10 +59,10 @@
 #include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::factory

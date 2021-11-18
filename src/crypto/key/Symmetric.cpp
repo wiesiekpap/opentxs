@@ -22,6 +22,8 @@
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/SymmetricKey.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -32,11 +34,9 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/verify/SymmetricKey.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
 #include "util/ScopeGuard.hpp"
 
 template class opentxs::Pimpl<opentxs::crypto::key::Symmetric>;

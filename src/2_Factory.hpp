@@ -13,8 +13,8 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

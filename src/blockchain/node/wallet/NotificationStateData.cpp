@@ -43,10 +43,10 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::blockchain::node::wallet
 {

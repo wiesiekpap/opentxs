@@ -19,6 +19,9 @@
 
 #include "Proto.hpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/ContactItem.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -44,15 +47,12 @@
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Contact.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/ContactItem.pb.h"
-#include "opentxs/protobuf/verify/ContactItem.hpp"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Contact.pb.h"
+#include "serialization/protobuf/ContactEnums.pb.h"
+#include "serialization/protobuf/ContactItem.pb.h"
 #include "util/Container.hpp"
 
 #define ID_BYTES 32

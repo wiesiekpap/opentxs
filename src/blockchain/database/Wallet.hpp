@@ -45,9 +45,9 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs

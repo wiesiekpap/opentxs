@@ -19,10 +19,10 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/NymFile.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/ContractEnums.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/util/Bytes.hpp"
+#include "serialization/protobuf/ContactEnums.pb.h"
+#include "serialization/protobuf/ContractEnums.pb.h"
+#include "serialization/protobuf/PeerEnums.pb.h"
 #include "util/Blank.hpp"
 
 namespace opentxs

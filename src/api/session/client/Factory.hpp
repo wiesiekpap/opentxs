@@ -63,12 +63,12 @@
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/ContactEnums.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/PeerEnums.pb.h"
 
 namespace opentxs
 {

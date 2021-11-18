@@ -23,8 +23,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/protobuf/ContractEnums.pb.h"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/ContractEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::blockchain

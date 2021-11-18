@@ -17,10 +17,10 @@
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
-#include "opentxs/protobuf/RPCEnums.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/ConsensusEnums.pb.h"
+#include "serialization/protobuf/RPCEnums.pb.h"
 
 namespace opentxs::rpc::implementation
 {

@@ -19,11 +19,11 @@
 #include "Proto.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/StorageEnums.pb.h"
 #include "opentxs/storage/Driver.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/StorageEnums.pb.h"
 #include "storage/Plugin.hpp"
 
 namespace opentxs
