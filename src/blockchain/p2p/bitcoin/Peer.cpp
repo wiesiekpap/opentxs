@@ -25,7 +25,10 @@
 #include "blockchain/p2p/bitcoin/message/Merkleblock.hpp"
 #include "blockchain/p2p/bitcoin/message/Reject.hpp"
 #include "blockchain/p2p/bitcoin/message/Sendcmpct.hpp"
+#include "blockchain/p2p/peer/Address.hpp"
+#include "blockchain/p2p/peer/ConnectionManager.hpp"
 #include "blockchain/p2p/peer/Peer.hpp"
+#include "core/Worker.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -54,11 +57,10 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/p2p/Peer.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -203,7 +205,7 @@ Peer::Peer(
     init();
 }
 
-auto Peer::broadcast_block(zmq::Message& in) noexcept -> void
+auto Peer::broadcast_block(zmq::Message&& in) noexcept -> void
 {
     const auto body = in.Body();
 
@@ -213,12 +215,7 @@ auto Peer::broadcast_block(zmq::Message& in) noexcept -> void
         OT_FAIL;
     }
 
-    const auto id = [&] {
-        auto output = api_.Factory().Data();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto id = api_.Factory().Data(body.at(1));
     auto payload = [&] {
         using Inventory = blockchain::bitcoin::Inventory;
         auto output = std::vector<Inventory>{};
@@ -236,7 +233,10 @@ auto Peer::broadcast_block(zmq::Message& in) noexcept -> void
     }
 
     const auto& msg = *pMsg;
-    send(msg.Encode());
+    LogTrace()("sending inv (block) message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
+    send(msg.Transmit());
 }
 
 auto Peer::broadcast_inv(
@@ -252,7 +252,10 @@ auto Peer::broadcast_inv(
     }
 
     const auto& msg = *pMsg;
-    send(msg.Encode());
+    LogTrace()("sending inv message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
+    send(msg.Transmit());
 }
 
 auto Peer::broadcast_inv_transaction(ReadView txid) noexcept -> void
@@ -275,7 +278,7 @@ auto Peer::broadcast_inv_transaction(ReadView txid) noexcept -> void
     broadcast_inv(std::move(inv));
 }
 
-auto Peer::broadcast_transaction(zmq::Message& in) noexcept -> void
+auto Peer::broadcast_transaction(zmq::Message&& in) noexcept -> void
 {
     const auto body = in.Body();
 
@@ -294,8 +297,11 @@ auto Peer::broadcast_transaction(zmq::Message& in) noexcept -> void
         return;
     }
 
+    LogTrace()("sending tx message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
     const auto& msg = *pMsg;
-    send(msg.Encode());
+    send(msg.Transmit());
 }
 
 auto Peer::get_body_size(const zmq::Frame& header) const noexcept -> std::size_t
@@ -379,8 +385,11 @@ auto Peer::ping() noexcept -> void
         return;
     }
 
+    LogTrace()("sending ping message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
     const auto& ping = *pPing;
-    send(ping.Encode());
+    send(ping.Transmit());
 }
 
 auto Peer::pong() noexcept -> void
@@ -394,8 +403,11 @@ auto Peer::pong() noexcept -> void
         return;
     }
 
+    LogTrace()("sending pong message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
     const auto& pong = *pPong;
-    send(pong.Encode());
+    send(pong.Transmit());
 }
 
 auto Peer::process_addr(
@@ -464,9 +476,12 @@ auto Peer::process_block(
 
         if (submit) {
             using Task = node::internal::Network::Task;
-            auto work = MakeWork(Task::SubmitBlock);
-            work->AddFrame(payload);
-            network_.Submit(work);
+            network_.Submit([&] {
+                auto work = MakeWork(Task::SubmitBlock);
+                work.AddFrame(payload);
+
+                return work;
+            }());
         }
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
@@ -524,7 +539,7 @@ auto Peer::process_cfheaders(
     auto& success = state_.verify_.second_action_;
     auto postcondition = ScopeGuard{[this, &success] {
         if (verifying() && (false == success)) {
-            LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to filter checkpoint failure.")
                 .Flush();
             disconnect();
@@ -577,8 +592,8 @@ auto Peer::process_cfheaders(
             return;
         }
 
-        LogVerbose()("Filter checkpoint validated for ")(DisplayString(chain_))(
-            " peer ")(address_.Display())
+        LogVerbose()("Filter checkpoint validated for ")(
+            display_chain_)(" peer ")(address_.Display())
             .Flush();
         cfilter_probe_ = true;
         success = true;
@@ -942,8 +957,11 @@ auto Peer::process_getcfheaders(
         return;
     }
 
+    LogTrace()("sending cfheaders message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
     const auto& message = *pOut;
-    send(message.Encode());
+    send(message.Transmit());
 }
 
 auto Peer::process_getcfilters(
@@ -1046,8 +1064,11 @@ auto Peer::process_getcfilters(
             return;
         }
 
+        LogTrace()("sending cfilter message to ")(display_chain_)(" peer ")(
+            address_.Display())
+            .Flush();
         const auto& message = *pOut;
-        send(message.Encode());
+        send(message.Transmit());
     }
 }
 
@@ -1092,8 +1113,12 @@ auto Peer::process_getdata(
 
                     OT_ASSERT(pMsg);
 
+                    LogTrace()("sending tx message to ")(
+                        display_chain_)(" peer ")(address_.Display())
+                        .Flush();
+
                     const auto& msg = *pMsg;
-                    send(msg.Encode());
+                    send(msg.Transmit());
                 } else {
                     notFound.emplace_back(inv);
                 }
@@ -1121,8 +1146,12 @@ auto Peer::process_getdata(
 
                     OT_ASSERT(pMsg);
 
+                    LogTrace()("sending block message to ")(
+                        display_chain_)(" peer ")(address_.Display())
+                        .Flush();
+
                     const auto& msg = *pMsg;
-                    send(msg.Encode());
+                    send(msg.Transmit());
                 } else {
                     notFound.emplace_back(inv);
                 }
@@ -1145,8 +1174,12 @@ auto Peer::process_getdata(
 
         OT_ASSERT(pMsg);
 
+        LogTrace()("sending notfound message to ")(display_chain_)(" peer ")(
+            address_.Display())
+            .Flush();
+
         const auto& msg = *pMsg;
-        send(msg.Encode());
+        send(msg.Transmit());
     }
 }
 
@@ -1190,8 +1223,12 @@ auto Peer::process_getheaders(
         return;
     }
 
+    LogTrace()("sending headers message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
+
     const auto& message = *pOut;
-    send(message.Encode());
+    send(message.Transmit());
 }
 
 auto Peer::process_headers(
@@ -1201,7 +1238,7 @@ auto Peer::process_headers(
     auto& success = state_.verify_.first_action_;
     auto postcondition = ScopeGuard{[this, &success] {
         if (verifying() && (false == success)) {
-            LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to block checkpoint failure.")
                 .Flush();
             disconnect();
@@ -1252,22 +1289,24 @@ auto Peer::process_headers(
             return;
         }
 
-        LogVerbose()("Block checkpoint validated for ")(DisplayString(chain_))(
-            " peer ")(address_.Display())
+        LogVerbose()("Block checkpoint validated for ")(
+            display_chain_)(" peer ")(address_.Display())
             .Flush();
         header_probe_ = true;
         success = true;
         check_verify();
     } else {
         get_headers_.Finish();
-        using Task = node::internal::Network::Task;
-        auto work = MakeWork(Task::SubmitBlockHeader);
+        auto future = network_.Track([&] {
+            using Task = node::internal::Network::Task;
+            auto work = MakeWork(Task::SubmitBlockHeader);
 
-        for (const auto& header : message) {
-            header.Serialize(work->AppendBytes(), false);
-        }
+            for (const auto& header : message) {
+                header.Serialize(work.AppendBytes(), false);
+            }
 
-        auto future = network_.Track(work);
+            return work;
+        }());
         using Status = std::future_status;
         constexpr auto limit = std::chrono::seconds{10};
 
@@ -1281,7 +1320,7 @@ auto Peer::process_inv(
     std::unique_ptr<HeaderType> header,
     const zmq::Frame& payload) -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
     if (State::Run != state_.value_.load()) { return; }
 
     const std::unique_ptr<message::internal::Inv> pMessage{
@@ -1307,8 +1346,8 @@ auto Peer::process_inv(
 
     for (const auto& inv : message) {
         const auto& hash = inv.hash_.get();
-        LogVerbose()("Received ")(DisplayString(chain_))(" ")(
-            inv.DisplayType())(" hash ")(hash.asHex())
+        LogVerbose()("Received ")(display_chain_)(" ")(inv.DisplayType())(
+            " hash ")(hash.asHex())
             .Flush();
 
         switch (inv.type_) {
@@ -1392,16 +1431,19 @@ auto Peer::process_merkleblock(
     // TODO
 }
 
-auto Peer::process_message(const zmq::Message& message) noexcept -> void
+auto Peer::process_message(zmq::Message&& message) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = message.Body();
 
     if (3 > body.size()) {
-        LogError()(OT_PRETTY_CLASS())("Invalid message").Flush();
+        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
+            address_.Display())(" due to invalid message.")
+            .Flush();
+        disconnect();
 
-        OT_FAIL;
+        return;
     }
 
     const auto& headerBytes = body.at(1);
@@ -1410,7 +1452,7 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
         factory::BitcoinP2PHeader(api_, headerBytes)};
 
     if (false == bool(pHeader)) {
-        LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
             address_.Display())(" due to invalid message header.")
             .Flush();
         disconnect();
@@ -1421,7 +1463,7 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
     auto& header = *pHeader;
 
     if (header.Network() != chain_) {
-        LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
             address_.Display())(" due to invalid network.")
             .Flush();
         disconnect();
@@ -1432,7 +1474,7 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
     const auto command = header.Command();
 
     if (false == message::VerifyChecksum(api_, header, payloadBytes)) {
-        LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
             address_.Display())(" due to invalid message checksum.")
             .Flush();
         disconnect();
@@ -1440,8 +1482,8 @@ auto Peer::process_message(const zmq::Message& message) noexcept -> void
         return;
     }
 
-    LogVerbose()(OT_PRETTY_CLASS())("Received ")(DisplayString(chain_))(" ")(
-        CommandName(command))(" command")
+    LogTrace()(OT_PRETTY_CLASS())("Received ")(display_chain_)(" ")(
+        CommandName(command))(" command from ")(address_.Display())
         .Flush();
 
     try {
@@ -1502,7 +1544,7 @@ auto Peer::process_ping(
     const auto& message = *pMessage;
 
     if (message.Nonce() == nonce_) {
-        LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
             address_.Display())(" which is apparently us.")
             .Flush();
         disconnect();
@@ -1668,7 +1710,10 @@ auto Peer::process_version(
     }
 
     const auto& verack = *pVerack;
-    send(verack.Encode());
+    LogTrace()("sending verack message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
+    send(verack.Transmit());
     state_.handshake_.second_action_ = true;
 
     if (address_.Incoming()) { start_handshake(); }
@@ -1733,11 +1778,14 @@ auto Peer::request_addresses() noexcept -> void
         return;
     }
 
+    LogTrace()("sending getaddr message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
     const auto& message = *pMessage;
-    send(message.Encode());
+    send(message.Transmit());
 }
 
-auto Peer::request_block(zmq::Message& in) noexcept -> void
+auto Peer::request_block(zmq::Message&& in) noexcept -> void
 {
     const auto body = in.Body();
 
@@ -1774,14 +1822,17 @@ auto Peer::request_block(zmq::Message& in) noexcept -> void
             return;
         }
 
+        LogTrace()("sending getdata(block) message to ")(
+            display_chain_)(" peer ")(address_.Display())
+            .Flush();
         const auto& message = *pMessage;
-        send(message.Encode());
+        send(message.Transmit());
     }
 }
 
 auto Peer::request_blocks() noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto& job = block_job_;
     const auto& data = job.data_;
@@ -1804,8 +1855,11 @@ auto Peer::request_blocks() noexcept -> void
             throw std::runtime_error("Failed to construct getdata");
         }
 
+        LogTrace()("sending getdata(block) message to ")(
+            display_chain_)(" peer ")(address_.Display())
+            .Flush();
         const auto& message = *pMessage;
-        send(message.Encode());
+        send(message.Transmit());
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
@@ -1813,7 +1867,7 @@ auto Peer::request_blocks() noexcept -> void
 
 auto Peer::request_cfheaders() noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto& job = cfheader_job_;
     const auto& data = job.data_;
@@ -1836,8 +1890,11 @@ auto Peer::request_cfheaders() noexcept -> void
             return;
         }
 
+        LogTrace()("sending getcfheaders message to ")(
+            display_chain_)(" peer ")(address_.Display())
+            .Flush();
         const auto& message = *pMessage;
-        send(message.Encode());
+        send(message.Transmit());
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())("Invalid parameters").Flush();
     }
@@ -1845,7 +1902,7 @@ auto Peer::request_cfheaders() noexcept -> void
 
 auto Peer::request_cfilter() noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto& job = cfilter_job_;
     const auto& data = job.data_;
@@ -1867,8 +1924,11 @@ auto Peer::request_cfilter() noexcept -> void
             return;
         }
 
+        LogTrace()("sending getcfilters message to ")(display_chain_)(" peer ")(
+            address_.Display())
+            .Flush();
         const auto& message = *pMessage;
-        send(message.Encode());
+        send(message.Transmit());
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())("Invalid parameters").Flush();
     }
@@ -1880,10 +1940,10 @@ auto Peer::request_checkpoint_block_header() noexcept -> void
     auto postcondition = ScopeGuard{[this, &success] {
         if (success) {
             LogVerbose()("Requested checkpoint block header from ")(
-                DisplayString(chain_))(" peer ")(address_.Display())(".")
+                display_chain_)(" peer ")(address_.Display())(".")
                 .Flush();
         } else {
-            LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to block checkpoint request failure.")
                 .Flush();
             disconnect();
@@ -1908,8 +1968,11 @@ auto Peer::request_checkpoint_block_header() noexcept -> void
             return;
         }
 
+        LogTrace()("sending getheaders message to ")(display_chain_)(" peer ")(
+            address_.Display())
+            .Flush();
         const auto& message = *pMessage;
-        send(message.Encode());
+        send(message.Transmit());
         success = true;
     } catch (...) {
     }
@@ -1921,10 +1984,10 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
     auto postcondition = ScopeGuard{[this, &success] {
         if (success) {
             LogVerbose()("Requested checkpoint filter header from ")(
-                DisplayString(chain_))(" peer ")(address_.Display())(".")
+                display_chain_)(" peer ")(address_.Display())(".")
                 .Flush();
         } else {
-            LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(
                 " due to filter checkpoint request failure.")
                 .Flush();
@@ -1951,8 +2014,11 @@ auto Peer::request_checkpoint_filter_header() noexcept -> void
             return;
         }
 
+        LogTrace()("sending getcfheaders message to ")(
+            display_chain_)(" peer ")(address_.Display())
+            .Flush();
         const auto& message = *pMessage;
-        send(message.Encode());
+        send(message.Transmit());
         success = true;
     } catch (...) {
         LogVerbose()(OT_PRETTY_CLASS())("Invalid parameters").Flush();
@@ -1977,8 +2043,11 @@ auto Peer::request_headers(const block::Hash& hash) noexcept -> void
         return;
     }
 
+    LogTrace()("sending getheaders message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
     const auto& message = *pMessage;
-    send(message.Encode());
+    send(message.Transmit());
     get_headers_.Start();
 }
 
@@ -1993,8 +2062,11 @@ auto Peer::request_mempool() noexcept -> void
         return;
     }
 
+    LogTrace()("sending mempool message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
     const auto& message = *pMessage;
-    send(message.Encode());
+    send(message.Transmit());
 }
 
 auto Peer::request_transactions(
@@ -2009,8 +2081,11 @@ auto Peer::request_transactions(
         return;
     }
 
+    LogTrace()("sending getdata(tx) message to ")(display_chain_)(" peer ")(
+        address_.Display())
+        .Flush();
     const auto& message = *pMessage;
-    send(message.Encode());
+    send(message.Transmit());
 }
 
 auto Peer::start_handshake() noexcept -> void
@@ -2019,7 +2094,7 @@ auto Peer::start_handshake() noexcept -> void
         const auto status = Connected().wait_for(std::chrono::seconds(5));
 
         if (std::future_status::ready != status) {
-            LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+            LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
                 address_.Display())(" due to handshake timeout.")
                 .Flush();
             disconnect();
@@ -2027,7 +2102,7 @@ auto Peer::start_handshake() noexcept -> void
             return;
         }
     } catch (const std::exception& e) {
-        LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
             address_.Display())(" due to handshake error: ")(e.what())
             .Flush();
         disconnect();
@@ -2056,10 +2131,13 @@ auto Peer::start_handshake() noexcept -> void
 
         OT_ASSERT(pVersion);
 
+        LogTrace()("sending version message to ")(display_chain_)(" peer ")(
+            address_.Display())
+            .Flush();
         const auto& version = *pVersion;
-        send(version.Encode());
+        send(version.Transmit());
     } catch (const std::exception& e) {
-        LogConsole()("Disconnecting ")(DisplayString(chain_))(" peer ")(
+        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
             address_.Display())(" due to handshake error: ")(e.what())
             .Flush();
         disconnect();

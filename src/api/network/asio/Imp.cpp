@@ -45,12 +45,13 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
@@ -112,9 +113,12 @@ const std::vector<Asio::Imp::Site> Asio::Imp::sites{
 Asio::Imp::Imp(const zmq::Context& zmq) noexcept
     : StateMachine([&] { return state_machine(); })
     , zmq_(zmq)
-    , notification_endpoint_(zmq_.BuildEndpoint("asio/register", -1, 1))
-    , data_cb_(
-          zmq::ListenCallback::Factory([this](auto& in) { data_callback(in); }))
+    , notification_endpoint_(opentxs::network::zeromq::MakeDeterministicInproc(
+          "asio/register",
+          -1,
+          1))
+    , data_cb_(zmq::ListenCallback::Factory(
+          [this](auto&& in) { data_callback(std::move(in)); }))
     , data_socket_(
           zmq_.RouterSocket(data_cb_, zmq::socket::Socket::Direction::Bind))
     , buffers_()
@@ -171,11 +175,15 @@ auto Asio::Imp::Connect(
                     .Flush();
             }
 
-            auto work = zmq_.TaggedReply(
-                reader(connection),
-                e ? WorkType::AsioDisconnect : WorkType::AsioConnect);
-            work->AddFrame(address);
-            data_socket_->Send(std::move(work));
+            data_socket_->Send([&] {
+                auto work =
+                    opentxs::network::zeromq::tagged_reply_to_connection(
+                        reader(connection),
+                        e ? WorkType::AsioDisconnect : WorkType::AsioConnect);
+                work.AddFrame(address);
+
+                return work;
+            }());
         });
 
     return true;
@@ -186,7 +194,7 @@ auto Asio::Imp::IOContext() noexcept -> boost::asio::io_context&
     return io_context_;
 }
 
-auto Asio::Imp::data_callback(zmq::Message& in) noexcept -> void
+auto Asio::Imp::data_callback(zmq::Message&& in) noexcept -> void
 {
     const auto header = in.Header();
 
@@ -213,9 +221,14 @@ auto Asio::Imp::data_callback(zmq::Message& in) noexcept -> void
 
         switch (work) {
             case value(WorkType::AsioRegister): {
-                auto reply = zmq_.TaggedReply(in, WorkType::AsioRegister);
-                reply->AddFrame(connectionID);
-                data_socket_->Send(reply);
+                data_socket_->Send([&] {
+                    auto work =
+                        opentxs::network::zeromq::tagged_reply_to_message(
+                            in, WorkType::AsioRegister);
+                    work.AddFrame(connectionID);
+
+                    return work;
+                }());
             } break;
             default: {
                 throw std::runtime_error{
@@ -357,23 +370,27 @@ auto Asio::Imp::Receive(
         bufData.second,
         [this, connection{space(id)}, type, bufData, address{endpoint.str()}](
             const auto& e, auto size) {
-            const auto& [index, buffer] = bufData;
-            auto work = zmq_.TaggedReply(
-                reader(connection), e ? value(WorkType::AsioDisconnect) : type);
+            data_socket_->Send([&] {
+                const auto& [index, buffer] = bufData;
+                auto work =
+                    opentxs::network::zeromq::tagged_reply_to_connection(
+                        reader(connection),
+                        e ? value(WorkType::AsioDisconnect) : type);
 
-            if (e) {
-                LogVerbose()(OT_PRETTY_CLASS())("asio receive error: ")(
-                    e.message())
-                    .Flush();
-                work->AddFrame(address);
-            } else {
-                work->AddFrame(buffer.data(), buffer.size());
-            }
+                if (e) {
+                    LogVerbose()(OT_PRETTY_CLASS())("asio receive error: ")(
+                        e.message())
+                        .Flush();
+                    work.AddFrame(address);
+                } else {
+                    work.AddFrame(buffer.data(), buffer.size());
+                }
 
-            OT_ASSERT(1 < work->Body().size());
+                OT_ASSERT(1 < work.Body().size());
 
-            data_socket_->Send(std::move(work));
-            buffers_.clear(index);
+                return work;
+            }());
+            buffers_.clear(bufData.first);
         });
 
     return true;

@@ -11,7 +11,6 @@
 #include <map>
 #include <mutex>
 #include <shared_mutex>
-#include <type_traits>
 #include <utility>
 
 #include "blockchain/database/common/Bulk.hpp"

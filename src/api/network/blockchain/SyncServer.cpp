@@ -37,10 +37,10 @@
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/blockchain/sync/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::api::network::blockchain
@@ -133,7 +133,7 @@ struct SyncServer::Imp {
                             std::piecewise_construct,
                             std::forward_as_tuple(chain),
                             std::forward_as_tuple(
-                                OTSocket::random_inproc_endpoint(),
+                                opentxs::network::zeromq::MakeArbitraryInproc(),
                                 false,
                                 Socket{
                                     ::zmq_socket(
@@ -170,7 +170,7 @@ private:
     auto process_external(const Lock& lock, void* socket) noexcept -> void
     {
         const auto incoming = [&] {
-            auto output = api_.Network().ZeroMQ().Message();
+            auto output = opentxs::network::zeromq::Message{};
             OTSocket::receive_message(lock, socket, output);
 
             return output;
@@ -197,10 +197,10 @@ private:
             {
                 const auto ack = bcsync::Acknowledgement{
                     parent_.Hello(), update_public_endpoint_};
-                auto msg = api_.Network().ZeroMQ().ReplyMessage(incoming);
+                auto msg = opentxs::network::zeromq::reply_to_message(incoming);
 
                 if (ack.Serialize(msg)) {
-                    OTSocket::send_message(lock, socket, msg);
+                    OTSocket::send_message(lock, socket, std::move(msg));
                 }
             }
 
@@ -214,7 +214,9 @@ private:
 
                         if (enabled) {
                             OTSocket::send_message(
-                                lock, internal.get(), OTZMQMessage{incoming});
+                                lock,
+                                internal.get(),
+                                opentxs::network::zeromq::Message{incoming});
                         }
                     } catch (...) {
                     }
@@ -226,20 +228,20 @@ private:
     }
     auto process_internal(const Lock& lock, void* socket) noexcept -> void
     {
-        auto incoming = api_.Network().ZeroMQ().Message();
+        auto incoming = opentxs::network::zeromq::Message{};
         OTSocket::receive_message(lock, socket, incoming);
-        const auto hSize = incoming->Header().size();
-        const auto bSize = incoming->Body().size();
+        const auto hSize = incoming.Header().size();
+        const auto bSize = incoming.Body().size();
 
         if ((0u == hSize) && (0u == bSize)) { return; }
 
         if (0u < hSize) {
             LogTrace()(OT_PRETTY_CLASS())("transmitting sync reply").Flush();
-            OTSocket::send_message(lock, sync_.get(), incoming);
+            OTSocket::send_message(lock, sync_.get(), std::move(incoming));
         } else {
             LogTrace()(OT_PRETTY_CLASS())("broadcasting push notification")
                 .Flush();
-            OTSocket::send_message(lock, update_.get(), incoming);
+            OTSocket::send_message(lock, update_.get(), std::move(incoming));
         }
     }
 };

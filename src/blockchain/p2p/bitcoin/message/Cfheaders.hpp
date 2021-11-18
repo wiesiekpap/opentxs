@@ -76,14 +76,14 @@ public:
         const filter::Type type,
         const block::Hash& stop,
         const ReadView previousHeader,
-        const std::vector<filter::pHash>& headers) noexcept;
+        const std::vector<filter::pHash>& headers) noexcept(false);
     Cfheaders(
         const api::Session& api,
         std::unique_ptr<Header> header,
         const filter::Type type,
         const block::Hash& stop,
         const filter::Header& previous,
-        const std::vector<filter::pHash>& headers) noexcept;
+        const std::vector<filter::pHash>& headers) noexcept(false);
 
     ~Cfheaders() final = default;
 
@@ -93,7 +93,8 @@ private:
     const filter::pHeader previous_;
     const std::vector<filter::pHash> payload_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Cfheaders(const Cfheaders&) = delete;
     Cfheaders(Cfheaders&&) = delete;

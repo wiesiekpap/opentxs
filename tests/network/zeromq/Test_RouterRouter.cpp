@@ -19,11 +19,10 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace zmq = ot::network::zeromq;
@@ -104,10 +103,10 @@ private:
 
             auto* socket = item.socket;
             auto receiving{true};
-            auto msg = context_.Message();
+            auto msg = opentxs::network::zeromq::Message{};
 
             while (receiving) {
-                auto& frame = msg->AddFrame();
+                auto& frame = msg.AddFrame();
                 const auto received =
                     (-1 != zmq_msg_recv(frame, socket, ZMQ_DONTWAIT));
 
@@ -164,19 +163,24 @@ TEST_F(RouterRouterF, test)
 
     ot::Sleep(std::chrono::seconds{1});
 
-    auto msg = context_.Message(endpoint_);
-    msg->AddFrame();
-    msg->AddFrame("test");
+    auto msg = opentxs::network::zeromq::Message{};
+    msg.AddFrame(endpoint_);
+    msg.StartBody();
+    msg.AddFrame("test");
     auto sent{true};
-    const auto parts = msg->size();
+    const auto parts = msg.size();
     auto counter = std::size_t{0};
 
-    for (auto& frame : msg.get()) {
+    for (auto& frame : msg) {
         int flags{0};
 
         if (++counter < parts) { flags = ZMQ_SNDMORE; }
 
-        sent &= (-1 != ::zmq_msg_send(frame, client_.get(), flags));
+        sent &=
+            (-1 != ::zmq_msg_send(
+                       const_cast<ot::network::zeromq::Frame&>(frame),
+                       client_.get(),
+                       flags));
     }
 
     EXPECT_TRUE(sent);

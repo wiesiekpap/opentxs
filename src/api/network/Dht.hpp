@@ -16,8 +16,8 @@
 #include "opentxs/api/network/Dht.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/network/OpenDHT.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
 
 namespace opentxs
@@ -100,7 +100,8 @@ private:
 
     auto process_request(
         const opentxs::network::zeromq::Message& incoming,
-        void (Dht::*get)(const std::string&) const) const -> OTZMQMessage;
+        void (Dht::*get)(const std::string&) const) const
+        -> opentxs::network::zeromq::Message;
 
     Dht() = delete;
     Dht(const Dht&) = delete;

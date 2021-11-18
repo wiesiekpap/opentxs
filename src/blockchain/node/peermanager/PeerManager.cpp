@@ -25,11 +25,10 @@
 #include "opentxs/blockchain/block/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -123,24 +122,24 @@ auto PeerManager::AddIncomingPeer(const int id, std::uintptr_t endpoint)
     const noexcept -> void
 {
     auto work = MakeWork(Work::IncomingPeer);
-    work->AddFrame(id);
-    work->AddFrame(endpoint);
-    pipeline_->Push(work);
+    work.AddFrame(id);
+    work.AddFrame(endpoint);
+    pipeline_.Push(std::move(work));
 }
 
 auto PeerManager::AddPeer(const p2p::Address& address) const noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     auto address_p = std::make_unique<OTBlockchainAddress>(address);
     auto promise = std::make_unique<std::promise<bool>>();
     auto future = promise->get_future();
     auto work = MakeWork(Work::AddPeer);
-    work->AddFrame(reinterpret_cast<std::uintptr_t>(address_p.release()));
-    work->AddFrame(reinterpret_cast<std::uintptr_t>(promise.release()));
-    pipeline_->Push(work);
+    work.AddFrame(reinterpret_cast<std::uintptr_t>(address_p.release()));
+    work.AddFrame(reinterpret_cast<std::uintptr_t>(promise.release()));
+    pipeline_.Push(std::move(work));
 
-    while (running_.get()) {
+    while (running_.load()) {
         if (std::future_status::ready ==
             future.wait_for(std::chrono::seconds(5))) {
 
@@ -154,14 +153,21 @@ auto PeerManager::AddPeer(const p2p::Address& address) const noexcept -> bool
 auto PeerManager::BroadcastBlock(const block::Block& block) const noexcept
     -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
-    if (0 == peers_.Count()) { return false; }
+    if (0 == peers_.Count()) {
+        LogError()(OT_PRETTY_CLASS())("no peers available").Flush();
 
-    const auto& id = block.ID();
-    auto work = jobs_.Work(Task::BroadcastBlock);
-    work->AddFrame(id);
-    jobs_.Dispatch(work);
+        return false;
+    }
+
+    jobs_.Dispatch([&] {
+        const auto& id = block.ID();
+        auto work = jobs_.Work(Task::BroadcastBlock);
+        work.AddFrame(id);
+
+        return work;
+    }());
 
     return true;
 }
@@ -169,7 +175,7 @@ auto PeerManager::BroadcastBlock(const block::Block& block) const noexcept
 auto PeerManager::BroadcastTransaction(
     const block::bitcoin::Transaction& tx) const noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     if (0 == peers_.Count()) { return false; }
 
@@ -181,15 +187,15 @@ auto PeerManager::BroadcastTransaction(
 
     const auto view = reader(bytes);
     auto work = jobs_.Work(Task::BroadcastTransaction);
-    work->AddFrame(view.data(), view.size());
-    jobs_.Dispatch(work);
+    work.AddFrame(view.data(), view.size());
+    jobs_.Dispatch(std::move(work));
 
     return true;
 }
 
 auto PeerManager::Connect() noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     trigger();
 
@@ -199,8 +205,8 @@ auto PeerManager::Connect() noexcept -> bool
 auto PeerManager::Disconnect(const int id) const noexcept -> void
 {
     auto work = MakeWork(Work::Disconnect);
-    work->AddFrame(id);
-    pipeline_->Push(work);
+    work.AddFrame(id);
+    pipeline_.Push(std::move(work));
 }
 
 auto PeerManager::GetVerifiedPeerCount() const noexcept -> std::size_t
@@ -235,17 +241,17 @@ auto PeerManager::JobReady(const Task type) const noexcept -> void
 
 auto PeerManager::Listen(const p2p::Address& address) const noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     auto address_p = std::make_unique<OTBlockchainAddress>(address);
     auto promise = std::make_unique<std::promise<bool>>();
     auto future = promise->get_future();
     auto work = MakeWork(Work::AddListener);
-    work->AddFrame(reinterpret_cast<std::uintptr_t>(address_p.release()));
-    work->AddFrame(reinterpret_cast<std::uintptr_t>(promise.release()));
-    pipeline_->Push(work);
+    work.AddFrame(reinterpret_cast<std::uintptr_t>(address_p.release()));
+    work.AddFrame(reinterpret_cast<std::uintptr_t>(promise.release()));
+    pipeline_.Push(std::move(work));
 
-    while (running_.get()) {
+    while (running_.load()) {
         if (std::future_status::ready ==
             future.wait_for(std::chrono::seconds(10))) {
 
@@ -288,9 +294,9 @@ auto PeerManager::peer_target(
     }
 }
 
-auto PeerManager::pipeline(zmq::Message& message) noexcept -> void
+auto PeerManager::pipeline(zmq::Message&& message) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = message.Body();
 
@@ -397,7 +403,7 @@ auto PeerManager::RequestBlock(const block::Hash& block) const noexcept -> bool
 auto PeerManager::RequestBlocks(
     const std::vector<ReadView>& hashes) const noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     if (0 == peers_.Count()) { return false; }
 
@@ -408,22 +414,22 @@ auto PeerManager::RequestBlocks(
         std::size_t{1u};  // TODO peers don't respond well to larger values
 
     for (const auto& block : hashes) {
-        work->AddFrame(block.data(), block.size());
+        work.AddFrame(block.data(), block.size());
 
-        if (work->Body().size() > limit) {
-            jobs_.Dispatch(work);
+        if (work.Body().size() > limit) {
+            jobs_.Dispatch(std::move(work));
             work = jobs_.Work(Task::Getblock);
         }
     }
 
-    if (work->Body().size() > 1u) { jobs_.Dispatch(work); }
+    if (work.Body().size() > 1u) { jobs_.Dispatch(std::move(work)); }
 
     return true;
 }
 
 auto PeerManager::RequestHeaders() const noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     if (0 == peers_.Count()) { return false; }
 
@@ -434,16 +440,12 @@ auto PeerManager::RequestHeaders() const noexcept -> bool
 
 auto PeerManager::shutdown(std::promise<void>& promise) noexcept -> void
 {
-    init_.get();
-
-    if (running_->Off()) {
+    if (auto previous = running_.exchange(false); previous) {
+        init_.get();
+        pipeline_.Close();
         jobs_.Shutdown();
         peers_.Shutdown();
-
-        try {
-            promise.set_value();
-        } catch (...) {
-        }
+        promise.set_value();
     }
 }
 
@@ -451,7 +453,7 @@ auto PeerManager::state_machine() noexcept -> bool
 {
     LogTrace()(OT_PRETTY_CLASS()).Flush();
 
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     return peers_.Run();
 }
@@ -467,5 +469,5 @@ auto PeerManager::VerifyPeer(const int id, const std::string& address)
     network_.UpdatePeer(chain_, address);
 }
 
-PeerManager::~PeerManager() { Shutdown().get(); }
+PeerManager::~PeerManager() { signal_shutdown().get(); }
 }  // namespace opentxs::blockchain::node::implementation

@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "opentxs/network/zeromq/PairEventCallback.hpp"
 
 namespace opentxs
@@ -23,14 +25,17 @@ namespace opentxs::network::zeromq::implementation
 class PairEventCallback final : virtual public zeromq::PairEventCallback
 {
 public:
-    void Process(zeromq::Message& message) const final;
+    auto Deactivate() const noexcept -> void final;
+    auto Process(zeromq::Message&& message) const noexcept -> void final;
 
     ~PairEventCallback() final;
 
 private:
     friend zeromq::PairEventCallback;
 
-    const zeromq::PairEventCallback::ReceiveCallback callback_;
+    mutable std::recursive_mutex execute_lock_;
+    mutable std::mutex callback_lock_;
+    mutable zeromq::PairEventCallback::ReceiveCallback callback_;
 
     auto clone() const -> PairEventCallback* final;
 

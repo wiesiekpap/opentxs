@@ -7,10 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include <functional>
 
 namespace opentxs
 {
@@ -18,48 +15,56 @@ namespace network
 {
 namespace zeromq
 {
+namespace internal
+{
+class Pipeline;
+}  // namespace internal
+
+class Context;
+class Message;
 class Pipeline;
 }  // namespace zeromq
 }  // namespace network
-
-using OTZMQPipeline = Pimpl<network::zeromq::Pipeline>;
 }  // namespace opentxs
 
-namespace opentxs
+namespace opentxs::network::zeromq
 {
-namespace network
-{
-namespace zeromq
-{
+OPENTXS_EXPORT auto swap(Pipeline& lhs, Pipeline& rhs) noexcept -> void;
+
 class OPENTXS_EXPORT Pipeline
 {
 public:
-    virtual auto Close() const noexcept -> bool = 0;
-    virtual auto Context() const noexcept -> const zeromq::Context& = 0;
-    template <typename Input>
-    auto Push(const Input& data) const noexcept -> bool
-    {
-        return push(Context().Message(data));
-    }
-    virtual void Start(const std::string& endpoint) const noexcept = 0;
+    class Imp;
 
-    virtual ~Pipeline() = default;
+    auto Close() const noexcept -> bool;
+    auto ConnectDealer(
+        const std::string& endpoint,
+        std::function<Message(bool)> notify = {}) const noexcept -> bool;
+    auto ConnectionIDDealer() const noexcept -> std::size_t;
+    auto ConnectionIDInternal() const noexcept -> std::size_t;
+    auto ConnectionIDPull() const noexcept -> std::size_t;
+    auto ConnectionIDSubscribe() const noexcept -> std::size_t;
+    OPENTXS_NO_EXPORT auto Internal() const noexcept
+        -> const internal::Pipeline&;
+    auto PullFrom(const std::string& endpoint) const noexcept -> bool;
+    auto Push(Message&& msg) const noexcept -> bool;
+    auto Send(Message&& msg) const noexcept -> bool;
+    auto SubscribeTo(const std::string& endpoint) const noexcept -> bool;
 
-protected:
-    Pipeline() noexcept = default;
+    OPENTXS_NO_EXPORT auto Internal() noexcept -> internal::Pipeline&;
+    virtual auto swap(Pipeline& rhs) noexcept -> void;
+
+    OPENTXS_NO_EXPORT Pipeline(Imp* imp) noexcept;
+    Pipeline(Pipeline&& rhs) noexcept;
+    auto operator=(Pipeline&& rhs) noexcept -> Pipeline&;
+
+    virtual ~Pipeline();
 
 private:
-    friend OTZMQPipeline;
+    Imp* imp_;
 
-    virtual auto clone() const noexcept -> Pipeline* = 0;
-    virtual auto push(network::zeromq::Message& data) const noexcept
-        -> bool = 0;
-
+    Pipeline() = delete;
     Pipeline(const Pipeline&) = delete;
-    Pipeline(Pipeline&&) = delete;
     auto operator=(const Pipeline&) -> Pipeline& = delete;
-    auto operator=(Pipeline&&) -> Pipeline& = delete;
 };
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::zeromq

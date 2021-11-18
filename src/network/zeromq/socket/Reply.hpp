@@ -53,7 +53,7 @@ private:
     auto clone() const noexcept -> Reply* final;
     auto have_callback() const noexcept -> bool final;
 
-    void process_incoming(const Lock& lock, Message& message) noexcept final;
+    void process_incoming(const Lock& lock, Message&& message) noexcept final;
 
     Reply() = delete;
     Reply(const Reply&) = delete;

@@ -80,7 +80,8 @@ private:
     const Space filter_;
     const blockchain::internal::FilterParams params_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Cfilter(const Cfilter&) = delete;
     Cfilter(Cfilter&&) = delete;

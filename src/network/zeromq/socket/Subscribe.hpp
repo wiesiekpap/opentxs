@@ -55,7 +55,7 @@ private:
     auto have_callback() const noexcept -> bool final;
 
     void init() noexcept final;
-    void process_incoming(const Lock& lock, Message& message) noexcept final;
+    void process_incoming(const Lock& lock, Message&& message) noexcept final;
 
     Subscribe() = delete;
     Subscribe(const Subscribe&) = delete;

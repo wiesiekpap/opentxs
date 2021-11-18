@@ -139,6 +139,7 @@ namespace zeromq
 {
 class Frame;
 class Message;
+class Pipeline;
 }  // namespace zeromq
 }  // namespace network
 
@@ -460,6 +461,8 @@ public:
     auto Identifier(const opentxs::Item& item) const -> OTIdentifier final;
     auto Identifier(const ReadView bytes) const -> OTIdentifier final;
     auto Identifier(const ProtobufType& proto) const -> OTIdentifier final;
+    auto Identifier(const opentxs::network::zeromq::Frame& bytes) const
+        -> OTIdentifier final;
     auto Item(const String& serialized) const
         -> std::unique_ptr<opentxs::Item> final;
     auto Item(const std::string& serialized) const
@@ -543,6 +546,8 @@ public:
     auto NymID(const std::string& serialized) const -> OTNymID final;
     auto NymID(const opentxs::String& serialized) const -> OTNymID final;
     auto NymIDFromPaymentCode(const std::string& serialized) const
+        -> OTNymID final;
+    auto NymID(const opentxs::network::zeromq::Frame& bytes) const
         -> OTNymID final;
     auto Offer() const -> std::unique_ptr<OTOffer> final;
     auto Offer(
@@ -653,8 +658,8 @@ public:
     auto PeerRequest(const Nym_p& nym, const ReadView& view) const
         noexcept(false) -> OTPeerRequest final;
     auto Pipeline(
-        std::function<void(opentxs::network::zeromq::Message&)> callback) const
-        -> OTZMQPipeline final;
+        std::function<void(opentxs::network::zeromq::Message&&)> callback) const
+        -> opentxs::network::zeromq::Pipeline final;
 #if OT_CASH
     auto Purse(
         const otx::context::Server& context,
@@ -719,6 +724,8 @@ public:
     auto ServerID() const -> OTServerID final;
     auto ServerID(const std::string& serialized) const -> OTServerID final;
     auto ServerID(const opentxs::String& serialized) const -> OTServerID final;
+    auto ServerID(const opentxs::network::zeromq::Frame& bytes) const
+        -> OTServerID final;
     auto SignedFile() const -> std::unique_ptr<OTSignedFile> final;
     auto SignedFile(const String& LOCAL_SUBDIR, const String& FILE_NAME) const
         -> std::unique_ptr<OTSignedFile> final;
@@ -837,6 +844,8 @@ public:
     auto UnitID() const -> OTUnitID final;
     auto UnitID(const std::string& serialized) const -> OTUnitID final;
     auto UnitID(const opentxs::String& serialized) const -> OTUnitID final;
+    auto UnitID(const opentxs::network::zeromq::Frame& bytes) const
+        -> OTUnitID final;
     auto UnitDefinition() const noexcept -> OTUnitDefinition final;
     auto UnitDefinition(
         const Nym_p& nym,

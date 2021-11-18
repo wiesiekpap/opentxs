@@ -34,10 +34,9 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -56,7 +55,7 @@ PeerManager::Peers::Peers(
     const internal::PeerDatabase& database,
     const internal::PeerManager& parent,
     const database::BlockStorage policy,
-    const Flag& running,
+    const std::atomic<bool>& running,
     const std::string& shutdown,
     const Type chain,
     const std::string& seednode,
@@ -155,11 +154,14 @@ auto PeerManager::Peers::adjust_count(int adjustment) noexcept -> void
         count_.store(0);
     }
 
-    auto out = api_.Network().ZeroMQ().TaggedMessage(
-        WorkType::BlockchainPeerConnected);
-    out->AddFrame(chain_);
-    out->AddFrame(count_.load());
-    connected_peers_.Send(out);
+    connected_peers_.Send([&] {
+        auto work =
+            network::zeromq::tagged_message(WorkType::BlockchainPeerConnected);
+        work.AddFrame(chain_);
+        work.AddFrame(count_.load());
+
+        return work;
+    }());
 }
 
 auto PeerManager::Peers::AddListener(
@@ -244,22 +246,23 @@ auto PeerManager::Peers::ConstructPeer(Endpoint endpoint) noexcept -> int
 
 auto PeerManager::Peers::Disconnect(const int id) noexcept -> void
 {
-    auto it = peers_.find(id);
+    if (auto it = peers_.find(id); peers_.end() != it) {
+        if (incoming_zmq_) { incoming_zmq_->Disconnect(id); }
 
-    if (peers_.end() == it) { return; }
+        if (incoming_tcp_) { incoming_tcp_->Disconnect(id); }
 
-    if (incoming_zmq_) { incoming_zmq_->Disconnect(id); }
+        const auto address = [&] {
+            auto& peer = *it->second;
+            auto out = peer.AddressID();
+            peer.Shutdown();
+            peers_.erase(it);
 
-    if (incoming_tcp_) { incoming_tcp_->Disconnect(id); }
-
-    auto& peer = *it->second;
-    const auto address = peer.AddressID();
-    --active_.at(address);
-    peer.Shutdown().get();
-    it->second.reset();
-    peers_.erase(it);
-    adjust_count(-1);
-    connected_.erase(address);
+            return out;
+        }();
+        --active_.at(address);
+        adjust_count(-1);
+        connected_.erase(address);
+    }
 }
 
 auto PeerManager::Peers::get_default_peer() const noexcept -> Endpoint
@@ -630,7 +633,7 @@ auto PeerManager::Peers::Shutdown() noexcept -> void
     if (incoming_tcp_) { incoming_tcp_->Shutdown(); }
 
     for (auto& [id, peer] : peers_) {
-        peer->Shutdown().wait_for(std::chrono::seconds(1));
+        peer->Shutdown();
         peer.reset();
     }
 

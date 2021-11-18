@@ -29,7 +29,7 @@
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Factory.hpp"
-#include "internal/network/Factory.hpp"
+#include "internal/network/zeromq/Factory.hpp"
 #include "internal/rpc/RPC.hpp"
 #include "internal/util/Log.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -92,7 +92,7 @@ Context::Context(
     , config_()
     , zmq_context_(opentxs::factory::ZMQContext())
     , signal_handler_(nullptr)
-    , log_(factory::Log(zmq_context_, args_.RemoteLogEndpoint()))
+    , log_(factory::Log(*zmq_context_, args_.RemoteLogEndpoint()))
     , asio_()
     , crypto_(nullptr)
     , factory_(nullptr)
@@ -109,6 +109,7 @@ Context::Context(
     , rpc_(opentxs::Factory::RPC(*this))
 {
     // NOTE: OT_ASSERT is not available until Init() has been called
+    assert(zmq_context_);
     assert(legacy_);
     assert(log_);
 
@@ -191,7 +192,7 @@ auto Context::Init() noexcept -> void
 
 auto Context::Init_Asio() -> void
 {
-    asio_ = std::make_unique<network::Asio>(zmq_context_);
+    asio_ = std::make_unique<network::Asio>(*zmq_context_);
 
     OT_ASSERT(asio_);
 
@@ -291,7 +292,7 @@ auto Context::init_pid() const -> void
 
 auto Context::Init_Zap() -> void
 {
-    zap_.reset(opentxs::Factory::ZAP(zmq_context_));
+    zap_.reset(opentxs::Factory::ZAP(*zmq_context_));
 
     OT_ASSERT(zap_);
 }
@@ -386,7 +387,7 @@ auto Context::start_client(const Lock& lock, const Options& args) const -> void
         args_ + args,
         Config(legacy_->ClientConfigFilePath(next)),
         *crypto_,
-        zmq_context_,
+        *zmq_context_,
         legacy_->ClientDataFolder(next),
         instance));
 
@@ -461,7 +462,7 @@ auto Context::start_server(const Lock& lock, const Options& args) const -> void
         args_ + args,
         *crypto_,
         Config(legacy_->ServerConfigFilePath(next)),
-        zmq_context_,
+        *zmq_context_,
         legacy_->ServerDataFolder(next),
         instance));
 }

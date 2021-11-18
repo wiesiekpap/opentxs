@@ -13,6 +13,7 @@
 #include <set>
 #include <string>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "1_Internal.hpp"
@@ -86,15 +87,19 @@ class Frame;
 }  // namespace network
 }  // namespace opentxs
 
+namespace zmq = opentxs::network::zeromq;
+
 namespace opentxs::blockchain::p2p::bitcoin
 {
 struct Message {
     static auto MaxPayload() -> std::size_t;
 
     virtual auto Encode() const -> OTData = 0;
-
-    virtual auto header() const -> const Header& = 0;
+    virtual auto header() const noexcept -> const Header& = 0;
     virtual auto payload() const noexcept -> OTData = 0;
+    virtual auto payload(AllocateOutput) const noexcept -> bool = 0;
+    virtual auto Transmit() const noexcept
+        -> std::pair<zmq::Frame, zmq::Frame> = 0;
 
     virtual ~Message() = default;
 };

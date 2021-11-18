@@ -31,13 +31,13 @@ class Message;
 
 namespace opentxs::network::zeromq::implementation
 {
-class Proxy final : virtual public opentxs::network::zeromq::Proxy
+class Proxy final : virtual public network::zeromq::Proxy
 {
 public:
     ~Proxy() final;
 
 private:
-    friend opentxs::network::zeromq::Proxy;
+    friend network::zeromq::Proxy;
 
     const zeromq::Context& context_;
     zeromq::socket::Socket& frontend_;

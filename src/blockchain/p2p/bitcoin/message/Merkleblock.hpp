@@ -16,6 +16,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -86,7 +87,8 @@ private:
     const std::vector<OTData> hashes_;
     const std::vector<std::byte> flags_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Merkleblock(const Merkleblock&) = delete;
     Merkleblock(Merkleblock&&) = delete;

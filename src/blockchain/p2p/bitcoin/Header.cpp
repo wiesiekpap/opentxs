@@ -22,10 +22,8 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/util/Pimpl.hpp"
-
-#define HEADER_SIZE 24
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory
 {
@@ -72,7 +70,7 @@ Header::BitcoinFormat::BitcoinFormat(
     , length_()
     , checksum_()
 {
-    static_assert(HEADER_SIZE == sizeof(BitcoinFormat));
+    static_assert(header_size_ == sizeof(BitcoinFormat));
 
     if (sizeof(BitcoinFormat) != size) {
         throw std::invalid_argument("Incorrect input size");
@@ -91,7 +89,7 @@ Header::BitcoinFormat::BitcoinFormat(
     , length_(static_cast<std::uint32_t>(payload))
     , checksum_()
 {
-    static_assert(HEADER_SIZE == sizeof(BitcoinFormat));
+    static_assert(header_size_ == sizeof(BitcoinFormat));
 
     OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= payload);
 
@@ -152,21 +150,31 @@ auto Header::BitcoinFormat::PayloadSize() const noexcept -> std::size_t
     return length_.value();
 }
 
-auto Header::Encode() const noexcept -> OTData
+auto Header::Serialize(const AllocateOutput out) const noexcept -> bool
 {
-    auto output = Data::Factory();
-
     try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
+
+        auto bytes = out(header_size_);
+
+        if (false == bytes.valid(header_size_)) {
+            throw std::runtime_error{"failed to allocate write buffer"};
+        }
+
         const auto raw =
             BitcoinFormat(chain_, command_, payload_size_, checksum_);
-        output->Assign(&raw, sizeof(raw));
-    } catch (...) {
-    }
+        std::memcpy(bytes.data(), static_cast<const void*>(&raw), header_size_);
 
-    return output;
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 
-void Header::SetChecksum(const std::size_t payload, OTData&& checksum) noexcept
+auto Header::SetChecksum(const std::size_t payload, OTData&& checksum) noexcept
+    -> void
 {
     payload_size_ = payload;
     checksum_ = std::move(checksum);

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <functional>
 #include <future>
@@ -14,11 +15,11 @@
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Work.hpp"
 
@@ -36,40 +37,36 @@ class Client;
 namespace opentxs
 {
 template <typename Enum>
-auto MakeWork(const api::Session& api, const Enum type) noexcept -> OTZMQMessage
+auto MakeWork(const Enum type) noexcept -> network::zeromq::Message
 {
-    return api.Network().ZeroMQ().TaggedMessage(type);
+    return network::zeromq::tagged_message<Enum>(type);
 }
 
 template <typename Child, typename API = api::session::Client>
 class Worker
 {
-public:
-    template <typename Enum>
-    auto MakeWork(const Enum type) const noexcept -> OTZMQMessage
-    {
-        return opentxs::MakeWork(api_, type);
-    }
-
 protected:
     using Endpoints = std::vector<std::string>;
 
     const API& api_;
     const std::chrono::milliseconds rate_limit_;
-    OTFlag running_;
+    std::atomic<bool> running_;
     std::promise<void> shutdown_promise_;
-    OTZMQPipeline pipeline_;
+    network::zeromq::Pipeline pipeline_;
 
     auto trigger() const noexcept -> void
     {
-        if (false == running_.get()) { return; }
+        if (false == running_.load()) { return; }
 
         const auto running = state_machine_queued_.exchange(true);
 
         if (false == running) {
-            auto work = MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL);
-            pipeline_->Push(work);
+            pipeline_.Push(MakeWork(OT_ZMQ_STATE_MACHINE_SIGNAL));
         }
+    }
+    auto signal_shutdown() const noexcept -> std::shared_future<void>
+    {
+        return const_cast<Worker&>(*this).stop_worker();
     }
 
     auto do_work() noexcept
@@ -80,15 +77,16 @@ protected:
     }
     auto init_executor(const Endpoints endpoints = {}) noexcept -> void
     {
-        pipeline_->Start(api_.Endpoints().Shutdown());
+        pipeline_.SubscribeTo(api_.Endpoints().Shutdown());
 
-        for (const auto& endpoint : endpoints) { pipeline_->Start(endpoint); }
+        for (const auto& endpoint : endpoints) {
+            pipeline_.SubscribeTo(endpoint);
+        }
     }
     auto stop_worker() noexcept -> std::shared_future<void>
     {
-        pipeline_->Close();
-
-        if (running_.get()) { downcast().shutdown(shutdown_promise_); }
+        pipeline_.Close();
+        downcast().shutdown(shutdown_promise_);
 
         return shutdown_;
     }
@@ -96,10 +94,10 @@ protected:
     Worker(const API& api, const std::chrono::milliseconds rateLimit) noexcept
         : api_(api)
         , rate_limit_(rateLimit)
-        , running_(Flag::Factory(true))
+        , running_(true)
         , shutdown_promise_()
         , pipeline_(api.Factory().Pipeline(
-              [this](auto& in) { downcast().pipeline(in); }))
+              [this](auto&& in) { downcast().pipeline(std::move(in)); }))
         , shutdown_(shutdown_promise_.get_future())
         , last_executed_(Clock::now())
         , state_machine_queued_(false)

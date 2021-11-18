@@ -24,6 +24,7 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/network/zeromq/message/Message.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/PeerReply.hpp"
 #include "internal/protobuf/verify/PeerRequest.hpp"
@@ -57,12 +58,11 @@
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -414,8 +414,7 @@ void Pair::callback_nym(const zmq::Message& in) noexcept
 
     OT_ASSERT(1 < body.size());
 
-    auto nymID = client_.Factory().NymID();
-    nymID->Assign(body.at(1).Bytes());
+    const auto nymID = client_.Factory().NymID(body.at(1));
     auto trigger{state_.CheckIssuer(nymID)};
 
     {
@@ -443,7 +442,7 @@ void Pair::callback_peer_reply(const zmq::Message& in) noexcept
 
     OT_ASSERT(2 <= body.size());
 
-    const auto nymID = client_.Factory().NymID(body.at(0));
+    const auto nymID = client_.Factory().NymID(std::string{body.at(0).Bytes()});
     const auto reply = proto::Factory<proto::PeerReply>(body.at(1));
     auto trigger{false};
 
@@ -487,7 +486,7 @@ void Pair::callback_peer_request(const zmq::Message& in) noexcept
 
     OT_ASSERT(2 <= body.size());
 
-    const auto nymID = client_.Factory().NymID(body.at(0));
+    const auto nymID = client_.Factory().NymID(std::string{body.at(0).Bytes()});
     const auto request = proto::Factory<proto::PeerRequest>(body.at(1));
     auto trigger{false};
 
@@ -673,11 +672,19 @@ void Pair::check_rename(
     needRename = context.ShouldRename();
 
     if (needRename) {
-        proto::PairEvent event;
-        event.set_version(1);
-        event.set_type(proto::PAIREVENT_RENAME);
-        event.set_issuer(issuer.IssuerID().str());
-        const auto published = pair_event_->Send(event);
+        const auto published = pair_event_->Send([&] {
+            auto out = opentxs::network::zeromq::Message{};
+            out.Internal().AddFrame([&] {
+                auto proto = proto::PairEvent{};
+                proto.set_version(1);
+                proto.set_type(proto::PAIREVENT_RENAME);
+                proto.set_issuer(issuer.IssuerID().str());
+
+                return proto;
+            }());
+
+            return out;
+        }());
 
         if (published) {
             LogDetail()(OT_PRETTY_CLASS())(
@@ -996,7 +1003,12 @@ auto Pair::process_pending_bailment(
         contract::peer::PeerRequestType::PendingBailment, requestID);
 
     if (added) {
-        pending_bailment_->Send(request);
+        pending_bailment_->Send([&] {
+            auto out = opentxs::network::zeromq::Message{};
+            out.Internal().AddFrame(request);
+
+            return out;
+        }());
         const OTIdentifier originalRequest =
             Identifier::Factory(request.pendingbailment().requestid());
         if (!originalRequest->empty()) {
@@ -1123,11 +1135,19 @@ auto Pair::process_store_secret(
 
     if (added) {
         client_.Wallet().PeerRequestComplete(nymID, replyID);
-        proto::PairEvent event;
-        event.set_version(1);
-        event.set_type(proto::PAIREVENT_STORESECRET);
-        event.set_issuer(issuerNymID->str());
-        const auto published = pair_event_->Send(event);
+        const auto published = pair_event_->Send([&] {
+            auto out = opentxs::network::zeromq::Message{};
+            out.Internal().AddFrame([&] {
+                auto event = proto::PairEvent{};
+                event.set_version(1);
+                event.set_type(proto::PAIREVENT_STORESECRET);
+                event.set_issuer(issuerNymID->str());
+
+                return event;
+            }());
+
+            return out;
+        }());
 
         if (published) {
             LogDetail()(OT_PRETTY_CLASS())(

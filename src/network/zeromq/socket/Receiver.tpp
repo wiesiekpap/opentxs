@@ -2,6 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/network/zeromq/socket/SocketType.hpp"
+
 #pragma once
 
 #include "network/zeromq/socket/Receiver.hpp"  // IWYU pragma: associated
@@ -15,8 +17,9 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -25,7 +28,7 @@ namespace opentxs::network::zeromq::socket::implementation
 template <typename InterfaceType, typename MessageType>
 Receiver<InterfaceType, MessageType>::Receiver(
     const zeromq::Context& context,
-    const SocketType type,
+    const socket::Type type,
     const Socket::Direction direction,
     const bool startThread) noexcept
     : Socket(context, type, direction)
@@ -165,7 +168,7 @@ void Receiver<InterfaceType, MessageType>::thread() noexcept
 
         if (false == running_.get()) { return; }
 
-        auto reply = MessageType::Factory();
+        auto reply = MessageType{};
         const auto received = Socket::receive_message(lock, socket_, reply);
 
         if (false == received) {
@@ -175,7 +178,7 @@ void Receiver<InterfaceType, MessageType>::thread() noexcept
             continue;
         }
 
-        process_incoming(lock, reply);
+        process_incoming(lock, std::move(reply));
         lock.unlock();
         std::this_thread::yield();
     }

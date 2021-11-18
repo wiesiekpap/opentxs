@@ -7,16 +7,23 @@
 
 #include <cstddef>
 #include <functional>
+#include <future>
 #include <iosfwd>
 #include <string>
+#include <tuple>
+#include <vector>
 
 #include "Proto.hpp"
-#include "internal/network/Factory.hpp"
+#include "internal/network/zeromq/Batch.hpp"
+#include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/Thread.hpp"
+#include "internal/network/zeromq/Types.hpp"
+#include "network/zeromq/context/Pool.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/Proxy.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -27,6 +34,7 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
@@ -40,8 +48,11 @@ namespace network
 {
 namespace zeromq
 {
+class Context;
 class ListenCallback;
+class Message;
 class PairEventCallback;
+class Pipeline;
 class ReplyCallback;
 }  // namespace zeromq
 }  // namespace network
@@ -51,55 +62,35 @@ class Factory;
 
 namespace opentxs::network::zeromq::implementation
 {
-class Context final : virtual public zeromq::Context
+class Context final : virtual public internal::Context
 {
 public:
     operator void*() const noexcept final;
 
-    auto BuildEndpoint(
-        const std::string& path,
-        const int instance,
-        const int version) const noexcept -> std::string final;
-    auto BuildEndpoint(
-        const std::string& path,
-        const int instance,
-        const int version,
-        const std::string& suffix) const noexcept -> std::string final;
     auto DealerSocket(
         const ListenCallback& callback,
         const socket::Socket::Direction direction) const noexcept
         -> OTZMQDealerSocket final;
-    auto Frame(const void* input, const std::size_t size) const noexcept
-        -> OTZMQFrame final;
-    auto Message() const noexcept -> OTZMQMessage final;
-    auto Message(const ProtobufType& input) const noexcept
-        -> OTZMQMessage final;
-    auto Message(const network::zeromq::Message& input) const noexcept
-        -> OTZMQMessage final
-    {
-        return OTZMQMessage(input);
-    }
-    auto Message(const void* input, const std::size_t size) const noexcept
-        -> OTZMQMessage final;
+    auto MakeBatch(std::vector<socket::Type>&& types) const noexcept
+        -> internal::Batch& final;
+    auto Modify(SocketID id, ModifyCallback cb) const noexcept
+        -> AsyncResult final;
     auto PairEventListener(
         const PairEventCallback& callback,
         const int instance) const noexcept -> OTZMQSubscribeSocket final;
-    auto PairSocket(const opentxs::network::zeromq::ListenCallback& callback)
-        const noexcept -> OTZMQPairSocket final;
-    auto PairSocket(
-        const opentxs::network::zeromq::ListenCallback& callback,
-        const opentxs::network::zeromq::socket::Pair& peer) const noexcept
+    auto PairSocket(const zeromq::ListenCallback& callback) const noexcept
         -> OTZMQPairSocket final;
     auto PairSocket(
-        const opentxs::network::zeromq::ListenCallback& callback,
+        const zeromq::ListenCallback& callback,
+        const socket::Pair& peer) const noexcept -> OTZMQPairSocket final;
+    auto PairSocket(
+        const zeromq::ListenCallback& callback,
         const std::string& endpoint) const noexcept -> OTZMQPairSocket final;
     auto Pipeline(
         const api::Session& api,
-        std::function<void(zeromq::Message&)> callback) const noexcept
-        -> OTZMQPipeline final;
-    auto Proxy(
-        network::zeromq::socket::Socket& frontend,
-        network::zeromq::socket::Socket& backend) const noexcept
+        std::function<void(zeromq::Message&&)> callback) const noexcept
+        -> zeromq::Pipeline final;
+    auto Proxy(socket::Socket& frontend, socket::Socket& backend) const noexcept
         -> OTZMQProxy final;
     auto PublishSocket() const noexcept -> OTZMQPublishSocket final;
     auto PullSocket(const socket::Socket::Direction direction) const noexcept
@@ -110,10 +101,6 @@ public:
         -> OTZMQPullSocket final;
     auto PushSocket(const socket::Socket::Direction direction) const noexcept
         -> OTZMQPushSocket final;
-    auto ReplyMessage(const zeromq::Message& request) const noexcept
-        -> OTZMQMessage final;
-    auto ReplyMessage(const ReadView connectionID) const noexcept
-        -> OTZMQMessage final;
     auto ReplySocket(
         const ReplyCallback& callback,
         const socket::Socket::Direction direction) const noexcept
@@ -123,29 +110,20 @@ public:
         const ListenCallback& callback,
         const socket::Socket::Direction direction) const noexcept
         -> OTZMQRouterSocket final;
+    auto Start(BatchID id, StartArgs&& sockets) const noexcept
+        -> internal::Thread* final;
+    auto Stop(BatchID id) const noexcept -> std::future<bool> final;
     auto SubscribeSocket(const ListenCallback& callback) const noexcept
         -> OTZMQSubscribeSocket final;
-    auto TaggedMessage(const void* tag, const std::size_t size) const noexcept
-        -> OTZMQMessage final;
-    auto TaggedReply(
-        const zeromq::Message& request,
-        const void* tag,
-        const std::size_t size) const noexcept -> OTZMQMessage final;
-    auto TaggedReply(
-        const ReadView connectionID,
-        const void* tag,
-        const std::size_t size) const noexcept -> OTZMQMessage final;
+
+    Context() noexcept;
 
     ~Context() final;
 
 private:
-    friend network::zeromq::Context* opentxs::factory::ZMQContext() noexcept;
+    void* context_;
+    mutable context::Pool pool_;
 
-    void* context_{nullptr};
-
-    auto clone() const noexcept -> Context* final { return new Context; }
-
-    Context() noexcept;
     Context(const Context&) = delete;
     Context(Context&&) = delete;
     auto operator=(const Context&) -> Context& = delete;

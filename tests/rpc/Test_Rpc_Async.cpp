@@ -46,10 +46,10 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -93,7 +93,7 @@ public:
         if (false == bool(notification_callback_)) {
             notification_callback_.reset(new OTZMQListenCallback(
                 network::zeromq::ListenCallback::Factory(
-                    [](const network::zeromq::Message& incoming) -> void {
+                    [](const network::zeromq::Message&& incoming) -> void {
                         process_notification(incoming);
                     })));
         }
@@ -129,7 +129,7 @@ protected:
     static void cleanup();
     static std::size_t get_index(const std::int32_t instance);
     static const api::Session& get_session(const std::int32_t instance);
-    static void process_notification(const network::zeromq::Message& incoming);
+    static void process_notification(const network::zeromq::Message&& incoming);
     static bool default_push_callback(const ot::proto::RPCPush& push);
     static void setup();
 
@@ -209,7 +209,7 @@ const api::Session& Test_Rpc_Async::get_session(const std::int32_t instance)
 }
 
 void Test_Rpc_Async::process_notification(
-    const network::zeromq::Message& incoming)
+    const network::zeromq::Message&& incoming)
 {
     if (1 < incoming.Body().size()) { return; }
 

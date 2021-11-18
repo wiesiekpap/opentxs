@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <utility>
 
+#include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
@@ -18,8 +19,8 @@
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
 #include "opentxs/network/blockchain/sync/Query.hpp"
 #include "opentxs/network/blockchain/sync/Request.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainP2PHello.pb.h"
 #include "serialization/protobuf/BlockchainP2PSync.pb.h"
@@ -138,7 +139,7 @@ auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
 
             return out;
         }();
-        out.AddFrame(hello);
+        out.Internal().AddFrame(hello);
         out.AddFrame(endpoint_.data(), endpoint_.size());
 
         for (const auto& block : blocks_) {
@@ -151,7 +152,7 @@ auto Base::Imp::serialize(zeromq::Message& out) const noexcept -> bool
 
                 return out;
             }();
-            out.AddFrame(data);
+            out.Internal().AddFrame(data);
         }
     } catch (...) {
 

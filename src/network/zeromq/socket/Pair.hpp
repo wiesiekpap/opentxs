@@ -73,7 +73,7 @@ private:
 
     auto clone() const noexcept -> Pair* final;
     auto have_callback() const noexcept -> bool final;
-    void process_incoming(const Lock& lock, Message& message) noexcept final;
+    void process_incoming(const Lock& lock, Message&& message) noexcept final;
 
     void init() noexcept final;
 

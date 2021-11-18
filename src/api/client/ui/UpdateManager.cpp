@@ -10,6 +10,7 @@
 #include <functional>
 #include <map>
 #include <mutex>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -21,12 +22,13 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace zmq = opentxs::network::zeromq;
@@ -34,21 +36,48 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::api::client::ui
 {
 struct UpdateManager::Imp {
-    auto ActivateUICallback(const Identifier& widget) const noexcept -> void
+    auto ActivateUICallback(const Identifier& id) const noexcept -> void
     {
-        pipeline_->Push(widget.str());
+        pipeline_.Push([&] {
+            auto out = opentxs::network::zeromq::Message{};
+            out.StartBody();
+            out.AddFrame(id);
+
+            return out;
+        }());
     }
-    auto ClearUICallbacks(const Identifier& widget) const noexcept -> void
+    auto ClearUICallbacks(const Identifier& id) const noexcept -> void
     {
+        if (id.empty()) {
+            LogError()(OT_PRETTY_CLASS())("Invalid widget id").Flush();
+
+            return;
+        } else {
+            LogTrace()(OT_PRETTY_CLASS())("Clearing callback for widget ")(id)
+                .Flush();
+        }
+
         auto lock = Lock{lock_};
-        map_.erase(widget);
+        map_.erase(id);
     }
-    auto RegisterUICallback(const Identifier& widget, const SimpleCallback& cb)
+    auto RegisterUICallback(const Identifier& id, const SimpleCallback& cb)
         const noexcept -> void
     {
+        if (id.empty()) {
+            LogError()(OT_PRETTY_CLASS())("Invalid widget id").Flush();
+
+            return;
+        } else {
+            LogTrace()(OT_PRETTY_CLASS())("Registering callback for widget ")(
+                id)
+                .Flush();
+        }
+
         if (cb) {
             auto lock = Lock{lock_};
-            map_[widget].emplace_back(cb);
+            map_[id].emplace_back(cb);
+        } else {
+            LogError()(OT_PRETTY_CLASS())("Invalid callback").Flush();
         }
     }
 
@@ -57,8 +86,8 @@ struct UpdateManager::Imp {
         , lock_()
         , map_()
         , publisher_(api.Network().ZeroMQ().PublishSocket())
-        , pipeline_(api.Network().ZeroMQ().Pipeline(api, [this](auto& in) {
-            pipeline(in);
+        , pipeline_(api.Network().ZeroMQ().Pipeline(api, [this](auto&& in) {
+            pipeline(std::move(in));
         }))
     {
         publisher_->Start(api_.Endpoints().WidgetUpdate());
@@ -69,16 +98,19 @@ private:
     mutable std::mutex lock_;
     mutable std::map<OTIdentifier, std::vector<SimpleCallback>> map_;
     OTZMQPublishSocket publisher_;
-    OTZMQPipeline pipeline_;
+    opentxs::network::zeromq::Pipeline pipeline_;
 
-    auto pipeline(zmq::Message& in) noexcept -> void
+    auto pipeline(zmq::Message&& in) noexcept -> void
     {
-        if (0 == in.size()) { return; }
+        const auto body = in.Body();
 
-        const auto& frame = in.at(0);
-        const auto id = api_.Factory().Identifier(frame);
-        LogTrace()(OT_PRETTY_CLASS())("Widget ")(id->str())(" updated.")
-            .Flush();
+        OT_ASSERT(0u < body.size());
+
+        auto& idFrame = body.at(0);
+
+        OT_ASSERT(0u < idFrame.size());
+
+        const auto id = api_.Factory().Identifier(idFrame);
         auto lock = Lock{lock_};
         auto it = map_.find(id);
 
@@ -91,9 +123,13 @@ private:
         }
 
         const auto& socket = publisher_.get();
-        auto work = socket.Context().TaggedMessage(WorkType::UIModelUpdated);
-        work->AddFrame(id);
-        socket.Send(work);
+        socket.Send([&] {
+            auto work = opentxs::network::zeromq::tagged_message(
+                WorkType::UIModelUpdated);
+            work.AddFrame(std::move(idFrame));
+
+            return work;
+        }());
     }
 };
 

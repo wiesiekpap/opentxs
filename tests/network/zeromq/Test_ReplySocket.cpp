@@ -7,13 +7,13 @@
 #include <memory>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -38,8 +38,8 @@ public:
 TEST_F(Test_ReplySocket, ReplySocket_Factory)
 {
     auto replyCallback = zmq::ReplyCallback::Factory(
-        [](const zmq::Message& input) -> OTZMQMessage {
-            return zmq::Message::Factory();
+        [](zmq::Message&& input) -> network::zeromq::Message {
+            return zmq::Message{};
         });
 
     ASSERT_NE(nullptr, &replyCallback.get());
@@ -48,7 +48,7 @@ TEST_F(Test_ReplySocket, ReplySocket_Factory)
         replyCallback, zmq::socket::Socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &replySocket.get());
-    ASSERT_EQ(SocketType::Reply, replySocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Reply, replySocket->Type());
 }
 }  // namespace ottest
 

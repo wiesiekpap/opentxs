@@ -46,7 +46,8 @@ struct Listener::Imp {
         : lock_()
         , data_()
         , counter_(-1)
-        , cb_(zmq::ListenCallback::Factory([this](auto& in) { cb(in); }))
+        , cb_(zmq::ListenCallback::Factory(
+              [this](auto&& in) { cb(std::move(in)); }))
         , socket_([&] {
             auto out = api.Network().ZeroMQ().SubscribeSocket(cb_);
 
@@ -60,8 +61,8 @@ struct Listener::Imp {
     }
 
 private:
-    using Promise = std::promise<ot::OTZMQMessage>;
-    using Future = std::shared_future<ot::OTZMQMessage>;
+    using Promise = std::promise<ot::network::zeromq::Message>;
+    using Future = std::shared_future<ot::network::zeromq::Message>;
 
     struct Task {
         Promise promise_;
@@ -110,7 +111,7 @@ private:
     ot::OTZMQListenCallback cb_;
     ot::OTZMQSubscribeSocket socket_;
 
-    auto cb(Message& in) noexcept -> void
+    auto cb(Message&& in) noexcept -> void
     {
         data_.promise(++counter_).set_value(std::move(in));
     }

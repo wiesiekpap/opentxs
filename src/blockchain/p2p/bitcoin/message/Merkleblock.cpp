@@ -9,9 +9,13 @@
 
 #include <cstdint>
 #include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
+#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
@@ -167,42 +171,6 @@ auto BitcoinP2PMerkleblock(
 
 namespace opentxs::blockchain::p2p::bitcoin::message
 {
-
-auto Merkleblock::payload() const noexcept -> OTData
-{
-    try {
-        Raw raw_data(block_header_, txn_count_);
-        auto output = Data::Factory(&raw_data, sizeof(raw_data));
-        const auto hashSize = CompactSize(hashes_.size()).Encode();
-        output->Concatenate(hashSize.data(), hashSize.size());
-        for (const auto& hash_data : hashes_) { output += hash_data; }
-        const auto flagSize = CompactSize(flags_.size()).Encode();
-        output->Concatenate(flagSize.data(), flagSize.size());
-        output->Concatenate(flags_.data(), flags_.size());
-
-        return output;
-    } catch (...) {
-        return Data::Factory();
-    }
-}
-
-Merkleblock::Raw::Raw(
-    const Data& block_header,
-    const TxnCount txn_count) noexcept
-    : block_header_()
-    , txn_count_(txn_count)
-{
-    OT_ASSERT(sizeof(block_header_) == block_header.size());
-
-    std::memcpy(block_header_.data(), block_header.data(), block_header.size());
-}
-
-Merkleblock::Raw::Raw() noexcept
-    : block_header_()
-    , txn_count_(0)
-{
-}
-
 // We have all the data members to create the message from scratch (for sending)
 Merkleblock::Merkleblock(
     const api::Session& api,
@@ -238,4 +206,63 @@ Merkleblock::Merkleblock(
     verify_checksum();
 }
 
+Merkleblock::Raw::Raw(
+    const Data& block_header,
+    const TxnCount txn_count) noexcept
+    : block_header_()
+    , txn_count_(txn_count)
+{
+    OT_ASSERT(sizeof(block_header_) == block_header.size());
+
+    std::memcpy(block_header_.data(), block_header.data(), block_header.size());
+}
+
+Merkleblock::Raw::Raw() noexcept
+    : block_header_()
+    , txn_count_(0)
+{
+}
+
+auto Merkleblock::payload(AllocateOutput out) const noexcept -> bool
+{
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
+
+        static constexpr auto fixed = sizeof(Raw);
+        const auto hashes = hashes_.size();
+        const auto flags = flags_.size();
+        const auto cs1 = CompactSize(hashes).Encode();
+        const auto cs2 = CompactSize(flags).Encode();
+        const auto bytes = fixed + cs1.size() + (hashes * standard_hash_size_) +
+                           cs2.size() + flags;
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        const auto data = Raw{block_header_, txn_count_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, static_cast<const void*>(&data), fixed);
+        std::advance(i, fixed);
+        std::memcpy(i, cs1.data(), cs1.size());
+        std::advance(i, cs1.size());
+
+        for (const auto& hash : hashes_) {
+            std::memcpy(i, hash->data(), standard_hash_size_);
+            std::advance(i, standard_hash_size_);
+        }
+
+        std::memcpy(i, cs2.data(), cs2.size());
+        std::advance(i, cs2.size());
+        std::memcpy(i, flags_.data(), flags_.size());
+        std::advance(i, flags_.size());
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
+}
 }  // namespace  opentxs::blockchain::p2p::bitcoin::message

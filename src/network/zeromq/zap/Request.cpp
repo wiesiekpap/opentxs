@@ -13,173 +13,80 @@
 #include <set>
 #include <sstream>
 #include <string>
-#include <vector>
+#include <string_view>
+#include <utility>
 
+#include "internal/network/zeromq/zap/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "network/zeromq/Message.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "network/zeromq/message/FrameSection.hpp"
+#include "network/zeromq/message/Message.hpp"
+#include "opentxs/core/Data.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "util/Container.hpp"
 
-template class opentxs::Pimpl<opentxs::network::zeromq::zap::Request>;
+namespace opentxs::factory
+{
+using ReturnType = network::zeromq::zap::Request;
 
-#define MAX_STRING_FIELD_SIZE 255
-#define PUBKEY_SIZE 32
+auto ZAPRequest(
+    const ReadView address,
+    const ReadView domain,
+    const network::zeromq::zap::Mechanism mechanism,
+    const ReadView requestID,
+    const ReadView identity,
+    const ReadView version) noexcept -> network::zeromq::zap::Request
+{
+    return std::make_unique<ReturnType::Imp>(
+               address, domain, mechanism, requestID, identity, version)
+        .release();
+}
+}  // namespace opentxs::factory
 
 namespace opentxs::network::zeromq::zap
 {
-auto Request::Factory() -> OTZMQZAPRequest
-{
-    return OTZMQZAPRequest(new implementation::Request());
-}
-
-auto Request::Factory(
-    const std::string& address,
-    const std::string& domain,
-    const zap::Mechanism mechanism,
-    const Data& requestID,
-    const Data& identity,
-    const std::string& version) -> OTZMQZAPRequest
-{
-    return OTZMQZAPRequest(new implementation::Request(
-        address, domain, mechanism, requestID, identity, version));
-}
-}  // namespace opentxs::network::zeromq::zap
-
-namespace opentxs::network::zeromq::zap::implementation
-{
-const std::set<std::string> Request::accept_versions_{"1.0"};
-const Request::MechanismMap Request::mechanism_map_{
+const std::set<std::string> Request::Imp::accept_versions_{default_version_};
+const Request::Imp::MechanismMap Request::Imp::mechanism_map_{
     {Mechanism::Null, "NULL"},
     {Mechanism::Plain, "PLAIN"},
     {Mechanism::Curve, "CURVE"},
 };
-const Request::MechanismReverseMap Request::mechanism_reverse_map_{
-    invert_mechanism_map(mechanism_map_)};
+const Request::Imp::MechanismReverseMap Request::Imp::mechanism_reverse_map_{
+    reverse_map(mechanism_map_)};
 
-Request::Request()
-    : zeromq::implementation::Message()
+Request::Imp::Imp(
+    const ReadView address,
+    const ReadView domain,
+    const network::zeromq::zap::Mechanism mechanism,
+    const ReadView requestID,
+    const ReadView identity,
+    const ReadView version) noexcept
+    : zeromq::Message::Imp()
+{
+    AddFrame(version);
+    AddFrame(requestID);
+    AddFrame(domain);
+    AddFrame(address);
+    AddFrame(identity);
+    AddFrame(mechanism_to_string(mechanism));
+}
+
+Request::Imp::Imp() noexcept
+    : zeromq::Message::Imp()
 {
 }
 
-Request::Request(
-    const std::string& address,
-    const std::string& domain,
-    const zap::Mechanism mechanism,
-    const Data& requestID,
-    const Data& identity,
-    const std::string& version)
-    : Request()
-{
-    zeromq::Message::AddFrame(version);
-    zeromq::Message::AddFrame(requestID);
-    zeromq::Message::AddFrame(domain);
-    zeromq::Message::AddFrame(address);
-    zeromq::Message::AddFrame(identity);
-    zeromq::Message::AddFrame(mechanism_to_string(mechanism));
-}
-
-Request::Request(const Request& rhs)
-    : zeromq::Message()
-    , zeromq::zap::Request()
-    , zeromq::implementation::Message(rhs)
+Request::Imp::Imp(const Imp& rhs) noexcept
+    : zeromq::Message::Imp(rhs)
 {
 }
 
-auto Request::Credentials() const -> const FrameSection
-{
-    const std::size_t position{body_position() + CREDENTIALS_START_POSITION};
-    auto size = std::max(messages_.size() - position, std::size_t{0});
-
-    return FrameSection(this, position, size);
-}
-
-auto Request::Debug() const -> std::string
-{
-    std::stringstream output{};
-    const auto body = Body();
-
-    if (VERSION_POSITION < body.size()) {
-        output << "Version: " << std::string(body.at(VERSION_POSITION)) << "\n";
-    }
-
-    if (REQUEST_ID_POSITION < body.size()) {
-        const auto& requestID = body.at(REQUEST_ID_POSITION);
-
-        if (0 < requestID.size()) {
-            output << "Request ID: 0x" << Data::Factory(requestID)->asHex()
-                   << "\n";
-        }
-    }
-
-    if (DOMAIN_POSITION < body.size()) {
-        output << "Domain: " << std::string(body.at(DOMAIN_POSITION)) << "\n";
-    }
-
-    if (ADDRESS_POSITION < body.size()) {
-        output << "Address: " << std::string(body.at(ADDRESS_POSITION)) << "\n";
-    }
-
-    if (IDENTITY_POSITION < body.size()) {
-        const auto& identity = body.at(IDENTITY_POSITION);
-
-        if (0 < identity.size()) {
-            output << "Identity: 0x" << Data::Factory(identity)->asHex()
-                   << "\n";
-        }
-    }
-
-    if (MECHANISM_POSITION < body.size()) {
-        output << "Mechanism: " << std::string(body.at(MECHANISM_POSITION))
-               << "\n";
-        const auto credentials = Credentials();
-
-        switch (Mechanism()) {
-            case Mechanism::Plain: {
-                if (0 < credentials.size()) {
-                    LogError()(OT_PRETTY_CLASS())("* Username: ")(
-                        std::string(credentials.at(0)))(".")
-                        .Flush();
-                }
-
-                if (1 < credentials.size()) {
-                    LogError()(OT_PRETTY_CLASS())("* Password: ")(
-                        std::string(credentials.at(1)))(".")
-                        .Flush();
-                }
-            } break;
-            case Mechanism::Curve: {
-                for (const auto& credential : credentials) {
-                    LogError()(OT_PRETTY_CLASS())("* Pubkey: 0x ")(
-                        Data::Factory(credential)->asHex())(".")
-                        .Flush();
-                }
-            } break;
-            case Mechanism::Null:
-            case Mechanism::Unknown:
-            default: {
-            }
-        }
-    }
-
-    return output.str();
-}
-
-auto Request::invert_mechanism_map(const MechanismMap& input)
-    -> Request::MechanismReverseMap
-{
-    MechanismReverseMap output{};
-
-    for (const auto& [type, string] : input) { output.emplace(string, type); }
-
-    return output;
-}
-
-auto Request::mechanism_to_string(const zap::Mechanism in) -> std::string
+auto Request::Imp::mechanism_to_string(const zap::Mechanism in) -> std::string
 {
     try {
         return mechanism_map_.at(in);
@@ -189,117 +96,296 @@ auto Request::mechanism_to_string(const zap::Mechanism in) -> std::string
     }
 }
 
-auto Request::string_to_mechanism(const std::string& in) -> zap::Mechanism
+auto Request::Imp::string_to_mechanism(const ReadView in) -> zap::Mechanism
 {
+    const auto key = std::string{in};
+
     try {
-        return mechanism_reverse_map_.at(in);
+        return mechanism_reverse_map_.at(key);
     } catch (...) {
 
         return Mechanism::Unknown;
     }
 }
+}  // namespace opentxs::network::zeromq::zap
 
-auto Request::Validate() const -> std::pair<bool, std::string>
+namespace opentxs::network::zeromq::zap
 {
-    std::pair<bool, std::string> output{false, ""};
+Request::Request(Imp* imp) noexcept
+    : imp_(imp)
+{
+    OT_ASSERT(nullptr != imp_);
+}
+
+Request::Request() noexcept
+    : Request(std::make_unique<Imp>().release())
+{
+}
+
+Request::Request(const Request& rhs) noexcept
+    : Request(std::make_unique<Imp>(*rhs.imp_).release())
+{
+}
+
+Request::Request(Request&& rhs) noexcept
+    : Request(std::make_unique<Imp>().release())
+{
+    swap(rhs);
+}
+
+auto Request::operator=(const Request& rhs) noexcept -> Request&
+{
+    auto old = std::unique_ptr<Imp>(imp_);
+    imp_ = std::make_unique<Imp>(*rhs.imp_).release();
+
+    return *this;
+}
+
+auto Request::operator=(Request&& rhs) noexcept -> Request&
+{
+    swap(rhs);
+
+    return *this;
+}
+
+auto Request::swap(Message& rhs) noexcept -> void
+{
+    if (auto* other = dynamic_cast<Request*>(&rhs); nullptr == other) {
+        Message::swap(rhs);
+        Request::imp_ = nullptr;
+    } else {
+        swap(*other);
+    }
+}
+
+auto Request::swap(Request& rhs) noexcept -> void
+{
+    Message::swap(rhs);
+    std::swap(Request::imp_, rhs.Request::imp_);
+}
+
+auto Request::Address() const noexcept -> ReadView
+{
+    try {
+
+        return Message::imp_->Body_at(Imp::address_position_).Bytes();
+    } catch (...) {
+
+        return {};
+    }
+}
+
+auto Request::Credentials() const noexcept -> const FrameSection
+{
+    const std::size_t position{
+        Message::imp_->body_position() + Imp::credentials_start_position_};
+    auto size = std::max(Message::imp_->size() - position, std::size_t{0});
+
+    return std::make_unique<implementation::FrameSection>(this, position, size)
+        .release();
+}
+
+auto Request::Debug() const noexcept -> std::string
+{
+    auto output = std::stringstream{};
+    const auto req = RequestID();
+    const auto id = Identity();
+    const auto mechanism = [&]() -> ReadView {
+        try {
+
+            return Message::imp_->Body_at(Imp::mechanism_position_).Bytes();
+        } catch (...) {
+
+            return {};
+        }
+    }();
+    const auto credentials = Credentials();
+    output << "Version: " << Version() << "\n";
+    output << "Request ID: 0x" << Data::Factory(req.data(), req.size())->asHex()
+           << "\n";
+    output << "Domain: " << Domain() << "\n";
+    output << "Address: " << Address() << "\n";
+    output << "Identity: 0x" << Data::Factory(id.data(), id.size())->asHex()
+           << "\n";
+    output << "Mechanism: " << mechanism << "\n";
+
+    switch (Mechanism()) {
+        case Mechanism::Plain: {
+            if (0 < credentials.size()) {
+                output << "* Username: " << credentials.at(0).Bytes() << '\n';
+            }
+
+            if (1 < credentials.size()) {
+                output << "* Username: " << credentials.at(1).Bytes() << '\n';
+            }
+        } break;
+        case Mechanism::Curve: {
+            for (const auto& credential : credentials) {
+                output << "* Pubkey: 0x" << Data::Factory(credential)->asHex()
+                       << '\n';
+            }
+        } break;
+        case Mechanism::Null:
+        case Mechanism::Unknown:
+        default: {
+        }
+    }
+
+    return output.str();
+}
+
+auto Request::Domain() const noexcept -> ReadView
+{
+    try {
+
+        return Message::imp_->Body_at(Imp::domain_position_).Bytes();
+    } catch (...) {
+
+        return {};
+    }
+}
+
+auto Request::Identity() const noexcept -> ReadView
+{
+    try {
+
+        return Message::imp_->Body_at(Imp::identity_position_).Bytes();
+    } catch (...) {
+
+        return {};
+    }
+}
+
+auto Request::Mechanism() const noexcept -> zap::Mechanism
+{
+    const auto mechanism = [&]() -> ReadView {
+        try {
+
+            return Message::imp_->Body_at(Imp::mechanism_position_).Bytes();
+        } catch (...) {
+
+            return {};
+        }
+    }();
+
+    return Imp::string_to_mechanism(mechanism);
+}
+
+auto Request::RequestID() const noexcept -> ReadView
+{
+    try {
+
+        return Message::imp_->Body_at(Imp::request_id_position_).Bytes();
+    } catch (...) {
+
+        return {};
+    }
+}
+
+auto Request::Validate() const noexcept -> std::pair<bool, std::string>
+{
+    auto output = std::pair<bool, std::string>{false, ""};
     auto& [success, error] = output;
-    const auto body = body_position();
+    const auto body = Message::imp_->body_position();
+    const auto size = Message::imp_->size();
 
-    if (VERSION_POSITION + body >= messages_.size()) {
+    if (Imp::version_position_ + body >= size) {
         error = "Missing version";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    if (0 == accept_versions_.count(Version())) {
-        error = std::string("Invalid version (") + Version() + ")";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+    if (0 == Imp::accept_versions_.count(std::string{Version()})) {
+        error = std::string{"Invalid version ("} + std::string{Version()} + ")";
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    if (REQUEST_ID_POSITION + body >= messages_.size()) {
+    if (Imp::request_id_position_ + body >= size) {
         error = "Missing request ID";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    const auto requestSize = Body_at(REQUEST_ID_POSITION).size();
+    const auto requestSize = Body_at(Imp::request_id_position_).size();
 
-    if (MAX_STRING_FIELD_SIZE < requestSize) {
+    if (Imp::max_string_field_size_ < requestSize) {
         error = std::string("Request ID too long (") +
                 std::to_string(requestSize) + ")";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    if (DOMAIN_POSITION + body >= messages_.size()) {
+    if (Imp::domain_position_ + body >= size) {
         error = "Missing domain";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    const auto domainSize = Body_at(DOMAIN_POSITION).size();
+    const auto domainSize = Body_at(Imp::domain_position_).size();
 
-    if (MAX_STRING_FIELD_SIZE < domainSize) {
+    if (Imp::max_string_field_size_ < domainSize) {
         error =
             std::string("Domain too long (") + std::to_string(domainSize) + ")";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    if (ADDRESS_POSITION + body >= messages_.size()) {
+    if (Imp::address_position_ + body >= size) {
         error = "Missing address";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    const auto addressSize = Body_at(ADDRESS_POSITION).size();
+    const auto addressSize = Body_at(Imp::address_position_).size();
 
-    if (MAX_STRING_FIELD_SIZE < addressSize) {
+    if (Imp::max_string_field_size_ < addressSize) {
         error = std::string("Address too long (") +
                 std::to_string(addressSize) + ")";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    if (IDENTITY_POSITION + body >= messages_.size()) {
+    if (Imp::identity_position_ + body >= size) {
         error = "Missing identity";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    const auto identitySize = Body_at(IDENTITY_POSITION).size();
+    const auto identitySize = Body_at(Imp::identity_position_).size();
 
-    if (MAX_STRING_FIELD_SIZE < identitySize) {
+    if (Imp::max_string_field_size_ < identitySize) {
         error = std::string("Identity too long (") +
                 std::to_string(identitySize) + ")";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    if (MECHANISM_POSITION + body >= messages_.size()) {
+    if (Imp::mechanism_position_ + body >= size) {
         error = "Missing mechanism";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
 
-    const std::string mechanism{messages_.at(MECHANISM_POSITION + body).get()};
-    const bool validMechanism = 1 == mechanism_reverse_map_.count(mechanism);
+    const std::string mechanism{
+        Message::imp_->at(Imp::mechanism_position_ + body).Bytes()};
+    const bool validMechanism =
+        1 == Imp::mechanism_reverse_map_.count(mechanism);
 
     if (false == validMechanism) {
         error = std::string("Unknown mechanism (") + mechanism + ")";
-        LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+        LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
     }
@@ -312,7 +398,7 @@ auto Request::Validate() const -> std::pair<bool, std::string>
             if (0 != count) {
                 error = std::string("Too many credentials (") +
                         std::to_string(count) + ")";
-                LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+                LogError()(OT_PRETTY_CLASS())(error).Flush();
 
                 return output;
             }
@@ -320,34 +406,34 @@ auto Request::Validate() const -> std::pair<bool, std::string>
         case Mechanism::Plain: {
             if (1 > count) {
                 error = "Missing username";
-                LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+                LogError()(OT_PRETTY_CLASS())(error).Flush();
 
                 return output;
             }
 
             const auto username = credentials.at(0).size();
 
-            if (MAX_STRING_FIELD_SIZE < username) {
+            if (Imp::max_string_field_size_ < username) {
                 error = std::string("Username too long (") +
                         std::to_string(username) + ")";
-                LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+                LogError()(OT_PRETTY_CLASS())(error).Flush();
 
                 return output;
             }
 
             if (2 > count) {
                 error = "Missing password";
-                LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+                LogError()(OT_PRETTY_CLASS())(error).Flush();
 
                 return output;
             }
 
             const auto password = credentials.at(1).size();
 
-            if (MAX_STRING_FIELD_SIZE < password) {
+            if (Imp::max_string_field_size_ < password) {
                 error = std::string("Password too long (") +
                         std::to_string(password) + ")";
-                LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+                LogError()(OT_PRETTY_CLASS())(error).Flush();
 
                 return output;
             }
@@ -356,17 +442,17 @@ auto Request::Validate() const -> std::pair<bool, std::string>
             if (1 != count) {
                 error = std::string("Wrong number of credentials (") +
                         std::to_string(count) + ")";
-                LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+                LogError()(OT_PRETTY_CLASS())(error).Flush();
 
                 return output;
             }
 
             const auto pubkey = credentials.at(0).size();
 
-            if (PUBKEY_SIZE != pubkey) {
+            if (Imp::pubkey_size_ != pubkey) {
                 error = std::string("Wrong pubkey size (") +
                         std::to_string(pubkey) + ")";
-                LogError()(OT_PRETTY_CLASS())(error)(".").Flush();
+                LogError()(OT_PRETTY_CLASS())(error).Flush();
 
                 return output;
             }
@@ -384,4 +470,24 @@ auto Request::Validate() const -> std::pair<bool, std::string>
 
     return output;
 }
-}  // namespace opentxs::network::zeromq::zap::implementation
+
+auto Request::Version() const noexcept -> ReadView
+{
+    try {
+
+        return Message::imp_->Body_at(Imp::version_position_).Bytes();
+    } catch (...) {
+
+        return {};
+    }
+}
+
+Request::~Request()
+{
+    if (nullptr != Request::imp_) {
+        delete Request::imp_;
+        Request::imp_ = nullptr;
+        Message::imp_ = nullptr;
+    }
+}
+}  // namespace opentxs::network::zeromq::zap

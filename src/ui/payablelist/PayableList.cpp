@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "ui/payablelist/PayableList.hpp"  // IWYU pragma: associated
 
+#include <atomic>
 #include <future>
 #include <list>
 #include <memory>
@@ -18,12 +19,11 @@
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/contact/Contact.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "ui/base/List.hpp"
@@ -57,7 +57,7 @@ PayableList::PayableList(
 {
     init_executor(
         {api.Endpoints().ContactUpdate(), api.Endpoints().NymDownload()});
-    pipeline_->Push(MakeWork(Work::init));
+    pipeline_.Push(MakeWork(Work::init));
 }
 
 auto PayableList::construct_row(
@@ -76,7 +76,7 @@ auto PayableList::construct_row(
 
 auto PayableList::pipeline(const Message& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -110,8 +110,9 @@ auto PayableList::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
+            if (auto previous = running_.exchange(false); previous) {
+                shutdown(shutdown_promise_);
+            }
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
@@ -160,8 +161,7 @@ auto PayableList::process_contact(const Message& message) noexcept -> void
     OT_ASSERT(1 < body.size());
 
     const auto& id = body.at(1);
-    auto contactID = Widget::api_.Factory().Identifier();
-    contactID->Assign(id.Bytes());
+    const auto contactID = Widget::api_.Factory().Identifier(id);
 
     OT_ASSERT(false == contactID->empty())
 
@@ -176,8 +176,7 @@ auto PayableList::process_nym(const Message& message) noexcept -> void
     OT_ASSERT(1 < body.size());
 
     const auto& id = body.at(1);
-    auto nymID = Widget::api_.Factory().NymID();
-    nymID->Assign(id.Bytes());
+    const auto nymID = Widget::api_.Factory().NymID(id);
 
     OT_ASSERT(false == nymID->empty())
 
@@ -202,6 +201,6 @@ auto PayableList::startup() noexcept -> void
 PayableList::~PayableList()
 {
     wait_for_startup();
-    stop_worker().get();
+    signal_shutdown().get();
 }
 }  // namespace opentxs::ui::implementation

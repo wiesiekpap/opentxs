@@ -11,7 +11,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <functional>
+#include <iterator>
 #include <limits>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
@@ -20,8 +23,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-// opentxs::blockchain::p2p::bitcoin::message::implementation::Version::"
 
 namespace opentxs::factory
 {
@@ -357,35 +358,74 @@ Version::BitcoinFormat_209::BitcoinFormat_209(
     OT_ASSERT(std::numeric_limits<std::uint32_t>::max() >= height);
 }
 
-auto Version::payload() const noexcept -> OTData
+auto Version::payload(AllocateOutput out) const noexcept -> bool
 {
-    BitcoinFormat_1 raw1(
-        version_,
-        TranslateServices(header_->Network(), version_, services_),
-        TranslateServices(header_->Network(), version_, remote_services_),
-        remote_address_,
-        timestamp_);
-    auto output = Data::Factory(&raw1, sizeof(raw1));
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-    if (106 <= version_) {
-        BitcoinFormat_106 raw2(
-            TranslateServices(header_->Network(), version_, local_services_),
-            local_address_,
-            nonce_);
-        output->Concatenate(&raw2, sizeof(raw2));
-        output += BitcoinString(user_agent_);
+        auto userAgent = Data::Factory();
+        const auto bytes = [&] {
+            auto output = sizeof(BitcoinFormat_1);
+
+            if (106 <= version_) {
+                userAgent = BitcoinString(user_agent_);
+                output += sizeof(BitcoinFormat_106) + userAgent->size();
+            }
+
+            if (209 <= version_) { output += sizeof(BitcoinFormat_209); }
+
+            if (70001 <= version_) { output += sizeof(std::byte); }
+
+            return output;
+        }();
+
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        const auto data1 = BitcoinFormat_1{
+            version_,
+            TranslateServices(header_->Network(), version_, services_),
+            TranslateServices(header_->Network(), version_, remote_services_),
+            remote_address_,
+            timestamp_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, static_cast<const void*>(&data1), sizeof(data1));
+        std::advance(i, sizeof(data1));
+
+        if (106 <= version_) {
+            const auto data2 = BitcoinFormat_106{
+                TranslateServices(
+                    header_->Network(), version_, local_services_),
+                local_address_,
+                nonce_};
+            std::memcpy(i, static_cast<const void*>(&data2), sizeof(data2));
+            std::advance(i, sizeof(data2));
+            std::memcpy(i, userAgent->data(), userAgent->size());
+            std::advance(i, userAgent->size());
+        }
+
+        if (209 <= version_) {
+            const auto data3 = BitcoinFormat_209{height_};
+            std::memcpy(i, static_cast<const void*>(&data3), sizeof(data3));
+            std::advance(i, sizeof(data3));
+        }
+
+        if (70001 <= version_) {
+            static constexpr auto relayTrue = std::byte{1};
+            static constexpr auto relayFalse = std::byte{0};
+            const auto& relay = (relay_) ? relayTrue : relayFalse;
+            std::memcpy(i, &relay, sizeof(relay));
+            std::advance(i, sizeof(relay));
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
-
-    if (209 <= version_) {
-        BitcoinFormat_209 raw3(height_);
-        output->Concatenate(&raw3, sizeof(raw3));
-    }
-
-    if (70001 <= version_) {
-        const auto relay = (relay_) ? std::byte{1} : std::byte{0};
-        output->Concatenate(&relay, sizeof(relay));
-    }
-
-    return output;
 }
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

@@ -168,15 +168,15 @@ private:
     auto get_body_size(const zmq::Frame& header) const noexcept
         -> std::size_t final;
 
-    auto broadcast_block(zmq::Message& message) noexcept -> void final;
+    auto broadcast_block(zmq::Message&& message) noexcept -> void final;
     auto broadcast_inv_transaction(ReadView txid) noexcept -> void final;
-    auto broadcast_transaction(zmq::Message& message) noexcept -> void final;
+    auto broadcast_transaction(zmq::Message&& message) noexcept -> void final;
     auto ping() noexcept -> void final;
     auto pong() noexcept -> void final;
-    auto process_message(const zmq::Message& message) noexcept -> void final;
+    auto process_message(zmq::Message&& message) noexcept -> void final;
     auto reconcile_mempool() noexcept -> void;
     auto request_addresses() noexcept -> void final;
-    auto request_block(zmq::Message& message) noexcept -> void final;
+    auto request_block(zmq::Message&& message) noexcept -> void final;
     auto request_blocks() noexcept -> void final;
     auto request_cfheaders() noexcept -> void final;
     auto request_cfilter() noexcept -> void final;

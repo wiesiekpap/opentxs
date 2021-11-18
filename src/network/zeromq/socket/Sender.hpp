@@ -24,13 +24,13 @@ template <typename Interface, typename ImplementationParent = Socket>
 class Sender : virtual public Interface, virtual public ImplementationParent
 {
 protected:
+    auto Send(zeromq::Message&& data) const noexcept -> bool override;
+
     Sender() noexcept;
 
     ~Sender() override = default;
 
 private:
-    auto send(zeromq::Message& data) const noexcept -> bool override;
-
     Sender(const Sender&) = delete;
     Sender(Sender&&) = delete;
     auto operator=(const Sender&) -> Sender& = delete;

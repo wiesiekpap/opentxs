@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"               // IWYU pragma: associated
 #include "server/MessageProcessor.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <limits>
@@ -15,8 +16,16 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "Proto.tpp"
+#include "internal/api/session/Notary.hpp"
+#include "internal/network/zeromq/Batch.hpp"
+#include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/Thread.hpp"
+#include "internal/network/zeromq/Types.hpp"
+#include "internal/network/zeromq/message/Message.hpp"  // IWYU pragma: keep
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/ServerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -27,141 +36,155 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
+#include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/network/zeromq/ReplyCallback.hpp"
-#include "opentxs/network/zeromq/socket/Dealer.hpp"
-#include "opentxs/network/zeromq/socket/Pull.hpp"
-#include "opentxs/network/zeromq/socket/Reply.hpp"
-#include "opentxs/network/zeromq/socket/Router.hpp"
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/OTXPush.pb.h"
 #include "serialization/protobuf/ServerReply.pb.h"
 #include "serialization/protobuf/ServerRequest.pb.h"
 #include "server/Server.hpp"
 #include "server/UserCommandProcessor.hpp"
 
-#define OTX_ZAP_DOMAIN "opentxs-otx"
-
-namespace zmq = opentxs::network::zeromq;
-
 namespace opentxs::server
 {
 MessageProcessor::MessageProcessor(
     Server& server,
-    const PasswordPrompt& reason,
-    const Flag& running)
-    : server_(server)
+    const PasswordPrompt& reason) noexcept
+    : api_(server.API())
+    , server_(server)
     , reason_(reason)
-    , running_(running)
-    , frontend_callback_(zmq::ListenCallback::Factory(
-          [=](const zmq::Message& incoming) -> void {
-              this->process_frontend(incoming);
-          }))
-    , frontend_socket_(server_.API().Network().ZeroMQ().RouterSocket(
-          frontend_callback_,
-          zmq::socket::Socket::Direction::Bind))
-    , backend_callback_(zmq::ReplyCallback::Factory(
-          [=](const zmq::Message& incoming) -> OTZMQMessage {
-              return this->process_backend(incoming);
-          }))
-    , backend_socket_(server_.API().Network().ZeroMQ().ReplySocket(
-          backend_callback_,
-          zmq::socket::Socket::Direction::Bind))
-    , internal_callback_(zmq::ListenCallback::Factory(
-          [=](const zmq::Message& incoming) -> void {
-              this->process_internal(incoming);
-          }))
-    , internal_socket_(server_.API().Network().ZeroMQ().DealerSocket(
-          internal_callback_,
-          zmq::socket::Socket::Direction::Connect))
-    , notification_callback_(zmq::ListenCallback::Factory(
-          [=](const zmq::Message& incoming) -> void {
-              this->process_notification(incoming);
-          }))
-    , notification_socket_(server_.API().Network().ZeroMQ().PullSocket(
-          notification_callback_,
-          zmq::socket::Socket::Direction::Bind))
+    , running_(true)
+    , zmq_batch_(api_.Network().ZeroMQ().Internal().MakeBatch({
+          zmq::socket::Type::Router,  // NOTE frontend_
+          zmq::socket::Type::Pull,    // NOTE notification_
+      }))
+    , frontend_(zmq_batch_.sockets_.at(0))
+    , notification_(zmq_batch_.sockets_.at(1))
+    , zmq_thread_(nullptr)
+    , frontend_id_(frontend_.ID())
     , thread_()
-    , internal_endpoint_(
-          std::string("inproc://opentxs/notary/") + Identifier::Random()->str())
     , counter_lock_()
     , drop_incoming_(0)
     , drop_outgoing_(0)
     , active_connections_()
     , connection_map_lock_()
 {
-    auto bound = backend_socket_->Start(internal_endpoint_);
-    bound &= internal_socket_->Start(internal_endpoint_);
-    bound &= notification_socket_->Start(
-        server_.API().Endpoints().InternalPushNotification());
+    zmq_batch_.listen_callbacks_.emplace_back(zmq::ListenCallback::Factory(
+        [this](auto&& m) { pipeline(std::move(m)); }));
+    auto rc =
+        notification_.Bind(api_.Endpoints().InternalPushNotification().c_str());
 
-    OT_ASSERT(bound);
+    OT_ASSERT(rc);
+
+    zmq_thread_ = api_.Network().ZeroMQ().Internal().Start(
+        zmq_batch_.id_,
+        {
+            {frontend_.ID(),
+             &frontend_,
+             [id = frontend_.ID(),
+              &cb = zmq_batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+            {notification_.ID(),
+             &notification_,
+             [id = notification_.ID(),
+              &cb = zmq_batch_.listen_callbacks_.at(0).get()](auto&& m) {
+                 m.Internal().Prepend(id);
+                 cb.Process(std::move(m));
+             }},
+        });
+
+    OT_ASSERT(nullptr != zmq_thread_);
 }
 
-void MessageProcessor::associate_connection(
-    const identifier::Nym& nymID,
-    const Data& connection)
+auto MessageProcessor::associate_connection(
+    const bool oldFormat,
+    const identifier::Nym& nym,
+    const Data& connection) noexcept -> void
 {
-    if (nymID.empty()) { return; }
+    if (nym.empty()) { return; }
     if (connection.empty()) { return; }
 
-    eLock lock(connection_map_lock_);
-    const auto result = active_connections_.emplace(nymID, connection);
+    const auto changed = [&] {
+        auto& map = active_connections_;
+        auto lock = eLock{connection_map_lock_};
+        auto output{false};
 
-    if (std::get<1>(result)) {
+        if (auto it = map.find(nym); map.end() == it) {
+            map.try_emplace(nym, connection, oldFormat);
+            output = true;
+        } else {
+            auto& [id, format] = it->second;
+
+            if (id != connection) {
+                output = true;
+                id = connection;
+            }
+
+            if (format != oldFormat) {
+                output = true;
+                format = oldFormat;
+            }
+        }
+
+        return output;
+    }();
+
+    if (changed) {
         LogDetail()(OT_PRETTY_CLASS())("Nym ")(
-            nymID)(" is available via connection ")(connection.asHex())(".")
+            nym)(" is available via connection ")(connection.asHex())
             .Flush();
     }
 }
 
-void MessageProcessor::cleanup()
+auto MessageProcessor::cleanup() noexcept -> void
 {
-    frontend_socket_->Close();
-    notification_socket_->Close();
-    internal_socket_->Close();
-    backend_socket_->Close();
-
-    if (thread_.joinable()) { thread_.join(); }
+    if (auto running = running_.exchange(false); running) {
+        zmq_batch_.ClearCallbacks();
+        zmq_thread_->Modify(
+            frontend_.ID(), [](auto& socket) { socket.Stop(); });
+        zmq_thread_->Modify(
+            notification_.ID(), [](auto& socket) { socket.Stop(); });
+        api_.Network().ZeroMQ().Internal().Stop(zmq_batch_.id_);
+    }
 }
 
-void MessageProcessor::DropIncoming(const int count) const
+auto MessageProcessor::DropIncoming(const int count) const noexcept -> void
 {
     Lock lock(counter_lock_);
     drop_incoming_ = count;
 }
 
-void MessageProcessor::DropOutgoing(const int count) const
+auto MessageProcessor::DropOutgoing(const int count) const noexcept -> void
 {
     Lock lock(counter_lock_);
     drop_outgoing_ = count;
 }
 
-auto MessageProcessor::extract_proto(const zmq::Frame& incoming) const
+auto MessageProcessor::extract_proto(const zmq::Frame& incoming) const noexcept
     -> proto::ServerRequest
 {
     return proto::Factory<proto::ServerRequest>(incoming);
 }
 
-auto MessageProcessor::get_connection(const network::zeromq::Message& incoming)
-    -> OTData
+auto MessageProcessor::get_connection(
+    const network::zeromq::Message& incoming) noexcept -> OTData
 {
     auto output = Data::Factory();
     const auto header = incoming.Header();
@@ -174,84 +197,103 @@ auto MessageProcessor::get_connection(const network::zeromq::Message& incoming)
     return output;
 }
 
-void MessageProcessor::init(
+auto MessageProcessor::init(
     const bool inproc,
     const int port,
-    const Secret& privkey)
+    const Secret& privkey) noexcept(false) -> void
 {
     if (port == 0) { OT_FAIL; }
 
-    auto set = frontend_socket_->SetPrivateKey(privkey);
+    auto [queued, promise] = zmq_thread_->Modify(
+        frontend_id_,
+        [this, inproc, port, key = OTSecret{privkey}](auto& socket) {
+            auto set = socket.SetPrivateKey(key->Bytes());
 
-    OT_ASSERT(set);
+            OT_ASSERT(set);
 
-    set = frontend_socket_->SetDomain(OTX_ZAP_DOMAIN);
+            set = socket.SetZAPDomain(zap_domain_);
 
-    OT_ASSERT(set);
+            OT_ASSERT(set);
 
-    auto endpoint = std::stringstream{};
+            auto endpoint = std::stringstream{};
 
-    if (inproc) {
-        endpoint << server_.API().MakeInprocEndpoint();
-        endpoint << ':';
+            if (inproc) {
+                endpoint << api_.InternalNotary().InprocEndpoint();
+                endpoint << ':';
+            } else {
+                endpoint << std::string("tcp://*:");
+            }
+
+            endpoint << std::to_string(port);
+            const auto bound = socket.Bind(endpoint.str().c_str());
+
+            if (false == bound) {
+                throw std::invalid_argument("Cannot bind to endpoint");
+            }
+
+            LogConsole()("Bound to endpoint: ")(endpoint.str()).Flush();
+        });
+
+    OT_ASSERT(queued);
+}
+
+auto MessageProcessor::pipeline(zmq::Message&& message) noexcept -> void
+{
+    const auto isFrontend = [&] {
+        const auto header = message.Header();
+
+        OT_ASSERT(0 < header.size());
+
+        const auto socket = message.Internal().ExtractFront();
+        const auto output = (frontend_id_ == socket.as<zmq::SocketID>());
+
+        return output;
+    }();
+
+    if (isFrontend) {
+        process_frontend(std::move(message));
     } else {
-        endpoint << std::string("tcp://*:");
-    }
-
-    endpoint << std::to_string(port);
-    const auto bound = frontend_socket_->Start(endpoint.str());
-
-    if (false == bound) {
-        throw std::invalid_argument("Cannot connect to endpoint.");
-    }
-
-    LogConsole()("Bound to endpoint: ")(endpoint.str()).Flush();
-}
-
-void MessageProcessor::run()
-{
-    while (running_) {
-        // timeout is the time left until the next cron should execute.
-        const auto timeout = server_.ComputeTimeout();
-
-        if (timeout.count() <= 0) {
-            // ProcessCron and process_backend must not run simultaneously
-            Lock lock(lock_);
-            server_.ProcessCron();
-        }
-
-        Sleep(std::chrono::milliseconds(50));
+        process_notification(std::move(message));
     }
 }
 
-auto MessageProcessor::process_backend(const zmq::Message& incoming)
-    -> OTZMQMessage
+auto MessageProcessor::process_backend(
+    const bool tagged,
+    zmq::Message&& incoming) noexcept -> network::zeromq::Message
 {
-    // ProcessCron and process_backend must not run simultaneously
-    Lock lock(lock_);
-    std::string reply{};
+    auto reply = std::string{};
+    const auto error = [&] {
+        // ProcessCron and process_backend must not run simultaneously
+        auto lock = Lock{lock_};
+        const auto request = [&] {
+            auto out = std::string{};
+            const auto body = incoming.Body();
 
-    std::string messageString{};
-    if (0 < incoming.Body().size()) {
-        messageString = *incoming.Body().begin();
-    }
+            if (0u < body.size()) { out = body.at(0).Bytes(); }
 
-    bool error = process_message(messageString, reply);
+            return out;
+        }();
+
+        return process_message(request, reply);
+    }();
 
     if (error) { reply = ""; }
 
-    auto output = server_.API().Network().ZeroMQ().ReplyMessage(incoming);
-    output->AddFrame(reply);
+    auto output = network::zeromq::reply_to_message(std::move(incoming));
+
+    if (tagged) { output.AddFrame(WorkType::OTXP2PLegacyXML); }
+
+    output.AddFrame(reply);
 
     return output;
 }
 
 auto MessageProcessor::process_command(
     const proto::ServerRequest& serialized,
-    identifier::Nym& nymID) -> bool
+    identifier::Nym& nymID) noexcept -> bool
 {
     const auto allegedNymID = identifier::Nym::Factory(serialized.nym());
-    const auto nym = server_.API().Wallet().Nym(allegedNymID);
+    const auto nym = api_.Wallet().Nym(allegedNymID);
 
     if (false == bool(nym)) {
         LogError()(OT_PRETTY_CLASS())("Nym is not yet registered.").Flush();
@@ -259,7 +301,7 @@ auto MessageProcessor::process_command(
         return true;
     }
 
-    auto request = otx::Request::Factory(server_.API(), serialized);
+    auto request = otx::Request::Factory(api_, serialized);
 
     if (request->Validate()) {
         nymID.Assign(request->Initiator());
@@ -274,64 +316,110 @@ auto MessageProcessor::process_command(
     return true;
 }
 
-void MessageProcessor::process_frontend(const zmq::Message& incoming)
+auto MessageProcessor::process_frontend(zmq::Message&& message) noexcept -> void
 {
-    Lock lock(counter_lock_);
+    const auto drop = [&] {
+        auto lock = Lock{counter_lock_};
 
-    if (0 < drop_incoming_) {
-        LogConsole()(OT_PRETTY_CLASS())(
-            "Dropping incoming message for testing.")
-            .Flush();
-        --drop_incoming_;
-    } else {
-        lock.unlock();
-        const auto id = get_connection(incoming);
-        const bool isProto{1 < incoming.Body().size()};
-
-        if (isProto) {
-            process_proto(id, incoming);
-        } else {
-            process_legacy(id, incoming);
-        }
-    }
-}
-
-void MessageProcessor::process_internal(const zmq::Message& incoming)
-{
-    Lock lock(counter_lock_);
-
-    if (0 < drop_outgoing_) {
-        LogConsole()(OT_PRETTY_CLASS())(
-            "Dropping outgoing message for testing.")
-            .Flush();
-        --drop_outgoing_;
-    } else {
-        lock.unlock();
-        OTZMQMessage reply{incoming};
-        const auto sent = frontend_socket_->Send(reply);
-
-        if (sent) {
-            LogTrace()(OT_PRETTY_CLASS())("Reply message delivered.").Flush();
-        } else {
-            LogError()(OT_PRETTY_CLASS())("Failed to send reply message.")
+        if (0 < drop_incoming_) {
+            LogConsole()(OT_PRETTY_CLASS())(
+                "Dropping incoming message for testing.")
                 .Flush();
+            --drop_incoming_;
+
+            return true;
+        } else {
+
+            return false;
         }
+    }();
+
+    if (drop) { return; }
+
+    const auto id = get_connection(message);
+    const auto body = message.Body();
+
+    if (2u > body.size()) {
+        process_legacy(id, false, std::move(message));
+
+        return;
+    }
+
+    try {
+        auto oldProtoFormat = false;
+        const auto type = [&] {
+            if ((2u == body.size()) && (0u == body.at(1).size())) {
+                oldProtoFormat = true;
+
+                return WorkType::OTXP2PRequest;
+            }
+
+            try {
+
+                return body.at(0).as<WorkType>();
+            } catch (...) {
+                throw std::runtime_error{"Invalid message type"};
+            }
+        }();
+
+        switch (type) {
+            case WorkType::OTXP2PRequest: {
+                process_proto(id, oldProtoFormat, std::move(message));
+            } break;
+            case WorkType::OTXP2PLegacyXML: {
+                process_legacy(id, true, std::move(message));
+            } break;
+            default: {
+                throw std::runtime_error{"Unsupported message type"};
+            }
+        }
+    } catch (const std::exception& e) {
+        LogConsole()(e.what())(" from ")(id->asHex()).Flush();
     }
 }
 
-void MessageProcessor::process_legacy(
+auto MessageProcessor::process_internal(zmq::Message&& message) noexcept -> void
+{
+    const auto drop = [&] {
+        auto lock = Lock{counter_lock_};
+
+        if (0 < drop_outgoing_) {
+            LogConsole()(OT_PRETTY_CLASS())(
+                "Dropping outgoing message for testing.")
+                .Flush();
+            --drop_outgoing_;
+
+            return true;
+        } else {
+
+            return false;
+        }
+    }();
+
+    if (drop) { return; }
+
+    const auto sent = frontend_.Send(std::move(message));
+
+    if (sent) {
+        LogTrace()(OT_PRETTY_CLASS())("Reply message delivered.").Flush();
+    } else {
+        LogError()(OT_PRETTY_CLASS())("Failed to send reply message.").Flush();
+    }
+}
+
+auto MessageProcessor::process_legacy(
     const Data& id,
-    const network::zeromq::Message& incoming)
+    const bool tagged,
+    network::zeromq::Message&& incoming) noexcept -> void
 {
     LogTrace()(OT_PRETTY_CLASS())("Processing request via ")(id.asHex())
         .Flush();
-    OTZMQMessage request{incoming};
-    internal_socket_->Send(request);
+    process_internal(process_backend(tagged, std::move(incoming)));
 }
 
 auto MessageProcessor::process_message(
     const std::string& messageString,
-    std::string& reply) -> bool
+    std::string& reply) noexcept -> bool
 {
     if (messageString.size() < 1) { return true; }
 
@@ -344,7 +432,7 @@ auto MessageProcessor::process_message(
         messageString.data(), static_cast<std::uint32_t>(messageString.size()));
     auto serialized = String::Factory();
     armored->GetString(serialized);
-    auto request{server_.API().Factory().Message()};
+    auto request{api_.Factory().Message()};
 
     if (false == serialized->Exists()) {
         LogError()(OT_PRETTY_CLASS())("Empty serialized request.").Flush();
@@ -359,7 +447,7 @@ auto MessageProcessor::process_message(
         return true;
     }
 
-    auto replymsg{server_.API().Factory().Message()};
+    auto replymsg{api_.Factory().Message()};
 
     OT_ASSERT(false != bool(replymsg));
 
@@ -398,7 +486,8 @@ auto MessageProcessor::process_message(
     return false;
 }
 
-void MessageProcessor::process_notification(const zmq::Message& incoming)
+auto MessageProcessor::process_notification(zmq::Message&& incoming) noexcept
+    -> void
 {
     if (2 != incoming.Body().size()) {
         LogError()(OT_PRETTY_CLASS())("Invalid message.").Flush();
@@ -406,8 +495,10 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
         return;
     }
 
-    const auto nymID = identifier::Nym::Factory(incoming.Body().at(0));
-    const auto connection = query_connection(nymID);
+    const auto nymID =
+        identifier::Nym::Factory(std::string{incoming.Body().at(0).Bytes()});
+    const auto& data = query_connection(nymID);
+    const auto& [connection, oldFormat] = data;
 
     if (connection->empty()) {
         LogDebug()(OT_PRETTY_CLASS())("No notification channel available for ")(
@@ -417,13 +508,13 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
         return;
     }
 
-    const auto nym = server_.API().Wallet().Nym(server_.GetServerNym().ID());
+    const auto nym = api_.Wallet().Nym(server_.GetServerNym().ID());
 
     OT_ASSERT(nym);
 
     const auto& payload = incoming.Body().at(1);
     auto message = otx::Reply::Factory(
-        server_.API(),
+        api_,
         nym,
         nymID,
         server_.GetServerID(),
@@ -436,18 +527,29 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
     OT_ASSERT(message->Validate());
 
     auto serialized = proto::ServerReply{};
+
     if (false == message->Serialize(serialized)) {
         LogVerbose()(OT_PRETTY_CLASS())("Failed to serialize reply.").Flush();
 
         return;
     }
-    const auto reply = server_.API().Factory().Data(serialized);
-    auto pushNotification = zmq::Message::Factory();
-    pushNotification->AddFrame(connection);
-    pushNotification->AddFrame();
-    pushNotification->AddFrame(reply);
-    pushNotification->AddFrame();
-    const auto sent = frontend_socket_->Send(pushNotification);
+
+    const auto reply = api_.Factory().Data(serialized);
+    const auto sent = frontend_.Send([&] {
+        auto out = zmq::Message{};
+        out.AddFrame(data.first);
+        out.StartBody();
+
+        if (data.second) {
+            out.AddFrame(reply);
+            out.AddFrame();
+        } else {
+            out.AddFrame(WorkType::OTXP2PPush);
+            out.AddFrame(reply);
+        }
+
+        return out;
+    }());
 
     if (sent) {
         LogVerbose()(OT_PRETTY_CLASS())("Push notification for ")(
@@ -461,13 +563,26 @@ void MessageProcessor::process_notification(const zmq::Message& incoming)
     }
 }
 
-void MessageProcessor::process_proto(
+auto MessageProcessor::process_proto(
     const Data& id,
-    const network::zeromq::Message& incoming)
+    const bool oldFormat,
+    network::zeromq::Message&& incoming) noexcept -> void
 {
     LogTrace()(OT_PRETTY_CLASS())("Processing request via ")(id.asHex())
         .Flush();
-    const auto command = extract_proto(incoming.Body().at(0));
+    const auto body = incoming.Body();
+    const auto& payload = [&]() -> auto&
+    {
+        if (oldFormat) {
+
+            return body.at(0);
+        } else {
+
+            return body.at(1);
+        }
+    }
+    ();
+    const auto command = extract_proto(payload);
 
     if (false == proto::Validate(command, VERBOSE)) {
         LogError()(OT_PRETTY_CLASS())("Invalid otx request.").Flush();
@@ -478,31 +593,51 @@ void MessageProcessor::process_proto(
     auto nymID = identifier::Nym::Factory();
     const auto valid = process_command(command, nymID);
 
-    if (valid) {
-        const auto connection = get_connection(incoming);
-
-        if (false == connection->empty()) {
-            associate_connection(nymID, connection);
-        }
-
-        return;
+    if (valid && (false == id.empty())) {
+        associate_connection(oldFormat, nymID, id);
     }
 }
 
-auto MessageProcessor::query_connection(const identifier::Nym& nymID) -> OTData
+auto MessageProcessor::query_connection(const identifier::Nym& id) noexcept
+    -> const ConnectionData&
 {
-    sLock lock(connection_map_lock_);
-    auto it = active_connections_.find(nymID);
+    auto lock = sLock{connection_map_lock_};
 
-    if (active_connections_.end() == it) { return Data::Factory(); }
+    try {
 
-    return it->second;
+        return active_connections_.at(id);
+    } catch (...) {
+        static const auto blank = ConnectionData{api_.Factory().Data(), true};
+
+        return blank;
+    }
 }
 
-void MessageProcessor::Start()
+auto MessageProcessor::run() noexcept -> void
+{
+    while (running_.load()) {
+        // timeout is the time left until the next cron should execute.
+        const auto timeout = server_.ComputeTimeout();
+
+        if (timeout.count() <= 0) {
+            // ProcessCron and process_backend must not run simultaneously
+            auto lock = Lock{lock_};
+            server_.ProcessCron();
+        }
+
+        Sleep(std::chrono::milliseconds(50));
+    }
+}
+
+auto MessageProcessor::Start() noexcept -> void
 {
     thread_ = std::thread(&MessageProcessor::run, this);
 }
 
-MessageProcessor::~MessageProcessor() { cleanup(); }
+MessageProcessor::~MessageProcessor()
+{
+    cleanup();
+
+    if (thread_.joinable()) { thread_.join(); }
+}
 }  // namespace opentxs::server

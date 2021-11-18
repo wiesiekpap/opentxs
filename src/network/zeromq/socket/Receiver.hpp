@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/network/zeromq/socket/SocketType.hpp"
+
 #pragma once
 
 #include <map>
@@ -11,8 +13,9 @@
 
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 
 namespace opentxs
@@ -50,13 +53,13 @@ protected:
     void init() noexcept override;
     virtual void process_incoming(
         const Lock& lock,
-        MessageType& message) noexcept = 0;
+        MessageType&& message) noexcept = 0;
     void shutdown(const Lock& lock) noexcept override;
     virtual void thread() noexcept;
 
     Receiver(
         const zeromq::Context& context,
-        const SocketType type,
+        const socket::Type type,
         const Socket::Direction direction,
         const bool startThread) noexcept;
 

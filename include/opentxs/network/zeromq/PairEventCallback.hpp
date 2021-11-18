@@ -27,8 +27,6 @@ namespace proto
 class PairEvent;
 }  // namespace proto
 
-class PairEventCallbackSwig;
-
 using OTZMQPairEventCallback = Pimpl<network::zeromq::PairEventCallback>;
 }  // namespace opentxs
 
@@ -44,8 +42,6 @@ public:
     using ReceiveCallback = std::function<void(const proto::PairEvent&)>;
 
     static auto Factory(ReceiveCallback callback) -> OTZMQPairEventCallback;
-    static auto Factory(PairEventCallbackSwig* callback)
-        -> opentxs::Pimpl<opentxs::network::zeromq::PairEventCallback>;
 
     ~PairEventCallback() override = default;
 

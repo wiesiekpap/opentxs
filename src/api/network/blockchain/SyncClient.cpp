@@ -44,11 +44,11 @@
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/blockchain/sync/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/BlockchainP2PChainState.pb.h"
 
@@ -69,8 +69,8 @@ struct SyncClient::Imp {
 
     Imp(const api::Session& api) noexcept
         : api_(api)
-        , endpoint_(OTSocket::random_inproc_endpoint())
-        , monitor_endpoint_(OTSocket::random_inproc_endpoint())
+        , endpoint_(opentxs::network::zeromq::MakeArbitraryInproc())
+        , monitor_endpoint_(opentxs::network::zeromq::MakeArbitraryInproc())
         , external_router_([&] {
             auto out = Socket{
                 ::zmq_socket(api_.Network().ZeroMQ(), ZMQ_ROUTER), ::zmq_close};
@@ -316,13 +316,13 @@ private:
         const auto msg = [&] {
             auto dummy = std::mutex{};
             auto lock = Lock{dummy};
-            auto output = api_.Network().ZeroMQ().Message();
+            auto output = opentxs::network::zeromq::Message{};
             OTSocket::receive_message(lock, socket, output);
 
             return output;
         }();
 
-        if (0 == msg->size()) {
+        if (0 == msg.size()) {
             LogError()(OT_PRETTY_CLASS())("Dropping empty message").Flush();
 
             return;
@@ -364,7 +364,7 @@ private:
                 }
             }
 
-            const auto endpoint = std::string{msg.at(0)};
+            const auto endpoint = std::string{msg.at(0).Bytes()};
             auto& server = [&]() -> auto&
             {
                 static auto blank = Server{};
@@ -438,13 +438,14 @@ private:
                             return out;
                         }();
                         const auto notification = Ack{std::move(data), ep};
-                        auto msg = api_.Network().ZeroMQ().Message(client);
-                        msg->AddFrame();
+                        auto msg = opentxs::network::zeromq::Message{};
+                        msg.AddFrame(client);
+                        msg.StartBody();
 
                         if (false == notification.Serialize(msg)) { OT_FAIL; }
 
                         OTSocket::send_message(
-                            lock, internal_router_.get(), msg);
+                            lock, internal_router_.get(), std::move(msg));
                     }
 
                     server.active_ = true;
@@ -463,12 +464,14 @@ private:
                             DisplayString(chain)};
                     }
 
-                    auto msg = api_.Network().ZeroMQ().Message(identity);
-                    msg->AddFrame();
+                    auto msg = opentxs::network::zeromq::Message{};
+                    msg.AddFrame(identity);
+                    msg.StartBody();
 
                     if (false == data.Serialize(msg)) { OT_FAIL; }
 
-                    OTSocket::send_message(lock, internal_router_.get(), msg);
+                    OTSocket::send_message(
+                        lock, internal_router_.get(), std::move(msg));
                 } break;
                 default: {
                     throw std::runtime_error{
@@ -519,7 +522,7 @@ private:
                 OT_ASSERT(1 < body.size());
 
                 const auto chain = body.at(1).as<Chain>();
-                clients_[chain] = identity;
+                clients_[chain] = identity.Bytes();
                 const auto& providers = providers_[chain];
                 LogVerbose()(OT_PRETTY_CLASS())("querying ")(providers.size())(
                     " providers for ")(DisplayString(chain))
@@ -560,14 +563,16 @@ private:
                     return Request{std::move(states)};
                 }();
 
-                auto msg = api_.Network().ZeroMQ().Message(provider);
-                msg->AddFrame();
+                auto msg = opentxs::network::zeromq::Message{};
+                msg.AddFrame(provider);
+                msg.StartBody();
 
                 if (false == request.Serialize(msg)) { OT_FAIL; }
 
                 auto dummy = std::mutex{};
                 auto lock = Lock{dummy};
-                OTSocket::send_message(lock, external_router_.get(), msg);
+                OTSocket::send_message(
+                    lock, external_router_.get(), std::move(msg));
                 server.last_ = Clock::now();
             } break;
             case Task::Ack:
@@ -634,14 +639,16 @@ private:
             if (false == server.connected_) { continue; }
 
             if (server.needs_query()) {
-                auto msg = api_.Network().ZeroMQ().Message(endpoint);
-                msg->AddFrame();
+                auto msg = opentxs::network::zeromq::Message{};
+                msg.AddFrame(endpoint);
+                msg.StartBody();
                 using Query = opentxs::network::blockchain::sync::Query;
                 const auto query = Query{0};
 
                 if (false == query.Serialize(msg)) { OT_FAIL; }
 
-                OTSocket::send_message(lock, external_router_.get(), msg);
+                OTSocket::send_message(
+                    lock, external_router_.get(), std::move(msg));
                 server.last_ = Clock::now();
                 server.waiting_ = true;
             }

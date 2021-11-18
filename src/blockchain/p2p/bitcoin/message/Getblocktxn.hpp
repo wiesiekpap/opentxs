@@ -18,6 +18,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -69,7 +70,8 @@ private:
     const OTData block_hash_;
     const std::vector<std::size_t> txn_indices_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Getblocktxn(const Getblocktxn&) = delete;
     Getblocktxn(Getblocktxn&&) = delete;

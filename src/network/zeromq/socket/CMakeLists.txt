@@ -6,6 +6,9 @@
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/network/zeromq/socket/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/network/zeromq/socket/Pipeline.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/network/zeromq/socket/Raw.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/network/zeromq/socket/Socket.hpp"
     "Bidirectional.hpp"
     "Bidirectional.tpp"
@@ -21,6 +24,8 @@ target_sources(
     "Pull.hpp"
     "Push.cpp"
     "Push.hpp"
+    "Raw.cpp"
+    "Raw.hpp"
     "Receiver.hpp"
     "Receiver.tpp"
     "Reply.cpp"
@@ -44,12 +49,16 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Push.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Reply.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Request.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Request.tpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Router.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Sender.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Sender.tpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Socket.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/SocketType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Subscribe.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/network/zeromq/socket/Types.hpp"
+)
+target_include_directories(
+  opentxs-common SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 target_link_libraries(opentxs-common PRIVATE "${OT_ZMQ_TARGET}")
 target_link_libraries(opentxs PRIVATE "${OT_ZMQ_TARGET}")

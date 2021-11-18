@@ -11,11 +11,13 @@
 #include <functional>
 #include <utility>
 
+#include "internal/network/zeromq/zap/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -50,43 +52,41 @@ Callback::Callback()
 {
 }
 
-auto Callback::default_callback(const zap::Request& in) const -> OTZMQZAPReply
+auto Callback::default_callback(const zap::Request& in) const -> Reply
 {
-    auto output = Reply::Factory(in);
-
     if (Policy::Accept == policy_.load()) {
-        output->SetCode(zap::Status::Success);
-        output->SetStatus("OK");
-    } else {
-        output->SetCode(zap::Status::AuthFailure);
-        output->SetStatus("Unsupported domain");
-    }
 
-    return output;
+        return factory::ZAPReply(in, zap::Status::Success, "OK");
+    } else {
+
+        return factory::ZAPReply(
+            in, zap::Status::AuthFailure, "Unsupported domain");
+    }
 }
 
-auto Callback::get_domain(const std::string& domain) const
+auto Callback::get_domain(const ReadView domain) const
     -> const Callback::Lambda&
 {
-    Lock lock(domain_lock_);
+    const auto key = std::string{domain};
+    auto lock = Lock{domain_lock_};
 
     try {
 
-        return domains_.at(domain);
+        return domains_.at(key);
     } catch (...) {
 
         return default_callback_;
     }
 }
 
-auto Callback::Process(const zap::Request& request) const -> OTZMQZAPReply
+auto Callback::Process(const zap::Request& request) const -> Reply
 {
     auto [valid, error] = request.Validate();
 
     if (false == valid) {
         LogError()(OT_PRETTY_CLASS())("Rejecting invalid request.").Flush();
 
-        return zap::Reply::Factory(request, Status::SystemError, error);
+        return factory::ZAPReply(request, Status::SystemError, error);
     }
 
     const auto& domain = get_domain(request.Domain());
@@ -98,7 +98,7 @@ auto Callback::SetDomain(
     const std::string& domain,
     const ReceiveCallback& callback) const -> bool
 {
-    Lock lock(domain_lock_);
+    auto lock = Lock{domain_lock_};
 
     if (domain.empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid domain.").Flush();

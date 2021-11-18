@@ -224,7 +224,7 @@ private:
     auto load_contacts(const proto::StorageThread& thread) noexcept -> void;
     auto load_thread(const proto::StorageThread& thread) noexcept -> void;
     auto new_thread() noexcept -> void;
-    auto pipeline(const Message& in) noexcept -> void;
+    auto pipeline(Message&& in) noexcept -> void;
     auto process_contact(const Message& message) noexcept -> void;
     auto process_item(const proto::StorageThreadItem& item) noexcept(false)
         -> ActivityThreadRowID;

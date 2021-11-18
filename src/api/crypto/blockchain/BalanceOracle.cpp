@@ -28,13 +28,14 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
+#include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -60,21 +61,22 @@ struct BalanceOracle::Imp {
         -> void
     {
         const auto make = [&](auto& out, auto type) {
-            out->AddFrame();
-            out->AddFrame(value(type));
-            out->AddFrame(chain);
-            out->AddFrame(balance.first.str());
-            out->AddFrame(balance.second.str());
+            out.AddFrame();
+            out.AddFrame(value(type));
+            out.AddFrame(chain);
+            out.AddFrame(balance.first.str());
+            out.AddFrame(balance.second.str());
         };
         {
-            auto out = zmq_.Message();
+            auto out = opentxs::network::zeromq::Message{};
             make(out, WorkType::BlockchainWalletUpdated);
-            publisher_->Send(out);
+            publisher_->Send(std::move(out));
         }
         const auto notify = [&](const auto& in) {
-            auto out = zmq_.Message(in);
+            auto out = opentxs::network::zeromq::Message{};
+            out.AddFrame(in);
             make(out, WorkType::BlockchainBalance);
-            socket_->Send(out);
+            socket_->Send(std::move(out));
         };
         {
             auto lock = Lock{lock_};
@@ -90,22 +92,23 @@ struct BalanceOracle::Imp {
         const Balance balance) const noexcept -> void
     {
         const auto make = [&](auto& out, auto type) {
-            out->AddFrame();
-            out->AddFrame(value(type));
-            out->AddFrame(chain);
-            out->AddFrame(balance.first.str());
-            out->AddFrame(balance.second.str());
-            out->AddFrame(owner);
+            out.AddFrame();
+            out.AddFrame(value(type));
+            out.AddFrame(chain);
+            out.AddFrame(balance.first.str());
+            out.AddFrame(balance.second.str());
+            out.AddFrame(owner);
         };
         {
-            auto out = zmq_.Message();
+            auto out = opentxs::network::zeromq::Message{};
             make(out, WorkType::BlockchainWalletUpdated);
-            publisher_->Send(out);
+            publisher_->Send(std::move(out));
         }
         const auto notify = [&](const auto& in) {
-            auto out = zmq_.Message(in);
+            auto out = opentxs::network::zeromq::Message{};
+            out.AddFrame(in);
             make(out, WorkType::BlockchainBalance);
-            socket_->Send(out);
+            socket_->Send(std::move(out));
         };
         {
             auto lock = Lock{lock_};
@@ -118,7 +121,8 @@ struct BalanceOracle::Imp {
     Imp(const api::Session& api) noexcept
         : api_(api)
         , zmq_(api_.Network().ZeroMQ())
-        , cb_(zmq::ListenCallback::Factory([this](auto& in) { cb(in); }))
+        , cb_(zmq::ListenCallback::Factory(
+              [this](auto&& in) { cb(std::move(in)); }))
         , socket_([&] {
             auto out =
                 zmq_.RouterSocket(cb_, zmq::socket::Socket::Direction::Bind);
@@ -156,9 +160,9 @@ private:
     mutable std::map<Chain, Subscribers> subscribers_;
     mutable std::map<Chain, std::map<OTNymID, Subscribers>> nym_subscribers_;
 
-    auto cb(opentxs::network::zeromq::Message& in) noexcept -> void
+    auto cb(opentxs::network::zeromq::Message&& in) noexcept -> void
     {
-        const auto& header = in.Header();
+        const auto header = in.Header();
 
         OT_ASSERT(0 < header.size());
 
@@ -171,24 +175,26 @@ private:
         auto output = opentxs::blockchain::Balance{};
         const auto& chainFrame = body.at(1);
         const auto nym = [&] {
-            auto output = api_.Factory().NymID();
-
             if (haveNym) {
-                const auto& frame = body.at(2);
-                output->Assign(frame.Bytes());
-            }
 
-            return output;
+                return api_.Factory().NymID(body.at(2));
+            } else {
+
+                return api_.Factory().NymID();
+            }
         }();
         auto postcondition = ScopeGuard{[&]() {
-            auto message = zmq_.TaggedReply(in, WorkType::BlockchainBalance);
-            message->AddFrame(chainFrame);
-            message->AddFrame(output.first.str());
-            message->AddFrame(output.second.str());
+            socket_->Send([&] {
+                auto work = opentxs::network::zeromq::tagged_reply_to_message(
+                    in, WorkType::BlockchainBalance);
+                work.AddFrame(chainFrame);
+                work.AddFrame(output.first.str());
+                work.AddFrame(output.second.str());
 
-            if (haveNym) { message->AddFrame(nym); }
+                if (haveNym) { work.AddFrame(nym); }
 
-            socket_->Send(message);
+                return work;
+            }());
         }};
         const auto chain = chainFrame.as<Chain>();
         const auto unsupported =

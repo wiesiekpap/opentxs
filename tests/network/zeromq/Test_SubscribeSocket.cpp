@@ -7,10 +7,10 @@
 #include <string>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -41,7 +41,7 @@ TEST_F(Test_SubscribeSocket, SubscribeSocket_Factory)
         context_.SubscribeSocket(network::zeromq::ListenCallback::Factory());
 
     ASSERT_NE(nullptr, &subscribeSocket.get());
-    ASSERT_EQ(SocketType::Subscribe, subscribeSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Subscribe, subscribeSocket->Type());
 }
 }  // namespace ottest
 

@@ -14,7 +14,7 @@
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Sender.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 
 namespace opentxs
 {
@@ -69,9 +69,9 @@ private:
 
     auto process_pull_socket(const Lock& lock) noexcept -> bool;
     auto process_receiver_socket(const Lock& lock) noexcept -> bool;
-    auto send(zeromq::Message& message) const noexcept -> bool final;
-    auto send(const Lock& lock, zeromq::Message& message) noexcept -> bool;
-    void thread() noexcept final;
+    auto Send(zeromq::Message&& message) const noexcept -> bool final;
+    auto send(const Lock& lock, zeromq::Message&& message) noexcept -> bool;
+    auto thread() noexcept -> void final;
 
     Bidirectional() = delete;
     Bidirectional(const Bidirectional&) = delete;

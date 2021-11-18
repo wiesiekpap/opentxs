@@ -62,9 +62,8 @@ auto ClientSession(
     const network::zeromq::Context& context,
     const std::string& dataFolder,
     const int instance) noexcept -> std::unique_ptr<api::session::Client>;
-auto EndpointsAPI(
-    const network::zeromq::Context& zmq,
-    const int instance) noexcept -> std::unique_ptr<api::session::Endpoints>;
+auto EndpointsAPI(const int instance) noexcept
+    -> std::unique_ptr<api::session::Endpoints>;
 auto NotarySession(
     const api::Context& parent,
     Flag& running,

@@ -38,8 +38,8 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
@@ -189,7 +189,7 @@ public:
     }
     auto Heartbeat() const noexcept -> void final
     {
-        pipeline_->Push(MakeWork(Task::Heartbeat));
+        pipeline_.Push(MakeWork(Task::Heartbeat));
     }
     auto IsSynchronized() const noexcept -> bool final
     {
@@ -226,9 +226,9 @@ public:
         const PaymentCode& recipient,
         const Amount amount,
         const std::string& memo) const noexcept -> PendingOutgoing final;
-    auto Submit(network::zeromq::Message& work) const noexcept -> void final;
+    auto Submit(network::zeromq::Message&& work) const noexcept -> void final;
     auto SyncTip() const noexcept -> block::Position final;
-    auto Track(network::zeromq::Message& work) const noexcept
+    auto Track(network::zeromq::Message&& work) const noexcept
         -> std::future<void> final;
     auto UpdateHeight(const block::Height height) const noexcept -> void final;
     auto UpdateLocalHeight(const block::Position position) const noexcept
@@ -242,7 +242,7 @@ public:
     }
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
-        return stop_worker();
+        return signal_shutdown();
     }
     auto Wallet() const noexcept -> const node::Wallet& final
     {
@@ -364,8 +364,6 @@ private:
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
 
-    static auto shutdown_endpoint() noexcept -> std::string;
-
     virtual auto instantiate_header(const ReadView payload) const noexcept
         -> std::unique_ptr<block::Header> = 0;
     auto is_synchronized_blocks() const noexcept -> bool;
@@ -375,13 +373,13 @@ private:
     auto notify_sync_client() const noexcept -> void;
     auto target() const noexcept -> block::Height;
 
-    auto pipeline(zmq::Message& in) noexcept -> void;
-    auto process_block(zmq::Message& in) noexcept -> void;
-    auto process_filter_update(zmq::Message& in) noexcept -> void;
-    auto process_header(zmq::Message& in) noexcept -> void;
-    auto process_send_to_address(zmq::Message& in) noexcept -> void;
-    auto process_send_to_payment_code(zmq::Message& in) noexcept -> void;
-    auto process_sync_data(zmq::Message& in) noexcept -> void;
+    auto pipeline(zmq::Message&& in) noexcept -> void;
+    auto process_block(zmq::Message&& in) noexcept -> void;
+    auto process_filter_update(zmq::Message&& in) noexcept -> void;
+    auto process_header(zmq::Message&& in) noexcept -> void;
+    auto process_send_to_address(zmq::Message&& in) noexcept -> void;
+    auto process_send_to_payment_code(zmq::Message&& in) noexcept -> void;
+    auto process_sync_data(zmq::Message&& in) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;
     auto state_machine_headers() noexcept -> void;

@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainaccountstatus/BlockchainAccountStatus.hpp"  // IWYU pragma: associated
 
+#include <atomic>
 #include <chrono>
 #include <exception>
 #include <map>
@@ -38,11 +39,10 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/PaymentCode.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 #include "ui/base/List.hpp"
@@ -78,7 +78,7 @@ BlockchainAccountStatus::BlockchainAccountStatus(
         api.Endpoints().BlockchainReorg(),
         api.Endpoints().BlockchainScanProgress(),
     });
-    pipeline_->Push(MakeWork(Work::init));
+    pipeline_.Push(MakeWork(Work::init));
 }
 
 auto BlockchainAccountStatus::add_children(ChildMap&& map) noexcept -> void
@@ -147,9 +147,9 @@ auto BlockchainAccountStatus::load() noexcept -> void
     }
 }
 
-auto BlockchainAccountStatus::pipeline(const Message& in) noexcept -> void
+auto BlockchainAccountStatus::pipeline(Message&& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -170,15 +170,16 @@ auto BlockchainAccountStatus::pipeline(const Message& in) noexcept -> void
     }();
 
     if ((false == startup_complete()) && (Work::init != work)) {
-        pipeline_->Push(in);
+        pipeline_.Push(std::move(in));
 
         return;
     }
 
     switch (work) {
         case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
+            if (auto previous = running_.exchange(false); previous) {
+                shutdown(shutdown_promise_);
+            }
         } break;
         case Work::newaccount: {
             process_account(in);
@@ -331,22 +332,12 @@ auto BlockchainAccountStatus::process_account(const Message& in) noexcept
 
     if (chain != chain_) { return; }
 
-    const auto owner = [&] {
-        auto out = api.Factory().Identifier();
-        out->Assign(body.at(2).Bytes());
-
-        return out;
-    }();
+    const auto owner = api.Factory().Identifier(body.at(2));
 
     if (owner != primary_id_) { return; }
 
     const auto type = body.at(3).as<blockchain::crypto::SubaccountType>();
-    const auto subaccountID = [&] {
-        auto out = api.Factory().Identifier();
-        out->Assign(body.at(4).Bytes());
-
-        return out;
-    }();
+    const auto subaccountID = api.Factory().Identifier(body.at(4));
     const auto& account =
         api.Crypto().Blockchain().Account(primary_id_, chain_);
     auto out = ChildMap{};
@@ -381,22 +372,12 @@ auto BlockchainAccountStatus::process_progress(const Message& in) noexcept
 
     if (chain != chain_) { return; }
 
-    const auto owner = [&] {
-        auto out = api.Factory().Identifier();
-        out->Assign(body.at(2).Bytes());
-
-        return out;
-    }();
+    const auto owner = api.Factory().Identifier(body.at(2));
 
     if (owner != primary_id_) { return; }
 
     const auto type = body.at(3).as<blockchain::crypto::SubaccountType>();
-    const auto subaccountID = [&] {
-        auto out = api.Factory().Identifier();
-        out->Assign(body.at(4).Bytes());
-
-        return out;
-    }();
+    const auto subaccountID = api.Factory().Identifier(body.at(4));
     const auto subchain = body.at(5).as<blockchain::crypto::Subchain>();
     const auto& account =
         api.Crypto().Blockchain().Account(primary_id_, chain_);

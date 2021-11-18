@@ -7,10 +7,10 @@
 #include <string>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -39,7 +39,7 @@ TEST_F(Test_RequestSocket, RequestSocket_Factory)
     auto requestSocket = context_.RequestSocket();
 
     ASSERT_NE(nullptr, &requestSocket.get());
-    ASSERT_EQ(SocketType::Request, requestSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Request, requestSocket->Type());
 }
 }  // namespace ottest
 

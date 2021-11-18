@@ -7,10 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -25,8 +24,6 @@ class Request;
 }  // namespace zap
 }  // namespace zeromq
 }  // namespace network
-
-using OTZMQZAPReply = Pimpl<network::zeromq::zap::Reply>;
 }  // namespace opentxs
 
 namespace opentxs
@@ -37,47 +34,40 @@ namespace zeromq
 {
 namespace zap
 {
-class OPENTXS_EXPORT Reply : virtual public zeromq::Message
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow-field"
+class OPENTXS_EXPORT Reply : public zeromq::Message
 {
 public:
-    static auto Factory(
-        const Request& request,
-        const zap::Status& code = zap::Status::Unknown,
-        const std::string& status = "",
-        const std::string& userID = "",
-        const Data& metadata = Data::Factory(),
-        const std::string& version = "1.0") -> Pimpl<Reply>;
+    class Imp;
 
-    virtual auto Code() const -> zap::Status = 0;
-    virtual auto Debug() const -> std::string = 0;
-    virtual auto Metadata() const -> OTData = 0;
-    virtual auto RequestID() const -> OTData = 0;
-    virtual auto Status() const -> std::string = 0;
-    virtual auto UserID() const -> std::string = 0;
-    virtual auto Version() const -> std::string = 0;
+    auto Code() const noexcept -> zap::Status;
+    auto Debug() const noexcept -> std::string;
+    auto Metadata() const noexcept -> ReadView;
+    auto RequestID() const noexcept -> ReadView;
+    auto Status() const noexcept -> ReadView;
+    auto UserID() const noexcept -> ReadView;
+    auto Version() const noexcept -> ReadView;
 
-    virtual auto SetCode(const zap::Status& code) -> bool = 0;
-    virtual auto SetMetadata(const Data& metadata) -> bool = 0;
-    virtual auto SetStatus(const std::string& status) -> bool = 0;
-    virtual auto SetUserID(const std::string& userID) -> bool = 0;
+    using Message::swap;
+    auto swap(Message& rhs) noexcept -> void override;
+    auto swap(Reply& rhs) noexcept -> void;
 
-    ~Reply() override = default;
+    OPENTXS_NO_EXPORT Reply(Imp* imp) noexcept;
+    Reply(const Reply&) noexcept;
+    Reply(Reply&&) noexcept;
+    auto operator=(const Reply&) noexcept -> Reply&;
+    auto operator=(Reply&&) noexcept -> Reply&;
+
+    ~Reply() override;
 
 protected:
-    Reply() = default;
+    Imp* imp_;
 
 private:
-    friend OTZMQZAPReply;
-
-#ifndef _WIN32
-    auto clone() const -> Reply* override = 0;
-#endif
-
-    Reply(const Reply&) = delete;
-    Reply(Reply&&) = delete;
-    auto operator=(const Reply&) -> Reply& = delete;
-    auto operator=(Reply&&) -> Reply& = delete;
+    Reply() = delete;
 };
+#pragma GCC diagnostic pop
 }  // namespace zap
 }  // namespace zeromq
 }  // namespace network

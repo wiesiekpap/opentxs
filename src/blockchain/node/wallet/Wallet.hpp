@@ -139,7 +139,7 @@ public:
     auto Init() noexcept -> void final;
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
-        return stop_worker();
+        return signal_shutdown();
     }
 
     Wallet(

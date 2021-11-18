@@ -9,10 +9,13 @@
 
 #include <cstddef>
 #include <cstring>
+#include <functional>
+#include <iterator>
 #include <stdexcept>
 #include <utility>
 
-#include "opentxs/util/Pimpl.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs::blockchain::bitcoin
@@ -36,6 +39,7 @@ Inventory::Inventory(const Type type, const Hash& hash) noexcept
     : type_(type)
     , hash_(hash)
 {
+    static_assert(size() == sizeof(BitcoinFormat));
 }
 
 Inventory::Inventory(const void* payload, const std::size_t size) noexcept
@@ -120,20 +124,6 @@ auto Inventory::DisplayType(const Type type) noexcept -> std::string
     }
 }
 
-auto Inventory::Encode() const noexcept -> OTData
-{
-    try {
-        BitcoinFormat output{type_, hash_};
-
-        return Data::Factory(&output, sizeof(output));
-    } catch (...) {
-        auto output = Data::Factory();
-        output->SetSize(sizeof(BitcoinFormat));
-
-        return Data::Factory();
-    }
-}
-
 auto Inventory::encode_hash(const Hash& hash) noexcept(false)
     -> p2p::bitcoin::message::HashField
 {
@@ -151,5 +141,29 @@ auto Inventory::encode_hash(const Hash& hash) noexcept(false)
 auto Inventory::encode_type(const Type type) noexcept(false) -> std::uint32_t
 {
     return map_.at(type);
+}
+
+auto Inventory::Serialize(AllocateOutput out) const noexcept -> bool
+{
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
+
+        auto output = out(size());
+
+        if (false == output.valid(size())) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        const auto raw = BitcoinFormat{type_, hash_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, static_cast<const void*>(&raw), size());
+        std::advance(i, size());
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 }  // namespace opentxs::blockchain::bitcoin

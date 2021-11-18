@@ -32,6 +32,7 @@ class Request final : virtual public zeromq::socket::Request,
                       public zeromq::curve::implementation::Client
 {
 public:
+    auto Send(zeromq::Message&& message) const noexcept -> SendResult final;
     auto SetSocksProxy(const std::string& proxy) const noexcept -> bool final;
 
     Request(const zeromq::Context& context) noexcept;
@@ -40,8 +41,6 @@ public:
 
 private:
     auto clone() const noexcept -> Request* final;
-    auto send_request(zeromq::Message& message) const noexcept
-        -> SendResult final;
     auto wait(const Lock& lock) const noexcept -> bool;
 
     Request() = delete;

@@ -6,6 +6,7 @@
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/network/zeromq/zap/Factory.hpp"
     "Callback.cpp"
     "Callback.hpp"
     "Handler.cpp"

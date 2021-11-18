@@ -22,6 +22,7 @@
 #include "internal/contact/Contact.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/identity/Identity.hpp"
+#include "internal/network/zeromq/message/Message.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
@@ -63,7 +64,8 @@
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
@@ -86,7 +88,6 @@
 
 template class opentxs::Exclusive<opentxs::Account>;
 template class opentxs::Shared<opentxs::Account>;
-template class opentxs::Pimpl<opentxs::network::zeromq::Message>;
 
 namespace opentxs::api::session::implementation
 {
@@ -685,14 +686,14 @@ auto Wallet::UpdateAccount(
 
         pAccount->SetAlias(alias);
         const auto balance = pAccount->GetBalance();
+        account_publisher_->Send([&] {
+            auto work = opentxs::network::zeromq::tagged_message(
+                WorkType::AccountUpdated);
+            work.AddFrame(accountID);
+            work.AddFrame(balance.str());
 
-        {
-            auto work =
-                api_.Network().ZeroMQ().TaggedMessage(WorkType::AccountUpdated);
-            work->AddFrame(accountID);
-            work->AddFrame(balance.str());
-            account_publisher_->Send(work);
-        }
+            return work;
+        }());
 
         return true;
     } catch (...) {
@@ -1091,12 +1092,13 @@ auto Wallet::Nym(
                 nym_map_.erase(nym);
             }
         } else {
-            {
-                auto work = api_.Network().ZeroMQ().TaggedMessage(
+            dht_nym_requester_->Send([&] {
+                auto work = opentxs::network::zeromq::tagged_message(
                     WorkType::DHTRequestNym);
-                work->AddFrame(id);
-                dht_nym_requester_->Send(work);
-            }
+                work.AddFrame(id);
+
+                return work;
+            }());
 
             if (timeout > std::chrono::milliseconds(0)) {
                 mapLock.unlock();
@@ -1239,13 +1241,13 @@ auto Wallet::Nym(
             Lock mapLock(nym_map_lock_);
             auto& pMapNym = nym_map_[nym.ID().str()].second;
             pMapNym = pNym;
+            nym_created_publisher_->Send([&] {
+                auto work = opentxs::network::zeromq::tagged_message(
+                    WorkType::NymCreated);
+                work.AddFrame(pNym->ID());
 
-            {
-                auto work =
-                    api_.Network().ZeroMQ().TaggedMessage(WorkType::NymCreated);
-                work->AddFrame(pNym->ID());
-                nym_created_publisher_->Send(work);
-            }
+                return work;
+            }());
 
             return std::move(pNym);
         } else {
@@ -1351,9 +1353,13 @@ auto Wallet::mutable_nymfile(
 auto Wallet::notify(const identifier::Nym& id) const noexcept -> void
 {
     api_.Internal().NewNym(id);
-    auto work = api_.Network().ZeroMQ().TaggedMessage(WorkType::NymUpdated);
-    work->AddFrame(id);
-    nym_publisher_->Send(work);
+    nym_publisher_->Send([&] {
+        auto work =
+            opentxs::network::zeromq::tagged_message(WorkType::NymUpdated);
+        work.AddFrame(id);
+
+        return work;
+    }());
 }
 
 auto Wallet::nymfile_lock(const identifier::Nym& nymID) const -> std::mutex&
@@ -1690,11 +1696,11 @@ auto Wallet::PeerReplyReceive(
         api_.Storage().Store(serialized, nymID, StorageBox::INCOMINGPEERREPLY);
 
     if (receivedReply) {
-        auto message = opentxs::network::zeromq::Message::Factory();
-        message->AddFrame();
-        message->AddFrame(nymID);
-        message->AddFrame(serialized);
-        peer_reply_publisher_->Send(message);
+        auto message = opentxs::network::zeromq::Message{};
+        message.AddFrame();
+        message.AddFrame(nymID);
+        message.Internal().AddFrame(serialized);
+        peer_reply_publisher_->Send(std::move(message));
     } else {
         LogError()(OT_PRETTY_CLASS())("Failed to save incoming reply.").Flush();
 
@@ -1905,11 +1911,11 @@ auto Wallet::PeerRequestReceive(
         serialized, nymID, StorageBox::INCOMINGPEERREQUEST);
 
     if (saved) {
-        auto message = opentxs::network::zeromq::Message::Factory();
-        message->AddFrame();
-        message->AddFrame(nymID);
-        message->AddFrame(serialized);
-        peer_request_publisher_->Send(message);
+        auto message = opentxs::network::zeromq::Message{};
+        message.AddFrame();
+        message.AddFrame(nymID);
+        message.Internal().AddFrame(serialized);
+        peer_request_publisher_->Send(std::move(message));
     }
 
     return saved;
@@ -2036,19 +2042,25 @@ auto Wallet::RemoveUnitDefinition(const identifier::UnitDefinition& id) const
 
 auto Wallet::publish_server(const identifier::Server& id) const noexcept -> void
 {
-    const auto& socket = server_publisher_.get();
-    auto work = socket.Context().TaggedMessage(WorkType::NotaryUpdated);
-    work->AddFrame(id);
-    socket.Send(work);
+    server_publisher_->Send([&] {
+        auto work =
+            opentxs::network::zeromq::tagged_message(WorkType::NotaryUpdated);
+        work.AddFrame(id);
+
+        return work;
+    }());
 }
 
 auto Wallet::publish_unit(const identifier::UnitDefinition& id) const noexcept
     -> void
 {
-    const auto& socket = unit_publisher_.get();
-    auto work = socket.Context().TaggedMessage(WorkType::UnitDefinitionUpdated);
-    work->AddFrame(id);
-    socket.Send(work);
+    unit_publisher_->Send([&] {
+        auto work = opentxs::network::zeromq::tagged_message(
+            WorkType::UnitDefinitionUpdated);
+        work.AddFrame(id);
+
+        return work;
+    }());
 }
 
 auto Wallet::reverse_unit_map(const UnitNameMap& map) -> Wallet::UnitNameReverse
@@ -2155,14 +2167,14 @@ void Wallet::save(const Lock& lock, api::client::Issuer* in) const
     OT_ASSERT(loaded);
 
     api_.Storage().Store(nymID.str(), serialized);
+    issuer_publisher_->Send([&] {
+        auto work =
+            opentxs::network::zeromq::tagged_message(WorkType::IssuerUpdated);
+        work.AddFrame(nymID);
+        work.AddFrame(issuerID);
 
-    {
-        const auto& socket = issuer_publisher_.get();
-        auto work = socket.Context().TaggedMessage(WorkType::IssuerUpdated);
-        work->AddFrame(nymID);
-        work->AddFrame(issuerID);
-        socket.Send(work);
-    }
+        return work;
+    }());
 }
 
 #if OT_CASH
@@ -2292,12 +2304,13 @@ auto Wallet::Server(
                 }
             }
         } else {
-            {
-                auto work = api_.Network().ZeroMQ().TaggedMessage(
+            dht_server_requester_->Send([&] {
+                auto work = opentxs::network::zeromq::tagged_message(
                     WorkType::DHTRequestServer);
-                work->AddFrame(id);
-                dht_server_requester_->Send(work);
-            }
+                work.AddFrame(id);
+
+                return work;
+            }());
 
             if (timeout > std::chrono::milliseconds(0)) {
                 mapLock.unlock();
@@ -2615,12 +2628,13 @@ auto Wallet::UnitDefinition(
                 }
             }
         } else {
-            {
-                auto work = api_.Network().ZeroMQ().TaggedMessage(
+            dht_unit_requester_->Send([&] {
+                auto work = opentxs::network::zeromq::tagged_message(
                     WorkType::DHTRequestUnit);
-                work->AddFrame(id);
-                dht_unit_requester_->Send(work);
-            }
+                work.AddFrame(id);
+
+                return work;
+            }());
 
             if (timeout > std::chrono::milliseconds(0)) {
                 mapLock.unlock();
@@ -2696,13 +2710,13 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
     const auto unit = contract.id();
     auto unitID = api_.Factory().UnitID(unit);
     const auto nymID = api_.Factory().NymID(contract.nymid());
-
-    {
+    find_nym_->Send([&] {
         auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchNym);
-        work->AddFrame(nymID);
-        find_nym_->Send(work);
-    }
+            opentxs::network::zeromq::tagged_message(WorkType::OTXSearchNym);
+        work.AddFrame(nymID);
+
+        return work;
+    }());
 
     auto nym = Nym(nymID);
 

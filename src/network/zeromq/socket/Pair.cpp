@@ -8,21 +8,22 @@
 #include "network/zeromq/socket/Pair.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Bidirectional.tpp"
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Pair>;
-
-// "opentxs::network::zeromq::socket::implementation::Pair::"
 
 namespace opentxs::factory
 {
@@ -66,7 +67,7 @@ Pair::Pair(
     const std::string& endpoint,
     const Socket::Direction direction,
     const bool startThread) noexcept
-    : Receiver(context, SocketType::Pair, direction, startThread)
+    : Receiver(context, socket::Type::Pair, direction, startThread)
     , Bidirectional(context, true)
     , callback_(callback)
     , endpoint_(endpoint)
@@ -81,7 +82,7 @@ Pair::Pair(
     : Pair(
           context,
           callback,
-          Socket::random_inproc_endpoint(),
+          MakeArbitraryInproc(),
           Socket::Direction::Bind,
           startThread)
 {
@@ -128,11 +129,11 @@ void Pair::init() noexcept
     OT_ASSERT(init)
 }
 
-void Pair::process_incoming(const Lock& lock, Message& message) noexcept
+void Pair::process_incoming(const Lock& lock, Message&& message) noexcept
 {
     OT_ASSERT(verify_lock(lock))
 
-    callback_.Process(message);
+    callback_.Process(std::move(message));
 }
 
 Pair::~Pair() SHUTDOWN

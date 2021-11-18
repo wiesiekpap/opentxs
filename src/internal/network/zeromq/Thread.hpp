@@ -3,13 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef OPENTXS_NETWORK_ZEROMQ_SOCKET_SEND_TPP
-#define OPENTXS_NETWORK_ZEROMQ_SOCKET_SEND_TPP
+#pragma once
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
+#include <future>
+#include <tuple>
 
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/socket/Sender.hpp"
+#include "internal/network/zeromq/Types.hpp"
 
 namespace opentxs
 {
@@ -19,13 +18,20 @@ namespace zeromq
 {
 namespace socket
 {
-template <typename Input>
-auto Sender::Send(const Input& data) const noexcept -> bool
-{
-    return send(Context().Message(data));
-}
+class Raw;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
-#endif
+
+namespace opentxs::network::zeromq::internal
+{
+class Thread
+{
+public:
+    virtual auto Modify(SocketID socket, ModifyCallback cb) noexcept
+        -> std::pair<bool, std::future<bool>> = 0;
+
+    virtual ~Thread() = default;
+};
+}  // namespace opentxs::network::zeromq::internal

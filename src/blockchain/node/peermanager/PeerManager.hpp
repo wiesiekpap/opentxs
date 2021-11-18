@@ -38,7 +38,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/asio/Socket.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -163,7 +163,7 @@ public:
             const node::internal::PeerDatabase& database,
             const node::internal::PeerManager& parent,
             const database::BlockStorage policy,
-            const Flag& running,
+            const std::atomic<bool>& running,
             const std::string& shutdown,
             const Type chain,
             const std::string& seednode,
@@ -187,7 +187,7 @@ public:
         const node::internal::PeerManager& parent_;
         const network::zeromq::socket::Publish& connected_peers_;
         const database::BlockStorage policy_;
-        const Flag& running_;
+        const std::atomic<bool>& running_;
         const std::string& shutdown_endpoint_;
         const bool invalid_peer_;
         const OTData localhost_peer_;
@@ -278,7 +278,7 @@ public:
 
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
-        return stop_worker();
+        return signal_shutdown();
     }
 
     auto init() noexcept -> void final;
@@ -305,11 +305,10 @@ private:
 
     struct Jobs {
         auto Endpoint(const Task type) const noexcept -> std::string;
-        auto Work(const Task task, std::promise<void>* promise = nullptr)
-            const noexcept -> OTZMQMessage;
+        auto Work(const Task task) const noexcept -> network::zeromq::Message;
 
         auto Dispatch(const Task type) noexcept -> void;
-        auto Dispatch(zmq::Message& work) noexcept -> void;
+        auto Dispatch(zmq::Message&& work) noexcept -> void;
         auto Shutdown() noexcept -> void;
 
         Jobs(const api::Session& api) noexcept;
@@ -353,7 +352,7 @@ private:
         const Type chain,
         const database::BlockStorage policy) noexcept -> std::size_t;
 
-    auto pipeline(zmq::Message& message) noexcept -> void;
+    auto pipeline(zmq::Message&& message) noexcept -> void;
     auto shutdown(std::promise<void>& promise) noexcept -> void;
     auto state_machine() noexcept -> bool;
 

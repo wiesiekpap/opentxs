@@ -5,22 +5,27 @@
 
 #pragma once
 
-#include "opentxs/network/zeromq/Message.hpp"
+#include <mutex>
+
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 
 namespace opentxs::network::zeromq::implementation
 {
 class ReplyCallback : virtual public zeromq::ReplyCallback
 {
 public:
-    auto Process(const zeromq::Message& message) const -> OTZMQMessage override;
+    auto Deactivate() const noexcept -> void final;
+    auto Process(zeromq::Message&& message) const noexcept -> Message override;
 
     ~ReplyCallback() override;
 
 private:
     friend zeromq::ReplyCallback;
 
-    const zeromq::ReplyCallback::ReceiveCallback callback_;
+    mutable std::recursive_mutex execute_lock_;
+    mutable std::mutex callback_lock_;
+    mutable zeromq::ReplyCallback::ReceiveCallback callback_;
 
     auto clone() const -> ReplyCallback* override;
 

@@ -7,7 +7,7 @@
 #ifndef OPENTXS_VERSION_HPP
 #define OPENTXS_VERSION_HPP
 
-#include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include "opentxs/opentxs_export.hpp"  // IWYU pragma: export
 
 #define OT_CASH @OT_CASH_EXPORT@
 #define OT_CASH_USING_LUCRE @CASH_LUCRE_EXPORT@

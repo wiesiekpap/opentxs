@@ -17,6 +17,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -58,7 +59,8 @@ public:
 private:
     const std::uint64_t fee_rate_{};
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Feefilter(const Feefilter&) = delete;
     Feefilter(Feefilter&&) = delete;

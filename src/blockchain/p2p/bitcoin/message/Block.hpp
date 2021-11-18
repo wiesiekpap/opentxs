@@ -13,6 +13,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -54,7 +55,8 @@ public:
 private:
     const OTData payload_;
 
-    auto payload() const noexcept -> OTData final { return payload_; }
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Block(const Block&) = delete;
     Block(Block&&) = delete;

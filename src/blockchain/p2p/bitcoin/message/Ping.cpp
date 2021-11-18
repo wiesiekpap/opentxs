@@ -10,15 +10,16 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
-
-// opentxs::blockchain::p2p::bitcoin::message::implementation::Ping::"
 
 namespace opentxs::factory
 {
@@ -110,11 +111,28 @@ Ping::BitcoinFormat_60001::BitcoinFormat_60001(
     static_assert(8 == sizeof(BitcoinFormat_60001));
 }
 
-auto Ping::payload() const noexcept -> OTData
+auto Ping::payload(AllocateOutput out) const noexcept -> bool
 {
-    BitcoinFormat_60001 raw(nonce_);
-    auto output = Data::Factory(&raw, sizeof(raw));
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-    return output;
+        static constexpr auto bytes = sizeof(BitcoinFormat_60001);
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        const auto data = BitcoinFormat_60001{nonce_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, static_cast<const void*>(&data), bytes);
+        std::advance(i, bytes);
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 }  // namespace  opentxs::blockchain::p2p::bitcoin::message::implementation

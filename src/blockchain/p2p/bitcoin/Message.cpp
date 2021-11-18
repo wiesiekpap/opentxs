@@ -25,8 +25,11 @@
 #include "internal/blockchain/p2p/bitcoin/Factory.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -227,7 +230,8 @@ Message::Message(
 
 auto Message::Encode() const -> OTData
 {
-    OTData output = header_->Encode();
+    auto output = api_.Factory().Data();
+    header().Serialize(output->WriteInto());
     output += payload();
 
     return output;
@@ -237,7 +241,7 @@ auto Message::calculate_checksum(const Data& payload) const noexcept -> OTData
 {
     auto output = Data::Factory();
     P2PMessageHash(
-        api_, header_->Network(), payload.Bytes(), output->WriteInto());
+        api_, header().Network(), payload.Bytes(), output->WriteInto());
 
     return output;
 }
@@ -246,19 +250,37 @@ auto Message::init_hash() noexcept -> void
 {
     const auto data = payload();
     const auto size = data->size();
-    header_->SetChecksum(size, calculate_checksum(data));
+    header().SetChecksum(size, calculate_checksum(data));
+}
+
+auto Message::payload() const noexcept -> OTData
+{
+    auto out = api_.Factory().Data();
+    payload(out->WriteInto());
+
+    return out;
+}
+
+auto Message::Transmit() const noexcept -> std::pair<zmq::Frame, zmq::Frame>
+{
+    auto output = std::pair<zmq::Frame, zmq::Frame>{};
+    auto& [header, payload] = output;
+    this->header().Serialize(header.WriteInto());
+    this->payload(payload.WriteInto());
+
+    return output;
 }
 
 auto Message::verify_checksum() const noexcept(false) -> void
 {
     const auto calculated = calculate_checksum(payload());
-    const auto& header = header_->Checksum();
+    const auto& provided = header().Checksum();
 
-    if (header != calculated) {
+    if (provided != calculated) {
         LogError()(OT_PRETTY_CLASS())("Checksum failure").Flush();
         LogError()("*  Calculated Payload:  ")(payload()->asHex()).Flush();
         LogError()("*  Calculated Checksum: ")(calculated->asHex()).Flush();
-        LogError()("*  Provided Checksum:   ")(header.asHex()).Flush();
+        LogError()("*  Provided Checksum:   ")(provided.asHex()).Flush();
 
         throw std::runtime_error("checksum failure");
     }

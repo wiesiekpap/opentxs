@@ -8,14 +8,17 @@
 #include "network/zeromq/socket/Pull.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Pull>;
@@ -56,7 +59,7 @@ Pull::Pull(
     const Socket::Direction direction,
     const zeromq::ListenCallback& callback,
     const bool startThread) noexcept
-    : Receiver(context, SocketType::Pull, direction, startThread)
+    : Receiver(context, socket::Type::Pull, direction, startThread)
     , Server(this->get())
     , callback_(callback)
 {
@@ -85,11 +88,12 @@ auto Pull::clone() const noexcept -> Pull*
 
 auto Pull::have_callback() const noexcept -> bool { return true; }
 
-void Pull::process_incoming(const Lock& lock, Message& message) noexcept
+auto Pull::process_incoming(const Lock& lock, Message&& message) noexcept
+    -> void
 {
     OT_ASSERT(verify_lock(lock))
 
-    callback_.Process(message);
+    callback_.Process(std::move(message));
 }
 
 Pull::~Pull() SHUTDOWN

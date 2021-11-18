@@ -17,6 +17,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -72,7 +73,8 @@ private:
     bool announce_{};
     std::uint64_t version_{};
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Sendcmpct(const Sendcmpct&) = delete;
     Sendcmpct(Sendcmpct&&) = delete;

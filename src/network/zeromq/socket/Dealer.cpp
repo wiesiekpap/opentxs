@@ -8,8 +8,9 @@
 #include "network/zeromq/socket/Dealer.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Bidirectional.tpp"
@@ -17,8 +18,9 @@
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -47,7 +49,7 @@ Dealer::Dealer(
     const zeromq::Context& context,
     const Socket::Direction direction,
     const zeromq::ListenCallback& callback) noexcept
-    : Receiver(context, SocketType::Dealer, direction, false)
+    : Receiver(context, socket::Type::Dealer, direction, false)
     , Bidirectional(context, true)
     , Client(this->get())
     , callback_(callback)
@@ -62,14 +64,14 @@ auto Dealer::clone() const noexcept -> Dealer*
 
 void Dealer::process_incoming(
     const Lock& lock,
-    opentxs::network::zeromq::Message& message) noexcept
+    opentxs::network::zeromq::Message&& message) noexcept
 {
     OT_ASSERT(verify_lock(lock))
 
     LogTrace()(OT_PRETTY_CLASS())(
         "Incoming messaged received. Triggering callback.")
         .Flush();
-    callback_.Process(message);
+    callback_.Process(std::move(message));
     LogTrace()(OT_PRETTY_CLASS())("Done.").Flush();
 }
 

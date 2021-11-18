@@ -14,6 +14,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -39,11 +40,6 @@ namespace opentxs::blockchain::p2p::bitcoin::message
 class Cmpctblock final : public implementation::Message
 {
 public:
-    auto getRawCmpctblock() const noexcept -> OTData
-    {
-        return Data::Factory(raw_cmpctblock_);
-    }
-
     Cmpctblock(
         const api::Session& api,
         const blockchain::Type network,
@@ -58,7 +54,8 @@ public:
 private:
     const OTData raw_cmpctblock_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Cmpctblock(const Cmpctblock&) = delete;
     Cmpctblock(Cmpctblock&&) = delete;

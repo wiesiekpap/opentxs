@@ -18,6 +18,7 @@
 #include "Proto.tpp"
 #include "internal/api/client/Client.hpp"
 #include "internal/api/client/Factory.hpp"
+#include "internal/network/zeromq/message/Message.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/PaymentWorkflow.hpp"
 #include "internal/protobuf/verify/RPCPush.hpp"
@@ -46,7 +47,9 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
@@ -458,8 +461,9 @@ Workflow::Workflow(
 
     OT_ASSERT(bound)
 
-    bound = rpc_publisher_->Start(
-        api_.Network().ZeroMQ().BuildEndpoint("rpc/push/internal", -1, 1));
+    bound =
+        rpc_publisher_->Start(opentxs::network::zeromq::MakeDeterministicInproc(
+            "rpc/push/internal", -1, 1));
 
     OT_ASSERT(bound)
 }
@@ -2656,10 +2660,13 @@ auto Workflow::save_workflow(
     OT_ASSERT(saved)
 
     if (false == accountID.empty()) {
-        auto work = api_.Network().ZeroMQ().TaggedMessage(
-            WorkType::WorkflowAccountUpdate);
-        work->AddFrame(accountID);
-        account_publisher_->Send(work);
+        account_publisher_->Send([&] {
+            auto work = opentxs::network::zeromq::tagged_message(
+                WorkType::WorkflowAccountUpdate);
+            work.AddFrame(accountID);
+
+            return work;
+        }());
     }
 
     return valid && saved;
@@ -2900,13 +2907,12 @@ void Workflow::update_rpc(
 
     OT_ASSERT(proto::Validate(push, VERBOSE));
 
-    auto message = zmq::Message::Factory();
-    message->PrependEmptyFrame();
-    message->AddFrame(localNymID);
-    message->AddFrame(push);
-    const auto instance = api_.Instance();
-    message->AddFrame(Data::Factory(&instance, sizeof(instance)));
-    rpc_publisher_->Send(message);
+    auto message = zmq::Message{};
+    message.StartBody();
+    message.AddFrame(localNymID);
+    message.Internal().AddFrame(push);
+    message.AddFrame(api_.Instance());
+    rpc_publisher_->Send(std::move(message));
 }
 
 auto Workflow::validate_recipient(

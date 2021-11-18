@@ -11,10 +11,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
@@ -209,17 +213,42 @@ Reject::Reject(
     verify_checksum();
 }
 
-auto Reject::payload() const noexcept -> OTData
+auto Reject::payload(AllocateOutput out) const noexcept -> bool
 {
-    auto output = Data::Factory(BitcoinString(message_));
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-    be::little_uint8_buf_t code(static_cast<std::uint8_t>(code_));
-    output->Concatenate(&code, sizeof(code));
+        const auto message = BitcoinString(message_);
+        const auto reason = BitcoinString(reason_);
+        const auto code =
+            be::little_uint8_buf_t{static_cast<std::uint8_t>(code_)};
+        const auto bytes =
+            message->size() + reason->size() + sizeof(code) + extra_->size();
 
-    output += Data::Factory(BitcoinString(reason_));
+        auto output = out(bytes);
 
-    if (false == extra_->empty()) { output += extra_; }
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
 
-    return output;
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, message->data(), message->size());
+        std::advance(i, message->size());
+        std::memcpy(i, static_cast<const void*>(&code), sizeof(code));
+        std::advance(i, sizeof(code));
+        std::memcpy(i, reason->data(), reason->size());
+        std::advance(i, reason->size());
+
+        if (false == extra_->empty()) {
+            std::memcpy(i, extra_->data(), extra_->size());
+            std::advance(i, extra_->size());
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 }  // namespace  opentxs::blockchain::p2p::bitcoin::message

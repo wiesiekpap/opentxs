@@ -8,12 +8,14 @@
 #include "blockchain/p2p/bitcoin/message/Tx.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
@@ -80,6 +82,21 @@ Tx::Tx(
     , payload_(api_.Factory().Data(transaction))
 {
     verify_checksum();
+}
+
+auto Tx::payload(AllocateOutput out) const noexcept -> bool
+{
+    try {
+        if (false == copy(payload_->Bytes(), out)) {
+            throw std::runtime_error{"failed to serialize payload"};
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 
 auto Tx::Transaction() const noexcept

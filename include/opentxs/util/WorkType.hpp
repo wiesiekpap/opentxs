@@ -58,6 +58,11 @@ enum class WorkType : OTZMQWorkType {
     AsioRegister = 2048,
     AsioConnect = 2049,
     AsioDisconnect = 2050,
+    BitcoinP2P = 3072,
+    OTXP2PRequest = 4096,
+    OTXP2PResponse = 4097,
+    OTXP2PPush = 4098,
+    OTXP2PLegacyXML = 4099,
 };
 
 constexpr auto value(const WorkType in) noexcept
@@ -312,5 +317,11 @@ constexpr auto value(const WorkType in) noexcept
  *   AsioDisconnect: reports a connection or receiving error
  *       * Additional frames:
  *          1: the remote endpoint (encoded as ascii)
+ *
+ *   BitcoinP2P: serialized Bitcoin wire protocol message
+ *       https://developer.bitcoin.org/reference/p2p_networking.html
+ *       * Additional frames:
+ *          1: message header (always 24 bytes)
+ *          2: payload (0 - 333554432 bytes)
  */
 }  // namespace opentxs

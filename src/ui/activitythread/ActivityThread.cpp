@@ -8,6 +8,7 @@
 #include "ui/activitythread/ActivityThread.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <future>
@@ -40,14 +41,13 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -104,7 +104,7 @@ ActivityThread::ActivityThread(
         api.Endpoints().MessageLoaded(),
         api.Endpoints().TaskComplete(),
     });
-    pipeline_->Push(MakeWork(Work::init));
+    pipeline_.Push(MakeWork(Work::init));
 }
 
 auto ActivityThread::calculate_display_name() const noexcept -> std::string
@@ -356,9 +356,9 @@ auto ActivityThread::PaymentCode(const core::UnitType currency) const noexcept
     }
 }
 
-auto ActivityThread::pipeline(const Message& in) noexcept -> void
+auto ActivityThread::pipeline(Message&& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -379,15 +379,16 @@ auto ActivityThread::pipeline(const Message& in) noexcept -> void
     }();
 
     if ((false == startup_complete()) && (Work::init != work)) {
-        pipeline_->Push(in);
+        pipeline_.Push(std::move(in));
 
         return;
     }
 
     switch (work) {
         case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
+            if (auto previous = running_.exchange(false); previous) {
+                shutdown(shutdown_promise_);
+            }
         } break;
         case Work::contact: {
             process_contact(in);
@@ -424,12 +425,7 @@ auto ActivityThread::process_contact(const Message& in) noexcept -> void
 
     OT_ASSERT(1 < body.size());
 
-    auto contactID = [&] {
-        auto out = Widget::api_.Factory().Identifier();
-        out->Assign(body.at(1).Bytes());
-
-        return out;
-    }();
+    const auto contactID = Widget::api_.Factory().Identifier(body.at(1));
     auto changed{false};
 
     OT_ASSERT(false == contactID->empty())
@@ -547,21 +543,11 @@ auto ActivityThread::process_messagability(const Message& message) noexcept
 
     OT_ASSERT(3 < body.size());
 
-    const auto nym = [&] {
-        auto output = Widget::api_.Factory().NymID();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto nym = Widget::api_.Factory().NymID(body.at(1));
 
     if (nym != primary_id_) { return; }
 
-    const auto contact = [&] {
-        auto output = Widget::api_.Factory().Identifier();
-        output->Assign(body.at(2).Bytes());
-
-        return output;
-    }();
+    const auto contact = Widget::api_.Factory().Identifier(body.at(2));
 
     if (0 == contacts_.count(contact)) { return; }
 
@@ -578,18 +564,9 @@ auto ActivityThread::process_message_loaded(const Message& message) noexcept
     OT_ASSERT(4 < body.size());
 
     const auto id = ActivityThreadRowID{
-        [&] {
-            auto out = Widget::api_.Factory().Identifier();
-            out->Assign(body.at(2).Bytes());
-
-            return out;
-        }(),
+        Widget::api_.Factory().Identifier(body.at(2)),
         body.at(3).as<StorageBox>(),
-        [&] {
-            auto out = Widget::api_.Factory().Identifier();
-
-            return out;
-        }()};
+        Widget::api_.Factory().Identifier()};
     const auto& [itemID, box, account] = id;
 
     if (const auto index = find_index(id); !index.has_value()) { return; }
@@ -657,12 +634,7 @@ auto ActivityThread::process_thread(const Message& message) noexcept -> void
 
     OT_ASSERT(1 < body.size());
 
-    const auto threadID = [&] {
-        auto output = Widget::api_.Factory().Identifier();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto threadID = Widget::api_.Factory().Identifier(body.at(1));
 
     OT_ASSERT(false == threadID->empty())
 
@@ -1003,6 +975,6 @@ auto ActivityThread::validate_account(
 ActivityThread::~ActivityThread()
 {
     wait_for_startup();
-    stop_worker().get();
+    signal_shutdown().get();
 }
 }  // namespace opentxs::ui::implementation

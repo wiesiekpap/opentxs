@@ -7,7 +7,6 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/curve/Client.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -21,6 +20,8 @@ namespace socket
 {
 class Request;
 }  // namespace socket
+
+class Message;
 }  // namespace zeromq
 }  // namespace network
 
@@ -38,23 +39,7 @@ namespace socket
 class OPENTXS_EXPORT Request : virtual public curve::Client
 {
 public:
-    auto Send(opentxs::Pimpl<opentxs::network::zeromq::Message>& message)
-        const noexcept -> std::pair<
-            opentxs::SendResult,
-            opentxs::Pimpl<opentxs::network::zeromq::Message>>
-    {
-        return send_request(message.get());
-    }
-    auto Send(Message& message) const noexcept -> std::pair<
-        opentxs::SendResult,
-        opentxs::Pimpl<opentxs::network::zeromq::Message>>
-    {
-        return send_request(message);
-    }
-    template <typename Input>
-    auto Send(const Input& data) const noexcept -> std::pair<
-        opentxs::SendResult,
-        opentxs::Pimpl<opentxs::network::zeromq::Message>>;
+    virtual auto Send(Message&& message) const noexcept -> SendResult = 0;
     virtual auto SetSocksProxy(const std::string& proxy) const noexcept
         -> bool = 0;
 
@@ -67,8 +52,6 @@ private:
     friend OTZMQRequestSocket;
 
     virtual auto clone() const noexcept -> Request* = 0;
-    virtual auto send_request(Message& message) const noexcept
-        -> SendResult = 0;
 
     Request(const Request&) = delete;
     Request(Request&&) = delete;

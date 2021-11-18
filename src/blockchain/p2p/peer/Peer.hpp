@@ -25,6 +25,8 @@
 #include <utility>
 #include <vector>
 
+#include "blockchain/p2p/peer/Address.hpp"
+#include "blockchain/p2p/peer/ConnectionManager.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -64,6 +66,14 @@ class Session;
 
 namespace blockchain
 {
+namespace p2p
+{
+namespace peer
+{
+class ConnectionManager;
+}  // namespace peer
+}  // namespace p2p
+
 namespace node
 {
 namespace internal
@@ -86,8 +96,6 @@ class Frame;
 class Message;
 }  // namespace zeromq
 }  // namespace network
-
-class Flag;
 }  // namespace opentxs
 
 namespace zmq = opentxs::network::zeromq;
@@ -98,85 +106,7 @@ class Peer : virtual public internal::Peer, public Worker<Peer, api::Session>
 {
 public:
     using SendStatus = std::future<bool>;
-    using SendPromise = std::promise<bool>;
     using Task = node::internal::PeerManager::Task;
-
-    struct Address {
-        using pointer = std::unique_ptr<internal::Address>;
-
-        auto Bytes() const noexcept -> OTData;
-        auto Chain() const noexcept -> blockchain::Type;
-        auto Display() const noexcept -> std::string;
-        auto ID() const noexcept -> OTIdentifier;
-        auto Incoming() const noexcept -> bool;
-        auto Port() const noexcept -> std::uint16_t;
-        auto Services() const noexcept -> std::set<Service>;
-        auto Type() const noexcept -> Network;
-
-        auto UpdateServices(const std::set<p2p::Service>& services) noexcept
-            -> pointer;
-        auto UpdateTime(const Time& time) noexcept -> pointer;
-
-        Address(pointer address) noexcept;
-
-    private:
-        mutable std::mutex lock_;
-        pointer address_;
-    };
-
-    struct ConnectionManager {
-        using EndpointData = std::pair<std::string, std::uint16_t>;
-
-        static auto TCP(
-            const api::Session& api,
-            Peer& parent,
-            const Flag& running,
-            const Address& address,
-            const std::size_t headerSize) noexcept
-            -> std::unique_ptr<ConnectionManager>;
-        static auto TCPIncoming(
-            const api::Session& api,
-            Peer& parent,
-            const Flag& running,
-            const Address& address,
-            const std::size_t headerSize,
-            opentxs::network::asio::Socket&& socket) noexcept
-            -> std::unique_ptr<ConnectionManager>;
-        static auto ZMQ(
-            const api::Session& api,
-            Peer& parent,
-            const Flag& running,
-            const Address& address,
-            const std::size_t headerSize) noexcept
-            -> std::unique_ptr<ConnectionManager>;
-        static auto ZMQIncoming(
-            const api::Session& api,
-            Peer& parent,
-            const Flag& running,
-            const Address& address,
-            const std::size_t headerSize) noexcept
-            -> std::unique_ptr<ConnectionManager>;
-
-        virtual auto address() const noexcept -> std::string = 0;
-        virtual auto endpoint_data() const noexcept -> EndpointData = 0;
-        virtual auto host() const noexcept -> std::string = 0;
-        virtual auto port() const noexcept -> std::uint16_t = 0;
-        virtual auto style() const noexcept -> p2p::Network = 0;
-
-        virtual auto connect() noexcept -> void = 0;
-        virtual auto init(const int id) noexcept -> bool = 0;
-        virtual auto shutdown_external() noexcept -> void = 0;
-        virtual auto stop_external() noexcept -> void = 0;
-        virtual auto stop_internal() noexcept -> void = 0;
-        virtual auto transmit(
-            const zmq::Frame& payload,
-            std::unique_ptr<SendPromise> promise) noexcept -> void = 0;
-
-        virtual ~ConnectionManager() = default;
-
-    protected:
-        ConnectionManager() = default;
-    };
 
     auto AddressID() const noexcept -> OTIdentifier final
     {
@@ -194,9 +124,8 @@ public:
     }
 
     auto on_connect() noexcept -> void;
-    auto on_pipeline(
-        const Task type,
-        const std::vector<ReadView>& frames) noexcept -> void;
+    auto on_init() noexcept -> void;
+    virtual auto process_message(zmq::Message&& message) noexcept -> void = 0;
     auto Shutdown() noexcept -> std::shared_future<void> final;
 
     ~Peer() override;
@@ -205,7 +134,8 @@ protected:
     using SendFuture = std::future<SendResult>;
     using KnownHashes = robin_hood::unordered_flat_set<std::string>;
 
-    enum class State : std::uint8_t {
+    enum class State {
+        Init,
         Connect,
         Listening,
         Handshake,
@@ -239,10 +169,10 @@ protected:
         auto done() const noexcept -> bool
         {
             try {
-                const auto status =
-                    future_.wait_for(std::chrono::microseconds(5));
+                static constexpr auto zero = std::chrono::nanoseconds{0};
+                static constexpr auto ready = std::future_status::ready;
 
-                return std::future_status::ready == status;
+                return ready == future_.wait_for(zero);
             } catch (...) {
 
                 return false;
@@ -305,7 +235,7 @@ protected:
         }
 
         States() noexcept
-            : value_(State::Connect)
+            : value_(State::Init)
             , connect_(value_)
             , handshake_(value_)
             , verify_(value_)
@@ -319,9 +249,10 @@ protected:
     const node::internal::PeerManager& manager_;
     const node::internal::Mempool& mempool_;
     const blockchain::Type chain_;
+    const std::string display_chain_;
     std::atomic_bool header_probe_;
     std::atomic_bool cfilter_probe_;
-    Address address_;
+    peer::Address address_;
     DownloadPeers download_peers_;
     States state_;
     node::CfheaderJob cfheader_job_;
@@ -329,14 +260,14 @@ protected:
     node::BlockJob block_job_;
     KnownHashes known_transactions_;
 
-    auto connection() const noexcept -> const ConnectionManager&
+    auto connection() const noexcept -> const peer::ConnectionManager&
     {
         return *connection_;
     }
 
-    virtual auto broadcast_block(zmq::Message& message) noexcept -> void = 0;
+    virtual auto broadcast_block(zmq::Message&& message) noexcept -> void = 0;
     virtual auto broadcast_inv_transaction(ReadView txid) noexcept -> void = 0;
-    virtual auto broadcast_transaction(zmq::Message& message) noexcept
+    virtual auto broadcast_transaction(zmq::Message&& message) noexcept
         -> void = 0;
     auto check_handshake() noexcept -> void;
     auto check_verify() noexcept -> void;
@@ -346,14 +277,14 @@ protected:
     virtual auto ping() noexcept -> void = 0;
     virtual auto pong() noexcept -> void = 0;
     virtual auto request_addresses() noexcept -> void = 0;
-    virtual auto request_block(zmq::Message& message) noexcept -> void = 0;
+    virtual auto request_block(zmq::Message&& message) noexcept -> void = 0;
     virtual auto request_blocks() noexcept -> void = 0;
     virtual auto request_headers() noexcept -> void = 0;
     virtual auto request_mempool() noexcept -> void = 0;
     auto reset_block_job() noexcept -> void;
     auto reset_cfheader_job() noexcept -> void;
     auto reset_cfilter_job() noexcept -> void;
-    auto send(OTData message) noexcept -> SendStatus;
+    auto send(std::pair<zmq::Frame, zmq::Frame>&& data) noexcept -> SendStatus;
     auto update_address_services(
         const std::set<p2p::Service>& services) noexcept -> void;
     auto verifying() noexcept -> bool
@@ -403,10 +334,12 @@ private:
         std::map<int, std::promise<bool>> map_;
     };
 
+    const Time init_start_;
     const bool verify_filter_checkpoint_;
     const int id_;
     const std::string shutdown_endpoint_;
-    std::unique_ptr<ConnectionManager> connection_;
+    const std::size_t untrusted_connection_id_;
+    std::unique_ptr<peer::ConnectionManager> connection_;
     SendPromises send_promises_;
     Activity activity_;
     std::promise<void> init_promise_;
@@ -417,22 +350,21 @@ private:
         const int id,
         const node::internal::PeerManager& manager,
         Peer& parent,
-        const Flag& running,
-        const Address& address,
+        const std::atomic<bool>& running,
+        const peer::Address& address,
         const std::size_t headerSize) noexcept
-        -> std::unique_ptr<ConnectionManager>;
+        -> std::unique_ptr<peer::ConnectionManager>;
 
     auto get_activity() const noexcept -> Time;
 
     auto break_promises() noexcept -> void;
     auto check_activity() noexcept -> void;
     auto check_download_peers() noexcept -> void;
+    auto check_init() noexcept -> void;
     auto check_jobs() noexcept -> void;
     auto connect() noexcept -> void;
-    auto pipeline(zmq::Message& message) noexcept -> void;
+    auto pipeline(zmq::Message&& message) noexcept -> void;
     auto process_mempool(const zmq::Message& message) noexcept -> void;
-    virtual auto process_message(const zmq::Message& message) noexcept
-        -> void = 0;
     auto process_state_machine() noexcept -> void;
     virtual auto request_cfheaders() noexcept -> void = 0;
     virtual auto request_cfilter() noexcept -> void = 0;
@@ -443,7 +375,7 @@ private:
     auto state_machine() noexcept -> bool;
     auto start_verify() noexcept -> void;
     auto subscribe() noexcept -> void;
-    auto transmit(zmq::Message& message) noexcept -> void;
+    auto transmit(zmq::Message&& message) noexcept -> void;
     auto update_address_activity() noexcept -> void;
     auto verify() noexcept -> void;
 

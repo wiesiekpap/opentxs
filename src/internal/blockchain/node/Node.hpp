@@ -50,7 +50,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -418,6 +418,7 @@ struct PeerManager {
         Register = value(WorkType::AsioRegister),
         Connect = value(WorkType::AsioConnect),
         Disconnect = value(WorkType::AsioDisconnect),
+        P2P = value(WorkType::BitcoinP2P),
         Getheaders = OT_ZMQ_INTERNAL_SIGNAL + 0,
         Getblock = OT_ZMQ_INTERNAL_SIGNAL + 1,
         BroadcastTransaction = OT_ZMQ_INTERNAL_SIGNAL + 2,
@@ -428,6 +429,7 @@ struct PeerManager {
         Body = OT_ZMQ_INTERNAL_SIGNAL + 126,
         Header = OT_ZMQ_INTERNAL_SIGNAL + 127,
         Heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,
+        Init = OT_ZMQ_INIT_SIGNAL,
         ReceiveMessage = OT_ZMQ_RECEIVE_SIGNAL,
         SendMessage = OT_ZMQ_SEND_SIGNAL,
         StateMachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
@@ -506,9 +508,9 @@ struct Network : virtual public node::Manager {
         -> bool = 0;
     virtual auto RequestBlocks(
         const std::vector<ReadView>& hashes) const noexcept -> bool = 0;
-    virtual auto Submit(network::zeromq::Message& work) const noexcept
+    virtual auto Submit(network::zeromq::Message&& work) const noexcept
         -> void = 0;
-    virtual auto Track(network::zeromq::Message& work) const noexcept
+    virtual auto Track(network::zeromq::Message&& work) const noexcept
         -> std::future<void> = 0;
     virtual auto UpdateHeight(const block::Height height) const noexcept
         -> void = 0;

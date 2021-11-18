@@ -44,8 +44,8 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
-#include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "rpc/Helpers.hpp"
 #include "ui/Helpers.hpp"
 

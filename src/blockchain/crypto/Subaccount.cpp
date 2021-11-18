@@ -30,8 +30,6 @@
 #include "serialization/protobuf/BlockchainAccountData.pb.h"
 #include "serialization/protobuf/BlockchainActivity.pb.h"
 
-// "opentxs::blockchain::crypto::implementation::Subaccount::"
-
 namespace opentxs::blockchain::crypto::implementation
 {
 Subaccount::AddressData::AddressData(

@@ -38,7 +38,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -253,9 +254,12 @@ auto Account::find_next_element(
 
 auto Account::FindNym(const identifier::Nym& id) const noexcept -> void
 {
-    auto work = api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchNym);
-    work->AddFrame(id);
-    find_nym_->Send(work);
+    find_nym_->Send([&] {
+        auto work = network::zeromq::tagged_message(WorkType::OTXSearchNym);
+        work.AddFrame(id);
+
+        return work;
+    }());
 }
 
 auto Account::GetNextChangeKey(const PasswordPrompt& reason) const

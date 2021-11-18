@@ -23,7 +23,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "smhasher/src/MurmurHash3.h"

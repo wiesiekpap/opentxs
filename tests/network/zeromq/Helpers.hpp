@@ -11,6 +11,9 @@
 #include <iosfwd>
 #include <memory>
 
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Bytes.hpp"
+
 namespace opentxs
 {
 namespace network

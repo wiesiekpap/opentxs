@@ -10,9 +10,9 @@
 #include <memory>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/PairEventCallback.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/util/Log.hpp"
 
 #define PAIR_EVENT_ENDPOINT_PATH "pairevent"
@@ -27,7 +27,7 @@ PairEventListener::PairEventListener(
     : ot_super(context, callback)
     , instance_(instance)
 {
-    const auto endpoint = context_.BuildEndpoint(
+    const auto endpoint = MakeDeterministicInproc(
         PAIR_EVENT_ENDPOINT_PATH, instance, PAIR_EVENT_ENDPOINT_VERSION);
     const bool started = Start(endpoint);
 

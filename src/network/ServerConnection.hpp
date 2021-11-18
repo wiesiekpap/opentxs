@@ -71,11 +71,6 @@ class Server;
 }  // namespace context
 }  // namespace otx
 
-namespace proto
-{
-class ServerReply;
-}  // namespace proto
-
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -119,9 +114,6 @@ private:
     mutable std::mutex registration_lock_;
     std::map<OTNymID, bool> registered_for_push_;
 
-    static auto check_for_protobuf(const zeromq::Frame& frame)
-        -> std::pair<bool, proto::ServerReply>;
-
     auto async_socket(const Lock& lock) const -> OTZMQDealerSocket;
     auto clone() const -> ServerConnection* final { return nullptr; }
     auto endpoint() const -> std::string;
@@ -130,23 +122,25 @@ private:
         std::string hostname,
         std::uint32_t port) const -> std::string;
     auto get_timeout() -> Time;
-    void publish() const;
-    void set_curve(const Lock& lock, zeromq::curve::Client& socket) const;
-    void set_proxy(const Lock& lock, zeromq::socket::Dealer& socket) const;
-    void set_timeouts(const Lock& lock, zeromq::socket::Socket& socket) const;
+    auto publish() const -> void;
+    auto set_curve(const Lock& lock, zeromq::curve::Client& socket) const
+        -> void;
+    auto set_proxy(const Lock& lock, zeromq::socket::Dealer& socket) const
+        -> void;
+    auto set_timeouts(const Lock& lock, zeromq::socket::Socket& socket) const
+        -> void;
     auto sync_socket(const Lock& lock) const -> OTZMQRequestSocket;
 
-    void activity_timer();
-    void disable_push(const identifier::Nym& nymID);
+    auto activity_timer() -> void;
+    auto disable_push(const identifier::Nym& nymID) -> void;
     auto get_async(const Lock& lock) -> zeromq::socket::Dealer&;
     auto get_sync(const Lock& lock) -> zeromq::socket::Request&;
-    void process_incoming(const zeromq::Message& in);
-    void process_incoming(const proto::ServerReply& in);
-    void register_for_push(
+    auto process_incoming(const zeromq::Message& in) -> void;
+    auto register_for_push(
         const otx::context::Server& context,
-        const PasswordPrompt& reason);
-    void reset_socket(const Lock& lock);
-    void reset_timer();
+        const PasswordPrompt& reason) -> void;
+    auto reset_socket(const Lock& lock) -> void;
+    auto reset_timer() -> void;
 
     ServerConnection(
         const api::Session& api,

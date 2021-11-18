@@ -34,8 +34,8 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 
 namespace opentxs
 {
@@ -205,8 +205,7 @@ private:
     WidgetMap widget_map_;
     WidgetTypeMap ui_names_;
 
-    auto callback(const ot::network::zeromq::Message& incoming) noexcept
-        -> void;
+    auto callback(ot::network::zeromq::Message&& incoming) noexcept -> void;
 
     Callbacks() = delete;
 };

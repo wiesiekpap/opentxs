@@ -16,6 +16,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -71,7 +72,8 @@ public:
 private:
     const std::vector<std::unique_ptr<value_type>> payload_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Headers(const Headers&) = delete;
     Headers(Headers&&) = delete;

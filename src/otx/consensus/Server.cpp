@@ -83,10 +83,10 @@
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
@@ -737,22 +737,30 @@ auto Server::add_item_to_workflow(
     // The sender nym and notary of the cheque may not match the sender nym and
     // notary of the message which conveyed the cheque.
     {
-        auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchNym);
-        work->AddFrame(cheque.GetSenderNymID());
-        find_nym_->Send(work);
+        find_nym_->Send([&] {
+            auto work = network::zeromq::tagged_message(WorkType::OTXSearchNym);
+            work.AddFrame(cheque.GetSenderNymID());
+
+            return work;
+        }());
     }
     {
-        auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchServer);
-        work->AddFrame(cheque.GetNotaryID());
-        find_server_->Send(work);
+        find_server_->Send([&] {
+            auto work =
+                network::zeromq::tagged_message(WorkType::OTXSearchServer);
+            work.AddFrame(cheque.GetNotaryID());
+
+            return work;
+        }());
     }
     {
-        auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchUnit);
-        work->AddFrame(cheque.GetInstrumentDefinitionID());
-        find_unit_definition_->Send(work);
+        find_unit_definition_->Send([&] {
+            auto work =
+                network::zeromq::tagged_message(WorkType::OTXSearchUnit);
+            work.AddFrame(cheque.GetInstrumentDefinitionID());
+
+            return work;
+        }());
     }
 
     // We already made sure a contact exists for the sender of the message, but
@@ -869,7 +877,12 @@ auto Server::attempt_delivery(
     Message& message,
     const PasswordPrompt& reason) -> NetworkReplyMessage
 {
-    request_sent_.Send(message.m_strCommand->Get());
+    request_sent_.Send([&] {
+        auto out = network::zeromq::Message{};
+        out.AddFrame(message.m_strCommand->Get());
+
+        return out;
+    }());
     auto output = connection_.Send(
         *this,
         message,
@@ -884,7 +897,12 @@ auto Server::attempt_delivery(
         case SendResult::VALID_REPLY: {
             OT_ASSERT(reply);
 
-            reply_received_.Send(message.m_strCommand->Get());
+            reply_received_.Send([&] {
+                auto out = network::zeromq::Message{};
+                out.AddFrame(message.m_strCommand->Get());
+
+                return out;
+            }());
             static std::set<OTManagedNumber> empty{};
             std::set<OTManagedNumber>* numbers = numbers_;
 
@@ -1894,8 +1912,6 @@ auto Server::init_new_account(
 
 void Server::init_sockets()
 {
-    const auto endpoint =
-        std::string("inproc://") + Identifier::Random()->str();
     auto started = find_nym_->Start(api_.Endpoints().FindNym());
 
     if (false == started) {
@@ -7185,12 +7201,22 @@ auto Server::SendMessage(
 {
     Lock lock(lock_);
     pending_args_ = {label, resync};
-    request_sent_.Send(message.m_strCommand->Get());
+    request_sent_.Send([&] {
+        auto out = network::zeromq::Message{};
+        out.AddFrame(message.m_strCommand->Get());
+
+        return out;
+    }());
     auto result = context.Connection().Send(context, message, reason);
 
     if (SendResult::VALID_REPLY == result.first) {
         process_reply(lock, client, pending, *result.second, reason);
-        reply_received_.Send(message.m_strCommand->Get());
+        reply_received_.Send([&] {
+            auto out = network::zeromq::Message{};
+            out.AddFrame(message.m_strCommand->Get());
+
+            return out;
+        }());
     }
 
     return result;

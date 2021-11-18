@@ -29,7 +29,8 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -387,11 +388,14 @@ auto BlockchainImp::IsEnabled(
 
 auto BlockchainImp::publish_chain_state(Chain type, bool state) const -> void
 {
-    auto work =
-        api_.Network().ZeroMQ().TaggedMessage(WorkType::BlockchainStateChange);
-    work->AddFrame(type);
-    work->AddFrame(state);
-    chain_state_publisher_->Send(work);
+    chain_state_publisher_->Send([&] {
+        auto work = opentxs::network::zeromq::tagged_message(
+            WorkType::BlockchainStateChange);
+        work.AddFrame(type);
+        work.AddFrame(state);
+
+        return work;
+    }());
 }
 
 auto BlockchainImp::ReportProgress(
@@ -399,12 +403,15 @@ auto BlockchainImp::ReportProgress(
     const opentxs::blockchain::block::Height current,
     const opentxs::blockchain::block::Height target) const noexcept -> void
 {
-    auto work =
-        api_.Network().ZeroMQ().TaggedMessage(WorkType::BlockchainSyncProgress);
-    work->AddFrame(chain);
-    work->AddFrame(current);
-    work->AddFrame(target);
-    sync_updates_->Send(work);
+    sync_updates_->Send([&] {
+        auto work = opentxs::network::zeromq::tagged_message(
+            WorkType::BlockchainSyncProgress);
+        work.AddFrame(chain);
+        work.AddFrame(current);
+        work.AddFrame(target);
+
+        return work;
+    }());
 }
 
 auto BlockchainImp::RestoreNetworks() const noexcept -> void
@@ -571,10 +578,10 @@ auto BlockchainImp::UpdatePeer(
     const opentxs::blockchain::Type chain,
     const std::string& address) const noexcept -> void
 {
-    auto work = MakeWork(api_, WorkType::BlockchainPeerAdded);
-    work->AddFrame(chain);
-    work->AddFrame(address);
-    active_peer_updates_->Send(work);
+    auto work = MakeWork(WorkType::BlockchainPeerAdded);
+    work.AddFrame(chain);
+    work.AddFrame(address);
+    active_peer_updates_->Send(std::move(work));
 }
 
 BlockchainImp::~BlockchainImp() = default;

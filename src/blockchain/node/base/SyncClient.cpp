@@ -22,6 +22,7 @@
 #include "api/network/blockchain/SyncClient.hpp"
 #include "core/Worker.hpp"
 #include "internal/api/network/Network.hpp"
+#include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
@@ -37,9 +38,10 @@
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -60,7 +62,7 @@ struct SyncClient::Imp {
     Imp(const api::Session& api,
         const api::network::internal::Blockchain& network,
         const Type chain) noexcept
-        : endpoint_(OTSocket::random_inproc_endpoint())
+        : endpoint_(network::zeromq::MakeArbitraryInproc())
         , state_(State::Init)
         , api_(api)
         , chain_(chain)
@@ -139,7 +141,7 @@ struct SyncClient::Imp {
 
 private:
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
-    using OTSocket = opentxs::network::zeromq::socket::implementation::Socket;
+    using OTSocket = network::zeromq::socket::implementation::Socket;
     using Task = api::network::blockchain::SyncClient::Task;
 
     static constexpr int linger_{0};
@@ -159,7 +161,7 @@ private:
     block::Position remote_position_;
     block::Position queue_position_;
     std::size_t queued_bytes_;
-    std::queue<OTZMQMessage> queue_;
+    std::queue<network::zeromq::Message> queue_;
     Backoff timer_;
     std::atomic_bool running_;
     std::thread thread_;
@@ -190,21 +192,21 @@ private:
     }
     auto register_chain() const noexcept -> void
     {
-        auto msg = MakeWork(api_, Task::Register);
-        msg->AddFrame(chain_);
+        auto msg = MakeWork(Task::Register);
+        msg.AddFrame(chain_);
         LogDebug()(OT_PRETTY_CLASS())("registering ")(DisplayString(chain_))(
             " with high level api")
             .Flush();
         auto lock = Lock{lock_};
-        OTSocket::send_message(lock, dealer_.get(), msg);
+        OTSocket::send_message(lock, dealer_.get(), std::move(msg));
     }
     auto request(const block::Position& position) const noexcept -> void
     {
         if (blank() == position) { return; }
 
-        auto msg = MakeWork(api_, Task::Request);
-        msg->AddFrame(chain_);
-        msg->AddFrame([&] {
+        auto msg = MakeWork(Task::Request);
+        msg.AddFrame(chain_);
+        msg.Internal().AddFrame([&] {
             auto proto = proto::BlockchainP2PChainState{};
             const auto state = bcsync::State{chain_, position};
             state.Serialize(proto);
@@ -215,10 +217,10 @@ private:
             DisplayString(chain_))(" starting from block ")(position.first)
             .Flush();
         auto lock = Lock{lock_};
-        OTSocket::send_message(lock, dealer_.get(), msg);
+        OTSocket::send_message(lock, dealer_.get(), std::move(msg));
     }
 
-    auto add_to_queue(OTZMQMessage&& msg) noexcept -> void
+    auto add_to_queue(network::zeromq::Message&& msg) noexcept -> void
     {
         const auto base = bcsync::Factory(api_, msg);
         const auto& data = base->asData();
@@ -227,7 +229,7 @@ private:
 
         if (0u == blocks.size()) { return; }
 
-        const auto bytes = msg->Total();
+        const auto bytes = msg.Total();
         LogDebug()(OT_PRETTY_CLASS())("buffering ")(
             bytes)(" bytes of sync data for ")(DisplayString(chain_))(
             " blocks ")(blocks.front().Height())(" to ")(blocks.back().Height())
@@ -254,10 +256,10 @@ private:
 
         if (0 < queue_.size()) {
             auto& msg = queue_.front();
-            const auto bytes = msg->Total();
+            const auto bytes = msg.Total();
             auto lock = Lock{lock_};
 
-            if (OTSocket::send_message(lock, pair_.get(), msg)) {
+            if (OTSocket::send_message(lock, pair_.get(), std::move(msg))) {
                 processing_ = true;
                 queued_bytes_ -= bytes;
                 queue_.pop();
@@ -318,21 +320,21 @@ private:
     auto process(void* socket) noexcept -> void
     {
         auto msg = [&] {
-            auto output = api_.Network().ZeroMQ().Message();
+            auto output = network::zeromq::Message{};
             auto lock = Lock{lock_};
             OTSocket::receive_message(lock, socket, output);
 
             return output;
         }();
 
-        if (0 == msg->size()) {
+        if (0 == msg.size()) {
             LogTrace()(OT_PRETTY_CLASS())("Dropping empty message").Flush();
 
             return;
         }
 
         try {
-            const auto body = msg->Body();
+            const auto body = msg.Body();
 
             if (0 == body.size()) {
                 throw std::runtime_error{"Empty message body"};

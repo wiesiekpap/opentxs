@@ -134,7 +134,7 @@ private:
 
     auto add_children(ChildMap&& children) noexcept -> void;
     auto load() noexcept -> void;
-    auto pipeline(const Message& in) noexcept -> void;
+    auto pipeline(Message&& in) noexcept -> void;
     auto process_account(const Message& in) noexcept -> void;
     auto process_progress(const Message& in) noexcept -> void;
     auto process_reorg(const Message& in) noexcept -> void;

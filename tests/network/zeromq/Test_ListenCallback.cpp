@@ -6,11 +6,11 @@
 #include <gtest/gtest.h>
 #include <future>
 #include <string>
+#include <utility>
 
-#include "opentxs/network/zeromq/Frame.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/util/Bytes.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"  // IWYU pragma: keep
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -32,7 +32,7 @@ protected:
         : promise_()
         , testMessage_("zeromq test message")
         , future_(promise_.get_future())
-        , callback_(zmq::ListenCallback::Factory([&](auto& input) -> void {
+        , callback_(zmq::ListenCallback::Factory([&](auto&& input) -> void {
             promise_.set_value(std::string{input.at(0).Bytes()});
         }))
     {
@@ -42,12 +42,12 @@ protected:
 TEST_F(ListenCallback, ListenCallback_Process)
 {
     auto message = [&] {
-        auto out = zmq::Message::Factory();
-        out->AddFrame(testMessage_);
+        auto out = zmq::Message{};
+        out.AddFrame(testMessage_);
 
         return out;
     }();
-    callback_->Process(message);
+    callback_->Process(std::move(message));
 
     EXPECT_EQ(testMessage_, future_.get());
 }

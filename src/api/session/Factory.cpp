@@ -27,7 +27,7 @@
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
@@ -101,6 +101,7 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
@@ -1048,6 +1049,15 @@ auto Factory::Identifier(const ProtobufType& proto) const -> OTIdentifier
     return Identifier(bytes->Bytes());
 }
 
+auto Factory::Identifier(const opentxs::network::zeromq::Frame& bytes) const
+    -> OTIdentifier
+{
+    auto out = Identifier();
+    out->Assign(bytes.data(), bytes.size());
+
+    return out;
+}
+
 auto Factory::instantiate_secp256k1(
     const ReadView key,
     const ReadView chaincode) const noexcept
@@ -1527,6 +1537,15 @@ auto Factory::NymID(const opentxs::String& serialized) const -> OTNymID
     return identifier::Nym::Factory(serialized);
 }
 
+auto Factory::NymID(const opentxs::network::zeromq::Frame& bytes) const
+    -> OTNymID
+{
+    auto out = NymID();
+    out->Assign(bytes.data(), bytes.size());
+
+    return out;
+}
+
 auto Factory::NymIDFromPaymentCode(const std::string& input) const -> OTNymID
 {
     const auto code = PaymentCode(input);
@@ -1910,11 +1929,10 @@ auto Factory::PeerRequest(const Nym_p& nym, const ReadView& view) const
 }
 
 auto Factory::Pipeline(
-    std::function<void(opentxs::network::zeromq::Message&)> callback) const
-    -> OTZMQPipeline
+    std::function<void(opentxs::network::zeromq::Message&&)> callback) const
+    -> opentxs::network::zeromq::Pipeline
 {
-    return OTZMQPipeline{
-        factory::Pipeline(api_, api_.Network().ZeroMQ(), callback)};
+    return factory::Pipeline(api_, api_.Network().ZeroMQ(), callback);
 }
 
 #if OT_CASH
@@ -2110,6 +2128,15 @@ auto Factory::ServerID(const std::string& serialized) const -> OTServerID
 auto Factory::ServerID(const opentxs::String& serialized) const -> OTServerID
 {
     return identifier::Server::Factory(serialized);
+}
+
+auto Factory::ServerID(const opentxs::network::zeromq::Frame& bytes) const
+    -> OTServerID
+{
+    auto out = ServerID();
+    out->Assign(bytes.data(), bytes.size());
+
+    return out;
 }
 
 auto Factory::SignedFile() const -> std::unique_ptr<OTSignedFile>
@@ -2538,5 +2565,14 @@ auto Factory::UnitID(const std::string& serialized) const -> OTUnitID
 auto Factory::UnitID(const opentxs::String& serialized) const -> OTUnitID
 {
     return identifier::UnitDefinition::Factory(serialized);
+}
+
+auto Factory::UnitID(const opentxs::network::zeromq::Frame& bytes) const
+    -> OTUnitID
+{
+    auto out = UnitID();
+    out->Assign(bytes.data(), bytes.size());
+
+    return out;
 }
 }  // namespace opentxs::api::session::implementation

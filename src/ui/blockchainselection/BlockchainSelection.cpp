@@ -22,13 +22,12 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -73,7 +72,7 @@ BlockchainSelection::BlockchainSelection(
     , enabled_callback_()
 {
     init_executor({api.Endpoints().BlockchainStateChange()});
-    pipeline_->Push(MakeWork(Work::init));
+    pipeline_.Push(MakeWork(Work::init));
 }
 
 auto BlockchainSelection::construct_row(
@@ -88,13 +87,12 @@ auto BlockchainSelection::construct_row(
 auto BlockchainSelection::Disable(const blockchain::Type type) const noexcept
     -> bool
 {
-    const auto work = [&] {
-        auto out = Widget::api_.Network().ZeroMQ().TaggedMessage(Work::disable);
-        out->AddFrame(type);
+    pipeline_.Push([&] {
+        auto out = network::zeromq::tagged_message(Work::disable);
+        out.AddFrame(type);
 
         return out;
-    }();
-    pipeline_->Push(work);
+    }());
 
     return true;
 }
@@ -113,13 +111,12 @@ auto BlockchainSelection::disable(const Message& in) noexcept -> void
 auto BlockchainSelection::Enable(const blockchain::Type type) const noexcept
     -> bool
 {
-    const auto work = [&] {
-        auto out = Widget::api_.Network().ZeroMQ().TaggedMessage(Work::enable);
-        out->AddFrame(type);
+    pipeline_.Push([&] {
+        auto out = network::zeromq::tagged_message(Work::enable);
+        out.AddFrame(type);
 
         return out;
-    }();
-    pipeline_->Push(work);
+    }());
 
     return true;
 }
@@ -176,7 +173,7 @@ auto BlockchainSelection::filter(const ui::Blockchains type) noexcept
 
 auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -198,8 +195,9 @@ auto BlockchainSelection::pipeline(const Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
+            if (auto previous = running_.exchange(false); previous) {
+                shutdown(shutdown_promise_);
+            }
         } break;
         case Work::statechange: {
             process_state(in);
@@ -286,6 +284,6 @@ auto BlockchainSelection::startup() noexcept -> void
 BlockchainSelection::~BlockchainSelection()
 {
     wait_for_startup();
-    stop_worker().get();
+    signal_shutdown().get();
 }
 }  // namespace opentxs::ui::implementation

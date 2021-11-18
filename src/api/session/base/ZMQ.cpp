@@ -17,7 +17,7 @@ ZMQ::ZMQ(
     const int instance) noexcept
     : zmq_context_(zmq)
     , instance_(instance)
-    , endpoints_p_(factory::EndpointsAPI(zmq_context_, instance_))
+    , endpoints_p_(factory::EndpointsAPI(instance_))
     , endpoints_(*endpoints_p_)
     , shutdown_sender_(zmq, endpoints_.Shutdown())
 {

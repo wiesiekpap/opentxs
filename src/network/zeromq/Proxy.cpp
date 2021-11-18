@@ -10,11 +10,11 @@
 #include <zmq.h>
 #include <memory>
 
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Pair.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -40,7 +40,7 @@ Proxy::Proxy(
     : context_(context)
     , frontend_(frontend)
     , backend_(backend)
-    , null_callback_(opentxs::network::zeromq::ListenCallback::Factory(
+    , null_callback_(network::zeromq::ListenCallback::Factory(
           [](const zeromq::Message&) -> void {}))
     , control_listener_(factory::PairSocket(context, null_callback_, false))
     , control_sender_(
@@ -64,7 +64,12 @@ void Proxy::proxy() const
 
 Proxy::~Proxy()
 {
-    control_sender_->Send("TERMINATE");
+    control_sender_->Send([] {
+        auto out = Message{};
+        out.AddFrame("TERMINATE");
+
+        return out;
+    }());
 
     if (thread_ && thread_->joinable()) { thread_->join(); }
 }

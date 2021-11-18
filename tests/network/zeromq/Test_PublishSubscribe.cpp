@@ -12,16 +12,15 @@
 #include <thread>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -71,8 +70,8 @@ void Test_PublishSubscribe::subscribeSocketThread(
     const std::set<std::string>& msgs)
 {
     auto listenCallback = network::zeromq::ListenCallback::Factory(
-        [this, msgs](network::zeromq::Message& input) -> void {
-            const std::string& inputString = *input.Body().begin();
+        [this, msgs](network::zeromq::Message&& input) -> void {
+            const auto inputString = std::string{input.Body().begin()->Bytes()};
             bool found = msgs.count(inputString);
             EXPECT_TRUE(found);
             ++callbackFinishedCount_;
@@ -83,7 +82,7 @@ void Test_PublishSubscribe::subscribeSocketThread(
     auto subscribeSocket = context_.SubscribeSocket(listenCallback);
 
     ASSERT_NE(nullptr, &subscribeSocket.get());
-    ASSERT_EQ(SocketType::Subscribe, subscribeSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Subscribe, subscribeSocket->Type());
 
     subscribeSocket->SetTimeouts(
         std::chrono::milliseconds(0),
@@ -108,7 +107,7 @@ void Test_PublishSubscribe::publishSocketThread(
     ;
 
     ASSERT_NE(nullptr, &publishSocket.get());
-    ASSERT_EQ(SocketType::Publish, publishSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Publish, publishSocket->Type());
 
     publishSocket->SetTimeouts(
         std::chrono::milliseconds(0),
@@ -123,7 +122,12 @@ void Test_PublishSubscribe::publishSocketThread(
            std::time(nullptr) < end)
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    bool sent = publishSocket->Send(msg);
+    bool sent = publishSocket->Send([&] {
+        auto out = opentxs::network::zeromq::Message{};
+        out.AddFrame(msg);
+
+        return out;
+    }());
 
     ASSERT_TRUE(sent);
 
@@ -140,7 +144,7 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
     ;
 
     ASSERT_NE(nullptr, &publishSocket.get());
-    ASSERT_EQ(SocketType::Publish, publishSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Publish, publishSocket->Type());
 
     auto set = publishSocket->SetTimeouts(
         std::chrono::milliseconds(0),
@@ -154,8 +158,8 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
     ASSERT_TRUE(set);
 
     auto listenCallback = network::zeromq::ListenCallback::Factory(
-        [this](network::zeromq::Message& input) -> void {
-            const std::string& inputString = *input.Body().begin();
+        [this](network::zeromq::Message&& input) -> void {
+            const auto inputString = std::string{input.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -167,7 +171,7 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
     auto subscribeSocket = context_.SubscribeSocket(listenCallback);
 
     ASSERT_NE(nullptr, &subscribeSocket.get());
-    ASSERT_EQ(SocketType::Subscribe, subscribeSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Subscribe, subscribeSocket->Type());
 
     set = subscribeSocket->SetTimeouts(
         std::chrono::milliseconds(0),
@@ -180,7 +184,12 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
 
     ASSERT_TRUE(set);
 
-    bool sent = publishSocket->Send(testMessage_);
+    bool sent = publishSocket->Send([&] {
+        auto out = opentxs::network::zeromq::Message{};
+        out.AddFrame(testMessage_);
+
+        return out;
+    }());
 
     ASSERT_TRUE(sent);
 
@@ -201,7 +210,7 @@ TEST_F(Test_PublishSubscribe, Publish_1_Subscribe_2)
     auto publishSocket = context_.PublishSocket();
 
     ASSERT_NE(nullptr, &publishSocket.get());
-    ASSERT_EQ(SocketType::Publish, publishSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Publish, publishSocket->Type());
 
     publishSocket->SetTimeouts(
         std::chrono::milliseconds(0),
@@ -227,7 +236,12 @@ TEST_F(Test_PublishSubscribe, Publish_1_Subscribe_2)
 
     ASSERT_EQ(subscribeThreadCount_, subscribeThreadStartedCount_);
 
-    bool sent = publishSocket->Send(testMessage_);
+    bool sent = publishSocket->Send([&] {
+        auto out = opentxs::network::zeromq::Message{};
+        out.AddFrame(testMessage_);
+
+        return out;
+    }());
 
     ASSERT_TRUE(sent);
 
@@ -258,8 +272,8 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_1)
     ASSERT_EQ(2, publishThreadStartedCount_);
 
     auto listenCallback = network::zeromq::ListenCallback::Factory(
-        [this](network::zeromq::Message& input) -> void {
-            const std::string& inputString = *input.Body().begin();
+        [this](network::zeromq::Message&& input) -> void {
+            const auto inputString = std::string{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage_ || inputString == testMessage2_;
             EXPECT_TRUE(match);
@@ -271,7 +285,7 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_1)
     auto subscribeSocket = context_.SubscribeSocket(listenCallback);
 
     ASSERT_NE(nullptr, &subscribeSocket.get());
-    ASSERT_EQ(SocketType::Subscribe, subscribeSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Subscribe, subscribeSocket->Type());
 
     subscribeSocket->SetTimeouts(
         std::chrono::milliseconds(0),

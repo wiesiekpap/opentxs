@@ -73,10 +73,11 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
@@ -1119,12 +1120,7 @@ void OTX::find_nym(const opentxs::network::zeromq::Message& message) const
         return;
     }
 
-    const auto id = [&] {
-        auto output = client_.Factory().NymID();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto id = client_.Factory().NymID(body.at(1));
 
     if (id->empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid id").Flush();
@@ -1147,12 +1143,7 @@ void OTX::find_server(const opentxs::network::zeromq::Message& message) const
         return;
     }
 
-    const auto id = [&] {
-        auto output = client_.Factory().ServerID();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto id = client_.Factory().ServerID(body.at(1));
 
     if (id->empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid id").Flush();
@@ -1179,12 +1170,7 @@ void OTX::find_unit(const opentxs::network::zeromq::Message& message) const
         return;
     }
 
-    const auto id = [&] {
-        auto output = client_.Factory().UnitID();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto id = client_.Factory().UnitID(body.at(1));
 
     if (id->empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid id").Flush();
@@ -1693,10 +1679,9 @@ void OTX::process_account(const zmq::Message& message) const
 
     OT_ASSERT(2 < body.size())
 
-    auto accountID = client_.Factory().Identifier();
-    accountID->Assign(body.at(1).Bytes());
+    const auto accountID = client_.Factory().Identifier(body.at(1));
     const auto balance = Amount{body.at(2)};
-    LogVerbose()(OT_PRETTY_CLASS())("Account ")(accountID->str())(" balance: ")(
+    LogVerbose()(OT_PRETTY_CLASS())("Account ")(accountID)(" balance: ")(
         balance.str())
         .Flush();
 }
@@ -1739,12 +1724,15 @@ auto OTX::publish_messagability(
     const Identifier& contact,
     Messagability value) const noexcept -> Messagability
 {
-    auto work =
-        client_.Network().ZeroMQ().TaggedMessage(WorkType::OTXMessagability);
-    work->AddFrame(sender);
-    work->AddFrame(contact);
-    work->AddFrame(value);
-    messagability_->Send(work);
+    messagability_->Send([&] {
+        auto work = opentxs::network::zeromq::tagged_message(
+            WorkType::OTXMessagability);
+        work.AddFrame(sender);
+        work.AddFrame(contact);
+        work.AddFrame(value);
+
+        return work;
+    }());
 
     return value;
 }
@@ -2374,12 +2362,14 @@ void OTX::update_task(
         }
 
         if (publish) {
-            const auto& socket = task_finished_.get();
-            auto work =
-                socket.Context().TaggedMessage(WorkType::OTXTaskComplete);
-            work->AddFrame(taskID);
-            work->AddFrame(value);
-            socket.Send(work);
+            task_finished_->Send([&] {
+                auto work = opentxs::network::zeromq::tagged_message(
+                    WorkType::OTXTaskComplete);
+                work.AddFrame(taskID);
+                work.AddFrame(value);
+
+                return work;
+            }());
         }
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())(

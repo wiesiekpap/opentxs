@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -37,7 +37,7 @@ TEST_F(Test_PublishSocket, PublishSocket_Factory)
     auto publishSocket = context_.PublishSocket();
 
     ASSERT_NE(nullptr, &publishSocket.get());
-    ASSERT_EQ(SocketType::Publish, publishSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Publish, publishSocket->Type());
 }
 }  // namespace ottest
 

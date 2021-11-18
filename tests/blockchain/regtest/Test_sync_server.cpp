@@ -19,8 +19,8 @@
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
 #include "opentxs/network/blockchain/sync/Query.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
@@ -242,17 +242,17 @@ TEST_F(Regtest_fixture_sync, query)
 
     {
         const auto serialized = [&] {
-            auto out = client_1_.Network().ZeroMQ().Message();
+            auto out = opentxs::network::zeromq::Message{};
 
             EXPECT_TRUE(original.Serialize(out));
 
             return out;
         }();
 
-        EXPECT_EQ(serialized->size(), 2);
+        EXPECT_EQ(serialized.size(), 2);
 
-        const auto header = serialized->Header();
-        const auto body = serialized->Body();
+        const auto header = serialized.Header();
+        const auto body = serialized.Body();
 
         EXPECT_EQ(header.size(), 0);
         EXPECT_EQ(body.size(), 1);
@@ -272,20 +272,20 @@ TEST_F(Regtest_fixture_sync, query)
 
     {
         const auto serialized = [&] {
-            auto out = client_1_.Network().ZeroMQ().Message();
-            out->AddFrame("Header frame 1");
-            out->AddFrame("Header frame 2");
-            out->AddFrame();
+            auto out = opentxs::network::zeromq::Message{};
+            out.AddFrame("Header frame 1");
+            out.AddFrame("Header frame 2");
+            out.StartBody();
 
             EXPECT_TRUE(original.Serialize(out));
 
             return out;
         }();
 
-        EXPECT_EQ(serialized->size(), 4);
+        EXPECT_EQ(serialized.size(), 4);
 
-        const auto header = serialized->Header();
-        const auto body = serialized->Body();
+        const auto header = serialized.Header();
+        const auto body = serialized.Body();
 
         EXPECT_EQ(header.size(), 2);
         EXPECT_EQ(body.size(), 1);

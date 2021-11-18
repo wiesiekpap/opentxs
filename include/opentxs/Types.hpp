@@ -616,19 +616,6 @@ enum class Depositability : std::int8_t {
     UNKNOWN = 127,
 };
 
-enum class SocketType : std::uint8_t {
-    Error = 0,
-    Request = 1,
-    Reply = 2,
-    Publish = 3,
-    Subscribe = 4,
-    Push = 5,
-    Pull = 6,
-    Pair = 7,
-    Dealer = 8,
-    Router = 9,
-};
-
 enum class RemoteBoxType : std::int8_t {
     Error = -1,
     Nymbox = 0,

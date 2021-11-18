@@ -13,8 +13,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <iterator>
 #include <limits>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
@@ -152,7 +154,7 @@ BloomFilter::BloomFilter(const BloomFilter& rhs) noexcept
 {
 }
 
-void BloomFilter::AddElement(const Data& in) noexcept
+auto BloomFilter::AddElement(const Data& in) noexcept -> void
 {
     const auto bitsize = filter_.size();
 
@@ -175,16 +177,40 @@ auto BloomFilter::hash(const Data& input, std::size_t hash_index) const noexcept
     return hash;
 }
 
-auto BloomFilter::Serialize() const noexcept -> OTData
+auto BloomFilter::Serialize(AllocateOutput out) const noexcept -> bool
 {
-    std::vector<std::uint8_t> bytes{};
-    boost::to_block_range(filter_, std::back_inserter(bytes));
-    auto output = Data::Factory(bytes);
-    blockchain::internal::SerializedBloomFilter raw{
-        tweak_, flags_, function_count_};
-    output->Concatenate(&raw, sizeof(raw));
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-    return output;
+        static constexpr auto fixed =
+            sizeof(blockchain::internal::SerializedBloomFilter);
+        const auto filter = [&] {
+            auto out = std::vector<std::uint8_t>{};
+            boost::to_block_range(filter_, std::back_inserter(out));
+
+            return out;
+        }();
+        const auto bytes = fixed + filter.size();
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        const auto data = blockchain::internal::SerializedBloomFilter{
+            tweak_, flags_, function_count_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, filter.data(), filter.size());
+        std::advance(i, filter.size());
+        std::memcpy(i, static_cast<const void*>(&data), fixed);
+        std::advance(i, fixed);
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 
 auto BloomFilter::Test(const Data& in) const noexcept -> bool

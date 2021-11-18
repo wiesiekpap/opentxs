@@ -8,6 +8,7 @@
 #include "ui/accountactivity/CustodialAccountActivity.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <future>
 #include <memory>
@@ -30,14 +31,13 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -369,7 +369,7 @@ auto CustodialAccountActivity::NotaryName() const noexcept -> std::string
 
 auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -413,8 +413,9 @@ auto CustodialAccountActivity::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
+            if (auto previous = running_.exchange(false); previous) {
+                shutdown(shutdown_promise_);
+            }
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Unhandled type").Flush();
@@ -432,8 +433,7 @@ auto CustodialAccountActivity::process_balance(const Message& message) noexcept
 
     OT_ASSERT(2 < body.size())
 
-    auto accountID = Widget::api_.Factory().Identifier();
-    accountID->Assign(body.at(1).Bytes());
+    const auto accountID = Widget::api_.Factory().Identifier(body.at(1));
 
     if (account_id_ != accountID) { return; }
 
@@ -531,12 +531,7 @@ auto CustodialAccountActivity::process_workflow(const Message& message) noexcept
 
     OT_ASSERT(1 < body.size());
 
-    const auto accountID = [&] {
-        auto output = Widget::api_.Factory().Identifier();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto accountID = Widget::api_.Factory().Identifier(body.at(1));
 
     OT_ASSERT(false == accountID->empty())
 
@@ -599,6 +594,6 @@ auto CustodialAccountActivity::Unit() const noexcept -> core::UnitType
 CustodialAccountActivity::~CustodialAccountActivity()
 {
     wait_for_startup();
-    stop_worker().get();
+    signal_shutdown().get();
 }
 }  // namespace opentxs::ui::implementation

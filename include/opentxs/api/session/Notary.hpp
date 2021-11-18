@@ -74,8 +74,7 @@ public:
     virtual auto GetUserTerms() const -> std::string = 0;
     virtual auto ID() const -> const identifier::Server& = 0;
     OPENTXS_NO_EXPORT virtual auto InternalNotary() const noexcept
-        -> session::internal::Notary& = 0;
-    virtual auto MakeInprocEndpoint() const -> std::string = 0;
+        -> const session::internal::Notary& = 0;
     virtual auto NymID() const -> const identifier::Nym& = 0;
     virtual auto ScanMints() const -> void = 0;
     virtual auto Server() const -> opentxs::server::Server& = 0;
@@ -83,7 +82,8 @@ public:
     virtual auto UpdateMint(const identifier::UnitDefinition& unitID) const
         -> void = 0;
 
-    OPENTXS_NO_EXPORT virtual void Start() = 0;
+    OPENTXS_NO_EXPORT virtual auto InternalNotary() noexcept
+        -> session::internal::Notary& = 0;
 
     OPENTXS_NO_EXPORT ~Notary() override = default;
 

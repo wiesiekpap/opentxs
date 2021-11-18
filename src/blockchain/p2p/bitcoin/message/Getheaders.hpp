@@ -18,6 +18,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -84,7 +85,8 @@ private:
     const std::vector<block::pHash> payload_;
     const block::pHash stop_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Getheaders(const Getheaders&) = delete;
     Getheaders(Getheaders&&) = delete;

@@ -26,7 +26,7 @@
 #include "opentxs/core/cron/OTCron.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "server/MainFile.hpp"
@@ -144,7 +144,7 @@ private:
     OTZMQPushSocket notification_socket_;
 
     auto nymbox_push(const identifier::Nym& nymID, const OTTransaction& item)
-        const -> OTZMQMessage;
+        const -> network::zeromq::Message;
 
     void CreateMainFile(bool& mainFileExists);
     // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.

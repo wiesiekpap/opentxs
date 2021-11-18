@@ -8,6 +8,10 @@
 #include "blockchain/p2p/bitcoin/message/Headers.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
@@ -19,11 +23,9 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -136,19 +138,46 @@ Headers::Headers(
 {
 }
 
-auto Headers::payload() const noexcept -> OTData
+auto Headers::payload(AllocateOutput out) const noexcept -> bool
 {
-    const auto null = Data::Factory("0x00", Data::Mode::Hex);
-    auto output = Data::Factory(CompactSize(payload_.size()).Encode());
+    static constexpr auto null = std::byte{0x0};
 
-    for (const auto& pHeader : payload_) {
-        OT_ASSERT(pHeader);
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-        const auto& header = *pHeader;
-        output += header.Encode();
-        output += null;
+        static constexpr auto length = std::size_t{80};
+        const auto headers = payload_.size();
+        const auto cs = CompactSize(headers).Encode();
+        const auto bytes = cs.size() + (headers * (length + sizeof(null)));
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, cs.data(), cs.size());
+        std::advance(i, cs.size());
+
+        for (const auto& pHeader : payload_) {
+            OT_ASSERT(pHeader);
+
+            const auto& header = *pHeader;
+
+            if (false == header.Serialize(preallocated(length, i))) {
+                throw std::runtime_error{"failed to serialize header"};
+            }
+
+            std::advance(i, length);
+            std::memcpy(i, &null, sizeof(null));
+            std::advance(i, sizeof(null));
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
-
-    return output;
 }
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

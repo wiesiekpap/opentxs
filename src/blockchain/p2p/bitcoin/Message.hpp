@@ -5,12 +5,15 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
+#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Types.hpp"
@@ -29,6 +32,14 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace network
+{
+namespace zeromq
+{
+class Frame;
+}  // namespace zeromq
+}  // namespace network
 }  // namespace opentxs
 
 namespace ot = opentxs;
@@ -39,14 +50,23 @@ class Message : virtual public bitcoin::Message
 {
 public:
     auto Encode() const -> OTData final;
+    auto header() const noexcept -> const Header& final { return *header_; }
+    using bitcoin::Message::payload;
+    auto payload() const noexcept -> OTData final;
+    auto Transmit() const noexcept -> std::pair<zmq::Frame, zmq::Frame> final;
 
-    auto header() const -> const Header& final { return *header_; }
+    auto header() noexcept -> Header& { return *header_; }
 
     ~Message() override = default;
 
 protected:
     const ot::api::Session& api_;
     std::unique_ptr<Header> header_;
+
+    static constexpr auto verify_hash_size(std::size_t size) noexcept -> bool
+    {
+        return size == standard_hash_size_;
+    }
 
     auto verify_checksum() const noexcept(false) -> void;
 

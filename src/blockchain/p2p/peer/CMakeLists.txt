@@ -8,12 +8,14 @@ target_sources(
   PRIVATE
     "Activity.cpp"
     "Address.cpp"
+    "Address.hpp"
+    "ConnectionManager.hpp"
     "DownloadPeers.cpp"
+    "Peer.cpp"
+    "Peer.hpp"
     "SendPromises.cpp"
     "TCP.cpp"
     "ZMQ.cpp"
-    "Peer.cpp"
-    "Peer.hpp"
 )
 target_include_directories(
   opentxs-common SYSTEM

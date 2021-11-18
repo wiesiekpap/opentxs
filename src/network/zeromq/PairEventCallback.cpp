@@ -7,10 +7,14 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "network/zeromq/PairEventCallback.hpp"  // IWYU pragma: associated
 
+#include <functional>
+
 #include "Proto.tpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"  // IWYU pragma: keep
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PairEvent.pb.h"
 
@@ -33,7 +37,9 @@ namespace opentxs::network::zeromq::implementation
 {
 PairEventCallback::PairEventCallback(
     zeromq::PairEventCallback::ReceiveCallback callback)
-    : callback_(callback)
+    : execute_lock_()
+    , callback_lock_()
+    , callback_(callback)
 {
 }
 
@@ -42,12 +48,27 @@ auto PairEventCallback::clone() const -> PairEventCallback*
     return new PairEventCallback(callback_);
 }
 
-void PairEventCallback::Process(zeromq::Message& message) const
+auto PairEventCallback::Deactivate() const noexcept -> void
+{
+    static const auto null = [](const proto::PairEvent&) {};
+    auto rlock = rLock{execute_lock_};
+    auto lock = Lock{callback_lock_};
+    callback_ = null;
+}
+
+auto PairEventCallback::Process(zeromq::Message&& message) const noexcept
+    -> void
 {
     OT_ASSERT(1 == message.Body().size());
 
     const auto event = proto::Factory<proto::PairEvent>(message.Body_at(0));
-    callback_(event);
+    auto rlock = rLock{execute_lock_};
+    auto cb = [this] {
+        auto lock = Lock{callback_lock_};
+
+        return callback_;
+    }();
+    cb(event);
 }
 
 PairEventCallback::~PairEventCallback() {}

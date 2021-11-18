@@ -12,13 +12,15 @@
 #include <chrono>
 #include <memory>
 #include <thread>
+#include <utility>
 
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -41,7 +43,7 @@ auto RequestSocket(const network::zeromq::Context& context)
 namespace opentxs::network::zeromq::socket::implementation
 {
 Request::Request(const zeromq::Context& context) noexcept
-    : Socket(context, SocketType::Request, Socket::Direction::Connect)
+    : Socket(context, socket::Type::Request, Socket::Direction::Connect)
     , Client(this->get())
 {
     init();
@@ -52,17 +54,16 @@ auto Request::clone() const noexcept -> Request*
     return new Request(context_);
 }
 
-auto Request::send_request(zeromq::Message& request) const noexcept
+auto Request::Send(zeromq::Message&& request) const noexcept
     -> Socket::SendResult
 {
     OT_ASSERT(nullptr != socket_);
 
     Lock lock(lock_);
-    SendResult output{opentxs::SendResult::Error, Message::Factory()};
-    auto& status = output.first;
-    auto& reply = output.second;
+    auto output = SendResult{opentxs::SendResult::Error, {}};
+    auto& [status, reply] = output;
 
-    if (false == send_message(lock, request)) {
+    if (false == send_message(lock, std::move(request))) {
         LogError()(OT_PRETTY_CLASS())("Failed to deliver message.").Flush();
 
         return output;

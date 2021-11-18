@@ -8,17 +8,20 @@
 #include "blockchain/p2p/bitcoin/message/Filteradd.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-// "opentxs::blockchain::p2p::bitcoin::message::implementation::Filteradd::"
 
 namespace opentxs::factory
 {
@@ -77,16 +80,31 @@ Filteradd::Filteradd(
 {
 }
 
-auto Filteradd::payload() const noexcept -> OTData
+auto Filteradd::payload(AllocateOutput out) const noexcept -> bool
 {
     try {
-        const auto size = CompactSize(element_->size()).Encode();
-        auto output = Data::Factory(size.data(), size.size());
-        output += element_;
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-        return output;
-    } catch (...) {
-        return Data::Factory();
+        const auto element = element_->size();
+        const auto cs = CompactSize(element).Encode();
+        const auto bytes = cs.size() + element;
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, cs.data(), cs.size());
+        std::advance(i, cs.size());
+        std::memcpy(i, element_->data(), element);
+        std::advance(i, element);
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
 }
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

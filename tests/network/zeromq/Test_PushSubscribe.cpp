@@ -8,16 +8,17 @@
 #include <chrono>
 #include <future>
 #include <string>
+#include <utility>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"         // IWYU pragma: keep
+#include "opentxs/network/zeromq/message/FrameSection.hpp"  // IWYU pragma: keep
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -55,31 +56,33 @@ TEST_F(Test_PushSubscribe, Push_Subscribe)
 {
     auto promise = std::promise<bool>{};
     auto future = promise.get_future();
-    auto callback = zmq::ListenCallback::Factory([&promise, this](auto& input) {
-        const auto body = input.Body();
+    auto callback =
+        zmq::ListenCallback::Factory([&promise, this](auto&& input) {
+            const auto body = input.Body();
 
-        EXPECT_GT(body.size(), 0);
+            EXPECT_GT(body.size(), 0);
 
-        if (0 < body.size()) {
-            const auto compare = testMessage_.compare(body.at(0));
+            if (0 < body.size()) {
+                const auto compare =
+                    testMessage_.compare(std::string{body.at(0).Bytes()});
 
-            EXPECT_EQ(compare, 0);
+                EXPECT_EQ(compare, 0);
 
-            promise.set_value(0 == compare);
-        } else {
-            promise.set_value(false);
-        }
-    });
+                promise.set_value(0 == compare);
+            } else {
+                promise.set_value(false);
+            }
+        });
 
     auto sender = context_.PushSocket(zmq::socket::Socket::Direction::Bind);
     auto receiver = context_.SubscribeSocket(callback);
-    auto message = context_.Message();
-    message->AddFrame();
-    message->AddFrame(testMessage_);
+    auto message = opentxs::network::zeromq::Message{};
+    message.StartBody();
+    message.AddFrame(testMessage_);
 
     ASSERT_TRUE(sender->Start(endpoint_1_));
     ASSERT_TRUE(receiver->Start(endpoint_1_));
-    ASSERT_TRUE(sender->Send(message));
+    ASSERT_TRUE(sender->Send(std::move(message)));
 
     const auto result = future.wait_for(std::chrono::seconds(10));
 
@@ -99,28 +102,28 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
     auto future2 = promise2.get_future();
     auto future3 = promise3.get_future();
     auto future4 = promise4.get_future();
-    auto callback1 = zmq::ListenCallback::Factory([&](auto& input) {
+    auto callback1 = zmq::ListenCallback::Factory([&](auto&& input) {
         ++counter_1_;
 
-        if (0 == message1.compare(input.Body_at(0))) {
+        if (0 == message1.compare(std::string{input.Body_at(0).Bytes()})) {
             promise1.set_value();
         } else {
             promise4.set_value();
         }
     });
-    auto callback2 = zmq::ListenCallback::Factory([&](auto& input) {
+    auto callback2 = zmq::ListenCallback::Factory([&](auto&& input) {
         ++counter_2_;
 
-        if (0 == message1.compare(input.Body_at(0))) {
+        if (0 == message1.compare(std::string{input.Body_at(0).Bytes()})) {
             promise2.set_value();
         } else {
             promise4.set_value();
         }
     });
-    auto callback3 = zmq::ListenCallback::Factory([&](auto& input) {
+    auto callback3 = zmq::ListenCallback::Factory([&](auto&& input) {
         ++counter_3_;
 
-        if (0 == message1.compare(input.Body_at(0))) {
+        if (0 == message1.compare(std::string{input.Body_at(0).Bytes()})) {
             promise3.set_value();
         } else {
             promise4.set_value();
@@ -146,7 +149,12 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
     ASSERT_EQ(counter_3_.load(), 0);
 
     // All receivers should get the message
-    ASSERT_TRUE(sender1->Send(message1));
+    ASSERT_TRUE(sender1->Send([&] {
+        auto out = opentxs::network::zeromq::Message{};
+        out.AddFrame(message1);
+
+        return out;
+    }()));
 
     const auto result1 = future1.wait_for(std::chrono::seconds(10));
     const auto result2 = future2.wait_for(std::chrono::seconds(2));
@@ -160,7 +168,12 @@ TEST_F(Test_PushSubscribe, Push_Publish_Subscribe)
     ASSERT_EQ(1, counter_3_.load());
 
     // One receivers should get the message
-    ASSERT_TRUE(sender2->Send(message2));
+    ASSERT_TRUE(sender2->Send([&] {
+        auto out = opentxs::network::zeromq::Message{};
+        out.AddFrame(message2);
+
+        return out;
+    }()));
 
     const auto result4 = future4.wait_for(std::chrono::seconds(10));
 

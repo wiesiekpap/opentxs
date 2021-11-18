@@ -17,6 +17,7 @@
 #include "opentxs/blockchain/BloomFilter.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -24,6 +25,8 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+class Data;
 }  // namespace opentxs
 
 namespace be = boost::endian;
@@ -37,10 +40,10 @@ public:
     using Filter = boost::dynamic_bitset<>;
     using Tweak = std::uint32_t;
 
-    auto Serialize() const noexcept -> OTData final;
+    auto Serialize(AllocateOutput) const noexcept -> bool final;
     auto Test(const Data& element) const noexcept -> bool final;
 
-    void AddElement(const Data& element) noexcept final;
+    auto AddElement(const Data& element) noexcept -> void final;
 
     BloomFilter(
         const api::Session& api,

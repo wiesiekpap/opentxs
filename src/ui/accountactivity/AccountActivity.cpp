@@ -86,7 +86,7 @@ auto AccountActivity::construct_row(
 auto AccountActivity::init(Endpoints endpoints) noexcept -> void
 {
     init_executor(std::move(endpoints));
-    pipeline_->Push(MakeWork(OT_ZMQ_INIT_SIGNAL));
+    pipeline_.Push(MakeWork(OT_ZMQ_INIT_SIGNAL));
 }
 
 auto AccountActivity::notify_balance(opentxs::Amount balance) const noexcept
@@ -111,7 +111,7 @@ auto AccountActivity::SetCallbacks(Callbacks&& cb) noexcept -> void
 AccountActivity::~AccountActivity()
 {
     wait_for_startup();
-    stop_worker().get();
+    signal_shutdown().get();
     shutdown_qt();
 }
 }  // namespace opentxs::ui::implementation

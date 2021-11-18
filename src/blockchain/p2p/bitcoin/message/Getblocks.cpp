@@ -7,13 +7,17 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/p2p/bitcoin/message/Getblocks.hpp"  // IWYU pragma: associated
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <iterator>
 #include <type_traits>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -166,5 +170,44 @@ Getblocks::Getblocks(
     , stop_hash_(Data::Factory(stop_hash))
 {
     verify_checksum();
+}
+
+auto Getblocks::payload(AllocateOutput out) const noexcept -> bool
+{
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
+
+        static constexpr auto hashBytes = sizeof(BlockHeaderHashField);
+        const auto data = Raw{version_, header_hashes_, stop_hash_};
+        const auto hashes = data.header_hashes_.size();
+        const auto cs = CompactSize(hashes).Encode();
+        const auto bytes = sizeof(data.version_) + cs.size() +
+                           (hashes * hashBytes) + hashBytes;
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, &data.version_, sizeof(data.version_));
+        std::advance(i, sizeof(data.version_));
+        std::memcpy(i, cs.data(), cs.size());
+        std::advance(i, cs.size());
+
+        for (const auto& hash : data.header_hashes_) {
+            std::memcpy(i, hash.data(), hashBytes);
+            std::advance(i, hashBytes);
+        }
+
+        std::memcpy(i, data.stop_hash_.data(), hashBytes);
+        std::advance(i, hashBytes);
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 }  // namespace  opentxs::blockchain::p2p::bitcoin::message

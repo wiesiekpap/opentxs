@@ -65,11 +65,12 @@
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Options.hpp"
@@ -187,7 +188,9 @@ Base::Base(
 
         return blockchain::internal::DefaultFilter(chain_);
     }())
-    , shutdown_sender_(api.Network().ZeroMQ(), shutdown_endpoint())
+    , shutdown_sender_(
+          api.Network().ZeroMQ(),
+          network::zeromq::MakeArbitraryInproc())
     , database_p_(factory::BlockchainDatabase(
           api,
           crypto,
@@ -196,7 +199,7 @@ Base::Base(
           chain_,
           filter_type_))
     , config_(config)
-    , mempool_(api, crypto_, *database_p_, network.Mempool(), chain_)
+    , mempool_(crypto_, *database_p_, network.Mempool(), chain_)
     , header_p_(factory::HeaderOracle(api, *database_p_, chain_))
     , block_p_(factory::BlockOracle(
           api,
@@ -279,8 +282,8 @@ Base::Base(
             return std::unique_ptr<base::SyncClient>{};
         }
     }())
-    , sync_cb_(
-          zmq::ListenCallback::Factory([&](auto& m) { pipeline_->Push(m); }))
+    , sync_cb_(zmq::ListenCallback::Factory(
+          [&](auto&& m) { pipeline_.Push(std::move(m)); }))
     , sync_socket_([&] {
         auto out = api_.Network().ZeroMQ().PairSocket(
             sync_cb_, [&]() -> auto& {
@@ -289,7 +292,7 @@ Base::Base(
                     return sync_client_->Endpoint();
                 } else {
                     static const auto dummy =
-                        std::string{"inproc://dummy_sync_client"};
+                        network::zeromq::MakeArbitraryInproc();
 
                     return dummy;
                 }
@@ -457,7 +460,7 @@ auto Base::AddBlock(const std::shared_ptr<const block::bitcoin::Block> pBlock)
 
 auto Base::AddPeer(const p2p::Address& address) const noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     return peer_.AddPeer(address);
 }
@@ -467,7 +470,7 @@ auto Base::BroadcastTransaction(
 {
     mempool_.Submit(tx.clone());
 
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     // TODO upgrade mempool logic so this becomes unnecessary
 
@@ -476,7 +479,7 @@ auto Base::BroadcastTransaction(
 
 auto Base::Connect() noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     return peer_.Connect();
 }
@@ -506,7 +509,7 @@ auto Base::GetConfirmations(const std::string& txid) const noexcept
 
 auto Base::GetPeerCount() const noexcept -> std::size_t
 {
-    if (false == running_.get()) { return 0; }
+    if (false == running_.load()) { return 0; }
 
     return peer_.GetPeerCount();
 }
@@ -524,7 +527,7 @@ auto Base::GetTransactions(const identifier::Nym& account) const noexcept
 
 auto Base::GetVerifiedPeerCount() const noexcept -> std::size_t
 {
-    if (false == running_.get()) { return 0; }
+    if (false == running_.load()) { return 0; }
 
     return peer_.GetVerifiedPeerCount();
 }
@@ -591,7 +594,7 @@ auto Base::JobReady(const node::internal::PeerManager::Task type) const noexcept
 
 auto Base::Listen(const p2p::Address& address) const noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     return peer_.Listen(address);
 }
@@ -601,15 +604,15 @@ auto Base::notify_sync_client() const noexcept -> void
     if (sync_client_) {
         const auto tip = filters_.FilterTip(filters_.DefaultType());
         auto msg = MakeWork(OTZMQWorkType{OT_ZMQ_INTERNAL_SIGNAL + 2});
-        msg->AddFrame(tip.first);
-        msg->AddFrame(tip.second);
-        sync_socket_->Send(msg);
+        msg.AddFrame(tip.first);
+        msg.AddFrame(tip.second);
+        sync_socket_->Send(std::move(msg));
     }
 }
 
-auto Base::pipeline(zmq::Message& in) noexcept -> void
+auto Base::pipeline(zmq::Message&& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     init_.get();
     const auto body = in.Body();
@@ -633,14 +636,14 @@ auto Base::pipeline(zmq::Message& in) noexcept -> void
         } break;
         case Task::SyncReply:
         case Task::SyncNewBlock: {
-            process_sync_data(in);
+            process_sync_data(std::move(in));
         } break;
         case Task::SubmitBlockHeader: {
-            process_header(in);
+            process_header(std::move(in));
             do_work();
         } break;
         case Task::SubmitBlock: {
-            process_block(in);
+            process_block(std::move(in));
         } break;
         case Task::Heartbeat: {
             mempool_.Heartbeat();
@@ -653,13 +656,13 @@ auto Base::pipeline(zmq::Message& in) noexcept -> void
             do_work();
         } break;
         case Task::SendToAddress: {
-            process_send_to_address(in);
+            process_send_to_address(std::move(in));
         } break;
         case Task::SendToPaymentCode: {
-            process_send_to_payment_code(in);
+            process_send_to_payment_code(std::move(in));
         } break;
         case Task::FilterUpdate: {
-            process_filter_update(in);
+            process_filter_update(std::move(in));
         } break;
         case Task::StateMachine: {
             do_work();
@@ -670,9 +673,9 @@ auto Base::pipeline(zmq::Message& in) noexcept -> void
     }
 }
 
-auto Base::process_block(network::zeromq::Message& in) noexcept -> void
+auto Base::process_block(network::zeromq::Message&& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -685,9 +688,9 @@ auto Base::process_block(network::zeromq::Message& in) noexcept -> void
     block_.SubmitBlock(body.at(1).Bytes());
 }
 
-auto Base::process_filter_update(network::zeromq::Message& in) noexcept -> void
+auto Base::process_filter_update(network::zeromq::Message&& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -713,9 +716,9 @@ auto Base::process_filter_update(network::zeromq::Message& in) noexcept -> void
     network_.ReportProgress(chain_, height, target);
 }
 
-auto Base::process_header(network::zeromq::Message& in) noexcept -> void
+auto Base::process_header(network::zeromq::Message&& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     waiting_for_headers_->Off();
     headers_received_ = Clock::now();
@@ -753,21 +756,16 @@ auto Base::process_header(network::zeromq::Message& in) noexcept -> void
     work_promises_.clear(promise);
 }
 
-auto Base::process_send_to_address(network::zeromq::Message& in) noexcept
+auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
     -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
     OT_ASSERT(4 < body.size());
 
-    const auto sender = [&] {
-        auto out = api_.Factory().NymID();
-        out->Assign(body.at(1).Bytes());
-
-        return out;
-    }();
+    const auto sender = api_.Factory().NymID(body.at(1));
     const auto address = std::string{body.at(2).Bytes()};
     const auto amount = Amount{body.at(3)};
     const auto memo = std::string{body.at(4).Bytes()};
@@ -839,21 +837,16 @@ auto Base::process_send_to_address(network::zeromq::Message& in) noexcept
     }
 }
 
-auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
+auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
     -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
     OT_ASSERT(4 < body.size());
 
-    const auto nymID = [&] {
-        auto out = api_.Factory().NymID();
-        out->Assign(body.at(1).Bytes());
-
-        return out;
-    }();
+    const auto nymID = api_.Factory().NymID(body.at(1));
     const auto recipient =
         api_.Factory().PaymentCode(std::string{body.at(2).Bytes()});
     const auto contact =
@@ -984,7 +977,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message& in) noexcept
     }
 }
 
-auto Base::process_sync_data(network::zeromq::Message& in) noexcept -> void
+auto Base::process_sync_data(network::zeromq::Message&& in) noexcept -> void
 {
     const auto start = Clock::now();
     const auto sync = opentxs::network::blockchain::sync::Factory(api_, in);
@@ -1036,7 +1029,7 @@ auto Base::Reorg() const noexcept -> const network::zeromq::socket::Publish&
 
 auto Base::RequestBlock(const block::Hash& block) const noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     return peer_.RequestBlock(block);
 }
@@ -1044,7 +1037,7 @@ auto Base::RequestBlock(const block::Hash& block) const noexcept -> bool
 auto Base::RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
     -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     return peer_.RequestBlocks(hashes);
 }
@@ -1057,12 +1050,12 @@ auto Base::SendToAddress(
 {
     auto [index, future] = send_promises_.get();
     auto work = MakeWork(Task::SendToAddress);
-    work->AddFrame(sender);
-    work->AddFrame(address);
-    work->AddFrame(amount.str());
-    work->AddFrame(memo);
-    work->AddFrame(index);
-    pipeline_->Push(work);
+    work.AddFrame(sender);
+    work.AddFrame(address);
+    work.AddFrame(amount.str());
+    work.AddFrame(memo);
+    work.AddFrame(index);
+    pipeline_.Push(std::move(work));
 
     return std::move(future);
 }
@@ -1075,12 +1068,12 @@ auto Base::SendToPaymentCode(
 {
     auto [index, future] = send_promises_.get();
     auto work = MakeWork(Task::SendToPaymentCode);
-    work->AddFrame(nymID);
-    work->AddFrame(recipient);
-    work->AddFrame(amount.str());
-    work->AddFrame(memo);
-    work->AddFrame(index);
-    pipeline_->Push(work);
+    work.AddFrame(nymID);
+    work.AddFrame(recipient);
+    work.AddFrame(amount.str());
+    work.AddFrame(memo);
+    work.AddFrame(index);
+    pipeline_.Push(std::move(work));
 
     return std::move(future);
 }
@@ -1096,34 +1089,25 @@ auto Base::SendToPaymentCode(
 
 auto Base::shutdown(std::promise<void>& promise) noexcept -> void
 {
-    init_.get();
-
-    if (running_->Off()) {
+    if (auto previous = running_.exchange(false); previous) {
+        init_.get();
+        pipeline_.Close();
         shutdown_sender_.Activate();
-        wallet_.Shutdown().get();
+        wallet_.Shutdown();
 
-        if (sync_server_) { sync_server_->Shutdown().get(); }
+        if (sync_server_) { sync_server_->Shutdown(); }
 
-        peer_.Shutdown().get();
+        peer_.Shutdown();
         filters_.Shutdown();
-        block_.Shutdown().get();
+        block_.Shutdown();
         shutdown_sender_.Close();
-
-        try {
-            promise.set_value();
-        } catch (...) {
-        }
+        promise.set_value();
     }
-}
-
-auto Base::shutdown_endpoint() noexcept -> std::string
-{
-    return std::string{"inproc://"} + Identifier::Random()->str();
 }
 
 auto Base::state_machine() noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     LogDebug()(OT_PRETTY_CLASS())("Starting state machine for ")(
         DisplayString(chain_))
@@ -1269,11 +1253,11 @@ auto Base::state_transition_sync() noexcept -> void
     state_.store(State::UpdatingSyncData);
 }
 
-auto Base::Submit(network::zeromq::Message& work) const noexcept -> void
+auto Base::Submit(network::zeromq::Message&& work) const noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
-    pipeline_->Push(work);
+    pipeline_.Push(std::move(work));
 }
 
 auto Base::SyncTip() const noexcept -> block::Position
@@ -1289,10 +1273,10 @@ auto Base::SyncTip() const noexcept -> block::Position
     }
 }
 
-auto Base::Track(network::zeromq::Message& work) const noexcept
+auto Base::Track(network::zeromq::Message&& work) const noexcept
     -> std::future<void>
 {
-    if (false == running_.get()) {
+    if (false == running_.load()) {
         auto promise = std::promise<void>{};
         promise.set_value();
 
@@ -1301,7 +1285,7 @@ auto Base::Track(network::zeromq::Message& work) const noexcept
 
     auto [index, future] = work_promises_.get();
     work.AddFrame(index);
-    pipeline_->Push(work);
+    pipeline_.Push(std::move(work));
 
     return std::move(future);
 }
@@ -1313,7 +1297,7 @@ auto Base::target() const noexcept -> block::Height
 
 auto Base::UpdateHeight(const block::Height height) const noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     remote_chain_height_.store(std::max(height, remote_chain_height_.load()));
     trigger();
@@ -1322,7 +1306,7 @@ auto Base::UpdateHeight(const block::Height height) const noexcept -> void
 auto Base::UpdateLocalHeight(const block::Position position) const noexcept
     -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto& [height, hash] = position;
     LogDetail()(DisplayString(chain_))(" block header chain updated to hash ")(

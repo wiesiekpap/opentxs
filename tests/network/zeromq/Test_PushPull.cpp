@@ -9,18 +9,17 @@
 #include <string>
 
 #include "opentxs/OT.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"  // IWYU pragma: keep
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -54,9 +53,9 @@ TEST_F(Test_PushPull, Push_Pull)
     bool callbackFinished{false};
 
     auto pullCallback = zmq::ListenCallback::Factory(
-        [this, &callbackFinished](zmq::Message& input) -> void {
+        [this, &callbackFinished](auto&& input) -> void {
             EXPECT_EQ(1, input.size());
-            const std::string& inputString = *input.Body().begin();
+            const auto inputString = std::string{input.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -69,7 +68,7 @@ TEST_F(Test_PushPull, Push_Pull)
         context_.PullSocket(pullCallback, zmq::socket::Socket::Direction::Bind);
 
     ASSERT_NE(nullptr, &pullSocket.get());
-    ASSERT_EQ(SocketType::Pull, pullSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Pull, pullSocket->Type());
 
     pullSocket->SetTimeouts(
         std::chrono::milliseconds(0),
@@ -81,7 +80,7 @@ TEST_F(Test_PushPull, Push_Pull)
         context_.PushSocket(zmq::socket::Socket::Direction::Connect);
 
     ASSERT_NE(nullptr, &pushSocket.get());
-    ASSERT_EQ(SocketType::Push, pushSocket->Type());
+    ASSERT_EQ(zmq::socket::Type::Push, pushSocket->Type());
 
     pushSocket->SetTimeouts(
         std::chrono::milliseconds(0),
@@ -89,7 +88,12 @@ TEST_F(Test_PushPull, Push_Pull)
         std::chrono::milliseconds(30000));
     pushSocket->Start(endpoint_);
 
-    auto sent = pushSocket->Send(testMessage_);
+    auto sent = pushSocket->Send([&] {
+        auto out = opentxs::network::zeromq::Message{};
+        out.AddFrame(testMessage_);
+
+        return out;
+    }());
 
     ASSERT_TRUE(sent);
 
