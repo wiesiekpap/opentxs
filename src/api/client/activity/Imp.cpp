@@ -40,6 +40,7 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -562,11 +563,11 @@ auto Activity::Imp::PaymentText(
             OT_ASSERT(cheque)
 
             if (0 < contract->Version()) {
-                std::string amount{};
-                const bool haveAmount = contract->FormatAmountLocale(
-                    cheque->GetAmount(), amount, ",", ".");
+                const auto& definition =
+                    opentxs::display::GetDefinition(contract->UnitOfAccount());
+                const auto amount = definition.Format(cheque->GetAmount());
 
-                if (haveAmount) {
+                if (0 < amount.size()) {
                     const std::string text =
                         *output + std::string{" for "} + amount;
                     *output = text;
@@ -583,11 +584,11 @@ auto Activity::Imp::PaymentText(
             OT_ASSERT(transfer)
 
             if (0 < contract->Version()) {
-                std::string amount{};
-                const bool haveAmount = contract->FormatAmountLocale(
-                    transfer->GetAmount(), amount, ",", ".");
+                const auto& definition =
+                    display::GetDefinition(contract->UnitOfAccount());
+                const auto amount = definition.Format(transfer->GetAmount());
 
-                if (haveAmount) {
+                if (0 < amount.size()) {
                     const std::string text =
                         *output + std::string{" for "} + amount;
                     *output = text;

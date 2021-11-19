@@ -15,6 +15,22 @@ auto BasketParamsAllowedBasketItem() noexcept -> const VersionMap&
 
     return output;
 }
+auto CurrencyParamsAllowedDisplayScales() noexcept -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
+auto DisplayScaleAllowedScaleRatios() noexcept -> const VersionMap&
+{
+    static const auto output = VersionMap{
+        {1, {1, 1}},
+    };
+
+    return output;
+}
 auto IssuerAllowedPeerRequestHistory() noexcept -> const VersionMap&
 {
     static const auto output = VersionMap{

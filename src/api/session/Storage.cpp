@@ -2226,7 +2226,7 @@ auto Storage::Store(const proto::UnitDefinition& data, const std::string& alias)
     const -> bool
 {
     auto storageVersion(data);
-    storageVersion.clear_publicnym();
+    storageVersion.clear_issuer_nym();
     std::string plaintext;
     const bool saved =
         mutable_Root().get().mutable_Tree().get().mutable_Units().get().Store(

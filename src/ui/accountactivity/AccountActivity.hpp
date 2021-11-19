@@ -17,7 +17,6 @@
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "core/Worker.hpp"
-#include "display/Definition.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -120,8 +119,6 @@ class AccountActivity : public AccountActivityList,
                         protected Worker<AccountActivity>
 {
 public:
-    const display::Definition scales_;
-
     auto AccountID() const noexcept -> std::string final
     {
         return account_id_->str();
@@ -271,8 +268,7 @@ protected:
         const identifier::Nym& nymID,
         const Identifier& accountID,
         const AccountType type,
-        const SimpleCallback& cb,
-        display::Definition&& scales) noexcept;
+        const SimpleCallback& cb) noexcept;
 
 private:
     friend Worker<AccountActivity>;

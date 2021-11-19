@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "internal/protobuf/verify/DisplayScale.hpp"
+#include "internal/protobuf/verify/VerifyContracts.hpp"
 #include "serialization/protobuf/CurrencyParams.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 
@@ -19,17 +21,21 @@ namespace proto
 
 auto CheckProto_1(const CurrencyParams& input, const bool silent) -> bool
 {
-    if (!input.has_tla()) { FAIL_1("missing TLA") }
+    if (!input.has_unit_of_account()) { FAIL_1("missing unit of account") }
 
-    if (3 != input.tla().size()) { FAIL_2("invalid TLA", input.tla()) }
+    if (!input.has_short_name()) { FAIL_1("missing short name") };
 
-    if (!input.has_fraction()) { FAIL_1("missing fraction") }
+    if (0 == input.scales_size()) { FAIL_1("missing scales") };
 
-    if (1 > input.fraction().size()) {
-        FAIL_2("invalid fraction", input.fraction())
+    for (auto& it : input.scales()) {
+        if (!Check(
+                it,
+                CurrencyParamsAllowedDisplayScales().at(input.version()).first,
+                CurrencyParamsAllowedDisplayScales().at(input.version()).second,
+                silent)) {
+            FAIL_1("invalid display scale")
+        }
     }
-
-    if (!input.has_power()) { FAIL_1("missing power") }
 
     return true;
 }

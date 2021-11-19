@@ -17,6 +17,7 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/UnitDefinition.hpp"
+#include "internal/contact/Contact.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/UnitDefinition.hpp"
@@ -42,24 +43,24 @@ auto Factory::BasketContract(
     const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
-    const std::string& name,
-    const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
     const core::UnitType unitOfAccount,
-    const VersionNumber version) noexcept
+    const VersionNumber version,
+    const display::Definition& displayDefinition,
+    const Amount& redemptionIncrement) noexcept
     -> std::shared_ptr<contract::unit::Basket>
 {
     return std::make_shared<ReturnType>(
         api,
         nym,
         shortname,
-        name,
-        symbol,
         terms,
         weight,
         unitOfAccount,
-        version);
+        version,
+        displayDefinition,
+        redemptionIncrement);
 }
 
 auto Factory::BasketContract(
@@ -95,8 +96,8 @@ auto Basket::CalculateBasketID(
 {
     auto contract(serialized);
     contract.clear_id();
-    contract.clear_nymid();
-    contract.clear_publicnym();
+    contract.clear_issuer();
+    contract.clear_issuer_nym();
 
     for (auto& item : *contract.mutable_basket()->mutable_item()) {
         item.clear_account();
@@ -153,13 +154,21 @@ Basket::Basket(
     const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
-    const std::string& name,
-    const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
     const core::UnitType unitOfAccount,
-    const VersionNumber version)
-    : Unit(api, nym, shortname, name, symbol, terms, unitOfAccount, version)
+    const VersionNumber version,
+    const display::Definition& displayDefinition,
+    const Amount& redemptionIncrement)
+    : Unit(
+          api,
+          nym,
+          shortname,
+          terms,
+          unitOfAccount,
+          version,
+          displayDefinition,
+          redemptionIncrement)
     , subcontracts_()
     , weight_(weight)
 {
@@ -203,7 +212,7 @@ auto Basket::BasketID() const -> OTIdentifier
 auto Basket::IDVersion(const Lock& lock) const -> SerializedType
 {
     auto contract = Unit::IDVersion(lock);
-    contract.set_type(translate(contract::UnitType::Basket));
+
     auto basket = contract.mutable_basket();
     basket->set_version(1);
     basket->set_weight(weight_);

@@ -61,25 +61,8 @@ auto operator>=(const long long int lhs, const Amount& rhs) noexcept -> bool;
 auto operator>=(const unsigned long long int lhs, const Amount& rhs) noexcept
     -> bool;
 
-auto operator+(const long int lhs, const Amount& rhs) noexcept(false) -> Amount;
-auto operator+(const long long int lhs, const Amount& rhs) noexcept(false)
-    -> Amount;
-auto operator+(const unsigned long int lhs, const Amount& rhs) noexcept(false)
-    -> Amount;
-
-auto operator-(const long int lhs, const Amount& rhs) noexcept(false) -> Amount;
-auto operator-(const long long int lhs, const Amount& rhs) noexcept(false)
-    -> Amount;
-
-auto operator*(const int lhs, const Amount& rhs) noexcept(false) -> Amount;
-auto operator*(const long long int lhs, const Amount& rhs) noexcept(false)
-    -> Amount;
-auto operator*(const unsigned int lhs, const Amount& rhs) noexcept(false)
-    -> Amount;
-auto operator*(const unsigned long int lhs, const Amount& rhs) noexcept(false)
-    -> Amount;
-auto operator*(const unsigned long long int lhs, const Amount& rhs) noexcept(
-    false) -> Amount;
+template <typename T>
+auto operator*(T lhs, const Amount& rhs) noexcept(false) -> Amount;
 }  // namespace opentxs
 
 namespace opentxs
@@ -87,96 +70,69 @@ namespace opentxs
 class OPENTXS_EXPORT Amount
 {
 public:
+    template <typename T>
+    auto operator<(const T) const noexcept -> bool;
     auto operator<(const Amount& rhs) const noexcept -> bool;
-    auto operator<(const int rhs) const noexcept -> bool;
-    auto operator<(const long int rhs) const noexcept -> bool;
-    auto operator<(const long long int rhs) const noexcept -> bool;
-    auto operator<(const unsigned long long int rhs) const noexcept -> bool;
 
+    template <typename T>
+    auto operator>(const T) const noexcept -> bool;
     auto operator>(const Amount& rhs) const noexcept -> bool;
-    auto operator>(const int rhs) const noexcept -> bool;
-    auto operator>(const long int rhs) const noexcept -> bool;
-    auto operator>(const long long int rhs) const noexcept -> bool;
-    auto operator>(const unsigned long long int rhs) const noexcept -> bool;
 
+    template <typename T>
+    auto operator==(const T) const noexcept -> bool;
     auto operator==(const Amount& rhs) const noexcept -> bool;
-    auto operator==(const int rhs) const noexcept -> bool;
-    auto operator==(const long int rhs) const noexcept -> bool;
-    auto operator==(const long long int rhs) const noexcept -> bool;
-    auto operator==(const unsigned int rhs) const noexcept -> bool;
-    auto operator==(const unsigned long int rhs) const noexcept -> bool;
-    auto operator==(const unsigned long long int rhs) const noexcept -> bool;
 
     auto operator!=(const Amount& rhs) const noexcept -> bool;
-    auto operator!=(const int rhs) const noexcept -> bool;
-    auto operator!=(const long int rhs) const noexcept -> bool;
-    auto operator!=(const long long int rhs) const noexcept -> bool;
-    auto operator!=(const unsigned long long int rhs) const noexcept -> bool;
+    template <typename T>
+    auto operator!=(const T) const noexcept -> bool;
 
     auto operator<=(const Amount& rhs) const noexcept -> bool;
-    auto operator<=(const int rhs) const noexcept -> bool;
-    auto operator<=(const long long int rhs) const noexcept -> bool;
-    auto operator<=(const unsigned int rhs) const noexcept -> bool;
-    auto operator<=(const unsigned long int rhs) const noexcept -> bool;
-    auto operator<=(const unsigned long long int rhs) const noexcept -> bool;
+    template <typename T>
+    auto operator<=(const T) const noexcept -> bool;
 
     auto operator>=(const Amount& rhs) const noexcept -> bool;
-    auto operator>=(const long int rhs) const noexcept -> bool;
-    auto operator>=(const long long int rhs) const noexcept -> bool;
-    auto operator>=(const unsigned long long int rhs) const noexcept -> bool;
+    template <typename T>
+    auto operator>=(const T) const noexcept -> bool;
 
     auto operator+(const Amount& rhs) const noexcept(false) -> Amount;
-    auto operator+(const long int rhs) const noexcept(false) -> Amount;
-    auto operator+(const long long int rhs) const noexcept(false) -> Amount;
-    auto operator+(const unsigned int rhs) const noexcept(false) -> Amount;
-    auto operator+(const unsigned long int rhs) const noexcept(false) -> Amount;
-    auto operator+(const unsigned long long int rhs) const noexcept(false)
-        -> Amount;
 
     auto operator-(const Amount& rhs) const noexcept(false) -> Amount;
-    auto operator-(const long int rhs) const noexcept(false) -> Amount;
-    auto operator-(const long long int rhs) const noexcept(false) -> Amount;
-    auto operator-(const unsigned long int rhs) const noexcept(false) -> Amount;
-    auto operator-(const unsigned long long int rhs) const noexcept(false)
-        -> Amount;
 
     auto operator*(const Amount& rhs) const noexcept(false) -> Amount;
-    auto operator*(const int rhs) const noexcept(false) -> Amount;
-    auto operator*(const long int rhs) const noexcept(false) -> Amount;
-    auto operator*(const long long int rhs) const noexcept(false) -> Amount;
-    auto operator*(const unsigned long long int rhs) const noexcept(false)
-        -> Amount;
+    template <typename T>
+    auto operator*(const T) const noexcept(false) -> Amount;
 
     auto operator/(const Amount& rhs) const noexcept(false) -> Amount;
-    auto operator/(const int rhs) const noexcept(false) -> Amount;
-    auto operator/(const long long int rhs) const noexcept(false) -> Amount;
-    auto operator/(const unsigned long long int rhs) const noexcept(false)
-        -> Amount;
+    template <typename T>
+    auto operator/(const T) const noexcept(false) -> Amount;
 
     auto operator%(const Amount& rhs) const noexcept(false) -> Amount;
-    auto operator%(const int rhs) const noexcept(false) -> Amount;
-    auto operator%(const long long int rhs) const noexcept(false) -> Amount;
-    auto operator%(const unsigned long long int rhs) const noexcept(false)
-        -> Amount;
+    template <typename T>
+    auto operator%(const T) const noexcept(false) -> Amount;
 
     auto operator*=(const Amount& amount) noexcept(false) -> Amount&;
 
     auto operator+=(const Amount& amount) noexcept(false) -> Amount&;
-    auto operator+=(const unsigned long int amount) noexcept(false) -> Amount&;
 
     auto operator-=(const Amount& amount) noexcept(false) -> Amount&;
-    auto operator-=(const unsigned long int amount) noexcept(false) -> Amount&;
 
     auto operator-() -> Amount;
 
-    operator std::string() const noexcept(false) { return this->str(); }
-
-    auto str() const -> std::string;
+    auto Serialize(const AllocateOutput dest) const noexcept -> bool;
 
     OPENTXS_NO_EXPORT auto SerializeBitcoin(
         const AllocateOutput dest) const noexcept -> bool;
     OPENTXS_NO_EXPORT static auto SerializeBitcoinSize() noexcept
         -> std::size_t;
+
+    static auto signed_amount(
+        long long int ip,
+        unsigned long long int fp = 0,
+        unsigned long long int div = 0) -> Amount;
+    static auto unsigned_amount(
+        unsigned long long int ip,
+        unsigned long long int fp = 0,
+        unsigned long long int div = 0) -> Amount;
 
     struct Imp;
 
@@ -188,7 +144,7 @@ public:
     Amount(unsigned int);
     Amount(unsigned long int);
     Amount(unsigned long long int);
-    Amount(std::string_view str) noexcept(false);
+    Amount(std::string_view str, bool normalize = false) noexcept(false);
     Amount(const opentxs::network::zeromq::Frame&);
     Amount() noexcept;
     Amount(const Amount& rhs) noexcept;
@@ -251,31 +207,9 @@ private:
         const unsigned long long int lhs,
         const Amount& rhs) noexcept -> bool;
 
-    friend auto operator+(const long int lhs, const Amount& rhs) noexcept(false)
+    template <typename T>
+    friend auto operator*(const T lhs, const Amount& rhs) noexcept(false)
         -> Amount;
-    friend auto operator+(const long long int lhs, const Amount& rhs) noexcept(
-        false) -> Amount;
-    friend auto operator+(
-        const unsigned long int lhs,
-        const Amount& rhs) noexcept(false) -> Amount;
-
-    friend auto operator-(const long int lhs, const Amount& rhs) noexcept(false)
-        -> Amount;
-    friend auto operator-(const long long int lhs, const Amount& rhs) noexcept(
-        false) -> Amount;
-
-    friend auto operator*(const int lhs, const Amount& rhs) noexcept(false)
-        -> Amount;
-    friend auto operator*(const long long int lhs, const Amount& rhs) noexcept(
-        false) -> Amount;
-    friend auto operator*(const unsigned int lhs, const Amount& rhs) noexcept(
-        false) -> Amount;
-    friend auto operator*(
-        const unsigned long int lhs,
-        const Amount& rhs) noexcept(false) -> Amount;
-    friend auto operator*(
-        const unsigned long long int lhs,
-        const Amount& rhs) noexcept(false) -> Amount;
 
     Imp* imp_;
 };

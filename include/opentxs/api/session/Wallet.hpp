@@ -52,6 +52,11 @@ namespace blind
 class Purse;
 }  // namespace blind
 
+namespace display
+{
+class Definition;
+}  // namespace display
+
 namespace otx
 {
 namespace context
@@ -587,27 +592,17 @@ public:
      *    \param[in] nymid the identifier of nym which will create the contract
      *    \param[in] shortname a short human-readable identifier for the
      *                         contract
-     *    \param[in] name the official name of the unit of account
-     *    \param[in] symbol symbol for the unit of account
      *    \param[in] terms human-readable terms and conditions
-     *    \param[in] tla three-letter acronym abbreviation of the unit of
-     *                   account
-     *    \param[in] power the number of decimal places to shift to display
-     *                     fractional units
-     *    \param[in] fraction the name of the fractional unit
      *    \throw std::runtime_error the contract can not be created
      */
-    virtual auto UnitDefinition(
+    virtual auto CurrencyContract(
         const std::string& nymid,
         const std::string& shortname,
-        const std::string& name,
-        const std::string& symbol,
         const std::string& terms,
-        const std::string& tla,
-        const std::uint32_t power,
-        const std::string& fraction,
         const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
+        const display::Definition& displayDefinition,
+        const Amount& redemptionIncrement,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         noexcept(false) -> OTUnitDefinition = 0;
 
@@ -616,19 +611,17 @@ public:
      *    \param[in] nymid the identifier of nym which will create the contract
      *    \param[in] shortname a short human-readable identifier for the
      *                         contract
-     *    \param[in] name the official name of the unit of account
-     *    \param[in] symbol symbol for the unit of account
      *    \param[in] terms human-readable terms and conditions
      *    \throw std::runtime_error the contract can not be created
      */
-    virtual auto UnitDefinition(
+    virtual auto SecurityContract(
         const std::string& nymid,
         const std::string& shortname,
-        const std::string& name,
-        const std::string& symbol,
         const std::string& terms,
         const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
+        const display::Definition& displayDefinition,
+        const Amount& redemptionIncrement,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         noexcept(false) -> OTUnitDefinition = 0;
 

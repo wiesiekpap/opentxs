@@ -22,10 +22,7 @@ auto CheckProto_1(const CreateInstrumentDefinition& input, const bool silent)
 {
     CHECK_NAME(name);
     CHECK_NAME(symbol);
-    CHECK_NAME(primaryunitname);
-    CHECK_NAME(fractionalunitname);
-    CHECK_NAME(tla);
-    CHECK_NAME(name);
+    CHECK_NAME(terms);
 
     const auto allowedtype = 1 == AllowedItemTypes()
                                       .at({5, CONTACTSECTION_CONTRACT})

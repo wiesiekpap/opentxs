@@ -3,11 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"       // IWYU pragma: associated
-#include "1_Internal.hpp"     // IWYU pragma: associated
-#include "display/Scale.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"    // IWYU pragma: associated
+#include "1_Internal.hpp"  // IWYU pragma: associated
+//#include "display/Scale.hpp"  // IWYU pragma: associated
 
-#include "display/Scale_imp.hpp"
+#include "core/display/Scale_imp.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
 
@@ -20,17 +20,18 @@ Scale::Scale(
     const OptionalInt defaultMinDecimals,
     const OptionalInt defaultMaxDecimals) noexcept
     : imp_(std::make_unique<Imp>(
-          prefix,
-          suffix,
-          ratios,
-          defaultMinDecimals,
-          defaultMaxDecimals))
+               prefix,
+               suffix,
+               ratios,
+               defaultMinDecimals,
+               defaultMaxDecimals)
+               .release())
 {
     OT_ASSERT(imp_);
 }
 
 Scale::Scale(const Scale& rhs) noexcept
-    : imp_(std::make_unique<Imp>(*rhs.imp_))
+    : imp_(std::make_unique<Imp>(*rhs.imp_).release())
 {
     OT_ASSERT(imp_);
 }
@@ -39,6 +40,16 @@ Scale::Scale(Scale&& rhs) noexcept
     : imp_(std::move(rhs.imp_))
 {
     OT_ASSERT(imp_);
+}
+
+auto Scale::DefaultMinDecimals() const noexcept -> OptionalInt
+{
+    return imp_->default_min_;
+}
+
+auto Scale::DefaultMaxDecimals() const noexcept -> OptionalInt
+{
+    return imp_->default_max_;
 }
 
 auto Scale::Format(
@@ -55,6 +66,11 @@ auto Scale::Import(const std::string& formatted) const noexcept(false) -> Amount
 }
 
 auto Scale::Prefix() const noexcept -> std::string { return imp_->prefix_; }
+
+auto Scale::Ratios() const noexcept -> const std::vector<Ratio>&
+{
+    return imp_->ratios_;
+}
 
 auto Scale::Suffix() const noexcept -> std::string { return imp_->suffix_; }
 

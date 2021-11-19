@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "internal/blockchain/Params.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -210,6 +211,11 @@ auto addresstype_map() noexcept -> const AddressTypeMap&
 
 namespace opentxs
 {
+auto print(core::UnitType in) noexcept -> std::string
+{
+    return proto::TranslateItemType(static_cast<std::uint32_t>(in));
+}
+
 auto translate(core::AddressType in) noexcept -> proto::AddressType
 {
     try {

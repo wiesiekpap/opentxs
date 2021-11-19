@@ -437,6 +437,7 @@ enum class ClaimType : std::uint32_t {
     YER = 420,    // Yemen Rial
     ZMW = 421,    // Zambia Kwacha
     ZWD = 422,    // Zimbabwe Dollar
+    Custom = 423,
 };
 }  // namespace contact
 }  // namespace opentxs

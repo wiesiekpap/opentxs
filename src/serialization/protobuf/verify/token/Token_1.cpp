@@ -54,7 +54,9 @@ auto CheckProto_1(
         case TOKENSTATE_READY: {
             const auto total =
                 Amount(totalValue) + Amount(input.denomination());
-            totalValue = total.str();
+            if (false == total.Serialize(writer(totalValue))) {
+                FAIL_2("Invalid value", totalValue);
+            }
             validFrom = std::max(input.validfrom(), validFrom);
             validTo = std::min(input.validto(), validTo);
         } break;

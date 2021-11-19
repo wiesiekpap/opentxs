@@ -6,6 +6,7 @@
 add_subdirectory(contract)
 add_subdirectory(cron)
 add_subdirectory(crypto)
+add_subdirectory(display)
 add_subdirectory(identifier)
 add_subdirectory(otprotob)
 add_subdirectory(recurring)

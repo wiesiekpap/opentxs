@@ -11,18 +11,14 @@
 #include <utility>
 #include <vector>
 
-#include "display/Definition.hpp"
-#include "display/Scale.hpp"
+#include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/Amount.hpp"
 
 TEST(DisplayScale, usd)
 {
-    const auto usd = opentxs::display::Definition{{
-        {u8"dollars", {u8"$", u8"", {{10, 3}}, 2, 3}},
-        {u8"cents", {u8"", u8"¢", {{10, 1}}, 0, 1}},
-        {u8"millions", {u8"$", u8"MM", {{10, 9}}, 0, 9}},
-        {u8"mills", {u8"", u8"₥", {{10, 0}}, 0, 0}},
-    }};
+    const auto usd =
+        opentxs::display::GetDefinition(opentxs::core::UnitType::USD);
 
     const auto scales = usd.GetScales();
     auto it = scales.begin();
@@ -54,72 +50,74 @@ TEST(DisplayScale, usd)
 
     const auto amount1 = opentxs::Amount{14000000000};
     const auto amount2 = opentxs::Amount{14000000880};
-    const auto amount3 = opentxs::Amount{14005000000};
-    const auto amount4 = opentxs::Amount{14015000000};
+    const auto amount3 = opentxs::Amount{14000000500};
+    const auto amount4 = opentxs::Amount{14000015000};
 
     EXPECT_EQ(usd.Format(amount1), usd.Format(amount1, 0));
-    EXPECT_EQ(usd.Format(amount1, 0), std::string{u8"$14,000,000.00"});
+    EXPECT_EQ(usd.Format(amount1, 0), std::string{u8"$14,000,000,000.00"});
     EXPECT_EQ(usd.Import(usd.Format(amount1, 0), 0), amount1);
-    EXPECT_EQ(usd.Format(amount1, 1), std::string{u8"1,400,000,000 ¢"});
+    EXPECT_EQ(usd.Format(amount1, 1), std::string{u8"1,400,000,000,000 ¢"});
     EXPECT_EQ(usd.Import(usd.Format(amount1, 1), 1), amount1);
-    EXPECT_EQ(usd.Format(amount1, 2), std::string{u8"$14 MM"});
+    EXPECT_EQ(usd.Format(amount1, 2), std::string{u8"$14,000 MM"});
     EXPECT_EQ(usd.Import(usd.Format(amount1, 2), 2), amount1);
-    EXPECT_EQ(usd.Format(amount1, 3), std::string{u8"14,000,000,000 ₥"});
+    EXPECT_EQ(usd.Format(amount1, 3), std::string{u8"14,000,000,000,000 ₥"});
     EXPECT_EQ(usd.Import(usd.Format(amount1, 3), 3), amount1);
 
-    EXPECT_EQ(usd.Format(amount2, 0), std::string{u8"$14,000,000.88"});
-    EXPECT_EQ(usd.Format(amount2, 1), std::string{u8"1,400,000,088 ¢"});
+    EXPECT_EQ(usd.Format(amount2, 0), std::string{u8"$14,000,000,880.00"});
+    EXPECT_EQ(usd.Format(amount2, 1), std::string{u8"1,400,000,088,000 ¢"});
+    EXPECT_EQ(usd.Format(amount2, 2), std::string{u8"$14,000.000\u202F88 MM"});
     EXPECT_EQ(
-        usd.Format(amount2, 2), std::string{u8"$14.000\u202F000\u202F88 MM"});
-    EXPECT_EQ(usd.Format(amount2, 2, std::nullopt, 2), std::string{u8"$14 MM"});
-    EXPECT_EQ(usd.Format(amount2, 2, 0, 2), std::string{u8"$14 MM"});
-    EXPECT_EQ(usd.Format(amount2, 2, 1, 2), std::string{u8"$14.0 MM"});
+        usd.Format(amount2, 2, std::nullopt, 2), std::string{u8"$14,000 MM"});
+    EXPECT_EQ(usd.Format(amount2, 2, 0, 2), std::string{u8"$14,000 MM"});
+    EXPECT_EQ(usd.Format(amount2, 2, 1, 2), std::string{u8"$14,000.0 MM"});
 
-    EXPECT_EQ(usd.Format(amount3, 2, 1, 2), std::string{u8"$14.0 MM"});
+    EXPECT_EQ(usd.Format(amount3, 2, 1, 2), std::string{u8"$14,000.0 MM"});
 
-    EXPECT_EQ(usd.Format(amount4, 2, 1, 2), std::string{u8"$14.02 MM"});
+    EXPECT_EQ(usd.Format(amount4, 2, 1, 2), std::string{u8"$14,000.02 MM"});
 
     const auto commaTest = std::vector<std::pair<opentxs::Amount, std::string>>{
         {00, u8"$0"},
-        {10, u8"$0.01"},
-        {1000, u8"$1"},
-        {1010, u8"$1.01"},
-        {10000, u8"$10"},
-        {10010, u8"$10.01"},
-        {100000, u8"$100"},
-        {100010, u8"$100.01"},
-        {1000000, u8"$1,000"},
-        {1000010, u8"$1,000.01"},
-        {10000000, u8"$10,000"},
-        {10000010, u8"$10,000.01"},
-        {100000000, u8"$100,000"},
-        {100000010, u8"$100,000.01"},
-        {1000000000, u8"$1,000,000"},
-        {1000000010, u8"$1,000,000.01"},
-        {10000000000, u8"$10,000,000"},
-        {10000000010, u8"$10,000,000.01"},
-        {100000000000, u8"$100,000,000"},
-        {100000000010, u8"$100,000,000.01"},
-        {1000000000000, u8"$1,000,000,000"},
-        {1000000000010, u8"$1,000,000,000.01"},
-        {10000000000000, u8"$10,000,000,000"},
-        {10000000000010, u8"$10,000,000,000.01"},
-        {100000000000000, u8"$100,000,000,000"},
-        {100000000000010, u8"$100,000,000,000.01"},
+        {1, u8"$1"},
+        {10, u8"$10"},
+        {100, u8"$100"},
+        {1000, u8"$1,000"},
+        {10000, u8"$10,000"},
+        {100000, u8"$100,000"},
+        {1000000, u8"$1,000,000"},
+        {10000000, u8"$10,000,000"},
+        {100000000, u8"$100,000,000"},
+        {1000000000, u8"$1,000,000,000"},
+        {10000000000, u8"$10,000,000,000"},
+        {100000000000, u8"$100,000,000,000"},
     };
 
     for (const auto& [amount, expected] : commaTest) {
         EXPECT_EQ(usd.Format(amount, 0, 0), expected);
     }
+
+    auto half = opentxs::Amount::signed_amount(0, 5, 10);
+    EXPECT_EQ(usd.Format(half, 0), std::string{u8"$0.50"});
+
+    half = opentxs::Amount::unsigned_amount(1, 5, 10);
+    EXPECT_EQ(usd.Format(half, 0), std::string{u8"$1.50"});
+
+    auto threequarter = opentxs::Amount::signed_amount(2, 75, 100);
+    EXPECT_EQ(usd.Format(threequarter, 0), std::string{u8"$2.75"});
+
+    threequarter = opentxs::Amount::unsigned_amount(3, 75, 100);
+    EXPECT_EQ(usd.Format(threequarter, 0), std::string{u8"$3.75"});
+
+    auto seveneighths = opentxs::Amount::signed_amount(4, 7, 8);
+    EXPECT_EQ(usd.Format(seveneighths, 0, 0, 3), std::string{u8"$4.875"});
+
+    seveneighths = opentxs::Amount::unsigned_amount(5, 7, 8);
+    EXPECT_EQ(usd.Format(seveneighths, 0, 0, 3), std::string{u8"$5.875"});
 }
 
 TEST(DisplayScale, btc)
 {
-    const auto btc = opentxs::display::Definition{{
-        {u8"BTC", {"", u8"₿", {{10, 8}}, 0, 8}},
-        {u8"mBTC", {"", u8"mBTC", {{10, 5}}, 0, 5}},
-        {u8"μBTC", {"", u8"μBTC", {{10, 2}}, 0, 2}},
-    }};
+    const auto btc =
+        opentxs::display::GetDefinition(opentxs::core::UnitType::BTC);
 
     const auto scales = btc.GetScales();
     auto it = scales.begin();
@@ -146,7 +144,25 @@ TEST(DisplayScale, btc)
         const auto& [index, name] = *it;
 
         EXPECT_EQ(index, 2);
+        EXPECT_EQ(name, u8"bits");
+    }
+
+    std::advance(it, 1);
+
+    {
+        const auto& [index, name] = *it;
+
+        EXPECT_EQ(index, 3);
         EXPECT_EQ(name, u8"μBTC");
+    }
+
+    std::advance(it, 1);
+
+    {
+        const auto& [index, name] = *it;
+
+        EXPECT_EQ(index, 4);
+        EXPECT_EQ(name, u8"satoshi");
     }
 
     const auto amount1 = opentxs::Amount{100000000};
@@ -157,13 +173,17 @@ TEST(DisplayScale, btc)
     EXPECT_EQ(btc.Import(btc.Format(amount1, 0), 0), amount1);
     EXPECT_EQ(btc.Format(amount1, 1), std::string{u8"1,000 mBTC"});
     EXPECT_EQ(btc.Import(btc.Format(amount1, 1), 1), amount1);
-    EXPECT_EQ(btc.Format(amount1, 2), std::string{u8"1,000,000 μBTC"});
+    EXPECT_EQ(btc.Format(amount1, 2), std::string{u8"1,000,000 bits"});
     EXPECT_EQ(btc.Import(btc.Format(amount1, 2), 2), amount1);
+    EXPECT_EQ(btc.Format(amount1, 3), std::string{u8"1,000,000 μBTC"});
+    EXPECT_EQ(btc.Import(btc.Format(amount1, 3), 3), amount1);
+    EXPECT_EQ(btc.Format(amount1, 4), std::string{u8"100,000,000 satoshis"});
+    EXPECT_EQ(btc.Import(btc.Format(amount1, 4), 4), amount1);
 
     EXPECT_EQ(
         btc.Format(amount2, 0), std::string{u8"0.000\u202F000\u202F01 ₿"});
     EXPECT_EQ(btc.Format(amount2, 1), std::string{u8"0.000\u202F01 mBTC"});
-    EXPECT_EQ(btc.Format(amount2, 2), std::string{u8"0.01 μBTC"});
+    EXPECT_EQ(btc.Format(amount2, 3), std::string{u8"0.01 μBTC"});
 
     EXPECT_EQ(
         btc.Format(amount3, 0),
@@ -173,13 +193,8 @@ TEST(DisplayScale, btc)
 
 TEST(DisplayScale, pkt)
 {
-    const auto pkt = opentxs::display::Definition{{
-        {u8"PKT", {"", u8"PKT", {{2, 30}}, 0, 11}},
-        {u8"mPKT", {"", u8"mPKT", {{2, 30}, {10, -3}}, 0, 8}},
-        {u8"μPKT", {"", u8"μPKT", {{2, 30}, {10, -6}}, 0, 5}},
-        {u8"nPKT", {"", u8"nPKT", {{2, 30}, {10, -9}}, 0, 2}},
-        {u8"pack", {"", u8"pack", {{10, 0}}, 0, 2}},
-    }};
+    const auto pkt =
+        opentxs::display::GetDefinition(opentxs::core::UnitType::PKT);
 
     const auto scales = pkt.GetScales();
     auto it = scales.begin();

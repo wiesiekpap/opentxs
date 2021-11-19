@@ -47,29 +47,15 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/CurrencyParams.pb.h"
+#include "serialization/protobuf/DisplayScale.pb.h"
 #include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/ScaleRatio.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
-
-#define OT_THOUSANDS_SEP ","
-#define OT_DECIMAL_POINT "."
-
-inline auto separateThousands(
-    std::stringstream& sss,
-    const opentxs::Amount& value,
-    const char* szSeparator) -> void
-{
-    if (value < 1000) {
-        sss << value.str();
-        return;
-    }
-
-    separateThousands(sss, value / 1000, szSeparator);
-    sss << szSeparator << std::setfill('0') << std::setw(3)
-        << (value % 1000).str();
-}
 
 namespace opentxs
 {
@@ -110,204 +96,6 @@ namespace opentxs::contract
 {
 const VersionNumber Unit::DefaultVersion{2};
 const VersionNumber Unit::MaxVersion{2};
-
-auto Unit::formatLongAmount(
-    Amount lValue,
-    std::int32_t nFactor,
-    std::int32_t nPower,
-    const char* szCurrencySymbol,
-    const char* szThousandSeparator,
-    const char* szDecimalPoint) -> std::string
-{
-    std::stringstream sss;
-
-    // Handle negative values
-    if (lValue < 0) {
-        sss << "-";
-        lValue = -lValue;
-    }
-
-    if (nullptr != szCurrencySymbol) sss << szCurrencySymbol << " ";
-
-    // For example, if 506 is supposed to be $5.06, then dividing by a factor of
-    // 100 results in 5 dollars (integer value) and 6 cents (fractional value).
-
-    // Handle integer value with thousand separaters
-    separateThousands(sss, lValue / nFactor, szThousandSeparator);
-
-    // Handle fractional value
-    if (1 < nFactor) {
-        sss << szDecimalPoint << std::setfill('0') << std::setw(nPower)
-            << (lValue % nFactor).str();
-    }
-
-    std::string str_result(sss.str());
-
-    return str_result;
-}
-
-auto Unit::ParseFormatted(
-    Amount& lResult,
-    const std::string& str_input,
-    std::int32_t nFactor,
-    std::int32_t nPower,
-    const char* szThousandSeparator,
-    const char* szDecimalPoint) -> bool
-{
-    OT_ASSERT(nullptr != szThousandSeparator);
-    OT_ASSERT(nullptr != szDecimalPoint);
-
-    lResult = 0;
-
-    char theSeparator = szThousandSeparator[0];
-    char theDecimalPoint = szDecimalPoint[0];
-
-    std::int64_t lDollars = 0;
-    std::int64_t lCents = 0;
-    std::int64_t lOutput = 0;
-    std::int64_t lSign = 1;
-
-    bool bHasEnteredDollars = false;
-    bool bHasEnteredCents = false;
-
-    std::int32_t nDigitsCollectedBeforeDot = 0;
-    std::int32_t nDigitsCollectedAfterDot = 0;
-
-    // BUG: &mp isn't used.
-    // const std::moneypunct<char, false> &mp = std::use_facet<
-    // std::moneypunct<char, false> >(std::locale ());
-
-    std::deque<std::int64_t> deque_cents;
-
-    for (std::uint32_t uIndex = 0; uIndex < str_input.length(); ++uIndex) {
-        char theChar = str_input[uIndex];
-
-        if (iscntrl(theChar))  // Break at any newline or other control
-                               // character.
-            break;
-
-        if (0 == isdigit(theChar))  // if it's not a numerical digit.
-        {
-            if (theSeparator == theChar) continue;
-
-            if (theDecimalPoint == theChar) {
-                if (bHasEnteredCents) {
-                    // There shouldn't be ANOTHER decimal point if we are
-                    // already in the cents.
-                    // Therefore, we're done here. Break.
-                    //
-                    break;
-                }
-
-                // If we HAVEN'T entered the cents yet, then this decimal point
-                // marks the spot where we DO.
-                //
-                bHasEnteredDollars = true;
-                bHasEnteredCents = true;
-                continue;
-            }  // theChar is the decimal point
-
-            // Once a negative sign appears, it's negative, period.
-            // If you put two or three negative signs in a row, it's STILL
-            // negative.
-
-            if ('-' == theChar) {
-                lSign = -1;
-                continue;
-            }
-
-            // Okay, by this point, we know it's not numerical, and it's not a
-            // separator or decimal point, or sign. We allow letters and symbols
-            // BEFORE the numbers start, but not AFTER (that would terminate the
-            // number.) Therefore we need to see if the dollars or cents have
-            // started yet. If they have, then this is the end, and we break.
-            // Otherwise if they haven't, then we're still at the beginning, so
-            // we continue.
-            if (bHasEnteredDollars || bHasEnteredCents)
-                break;
-            else
-                continue;
-        }  // not numerical
-
-        // By this point, we KNOW that it's a numeric digit. Are we collecting
-        // cents yet? How about dollars? Also, if nPower is 2, then we only
-        // collect 2 digits after the decimal point. If we've already collected
-        // those, then we need to break.
-        if (bHasEnteredCents) {
-            ++nDigitsCollectedAfterDot;
-
-            // If "cents" occupy 2 digits after the decimal point, and we are
-            // now on the THIRD digit -- then we're done.
-            if (nDigitsCollectedAfterDot > nPower) break;
-
-            // Okay, we're in the cents, so let's add this digit...
-            deque_cents.push_back(static_cast<std::int64_t>(theChar - '0'));
-
-            continue;
-        }
-
-        // Okay, it's a digit, and we haven't started processing cents yet. How
-        // about dollars?
-        if (!bHasEnteredDollars) bHasEnteredDollars = true;
-
-        ++nDigitsCollectedBeforeDot;
-
-        // Let's add this digit...
-        lDollars *=
-            10;  // Multiply existing dollars by 10, and then add the new digit.
-        lDollars += static_cast<std::int64_t>(theChar - '0');
-    }
-
-    // Time to put it all together...
-    lOutput += lDollars;
-    lOutput *=
-        static_cast<std::int64_t>(nFactor);  // 1 dollar becomes 100 cents.
-
-    std::int32_t nTempPower = nPower;
-
-    while (nTempPower > 0) {
-        --nTempPower;
-
-        if (deque_cents.size() > 0) {
-            lCents += deque_cents.front();
-            deque_cents.pop_front();
-        }
-
-        lCents *= 10;
-    }
-    lCents /= 10;  // There won't be any rounding errors here, since the last
-                   // thing we did in the loop was multiply by 10.
-
-    lOutput += lCents;
-
-    lResult = (lOutput * lSign);
-
-    return true;
-}
-
-auto Unit::ValidUnits(const VersionNumber version) noexcept
-    -> std::set<core::UnitType>
-{
-    try {
-        auto validunits = proto::AllowedItemTypes().at(
-            {implementation::Unit::unit_of_account_version_map_.at(version),
-             translate(contact::SectionType::Contract)});
-
-        std::set<core::UnitType> output;
-        std::transform(
-            validunits.begin(),
-            validunits.end(),
-            std::inserter(output, output.end()),
-            [](proto::ContactItemType itemtype) -> core::UnitType {
-                return ClaimToUnit(translate(itemtype));
-            });
-
-        return output;
-    } catch (...) {
-
-        return {};
-    }
-}
 }  // namespace opentxs::contract
 
 namespace opentxs::contract::implementation
@@ -320,11 +108,11 @@ Unit::Unit(
     const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
-    const std::string& name,
-    const std::string& symbol,
     const std::string& terms,
     const core::UnitType unitOfAccount,
-    const VersionNumber version)
+    const VersionNumber version,
+    const display::Definition& displayDefinition,
+    const Amount& redemptionIncrement)
     : Signable(
           api,
           nym,
@@ -333,9 +121,9 @@ Unit::Unit(
           shortname,
           api.Factory().Identifier(),
           {})
-    , primary_unit_symbol_(symbol)
     , unit_of_account_(unitOfAccount)
-    , primary_unit_name_(name)
+    , display_definition_(displayDefinition)
+    , redemption_increment_(redemptionIncrement)
     , short_name_(shortname)
 {
 }
@@ -349,24 +137,24 @@ Unit::Unit(
           nym,
           serialized.version(),
           serialized.terms(),
-          serialized.shortname(),
+          serialized.name(),
           api.Factory().Identifier(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
               : Signatures{})
-    , primary_unit_symbol_(serialized.symbol())
-    , unit_of_account_(ClaimToUnit(translate(serialized.unitofaccount())))
-    , primary_unit_name_(serialized.name())
-    , short_name_(serialized.shortname())
+    , unit_of_account_(get_unitofaccount(serialized))
+    , display_definition_(get_displayscales(serialized))
+    , redemption_increment_(serialized.redemption_increment())
+    , short_name_(serialized.name())
 {
 }
 
 Unit::Unit(const Unit& rhs)
     : Signable(rhs)
-    , primary_unit_symbol_(rhs.primary_unit_symbol_)
     , unit_of_account_(rhs.unit_of_account_)
-    , primary_unit_name_(rhs.primary_unit_name_)
+    , display_definition_(rhs.display_definition_)
+    , redemption_increment_(rhs.redemption_increment_)
     , short_name_(rhs.short_name_)
 {
 }
@@ -632,102 +420,35 @@ auto Unit::EraseAccountRecord(
     return true;
 }
 
-// Convert 912545 to "$9,125.45"
-//
-// (Assuming a Factor of 100, Decimal Power of 2, Currency Symbol of "$",
-//  separator of "," and decimal point of ".")
-auto Unit::FormatAmountLocale(
-    Amount amount,
-    std::string& str_output,
-    const std::string& str_thousand,
-    const std::string& str_decimal) const -> bool
+auto Unit::get_displayscales(const SerializedType& serialized) const
+    -> std::optional<display::Definition>
 {
-    // Lookup separator and decimal point symbols based on locale.
+    if (serialized.has_params()) {
+        auto& params = serialized.params();
 
-    // Get a moneypunct facet from the global ("C") locale
-    //
-    // NOTE: Turns out moneypunct kind of sucks.
-    // As a result, for internationalization purposes,
-    // these values have to be set here before compilation.
-    //
-    auto strSeparator =
-        String::Factory(str_thousand.empty() ? OT_THOUSANDS_SEP : str_thousand);
-    auto strDecimalPoint =
-        String::Factory(str_decimal.empty() ? OT_DECIMAL_POINT : str_decimal);
+        auto scales = display::Definition::Scales{};
+        for (auto& scale : params.scales()) {
+            auto ratios = std::vector<display::Scale::Ratio>{};
+            for (auto& ratio : scale.ratios()) {
+                ratios.emplace_back(std::pair{ratio.base(), ratio.power()});
+            }
+            scales.emplace_back(std::pair(
+                scale.name(),
+                display::Scale{
+                    scale.prefix(),
+                    scale.suffix(),
+                    ratios,
+                    scale.default_minimum_decimals(),
+                    scale.default_maximum_decimals()}));
+        }
 
-    // NOTE: from web searching, I've determined that locale / moneypunct has
-    // internationalization problems. Therefore it looks like if you want to
-    // build OT for various languages / regions, you're just going to have to
-    // edit stdafx.hpp and change the OT_THOUSANDS_SEP and OT_DECIMAL_POINT
-    // variables.
-    //
-    // The best improvement I can think on that is to check locale and then use
-    // it to choose from our own list of hardcoded values. Todo.
-
-    str_output = Unit::formatLongAmount(
-        amount,
-        static_cast<std::int32_t>(std::pow(10, DecimalPower())),
-        DecimalPower(),
-        (contract::UnitType::Currency == Type()) ? primary_unit_symbol_.c_str()
-                                                 : nullptr,
-        strSeparator->Get(),
-        strDecimalPoint->Get());
-    return true;  // Note: might want to return false if str_output is empty.
-}
-
-auto Unit::FormatAmountLocale(Amount amount, std::string& str_output) const
-    -> bool
-{
-    return FormatAmountLocale(
-        amount,
-        str_output,
-        {locale_.thousands_sep()},
-        {locale_.decimal_point()});
-}
-
-// Convert 912545 to "9,125.45"
-//
-// (Example assumes a Factor of 100, Decimal Power of 2
-//  separator of "," and decimal point of ".")
-auto Unit::FormatAmountWithoutSymbolLocale(
-    Amount amount,
-    std::string& str_output,
-    const std::string& str_thousand,
-    const std::string& str_decimal) const -> bool
-{
-    // --------------------------------------------------------
-    // Lookup separator and decimal point symbols based on locale.
-    // --------------------------------------------------------
-    // Get a moneypunct facet from the global ("C") locale
-    //
-    // NOTE: Turns out moneypunct kind of sucks.
-    // As a result, for internationalization purposes,
-    // these values have to be set here before compilation.
-    //
-    auto strSeparator =
-        String::Factory(str_thousand.empty() ? OT_THOUSANDS_SEP : str_thousand);
-    auto strDecimalPoint =
-        String::Factory(str_decimal.empty() ? OT_DECIMAL_POINT : str_decimal);
-
-    str_output = Unit::formatLongAmount(
-        amount,
-        static_cast<std::int32_t>(std::pow(10, DecimalPower())),
-        DecimalPower(),
-        nullptr,
-        strSeparator->Get(),
-        strDecimalPoint->Get());
-    return true;  // Note: might want to return false if str_output is empty.
-}
-
-auto Unit::FormatAmountWithoutSymbolLocale(
-    Amount amount,
-    std::string& str_output) const -> bool
-{
-    return FormatAmountWithoutSymbolLocale(
-        amount,
-        str_output,
-        {locale_.thousands_sep()},
-        {locale_.decimal_point()});
+        if (0 < scales.size()) {
+            return std::optional<display::Definition>(display::Definition(
+                display::Definition::Name(params.short_name()),
+                std::move(scales)));
+        }
+    }
+    return {};
 }
 
 auto Unit::GetID(const Lock& lock) const -> OTIdentifier
@@ -741,30 +462,61 @@ auto Unit::GetID(const api::Session& api, const SerializedType& contract)
     return api.Factory().Identifier(contract);
 }
 
+auto Unit::get_unitofaccount(const SerializedType& serialized) const
+    -> core::UnitType
+{
+    if (serialized.has_params()) {
+        return ClaimToUnit(translate(serialized.params().unit_of_account()));
+    } else {
+        return core::UnitType::Custom;
+    }
+}
+
 auto Unit::IDVersion(const Lock& lock) const -> SerializedType
 {
     OT_ASSERT(verify_write_lock(lock));
 
     SerializedType contract;
     contract.set_version(version_);
-    contract.clear_id();         // reinforcing that this field must be blank.
-    contract.clear_signature();  // reinforcing that this field must be blank.
-    contract.clear_publicnym();  // reinforcing that this field must be blank.
+    contract.clear_id();          // reinforcing that this field must be blank.
+    contract.clear_signature();   // reinforcing that this field must be blank.
+    contract.clear_issuer_nym();  // reinforcing that this field must be blank.
 
     if (nym_) {
         auto nymID = String::Factory();
         nym_->GetIdentifier(nymID);
-        contract.set_nymid(nymID->Get());
+        contract.set_issuer(nymID->Get());
     }
 
-    contract.set_shortname(short_name_);
+    redemption_increment_.Serialize(
+        writer(contract.mutable_redemption_increment()));
+    contract.set_name(short_name_);
     contract.set_terms(conditions_);
-    contract.set_name(primary_unit_name_);
-    contract.set_symbol(primary_unit_symbol_);
     contract.set_type(translate(Type()));
 
-    if (version_ > 1) {
-        contract.set_unitofaccount(translate(UnitToClaim(unit_of_account_)));
+    auto& currency = *contract.mutable_params();
+    currency.set_version(1);
+    currency.set_unit_of_account(translate(UnitToClaim(UnitOfAccount())));
+    currency.set_short_name(Name());
+
+    if (display_definition_.has_value()) {
+        for (auto& scale : display_definition_->DisplayScales()) {
+            auto& serialized = *currency.add_scales();
+            serialized.set_version(1);
+            serialized.set_name(short_name_);
+            serialized.set_prefix(scale.second.Prefix());
+            serialized.set_suffix(scale.second.Suffix());
+            serialized.set_default_minimum_decimals(
+                scale.second.DefaultMinDecimals().value_or(0));
+            serialized.set_default_maximum_decimals(
+                scale.second.DefaultMaxDecimals().value_or(0));
+            for (auto& ratio : scale.second.Ratios()) {
+                auto& ratios = *serialized.add_ratios();
+                ratios.set_version(1);
+                ratios.set_base(ratio.first);
+                ratios.set_power(ratio.second);
+            }
+        }
     }
 
     return contract;
@@ -800,7 +552,7 @@ auto Unit::Serialize(SerializedType& serialized, bool includeNym) const -> bool
     if (includeNym && nym_) {
         auto publicNym = proto::Nym{};
         if (false == nym_->Serialize(publicNym)) { return false; }
-        *(serialized.mutable_publicnym()) = publicNym;
+        *(serialized.mutable_issuer_nym()) = publicNym;
     }
 
     return true;
@@ -820,46 +572,6 @@ auto Unit::SigVersion(const Lock& lock) const -> SerializedType
     contract.set_id(id(lock)->str().c_str());
 
     return contract;
-}
-
-// Convert "$9,125.45" to 912545.
-//
-// (Assuming a Factor of 100, Decimal Power of 2, separator of "," and decimal
-// point of ".")
-auto Unit::StringToAmountLocale(
-    Amount& amount,
-    const std::string& str_input,
-    const std::string& str_thousand,
-    const std::string& str_decimal) const -> bool
-{
-    // Lookup separator and decimal point symbols based on locale.
-
-    // Get a moneypunct facet from the global ("C") locale
-    //
-
-    // NOTE: from web searching, I've determined that locale / moneypunct has
-    // internationalization problems. Therefore it looks like if you want to
-    // build OT for various languages / regions, you're just going to have to
-    // edit stdafx.hpp and change the OT_THOUSANDS_SEP and OT_DECIMAL_POINT
-    // variables.
-    //
-    // The best improvement I can think on that is to check locale and then use
-    // it to choose from our own list of hardcoded values. Todo.
-
-    auto strSeparator =
-        String::Factory(str_thousand.empty() ? OT_THOUSANDS_SEP : str_thousand);
-    auto strDecimalPoint =
-        String::Factory(str_decimal.empty() ? OT_DECIMAL_POINT : str_decimal);
-
-    bool bSuccess = Unit::ParseFormatted(
-        amount,
-        str_input,
-        static_cast<std::int32_t>(std::pow(10, DecimalPower())),
-        DecimalPower(),
-        strSeparator->Get(),
-        strDecimalPoint->Get());
-
-    return bSuccess;
 }
 
 auto Unit::update_signature(const Lock& lock, const PasswordPrompt& reason)

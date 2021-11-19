@@ -32,6 +32,8 @@ public:
     using Ratio = std::pair<std::uint8_t, std::int8_t>;
     using OptionalInt = std::optional<std::uint8_t>;
 
+    auto DefaultMinDecimals() const noexcept -> OptionalInt;
+    auto DefaultMaxDecimals() const noexcept -> OptionalInt;
     auto Format(
         const Amount& amount,
         const OptionalInt minDecimals = std::nullopt,
@@ -39,6 +41,7 @@ public:
         -> std::string;
     auto Import(const std::string& formatted) const noexcept(false) -> Amount;
     auto Prefix() const noexcept -> std::string;
+    auto Ratios() const noexcept -> const std::vector<Ratio>&;
     auto Suffix() const noexcept -> std::string;
 
     Scale(
@@ -50,12 +53,12 @@ public:
     Scale(const Scale&) noexcept;
     Scale(Scale&&) noexcept;
 
-    ~Scale();
+    virtual ~Scale();
 
 private:
     struct Imp;
 
-    std::unique_ptr<Imp> imp_;
+    Imp* imp_;
 
     auto operator=(const Scale&) -> Scale& = delete;
     auto operator=(Scale&&) -> Scale& = delete;

@@ -34,6 +34,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -68,7 +69,7 @@ CustodialAccountActivity::CustodialAccountActivity(
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
-    : AccountActivity(api, nymID, accountID, AccountType::Custodial, cb, {})
+    : AccountActivity(api, nymID, accountID, AccountType::Custodial, cb)
     , alias_()
 {
     init({
@@ -96,20 +97,21 @@ auto CustodialAccountActivity::display_balance(
     opentxs::Amount amount) const noexcept -> std::string
 {
     sLock lock(shared_lock_);
-    std::string output{};
-    const auto formatted =
-        contract_->FormatAmountLocale(amount, output, ",", ".");
+    const auto& definition = display::GetDefinition(Contract().UnitOfAccount());
+    std::string output = definition.Format(amount);
 
-    if (formatted) { return output; }
+    if (0 < output.size()) { return output; }
 
-    return amount.str();
+    amount.Serialize(writer(output));
+    return output;
 }
 
 auto CustodialAccountActivity::DisplayUnit() const noexcept -> std::string
 {
     sLock lock(shared_lock_);
 
-    return contract_->TLA();
+    const auto& definition = display::GetDefinition(Unit());
+    return definition.ShortName();
 }
 
 auto CustodialAccountActivity::extract_event(
