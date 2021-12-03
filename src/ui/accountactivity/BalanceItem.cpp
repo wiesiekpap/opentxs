@@ -27,9 +27,9 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
 #if OT_BLOCKCHAIN
 #include "ui/accountactivity/BlockchainBalanceItem.hpp"
 #endif  // OT_BLOCKCHAIN

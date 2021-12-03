@@ -35,11 +35,11 @@
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/protobuf/RPCResponse.pb.h"
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Options.hpp"
+#include "serialization/protobuf/RPCResponse.pb.h"
 
 class QObject;
 
@@ -141,7 +141,7 @@ public:
     auto ZAP() const noexcept -> const api::network::ZAP& final;
     auto ZMQ() const noexcept -> const opentxs::network::zeromq::Context& final
     {
-        return zmq_context_.get();
+        return *zmq_context_;
     }
 
     auto GetPasswordCaller() const noexcept -> OTCaller& final;
@@ -162,7 +162,7 @@ private:
     mutable std::mutex task_list_lock_;
     mutable std::mutex signal_handler_lock_;
     mutable ConfigMap config_;
-    OTZMQContext zmq_context_;
+    std::unique_ptr<opentxs::network::zeromq::Context> zmq_context_;
     mutable std::unique_ptr<Signals> signal_handler_;
     std::unique_ptr<api::internal::Log> log_;
     std::unique_ptr<network::Asio> asio_;

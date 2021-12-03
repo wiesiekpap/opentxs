@@ -14,6 +14,7 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::blockchain::bitcoin
 {
@@ -37,12 +38,13 @@ public:
     const pHash hash_;
 
     static auto DisplayType(const Type type) noexcept -> std::string;
+    static constexpr auto size() noexcept -> std::size_t { return 36u; }
 
     auto DisplayType() const noexcept -> std::string
     {
         return DisplayType(type_);
     }
-    auto Encode() const noexcept -> OTData;
+    auto Serialize(AllocateOutput out) const noexcept -> bool;
 
     Inventory(const Type type, const Hash& hash) noexcept;
     Inventory(const void* payload, const std::size_t size) noexcept;

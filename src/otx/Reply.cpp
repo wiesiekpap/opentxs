@@ -14,6 +14,8 @@
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "internal/otx/OTX.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/ServerReply.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -25,14 +27,12 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/Types.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/OTXPush.pb.h"
-#include "opentxs/protobuf/ServerReply.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/verify/ServerReply.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+#include "serialization/protobuf/OTXPush.pb.h"
+#include "serialization/protobuf/ServerReply.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 template class opentxs::Pimpl<opentxs::otx::Reply>;
 

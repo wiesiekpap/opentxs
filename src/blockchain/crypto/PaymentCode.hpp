@@ -37,10 +37,10 @@
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/protobuf/Bip47Channel.pb.h"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/Bip47Channel.pb.h"
+#include "serialization/protobuf/HDPath.pb.h"
 #include "util/Latest.hpp"
 
 namespace opentxs

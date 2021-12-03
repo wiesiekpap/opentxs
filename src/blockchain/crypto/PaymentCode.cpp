@@ -36,13 +36,13 @@
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
-#include "opentxs/protobuf/Bip47Channel.pb.h"
-#include "opentxs/protobuf/Bip47Direction.pb.h"
-#include "opentxs/protobuf/BlockchainAddress.pb.h"
-#include "opentxs/protobuf/HDPath.pb.h"
-#include "opentxs/protobuf/PaymentCode.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Bip47Channel.pb.h"
+#include "serialization/protobuf/Bip47Direction.pb.h"
+#include "serialization/protobuf/BlockchainAddress.pb.h"
+#include "serialization/protobuf/HDPath.pb.h"
+#include "serialization/protobuf/PaymentCode.pb.h"
 
 namespace opentxs::factory
 {

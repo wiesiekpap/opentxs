@@ -65,7 +65,8 @@ public:
 private:
     const OTData payload_;
 
-    auto payload() const noexcept -> OTData final { return payload_; }
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Tx(const Tx&) = delete;
     Tx(Tx&&) = delete;

@@ -25,6 +25,9 @@
 #include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/Credential.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -45,18 +48,15 @@
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/credential/Key.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
-#include "opentxs/protobuf/Authority.pb.h"  // IWYU pragma: keep
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ContactData.pb.h"
-#include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/HDPath.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/Verification.pb.h"
-#include "opentxs/protobuf/verify/Credential.hpp"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Authority.pb.h"  // IWYU pragma: keep
+#include "serialization/protobuf/ContactData.pb.h"
+#include "serialization/protobuf/Credential.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/HDPath.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
+#include "serialization/protobuf/Verification.pb.h"
 
 namespace opentxs
 {

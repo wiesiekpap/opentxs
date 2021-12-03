@@ -3,46 +3,46 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                  // IWYU pragma: associated
-#include "1_Internal.hpp"                // IWYU pragma: associated
-#include "blockchain/p2p/peer/Peer.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                               // IWYU pragma: associated
+#include "1_Internal.hpp"                             // IWYU pragma: associated
+#include "blockchain/p2p/peer/ConnectionManager.hpp"  // IWYU pragma: associated
 
-#include <iterator>
-#include <string_view>
+#include <chrono>
 
+#include "blockchain/p2p/peer/Address.hpp"
+#include "blockchain/p2p/peer/Peer.hpp"
+#include "core/Worker.hpp"
+#include "internal/network/zeromq/Types.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/network/zeromq/socket/Dealer.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
-#include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/WorkType.hpp"
-#include "util/Work.hpp"
 
-namespace opentxs::blockchain::p2p::implementation
+namespace opentxs::blockchain::p2p::peer
 {
-struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
+struct ZMQConnectionManager : virtual public ConnectionManager {
     const api::Session& api_;
-    Peer& parent_;
-    const Flag& running_;
+    const int id_;
+    p2p::implementation::Peer& parent_;
+    network::zeromq::Pipeline& pipeline_;
+    const std::atomic<bool>& running_;
     EndpointData endpoint_;
     const std::string zmq_;
     const std::size_t header_bytes_;
-    OTZMQListenCallback cb_;
-    OTZMQDealerSocket dealer_;
+    std::promise<void> init_promise_;
+    std::shared_future<void> init_future_;
 
     auto address() const noexcept -> std::string final { return "::1/128"; }
     auto endpoint_data() const noexcept -> EndpointData final
     {
         return endpoint_;
+    }
+    auto filter(const Task type) const noexcept -> bool override
+    {
+        return Task::P2P == type;
     }
     auto host() const noexcept -> std::string final { return endpoint_.first; }
     auto port() const noexcept -> std::uint16_t final
@@ -57,33 +57,56 @@ struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
     auto connect() noexcept -> void override
     {
         LogVerbose()(OT_PRETTY_CLASS())("Connecting to ")(zmq_).Flush();
-        dealer_->Start(zmq_);
+        pipeline_.ConnectDealer(zmq_, [id = id_](auto) {
+            const network::zeromq::SocketID header = id;
+            auto out = zmq::Message{};
+            out.AddFrame(header);
+            out.StartBody();
+            out.AddFrame(Task::Connect);
+
+            return out;
+        });
+    }
+    auto init() noexcept -> void override
+    {
+        try {
+            init_promise_.set_value();
+        } catch (...) {
+        }
+
+        parent_.on_init();
+    }
+    auto is_initialized() const noexcept -> bool final
+    {
+        static constexpr auto zero = std::chrono::nanoseconds{0};
+        static constexpr auto ready = std::future_status::ready;
+
+        return (ready == init_future_.wait_for(zero));
+    }
+    auto on_body(zmq::Message&&) noexcept -> void final { OT_FAIL; }
+    auto on_connect(zmq::Message&&) noexcept -> void override
+    {
         parent_.on_connect();
     }
-    auto init(const int id) noexcept -> bool override { return true; }
-    virtual auto pipeline(zmq::Message& message) noexcept -> void
-    {
-        if (false == running_) { return; }
-
-        const auto body = message.Body();
-
-        if (1 > body.size()) { return; }
-
-        parent_.on_pipeline(
-            Peer::Task::ReceiveMessage,
-            {body.at(0).Bytes(),
-             (1 < body.size()) ? body.at(1).Bytes() : ReadView{}});
-    }
-    auto shutdown_external() noexcept -> void final { dealer_->Close(); }
-    auto stop_external() noexcept -> void final { dealer_->Close(); }
-    auto stop_internal() noexcept -> void final {}
+    auto on_header(zmq::Message&&) noexcept -> void final { OT_FAIL; }
+    auto on_init(zmq::Message&&) noexcept -> void override { OT_FAIL; }
+    auto on_register(zmq::Message&&) noexcept -> void override { OT_FAIL; }
+    auto shutdown_external() noexcept -> void final {}
+    auto stop_external() noexcept -> void final {}
     auto transmit(
-        const zmq::Frame& payload,
-        std::unique_ptr<Peer::SendPromise> promise) noexcept -> void final
+        zmq::Frame&& header,
+        zmq::Frame&& payload,
+        std::unique_ptr<SendPromise> promise) noexcept -> void final
     {
-        OT_ASSERT(header_bytes_ <= payload.size());
+        OT_ASSERT(header_bytes_ <= header.size());
 
-        const auto sent = dealer_->Send(make_outgoing_message(payload));
+        const auto sent = pipeline_.Send([&] {
+            auto out = network::zeromq::tagged_message(Task::P2P);
+            out.AddFrame(std::move(header));
+            out.AddFrame(std::move(payload));
+
+            return out;
+        }());
 
         try {
             if (promise) { promise->set_value(sent); }
@@ -93,165 +116,111 @@ struct ZMQConnectionManager : virtual public Peer::ConnectionManager {
 
     ZMQConnectionManager(
         const api::Session& api,
-        Peer& parent,
-        const Flag& running,
-        const Peer::Address& address,
+        const int id,
+        p2p::implementation::Peer& parent,
+        network::zeromq::Pipeline& pipeline,
+        const std::atomic<bool>& running,
+        const Address& address,
         const std::size_t headerSize) noexcept
         : api_(api)
+        , id_(id)
         , parent_(parent)
+        , pipeline_(pipeline)
         , running_(running)
         , endpoint_(address.Bytes()->str(), address.Port())
         , zmq_(endpoint_.first + ':' + std::to_string(endpoint_.second))
         , header_bytes_(headerSize)
-        , cb_(zmq::ListenCallback::Factory(
-              [&](auto& in) { this->pipeline(in); }))
-        , dealer_(api.Network().ZeroMQ().DealerSocket(
-              cb_,
-              zmq::socket::Socket::Direction::Connect))
+        , init_promise_()
+        , init_future_(init_promise_.get_future())
     {
     }
 
     ~ZMQConnectionManager() override
     {
-        stop_internal();
         stop_external();
         shutdown_external();
-    }
-
-private:
-    virtual auto make_outgoing_message(const zmq::Frame& payload) const noexcept
-        -> OTZMQMessage
-    {
-        const auto bytes = payload.Bytes();
-        auto it = bytes.data();
-        auto message = api_.Network().ZeroMQ().Message();
-        message->PrependEmptyFrame();
-        message->AddFrame(it, header_bytes_);
-        const auto body = bytes.size() - header_bytes_;
-
-        if (0 < body) {
-            std::advance(it, header_bytes_);
-            message->AddFrame(it, body);
-        }
-
-        return message;
     }
 };
 
 struct ZMQIncomingConnectionManager final : public ZMQConnectionManager {
-    std::promise<void> init_promise_;
-
-    auto connect() noexcept -> void final {}
-    auto init(const int id) noexcept -> bool final
+    auto connect() noexcept -> void final { parent_.on_connect(); }
+    auto filter(const Task) const noexcept -> bool final { return true; }
+    auto init() noexcept -> void final
     {
-        auto out = ZMQConnectionManager::init(id);
-        auto future = init_promise_.get_future();
-        auto zmq = dealer_->Start(zmq_);
+        pipeline_.ConnectDealer(zmq_, [id = id_](auto) {
+            const network::zeromq::SocketID header = id;
+            auto out = zmq::Message{};
+            out.AddFrame(header);
+            out.StartBody();
+            out.AddFrame(Task::Init);
 
-        OT_ASSERT(zmq);
-
-        auto message = MakeWork(api_, WorkType::AsioRegister);
-        message->AddFrame(id);
-        zmq = dealer_->Send(message);
-
-        OT_ASSERT(zmq);
-
-        const auto status = future.wait_for(std::chrono::seconds(10));
-
-        return (std::future_status::ready == status) && out;
+            return out;
+        });
     }
-    auto pipeline(zmq::Message& message) noexcept -> void final
+    auto on_init(zmq::Message&&) noexcept -> void final
     {
-        if (false == running_) { return; }
+        pipeline_.Send([&] {
+            auto out = MakeWork(Task::Register);
+            out.AddFrame(id_);
 
-        const auto body = message.Body();
-
-        OT_ASSERT(0 < body.size());
-
-        const auto task = [&] {
-            try {
-
-                return body.at(0).as<Peer::Task>();
-            } catch (...) {
-
-                OT_FAIL;
-            }
-        }();
-
-        switch (task) {
-            case Peer::Task::Register: {
-                try {
-                    init_promise_.set_value();
-                } catch (...) {
-                }
-
-                parent_.on_connect();
-            } break;
-            case Peer::Task::Body: {
-                OT_ASSERT(1 < body.size());
-
-                parent_.on_pipeline(
-                    Peer::Task::ReceiveMessage,
-                    {body.at(1).Bytes(),
-                     (2 < body.size()) ? body.at(2).Bytes() : ReadView{}});
-            } break;
-            default: {
-                OT_FAIL;
-            }
+            return out;
+        }());
+    }
+    auto on_register(zmq::Message&&) noexcept -> void final
+    {
+        try {
+            init_promise_.set_value();
+        } catch (...) {
         }
+
+        parent_.on_init();
     }
 
     ZMQIncomingConnectionManager(
         const api::Session& api,
-        Peer& parent,
-        const Flag& running,
-        const Peer::Address& address,
+        const int id,
+        p2p::implementation::Peer& parent,
+        network::zeromq::Pipeline& pipeline,
+        const std::atomic<bool>& running,
+        const Address& address,
         const std::size_t headerSize) noexcept
-        : ZMQConnectionManager(api, parent, running, address, headerSize)
-        , init_promise_()
+        : ZMQConnectionManager(
+              api,
+              id,
+              parent,
+              pipeline,
+              running,
+              address,
+              headerSize)
     {
     }
 
     ~ZMQIncomingConnectionManager() final = default;
-
-private:
-    auto make_outgoing_message(const zmq::Frame& payload) const noexcept
-        -> OTZMQMessage final
-    {
-        const auto bytes = payload.Bytes();
-        auto it = bytes.data();
-        auto message = MakeWork(api_, OT_ZMQ_SEND_SIGNAL);
-        message->AddFrame(it, header_bytes_);
-        const auto body = bytes.size() - header_bytes_;
-
-        if (0 < body) {
-            std::advance(it, header_bytes_);
-            message->AddFrame(it, body);
-        }
-
-        return message;
-    }
 };
 
-auto Peer::ConnectionManager::ZMQ(
+auto ConnectionManager::ZMQ(
     const api::Session& api,
-    Peer& parent,
-    const Flag& running,
-    const Peer::Address& address,
+    const int id,
+    p2p::implementation::Peer& parent,
+    network::zeromq::Pipeline& pipeline,
+    const std::atomic<bool>& running,
+    const Address& address,
     const std::size_t headerSize) noexcept -> std::unique_ptr<ConnectionManager>
 {
     return std::make_unique<ZMQConnectionManager>(
-        api, parent, running, address, headerSize);
+        api, id, parent, pipeline, running, address, headerSize);
 }
 
-auto Peer::ConnectionManager::ZMQIncoming(
+auto ConnectionManager::ZMQIncoming(
     const api::Session& api,
-    Peer& parent,
-    const Flag& running,
-    const Peer::Address& address,
+    const int id,
+    p2p::implementation::Peer& parent,
+    network::zeromq::Pipeline& pipeline,
+    const std::atomic<bool>& running,
+    const Address& address,
     const std::size_t headerSize) noexcept -> std::unique_ptr<ConnectionManager>
 {
     return std::make_unique<ZMQIncomingConnectionManager>(
-        api, parent, running, address, headerSize);
+        api, id, parent, pipeline, running, address, headerSize);
 }
-}  // namespace opentxs::blockchain::p2p::implementation
+}  // namespace opentxs::blockchain::p2p::peer

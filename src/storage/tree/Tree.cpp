@@ -10,13 +10,13 @@
 #include <functional>
 #include <stdexcept>
 
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/StorageItems.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/StorageItems.pb.h"
-#include "opentxs/protobuf/verify/StorageItems.hpp"
 #include "opentxs/storage/Driver.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
+#include "serialization/protobuf/StorageItems.pb.h"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Accounts.hpp"
 #include "storage/tree/Contacts.hpp"

@@ -34,7 +34,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
@@ -141,12 +141,12 @@ struct MailCache::Imp {
             task.promise_.set_value(message);
 
             {
-                auto work = MakeWork(api_, value(WorkType::MessageLoaded));
-                work->AddFrame(task.nym_);
-                work->AddFrame(task.item_);
-                work->AddFrame(task.box_);
-                work->AddFrame(message);
-                message_loaded_.Send(work);
+                auto work = MakeWork(value(WorkType::MessageLoaded));
+                work.AddFrame(task.nym_);
+                work.AddFrame(task.item_);
+                work.AddFrame(task.box_);
+                work.AddFrame(message);
+                message_loaded_.Send(std::move(work));
             }
 
             --task.counter_;

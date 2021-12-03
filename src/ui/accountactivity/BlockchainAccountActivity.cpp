@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/accountactivity/BlockchainAccountActivity.hpp"  // IWYU pragma: associated
 
+#include <atomic>
 #include <functional>
 #include <future>
 #include <limits>
@@ -36,21 +37,21 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
-#include "opentxs/protobuf/PaymentEvent.pb.h"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/PaymentEvent.pb.h"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "ui/base/List.hpp"
 #include "ui/base/Widget.hpp"
 #include "util/Container.hpp"
@@ -93,7 +94,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
     , chain_(chain)
     , confirmed_(0)
     , balance_cb_(zmq::ListenCallback::Factory(
-          [this](const auto& in) { pipeline_->Push(in); }))
+          [this](auto&& in) { pipeline_.Push(std::move(in)); }))
     , balance_socket_(Widget::api_.Network().ZeroMQ().DealerSocket(
           balance_cb_,
           zmq::socket::Socket::Direction::Connect))
@@ -113,14 +114,14 @@ BlockchainAccountActivity::BlockchainAccountActivity(
         api.Endpoints().BlockchainTransactions(nymID),
         api.Endpoints().ContactUpdate(),
     });
+    balance_socket_->Send([&] {
+        auto work =
+            network::zeromq::tagged_message(WorkType::BlockchainBalance);
+        work.AddFrame(chain_);
+        work.AddFrame(nymID);
 
-    {
-        const auto& socket = balance_socket_.get();
-        auto work = socket.Context().TaggedMessage(WorkType::BlockchainBalance);
-        work->AddFrame(chain_);
-        work->AddFrame(nymID);
-        socket.Send(work);
-    }
+        return work;
+    }());
 }
 
 auto BlockchainAccountActivity::DepositAddress(
@@ -174,7 +175,7 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
 
 auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -196,8 +197,9 @@ auto BlockchainAccountActivity::pipeline(const Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
+            if (auto previous = running_.exchange(false); previous) {
+                shutdown(shutdown_promise_);
+            }
         } break;
         case Work::contact: {
             process_contact(in);
@@ -246,12 +248,7 @@ auto BlockchainAccountActivity::process_balance(const Message& in) noexcept
     const auto chain = body.at(1).as<blockchain::Type>();
     const auto confirmed = Amount{body.at(2)};
     const auto unconfirmed = Amount{body.at(3)};
-    const auto nym = [&] {
-        auto output = Widget::api_.Factory().NymID();
-        output->Assign(body.at(4).Bytes());
-
-        return output;
-    }();
+    const auto nym = Widget::api_.Factory().NymID(body.at(4));
 
     OT_ASSERT(chain_ == chain);
     OT_ASSERT(primary_id_ == nym);
@@ -302,12 +299,7 @@ auto BlockchainAccountActivity::process_contact(const Message& in) noexcept
 
     OT_ASSERT(1 < body.size());
 
-    const auto contactID = [&] {
-        auto id = Widget::api_.Factory().Identifier();
-        id->Assign(body.at(1).Bytes());
-
-        return id->str();
-    }();
+    const auto contactID = Widget::api_.Factory().Identifier(body.at(1))->str();
     const auto txids = [&] {
         auto out = std::set<OTData>{};
         for_each_row([&](const auto& row) {
@@ -534,6 +526,6 @@ auto BlockchainAccountActivity::ValidateAmount(
 BlockchainAccountActivity::~BlockchainAccountActivity()
 {
     wait_for_startup();
-    stop_worker().get();
+    signal_shutdown().get();
 }
 }  // namespace opentxs::ui::implementation

@@ -9,11 +9,15 @@
 
 #include <cstddef>
 #include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -119,14 +123,28 @@ Sendcmpct::Raw::Raw() noexcept
 {
 }
 
-auto Sendcmpct::payload() const noexcept -> OTData
+auto Sendcmpct::payload(AllocateOutput out) const noexcept -> bool
 {
     try {
-        Sendcmpct::Raw raw_item(announce_, version_);
-        auto output = Data::Factory(&raw_item, sizeof(raw_item));
-        return output;
-    } catch (...) {
-        return Data::Factory();
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
+
+        static constexpr auto bytes = sizeof(Sendcmpct::Raw);
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        const auto data = Sendcmpct::Raw{announce_, version_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, static_cast<const void*>(&data), bytes);
+        std::advance(i, bytes);
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
 }
 }  // namespace  opentxs::blockchain::p2p::bitcoin::message

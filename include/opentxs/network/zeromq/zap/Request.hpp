@@ -9,10 +9,9 @@
 
 #include <tuple>
 
-#include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -26,8 +25,6 @@ class Request;
 }  // namespace zap
 }  // namespace zeromq
 }  // namespace network
-
-using OTZMQZAPRequest = Pimpl<network::zeromq::zap::Request>;
 }  // namespace opentxs
 
 namespace opentxs
@@ -38,47 +35,40 @@ namespace zeromq
 {
 namespace zap
 {
-class OPENTXS_EXPORT Request : virtual public zeromq::Message
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow-field"
+class OPENTXS_EXPORT Request : public zeromq::Message
 {
 public:
-    static auto Factory() -> Pimpl<Request>;
-    static auto Factory(
-        const std::string& address,
-        const std::string& domain,
-        const zap::Mechanism mechanism,
-        const Data& requestID = Data::Factory(),
-        const Data& identity = Data::Factory(),
-        const std::string& version = "1.0") -> Pimpl<Request>;
+    class Imp;
 
-    virtual auto Address() const -> std::string = 0;
-    virtual auto Credentials() const -> const FrameSection = 0;
-    virtual auto Debug() const -> std::string = 0;
-    virtual auto Domain() const -> std::string = 0;
-    virtual auto Identity() const -> OTData = 0;
-    virtual auto Mechanism() const -> zap::Mechanism = 0;
-    virtual auto RequestID() const -> OTData = 0;
-    virtual auto Validate() const -> std::pair<bool, std::string> = 0;
-    virtual auto Version() const -> std::string = 0;
+    auto Address() const noexcept -> ReadView;
+    auto Credentials() const noexcept -> const FrameSection;
+    auto Debug() const noexcept -> std::string;
+    auto Domain() const noexcept -> ReadView;
+    auto Identity() const noexcept -> ReadView;
+    auto Mechanism() const noexcept -> zap::Mechanism;
+    auto RequestID() const noexcept -> ReadView;
+    auto Validate() const noexcept -> std::pair<bool, std::string>;
+    auto Version() const noexcept -> ReadView;
 
-    virtual auto AddCredential(const Data& credential) -> Frame& = 0;
+    using Message::swap;
+    auto swap(Message& rhs) noexcept -> void override;
+    auto swap(Request& rhs) noexcept -> void;
 
-    ~Request() override = default;
+    Request() noexcept;
+    OPENTXS_NO_EXPORT Request(Imp* imp) noexcept;
+    Request(const Request&) noexcept;
+    Request(Request&&) noexcept;
+    auto operator=(const Request&) noexcept -> Request&;
+    auto operator=(Request&&) noexcept -> Request&;
+
+    ~Request() override;
 
 protected:
-    Request() = default;
-
-private:
-    friend OTZMQZAPRequest;
-
-#ifndef _WIN32
-    auto clone() const -> Request* override = 0;
-#endif
-
-    Request(const Request&) = delete;
-    Request(Request&&) = delete;
-    auto operator=(const Request&) -> Request& = delete;
-    auto operator=(Request&&) -> Request& = delete;
+    Imp* imp_;
 };
+#pragma GCC diagnostic pop
 }  // namespace zap
 }  // namespace zeromq
 }  // namespace network

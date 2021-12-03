@@ -19,9 +19,9 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/PaymentEvent.pb.h"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/PaymentEvent.pb.h"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "ui/accountactivity/BalanceItem.hpp"
 #include "ui/base/Widget.hpp"
 

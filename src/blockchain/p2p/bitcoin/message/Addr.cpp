@@ -10,6 +10,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <type_traits>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
@@ -225,26 +228,59 @@ auto Addr::ExtractAddress(AddressByteField in) noexcept
     return output;
 }
 
-auto Addr::payload() const noexcept -> OTData
+auto Addr::payload(AllocateOutput out) const noexcept -> bool
 {
-    auto output = Data::Factory(CompactSize(payload_.size()).Encode());
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-    for (const auto& pAddress : payload_) {
-        OT_ASSERT(pAddress);
+        const auto cs = CompactSize(payload_.size()).Encode();
+        const auto bytes = [&] {
+            const auto size = [this] {
+                if (SerializeTimestamp()) {
 
-        const auto& address = *pAddress;
+                    return sizeof(BitcoinFormat_31402);
+                } else {
 
-        if (SerializeTimestamp()) {
-            const BitcoinFormat_31402 raw{
-                header_->Network(), version_, address};
-            output += Data::Factory(&raw, sizeof(raw));
-        } else {
-            const AddressVersion raw{header_->Network(), version_, address};
-            output += Data::Factory(&raw, sizeof(raw));
+                    return sizeof(AddressVersion);
+                }
+            }();
+
+            return cs.size() + (payload_.size() * size);
+        }();
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
         }
-    }
 
-    return output;
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, cs.data(), cs.size());
+        std::advance(i, cs.size());
+
+        for (const auto& pAddress : payload_) {
+            OT_ASSERT(pAddress);
+
+            const auto& address = *pAddress;
+
+            if (SerializeTimestamp()) {
+                const auto raw =
+                    BitcoinFormat_31402{header_->Network(), version_, address};
+                std::memcpy(i, static_cast<const void*>(&raw), sizeof(raw));
+                std::advance(i, sizeof(raw));
+            } else {
+                const auto raw =
+                    AddressVersion{header_->Network(), version_, address};
+                std::memcpy(i, static_cast<const void*>(&raw), sizeof(raw));
+                std::advance(i, sizeof(raw));
+            }
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 
 auto Addr::SerializeTimestamp(const ProtocolVersion version) noexcept -> bool

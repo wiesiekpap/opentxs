@@ -31,10 +31,10 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
-#include "opentxs/protobuf/BlockchainDeterministicAccountData.pb.h"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/BlockchainDeterministicAccountData.pb.h"
+#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs
 {

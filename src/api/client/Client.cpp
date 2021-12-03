@@ -11,7 +11,7 @@
 
 #include "opentxs/api/client/PaymentWorkflowState.hpp"
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::api::client

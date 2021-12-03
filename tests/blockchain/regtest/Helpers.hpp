@@ -164,6 +164,7 @@ public:
     std::atomic_int client_2_peers_;
 
     PeerListener(
+        const bool waitForHandshake,
         const int clientCount,
         const ot::api::session::Client& miner,
         const ot::api::session::Client& client1,
@@ -428,8 +429,12 @@ protected:
     virtual auto Shutdown() noexcept -> void;
     auto Start() noexcept -> bool;
 
-    Regtest_fixture_base(const int clientCount, const ot::Options& clientArgs);
     Regtest_fixture_base(
+        const bool waitForHandshake,
+        const int clientCount,
+        const ot::Options& clientArgs);
+    Regtest_fixture_base(
+        const bool waitForHandshake,
         const int clientCount,
         const ot::Options& minerArgs,
         const ot::Options& clientArgs);
@@ -454,6 +459,7 @@ private:
         const ot::api::Session& api) noexcept -> BlockListener&;
     static auto init_mined() noexcept -> MinedBlocks&;
     static auto init_peer(
+        const bool waitForHandshake,
         const int clientCount,
         const ot::api::session::Client& miner,
         const ot::api::session::Client& client1,

@@ -10,7 +10,7 @@
 #pragma once
 
 #include "opentxs/contact/Types.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
+#include "serialization/protobuf/ContactEnums.pb.h"
 
 namespace opentxs
 {

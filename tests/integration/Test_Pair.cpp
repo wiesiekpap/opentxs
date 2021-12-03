@@ -50,10 +50,10 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/ui/AccountSummary.hpp"
@@ -107,9 +107,9 @@ public:
         , api_chris_(ot::Context().StartClientSession(1))
         , api_server_1_(ot::Context().StartNotarySession(0))
         , issuer_peer_request_cb_(ot::network::zeromq::ListenCallback::Factory(
-              [this](const auto& in) { issuer_peer_request(in); }))
+              [this](auto&& in) { issuer_peer_request(std::move(in)); }))
         , chris_rename_notary_cb_(ot::network::zeromq::ListenCallback::Factory(
-              [this](const auto& in) { chris_rename_notary(in); }))
+              [this](auto&& in) { chris_rename_notary(std::move(in)); }))
         , issuer_peer_request_listener_(
               api_issuer_.Network().ZeroMQ().SubscribeSocket(
                   issuer_peer_request_cb_))
@@ -132,7 +132,7 @@ public:
             api_chris_.Endpoints().PairEvent()));
     }
 
-    void chris_rename_notary(const ot::network::zeromq::Message& in)
+    void chris_rename_notary(ot::network::zeromq::Message&& in)
     {
         const auto body = in.Body();
 
@@ -157,7 +157,7 @@ public:
         if (0 == result.first) { return; }
     }
 
-    void issuer_peer_request(const ot::network::zeromq::Message& in)
+    void issuer_peer_request(ot::network::zeromq::Message&& in)
     {
         const auto body = in.Body();
 
@@ -165,13 +165,13 @@ public:
 
         if (2 != body.size()) { return; }
 
-        EXPECT_EQ(issuer_.nym_id_->str(), std::string(body.at(0)));
+        EXPECT_EQ(issuer_.nym_id_->str(), body.at(0).Bytes());
 
         const auto nym_p = api_chris_.Wallet().Nym(chris_.nym_id_);
         const auto request =
             api_chris_.Factory().PeerRequest(nym_p, body.at(1).Bytes());
 
-        EXPECT_EQ(std::string(body.at(0)), request->Recipient().str());
+        EXPECT_EQ(body.at(0).Bytes(), request->Recipient().str());
         EXPECT_EQ(server_1_.id_, request->Server());
 
         switch (request->Type()) {

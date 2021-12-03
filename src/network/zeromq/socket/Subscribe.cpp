@@ -12,13 +12,16 @@
 #include <memory>
 #include <set>
 #include <stdexcept>
+#include <utility>
 
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -43,7 +46,11 @@ namespace opentxs::network::zeromq::socket::implementation
 Subscribe::Subscribe(
     const zeromq::Context& context,
     const zeromq::ListenCallback& callback) noexcept
-    : Receiver(context, SocketType::Subscribe, Socket::Direction::Connect, true)
+    : Receiver(
+          context,
+          socket::Type::Subscribe,
+          Socket::Direction::Connect,
+          true)
     , Client(this->get())
     , callback_(callback)
 {
@@ -66,12 +73,12 @@ void Subscribe::init() noexcept
     OT_ASSERT(0 == set);
 }
 
-void Subscribe::process_incoming(const Lock& lock, Message& message) noexcept
+void Subscribe::process_incoming(const Lock& lock, Message&& message) noexcept
 {
     OT_ASSERT(verify_lock(lock))
 
     try {
-        callback_.Process(message);
+        callback_.Process(std::move(message));
     } catch (const std::exception& e) {
         LogError()(OT_PRETTY_CLASS())("Callback exception: ")(e.what()).Flush();
 

@@ -43,7 +43,6 @@ public:
     ~ShutdownSender();
 
 private:
-    const network::zeromq::Context& zmq_;
     OTZMQPublishSocket socket_;
 
     ShutdownSender() = delete;

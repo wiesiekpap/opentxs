@@ -24,8 +24,8 @@
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
-#include "opentxs/protobuf/BlockchainTransaction.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::factory

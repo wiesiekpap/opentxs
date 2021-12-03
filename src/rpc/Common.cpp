@@ -10,7 +10,6 @@
 #include <robin_hood.h>
 #include <string>
 
-#include "opentxs/protobuf/RPCEnums.pb.h"
 #include "opentxs/rpc/AccountEventType.hpp"
 #include "opentxs/rpc/AccountType.hpp"
 #include "opentxs/rpc/CommandType.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/rpc/PushType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/Types.hpp"
+#include "serialization/protobuf/RPCEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs

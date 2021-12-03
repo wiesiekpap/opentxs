@@ -16,7 +16,7 @@
 
 #include "core/Amount.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace be = boost::endian;

@@ -76,12 +76,13 @@ public:
     static auto Size() noexcept -> std::size_t { return sizeof(BitcoinFormat); }
 
     auto Command() const noexcept -> bitcoin::Command { return command_; }
-    auto Encode() const noexcept -> OTData;
+    auto Serialize(const AllocateOutput out) const noexcept -> bool;
     auto Network() const noexcept -> blockchain::Type { return chain_; }
     auto PayloadSize() const noexcept -> std::size_t { return payload_size_; }
     auto Checksum() const noexcept -> const opentxs::Data& { return checksum_; }
 
-    void SetChecksum(const std::size_t payload, OTData&& checksum) noexcept;
+    auto SetChecksum(const std::size_t payload, OTData&& checksum) noexcept
+        -> void;
 
     Header(
         const api::Session& api,
@@ -97,9 +98,11 @@ public:
     ~Header() = default;
 
 private:
-    blockchain::Type chain_{};
-    bitcoin::Command command_{};
-    std::size_t payload_size_{};
+    static constexpr auto header_size_ = std::size_t{24};
+
+    blockchain::Type chain_;
+    bitcoin::Command command_;
+    std::size_t payload_size_;
     OTData checksum_;
 
     Header() = delete;

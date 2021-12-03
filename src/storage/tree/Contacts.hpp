@@ -20,8 +20,8 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/StorageContacts.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/StorageContacts.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs

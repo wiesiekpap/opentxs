@@ -63,7 +63,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -74,17 +73,17 @@
 #include "opentxs/network/blockchain/sync/Request.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "paymentcode/VectorsV3.hpp"
 
@@ -110,7 +109,7 @@ struct BlockListener::Imp {
         , lock_()
         , promise_()
         , target_(-1)
-        , cb_(zmq::ListenCallback::Factory([&](const zmq::Message& msg) {
+        , cb_(zmq::ListenCallback::Factory([&](zmq::Message&& msg) {
             const auto body = msg.Body();
 
             OT_ASSERT(0 < body.size());
@@ -224,13 +223,11 @@ struct PeerListener::Imp {
     ot::OTZMQSubscribeSocket c1_socket_;
     ot::OTZMQSubscribeSocket c2_socket_;
 
-    auto cb(const zmq::Message& msg, std::atomic_int& counter) noexcept -> void
+    auto cb(zmq::Message&& msg, std::atomic_int& counter) noexcept -> void
     {
         const auto body = msg.Body();
 
         OT_ASSERT(2 < body.size());
-
-        if (0 == body.at(2).size()) { return; }
 
         ++counter;
 
@@ -249,6 +246,7 @@ struct PeerListener::Imp {
     }
 
     Imp(PeerListener& parent,
+        const bool waitForHandshake,
         const int clientCount,
         const ot::api::session::Client& miner,
         const ot::api::session::Client& client1,
@@ -257,27 +255,39 @@ struct PeerListener::Imp {
         , client_count_(clientCount)
         , lock_()
         , miner_cb_(ot::network::zeromq::ListenCallback::Factory(
-              [this](auto& msg) { cb(msg, parent_.miner_peers_); }))
-        , client_1_cb_(ot::network::zeromq::ListenCallback::Factory(
-              [this](auto& msg) { cb(msg, parent_.client_1_peers_); }))
-        , client_2_cb_(ot::network::zeromq::ListenCallback::Factory(
-              [this](auto& msg) { cb(msg, parent_.client_2_peers_); }))
+              [this](auto&& msg) { cb(std::move(msg), parent_.miner_peers_); }))
+        , client_1_cb_(
+              ot::network::zeromq::ListenCallback::Factory([this](auto&& msg) {
+                  cb(std::move(msg), parent_.client_1_peers_);
+              }))
+        , client_2_cb_(
+              ot::network::zeromq::ListenCallback::Factory([this](auto&& msg) {
+                  cb(std::move(msg), parent_.client_2_peers_);
+              }))
         , m_socket_(miner.Network().ZeroMQ().SubscribeSocket(miner_cb_))
         , c1_socket_(client1.Network().ZeroMQ().SubscribeSocket(client_1_cb_))
         , c2_socket_(client2.Network().ZeroMQ().SubscribeSocket(client_2_cb_))
     {
-        if (false ==
-            m_socket_->Start(miner.Endpoints().BlockchainPeerConnection())) {
+        if (false == m_socket_->Start(
+                         waitForHandshake
+                             ? miner.Endpoints().BlockchainPeer()
+                             : miner.Endpoints().BlockchainPeerConnection())) {
             throw std::runtime_error("Error connecting to miner socket");
         }
 
         if (false ==
-            c1_socket_->Start(client1.Endpoints().BlockchainPeerConnection())) {
+            c1_socket_->Start(
+                waitForHandshake
+                    ? client1.Endpoints().BlockchainPeer()
+                    : client1.Endpoints().BlockchainPeerConnection())) {
             throw std::runtime_error("Error connecting to client1 socket");
         }
 
         if (false ==
-            c2_socket_->Start(client2.Endpoints().BlockchainPeerConnection())) {
+            c2_socket_->Start(
+                waitForHandshake
+                    ? client2.Endpoints().BlockchainPeer()
+                    : client2.Endpoints().BlockchainPeerConnection())) {
             throw std::runtime_error("Error connecting to client2 socket");
         }
     }
@@ -291,6 +301,7 @@ struct PeerListener::Imp {
 };
 
 PeerListener::PeerListener(
+    const bool waitForHandshake,
     const int clientCount,
     const ot::api::session::Client& miner,
     const ot::api::session::Client& client1,
@@ -300,13 +311,15 @@ PeerListener::PeerListener(
     , miner_peers_(0)
     , client_1_peers_(0)
     , client_2_peers_(0)
-    , imp_(std::make_unique<Imp>(*this, clientCount, miner, client1, client2))
+    , imp_(std::make_unique<
+           Imp>(*this, waitForHandshake, clientCount, miner, client1, client2))
 {
 }
 
 PeerListener::~PeerListener() = default;
 
 Regtest_fixture_base::Regtest_fixture_base(
+    const bool waitForHandshake,
     const int clientCount,
     const ot::Options& minerArgs,
     const ot::Options& clientArgs)
@@ -321,7 +334,12 @@ Regtest_fixture_base::Regtest_fixture_base(
     , client_1_(ot_.StartClientSession(client_args_, 1))
     , client_2_(ot_.StartClientSession(client_args_, 2))
     , address_(init_address(miner_))
-    , connection_(init_peer(client_count_, miner_, client_1_, client_2_))
+    , connection_(init_peer(
+          waitForHandshake,
+          client_count_,
+          miner_,
+          client_1_,
+          client_2_))
     , default_([&](Height height) -> Transaction {
         using OutputBuilder = ot::api::session::Factory::OutputBuilder;
 
@@ -350,9 +368,14 @@ Regtest_fixture_base::Regtest_fixture_base(
 }
 
 Regtest_fixture_base::Regtest_fixture_base(
+    const bool waitForHandshake,
     const int clientCount,
     const ot::Options& clientArgs)
-    : Regtest_fixture_base(clientCount, ot::Options{}, clientArgs)
+    : Regtest_fixture_base(
+          waitForHandshake,
+          clientCount,
+          ot::Options{},
+          clientArgs)
 {
 }
 
@@ -573,6 +596,7 @@ auto Regtest_fixture_base::init_mined() noexcept -> MinedBlocks&
 }
 
 auto Regtest_fixture_base::init_peer(
+    const bool waitForHandshake,
     const int clientCount,
     const ot::api::session::Client& miner,
     const ot::api::session::Client& client1,
@@ -580,7 +604,7 @@ auto Regtest_fixture_base::init_peer(
 {
     if (false == bool(peer_listener_)) {
         peer_listener_ = std::make_unique<PeerListener>(
-            clientCount, miner, client1, client2);
+            waitForHandshake, clientCount, miner, client1, client2);
     }
 
     OT_ASSERT(peer_listener_);
@@ -671,7 +695,7 @@ auto Regtest_fixture_base::Mine(
         promise.set_value(block->Header().Hash());
         const auto added = network.AddBlock(block);
 
-        EXPECT_TRUE(added);
+        OT_ASSERT(added);
 
         previousHeader = block->Header().as_Bitcoin();
 
@@ -1037,6 +1061,7 @@ auto Regtest_fixture_hd::Shutdown() noexcept -> void
 
 Regtest_fixture_normal::Regtest_fixture_normal(const int clientCount)
     : Regtest_fixture_base(
+          true,
           clientCount,
           ot::Options{}.SetBlockchainStorageLevel(1))
 {
@@ -1049,6 +1074,7 @@ Regtest_fixture_single::Regtest_fixture_single()
 
 Regtest_fixture_sync::Regtest_fixture_sync()
     : Regtest_fixture_base(
+          true,
           1,
           ot::Options{}.SetBlockchainStorageLevel(2).SetBlockchainSyncEnabled(
               true))
@@ -1098,6 +1124,7 @@ auto Regtest_fixture_sync::Shutdown() noexcept -> void
 
 Regtest_fixture_tcp::Regtest_fixture_tcp()
     : Regtest_fixture_base(
+          false,
           1,
           ot::Options{},
           ot::Options{}.SetBlockchainStorageLevel(1))
@@ -1362,7 +1389,7 @@ struct ScanListener::Imp {
     mutable std::mutex lock_;
     Map map_;
 
-    auto cb(const ot::network::zeromq::Message& in) noexcept -> void
+    auto cb(ot::network::zeromq::Message&& in) noexcept -> void
     {
         const auto body = in.Body();
 
@@ -1414,7 +1441,7 @@ struct ScanListener::Imp {
 
     Imp(const ot::api::Session& api) noexcept
         : api_(api)
-        , cb_(Callback::Factory([&](auto& msg) { cb(msg); }))
+        , cb_(Callback::Factory([&](auto&& msg) { cb(std::move(msg)); }))
         , socket_([&] {
             auto out = api_.Network().ZeroMQ().SubscribeSocket(cb_);
             const auto rc =
@@ -1475,7 +1502,7 @@ auto ScanListener::wait(const Future& future) const noexcept -> bool
 ScanListener::~ScanListener() = default;
 
 struct SyncRequestor::Imp {
-    using Buffer = std::deque<ot::OTZMQMessage>;
+    using Buffer = std::deque<ot::network::zeromq::Message>;
 
     SyncRequestor& parent_;
     const ot::api::session::Client& api_;
@@ -1486,7 +1513,7 @@ struct SyncRequestor::Imp {
     ot::OTZMQListenCallback cb_;
     ot::OTZMQDealerSocket socket_;
 
-    auto cb(zmq::Message& in) noexcept -> void
+    auto cb(ot::network::zeromq::Message&& in) noexcept -> void
     {
         auto lock = ot::Lock{lock_};
         buffer_.emplace_back(std::move(in));
@@ -1502,7 +1529,8 @@ struct SyncRequestor::Imp {
         , lock_()
         , updated_(0)
         , buffer_()
-        , cb_(zmq::ListenCallback::Factory([&](auto& msg) { cb(msg); }))
+        , cb_(zmq::ListenCallback::Factory(
+              [&](auto&& msg) { cb(std::move(msg)); }))
         , socket_(api.Network().ZeroMQ().DealerSocket(cb_, Dir::Connect))
     {
         socket_->Start(sync_server_sync_);
@@ -1587,7 +1615,7 @@ auto SyncRequestor::get(const std::size_t index) const -> const zmq::Message&
 
 auto SyncRequestor::request(const Position& pos) const noexcept -> bool
 {
-    auto msg = imp_->api_.Network().ZeroMQ().Message();
+    auto msg = opentxs::network::zeromq::Message{};
     const auto req = otsync::Request{[&] {
         auto out = otsync::Request::StateData{};
         out.emplace_back(test_chain_, pos);
@@ -1601,7 +1629,7 @@ auto SyncRequestor::request(const Position& pos) const noexcept -> bool
         return false;
     }
 
-    return imp_->socket_->Send(msg);
+    return imp_->socket_->Send(std::move(msg));
 }
 
 auto SyncRequestor::wait(const bool hard) noexcept -> bool
@@ -1631,7 +1659,7 @@ struct SyncSubscriber::Imp {
     ot::OTZMQListenCallback cb_;
     ot::OTZMQSubscribeSocket socket_;
 
-    auto check_update(const ot::network::zeromq::Message& in) noexcept -> void
+    auto check_update(ot::network::zeromq::Message&& in) noexcept -> void
     {
         namespace bcsync = ot::network::blockchain::sync;
         const auto base = bcsync::Factory(api_, in);
@@ -1697,7 +1725,7 @@ struct SyncSubscriber::Imp {
         , updated_(0)
         , errors_(0)
         , cb_(ot::network::zeromq::ListenCallback::Factory(
-              [&](const auto& in) { check_update(in); }))
+              [&](auto&& in) { check_update(std::move(in)); }))
         , socket_(api_.Network().ZeroMQ().SubscribeSocket(cb_))
     {
         if (false == socket_->Start(sync_server_update_)) {
@@ -2196,7 +2224,7 @@ struct WalletListener::Imp {
         , lock_()
         , promise_()
         , target_(-1)
-        , cb_(zmq::ListenCallback::Factory([&](const zmq::Message& msg) {
+        , cb_(zmq::ListenCallback::Factory([&](zmq::Message&& msg) {
             const auto body = msg.Body();
 
             OT_ASSERT(body.size() == 4);

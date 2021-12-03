@@ -44,10 +44,10 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/util/Bytes.hpp"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 
 namespace opentxs
 {

@@ -54,11 +54,11 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
-#include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
+#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
 #include "util/JobCounter.hpp"
 #include "util/Work.hpp"
 
@@ -139,7 +139,7 @@ public:
     auto Init() noexcept -> void final;
     auto Shutdown() noexcept -> std::shared_future<void> final
     {
-        return stop_worker();
+        return signal_shutdown();
     }
 
     Wallet(

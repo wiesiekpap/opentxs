@@ -3,10 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/network/zeromq/socket/SocketType.hpp"
+
 #pragma once
 
 #include <atomic>
 #include <chrono>
+#include <cstddef>
 #include <functional>
 #include <map>
 #include <mutex>
@@ -15,11 +18,13 @@
 #include <string>
 #include <vector>
 
+#include "internal/network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 
 namespace opentxs
 {
@@ -43,7 +48,7 @@ class Message;
 
 namespace opentxs::network::zeromq::socket::implementation
 {
-class Socket : virtual public zeromq::socket::Socket, public Lockable
+class Socket : virtual public internal::Socket, public Lockable
 {
 public:
     using SocketCallback = std::function<bool(const Lock& lock)>;
@@ -51,14 +56,14 @@ public:
     static auto send_message(
         const Lock& lock,
         void* socket,
-        zeromq::Message& message) noexcept -> bool;
-    static auto random_inproc_endpoint() noexcept -> std::string;
+        zeromq::Message&& message) noexcept -> bool;
     static auto receive_message(
         const Lock& lock,
         void* socket,
         zeromq::Message& message) noexcept -> bool;
 
-    auto Type() const noexcept -> SocketType final { return type_; }
+    auto ID() const noexcept -> std::size_t final { return id_; }
+    auto Type() const noexcept -> socket::Type final { return type_; }
 
     operator void*() const noexcept final;
 
@@ -102,6 +107,7 @@ protected:
 
     const zeromq::Context& context_;
     const Socket::Direction direction_;
+    const std::size_t id_;
     mutable void* socket_;
     mutable std::atomic<int> linger_;
     mutable std::atomic<int> send_timeout_;
@@ -111,7 +117,7 @@ protected:
     mutable OTFlag running_;
     mutable Endpoints endpoint_queue_;
 
-    void add_endpoint(const std::string& endpoint) const noexcept;
+    auto add_endpoint(const std::string& endpoint) const noexcept -> void;
     auto apply_timeouts(const Lock& lock) const noexcept -> bool;
     auto bind(const Lock& lock, const std::string& endpoint) const noexcept
         -> bool;
@@ -119,8 +125,8 @@ protected:
         -> bool;
     auto receive_message(const Lock& lock, zeromq::Message& message)
         const noexcept -> bool;
-    auto send_message(const Lock& lock, zeromq::Message& message) const noexcept
-        -> bool;
+    auto send_message(const Lock& lock, zeromq::Message&& message)
+        const noexcept -> bool;
     auto set_socks_proxy(const std::string& proxy) const noexcept -> bool;
     auto start(const Lock& lock, const std::string& endpoint) const noexcept
         -> bool;
@@ -130,13 +136,11 @@ protected:
 
     explicit Socket(
         const zeromq::Context& context,
-        const SocketType type,
+        const socket::Type type,
         const Socket::Direction direction) noexcept;
 
 private:
-    static const std::map<SocketType, int> types_;
-
-    const SocketType type_{SocketType::Error};
+    const socket::Type type_;
 
     Socket() = delete;
     Socket(const Socket&) = delete;

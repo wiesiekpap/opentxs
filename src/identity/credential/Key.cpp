@@ -31,13 +31,13 @@
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/identity/CredentialType.hpp"
-#include "opentxs/protobuf/AsymmetricKey.pb.h"
-#include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/KeyCredential.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/AsymmetricKey.pb.h"
+#include "serialization/protobuf/Credential.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/KeyCredential.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs::identity::credential::implementation
 {

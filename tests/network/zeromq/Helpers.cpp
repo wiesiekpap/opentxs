@@ -14,8 +14,7 @@
 #include <utility>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 
 namespace ottest
 {
@@ -45,8 +44,8 @@ struct ZMQQueue::Imp {
     }
 
 private:
-    using Promise = std::promise<ot::OTZMQMessage>;
-    using Future = std::shared_future<ot::OTZMQMessage>;
+    using Promise = std::promise<ot::network::zeromq::Message>;
+    using Future = std::shared_future<ot::network::zeromq::Message>;
 
     struct Task {
         Promise promise_;

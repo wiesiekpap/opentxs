@@ -14,7 +14,7 @@
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
-#include "opentxs/protobuf/ContactEnums.pb.h"
+#include "serialization/protobuf/ContactEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::contact

@@ -14,9 +14,9 @@
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
-#include "opentxs/protobuf/PairEvent.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
-#include "opentxs/protobuf/ZMQEnums.pb.h"
+#include "serialization/protobuf/PairEvent.pb.h"
+#include "serialization/protobuf/PeerEnums.pb.h"
+#include "serialization/protobuf/ZMQEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::contract::peer::internal

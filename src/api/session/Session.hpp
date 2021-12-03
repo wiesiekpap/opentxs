@@ -37,8 +37,8 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
 #include "storage/Config.hpp"
 
 class QObject;

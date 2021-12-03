@@ -19,9 +19,9 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/BlockchainPeerAddress.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainPeerAddress.pb.h"
 
 namespace opentxs::factory
 {

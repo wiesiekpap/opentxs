@@ -24,8 +24,6 @@ namespace crypto
 {
 class Blockchain;
 }  // namespace crypto
-
-class Session;
 }  // namespace api
 
 namespace blockchain
@@ -81,7 +79,6 @@ public:
     auto Heartbeat() noexcept -> void final;
 
     Mempool(
-        const api::Session& api,
         const api::crypto::Blockchain& crypto,
         const internal::WalletDatabase& wallet,
         const network::zeromq::socket::Publish& socket,

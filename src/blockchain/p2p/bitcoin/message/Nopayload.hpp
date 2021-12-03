@@ -5,16 +5,21 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Log.hpp"
 
 namespace opentxs
 {
@@ -58,7 +63,21 @@ public:
     ~Nopayload() final = default;
 
 private:
-    auto payload() const noexcept -> OTData final { return Data::Factory(); }
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final
+    {
+        try {
+            if (!out) { throw std::runtime_error{"invalid output allocator"}; }
+
+            out(0);
+
+            return true;
+        } catch (const std::exception& e) {
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+            return false;
+        }
+    }
 
     Nopayload(const Nopayload&) = delete;
     Nopayload(Nopayload&&) = delete;

@@ -14,10 +14,10 @@
 #include "identity/credential/Key.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
-#include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/Credential.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs
 {

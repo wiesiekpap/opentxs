@@ -16,8 +16,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/protobuf/AsymmetricKey.pb.h"
-#include "opentxs/protobuf/Ciphertext.pb.h"
+#include "serialization/protobuf/AsymmetricKey.pb.h"
+#include "serialization/protobuf/Ciphertext.pb.h"
 
 namespace opentxs::crypto::key::implementation
 {

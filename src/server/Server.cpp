@@ -18,7 +18,9 @@
 
 #include "Proto.tpp"
 #include "core/OTStorage.hpp"
+#include "internal/api/session/Notary.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/network/zeromq/message/Message.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
@@ -53,16 +55,15 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
-#include "opentxs/protobuf/OTXEnums.pb.h"
-#include "opentxs/protobuf/OTXPush.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+#include "serialization/protobuf/OTXEnums.pb.h"
+#include "serialization/protobuf/OTXPush.pb.h"
+#include "serialization/protobuf/ServerContract.pb.h"
 #include "server/ConfigLoader.hpp"
 #include "server/MainFile.hpp"
 #include "server/Transactor.hpp"
@@ -279,7 +280,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         endpoints.emplace_back(
             core::AddressType::Inproc,
             contract::ProtocolVersion::Legacy,
-            manager_.MakeInprocEndpoint(),
+            manager_.InternalNotary().InprocEndpoint(),
             publicPort,
             2);
     } else {
@@ -902,15 +903,15 @@ auto Server::GetConnectInfo(
 
 auto Server::nymbox_push(
     const identifier::Nym& nymID,
-    const OTTransaction& item) const -> OTZMQMessage
+    const OTTransaction& item) const -> network::zeromq::Message
 {
-    auto output = zmq::Message::Factory();
-    output->AddFrame(nymID.str());
+    auto output = zmq::Message{};
+    output.AddFrame(nymID.str());
     proto::OTXPush push;
     push.set_version(OTX_PUSH_VERSION);
     push.set_type(proto::OTXPUSH_NYMBOX);
     push.set_item(String::Factory(item)->Get());
-    output->AddFrame(push);
+    output.Internal().AddFrame(push);
 
     return output;
 }

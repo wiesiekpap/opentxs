@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "internal/contact/Contact.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -31,11 +32,11 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -95,8 +96,7 @@ auto UnitList::process_account(const Message& message) noexcept -> void
 
     OT_ASSERT(2 < body.size());
 
-    auto accountID = api_.Factory().Identifier();
-    accountID->Assign(body.at(1).Bytes());
+    const auto accountID = api_.Factory().Identifier(body.at(1));
 
     OT_ASSERT(false == accountID->empty());
 
@@ -161,10 +161,13 @@ auto UnitList::startup() noexcept -> void
                     .Blockchain()
                     .SubaccountList(primary_id_, chain)
                     .size()) {
-            auto out = api_.Network().ZeroMQ().TaggedMessage(
-                WorkType::BlockchainBalance);
-            out->AddFrame(chain);
-            blockchain_balance_->Send(out);
+            blockchain_balance_->Send([&] {
+                auto work = network::zeromq::tagged_message(
+                    WorkType::BlockchainBalance);
+                work.AddFrame(chain);
+
+                return work;
+            }());
         }
     }
 #endif  // OT_BLOCKCHAIN

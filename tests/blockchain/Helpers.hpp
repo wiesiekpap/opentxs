@@ -19,6 +19,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 

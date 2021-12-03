@@ -14,12 +14,12 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
+#include "internal/protobuf/Basic.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/protobuf/Basic.hpp"
-#include "opentxs/protobuf/VerificationGroup.pb.h"
-#include "opentxs/protobuf/VerificationSet.pb.h"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/VerificationGroup.pb.h"
+#include "serialization/protobuf/VerificationSet.pb.h"
 
 namespace opentxs
 {

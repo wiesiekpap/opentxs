@@ -27,9 +27,9 @@
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -81,7 +81,7 @@ auto test_future(std::future<bool>& future, const unsigned int seconds) noexcept
 Callbacks::Callbacks(const std::string& name) noexcept
     : callback_lock_()
     , callback_(ot::network::zeromq::ListenCallback::Factory(
-          [this](const auto& incoming) -> void { callback(incoming); }))
+          [this](auto&& incoming) -> void { callback(std::move(incoming)); }))
     , map_lock_()
     , name_(name)
     , widget_map_()
@@ -89,11 +89,12 @@ Callbacks::Callbacks(const std::string& name) noexcept
 {
 }
 
-auto Callbacks::callback(const ot::network::zeromq::Message& incoming) noexcept
+auto Callbacks::callback(ot::network::zeromq::Message&& incoming) noexcept
     -> void
 {
     ot::Lock lock(callback_lock_);
-    const auto widgetID = ot::Identifier::Factory(incoming.Body().at(0));
+    const auto widgetID =
+        ot::Identifier::Factory(std::string{incoming.Body().at(0).Bytes()});
 
     ASSERT_NE("", widgetID->str().c_str());
 

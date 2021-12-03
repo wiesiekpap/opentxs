@@ -10,11 +10,15 @@
 #include <boost/endian/buffers.hpp>
 #include <cstddef>
 #include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -101,11 +105,28 @@ Feefilter::Feefilter(
     verify_checksum();
 }
 
-auto Feefilter::payload() const noexcept -> OTData
+auto Feefilter::payload(AllocateOutput out) const noexcept -> bool
 {
-    FeeRateField fee_rate(fee_rate_);
-    OTData output(Data::Factory(&fee_rate, sizeof(fee_rate)));
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-    return output;
+        static constexpr auto bytes = sizeof(FeeRateField);
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        const auto data = FeeRateField{fee_rate_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, &data, bytes);
+        std::advance(i, bytes);
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 }  // namespace  opentxs::blockchain::p2p::bitcoin::message

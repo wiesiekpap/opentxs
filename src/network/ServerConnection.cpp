@@ -14,11 +14,14 @@
 #include <map>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 #include <thread>
 
 #include "Proto.tpp"
+#include "internal/network/zeromq/message/Message.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/ServerReply.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -34,29 +37,27 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/curve/Client.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Request.tpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
+#include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ServerReply.pb.h"
-#include "opentxs/protobuf/ServerRequest.pb.h"
-#include "opentxs/protobuf/verify/ServerReply.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/ServerReply.pb.h"
+#include "serialization/protobuf/ServerRequest.pb.h"
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -88,9 +89,7 @@ ServerConnection::ServerConnection(
     , remote_contract_(contract)
     , thread_()
     , callback_(zeromq::ListenCallback::Factory(
-          [=](const zeromq::Message& in) -> void {
-              this->process_incoming(in);
-          }))
+          [=](const auto& in) { process_incoming(in); }))
     , registration_socket_(zmq.Context().DealerSocket(
           callback_,
           zmq::socket::Socket::Direction::Connect))
@@ -111,7 +110,7 @@ ServerConnection::ServerConnection(
     OT_ASSERT(started);
 }
 
-void ServerConnection::activity_timer()
+auto ServerConnection::activity_timer() -> void
 {
     while (zmq_.Running()) {
         const auto limit = zmq_.KeepAlive();
@@ -121,7 +120,7 @@ void ServerConnection::activity_timer()
 
         if (duration > limit) {
             if (limit > std::chrono::seconds(0)) {
-                const auto result = socket_->Send(std::string(""));
+                const auto result = socket_->Send(zeromq::Message{});
 
                 if (SendResult::TIMEOUT != result.first) {
                     reset_timer();
@@ -158,17 +157,6 @@ auto ServerConnection::ChangeAddressType(const core::AddressType type) -> bool
     return true;
 }
 
-auto ServerConnection::check_for_protobuf(const zeromq::Frame& frame)
-    -> std::pair<bool, proto::ServerReply>
-{
-    std::pair<bool, proto::ServerReply> output{false, {}};
-    auto& [valid, serialized] = output;
-    serialized = proto::Factory<proto::ServerReply>(frame);
-    valid = proto::Validate(serialized, VERBOSE);
-
-    return output;
-}
-
 auto ServerConnection::ClearProxy() -> bool
 {
     Lock lock(lock_);
@@ -187,7 +175,7 @@ auto ServerConnection::EnableProxy() -> bool
     return true;
 }
 
-void ServerConnection::disable_push(const identifier::Nym& nymID)
+auto ServerConnection::disable_push(const identifier::Nym& nymID) -> void
 {
     Lock registrationLock(registration_lock_);
     registered_for_push_[nymID] = true;
@@ -266,77 +254,83 @@ auto ServerConnection::get_timeout() -> Time
     return Clock::now() + zmq_.SendTimeout();
 }
 
-void ServerConnection::process_incoming(const proto::ServerReply& in)
-{
-    try {
-        auto message = otx::Reply::Factory(api_, in);
-
-        if (false == message->Validate()) {
-            LogError()(OT_PRETTY_CLASS())("Invalid push notification.").Flush();
-
-            return;
-        }
-
-        auto serialized = proto::ServerReply{};
-        if (false == message->Serialize(serialized)) {
-            LogError()(OT_PRETTY_CLASS())("Failed to serialize reply.").Flush();
-
-            return;
-        }
-
-        notification_socket_->Send(api_.Factory().Data(serialized));
-    } catch (...) {
-        LogError()(OT_PRETTY_CLASS())("Unable to instantiate reply").Flush();
-    }
-}
-
-void ServerConnection::process_incoming(const zeromq::Message& in)
+auto ServerConnection::process_incoming(const zeromq::Message& in) -> void
 {
     if (status_->On()) { publish(); }
 
-    auto message{api_.Factory().Message()};
+    try {
+        const auto body = in.Body();
+        const auto& payload = [&]() -> auto&
+        {
+            if (2u > body.size()) {
+                throw std::runtime_error{"payload missing"};
+            }
 
-    OT_ASSERT(false != bool(message));
+            if ((2u == body.size()) && (0u == body.at(1).size())) {
 
-    if (1 > in.Body().size()) {
-        LogError()(OT_PRETTY_CLASS())("Received legacy reply on async socket.")
-            .Flush();
+                return body.at(0);
+            }
 
-        return;
-    }
+            const auto type = [&] {
+                try {
 
-    auto& frame = *in.Body().begin();
+                    return body.at(0).as<WorkType>();
+                } catch (...) {
+                    throw std::runtime_error{"unknown message type"};
+                }
+            }();
 
-    if (0 == frame.size()) { return; }
+            switch (type) {
+                case WorkType::OTXP2PPush: {
 
-    if (1 < in.Body().size()) {
-        const auto [isProto, reply] = check_for_protobuf(frame);
+                    return body.at(1);
+                }
+                case WorkType::OTXP2PResponse:
+                default: {
+                    throw std::runtime_error{"unsupported message type"};
+                }
+            }
+        }
+        ();
+        const auto proto = proto::Factory<proto::ServerReply>(payload);
 
-        if (isProto) {
-            process_incoming(reply);
-
-            return;
+        if (false == proto::Validate(proto, VERBOSE)) {
+            throw std::runtime_error{"invalid serialization"};
         }
 
-        LogError()(OT_PRETTY_CLASS())("Message should be a protobuf but isn't.")
-            .Flush();
+        const auto message = otx::Reply::Factory(api_, proto);
 
-        return;
+        if (false == message->Validate()) {
+            throw std::runtime_error{"Invalid message"};
+        }
+
+        notification_socket_->Send([&] {
+            auto out = zeromq::Message{};
+            out.AddFrame(payload);  // TODO std::move
+
+            return out;
+        }());
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
     }
 }
 
-void ServerConnection::publish() const
+auto ServerConnection::publish() const -> void
 {
-    const bool state(status_.get());
-    auto message = zmq_.Context().TaggedMessage(WorkType::OTXConnectionStatus);
-    message->AddFrame(server_id_);
-    message->AddFrame(state);
-    updates_.Send(message);
+    updates_.Send([&] {
+        const auto status = bool{status_.get()};
+        auto work =
+            network::zeromq::tagged_message(WorkType::OTXConnectionStatus);
+        work.AddFrame(server_id_);
+        work.AddFrame(status);
+
+        return work;
+    }());
 }
 
-void ServerConnection::register_for_push(
+auto ServerConnection::register_for_push(
     const otx::context::Server& context,
-    const PasswordPrompt& reason)
+    const PasswordPrompt& reason) -> void
 {
     if (2 > context.Request()) {
         LogVerbose()(OT_PRETTY_CLASS())("Nym is not yet registered").Flush();
@@ -358,28 +352,28 @@ void ServerConnection::register_for_push(
         0,
         reason);
     request->SetIncludeNym(true, reason);
-    auto message = zmq::Message::Factory();
-    message->AddFrame();
+    auto message = zmq::Message{};
+    message.AddFrame();
     auto serialized = proto::ServerRequest{};
     if (false == request->Serialize(serialized)) {
         LogVerbose()(OT_PRETTY_CLASS())("Failed to serialize request.").Flush();
 
         return;
     }
-    message->AddFrame(serialized);
-    message->AddFrame();
+    message.Internal().AddFrame(serialized);
+    message.AddFrame();
     Lock socketLock(lock_);
-    isRegistered = get_async(socketLock).Send(message);
+    isRegistered = get_async(socketLock).Send(std::move(message));
 }
 
-void ServerConnection::reset_socket(const Lock& lock)
+auto ServerConnection::reset_socket(const Lock& lock) -> void
 {
     OT_ASSERT(verify_lock(lock))
 
     sockets_ready_->Off();
 }
 
-void ServerConnection::reset_timer()
+auto ServerConnection::reset_timer() -> void
 {
     last_activity_.store(std::time(nullptr));
 }
@@ -450,9 +444,12 @@ auto ServerConnection::Send(
 
     Lock socketLock(lock_);
     Cleanup cleanup(socketLock, *this, status, reply);
-    auto request =
-        api_.Network().ZeroMQ().Message(std::string(envelope->Get()));
-    auto sendresult = get_sync(socketLock).Send(request);
+    auto sendresult = get_sync(socketLock).Send([&] {
+        auto out = zeromq::Message{};
+        out.AddFrame(envelope->Get());
+
+        return out;
+    }());
 
     if (status_->On()) { publish(); }
 
@@ -469,54 +466,79 @@ auto ServerConnection::Send(
         return output;
     }
 
-    if (1 > in->Body().size()) {
-        LogError()(OT_PRETTY_CLASS())("Empty reply.").Flush();
+    try {
+        const auto body = in.Body();
+        const auto& payload = [&] {
+            if (0u == body.size()) {
+                throw std::runtime_error{"Empty reply"};
+            } else if (1u == body.size()) {
+
+                return body.at(0);
+            } else if (0u == body.at(1).size()) {
+                throw std::runtime_error{
+                    "Push notification received as a reply"};
+            } else {
+                const auto type = [&] {
+                    try {
+
+                        return body.at(0).as<WorkType>();
+                    } catch (...) {
+                        throw std::runtime_error{"Unknown message type"};
+                    }
+                }();
+
+                switch (type) {
+                    case WorkType::OTXP2PLegacyXML: {
+
+                        return body.at(1);
+                    }
+                    default: {
+                        throw std::runtime_error{"Unsupported message type"};
+                    }
+                }
+            }
+        }();
+
+        if (0 == payload.size()) {
+            throw std::runtime_error{"Invalid reply message"};
+        }
+
+        const auto serialized = [&] {
+            const auto armored = [&] {
+                auto out = Armored::Factory();
+                out->Set(std::string{payload.Bytes()}.c_str());
+
+                return out;
+            }();
+            auto out = String::Factory();
+            armored->GetString(out);
+
+            return out;
+        }();
+        const auto loaded = replymessage->LoadContractFromString(serialized);
+
+        if (loaded) {
+            reply = std::move(replymessage);
+        } else {
+            LogError()(OT_PRETTY_CLASS())(
+                "Received server reply, but unable to instantiate it as a "
+                "Message.")
+                .Flush();
+            cleanup.SetStatus(SendResult::INVALID_REPLY);
+        }
+
+        cleanup.SetStatus(SendResult::VALID_REPLY);
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
         cleanup.SetStatus(SendResult::INVALID_REPLY);
-
-        return output;
     }
-
-    if (1 < in->Body().size()) {
-        LogError()(OT_PRETTY_CLASS())("Push notification received as a reply.")
-            .Flush();
-        cleanup.SetStatus(SendResult::INVALID_REPLY);
-
-        return output;
-    }
-
-    auto& frame = *in->Body().begin();
-
-    if (0 == frame.size()) {
-        LogError()(OT_PRETTY_CLASS())("Invalid reply message.").Flush();
-        cleanup.SetStatus(SendResult::INVALID_REPLY);
-
-        return output;
-    }
-
-    auto armored = Armored::Factory();
-    armored->Set(std::string(frame).c_str());
-    auto serialized = String::Factory();
-    armored->GetString(serialized);
-    const auto loaded = replymessage->LoadContractFromString(serialized);
-
-    if (loaded) {
-        reply.reset(replymessage.release());
-    } else {
-        LogError()(OT_PRETTY_CLASS())(
-            "Received server reply, but unable to instantiate it as a "
-            "Message.")
-            .Flush();
-        cleanup.SetStatus(SendResult::INVALID_REPLY);
-    }
-
-    cleanup.SetStatus(SendResult::VALID_REPLY);
 
     return output;
 }
 
-void ServerConnection::set_curve(
+auto ServerConnection::set_curve(
     const Lock& lock,
-    zeromq::curve::Client& socket) const
+    zeromq::curve::Client& socket) const -> void
 {
     OT_ASSERT(verify_lock(lock));
 
@@ -525,9 +547,9 @@ void ServerConnection::set_curve(
     OT_ASSERT(set);
 }
 
-void ServerConnection::set_proxy(
+auto ServerConnection::set_proxy(
     const Lock& lock,
-    zeromq::socket::Dealer& socket) const
+    zeromq::socket::Dealer& socket) const -> void
 {
     OT_ASSERT(verify_lock(lock));
 
@@ -543,9 +565,9 @@ void ServerConnection::set_proxy(
     }
 }
 
-void ServerConnection::set_timeouts(
+auto ServerConnection::set_timeouts(
     const Lock& lock,
-    zeromq::socket::Socket& socket) const
+    zeromq::socket::Socket& socket) const -> void
 {
     OT_ASSERT(verify_lock(lock));
 

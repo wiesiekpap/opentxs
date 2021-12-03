@@ -15,7 +15,7 @@
 #include "opentxs/identity/credential/Primary.hpp"
 #include "opentxs/identity/credential/Secondary.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs::identity::credential::internal
 {

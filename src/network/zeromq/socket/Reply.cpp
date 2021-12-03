@@ -8,14 +8,16 @@
 #include "network/zeromq/socket/Reply.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Socket.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Reply>;
@@ -47,7 +49,7 @@ Reply::Reply(
     const zeromq::Context& context,
     const Socket::Direction direction,
     const ReplyCallback& callback) noexcept
-    : Receiver(context, SocketType::Reply, direction, true)
+    : Receiver(context, socket::Type::Reply, direction, true)
     , Server(this->get())
     , callback_(callback)
 {
@@ -61,11 +63,12 @@ auto Reply::clone() const noexcept -> Reply*
 
 auto Reply::have_callback() const noexcept -> bool { return true; }
 
-void Reply::process_incoming(const Lock& lock, Message& message) noexcept
+auto Reply::process_incoming(const Lock& lock, Message&& message) noexcept
+    -> void
 {
-    auto output = callback_.Process(message);
+    auto output = callback_.Process(std::move(message));
     Message& reply = output;
-    send_message(lock, reply);
+    send_message(lock, std::move(reply));
 }
 
 Reply::~Reply() SHUTDOWN

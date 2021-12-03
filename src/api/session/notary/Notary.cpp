@@ -11,11 +11,9 @@
 #include <chrono>
 #include <deque>
 #include <exception>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <mutex>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -51,6 +49,7 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -166,7 +165,7 @@ Notary::Notary(
     , server_p_(new opentxs::server::Server(*this, reason_))
     , server_(*server_p_)
     , message_processor_p_(
-          new opentxs::server::MessageProcessor(server_, reason_, running_))
+          new opentxs::server::MessageProcessor(server_, reason_))
     , message_processor_(*message_processor_p_)
 #if OT_CASH
     , mint_thread_()
@@ -374,6 +373,12 @@ void Notary::Init()
     Start();
 }
 
+auto Notary::InprocEndpoint() const -> std::string
+{
+    return opentxs::network::zeromq::MakeDeterministicInproc(
+        "notary", instance_, 1);
+}
+
 #if OT_CASH
 auto Notary::last_generated_series(
     const std::string& serverID,
@@ -429,18 +434,7 @@ auto Notary::load_public_mint(
 
     return verify_mint(lock, unitID, seriesID, mint);
 }
-#endif  // OT_CASH
 
-auto Notary::MakeInprocEndpoint() const -> std::string
-{
-    auto out = std::stringstream{};
-    out << "inproc://opentxs/notary/";
-    out << std::to_string(instance_);
-
-    return out.str();
-}
-
-#if OT_CASH
 void Notary::mint() const
 {
     opentxs::Lock updateLock(mint_update_lock_, std::defer_lock);

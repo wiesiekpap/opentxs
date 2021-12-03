@@ -127,7 +127,7 @@ private:
     std::shared_future<OTData> ipv4_future_;
     std::shared_future<OTData> ipv6_future_;
 
-    auto data_callback(zmq::Message& in) noexcept -> void;
+    auto data_callback(zmq::Message&& in) noexcept -> void;
     auto load_root_certificates(
         boost::asio::ssl::context& ctx,
         boost::system::error_code& ec) noexcept -> void;

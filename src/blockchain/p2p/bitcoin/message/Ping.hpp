@@ -14,6 +14,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -62,7 +63,8 @@ public:
 private:
     const bitcoin::Nonce nonce_{};
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Ping(const Ping&) = delete;
     Ping(Ping&&) = delete;

@@ -17,13 +17,13 @@ Sender<Interface, ImplementationParent>::Sender() noexcept
 }
 
 template <typename Interface, typename ImplementationParent>
-auto Sender<Interface, ImplementationParent>::send(
-    zeromq::Message& message) const noexcept -> bool
+auto Sender<Interface, ImplementationParent>::Send(
+    zeromq::Message&& message) const noexcept -> bool
 {
     Lock lock(this->lock_);
 
     if (false == this->running_.get()) { return false; }
 
-    return this->send_message(lock, message);
+    return this->send_message(lock, std::move(message));
 }
 }  // namespace opentxs::network::zeromq::socket::implementation

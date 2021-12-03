@@ -60,7 +60,7 @@ private:
     auto clone() const noexcept -> Dealer* final;
     auto have_callback() const noexcept -> bool final { return true; }
 
-    void process_incoming(const Lock& lock, Message& message) noexcept final;
+    void process_incoming(const Lock& lock, Message&& message) noexcept final;
 
     Dealer() = delete;
     Dealer(const Dealer&) = delete;

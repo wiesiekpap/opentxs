@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 
 namespace opentxs
@@ -23,14 +25,17 @@ namespace opentxs::network::zeromq::implementation
 class ListenCallback final : virtual public zeromq::ListenCallback
 {
 public:
-    void Process(zeromq::Message& message) const final;
+    auto Deactivate() const noexcept -> void final;
+    auto Process(zeromq::Message&& message) const noexcept -> void final;
 
     ~ListenCallback() final;
 
 private:
     friend zeromq::ListenCallback;
 
-    const zeromq::ListenCallback::ReceiveCallback callback_;
+    mutable std::recursive_mutex execute_lock_;
+    mutable std::mutex callback_lock_;
+    mutable zeromq::ListenCallback::ReceiveCallback callback_;
 
     auto clone() const -> ListenCallback* final;
 

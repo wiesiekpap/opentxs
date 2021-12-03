@@ -15,9 +15,9 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database

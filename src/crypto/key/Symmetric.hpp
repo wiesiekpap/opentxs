@@ -22,9 +22,9 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
 
 namespace opentxs
 {

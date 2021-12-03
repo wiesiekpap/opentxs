@@ -94,14 +94,11 @@ public:
     auto WidgetUpdate() const noexcept -> std::string final;
     auto WorkflowAccountUpdate() const noexcept -> std::string final;
 
-    Endpoints(
-        const opentxs::network::zeromq::Context& zmq,
-        const int instance) noexcept;
+    Endpoints(const int instance) noexcept;
 
     ~Endpoints() final = default;
 
 private:
-    const opentxs::network::zeromq::Context& zmq_;
     const int instance_;
 
     auto build_inproc_path(const std::string& path, const int version)

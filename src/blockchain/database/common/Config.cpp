@@ -11,8 +11,6 @@ extern "C" {
 #include <lmdb.h>
 }
 
-#include <utility>
-
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -20,13 +18,12 @@ extern "C" {
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/LMDB.hpp"
-
-// "opentxs::blockchain::database::common::Configuration::"
 
 namespace opentxs::blockchain::database::common
 {
@@ -67,11 +64,15 @@ auto Configuration::AddSyncServer(const std::string& endpoint) const noexcept
         MDB_NODUPDATA);
 
     if (success) {
-        auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::SyncServerUpdated);
-        work->AddFrame(endpoint);
-        work->AddFrame(success);
-        socket_->Send(work);
+        static const auto value = bool{true};
+        socket_->Send([&] {
+            auto work =
+                network::zeromq::tagged_message(WorkType::SyncServerUpdated);
+            work.AddFrame(endpoint);
+            work.AddFrame(value);
+
+            return work;
+        }());
 
         return true;
     }
@@ -92,11 +93,14 @@ auto Configuration::DeleteSyncServer(const std::string& endpoint) const noexcept
 
     if (output) {
         static constexpr auto deleted{false};
-        auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::SyncServerUpdated);
-        work->AddFrame(endpoint);
-        work->AddFrame(deleted);
-        socket_->Send(work);
+        socket_->Send([&] {
+            auto work =
+                network::zeromq::tagged_message(WorkType::SyncServerUpdated);
+            work.AddFrame(endpoint);
+            work.AddFrame(deleted);
+
+            return work;
+        }());
 
         return true;
     }

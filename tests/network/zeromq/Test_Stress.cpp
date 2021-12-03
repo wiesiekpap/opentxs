@@ -14,8 +14,8 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -56,14 +56,16 @@ TEST(Test_Stress, PubSub_100)
 
     auto results = std::atomic<std::size_t>{};
     auto callback =
-        zmq::ListenCallback::Factory([&results](auto&) { ++results; });
+        zmq::ListenCallback::Factory([&results](auto&&) { ++results; });
     auto sub = ot.ZMQ().SubscribeSocket(callback);
 
     for (const auto& endpoint : endpoints) {
         EXPECT_TRUE(sub->Start(endpoint));
     }
 
-    for (const auto& socket : pub) { EXPECT_TRUE(socket->Send("")); }
+    for (const auto& socket : pub) {
+        EXPECT_TRUE(socket->Send(opentxs::network::zeromq::Message{}));
+    }
 
     while (pub.size() > results.load()) { ; }
 }

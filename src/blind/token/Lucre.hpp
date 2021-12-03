@@ -18,8 +18,8 @@
 #include "opentxs/blind/TokenState.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/protobuf/Token.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Token.pb.h"
 
 namespace opentxs
 {

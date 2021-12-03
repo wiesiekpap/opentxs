@@ -36,11 +36,11 @@ extern "C" {
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/LucreTokenData.pb.h"
-#include "opentxs/protobuf/Token.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
+#include "serialization/protobuf/LucreTokenData.pb.h"
+#include "serialization/protobuf/Token.pb.h"
 
 #define LUCRE_TOKEN_VERSION 1
 

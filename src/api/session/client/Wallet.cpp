@@ -31,10 +31,10 @@
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/Context.pb.h"
-#include "opentxs/protobuf/ServerContext.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Context.pb.h"
+#include "serialization/protobuf/ServerContext.pb.h"
 
 namespace opentxs::factory
 {

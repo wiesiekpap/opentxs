@@ -18,8 +18,8 @@
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
 {

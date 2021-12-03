@@ -33,8 +33,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "ui/base/Combined.hpp"
@@ -133,8 +132,7 @@ void IssuerItem::process_account(const Message& message) noexcept
 
     OT_ASSERT(2 < message.Body().size())
 
-    auto accountID = api_.Factory().Identifier();
-    accountID->Assign(body.at(1).Bytes());
+    const auto accountID = api_.Factory().Identifier(body.at(1));
 
     OT_ASSERT(false == accountID->empty());
 

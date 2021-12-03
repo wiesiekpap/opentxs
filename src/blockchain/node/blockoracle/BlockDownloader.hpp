@@ -18,10 +18,10 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
@@ -38,6 +38,10 @@ class BlockOracle::BlockDownloader : public BlockDM, public BlockWorker
 {
 public:
     auto NextBatch() noexcept { return allocate_batch(0); }
+    auto Shutdown() noexcept -> std::shared_future<void>
+    {
+        return signal_shutdown();
+    }
 
     BlockDownloader(
         const api::Session& api,
@@ -71,7 +75,7 @@ public:
         OT_ASSERT(zmq);
     }
 
-    ~BlockDownloader() { stop_worker().get(); }
+    ~BlockDownloader() { signal_shutdown().get(); }
 
 private:
     friend BlockDM;
@@ -125,14 +129,14 @@ private:
             position.first)
             .Flush();
         auto work = MakeWork(OT_ZMQ_NEW_FULL_BLOCK_SIGNAL);
-        work->AddFrame(position.first);
-        work->AddFrame(position.second);
-        socket_->Send(work);
+        work.AddFrame(position.first);
+        work.AddFrame(position.second);
+        socket_->Send(std::move(work));
     }
 
     auto pipeline(const zmq::Message& in) noexcept -> void
     {
-        if (false == running_.get()) { return; }
+        if (false == running_.load()) { return; }
 
         const auto body = in.Body();
 
@@ -227,11 +231,9 @@ private:
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
-        if (running_->Off()) {
-            try {
-                promise.set_value();
-            } catch (...) {
-            }
+        if (auto previous = running_.exchange(false); previous) {
+            pipeline_.Close();
+            promise.set_value();
         }
     }
 };

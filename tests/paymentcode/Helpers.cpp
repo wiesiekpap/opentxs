@@ -21,8 +21,6 @@
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/crypto/key/HD.hpp"
-#include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ottest

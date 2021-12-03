@@ -14,11 +14,11 @@
 #include <string>
 
 #include "opentxs/core/contract/peer/Types.hpp"
-#include "opentxs/protobuf/ContractEnums.pb.h"
-#include "opentxs/protobuf/PairEvent.pb.h"
-#include "opentxs/protobuf/PeerEnums.pb.h"
-#include "opentxs/protobuf/ZMQEnums.pb.h"
 #include "opentxs/util/Bytes.hpp"
+#include "serialization/protobuf/ContractEnums.pb.h"
+#include "serialization/protobuf/PairEvent.pb.h"
+#include "serialization/protobuf/PeerEnums.pb.h"
+#include "serialization/protobuf/ZMQEnums.pb.h"
 #include "util/Blank.hpp"
 
 namespace opentxs

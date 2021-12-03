@@ -45,6 +45,11 @@ struct Input;
 
 namespace be = boost::endian;
 
+namespace opentxs::blockchain
+{
+static constexpr auto standard_hash_size_ = std::size_t{32};
+}  // namespace opentxs::blockchain
+
 namespace opentxs::blockchain::bitcoin
 {
 using Byte = const std::byte;
@@ -61,7 +66,7 @@ auto HasSegwit(
     const std::size_t size) noexcept(false) -> std::optional<std::byte>;
 
 struct EncodedOutpoint {
-    std::array<std::byte, 32> txid_{};
+    std::array<std::byte, standard_hash_size_> txid_{};
     be::little_uint32_buf_t index_{};
 };
 
@@ -152,7 +157,7 @@ struct SigHash {
 };
 
 struct Bip143Hashes {
-    using Hash = std::array<std::byte, 32>;
+    using Hash = std::array<std::byte, standard_hash_size_>;
 
     Hash outpoints_{};
     Hash sequences_{};

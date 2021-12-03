@@ -20,9 +20,9 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

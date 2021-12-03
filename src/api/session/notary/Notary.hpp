@@ -85,11 +85,7 @@ public:
     auto GetUserName() const -> std::string final;
     auto GetUserTerms() const -> std::string final;
     auto ID() const -> const identifier::Server& final;
-    auto InternalNotary() const noexcept -> session::internal::Notary& final
-    {
-        return const_cast<Notary&>(*this);
-    }
-    auto MakeInprocEndpoint() const -> std::string final;
+    auto InprocEndpoint() const -> std::string final;
     auto NymID() const -> const identifier::Nym& final;
     auto ScanMints() const -> void final;
     auto Server() const -> opentxs::server::Server& final { return server_; }

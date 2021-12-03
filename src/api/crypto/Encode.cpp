@@ -29,7 +29,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/HashType.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -252,13 +252,11 @@ auto Encode::SanatizeBase64(const std::string& input) const -> std::string
     return std::regex_replace(input, std::regex("[^0-9A-Za-z+/=]"), "");
 }
 
-using zmq = opentxs::network::zeromq::Context;
-
 auto Encode::Z85Encode(const Data& input) const -> std::string
 {
     auto output = std::string{};
 
-    if (zmq::Context::RawToZ85(input.Bytes(), writer(output))) {
+    if (opentxs::network::zeromq::RawToZ85(input.Bytes(), writer(output))) {
         return output;
     } else {
         return {};
@@ -269,7 +267,7 @@ auto Encode::Z85Encode(const std::string& input) const -> std::string
 {
     auto output = std::string{};
 
-    if (zmq::Context::RawToZ85(input, writer(output))) {
+    if (opentxs::network::zeromq::RawToZ85(input, writer(output))) {
         return output;
     } else {
         return {};
@@ -280,7 +278,8 @@ auto Encode::Z85Decode(const Data& input) const -> OTData
 {
     auto output = Data::Factory();
 
-    if (zmq::Context::Z85ToRaw(input.Bytes(), output->WriteInto())) {
+    if (opentxs::network::zeromq::Z85ToRaw(
+            input.Bytes(), output->WriteInto())) {
         return output;
     } else {
         return Data::Factory();
@@ -291,7 +290,7 @@ auto Encode::Z85Decode(const std::string& input) const -> std::string
 {
     auto output = std::string{};
 
-    if (zmq::Context::Z85ToRaw(input, writer(output))) {
+    if (opentxs::network::zeromq::Z85ToRaw(input, writer(output))) {
         return output;
     } else {
         return {};

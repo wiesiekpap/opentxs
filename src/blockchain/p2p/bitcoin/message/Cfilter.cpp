@@ -7,8 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/p2p/bitcoin/message/Cfilter.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <functional>
 #include <iterator>
 #include <stdexcept>
 #include <type_traits>
@@ -20,12 +22,11 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -164,28 +165,43 @@ Cfilter::Cfilter(
 {
 }
 
-auto Cfilter::payload() const noexcept -> OTData
+auto Cfilter::payload(AllocateOutput out) const noexcept -> bool
 {
     try {
-        auto raw = BitcoinFormat{header().Network(), type_, hash_};
-        auto output = Data::Factory(&raw, sizeof(raw));
-        const auto filter = [&] {
-            auto output = CompactSize(count_).Encode();
-            output.insert(output.end(), filter_.begin(), filter_.end());
-
-            return output;
-        }();
         const auto payload = [&] {
+            auto filter = [&] {
+                auto output = CompactSize(count_).Encode();
+                output.insert(output.end(), filter_.begin(), filter_.end());
+
+                return output;
+            }();
             auto output = CompactSize(filter.size()).Encode();
-            output.insert(output.end(), filter.begin(), filter.end());
+            output.reserve(output.size() + filter.size());
+            std::move(filter.begin(), filter.end(), std::back_inserter(output));
 
             return output;
         }();
-        output->Concatenate(payload.data(), payload.size());
+        static constexpr auto fixed = sizeof(BitcoinFormat);
+        const auto bytes = fixed + payload.size();
 
-        return output;
-    } catch (...) {
-        return Data::Factory();
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        const auto data = BitcoinFormat{header().Network(), type_, hash_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, static_cast<const void*>(&data), fixed);
+        std::advance(i, fixed);
+        std::memcpy(i, payload.data(), payload.size());
+        std::advance(i, payload.size());
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
 }
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

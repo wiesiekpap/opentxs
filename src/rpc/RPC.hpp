@@ -33,11 +33,11 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/protobuf/RPCEnums.pb.h"
-#include "opentxs/protobuf/RPCResponse.pb.h"
 #include "opentxs/rpc/Types.hpp"
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/response/Base.hpp"
+#include "serialization/protobuf/RPCEnums.pb.h"
+#include "serialization/protobuf/RPCResponse.pb.h"
 
 namespace opentxs
 {

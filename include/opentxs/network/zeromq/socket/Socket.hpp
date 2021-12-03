@@ -15,7 +15,7 @@
 #include <tuple>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 
 namespace opentxs
 {
@@ -23,7 +23,16 @@ namespace network
 {
 namespace zeromq
 {
+namespace socket
+{
+namespace internal
+{
+class Socket;
+}  // namespace internal
+}  // namespace socket
+
 class Context;
+class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
@@ -39,13 +48,15 @@ namespace socket
 class OPENTXS_EXPORT Socket
 {
 public:
-    using SendResult = std::pair<opentxs::SendResult, OTZMQMessage>;
+    using SendResult = std::pair<opentxs::SendResult, Message>;
     enum class Direction : bool { Bind = false, Connect = true };
 
     virtual operator void*() const noexcept = 0;
 
     virtual auto Close() const noexcept -> bool = 0;
     virtual auto Context() const noexcept -> const zeromq::Context& = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Socket& = 0;
     virtual auto SetTimeouts(
         const std::chrono::milliseconds& linger,
         const std::chrono::milliseconds& send,
@@ -53,8 +64,11 @@ public:
     // Do not call Start during callback execution
     virtual auto Start(const std::string& endpoint) const noexcept -> bool = 0;
     // StartAsync version may be called during callback execution
-    virtual void StartAsync(const std::string& endpoint) const noexcept = 0;
-    virtual auto Type() const noexcept -> SocketType = 0;
+    virtual auto StartAsync(const std::string& endpoint) const noexcept
+        -> void = 0;
+    virtual auto Type() const noexcept -> socket::Type = 0;
+
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Socket& = 0;
 
     virtual ~Socket() = default;
 

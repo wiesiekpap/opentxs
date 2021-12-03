@@ -14,15 +14,15 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/Seed.hpp"
+#include "internal/protobuf/verify/StorageSeeds.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Seed.pb.h"
-#include "opentxs/protobuf/StorageItemHash.pb.h"
-#include "opentxs/protobuf/StorageSeeds.pb.h"
-#include "opentxs/protobuf/verify/Seed.hpp"
-#include "opentxs/protobuf/verify/StorageSeeds.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "serialization/protobuf/Seed.pb.h"
+#include "serialization/protobuf/StorageItemHash.pb.h"
+#include "serialization/protobuf/StorageSeeds.pb.h"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 

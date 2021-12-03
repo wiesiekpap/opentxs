@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "internal/contact/Contact.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
@@ -33,9 +34,7 @@
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "opentxs/util/Log.hpp"
@@ -289,8 +288,7 @@ void Profile::process_nym(const Message& message) noexcept
 
     OT_ASSERT(1 < message.Body().size());
 
-    auto nymID = api_.Factory().NymID();
-    nymID->Assign(message.Body_at(1).Bytes());
+    const auto nymID = api_.Factory().NymID(message.Body_at(1));
 
     OT_ASSERT(false == nymID->empty())
 

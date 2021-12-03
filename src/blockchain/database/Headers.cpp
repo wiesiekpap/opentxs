@@ -33,13 +33,13 @@
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
-#include "opentxs/protobuf/BlockchainBlockLocalData.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
+#include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database
@@ -237,19 +237,19 @@ auto Headers::ApplyUpdate(const node::UpdateTransaction& update) noexcept
             " reorg detected. Last common ancestor is ")(pHash->asHex())(
             " at height ")(pHeight)
             .Flush();
-        auto work = MakeWork(api_, WorkType::BlockchainReorg);
-        work->AddFrame(network_.Chain());
-        work->AddFrame(pBytes.data(), pBytes.size());
-        work->AddFrame(pHeight);
-        work->AddFrame(bytes.data(), bytes.size());
-        work->AddFrame(height);
-        network_.Reorg().Send(work);
+        auto work = MakeWork(WorkType::BlockchainReorg);
+        work.AddFrame(network_.Chain());
+        work.AddFrame(pBytes.data(), pBytes.size());
+        work.AddFrame(pHeight);
+        work.AddFrame(bytes.data(), bytes.size());
+        work.AddFrame(height);
+        network_.Reorg().Send(std::move(work));
     } else {
-        auto work = MakeWork(api_, WorkType::BlockchainNewHeader);
-        work->AddFrame(network_.Chain());
-        work->AddFrame(bytes.data(), bytes.size());
-        work->AddFrame(height);
-        network_.Reorg().Send(work);
+        auto work = MakeWork(WorkType::BlockchainNewHeader);
+        work.AddFrame(network_.Chain());
+        work.AddFrame(bytes.data(), bytes.size());
+        work.AddFrame(height);
+        network_.Reorg().Send(std::move(work));
     }
 
     network_.UpdateLocalHeight(position);

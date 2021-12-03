@@ -34,8 +34,8 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
 
 template class opentxs::Pimpl<opentxs::Identifier>;
 template class std::set<opentxs::OTIdentifier>;

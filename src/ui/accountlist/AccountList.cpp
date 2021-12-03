@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "ui/accountlist/AccountList.hpp"  // IWYU pragma: associated
 
+#include <atomic>
 #include <future>
 #include <map>
 #include <memory>
@@ -30,16 +31,15 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/core/Account.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -72,7 +72,7 @@ AccountList::AccountList(
     , Worker(api, {})
 #if OT_BLOCKCHAIN
     , blockchain_balance_cb_(zmq::ListenCallback::Factory(
-          [this](const auto& in) { pipeline_->Push(in); }))
+          [this](auto&& in) { pipeline_.Push(std::move(in)); }))
     , blockchain_balance_(Widget::api_.Network().ZeroMQ().DealerSocket(
           blockchain_balance_cb_,
           zmq::socket::Socket::Direction::Connect))
@@ -92,7 +92,7 @@ AccountList::AccountList(
             api.Endpoints().BlockchainAccountCreated()
 #endif  // OT_BLOCKCHAIN
     });
-    pipeline_->Push(MakeWork(Work::init));
+    pipeline_.Push(MakeWork(Work::init));
 }
 
 auto AccountList::construct_row(
@@ -116,7 +116,7 @@ auto AccountList::construct_row(
 
 auto AccountList::pipeline(const Message& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -151,8 +151,9 @@ auto AccountList::pipeline(const Message& in) noexcept -> void
             do_work();
         } break;
         case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
+            if (auto previous = running_.exchange(false); previous) {
+                shutdown(shutdown_promise_);
+            }
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Unhandled type: ")(
@@ -202,8 +203,7 @@ auto AccountList::process_account(const Message& message) noexcept -> void
 
     OT_ASSERT(2 < body.size());
 
-    auto accountID = Widget::api_.Factory().Identifier();
-    accountID->Assign(body.at(1).Bytes());
+    const auto accountID = Widget::api_.Factory().Identifier(body.at(1));
     const auto balance = body.at(2).Bytes();
     process_account(accountID, balance);
 }
@@ -219,8 +219,7 @@ auto AccountList::process_blockchain_account(const Message& message) noexcept
     }
 
     const auto& nymFrame = message.Body_at(2);
-    auto nymID = Widget::api_.Factory().NymID();
-    nymID->Assign(nymFrame.Bytes());
+    const auto nymID = Widget::api_.Factory().NymID(nymFrame);
 
     if (nymID != primary_id_) {
         LogTrace()(OT_PRETTY_CLASS())("Update does not apply to this widget")
@@ -290,11 +289,14 @@ auto AccountList::startup() noexcept -> void
 #if OT_BLOCKCHAIN
 auto AccountList::subscribe(const blockchain::Type chain) const noexcept -> void
 {
-    auto out = Widget::api_.Network().ZeroMQ().TaggedMessage(
-        WorkType::BlockchainBalance);
-    out->AddFrame(chain);
-    out->AddFrame(primary_id_);
-    blockchain_balance_->Send(out);
+    blockchain_balance_->Send([&] {
+        auto work =
+            network::zeromq::tagged_message(WorkType::BlockchainBalance);
+        work.AddFrame(chain);
+        work.AddFrame(primary_id_);
+
+        return work;
+    }());
 }
 #endif  // OT_BLOCKCHAIN
 
@@ -304,6 +306,6 @@ AccountList::~AccountList()
 #if OT_BLOCKCHAIN
     blockchain_balance_->Close();
 #endif  // OT_BLOCKCHAIN
-    stop_worker().get();
+    signal_shutdown().get();
 }
 }  // namespace opentxs::ui::implementation

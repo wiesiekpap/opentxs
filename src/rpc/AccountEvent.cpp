@@ -14,10 +14,10 @@
 
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/protobuf/AccountEvent.pb.h"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/rpc/AccountEventType.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/AccountEvent.pb.h"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 
 namespace opentxs::rpc
 {

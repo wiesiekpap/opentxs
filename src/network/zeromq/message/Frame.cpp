@@ -1,0 +1,228 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#include "0_stdafx.hpp"                      // IWYU pragma: associated
+#include "1_Internal.hpp"                    // IWYU pragma: associated
+#include "network/zeromq/message/Frame.hpp"  // IWYU pragma: associated
+
+#include <algorithm>
+#include <array>
+#include <cstring>
+#include <limits>
+#include <memory>
+#include <string_view>
+#include <utility>
+#include <variant>
+
+#include "internal/network/zeromq/message/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/api/Context.hpp"
+#include "opentxs/api/crypto/Crypto.hpp"
+#include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/crypto/HashType.hpp"
+
+namespace std
+{
+template <>
+struct hash<opentxs::network::zeromq::Frame> {
+    auto operator()(const opentxs::network::zeromq::Frame& data) const noexcept
+        -> std::size_t
+    {
+        static const auto& api = opentxs::Context().Crypto().Hash();
+        static const auto key = std::array<char, 16>{};
+        auto out = std::size_t{};
+        api.HMAC(
+            opentxs::crypto::HashType::SipHash24,
+            {key.data(), key.size()},
+            data.Bytes(),
+            opentxs::preallocated(sizeof(out), &out));
+
+        return out;
+    }
+};
+}  // namespace std
+
+namespace opentxs::factory
+{
+using ReturnType = network::zeromq::Frame;
+
+auto ZMQFrame(const std::size_t size) noexcept -> network::zeromq::Frame
+{
+    return std::make_unique<ReturnType::Imp>(size).release();
+}
+
+auto ZMQFrame(const void* data, const std::size_t size) noexcept
+    -> network::zeromq::Frame
+{
+    return std::make_unique<ReturnType::Imp>(data, size).release();
+}
+
+auto ZMQFrame(const ProtobufType& data) noexcept -> network::zeromq::Frame
+{
+    return std::make_unique<ReturnType::Imp>(data).release();
+}
+}  // namespace opentxs::factory
+
+namespace opentxs::network::zeromq
+{
+auto operator<(const Frame& lhs, const Frame& rhs) noexcept -> bool
+{
+    return lhs.imp_->operator<(rhs);
+}
+
+auto operator==(const Frame& lhs, const Frame& rhs) noexcept -> bool
+{
+    return lhs.imp_->operator==(rhs);
+}
+
+Frame::Imp::Imp(const void* data, std::size_t size) noexcept
+    : message_()
+{
+    const auto init = ::zmq_msg_init_size(&message_, size);
+
+    OT_ASSERT(0 == init);
+    OT_ASSERT(size <= std::numeric_limits<int>::max());
+
+    if ((0u < size) && (nullptr != data)) {
+        std::memcpy(::zmq_msg_data(&message_), data, size);
+    }
+}
+
+Frame::Imp::Imp(std::size_t size) noexcept
+    : Imp(nullptr, size)
+{
+}
+
+Frame::Imp::Imp() noexcept
+    : Imp(0u)
+{
+}
+
+Frame::Imp::Imp(const ProtobufType& input) noexcept
+    : Imp(input.ByteSizeLong())
+{
+    input.SerializeToArray(data(), static_cast<int>(size()));
+}
+
+Frame::Imp::Imp(const Imp& rhs) noexcept
+    : Imp(rhs.data(), rhs.size())
+{
+}
+
+auto Frame::Imp::operator<(const zeromq::Frame& rhs) const noexcept -> bool
+{
+    const auto cmp =
+        std::memcmp(data(), rhs.data(), std::min(size(), rhs.size()));
+
+    if (0 > cmp) {
+
+        return true;
+    } else if (0 < cmp) {
+
+        return false;
+    } else {
+
+        return size() < rhs.size();
+    }
+}
+
+auto Frame::Imp::operator==(const zeromq::Frame& rhs) const noexcept -> bool
+{
+    return (size() == rhs.size()) &&
+           (0 == std::memcmp(data(), rhs.data(), std::min(size(), rhs.size())));
+}
+
+Frame::Imp::~Imp() { ::zmq_msg_close(&message_); }
+}  // namespace opentxs::network::zeromq
+
+namespace opentxs::network::zeromq
+{
+Frame::Frame(Imp* imp) noexcept
+    : imp_(imp)
+{
+    OT_ASSERT(nullptr != imp);
+}
+
+Frame::Frame() noexcept
+    : Frame(std::make_unique<Imp>().release())
+{
+}
+
+Frame::Frame(const Frame& rhs) noexcept
+    : Frame(std::make_unique<Imp>(*rhs.imp_).release())
+{
+}
+
+Frame::Frame(Frame&& rhs) noexcept
+    : Frame()
+{
+    swap(rhs);
+}
+
+auto Frame::operator=(const Frame& rhs) noexcept -> Frame&
+{
+    auto old = std::unique_ptr<Imp>{imp_};
+    imp_ = std::make_unique<Imp>(*rhs.imp_).release();
+
+    return *this;
+}
+
+auto Frame::operator=(Frame&& rhs) noexcept -> Frame&
+{
+    swap(rhs);
+
+    return *this;
+}
+
+Frame::operator zmq_msg_t*() noexcept { return *imp_; }
+
+auto Frame::Bytes() const noexcept -> ReadView { return imp_->Bytes(); }
+
+auto Frame::data() const noexcept -> const void* { return imp_->data(); }
+
+auto Frame::Internal() const noexcept -> const internal::Frame&
+{
+    return *imp_;
+}
+
+auto Frame::Internal() noexcept -> internal::Frame& { return *imp_; }
+
+auto Frame::operator+=(const Frame& rhs) noexcept -> Frame&
+{
+    const auto lSize = size();
+    const auto rSize = rhs.size();
+    auto other = Frame{std::make_unique<Imp>(lSize + rSize).release()};
+    auto* i = static_cast<std::byte*>(other.imp_->data());
+    std::memcpy(i, data(), lSize);
+    std::advance(i, lSize);
+    std::memcpy(i, rhs.data(), rSize);
+    swap(other);
+
+    return *this;
+}
+
+auto Frame::size() const noexcept -> std::size_t { return imp_->size(); }
+
+auto Frame::swap(Frame& rhs) noexcept -> void { std::swap(imp_, rhs.imp_); }
+
+auto Frame::WriteInto() noexcept -> AllocateOutput
+{
+    return [this](const auto size) {
+        auto rhs = Frame{std::make_unique<Imp>(size).release()};
+        swap(rhs);
+
+        return WritableView{imp_->data(), imp_->size()};
+    };
+}
+
+Frame::~Frame()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
+}  // namespace opentxs::network::zeromq

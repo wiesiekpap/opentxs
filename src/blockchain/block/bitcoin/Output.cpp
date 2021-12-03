@@ -39,11 +39,11 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
-#include "opentxs/protobuf/BlockchainWalletKey.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
+#include "serialization/protobuf/BlockchainWalletKey.pb.h"
 
 namespace opentxs::factory
 {

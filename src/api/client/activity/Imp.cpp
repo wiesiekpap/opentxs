@@ -43,14 +43,15 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/StorageThread.pb.h"
-#include "opentxs/protobuf/StorageThreadItem.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
+#include "serialization/protobuf/StorageThread.pb.h"
+#include "serialization/protobuf/StorageThreadItem.pb.h"
 
 namespace opentxs::api::client
 {
@@ -163,11 +164,14 @@ auto Activity::Imp::add_blockchain_transaction(
     }
 
     std::for_each(std::begin(chains), std::end(chains), [&](const auto& chain) {
-        auto out = api_.Network().ZeroMQ().TaggedMessage(
-            WorkType::BlockchainNewTransaction);
-        out->AddFrame(txid);
-        out->AddFrame(chain);
-        get_blockchain(lock, nym).Send(out);
+        get_blockchain(lock, nym).Send([&] {
+            auto out = opentxs::network::zeromq::tagged_message(
+                WorkType::BlockchainNewTransaction);
+            out.AddFrame(txid);
+            out.AddFrame(chain);
+
+            return out;
+        }());
     });
 
     return output;
@@ -640,9 +644,13 @@ auto Activity::Imp::publish(
     const Identifier& threadID) const noexcept -> void
 {
     auto& socket = get_publisher(nymID);
-    auto work = socket.Context().TaggedMessage(WorkType::ActivityThreadUpdated);
-    work->AddFrame(threadID);
-    socket.Send(work);
+    socket.Send([&] {
+        auto work = opentxs::network::zeromq::tagged_message(
+            WorkType::ActivityThreadUpdated);
+        work.AddFrame(threadID);
+
+        return work;
+    }());
 }
 
 auto Activity::Imp::start_publisher(const std::string& endpoint) const noexcept

@@ -49,9 +49,9 @@
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
 #include "util/Container.hpp"
 #include "util/HDIndex.hpp"
 

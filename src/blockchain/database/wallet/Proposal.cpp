@@ -15,9 +15,9 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/BlockchainTransactionProposal.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database::wallet

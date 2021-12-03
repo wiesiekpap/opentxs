@@ -63,11 +63,11 @@
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/protobuf/BasketItem.pb.h"
-#include "opentxs/protobuf/BasketParams.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+#include "serialization/protobuf/BasketItem.pb.h"
+#include "serialization/protobuf/BasketParams.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 #define CLIENT_MASTER_KEY_TIMEOUT_DEFAULT 300
 

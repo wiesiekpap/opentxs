@@ -12,6 +12,7 @@
 
 #include "opentxs/network/zeromq/zap/Callback.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -21,6 +22,7 @@ namespace zeromq
 {
 namespace zap
 {
+class Reply;
 class Request;
 }  // namespace zap
 }  // namespace zeromq
@@ -34,7 +36,7 @@ class Callback final : virtual zap::Callback
 public:
     using Lambda = zap::Callback::ReceiveCallback;
 
-    auto Process(const zap::Request& request) const -> OTZMQZAPReply final;
+    auto Process(const zap::Request& request) const -> Reply final;
     auto SetDomain(const std::string& domain, const ReceiveCallback& callback)
         const -> bool final;
     auto SetPolicy(const Policy policy) const -> bool final;
@@ -50,8 +52,8 @@ private:
     mutable std::atomic<Policy> policy_;
 
     auto clone() const -> Callback* final { return new Callback(); }
-    auto default_callback(const zap::Request& in) const -> OTZMQZAPReply;
-    auto get_domain(const std::string& domain) const -> const Lambda&;
+    auto default_callback(const zap::Request& in) const -> Reply;
+    auto get_domain(const ReadView domain) const -> const Lambda&;
 
     Callback();
     Callback(const Callback&) = delete;

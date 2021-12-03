@@ -29,8 +29,8 @@
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/identity/credential/Base.hpp"
-#include "opentxs/protobuf/ContactData.pb.h"
-#include "opentxs/protobuf/VerificationSet.pb.h"
+#include "serialization/protobuf/ContactData.pb.h"
+#include "serialization/protobuf/VerificationSet.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::crypto

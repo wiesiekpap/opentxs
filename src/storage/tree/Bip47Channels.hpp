@@ -18,7 +18,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
-#include "opentxs/protobuf/StorageBip47Contexts.pb.h"
+#include "serialization/protobuf/StorageBip47Contexts.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs

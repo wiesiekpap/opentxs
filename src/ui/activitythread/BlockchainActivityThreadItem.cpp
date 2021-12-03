@@ -20,8 +20,6 @@
 #include "ui/activitythread/ActivityThreadItem.hpp"
 #include "ui/base/Widget.hpp"
 
-// "opentxs::ui::implementation::BlockchainActivityThreadItem::"
-
 namespace opentxs::factory
 {
 auto BlockchainActivityThreadItem(

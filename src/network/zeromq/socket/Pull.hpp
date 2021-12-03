@@ -61,7 +61,8 @@ private:
     auto clone() const noexcept -> Pull* final;
     auto have_callback() const noexcept -> bool final;
 
-    void process_incoming(const Lock& lock, Message& message) noexcept final;
+    auto process_incoming(const Lock& lock, Message&& message) noexcept
+        -> void final;
 
     Pull() = delete;
     Pull(const Pull&) = delete;

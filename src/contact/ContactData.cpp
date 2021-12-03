@@ -16,6 +16,8 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/protobuf/Contact.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ClaimType.hpp"
@@ -26,13 +28,11 @@
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Server.hpp"
-#include "opentxs/protobuf/Contact.hpp"
-#include "opentxs/protobuf/ContactData.pb.h"
-#include "opentxs/protobuf/ContactItem.pb.h"
-#include "opentxs/protobuf/ContactSection.pb.h"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/ContactData.pb.h"
+#include "serialization/protobuf/ContactItem.pb.h"
+#include "serialization/protobuf/ContactSection.pb.h"
 
 namespace opentxs
 {

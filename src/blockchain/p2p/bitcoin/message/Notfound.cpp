@@ -8,6 +8,10 @@
 #include "blockchain/p2p/bitcoin/message/Notfound.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -16,13 +20,10 @@
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
-
-// opentxs::blockchain::p2p::bitcoin::message::implementation::Notfound::"
 
 namespace opentxs::factory
 {
@@ -120,17 +121,36 @@ Notfound::Notfound(
 {
 }
 
-auto Notfound::payload() const noexcept -> OTData
+auto Notfound::payload(AllocateOutput out) const noexcept -> bool
 {
     try {
-        auto output = Data::Factory(CompactSize(payload_.size()).Encode());
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-        for (const auto& item : payload_) { output += item.Encode(); }
+        const auto cs = CompactSize(payload_.size()).Encode();
+        const auto bytes = cs.size() + (payload_.size() * value_type::size());
+        auto output = out(bytes);
 
-        return output;
-    } catch (...) {
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
 
-        return Data::Factory();
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, cs.data(), cs.size());
+        std::advance(i, cs.size());
+
+        for (const auto& item : payload_) {
+            if (false == item.Serialize(preallocated(item.size(), i))) {
+                throw std::runtime_error{"failed to serialize inventory"};
+            }
+
+            std::advance(i, item.size());
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
 }
 }  // namespace  opentxs::blockchain::p2p::bitcoin::message::implementation

@@ -18,6 +18,9 @@
 #include <vector>
 
 #include "Basic.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/RPCPush.hpp"
+#include "internal/protobuf/verify/RPCResponse.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -43,29 +46,26 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/protobuf/APIArgument.pb.h"
-#include "opentxs/protobuf/AcceptPendingPayment.pb.h"
-#include "opentxs/protobuf/AccountEvent.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
-#include "opentxs/protobuf/RPCCommand.pb.h"
-#include "opentxs/protobuf/RPCEnums.pb.h"
-#include "opentxs/protobuf/RPCPush.pb.h"
-#include "opentxs/protobuf/RPCResponse.pb.h"
-#include "opentxs/protobuf/RPCStatus.pb.h"
-#include "opentxs/protobuf/RPCTask.pb.h"
-#include "opentxs/protobuf/SendPayment.pb.h"
-#include "opentxs/protobuf/TaskComplete.pb.h"
-#include "opentxs/protobuf/verify/RPCPush.hpp"
-#include "opentxs/protobuf/verify/RPCResponse.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+#include "serialization/protobuf/APIArgument.pb.h"
+#include "serialization/protobuf/AcceptPendingPayment.pb.h"
+#include "serialization/protobuf/AccountEvent.pb.h"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
+#include "serialization/protobuf/RPCCommand.pb.h"
+#include "serialization/protobuf/RPCEnums.pb.h"
+#include "serialization/protobuf/RPCPush.pb.h"
+#include "serialization/protobuf/RPCResponse.pb.h"
+#include "serialization/protobuf/RPCStatus.pb.h"
+#include "serialization/protobuf/RPCTask.pb.h"
+#include "serialization/protobuf/SendPayment.pb.h"
+#include "serialization/protobuf/TaskComplete.pb.h"
 
 #define COMMAND_VERSION 3
 #define RESPONSE_VERSION 3
@@ -93,7 +93,7 @@ public:
         if (false == bool(notification_callback_)) {
             notification_callback_.reset(new OTZMQListenCallback(
                 network::zeromq::ListenCallback::Factory(
-                    [](const network::zeromq::Message& incoming) -> void {
+                    [](const network::zeromq::Message&& incoming) -> void {
                         process_notification(incoming);
                     })));
         }
@@ -129,7 +129,7 @@ protected:
     static void cleanup();
     static std::size_t get_index(const std::int32_t instance);
     static const api::Session& get_session(const std::int32_t instance);
-    static void process_notification(const network::zeromq::Message& incoming);
+    static void process_notification(const network::zeromq::Message&& incoming);
     static bool default_push_callback(const ot::proto::RPCPush& push);
     static void setup();
 
@@ -209,7 +209,7 @@ const api::Session& Test_Rpc_Async::get_session(const std::int32_t instance)
 }
 
 void Test_Rpc_Async::process_notification(
-    const network::zeromq::Message& incoming)
+    const network::zeromq::Message&& incoming)
 {
     if (1 < incoming.Body().size()) { return; }
 

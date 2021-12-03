@@ -15,7 +15,7 @@
 #include "crypto/bip32/Imp.hpp"
 #include "internal/crypto/Factory.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
+#include "serialization/protobuf/HDPath.pb.h"
 #include "util/HDIndex.hpp"
 
 namespace opentxs

@@ -42,7 +42,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/util/Bytes.hpp"

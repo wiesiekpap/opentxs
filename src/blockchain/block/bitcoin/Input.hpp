@@ -41,12 +41,12 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/protobuf/BlockchainTransactionInput.pb.h"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
-#include "opentxs/protobuf/BlockchainWalletKey.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/BlockchainTransactionInput.pb.h"
+#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
+#include "serialization/protobuf/BlockchainWalletKey.pb.h"
 
 namespace opentxs
 {

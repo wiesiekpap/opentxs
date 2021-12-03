@@ -18,9 +18,9 @@
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/Types.hpp"
-#include "opentxs/protobuf/ServerReply.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/ServerReply.pb.h"
 
 namespace opentxs
 {

@@ -43,13 +43,13 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/protobuf/ContractEnums.pb.h"
-#include "opentxs/protobuf/PeerReply.pb.h"
-#include "opentxs/protobuf/PeerRequest.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/ContractEnums.pb.h"
+#include "serialization/protobuf/PeerReply.pb.h"
+#include "serialization/protobuf/PeerRequest.pb.h"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
 {

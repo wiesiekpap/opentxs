@@ -17,15 +17,13 @@
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace boost
@@ -123,13 +121,17 @@ TEST_F(Test_Message, getblocks)
             stop_hash)};
     ASSERT_TRUE(pMessage);
 
-    auto serialized_header = pMessage->header().Encode();
-    auto payload = pMessage->payload();
+    const auto payload = pMessage->payload();
 
-    auto frame = api_.Network().ZeroMQ().Message(serialized_header);
+    auto frame = [&] {
+        auto out = opentxs::network::zeromq::Message{};
+        pMessage->header().Serialize(out.AppendBytes());
+
+        return out;
+    }();
 
     std::unique_ptr<bitcoin::Header> pHeader{
-        ot::factory::BitcoinP2PHeader(api_, frame->at(0))};
+        ot::factory::BitcoinP2PHeader(api_, frame.at(0))};
 
     if (payload->size() > 0) {
         std::unique_ptr<bitcoin::Message> pLoadedMsg{

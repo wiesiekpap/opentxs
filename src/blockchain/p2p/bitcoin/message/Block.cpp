@@ -8,17 +8,17 @@
 #include "blockchain/p2p/bitcoin/message/Block.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-// opentxs::blockchain::p2p::bitcoin::message::implementation::Block::"
 
 namespace opentxs::factory
 {
@@ -76,5 +76,20 @@ Block::Block(
     : Message(api, std::move(header))
     , payload_(block)
 {
+}
+
+auto Block::payload(AllocateOutput out) const noexcept -> bool
+{
+    try {
+        if (false == copy(payload_->Bytes(), out)) {
+            throw std::runtime_error{"failed to serialize payload"};
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

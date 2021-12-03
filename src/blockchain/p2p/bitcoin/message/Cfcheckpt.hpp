@@ -18,6 +18,7 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -83,7 +84,8 @@ private:
     const filter::pHash stop_;
     const std::vector<filter::pHash> payload_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Cfcheckpt(const Cfcheckpt&) = delete;
     Cfcheckpt(Cfcheckpt&&) = delete;

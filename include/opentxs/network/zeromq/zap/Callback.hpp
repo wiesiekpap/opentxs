@@ -21,6 +21,7 @@ namespace zeromq
 namespace zap
 {
 class Callback;
+class Reply;
 class Request;
 }  // namespace zap
 }  // namespace zeromq
@@ -40,7 +41,7 @@ namespace zap
 class OPENTXS_EXPORT Callback
 {
 public:
-    using ReceiveCallback = std::function<OTZMQZAPReply(const Request&)>;
+    using ReceiveCallback = std::function<Reply(const Request&)>;
 
     enum class Policy : bool { Accept = true, Reject = false };
 
@@ -49,7 +50,7 @@ public:
         const ReceiveCallback& callback) -> OTZMQZAPCallback;
     static auto Factory() -> OTZMQZAPCallback;
 
-    virtual auto Process(const Request& request) const -> OTZMQZAPReply = 0;
+    virtual auto Process(const Request& request) const -> Reply = 0;
     virtual auto SetDomain(
         const std::string& domain,
         const ReceiveCallback& callback) const -> bool = 0;

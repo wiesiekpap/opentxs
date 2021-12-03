@@ -5,91 +5,21 @@
 
 #pragma once
 
-#include <mutex>
+#include "opentxs/network/zeromq/Context.hpp"
 
-namespace opentxs
+namespace opentxs::network::zeromq::socket::internal
 {
-namespace api
+class Socket : virtual public socket::Socket
 {
-class Session;
-}  // namespace api
+public:
+    virtual auto ID() const noexcept -> std::size_t = 0;
+    auto Internal() const noexcept -> const internal::Socket& final
+    {
+        return *this;
+    }
 
-namespace network
-{
-namespace zeromq
-{
-namespace socket
-{
-class Dealer;
-class Pair;
-class Publish;
-class Pull;
-class Push;
-class Reply;
-class Request;
-class Router;
-class Subscribe;
-}  // namespace socket
+    auto Internal() noexcept -> internal::Socket& final { return *this; }
 
-class Context;
-class ListenCallback;
-class Message;
-class Pipeline;
-class ReplyCallback;
-}  // namespace zeromq
-}  // namespace network
-}  // namespace opentxs
-
-namespace opentxs::factory
-{
-auto DealerSocket(
-    const network::zeromq::Context& context,
-    const bool direction,
-    const network::zeromq::ListenCallback& callback)
-    -> std::unique_ptr<network::zeromq::socket::Dealer>;
-auto PairSocket(
-    const network::zeromq::Context& context,
-    const network::zeromq::ListenCallback& callback,
-    const bool startThread) -> std::unique_ptr<network::zeromq::socket::Pair>;
-auto PairSocket(
-    const network::zeromq::ListenCallback& callback,
-    const network::zeromq::socket::Pair& peer,
-    const bool startThread) -> std::unique_ptr<network::zeromq::socket::Pair>;
-auto PairSocket(
-    const network::zeromq::Context& context,
-    const network::zeromq::ListenCallback& callback,
-    const std::string& endpoint)
-    -> std::unique_ptr<network::zeromq::socket::Pair>;
-auto Pipeline(
-    const api::Session& api,
-    const network::zeromq::Context& context,
-    std::function<void(network::zeromq::Message&)> callback)
-    -> std::unique_ptr<opentxs::network::zeromq::Pipeline>;
-auto PublishSocket(const network::zeromq::Context& context)
-    -> std::unique_ptr<network::zeromq::socket::Publish>;
-auto PullSocket(const network::zeromq::Context& context, const bool direction)
-    -> std::unique_ptr<network::zeromq::socket::Pull>;
-auto PullSocket(
-    const network::zeromq::Context& context,
-    const bool direction,
-    const network::zeromq::ListenCallback& callback)
-    -> std::unique_ptr<network::zeromq::socket::Pull>;
-auto PushSocket(const network::zeromq::Context& context, const bool direction)
-    -> std::unique_ptr<network::zeromq::socket::Push>;
-auto ReplySocket(
-    const network::zeromq::Context& context,
-    const bool direction,
-    const network::zeromq::ReplyCallback& callback)
-    -> std::unique_ptr<network::zeromq::socket::Reply>;
-auto RequestSocket(const network::zeromq::Context& context)
-    -> std::unique_ptr<network::zeromq::socket::Request>;
-auto RouterSocket(
-    const network::zeromq::Context& context,
-    const bool direction,
-    const network::zeromq::ListenCallback& callback)
-    -> std::unique_ptr<network::zeromq::socket::Router>;
-auto SubscribeSocket(
-    const network::zeromq::Context& context,
-    const network::zeromq::ListenCallback& callback)
-    -> std::unique_ptr<network::zeromq::socket::Subscribe>;
-}  // namespace opentxs::factory
+    ~Socket() override = default;
+};
+}  // namespace opentxs::network::zeromq::socket::internal

@@ -31,10 +31,11 @@
 #include "opentxs/network/blockchain/sync/Request.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
@@ -63,7 +64,7 @@ public:
 
         if (zmq_thread_.joinable()) { zmq_thread_.join(); }
 
-        return stop_worker();
+        return signal_shutdown();
     }
 
     SyncServer(
@@ -108,14 +109,14 @@ public:
         ::zmq_connect(socket_.get(), endpoint_.c_str());
     }
 
-    ~SyncServer() { Shutdown().get(); }
+    ~SyncServer() { signal_shutdown().get(); }
 
 private:
     friend SyncDM;
     friend SyncWorker;
 
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
-    using OTSocket = opentxs::network::zeromq::socket::implementation::Socket;
+    using OTSocket = network::zeromq::socket::implementation::Socket;
     using Work = node::implementation::Base::Work;
 
     const node::internal::SyncDatabase& db_;
@@ -184,7 +185,7 @@ private:
     }
     auto pipeline(const zmq::Message& in) noexcept -> void
     {
-        if (false == running_.get()) { return; }
+        if (false == running_.load()) { return; }
 
         const auto body = in.Body();
 
@@ -293,7 +294,7 @@ private:
     auto process_zmq(const Lock& lock) noexcept -> void
     {
         const auto incoming = [&] {
-            auto output = api_.Network().ZeroMQ().Message();
+            auto output = network::zeromq::Message{};
             OTSocket::receive_message(lock, socket_.get(), output);
 
             return output;
@@ -328,10 +329,10 @@ private:
 
             if (needSync) { send = db_.LoadSync(height, reply); }
 
-            auto out = api_.Network().ZeroMQ().ReplyMessage(incoming);
+            auto out = network::zeromq::reply_to_message(incoming);
 
             if (send && reply.Serialize(out)) {
-                OTSocket::send_message(lock, socket_.get(), out);
+                OTSocket::send_message(lock, socket_.get(), std::move(out));
             }
         } catch (const std::exception& e) {
             LogError()(SYNC_SERVER)(__func__)(": ")(e.what()).Flush();
@@ -413,23 +414,21 @@ private:
             {chain_, pos},
             std::move(items),
             previousFilterHeader->Bytes()};
-        auto work = api_.Network().ZeroMQ().Message();
+        auto work = network::zeromq::Message{};
 
         if (msg.Serialize(work) && zmq_running_) {
             // NOTE the appropriate lock is already being held in the pipeline
             // function
             auto dummy = std::mutex{};
             auto lock = Lock{dummy};
-            OTSocket::send_message(lock, socket_.get(), work);
+            OTSocket::send_message(lock, socket_.get(), std::move(work));
         }
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
-        if (running_->Off()) {
-            try {
-                promise.set_value();
-            } catch (...) {
-            }
+        if (auto previous = running_.exchange(false); previous) {
+            pipeline_.Close();
+            promise.set_value();
         }
     }
     auto zmq_thread() noexcept -> void

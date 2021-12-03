@@ -17,8 +17,7 @@ namespace opentxs::internal
 class Log
 {
 public:
-    static constexpr auto endpoint_{"inproc://opentxs/logsink/1"};
-
+    static auto Endpoint() noexcept -> const char*;
     static auto SetVerbosity(const int level) noexcept -> void;
     static auto Shutdown() noexcept -> void;
     static auto Start() noexcept -> void;

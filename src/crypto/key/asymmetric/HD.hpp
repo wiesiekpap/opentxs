@@ -19,10 +19,10 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

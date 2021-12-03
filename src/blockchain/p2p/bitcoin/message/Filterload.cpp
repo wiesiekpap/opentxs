@@ -8,18 +8,19 @@
 #include "blockchain/p2p/bitcoin/message/Filterload.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/BloomFilter.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
-
-// "opentxs::blockchain::p2p::bitcoin::message::implementation::Filterload::"
 
 namespace opentxs::factory
 {
@@ -84,5 +85,20 @@ Filterload::Filterload(
     : Message(api, std::move(header))
     , payload_(filter)
 {
+}
+
+auto Filterload::payload(AllocateOutput out) const noexcept -> bool
+{
+    try {
+        if (false == payload_->Serialize(out)) {
+            throw std::runtime_error{"failed to serialize bloom filter"};
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

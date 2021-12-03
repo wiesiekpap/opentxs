@@ -11,7 +11,7 @@
 
 #include "Proto.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/protobuf/StorageCredentials.pb.h"
+#include "serialization/protobuf/StorageCredentials.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs

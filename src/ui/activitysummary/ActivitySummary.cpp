@@ -26,13 +26,12 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/protobuf/StorageThread.pb.h"
-#include "opentxs/protobuf/StorageThreadItem.pb.h"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/StorageThread.pb.h"
+#include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "ui/base/List.hpp"
 
 namespace opentxs::factory
@@ -162,12 +161,7 @@ void ActivitySummary::process_thread(const Message& message) noexcept
 
     OT_ASSERT(1 < body.size());
 
-    const auto threadID = [&] {
-        auto output = api_.Factory().Identifier();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto threadID = api_.Factory().Identifier(body.at(1));
 
     OT_ASSERT(false == threadID->empty())
 

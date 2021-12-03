@@ -36,7 +36,7 @@
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
+#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs
 {

@@ -42,12 +42,12 @@
 #include "opentxs/identity/Authority.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
-#include "opentxs/protobuf/AsymmetricKey.pb.h"
-#include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/Envelope.pb.h"
-#include "opentxs/protobuf/TaggedKey.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/AsymmetricKey.pb.h"
+#include "serialization/protobuf/Ciphertext.pb.h"
+#include "serialization/protobuf/Envelope.pb.h"
+#include "serialization/protobuf/TaggedKey.pb.h"
 
 namespace opentxs
 {

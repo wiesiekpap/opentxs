@@ -17,8 +17,8 @@
 #include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
-#include "opentxs/protobuf/StoragePaymentWorkflows.pb.h"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
+#include "serialization/protobuf/StoragePaymentWorkflows.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs

@@ -15,9 +15,9 @@
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/ContactSection.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/ContactSection.pb.h"
 
 namespace opentxs
 {

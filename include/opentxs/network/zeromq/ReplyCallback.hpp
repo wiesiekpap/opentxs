@@ -17,6 +17,7 @@ namespace network
 {
 namespace zeromq
 {
+class Message;
 class ReplyCallback;
 }  // namespace zeromq
 }  // namespace network
@@ -33,12 +34,15 @@ namespace zeromq
 class OPENTXS_EXPORT ReplyCallback
 {
 public:
-    using ReceiveCallback = std::function<OTZMQMessage(const Message&)>;
+    using ReceiveCallback = std::function<Message(Message&&)>;
 
+    static auto Factory() -> OTZMQReplyCallback;
     static auto Factory(ReceiveCallback callback) -> OTZMQReplyCallback;
 
-    virtual auto Process(const Message& message) const
-        -> Pimpl<opentxs::network::zeromq::Message> = 0;
+    /// Deactivate will block until Process is no longer executing, unless it is
+    /// called by the same thread as the one currently executing the callback.
+    virtual auto Deactivate() const noexcept -> void = 0;
+    virtual auto Process(Message&& message) const noexcept -> Message = 0;
 
     virtual ~ReplyCallback() = default;
 

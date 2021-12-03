@@ -18,14 +18,13 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
@@ -66,21 +65,27 @@ auto BlockOracle::Cache::DownloadQueue() const noexcept -> std::size_t
 
 auto BlockOracle::Cache::publish(std::size_t size) const noexcept -> void
 {
-    auto work = api_.Network().ZeroMQ().TaggedMessage(
-        WorkType::BlockchainBlockDownloadQueue);
-    work->AddFrame(chain_);
-    work->AddFrame(size);
-    cache_size_publisher_.Send(work);
+    cache_size_publisher_.Send([&] {
+        auto work = network::zeromq::tagged_message(
+            WorkType::BlockchainBlockDownloadQueue);
+        work.AddFrame(chain_);
+        work.AddFrame(size);
+
+        return work;
+    }());
 }
 
 auto BlockOracle::Cache::publish(const block::Hash& block) const noexcept
     -> void
 {
-    auto work = api_.Network().ZeroMQ().TaggedMessage(
-        WorkType::BlockchainBlockAvailable);
-    work->AddFrame(chain_);
-    work->AddFrame(block);
-    block_available_.Send(work);
+    block_available_.Send([&] {
+        auto work =
+            network::zeromq::tagged_message(WorkType::BlockchainBlockAvailable);
+        work.AddFrame(chain_);
+        work.AddFrame(block);
+
+        return work;
+    }());
 }
 
 auto BlockOracle::Cache::ReceiveBlock(const zmq::Frame& in) const noexcept

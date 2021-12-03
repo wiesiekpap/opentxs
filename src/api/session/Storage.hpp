@@ -38,10 +38,10 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/protobuf/PaymentWorkflowEnums.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "storage/Config.hpp"
 
 namespace opentxs

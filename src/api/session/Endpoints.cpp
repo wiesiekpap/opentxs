@@ -12,7 +12,7 @@
 
 #include "internal/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
 
 #define ENDPOINT_VERSION_1 1
 
@@ -66,30 +66,27 @@
 
 namespace opentxs::factory
 {
-auto EndpointsAPI(
-    const network::zeromq::Context& zmq,
-    const int instance) noexcept -> std::unique_ptr<api::session::Endpoints>
+auto EndpointsAPI(const int instance) noexcept
+    -> std::unique_ptr<api::session::Endpoints>
 {
     using ReturnType = api::session::implementation::Endpoints;
 
-    return std::make_unique<ReturnType>(zmq, instance);
+    return std::make_unique<ReturnType>(instance);
 }
 }  // namespace opentxs::factory
 
 namespace opentxs::api::session::implementation
 {
-Endpoints::Endpoints(
-    const opentxs::network::zeromq::Context& zmq,
-    const int instance) noexcept
-    : zmq_(zmq)
-    , instance_(instance)
+Endpoints::Endpoints(const int instance) noexcept
+    : instance_(instance)
 {
 }
 
 auto Endpoints::build_inproc_path(const std::string& path, const int version)
     const noexcept -> std::string
 {
-    return zmq_.BuildEndpoint(path, instance_, version);
+    return opentxs::network::zeromq::MakeDeterministicInproc(
+        path, instance_, version);
 }
 
 auto Endpoints::build_inproc_path(
@@ -97,7 +94,8 @@ auto Endpoints::build_inproc_path(
     const int version,
     const std::string& suffix) const noexcept -> std::string
 {
-    return zmq_.BuildEndpoint(path, instance_, version, suffix);
+    return opentxs::network::zeromq::MakeDeterministicInproc(
+        path, instance_, version, suffix);
 }
 
 auto Endpoints::AccountUpdate() const noexcept -> std::string

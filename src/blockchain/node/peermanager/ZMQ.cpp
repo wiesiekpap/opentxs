@@ -8,8 +8,10 @@
 #include "IncomingConnectionManager.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <deque>
 #include <map>
 #include <mutex>
+#include <queue>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -32,11 +34,13 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
@@ -50,6 +54,8 @@ class ZMQIncomingConnectionManager final
     : public PeerManager::IncomingConnectionManager
 {
 public:
+    using Task = node::internal::PeerManager::Task;
+
     auto Disconnect(const int id) const noexcept -> void final
     {
         auto lock = Lock{lock_};
@@ -57,7 +63,7 @@ public:
 
         if (peers_.end() == it) { return; }
 
-        const auto& [externalID, internalID, cached] = it->second;
+        const auto& [externalID, internalID, registered, cached] = it->second;
         external_index_.erase(externalID);
         internal_index_.erase(internalID);
         peers_.erase(it);
@@ -91,9 +97,9 @@ public:
         , external_index_()
         , internal_index_()
         , cb_ex_(zmq::ListenCallback::Factory(
-              [=](auto& in) { this->external(in); }))
+              [=](auto&& in) { this->external(std::move(in)); }))
         , cb_int_(zmq::ListenCallback::Factory(
-              [=](auto& in) { this->internal(in); }))
+              [=](auto&& in) { this->internal(std::move(in)); }))
         , external_(api_.Network().ZeroMQ().RouterSocket(
               cb_ex_,
               zmq::socket::Socket::Direction::Bind))
@@ -105,8 +111,9 @@ public:
 
 private:
     using ConnectionID = OTData;
-    using CachedMessages = std::vector<OTZMQMessage>;
-    using PeerData = std::tuple<ConnectionID, ConnectionID, CachedMessages>;
+    using CachedMessages = std::queue<network::zeromq::Message>;
+    using PeerData =
+        std::tuple<ConnectionID, ConnectionID, bool, CachedMessages>;
     using Peers = std::map<int, PeerData>;
     using PeerIndex = std::map<ConnectionID, int>;
 
@@ -120,37 +127,49 @@ private:
     OTZMQRouterSocket external_;
     OTZMQRouterSocket internal_;
 
-    auto make_endpoint() const noexcept -> std::string
+    auto external(zmq::Message&& message) noexcept -> void
     {
-        return std::string{"inproc://"} +
-               api_.Crypto().Encode().Nonce(20)->Get();
-    }
-
-    auto external(zmq::Message& message) noexcept -> void
-    {
-        const auto& header = message.Header();
+        const auto header = message.Header();
+        const auto body = message.Body();
 
         if (0 == header.size()) {
-            LogError()(OT_PRETTY_CLASS())("Invalid header").Flush();
+            LogError()(OT_PRETTY_CLASS())(
+                "Rejecting message with missing header")
+                .Flush();
+
+            return;
+        }
+
+        if (0 == body.size()) {
+            LogError()(OT_PRETTY_CLASS())("Rejecting message with missing body")
+                .Flush();
+
+            return;
+        }
+
+        if (Task::P2P != body.at(0).as<Task>()) {
+            LogError()(OT_PRETTY_CLASS())("Rejecting invalid message type")
+                .Flush();
 
             return;
         }
 
         const auto& idFrame = header.at(0);
         const auto id = api_.Factory().Data(idFrame);
-        auto lock = Lock{lock_};
         auto index = external_index_.find(id);
 
         if (external_index_.end() != index) {
-            auto& [externalID, internalID, cached] = peers_.at(index->second);
+            auto lock = Lock{lock_};
+            auto& [externalID, internalID, registered, cached] =
+                peers_.at(index->second);
 
-            if (internalID->empty()) {
-                cached.emplace_back(message);
+            if (registered) {
+                forward_message(internalID, std::move(message));
             } else {
-                forward_message(internalID, message);
+                cached.emplace(std::move(message));
             }
         } else {
-            const auto inproc = make_endpoint();
+            const auto inproc = network::zeromq::MakeArbitraryInproc();
             const auto port =
                 params::Data::Chains().at(parent_.chain_).default_port_;
             const auto zmq = inproc + ':' + std::to_string(port);
@@ -173,6 +192,7 @@ private:
                 return;
             }
 
+            auto lock = Lock{lock_};
             const auto peerID = parent_.ConstructPeer(std::move(address));
 
             if (-1 == peerID) {
@@ -183,89 +203,90 @@ private:
             }
 
             external_index_.try_emplace(id, peerID);
-            peers_.try_emplace(
-                peerID, id, api_.Factory().Data(), CachedMessages{message});
+            auto [it, added] = peers_.try_emplace(
+                peerID, id, api_.Factory().Data(), false, CachedMessages{});
+
+            OT_ASSERT(added);
+
+            auto& [externalID, internalID, registered, cached] = it->second;
+            cached.emplace(std::move(message));
         }
     }
-    auto forward_message(const Data& internalID, zmq::Message& message) noexcept
-        -> void
+    auto forward_message(
+        const Data& internalID,
+        zmq::Message&& message) noexcept -> void
     {
-        using Task = node::internal::PeerManager::Task;
+        internal_->Send([&] {
+            auto out = network::zeromq::Message{};
+            out.AddFrame(internalID);
+            out.StartBody();
 
-        auto forwarded = api_.Network().ZeroMQ().Message(internalID);
-        forwarded->StartBody();
-        forwarded->AddFrame(Task::Body);
+            for (auto& frame : message.Body()) {
+                out.AddFrame(std::move(frame));
+            }
 
-        for (const auto& frame : message.Body()) { forwarded->AddFrame(frame); }
-
-        internal_->Send(forwarded);
+            return out;
+        }());
     }
-    auto internal(zmq::Message& message) noexcept -> void
+    auto internal(zmq::Message&& message) noexcept -> void
     {
-        using Task = node::internal::PeerManager::Task;
-
         const auto header = message.Header();
 
         OT_ASSERT(0 < header.size());
 
         auto incomingID = api_.Factory().Data(header.at(0));
-        const auto body = message.Body();
+        auto body = message.Body();
 
         OT_ASSERT(0 < body.size());
 
-        const auto work = [&] {
-            try {
-
-                return body.at(0).as<OTZMQWorkType>();
-            } catch (...) {
-
-                OT_FAIL;
-            }
-        }();
-
-        switch (work) {
-            case value(WorkType::AsioRegister): {
+        switch (body.at(0).as<Task>()) {
+            case Task::Register: {
                 OT_ASSERT(1 < body.size());
 
                 const auto peerID = body.at(1).as<int>();
-
                 auto lock = Lock{lock_};
 
                 try {
-                    auto& [externalID, internalID, cached] = peers_.at(peerID);
+                    auto& [externalID, internalID, registered, cached] =
+                        peers_.at(peerID);
                     internalID = incomingID;
-                    auto reply = api_.Network().ZeroMQ().TaggedReply(
-                        message, Task::Register);
-                    internal_->Send(reply);
+                    registered = true;
+                    internal_->Send(network::zeromq::tagged_reply_to_message(
+                        message, Task::Register));
 
-                    for (auto& message : cached) {
-                        forward_message(internalID, message);
+                    while (0u < cached.size()) {
+                        forward_message(internalID, std::move(cached.front()));
+                        cached.pop();
                     }
 
-                    cached.clear();
                     internal_index_.try_emplace(std::move(incomingID), peerID);
                 } catch (...) {
 
                     return;
                 }
             } break;
-            case OT_ZMQ_SEND_SIGNAL: {
-                OT_ASSERT(1 < body.size());
-
-                auto lock = Lock{lock_};
+            case Task::P2P: {
+                OT_ASSERT(2 < body.size());
 
                 try {
-                    auto& [externalID, internalID, cached] =
-                        peers_.at(internal_index_.at(incomingID));
+                    const auto externalID = [&] {
+                        auto lock = Lock{lock_};
+                        auto& [eID, internalID, registered, cached] =
+                            peers_.at(internal_index_.at(incomingID));
 
-                    auto outgoing = api_.Network().ZeroMQ().Message(externalID);
-                    outgoing->StartBody();
+                        return eID;
+                    }();
+                    external_->Send([&] {
+                        auto out = network::zeromq::Message{};
+                        out.AddFrame(externalID);
+                        out.StartBody();
 
-                    for (auto i = std::size_t{1}; i < body.size(); ++i) {
-                        outgoing->AddFrame(body.at(i));
-                    }
+                        for (auto& frame : body) {
+                            out.AddFrame(std::move(frame));
+                        }
 
-                    external_->Send(outgoing);
+                        return out;
+                    }());
                 } catch (...) {
 
                     return;

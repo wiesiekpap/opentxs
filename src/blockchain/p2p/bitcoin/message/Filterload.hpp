@@ -14,6 +14,7 @@
 #include "opentxs/blockchain/BloomFilter.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -59,10 +60,8 @@ public:
 private:
     const OTBloomFilter payload_;
 
-    auto payload() const noexcept -> OTData final
-    {
-        return payload_->Serialize();
-    }
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Filterload(const Filterload&) = delete;
     Filterload(Filterload&&) = delete;

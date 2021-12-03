@@ -7,7 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -16,6 +16,8 @@ namespace blockchain
 {
 class BloomFilter;
 }  // namespace blockchain
+
+class Data;
 
 using OTBloomFilter = Pimpl<blockchain::BloomFilter>;
 }  // namespace opentxs
@@ -27,10 +29,10 @@ namespace blockchain
 class OPENTXS_EXPORT BloomFilter
 {
 public:
-    virtual auto Serialize() const noexcept -> OTData = 0;
+    virtual auto Serialize(AllocateOutput) const noexcept -> bool = 0;
     virtual auto Test(const Data& element) const noexcept -> bool = 0;
 
-    virtual void AddElement(const Data& element) noexcept = 0;
+    virtual auto AddElement(const Data& element) noexcept -> void = 0;
 
     virtual ~BloomFilter() = default;
 

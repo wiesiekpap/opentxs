@@ -11,8 +11,8 @@
 #include "identity/credential/Base.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/ContactData.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/ContactData.pb.h"
 
 namespace opentxs
 {

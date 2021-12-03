@@ -17,9 +17,10 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
 
 #define CALLBACK_WAIT_MILLISECONDS 50
@@ -32,7 +33,7 @@ Bidirectional<InterfaceType, MessageType>::Bidirectional(
     const zeromq::Context& context,
     const bool startThread) noexcept
     : bidirectional_start_thread_(startThread)
-    , endpoint_(Socket::random_inproc_endpoint())
+    , endpoint_(MakeArbitraryInproc())
     , push_socket_([&] {
         auto output = RawSocket{zmq_socket(context, ZMQ_PUSH), zmq_close};
 
@@ -151,7 +152,7 @@ template <typename InterfaceType, typename MessageType>
 auto Bidirectional<InterfaceType, MessageType>::process_pull_socket(
     const Lock& lock) noexcept -> bool
 {
-    auto msg = Message::Factory();
+    auto msg = Message{};
 
     if (pull_socket_) {
         const auto have =
@@ -163,26 +164,26 @@ auto Bidirectional<InterfaceType, MessageType>::process_pull_socket(
         return false;
     }
 
-    return send(lock, msg);
+    return send(lock, std::move(msg));
 }
 
 template <typename InterfaceType, typename MessageType>
 auto Bidirectional<InterfaceType, MessageType>::process_receiver_socket(
     const Lock& lock) noexcept -> bool
 {
-    auto reply = Message::Factory();
+    auto reply = Message{};
     const auto received = Socket::receive_message(lock, this->socket_, reply);
 
     if (false == received) { return false; }
 
-    this->process_incoming(lock, reply);
+    this->process_incoming(lock, std::move(reply));
 
     return true;
 }
 
 template <typename InterfaceType, typename MessageType>
-auto Bidirectional<InterfaceType, MessageType>::send(
-    zeromq::Message& message) const noexcept -> bool
+auto Bidirectional<InterfaceType, MessageType>::Send(
+    zeromq::Message&& message) const noexcept -> bool
 {
     Lock lock(send_lock_);
 
@@ -190,7 +191,8 @@ auto Bidirectional<InterfaceType, MessageType>::send(
 
     if (push_socket_) {
 
-        return Socket::send_message(lock, push_socket_.get(), message);
+        return Socket::send_message(
+            lock, push_socket_.get(), std::move(message));
     } else {
 
         return false;
@@ -200,9 +202,9 @@ auto Bidirectional<InterfaceType, MessageType>::send(
 template <typename InterfaceType, typename MessageType>
 auto Bidirectional<InterfaceType, MessageType>::send(
     const Lock& lock,
-    zeromq::Message& message) noexcept -> bool
+    zeromq::Message&& message) noexcept -> bool
 {
-    return Socket::send_message(lock, this->socket_, message);
+    return Socket::send_message(lock, this->socket_, std::move(message));
 }
 
 template <typename InterfaceType, typename MessageType>

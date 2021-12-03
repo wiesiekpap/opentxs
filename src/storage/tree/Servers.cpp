@@ -14,14 +14,14 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/ServerContract.hpp"
+#include "internal/protobuf/verify/StorageServers.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/StorageItemHash.pb.h"
-#include "opentxs/protobuf/StorageServers.pb.h"
-#include "opentxs/protobuf/verify/ServerContract.hpp"
-#include "opentxs/protobuf/verify/StorageServers.hpp"
 #include "opentxs/storage/Driver.hpp"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/StorageItemHash.pb.h"
+#include "serialization/protobuf/StorageServers.pb.h"
 #include "storage/Plugin.hpp"
 #include "storage/tree/Node.hpp"
 

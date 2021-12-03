@@ -26,13 +26,13 @@
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/credential/Verification.hpp"
-#include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/Verification.pb.h"
-#include "opentxs/protobuf/VerificationGroup.pb.h"
-#include "opentxs/protobuf/VerificationIdentity.pb.h"
-#include "opentxs/protobuf/VerificationSet.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/Credential.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
+#include "serialization/protobuf/Verification.pb.h"
+#include "serialization/protobuf/VerificationGroup.pb.h"
+#include "serialization/protobuf/VerificationIdentity.pb.h"
+#include "serialization/protobuf/VerificationSet.pb.h"
 
 namespace opentxs
 {

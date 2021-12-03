@@ -22,8 +22,6 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 
-class ListenCallbackSwig;
-
 using OTZMQListenCallback = Pimpl<network::zeromq::ListenCallback>;
 }  // namespace opentxs
 
@@ -36,14 +34,15 @@ namespace zeromq
 class OPENTXS_EXPORT ListenCallback
 {
 public:
-    using ReceiveCallback = std::function<void(Message&)>;
+    using ReceiveCallback = std::function<void(Message&&)>;
 
     static auto Factory(ReceiveCallback callback) -> OTZMQListenCallback;
     static auto Factory() -> OTZMQListenCallback;
-    static auto Factory(ListenCallbackSwig* callback)
-        -> opentxs::Pimpl<opentxs::network::zeromq::ListenCallback>;
 
-    virtual void Process(Message& message) const = 0;
+    /// Deactivate will block until Process is no longer executing, unless it is
+    /// called by the same thread as the one currently executing the callback.
+    virtual auto Deactivate() const noexcept -> void = 0;
+    virtual auto Process(Message&& message) const noexcept -> void = 0;
 
     virtual ~ListenCallback() = default;
 

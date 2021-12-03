@@ -20,9 +20,9 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/protobuf/BlockchainFilterHeader.pb.h"
-#include "opentxs/protobuf/GCS.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/BlockchainFilterHeader.pb.h"
+#include "serialization/protobuf/GCS.pb.h"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 

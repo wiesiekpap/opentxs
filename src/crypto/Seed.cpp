@@ -30,12 +30,12 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/Seed.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Seed.pb.h"
 #include "util/Container.hpp"
 
 namespace opentxs::crypto

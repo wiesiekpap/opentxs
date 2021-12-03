@@ -23,6 +23,7 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
@@ -38,6 +39,9 @@
 #include "opentxs/blind/Token.hpp"
 #endif  // OT_CASH
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/OTXPush.hpp"
+#include "internal/protobuf/verify/Purse.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Cheque.hpp"
@@ -64,21 +68,18 @@
 #include "opentxs/core/trade/OTTrade.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/OTXEnums.pb.h"
-#include "opentxs/protobuf/OTXPush.pb.h"
-#include "opentxs/protobuf/Purse.pb.h"
-#include "opentxs/protobuf/verify/OTXPush.hpp"
-#include "opentxs/protobuf/verify/Purse.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/OTXEnums.pb.h"
+#include "serialization/protobuf/OTXPush.pb.h"
+#include "serialization/protobuf/Purse.pb.h"
 #include "server/Macros.hpp"
 #include "server/PayDividendVisitor.hpp"
 #include "server/Server.hpp"
@@ -8686,8 +8687,8 @@ void Notary::send_push_notification(
     outbox->SaveContractRaw(serializedOutbox);
     outbox->CalculateOutboxHash(outboxHash);
     item->SaveContractRaw(serializedItem);
-    auto message = zmq::Message::Factory();
-    message->AddFrame(account.GetNymID().str());
+    auto message = zmq::Message{};
+    message.AddFrame(account.GetNymID().str());
     proto::OTXPush push;
     push.set_version(OTX_PUSH_VERSION);
     push.set_type(proto::OTXPUSH_INBOX);
@@ -8707,8 +8708,8 @@ void Notary::send_push_notification(
         return;
     }
 
-    message->AddFrame(push);
-    notification_socket_->Send(message);
+    message.Internal().AddFrame(push);
+    notification_socket_->Send(std::move(message));
 }
 
 #if OT_CASH

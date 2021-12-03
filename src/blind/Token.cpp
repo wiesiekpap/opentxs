@@ -23,9 +23,9 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#include "opentxs/protobuf/Token.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Token.pb.h"
 
 namespace opentxs
 {

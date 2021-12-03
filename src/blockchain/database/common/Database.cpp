@@ -22,6 +22,7 @@ extern "C" {
 #include <map>
 #include <optional>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #include "blockchain/database/common/BlockFilter.hpp"
@@ -37,10 +38,10 @@ extern "C" {
 #include "opentxs/blockchain/GCS.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "util/LMDB.hpp"
 
 constexpr auto false_byte_ = std::byte{0x0};

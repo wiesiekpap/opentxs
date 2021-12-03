@@ -7,11 +7,14 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "network/zeromq/zap/Handler.hpp"  // IWYU pragma: associated
 
+#include <utility>
+
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/zap/Callback.hpp"
 #include "opentxs/network/zeromq/zap/Handler.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
@@ -26,7 +29,6 @@ namespace network
 namespace zeromq
 {
 class Context;
-class Message;
 }  // namespace zeromq
 }  // namespace network
 }  // namespace opentxs
@@ -34,8 +36,6 @@ class Message;
 template class opentxs::Pimpl<opentxs::network::zeromq::zap::Handler>;
 template class opentxs::network::zeromq::socket::implementation::Receiver<
     opentxs::network::zeromq::zap::Request>;
-
-#define ZAP_ENDPOINT "inproc://zeromq.zap.01"
 
 namespace opentxs::network::zeromq::zap
 {
@@ -52,28 +52,29 @@ namespace opentxs::network::zeromq::zap::implementation
 Handler::Handler(
     const zeromq::Context& context,
     const zap::Callback& callback) noexcept
-    : Receiver(context, SocketType::Router, Socket::Direction::Bind, true)
+    : Receiver(context, socket::Type::Router, Socket::Direction::Bind, true)
     , Server(this->get())
     , callback_(callback)
 {
     init();
 }
 
-void Handler::init() noexcept
+auto Handler::init() noexcept -> void
 {
+    static constexpr auto endpoint{"inproc://zeromq.zap.01"};
     Receiver::init();
-    const auto running = Receiver::Start(ZAP_ENDPOINT);
+    const auto running = Receiver::Start(endpoint);
 
     OT_ASSERT(running);
 
-    LogDetail()(OT_PRETTY_CLASS())("Listening on ")(ZAP_ENDPOINT).Flush();
+    LogDetail()(OT_PRETTY_CLASS())("Listening on ")(endpoint).Flush();
 }
 
-void Handler::process_incoming(const Lock& lock, zap::Request& message) noexcept
+auto Handler::process_incoming(
+    const Lock& lock,
+    zap::Request&& message) noexcept -> void
 {
-    auto output = callback_.Process(message);
-    Message& reply = output;
-    send_message(lock, reply);
+    send_message(lock, callback_.Process(std::move(message)));
 }
 
 Handler::~Handler() SHUTDOWN

@@ -14,10 +14,10 @@
 #include "blockchain/DownloadManager.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
@@ -76,7 +76,7 @@ public:
         OT_ASSERT(checkpoint_);
     }
 
-    ~HeaderDownloader() { stop_worker().get(); }
+    ~HeaderDownloader() { signal_shutdown().get(); }
 
 private:
     friend HeaderDM;
@@ -127,7 +127,7 @@ private:
 
     auto pipeline(const zmq::Message& in) noexcept -> void
     {
-        if (false == running_.get()) { return; }
+        if (false == running_.load()) { return; }
 
         const auto body = in.Body();
 
@@ -239,10 +239,10 @@ private:
                 OT_ASSERT(false == good->empty());
 
                 auto work = MakeWork(Work::reset_filter_tip);
-                work->AddFrame(check.first);
-                work->AddFrame(check.second);
-                work->AddFrame(good);
-                pipeline_->Push(work);
+                work.AddFrame(check.first);
+                work.AddFrame(check.second);
+                work.AddFrame(good);
+                pipeline_.Push(std::move(work));
             }
         }
 
@@ -253,11 +253,9 @@ private:
     }
     auto shutdown(std::promise<void>& promise) noexcept -> void
     {
-        if (running_->Off()) {
-            try {
-                promise.set_value();
-            } catch (...) {
-            }
+        if (auto previous = running_.exchange(false); previous) {
+            pipeline_.Close();
+            promise.set_value();
         }
     }
 };

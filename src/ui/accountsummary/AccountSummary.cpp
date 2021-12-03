@@ -24,8 +24,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "ui/base/List.hpp"
 
@@ -130,12 +129,7 @@ void AccountSummary::process_connection(const Message& message) noexcept
 
     OT_ASSERT(2 < body.size());
 
-    const auto id = [&] {
-        auto output = api_.Factory().ServerID();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto id = api_.Factory().ServerID(body.at(1));
     process_server(id);
 }
 
@@ -153,18 +147,8 @@ void AccountSummary::process_issuer(const Message& message) noexcept
 
     OT_ASSERT(2 < body.size());
 
-    const auto nymID = [&] {
-        auto output = api_.Factory().NymID();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
-    const auto issuerID = [&] {
-        auto output = api_.Factory().NymID();
-        output->Assign(body.at(2).Bytes());
-
-        return output;
-    }();
+    const auto nymID = api_.Factory().NymID(body.at(1));
+    const auto issuerID = api_.Factory().NymID(body.at(2));
 
     OT_ASSERT(false == nymID->empty())
     OT_ASSERT(false == issuerID->empty())
@@ -180,8 +164,7 @@ void AccountSummary::process_nym(const Message& message) noexcept
 
     OT_ASSERT(1 < message.Body().size());
 
-    auto nymID = api_.Factory().NymID();
-    nymID->Assign(message.Body_at(1).Bytes());
+    const auto nymID = api_.Factory().NymID(message.Body_at(1));
     sLock lock(shared_lock_);
     const auto it = nym_server_map_.find(nymID);
 
@@ -200,12 +183,7 @@ void AccountSummary::process_server(const Message& message) noexcept
 
     OT_ASSERT(1 < body.size());
 
-    const auto serverID = [&] {
-        auto output = api_.Factory().ServerID();
-        output->Assign(body.at(1).Bytes());
-
-        return output;
-    }();
+    const auto serverID = api_.Factory().ServerID(body.at(1));
 
     OT_ASSERT(false == serverID->empty())
 

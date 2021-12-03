@@ -40,7 +40,7 @@ private:
     OTZMQPublishSocket publish_socket_;
     const bool publish_;
 
-    void callback(opentxs::network::zeromq::Message& message);
+    auto callback(opentxs::network::zeromq::Message&& message) noexcept -> void;
     void print(
         const int level,
         const std::string& text,

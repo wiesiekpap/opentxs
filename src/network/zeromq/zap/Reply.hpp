@@ -5,15 +5,19 @@
 
 #pragma once
 
+#include <cstddef>
 #include <map>
 #include <string>
 
-#include "internal/network/Factory.hpp"
-#include "network/zeromq/Message.hpp"
+#include "internal/network/zeromq/message/Factory.hpp"
+#include "network/zeromq/message/Message.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -29,93 +33,50 @@ class Request;
 }  // namespace network
 }  // namespace opentxs
 
-#define VERSION_POSITION 0
-#define REQUEST_ID_POSITION 1
-#define STATUS_CODE_POSITION 2
-#define STATUS_TEXT_POSITION 3
-#define USER_ID_POSITION 4
-#define METADATA_POSITION 5
-
-namespace opentxs::network::zeromq::zap::implementation
+namespace opentxs::network::zeromq::zap
 {
-class Reply final : virtual zap::Reply, zeromq::implementation::Message
+class Reply::Imp final : public zeromq::Message::Imp
 {
 public:
-    auto Code() const -> zap::Status override
-    {
-        return string_to_code(Body_at(STATUS_CODE_POSITION));
-    }
-    auto Debug() const -> std::string override;
-    auto Metadata() const -> OTData override;
-    auto RequestID() const -> OTData override;
-    auto Status() const -> std::string override
-    {
-        return Body_at(STATUS_TEXT_POSITION);
-    }
-    auto UserID() const -> std::string override
-    {
-        return Body_at(USER_ID_POSITION);
-    }
-    auto Version() const -> std::string override
-    {
-        return Body_at(VERSION_POSITION);
-    }
+    static constexpr auto default_version_{"1.0"};
+    static constexpr auto version_position_ = std::size_t{0};
+    static constexpr auto request_id_position_ = std::size_t{1};
+    static constexpr auto status_code_position_ = std::size_t{2};
+    static constexpr auto status_text_position_ = std::size_t{3};
+    static constexpr auto user_id_position_ = std::size_t{4};
+    static constexpr auto metadata_position_ = std::size_t{5};
 
-    auto SetCode(const zap::Status& code) -> bool override
-    {
-        const auto value = code_to_string(code);
+    static auto string_to_code(const ReadView string) noexcept -> zap::Status;
 
-        return set_field(
-            STATUS_CODE_POSITION,
-            OTZMQFrame{factory::ZMQFrame(value.data(), value.size())});
-    }
-    auto SetMetadata(const Data& metadata) -> bool override
-    {
-        return set_field(
-            METADATA_POSITION,
-            OTZMQFrame{factory::ZMQFrame(metadata.data(), metadata.size())});
-    }
-    auto SetStatus(const std::string& status) -> bool override
-    {
-        return set_field(
-            STATUS_TEXT_POSITION,
-            OTZMQFrame{factory::ZMQFrame(status.data(), status.size())});
-    }
-    auto SetUserID(const std::string& userID) -> bool override
-    {
-        return set_field(
-            USER_ID_POSITION,
-            OTZMQFrame{factory::ZMQFrame(userID.data(), userID.size())});
-    }
+    Imp() noexcept;
+    Imp(const Request&,
+        const zap::Status& code,
+        const ReadView status,
+        const ReadView userID,
+        const ReadView metadata,
+        const ReadView version) noexcept;
+    Imp(const Imp& rhs) noexcept;
 
-    ~Reply() override = default;
+    ~Imp() final = default;
 
 private:
-    friend network::zeromq::zap::Reply;
-
     using CodeMap = std::map<zap::Status, std::string>;
     using CodeReverseMap = std::map<std::string, zap::Status>;
 
     static const CodeMap code_map_;
     static const CodeReverseMap code_reverse_map_;
 
-    static auto code_to_string(const zap::Status& code) -> std::string;
-    static auto invert_code_map(const CodeMap& input) -> CodeReverseMap;
-    static auto string_to_code(const std::string& string) -> zap::Status;
+    static auto code_to_string(const zap::Status& code) noexcept -> std::string;
 
-    auto clone() const -> Reply* override { return new Reply(*this); }
-
-    Reply(
-        const Request& request,
+    Imp(const SimpleCallback header,
+        const ReadView requestID,
         const zap::Status& code,
-        const std::string& status,
-        const std::string& userID,
-        const Data& metadata,
-        const std::string& version);
-    Reply() = delete;
-    Reply(const Reply&);
-    Reply(Reply&&) = delete;
-    auto operator=(const Reply&) -> Reply& = delete;
-    auto operator=(Reply&&) -> Reply& = delete;
+        const ReadView status,
+        const ReadView userID,
+        const ReadView metadata,
+        const ReadView version) noexcept;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::network::zeromq::zap::implementation
+}  // namespace opentxs::network::zeromq::zap

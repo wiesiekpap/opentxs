@@ -26,11 +26,11 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/Envelope.pb.h"
-#include "opentxs/protobuf/Purse.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/Envelope.pb.h"
+#include "serialization/protobuf/Purse.pb.h"
 
 namespace opentxs
 {

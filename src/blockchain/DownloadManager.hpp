@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "blockchain/DownloadTask.hpp"
+#include "core/Worker.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -42,7 +43,7 @@ public:
     {
         auto& me = downcast();
 
-        me.pipeline_->Push(me.MakeWork(OT_ZMQ_HEARTBEAT_SIGNAL));
+        me.pipeline_.Push(MakeWork(OT_ZMQ_HEARTBEAT_SIGNAL));
     }
     auto Reset(const Position& position, Finished&& previous) noexcept -> void
     {

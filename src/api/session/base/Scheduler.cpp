@@ -16,9 +16,9 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs::api::session
 {

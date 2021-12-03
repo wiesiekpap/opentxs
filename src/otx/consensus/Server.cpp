@@ -25,6 +25,10 @@
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/OTX.hpp"
+#include "internal/otx/client/OTPayment.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/Context.hpp"
+#include "internal/protobuf/verify/Purse.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
@@ -46,7 +50,6 @@
 #include "opentxs/blind/Purse.hpp"
 #include "opentxs/blind/Token.hpp"
 #endif  // OT_CASH
-#include "internal/otx/client/OTPayment.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -80,10 +83,10 @@
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
@@ -91,27 +94,24 @@
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
-#include "opentxs/protobuf/AsymmetricKey.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ConsensusEnums.pb.h"
-#include "opentxs/protobuf/Context.pb.h"
-#include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/OTXEnums.pb.h"
-#include "opentxs/protobuf/OTXPush.pb.h"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/PendingCommand.pb.h"
-#include "opentxs/protobuf/Purse.pb.h"
-#include "opentxs/protobuf/ServerContext.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
-#include "opentxs/protobuf/verify/Context.hpp"
-#include "opentxs/protobuf/verify/Purse.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "otx/consensus/Base.hpp"
+#include "serialization/protobuf/AsymmetricKey.pb.h"
+#include "serialization/protobuf/ConsensusEnums.pb.h"
+#include "serialization/protobuf/Context.pb.h"
+#include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/OTXEnums.pb.h"
+#include "serialization/protobuf/OTXPush.pb.h"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
+#include "serialization/protobuf/PendingCommand.pb.h"
+#include "serialization/protobuf/Purse.pb.h"
+#include "serialization/protobuf/ServerContext.pb.h"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 #define START()                                                                \
     Lock lock(decision_lock_);                                                 \
@@ -737,22 +737,30 @@ auto Server::add_item_to_workflow(
     // The sender nym and notary of the cheque may not match the sender nym and
     // notary of the message which conveyed the cheque.
     {
-        auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchNym);
-        work->AddFrame(cheque.GetSenderNymID());
-        find_nym_->Send(work);
+        find_nym_->Send([&] {
+            auto work = network::zeromq::tagged_message(WorkType::OTXSearchNym);
+            work.AddFrame(cheque.GetSenderNymID());
+
+            return work;
+        }());
     }
     {
-        auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchServer);
-        work->AddFrame(cheque.GetNotaryID());
-        find_server_->Send(work);
+        find_server_->Send([&] {
+            auto work =
+                network::zeromq::tagged_message(WorkType::OTXSearchServer);
+            work.AddFrame(cheque.GetNotaryID());
+
+            return work;
+        }());
     }
     {
-        auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::OTXSearchUnit);
-        work->AddFrame(cheque.GetInstrumentDefinitionID());
-        find_unit_definition_->Send(work);
+        find_unit_definition_->Send([&] {
+            auto work =
+                network::zeromq::tagged_message(WorkType::OTXSearchUnit);
+            work.AddFrame(cheque.GetInstrumentDefinitionID());
+
+            return work;
+        }());
     }
 
     // We already made sure a contact exists for the sender of the message, but
@@ -869,7 +877,12 @@ auto Server::attempt_delivery(
     Message& message,
     const PasswordPrompt& reason) -> NetworkReplyMessage
 {
-    request_sent_.Send(message.m_strCommand->Get());
+    request_sent_.Send([&] {
+        auto out = network::zeromq::Message{};
+        out.AddFrame(message.m_strCommand->Get());
+
+        return out;
+    }());
     auto output = connection_.Send(
         *this,
         message,
@@ -884,7 +897,12 @@ auto Server::attempt_delivery(
         case SendResult::VALID_REPLY: {
             OT_ASSERT(reply);
 
-            reply_received_.Send(message.m_strCommand->Get());
+            reply_received_.Send([&] {
+                auto out = network::zeromq::Message{};
+                out.AddFrame(message.m_strCommand->Get());
+
+                return out;
+            }());
             static std::set<OTManagedNumber> empty{};
             std::set<OTManagedNumber>* numbers = numbers_;
 
@@ -1894,8 +1912,6 @@ auto Server::init_new_account(
 
 void Server::init_sockets()
 {
-    const auto endpoint =
-        std::string("inproc://") + Identifier::Random()->str();
     auto started = find_nym_->Start(api_.Endpoints().FindNym());
 
     if (false == started) {
@@ -7185,12 +7201,22 @@ auto Server::SendMessage(
 {
     Lock lock(lock_);
     pending_args_ = {label, resync};
-    request_sent_.Send(message.m_strCommand->Get());
+    request_sent_.Send([&] {
+        auto out = network::zeromq::Message{};
+        out.AddFrame(message.m_strCommand->Get());
+
+        return out;
+    }());
     auto result = context.Connection().Send(context, message, reason);
 
     if (SendResult::VALID_REPLY == result.first) {
         process_reply(lock, client, pending, *result.second, reason);
-        reply_received_.Send(message.m_strCommand->Get());
+        reply_received_.Send([&] {
+            auto out = network::zeromq::Message{};
+            out.AddFrame(message.m_strCommand->Get());
+
+            return out;
+        }());
     }
 
     return result;

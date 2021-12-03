@@ -14,7 +14,7 @@
 
 #include "core/Amount.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 using namespace opentxs;
@@ -142,12 +142,12 @@ TEST(Amount, string_constructor)
 
 TEST(Amount, zmqframe_constructor)
 {
-    opentxs::OTZMQMessage message{opentxs::network::zeromq::Message::Factory()};
+    auto message = opentxs::network::zeromq::Message{};
 
     const auto max = std::to_string(ulonglong_max);
-    message->AddFrame(max);
+    message.AddFrame(max);
 
-    const auto amount = Amount(message->at(0));
+    const auto amount = Amount(message.at(0));
     ASSERT_TRUE(amount == ulonglong_max);
 }
 

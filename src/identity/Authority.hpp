@@ -34,9 +34,9 @@
 #include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/identity/credential/Key.hpp"
 #include "opentxs/identity/credential/Primary.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

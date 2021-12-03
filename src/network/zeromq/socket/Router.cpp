@@ -8,8 +8,9 @@
 #include "network/zeromq/socket/Router.hpp"  // IWYU pragma: associated
 
 #include <memory>
+#include <utility>
 
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/curve/Server.hpp"
@@ -17,8 +18,9 @@
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Sender.tpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -47,7 +49,7 @@ Router::Router(
     const zeromq::Context& context,
     const Socket::Direction direction,
     const zeromq::ListenCallback& callback) noexcept
-    : Receiver(context, SocketType::Router, direction, false)
+    : Receiver(context, socket::Type::Router, direction, false)
     , Bidirectional(context, true)
     , Client(this->get())
     , Server(this->get())
@@ -61,7 +63,7 @@ auto Router::clone() const noexcept -> Router*
     return new Router(context_, direction_, callback_);
 }
 
-void Router::process_incoming(const Lock& lock, Message& message) noexcept
+void Router::process_incoming(const Lock& lock, Message&& message) noexcept
 {
     OT_ASSERT(verify_lock(lock))
 
@@ -72,7 +74,7 @@ void Router::process_incoming(const Lock& lock, Message& message) noexcept
     // there is an empty frame between the identity frame(s) and the frames that
     // make up the rest of the message.
     message.EnsureDelimiter();
-    callback_.Process(message);
+    callback_.Process(std::move(message));
     LogTrace()(OT_PRETTY_CLASS())("Done.").Flush();
 }
 

@@ -30,7 +30,8 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/util/Common.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -40,6 +41,13 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::internal
 {
+auto Log::Endpoint() noexcept -> const char*
+{
+    static const auto output = zmq::MakeDeterministicInproc("logsink", -1, 1);
+
+    return output.c_str();
+}
+
 auto Log::SetVerbosity(const int level) noexcept -> void
 {
     static auto& logger = opentxs::Log::Imp::logger_;
@@ -130,7 +138,7 @@ auto Log::Imp::get_buffer(std::string& out) noexcept -> Logger::Source&
                         auto out =
                             Context().ZMQ().PushSocket(Direction::Connect);
                         const auto started =
-                            out->Start(internal::Log::endpoint_);
+                            out->Start(internal::Log::Endpoint());
 
                         assert(started);
 
@@ -162,22 +170,22 @@ auto Log::Imp::send(const bool terminate) const noexcept -> void
     if (auto done = logger_.running_.get(); false == done) {
         auto id = std::string{};
         auto& [socket, buffer] = get_buffer(id);
-        auto message = zmq::Message::Factory();
-        message->PrependEmptyFrame();
-        message->AddFrame(level_);
-        message->AddFrame(buffer.str());
-        message->AddFrame(id);
+        auto message = zmq::Message{};
+        message.StartBody();
+        message.AddFrame(level_);
+        message.AddFrame(buffer.str());
+        message.AddFrame(id);
         auto promise = std::promise<void>{};
         auto future = promise.get_future();
         const auto* pPromise = &promise;
 
         if (terminate) {
-            message->AddFrame(&pPromise, sizeof(pPromise));
+            message.AddFrame(&pPromise, sizeof(pPromise));
         } else {
             promise.set_value();
         }
 
-        socket->Send(message);
+        socket->Send(std::move(message));
         buffer = std::stringstream{};
         future.wait_for(std::chrono::seconds(10));
     }

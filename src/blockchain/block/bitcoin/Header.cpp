@@ -34,11 +34,11 @@
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/protobuf/BitcoinBlockHeaderFields.pb.h"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"
-#include "opentxs/protobuf/BlockchainBlockLocalData.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BitcoinBlockHeaderFields.pb.h"
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"
+#include "serialization/protobuf/BlockchainBlockLocalData.pb.h"
 #include "util/Blank.hpp"
 
 #define OT_BITCOIN_BLOCK_HEADER_SIZE 80

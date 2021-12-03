@@ -15,7 +15,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
-#include "opentxs/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
+#include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 
 namespace opentxs::factory
 {

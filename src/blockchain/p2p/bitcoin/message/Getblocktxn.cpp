@@ -8,11 +8,16 @@
 #include "blockchain/p2p/bitcoin/message/Getblocktxn.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
+#include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
@@ -130,22 +135,43 @@ auto BitcoinP2PGetblocktxn(
 namespace opentxs::blockchain::p2p::bitcoin::message
 {
 
-auto Getblocktxn::payload() const noexcept -> OTData
+auto Getblocktxn::payload(AllocateOutput out) const noexcept -> bool
 {
     try {
-        auto output = Data::Factory(block_hash_);
-        // ---------------------------
-        const auto size = CompactSize(txn_indices_.size()).Encode();
-        output->Concatenate(size.data(), size.size());
-        // ---------------------------
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
+
+        auto bytes = block_hash_->size();
+        auto data = std::vector<OTData>{};
+        data.reserve(1u + txn_indices_.size());
+        const auto& count = data.emplace_back(
+            Data::Factory(CompactSize(txn_indices_.size()).Encode()));
+        bytes += count->size();
+
         for (const auto& index : txn_indices_) {
-            const auto size = CompactSize(index).Encode();
-            output->Concatenate(size.data(), size.size());
+            const auto& cs =
+                data.emplace_back(Data::Factory(CompactSize(index).Encode()));
+            bytes += cs->size();
         }
 
-        return output;
-    } catch (...) {
-        return Data::Factory();
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, block_hash_->data(), block_hash_->size());
+        std::advance(i, block_hash_->size());
+
+        for (const auto& cs : data) {
+            std::memcpy(i, cs->data(), cs->size());
+            std::advance(i, cs->size());
+        }
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
 }
 

@@ -29,12 +29,11 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -77,9 +76,9 @@ Wallet::Wallet(
     , chain_(chain)
     , task_finished_([this](const Identifier& id, const char* type) {
         auto work = MakeWork(Work::job_finished);
-        work->AddFrame(id.data(), id.size());
-        work->AddFrame(std::string(type));
-        pipeline_->Push(work);
+        work.AddFrame(id.data(), id.size());
+        work.AddFrame(std::string(type));
+        pipeline_.Push(std::move(work));
     })
     , enabled_(true)
     , accounts_(api, crypto_, parent_, db_, chain_, task_finished_)
@@ -186,7 +185,7 @@ auto Wallet::Init() noexcept -> void
 
 auto Wallet::pipeline(const zmq::Message& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -288,12 +287,7 @@ auto Wallet::process_block_download(const zmq::Message& in) noexcept -> void
 
     if (chain_ != chain) { return; }
 
-    const auto hash = [&] {
-        auto out = api_.Factory().Data();
-        out->Assign(body.at(2).Bytes());
-
-        return out;
-    }();
+    const auto hash = api_.Factory().Data(body.at(2));
     accounts_.ProcessBlockAvailable(hash);
 }
 
@@ -333,12 +327,8 @@ auto Wallet::process_filter(const zmq::Message& in) noexcept -> void
 
     if (type != parent_.FilterOracleInternal().DefaultType()) { return; }
 
-    const auto position = block::Position{body.at(3).as<block::Height>(), [&] {
-                                              auto out = api_.Factory().Data();
-                                              out->Assign(body.at(4).Bytes());
-
-                                              return out;
-                                          }()};
+    const auto position = block::Position{
+        body.at(3).as<block::Height>(), api_.Factory().Data(body.at(4))};
 
     if (enabled_) { accounts_.ProcessNewFilter(position); }
 }
@@ -349,12 +339,7 @@ auto Wallet::process_job_finished(const zmq::Message& in) noexcept -> void
 
     OT_ASSERT(2 < body.size());
 
-    const auto id = [&] {
-        auto out = api_.Factory().Identifier();
-        out->Assign(body.at(1).Bytes());
-
-        return out;
-    }();
+    const auto id = api_.Factory().Identifier(body.at(1));
     const auto type = std::string{body.at(2).Bytes()};
     accounts_.ProcessTaskComplete(id, type.c_str(), enabled_);
 }
@@ -462,20 +447,17 @@ auto Wallet::process_wallet() noexcept -> void
 
 auto Wallet::shutdown(std::promise<void>& promise) noexcept -> void
 {
-    if (running_->Off()) {
+    if (auto previous = running_.exchange(false); previous) {
         LogDetail()("Shutting down ")(DisplayString(chain_))(" wallet").Flush();
+        pipeline_.Close();
         accounts_.Shutdown();
-
-        try {
-            promise.set_value();
-        } catch (...) {
-        }
+        promise.set_value();
     }
 }
 
 auto Wallet::state_machine() noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     auto repeat{false};
 
@@ -486,8 +468,8 @@ auto Wallet::state_machine() noexcept -> bool
 
 auto Wallet::trigger_wallet() const noexcept -> void
 {
-    pipeline_->Push(MakeWork(Work::init_wallet));
+    pipeline_.Push(MakeWork(Work::init_wallet));
 }
 
-Wallet::~Wallet() { Shutdown().get(); }
+Wallet::~Wallet() { signal_shutdown().get(); }
 }  // namespace opentxs::blockchain::node::implementation

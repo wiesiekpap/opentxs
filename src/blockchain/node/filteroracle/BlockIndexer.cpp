@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/filteroracle/BlockIndexer.hpp"  // IWYU pragma: associated
 
+#include <atomic>
 #include <chrono>
 #include <exception>
 #include <optional>
@@ -27,10 +28,10 @@
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -173,7 +174,7 @@ auto FilterOracle::BlockIndexer::download() noexcept -> void
 auto FilterOracle::BlockIndexer::pipeline(const zmq::Message& in) noexcept
     -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -320,7 +321,7 @@ auto FilterOracle::BlockIndexer::queue_processing(
         static const auto blankView = ReadView{};
 
         for (const auto& task : data) {
-            if (false == running_.get()) { return; }
+            if (false == running_.load()) { return; }
 
             auto& filter = filters.emplace_back(blankView, nullptr);
             auto& header = headers.emplace_back(blank, blank, blankView);
@@ -368,11 +369,9 @@ auto FilterOracle::BlockIndexer::reset_to_genesis() noexcept -> void
 auto FilterOracle::BlockIndexer::shutdown(std::promise<void>& promise) noexcept
     -> void
 {
-    if (running_->Off()) {
-        try {
-            promise.set_value();
-        } catch (...) {
-        }
+    if (auto previous = running_.exchange(false); previous) {
+        pipeline_.Close();
+        promise.set_value();
     }
 }
 
@@ -394,5 +393,5 @@ auto FilterOracle::BlockIndexer::update_tip(
     notify_(type_, position);
 }
 
-FilterOracle::BlockIndexer::~BlockIndexer() { stop_worker().get(); }
+FilterOracle::BlockIndexer::~BlockIndexer() { signal_shutdown().get(); }
 }  // namespace opentxs::blockchain::node::implementation

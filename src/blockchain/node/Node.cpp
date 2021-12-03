@@ -14,7 +14,7 @@
 
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"  // IWYU pragma: keep
+#include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
 
 namespace opentxs::blockchain::node::internal
 {

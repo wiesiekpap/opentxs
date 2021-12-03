@@ -13,15 +13,15 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/contact/Contact.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/protobuf/ContactData.pb.h"
-#include "opentxs/protobuf/ContactItem.pb.h"
-#include "opentxs/protobuf/ContactSection.pb.h"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/ContactData.pb.h"
+#include "serialization/protobuf/ContactItem.pb.h"
+#include "serialization/protobuf/ContactSection.pb.h"
 
 namespace opentxs
 {

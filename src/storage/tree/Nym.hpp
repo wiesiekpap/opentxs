@@ -24,7 +24,7 @@
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/protobuf/StorageNym.pb.h"
+#include "serialization/protobuf/StorageNym.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs

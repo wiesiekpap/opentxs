@@ -31,10 +31,10 @@ extern "C" {
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
-#include "opentxs/protobuf/Ciphertext.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs::factory
 {

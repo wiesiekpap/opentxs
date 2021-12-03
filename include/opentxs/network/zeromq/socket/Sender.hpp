@@ -7,8 +7,18 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+
+namespace opentxs
+{
+namespace network
+{
+namespace zeromq
+{
+class Message;
+}  // namespace zeromq
+}  // namespace network
+}  // namespace opentxs
 
 namespace opentxs
 {
@@ -21,14 +31,7 @@ namespace socket
 class OPENTXS_EXPORT Sender : virtual public Socket
 {
 public:
-    auto Send(opentxs::Pimpl<opentxs::network::zeromq::Message>& message)
-        const noexcept -> bool
-    {
-        return send(message.get());
-    }
-    auto Send(Message& message) const noexcept -> bool { return send(message); }
-    template <typename Input>
-    auto Send(const Input& data) const noexcept -> bool;
+    virtual auto Send(Message&& message) const noexcept -> bool = 0;
 
     ~Sender() override = default;
 
@@ -36,8 +39,6 @@ protected:
     Sender() = default;
 
 private:
-    virtual auto send(Message& message) const noexcept -> bool = 0;
-
     Sender(const Sender&) = delete;
     Sender(Sender&&) = delete;
     auto operator=(const Sender&) -> Sender& = delete;

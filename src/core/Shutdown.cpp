@@ -8,11 +8,12 @@
 #include "core/Shutdown.hpp"  // IWYU pragma: associated
 
 #include <chrono>
+#include <string>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace zmq = opentxs::network::zeromq;
@@ -23,7 +24,6 @@ ShutdownSender::ShutdownSender(
     const network::zeromq::Context& zmq,
     const std::string endpoint) noexcept
     : endpoint_(endpoint)
-    , zmq_(zmq)
     , socket_(zmq.PublishSocket())
 {
     auto init = socket_->SetTimeouts(
@@ -40,9 +40,12 @@ ShutdownSender::ShutdownSender(
 
 auto ShutdownSender::Activate() const noexcept -> void
 {
-    auto message = zmq_.TaggedMessage(WorkType::Shutdown);
-    message->AddFrame("shutdown");
-    socket_->Send(message);
+    socket_->Send([&] {
+        auto work = network::zeromq::tagged_message(WorkType::Shutdown);
+        work.AddFrame("shutdown");
+
+        return work;
+    }());
 }
 
 auto ShutdownSender::Close() noexcept -> void { socket_->Close(); }
@@ -59,7 +62,7 @@ ShutdownReceiver::ShutdownReceiver(
     Callback cb) noexcept
     : promise_()
     , future_(promise_.get_future())
-    , callback_(zmq::ListenCallback::Factory([cb, this](auto&) {
+    , callback_(zmq::ListenCallback::Factory([cb, this](auto&&) {
         if (bool(cb)) { cb(this->promise_); }
     }))
     , socket_(zmq.SubscribeSocket(callback_))

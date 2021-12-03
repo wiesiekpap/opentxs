@@ -28,7 +28,10 @@
 #include "internal/contact/Contact.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/identity/credential/Credential.hpp"
+#include "internal/network/zeromq/message/Message.hpp"
 #include "internal/otx/client/OTPayment.hpp"  // IWYU pragma: keep
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/RPCCommand.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/Types.hpp"
@@ -74,42 +77,16 @@
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
-#include "opentxs/network/zeromq/socket/Sender.tpp"
+#include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/protobuf/APIArgument.pb.h"
-#include "opentxs/protobuf/AcceptPendingPayment.pb.h"
-#include "opentxs/protobuf/AccountEvent.pb.h"
-#include "opentxs/protobuf/AddClaim.pb.h"
-#include "opentxs/protobuf/AddContact.pb.h"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ContactItem.pb.h"
-#include "opentxs/protobuf/CreateInstrumentDefinition.pb.h"
-#include "opentxs/protobuf/CreateNym.pb.h"
-#include "opentxs/protobuf/GetWorkflow.pb.h"
-#include "opentxs/protobuf/HDSeed.pb.h"
-#include "opentxs/protobuf/ModifyAccount.pb.h"
-#include "opentxs/protobuf/MoveFunds.pb.h"
-#include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/PaymentEvent.pb.h"
-#include "opentxs/protobuf/PaymentWorkflow.pb.h"
-#include "opentxs/protobuf/RPCCommand.pb.h"
-#include "opentxs/protobuf/RPCEnums.pb.h"
-#include "opentxs/protobuf/RPCPush.pb.h"
-#include "opentxs/protobuf/RPCResponse.pb.h"
-#include "opentxs/protobuf/RPCStatus.pb.h"
-#include "opentxs/protobuf/RPCTask.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/SessionData.pb.h"
-#include "opentxs/protobuf/TaskComplete.pb.h"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
-#include "opentxs/protobuf/verify/RPCCommand.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"
@@ -120,6 +97,31 @@
 #include "opentxs/util/SharedPimpl.hpp"
 #include "rpc/RPC.hpp"
 #include "rpc/response/Invalid.hpp"
+#include "serialization/protobuf/APIArgument.pb.h"
+#include "serialization/protobuf/AcceptPendingPayment.pb.h"
+#include "serialization/protobuf/AccountEvent.pb.h"
+#include "serialization/protobuf/AddClaim.pb.h"
+#include "serialization/protobuf/AddContact.pb.h"
+#include "serialization/protobuf/ContactItem.pb.h"
+#include "serialization/protobuf/CreateInstrumentDefinition.pb.h"
+#include "serialization/protobuf/CreateNym.pb.h"
+#include "serialization/protobuf/GetWorkflow.pb.h"
+#include "serialization/protobuf/HDSeed.pb.h"
+#include "serialization/protobuf/ModifyAccount.pb.h"
+#include "serialization/protobuf/MoveFunds.pb.h"
+#include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/PaymentEvent.pb.h"
+#include "serialization/protobuf/PaymentWorkflow.pb.h"
+#include "serialization/protobuf/RPCCommand.pb.h"
+#include "serialization/protobuf/RPCEnums.pb.h"
+#include "serialization/protobuf/RPCPush.pb.h"
+#include "serialization/protobuf/RPCResponse.pb.h"
+#include "serialization/protobuf/RPCStatus.pb.h"
+#include "serialization/protobuf/RPCTask.pb.h"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/SessionData.pb.h"
+#include "serialization/protobuf/TaskComplete.pb.h"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 #define ACCOUNTEVENT_VERSION 2
 #define RPCTASK_VERSION 1
@@ -218,7 +220,7 @@ RPC::RPC(const api::Context& native)
     , task_callback_(zmq::ListenCallback::Factory(
           std::bind(&RPC::task_handler, this, std::placeholders::_1)))
     , push_callback_(zmq::ListenCallback::Factory([&](const zmq::Message& in) {
-        rpc_publisher_->Send(OTZMQMessage{in});
+        rpc_publisher_->Send(network::zeromq::Message{in});
     }))
     , push_receiver_(ot_.ZMQ().PullSocket(
           push_callback_,
@@ -227,11 +229,12 @@ RPC::RPC(const api::Context& native)
     , task_subscriber_(ot_.ZMQ().SubscribeSocket(task_callback_))
 {
     auto bound = push_receiver_->Start(
-        ot_.ZMQ().BuildEndpoint("rpc/push/internal", -1, 1));
+        network::zeromq::MakeDeterministicInproc("rpc/push/internal", -1, 1));
 
     OT_ASSERT(bound)
 
-    bound = rpc_publisher_->Start(ot_.ZMQ().BuildEndpoint("rpc/push", -1, 1));
+    bound = rpc_publisher_->Start(
+        network::zeromq::MakeDeterministicInproc("rpc/push", -1, 1));
 
     OT_ASSERT(bound)
 }
@@ -2045,9 +2048,9 @@ void RPC::task_handler(const zmq::Message& in)
     taskIDCompat->CalculateDigest(taskIDStr->Bytes());
     task.set_id(taskIDCompat->str());
     task.set_result(success);
-    auto output = zmq::Message::Factory();
-    output->AddFrame(message);
-    rpc_publisher_->Send(output);
+    auto output = zmq::Message{};
+    output.Internal().AddFrame(message);
+    rpc_publisher_->Send(std::move(output));
 }
 
 RPC::~RPC()

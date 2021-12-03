@@ -41,7 +41,8 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/rpc/AccountData.hpp"
@@ -235,7 +236,7 @@ struct RPCPushCounter::Imp {
     {
         auto lock = ot::Lock{lock_};
 
-        return std::next(received_.begin(), index)->get();
+        return *std::next(received_.begin(), index);
     }
     auto size() const noexcept -> std::size_t
     {
@@ -262,12 +263,14 @@ struct RPCPushCounter::Imp {
 
     Imp(const ot::api::Context& ot) noexcept
         : ot_(ot)
-        , cb_(zmq::ListenCallback::Factory([&](auto& in) { cb(in); }))
+        , cb_(zmq::ListenCallback::Factory(
+              [&](auto&& in) { cb(std::move(in)); }))
         , socket_(ot_.ZMQ().SubscribeSocket(cb_))
         , lock_()
         , received_()
     {
-        const auto endpoint = ot_.ZMQ().BuildEndpoint("rpc/push", -1, 1);
+        const auto endpoint =
+            ot::network::zeromq::MakeDeterministicInproc("rpc/push", -1, 1);
         socket_->Start(endpoint);
     }
 
@@ -278,12 +281,12 @@ private:
     const ot::OTZMQListenCallback cb_;
     const ot::OTZMQSubscribeSocket socket_;
     mutable std::mutex lock_;
-    std::list<ot::OTZMQMessage> received_;
+    std::list<ot::network::zeromq::Message> received_;
 
-    auto cb(zmq::Message& in) noexcept -> void
+    auto cb(zmq::Message&& in) noexcept -> void
     {
         auto lock = ot::Lock{lock_};
-        received_.emplace_back(in);
+        received_.emplace_back(std::move(in));
     }
 
     Imp(const Imp&) = delete;

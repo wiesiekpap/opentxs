@@ -26,8 +26,8 @@
 #include "opentxs/crypto/key/Ed25519.hpp"
 #include "opentxs/crypto/key/Secp256k1.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/protobuf/HDPath.pb.h"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::crypto::key::implementation
 {

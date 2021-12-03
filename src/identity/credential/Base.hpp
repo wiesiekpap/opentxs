@@ -19,8 +19,8 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/CredentialType.hpp"
-#include "opentxs/protobuf/Credential.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Credential.pb.h"
 
 namespace opentxs
 {

@@ -5,16 +5,13 @@
 
 #include <gtest/gtest.h>
 #include <string>
+#include <utility>
 
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 using namespace opentxs;
@@ -32,8 +29,8 @@ public:
 TEST(ReplyCallback, ReplyCallback_Factory)
 {
     auto replyCallback = network::zeromq::ReplyCallback::Factory(
-        [](const network::zeromq::Message& input) -> OTZMQMessage {
-            return Context().ZMQ().ReplyMessage(input);
+        [](const network::zeromq::Message&& input) -> network::zeromq::Message {
+            return opentxs::network::zeromq::reply_to_message(input);
         });
 
     ASSERT_NE(nullptr, &replyCallback.get());
@@ -42,24 +39,24 @@ TEST(ReplyCallback, ReplyCallback_Factory)
 TEST_F(Test_ReplyCallback, ReplyCallback_Process)
 {
     auto replyCallback = network::zeromq::ReplyCallback::Factory(
-        [this](const network::zeromq::Message& input) -> OTZMQMessage {
-            const std::string& inputString = *input.Body().begin();
+        [this](network::zeromq::Message&& input) -> network::zeromq::Message {
+            const auto inputString = std::string{input.Body().begin()->Bytes()};
             EXPECT_EQ(testMessage_, inputString);
 
-            auto reply = Context().ZMQ().ReplyMessage(input);
-            reply->AddFrame(inputString);
+            auto reply = opentxs::network::zeromq::reply_to_message(input);
+            reply.AddFrame(inputString);
             return reply;
         });
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto testMessage = network::zeromq::Message::Factory();
-    testMessage->AddFrame(testMessage_);
+    auto testMessage = network::zeromq::Message{};
+    testMessage.AddFrame(testMessage_);
 
-    ASSERT_NE(nullptr, &testMessage.get());
+    ASSERT_NE(nullptr, &testMessage);
 
-    auto message = replyCallback->Process(testMessage);
+    auto message = replyCallback->Process(std::move(testMessage));
 
-    const std::string& messageString = *message->Body().begin();
+    const auto messageString = std::string{message.Body().begin()->Bytes()};
     ASSERT_EQ(testMessage_, messageString);
 }

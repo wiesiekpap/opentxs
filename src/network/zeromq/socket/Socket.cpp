@@ -10,41 +10,29 @@
 #include <zmq.h>
 #include <cerrno>
 #include <cstddef>
-#include <cstdint>
 #include <iostream>
+#include <map>
 #include <utility>
 
+#include "internal/network/zeromq/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameIterator.hpp"  // IWYU pragma: keep
-#include "opentxs/network/zeromq/Message.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "util/Random.hpp"
-
-#define INPROC_PREFIX "inproc://opentxs/"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameIterator.hpp"  // IWYU pragma: keep
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 
 namespace opentxs::network::zeromq::socket::implementation
 {
-const std::map<SocketType, int> Socket::types_{
-    {SocketType::Request, ZMQ_REQ},
-    {SocketType::Reply, ZMQ_REP},
-    {SocketType::Publish, ZMQ_PUB},
-    {SocketType::Subscribe, ZMQ_SUB},
-    {SocketType::Pull, ZMQ_PULL},
-    {SocketType::Push, ZMQ_PUSH},
-    {SocketType::Pair, ZMQ_PAIR},
-    {SocketType::Dealer, ZMQ_DEALER},
-    {SocketType::Router, ZMQ_ROUTER},
-};
-
 Socket::Socket(
     const zeromq::Context& context,
-    const SocketType type,
+    const socket::Type type,
     const Socket::Direction direction) noexcept
     : context_(context)
     , direction_(direction)
-    , socket_(zmq_socket(context, types_.at(type)))
+    , id_(GetSocketID())
+    , socket_(zmq_socket(context, to_native(type)))
     , linger_(0)
     , send_timeout_(0)
     , receive_timeout_(
@@ -215,7 +203,7 @@ auto Socket::receive_message(
 auto Socket::send_message(
     const Lock& lock,
     void* socket,
-    Message& message) noexcept -> bool
+    Message&& message) noexcept -> bool
 {
     bool sent{true};
     const auto parts = message.size();
@@ -226,7 +214,7 @@ auto Socket::send_message(
 
         if (++counter < parts) { flags = ZMQ_SNDMORE; }
 
-        sent |= (-1 != zmq_msg_send(frame, socket, flags));
+        sent |= (-1 != zmq_msg_send(const_cast<Frame&>(frame), socket, flags));
     }
 
     if (false == sent) {
@@ -237,21 +225,10 @@ auto Socket::send_message(
     return sent;
 }
 
-auto Socket::send_message(const Lock& lock, Message& message) const noexcept
+auto Socket::send_message(const Lock& lock, Message&& message) const noexcept
     -> bool
 {
-    return send_message(lock, socket_, message);
-}
-
-auto Socket::random_inproc_endpoint() noexcept -> std::string
-{
-    auto one = std::uint64_t{};
-    auto two = std::uint64_t{};
-    random_bytes_non_crypto(preallocated(sizeof(one), &one), sizeof(one));
-    random_bytes_non_crypto(preallocated(sizeof(two), &two), sizeof(two));
-
-    return std::string(INPROC_PREFIX) + std::to_string(one) +
-           std::to_string(two);
+    return send_message(lock, socket_, std::move(message));
 }
 
 auto Socket::receive_message(const Lock& lock, Message& message) const noexcept

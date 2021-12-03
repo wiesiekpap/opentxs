@@ -25,10 +25,10 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/Context.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Context.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 #ifndef OT_MAX_ACK_NUMS
 #define OT_MAX_ACK_NUMS 100

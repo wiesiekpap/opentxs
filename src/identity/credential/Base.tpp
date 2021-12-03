@@ -8,11 +8,11 @@
 #include <cstdint>
 
 #include "2_Factory.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/Credential.pb.h"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/verify/Credential.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/Credential.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/Credential.pb.h"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

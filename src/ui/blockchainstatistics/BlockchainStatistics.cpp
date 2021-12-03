@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "ui/blockchainstatistics/BlockchainStatistics.hpp"  // IWYU pragma: associated
 
+#include <atomic>
 #include <cstddef>
 #include <future>
 #include <map>
@@ -28,11 +29,10 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "ui/base/List.hpp"
 
@@ -69,7 +69,7 @@ BlockchainStatistics::BlockchainStatistics(
         api.Endpoints().BlockchainStateChange(),
         api.Endpoints().BlockchainWalletUpdated(),
     });
-    pipeline_->Push(MakeWork(Work::init));
+    pipeline_.Push(MakeWork(Work::init));
 }
 
 auto BlockchainStatistics::construct_row(
@@ -120,7 +120,7 @@ auto BlockchainStatistics::custom(
 
 auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -142,8 +142,9 @@ auto BlockchainStatistics::pipeline(const Message& in) noexcept -> void
 
     switch (work) {
         case Work::shutdown: {
-            running_->Off();
-            shutdown(shutdown_promise_);
+            if (auto previous = running_.exchange(false); previous) {
+                shutdown(shutdown_promise_);
+            }
         } break;
         case Work::balance:
         case Work::blockheader:
@@ -211,6 +212,6 @@ auto BlockchainStatistics::startup() noexcept -> void
 BlockchainStatistics::~BlockchainStatistics()
 {
     wait_for_startup();
-    stop_worker().get();
+    signal_shutdown().get();
 }
 }  // namespace opentxs::ui::implementation

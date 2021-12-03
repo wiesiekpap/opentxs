@@ -11,8 +11,6 @@
 
 #include <memory>
 
-// "opentxs::blockchain::node::implementation::PeerManager::IncomingConnectionManager::"
-
 namespace opentxs
 {
 namespace network

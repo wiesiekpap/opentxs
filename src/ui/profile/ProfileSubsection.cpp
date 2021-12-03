@@ -13,13 +13,13 @@
 #include <type_traits>
 
 #include "internal/contact/Contact.hpp"
+#include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/protobuf/verify/VerifyContacts.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
 

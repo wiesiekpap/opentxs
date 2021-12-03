@@ -14,19 +14,19 @@ extern "C" {
 #endif
 
 #include <cstdlib>
-#include <functional>
 #include <future>
 #include <iostream>
 #include <memory>
+#include <utility>
 
 #include "internal/api/Factory.hpp"
 #include "internal/util/Log.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
@@ -48,13 +48,13 @@ auto Log(const zmq::Context& zmq, const std::string& endpoint) noexcept
 namespace opentxs::api::implementation
 {
 Log::Log(const zmq::Context& zmq, const std::string& endpoint)
-    : callback_(zmq::ListenCallback::Factory(
-          std::bind(&Log::callback, this, std::placeholders::_1)))
+    : callback_(opentxs::network::zeromq::ListenCallback::Factory(
+          [&](auto&& msg) -> void { callback(std::move(msg)); }))
     , socket_(zmq.PullSocket(callback_, zmq::socket::Socket::Direction::Bind))
     , publish_socket_(zmq.PublishSocket())
     , publish_{!endpoint.empty()}
 {
-    const auto started = socket_->Start(opentxs::internal::Log::endpoint_);
+    const auto started = socket_->Start(opentxs::internal::Log::Endpoint());
 
     if (false == started) { abort(); }
 
@@ -64,21 +64,21 @@ Log::Log(const zmq::Context& zmq, const std::string& endpoint)
     }
 }
 
-void Log::callback(zmq::Message& message)
+auto Log::callback(zmq::Message&& message) noexcept -> void
 {
     if (message.Body().size() < 3) { return; }
 
     const auto& levelFrame = message.Body_at(0);
-    const auto& messageFrame = message.Body_at(1);
-    const auto& id = message.Body_at(2);
+    const auto text = std::string{message.Body_at(1).Bytes()};
+    const auto id = std::string{message.Body_at(2).Bytes()};
 
     try {
         const auto level = levelFrame.as<int>();
 
 #ifdef ANDROID
-        print_android(level, messageFrame, id);
+        print_android(level, text, id);
 #else
-        print(level, messageFrame, id);
+        print(level, text, id);
 #endif
     } catch (...) {
         std::cout << "Invalid level size: " << levelFrame.size() << '\n';
@@ -86,7 +86,7 @@ void Log::callback(zmq::Message& message)
         OT_FAIL;
     }
 
-    if (publish_) { publish_socket_->Send(message); }
+    if (publish_) { publish_socket_->Send(std::move(message)); }
 
     if (message.Body().size() >= 4) {
         const auto& promiseFrame = message.Body_at(3);

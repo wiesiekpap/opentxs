@@ -29,9 +29,9 @@
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/core/recurring/OTPaymentPlan.hpp"
-#include "opentxs/protobuf/UnitDefinition.pb.h"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/UnitDefinition.pb.h"
 
 namespace opentxs
 {

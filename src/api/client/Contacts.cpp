@@ -39,13 +39,14 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
-#include "opentxs/protobuf/Contact.pb.h"  // IWYU pragma: keep
-#include "opentxs/protobuf/Nym.pb.h"      // IWYU pragma: keep
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "serialization/protobuf/Contact.pb.h"  // IWYU pragma: keep
+#include "serialization/protobuf/Nym.pb.h"      // IWYU pragma: keep
 
 namespace opentxs::factory
 {
@@ -732,8 +733,8 @@ auto Contacts::PaymentCodeToContact(
     return id;
 }
 
-void Contacts::refresh_indices(const rLock& lock, opentxs::Contact& contact)
-    const
+auto Contacts::refresh_indices(const rLock& lock, opentxs::Contact& contact)
+    const -> void
 {
     if (false == verify_write_lock(lock)) {
         throw std::runtime_error("lock error");
@@ -747,13 +748,13 @@ void Contacts::refresh_indices(const rLock& lock, opentxs::Contact& contact)
 
     const auto& id = contact.ID();
     contact_name_map_[id] = contact.Label();
-
-    {
+    publisher_->Send([&] {
         auto work =
-            api_.Network().ZeroMQ().TaggedMessage(WorkType::ContactUpdated);
-        work->AddFrame(id);
-        publisher_->Send(work);
-    }
+            opentxs::network::zeromq::tagged_message(WorkType::ContactUpdated);
+        work.AddFrame(id);
+
+        return work;
+    }());
 }
 
 void Contacts::save(opentxs::Contact* contact) const

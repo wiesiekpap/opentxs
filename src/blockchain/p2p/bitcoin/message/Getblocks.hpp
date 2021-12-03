@@ -21,6 +21,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -96,29 +97,8 @@ public:
     {
         return header_hashes_.size();
     }
-    auto payload() const noexcept -> OTData final
-    {
-        try {
-            Raw raw_data(version_, header_hashes_, stop_hash_);
-
-            auto output =
-                Data::Factory(&raw_data.version_, sizeof(raw_data.version_));
-
-            const auto size = CompactSize(header_hashes_.size()).Encode();
-            output->Concatenate(size.data(), size.size());
-
-            for (const auto& raw_hash : raw_data.header_hashes_) {
-                output->Concatenate(raw_hash.data(), sizeof(raw_hash));
-            }
-
-            output->Concatenate(
-                raw_data.stop_hash_.data(), sizeof(raw_data.stop_hash_));
-
-            return output;
-        } catch (...) {
-            return Data::Factory();
-        }
-    }
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
     auto version() const noexcept -> bitcoin::ProtocolVersionUnsigned
     {
         return version_;

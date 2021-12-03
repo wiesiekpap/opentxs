@@ -42,12 +42,12 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
-#include "opentxs/protobuf/BlockchainTransaction.pb.h"
-#include "opentxs/protobuf/BlockchainTransactionInput.pb.h"
-#include "opentxs/protobuf/BlockchainTransactionOutput.pb.h"
-#include "opentxs/protobuf/ContactEnums.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/BlockchainTransaction.pb.h"
+#include "serialization/protobuf/BlockchainTransactionInput.pb.h"
+#include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
+#include "serialization/protobuf/ContactEnums.pb.h"
 #include "util/Container.hpp"
 
 namespace be = boost::endian;

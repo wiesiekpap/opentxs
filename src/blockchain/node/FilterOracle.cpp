@@ -45,7 +45,7 @@
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -399,19 +399,19 @@ auto FilterOracle::new_tip(
     last_sync_progress_ = Clock::now();
 
     {
-        auto work = MakeWork(api_, OT_ZMQ_NEW_FILTER_SIGNAL);
-        work->AddFrame(type);
-        work->AddFrame(tip.first);
-        work->AddFrame(tip.second);
-        new_filters_->Send(work);
+        auto work = MakeWork(OT_ZMQ_NEW_FILTER_SIGNAL);
+        work.AddFrame(type);
+        work.AddFrame(tip.first);
+        work.AddFrame(tip.second);
+        new_filters_->Send(std::move(work));
     }
     {
-        auto work = MakeWork(api_, WorkType::BlockchainNewFilter);
-        work->AddFrame(chain_);
-        work->AddFrame(type);
-        work->AddFrame(tip.first);
-        work->AddFrame(tip.second);
-        filter_notifier_.Send(work);
+        auto work = MakeWork(WorkType::BlockchainNewFilter);
+        work.AddFrame(chain_);
+        work.AddFrame(type);
+        work.AddFrame(tip.first);
+        work.AddFrame(tip.second);
+        filter_notifier_.Send(std::move(work));
     }
 }
 

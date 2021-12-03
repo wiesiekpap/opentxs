@@ -19,6 +19,8 @@
 #include "core/contract/Signable.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/contract/Contract.hpp"
+#include "internal/protobuf/Check.hpp"
+#include "internal/protobuf/verify/ServerContract.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -30,14 +32,12 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/protobuf/Check.hpp"
-#include "opentxs/protobuf/ListenAddress.pb.h"
-#include "opentxs/protobuf/Nym.pb.h"
-#include "opentxs/protobuf/ServerContract.pb.h"
-#include "opentxs/protobuf/Signature.pb.h"
-#include "opentxs/protobuf/verify/ServerContract.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/ListenAddress.pb.h"
+#include "serialization/protobuf/Nym.pb.h"
+#include "serialization/protobuf/ServerContract.pb.h"
+#include "serialization/protobuf/Signature.pb.h"
 
 namespace opentxs
 {

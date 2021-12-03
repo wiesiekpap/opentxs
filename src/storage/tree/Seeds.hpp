@@ -12,7 +12,7 @@
 
 #include "Proto.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/protobuf/StorageSeeds.pb.h"
+#include "serialization/protobuf/StorageSeeds.pb.h"
 #include "storage/tree/Node.hpp"
 
 namespace opentxs

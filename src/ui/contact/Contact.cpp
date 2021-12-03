@@ -26,8 +26,7 @@
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "ui/base/List.hpp"
@@ -177,8 +176,7 @@ auto Contact::process_contact(const Message& message) noexcept -> void
     OT_ASSERT(1 < body.size());
 
     const auto& id = body.at(1);
-    auto contactID = Widget::api_.Factory().Identifier();
-    contactID->Assign(id.Bytes());
+    const auto contactID = Widget::api_.Factory().Identifier(id);
 
     OT_ASSERT(false == contactID->empty())
 

@@ -30,8 +30,8 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
-#include "opentxs/protobuf/HDAccount.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/HDAccount.pb.h"
 
 namespace opentxs
 {

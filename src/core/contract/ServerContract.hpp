@@ -18,9 +18,9 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
-#include "opentxs/protobuf/ServerContract.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/ServerContract.pb.h"
 
 namespace opentxs
 {

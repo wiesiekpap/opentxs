@@ -7,6 +7,12 @@
 #include "1_Internal.hpp"                     // IWYU pragma: associated
 #include "network/zeromq/ListenCallback.hpp"  // IWYU pragma: associated
 
+#include <functional>
+#include <utility>
+
+#include "internal/util/LogMacros.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::ListenCallback>;
@@ -22,15 +28,18 @@ auto ListenCallback::Factory(zeromq::ListenCallback::ReceiveCallback callback)
 auto ListenCallback::Factory() -> OTZMQListenCallback
 {
     return OTZMQListenCallback(
-        new implementation::ListenCallback([](const Message&) -> void {}));
+        new implementation::ListenCallback([](zeromq::Message&&) -> void {}));
 }
 }  // namespace opentxs::network::zeromq
 
 namespace opentxs::network::zeromq::implementation
 {
 ListenCallback::ListenCallback(zeromq::ListenCallback::ReceiveCallback callback)
-    : callback_(callback)
+    : execute_lock_()
+    , callback_lock_()
+    , callback_(callback)
 {
+    OT_ASSERT(callback_);
 }
 
 auto ListenCallback::clone() const -> ListenCallback*
@@ -38,9 +47,23 @@ auto ListenCallback::clone() const -> ListenCallback*
     return new ListenCallback(callback_);
 }
 
-void ListenCallback::Process(zeromq::Message& message) const
+auto ListenCallback::Deactivate() const noexcept -> void
 {
-    callback_(message);
+    static const auto null = [](zeromq::Message&&) {};
+    auto rlock = rLock{execute_lock_};
+    auto lock = Lock{callback_lock_};
+    callback_ = null;
+}
+
+auto ListenCallback::Process(zeromq::Message&& message) const noexcept -> void
+{
+    auto rlock = rLock{execute_lock_};
+    auto cb = [this] {
+        auto lock = Lock{callback_lock_};
+
+        return callback_;
+    }();
+    cb(std::move(message));
 }
 
 ListenCallback::~ListenCallback() {}

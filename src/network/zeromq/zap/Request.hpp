@@ -5,95 +5,62 @@
 
 #pragma once
 
+#include <cstddef>
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
 
-#include "network/zeromq/Message.hpp"
+#include "network/zeromq/message/Message.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
+#include "opentxs/util/Bytes.hpp"
 
-#define VERSION_POSITION 0
-#define REQUEST_ID_POSITION 1
-#define DOMAIN_POSITION 2
-#define ADDRESS_POSITION 3
-#define IDENTITY_POSITION 4
-#define MECHANISM_POSITION 5
-#define CREDENTIALS_START_POSITION 6
-
-namespace opentxs::network::zeromq::zap::implementation
+namespace opentxs::network::zeromq::zap
 {
-class Request final : virtual zap::Request, zeromq::implementation::Message
+class Request::Imp final : public zeromq::Message::Imp
 {
 public:
-    auto Address() const -> std::string final
-    {
-        return Body_at(ADDRESS_POSITION);
-    }
-    auto Credentials() const -> const FrameSection final;
-    auto Debug() const -> std::string final;
-    auto Domain() const -> std::string final
-    {
-        return Body_at(DOMAIN_POSITION);
-    }
-    auto Identity() const -> OTData final
-    {
-        return Data::Factory(Body_at(IDENTITY_POSITION));
-    }
-    auto Mechanism() const -> zap::Mechanism final
-    {
-        return string_to_mechanism(Body_at(MECHANISM_POSITION));
-    }
-    auto RequestID() const -> OTData final
-    {
-        return Data::Factory(Body_at(REQUEST_ID_POSITION));
-    }
-    auto Validate() const -> std::pair<bool, std::string> final;
-    auto Version() const -> std::string final
-    {
-        return Body_at(VERSION_POSITION);
-    }
-
-    auto AddCredential(const Data& credential) -> Frame& final
-    {
-        return zeromq::Message::AddFrame(credential);
-    }
-
-    ~Request() final = default;
-
-private:
-    friend network::zeromq::zap::Request;
-
     using MechanismMap = std::map<zap::Mechanism, std::string>;
     using MechanismReverseMap = std::map<std::string, zap::Mechanism>;
+
+    static constexpr auto default_version_{"1.0"};
+    static constexpr auto version_position_ = std::size_t{0};
+    static constexpr auto request_id_position_ = std::size_t{1};
+    static constexpr auto domain_position_ = std::size_t{2};
+    static constexpr auto address_position_ = std::size_t{3};
+    static constexpr auto identity_position_ = std::size_t{4};
+    static constexpr auto mechanism_position_ = std::size_t{5};
+    static constexpr auto credentials_start_position_ = std::size_t{6};
+    static constexpr auto max_string_field_size_ = std::size_t{255};
+    static constexpr auto pubkey_size_ = std::size_t{32};
 
     static const std::set<std::string> accept_versions_;
     static const MechanismMap mechanism_map_;
     static const MechanismReverseMap mechanism_reverse_map_;
 
-    static auto invert_mechanism_map(const MechanismMap& input)
-        -> MechanismReverseMap;
+    static auto string_to_mechanism(const ReadView in) -> zap::Mechanism;
+
+    Imp() noexcept;
+    Imp(const ReadView address,
+        const ReadView domain,
+        const network::zeromq::zap::Mechanism mechanism,
+        const ReadView requestID,
+        const ReadView identity,
+        const ReadView version) noexcept;
+    Imp(const Imp& rhs) noexcept;
+
+    ~Imp() final = default;
+
+private:
     static auto mechanism_to_string(const zap::Mechanism in) -> std::string;
-    static auto string_to_mechanism(const std::string& in) -> zap::Mechanism;
 
-    auto clone() const -> Request* final { return new Request(*this); }
-
-    Request(
-        const std::string& address,
-        const std::string& domain,
-        const zap::Mechanism mechanism,
-        const Data& requestID,
-        const Data& identity,
-        const std::string& version);
-    Request();
-    Request(const Request&);
-    Request(Request&&) = delete;
-    auto operator=(const Request&) -> Request& = delete;
-    auto operator=(Request&&) -> Request& = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
-}  // namespace opentxs::network::zeromq::zap::implementation
+}  // namespace opentxs::network::zeromq::zap

@@ -19,13 +19,11 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -154,13 +152,11 @@ struct Mempool::Imp {
         }
     }
 
-    Imp(const api::Session& api,
-        const api::crypto::Blockchain& crypto,
+    Imp(const api::crypto::Blockchain& crypto,
         const internal::WalletDatabase& wallet,
         const network::zeromq::socket::Publish& socket,
         const Type chain) noexcept
-        : api_(api)
-        , crypto_(crypto)
+        : crypto_(crypto)
         , wallet_(wallet)
         , chain_(chain)
         , lock_()
@@ -184,7 +180,6 @@ private:
     static constexpr auto tx_limit_ = std::chrono::hours{1};
     static constexpr auto txid_limit_ = std::chrono::hours{24};
 
-    const api::Session& api_;
     const api::crypto::Blockchain& crypto_;
     const internal::WalletDatabase& wallet_;
     const Type chain_;
@@ -197,11 +192,14 @@ private:
 
     auto notify(ReadView txid) const noexcept -> void
     {
-        auto work = api_.Network().ZeroMQ().TaggedMessage(
-            WorkType::BlockchainMempoolUpdated);
-        work->AddFrame(chain_);
-        work->AddFrame(txid.data(), txid.size());
-        socket_.Send(work);
+        socket_.Send([&] {
+            auto work = network::zeromq::tagged_message(
+                WorkType::BlockchainMempoolUpdated);
+            work.AddFrame(chain_);
+            work.AddFrame(txid.data(), txid.size());
+
+            return work;
+        }());
     }
 
     auto init() noexcept -> void
@@ -227,12 +225,11 @@ private:
 };
 
 Mempool::Mempool(
-    const api::Session& api,
     const api::crypto::Blockchain& crypto,
     const internal::WalletDatabase& wallet,
     const network::zeromq::socket::Publish& socket,
     const Type chain) noexcept
-    : imp_(std::make_unique<Imp>(api, crypto, wallet, socket, chain))
+    : imp_(std::make_unique<Imp>(crypto, wallet, socket, chain))
 {
 }
 

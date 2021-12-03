@@ -15,10 +15,10 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
-#include "opentxs/protobuf/ClientContext.pb.h"
-#include "opentxs/protobuf/Context.pb.h"
 #include "opentxs/util/Log.hpp"
 #include "otx/consensus/Base.hpp"
+#include "serialization/protobuf/ClientContext.pb.h"
+#include "serialization/protobuf/Context.pb.h"
 
 #define CURRENT_VERSION 1
 

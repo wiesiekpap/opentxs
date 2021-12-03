@@ -16,9 +16,9 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/Types.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
 {

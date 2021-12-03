@@ -15,6 +15,7 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -67,7 +68,8 @@ private:
     const block::Height start_;
     const filter::pHash stop_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Getcfheaders(const Getcfheaders&) = delete;
     Getcfheaders(Getcfheaders&&) = delete;

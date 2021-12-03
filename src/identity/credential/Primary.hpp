@@ -18,9 +18,9 @@
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/credential/Base.hpp"
-#include "opentxs/protobuf/Enums.pb.h"
-#include "opentxs/protobuf/SourceProof.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Enums.pb.h"
+#include "serialization/protobuf/SourceProof.pb.h"
 
 namespace opentxs
 {

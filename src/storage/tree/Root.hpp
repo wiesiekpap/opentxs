@@ -18,8 +18,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/protobuf/StorageRoot.pb.h"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/StorageRoot.pb.h"
 #include "storage/tree/Node.hpp"
 #include "storage/tree/Tree.hpp"
 

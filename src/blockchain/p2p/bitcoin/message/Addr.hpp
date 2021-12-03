@@ -19,6 +19,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -104,7 +105,8 @@ private:
     const ProtocolVersion version_;
     const AddressVector payload_;
 
-    auto payload() const noexcept -> OTData final;
+    using implementation::Message::payload;
+    auto payload(AllocateOutput out) const noexcept -> bool final;
 
     Addr(const Addr&) = delete;
     Addr(Addr&&) = delete;

@@ -8,26 +8,22 @@
 #include "blockchain/node/peermanager/PeerManager.hpp"  // IWYU pragma: associated
 
 #include <map>
-#include <memory>
 #include <utility>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
+#include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
-#include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Pimpl.hpp"
-
-// "opentxs::blockchain::node::implementation::PeerManager::Jobs::"
 
 namespace opentxs::blockchain::node::implementation
 {
@@ -66,6 +62,9 @@ PeerManager::Jobs::Jobs(const api::Session& api) noexcept
           {Task::BroadcastBlock, &broadcast_block_.get()},
       })
 {
+    // WARNING if any publish sockets are converted to push sockets or vice
+    // versa then blockchain::p2p::implementation::Peer::subscribe() must also
+    // be updated
 }
 
 auto PeerManager::Jobs::Dispatch(const Task type) noexcept -> void
@@ -73,7 +72,7 @@ auto PeerManager::Jobs::Dispatch(const Task type) noexcept -> void
     Dispatch(Work(type));
 }
 
-auto PeerManager::Jobs::Dispatch(zmq::Message& work) noexcept -> void
+auto PeerManager::Jobs::Dispatch(zmq::Message&& work) noexcept -> void
 {
     const auto body = work.Body();
 
@@ -89,7 +88,7 @@ auto PeerManager::Jobs::Dispatch(zmq::Message& work) noexcept -> void
         }
     }();
 
-    socket_map_.at(task)->Send(work);
+    socket_map_.at(task)->Send(std::move(work));
 }
 
 auto PeerManager::Jobs::Endpoint(const Task type) const noexcept -> std::string
@@ -108,10 +107,8 @@ auto PeerManager::Jobs::listen(
     const Task type,
     const zmq::socket::Sender& socket) noexcept -> void
 {
-    auto [it, added] = map.emplace(
-        type,
-        std::string{"inproc://opentxs//blockchain/peer_tasks/"} +
-            Identifier::Random()->str());
+    auto [it, added] =
+        map.emplace(type, network::zeromq::MakeArbitraryInproc());
 
     OT_ASSERT(added);
 
@@ -125,14 +122,9 @@ auto PeerManager::Jobs::Shutdown() noexcept -> void
     for (auto [type, socket] : socket_map_) { socket->Close(); }
 }
 
-auto PeerManager::Jobs::Work(const Task task, std::promise<void>* promise)
-    const noexcept -> OTZMQMessage
+auto PeerManager::Jobs::Work(const Task task) const noexcept
+    -> network::zeromq::Message
 {
-    if (nullptr != promise) {
-        return zmq_.TaggedReply(
-            ReadView{reinterpret_cast<char*>(promise), sizeof(promise)}, task);
-    } else {
-        return zmq_.TaggedMessage(task);
-    }
+    return network::zeromq::tagged_message(task);
 }
 }  // namespace opentxs::blockchain::node::implementation

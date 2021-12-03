@@ -9,16 +9,14 @@
 
 #include <memory>
 
-#include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/network/zeromq/socket/Factory.hpp"
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Sender.tpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Push>;
-
-//"opentxs::network::zeromq::socket::implementation::Push::"
 
 namespace opentxs::factory
 {
@@ -38,7 +36,7 @@ namespace opentxs::network::zeromq::socket::implementation
 Push::Push(
     const zeromq::Context& context,
     const Socket::Direction direction) noexcept
-    : Socket(context, SocketType::Push, direction)
+    : Socket(context, socket::Type::Push, direction)
     , Sender()
     , Client(this->get())
 {

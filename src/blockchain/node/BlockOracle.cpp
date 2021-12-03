@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "blockchain/node/BlockOracle.hpp"  // IWYU pragma: associated
 
+#include <atomic>
 #include <memory>
 #include <vector>
 
@@ -17,16 +18,13 @@
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/network/zeromq/Frame.hpp"
-#include "opentxs/network/zeromq/FrameSection.hpp"
-#include "opentxs/network/zeromq/Message.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
@@ -85,8 +83,6 @@ BlockOracle::BlockOracle(
 
 auto BlockOracle::GetBlockJob() const noexcept -> BlockJob
 {
-    auto lock = Lock{lock_};
-
     if (block_downloader_) {
 
         return block_downloader_->NextBatch();
@@ -99,15 +95,12 @@ auto BlockOracle::GetBlockJob() const noexcept -> BlockJob
 auto BlockOracle::Heartbeat() const noexcept -> void
 {
     trigger();
-    auto lock = Lock{lock_};
 
     if (block_downloader_) { block_downloader_->Heartbeat(); }
 }
 
 auto BlockOracle::Init() noexcept -> void
 {
-    auto lock = Lock{lock_};
-
     if (block_downloader_) { block_downloader_->Start(); }
 }
 
@@ -133,7 +126,7 @@ auto BlockOracle::LoadBitcoin(const BlockHashes& hashes) const noexcept
 
 auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
 {
-    if (false == running_.get()) { return; }
+    if (false == running_.load()) { return; }
 
     const auto body = in.Body();
 
@@ -180,25 +173,19 @@ auto BlockOracle::pipeline(const zmq::Message& in) noexcept -> void
 
 auto BlockOracle::shutdown(std::promise<void>& promise) noexcept -> void
 {
-    {
-        auto lock = Lock{lock_};
+    if (auto previous = running_.exchange(false); previous) {
+        pipeline_.Close();
 
-        if (block_downloader_) { block_downloader_.reset(); }
-    }
+        if (block_downloader_) { block_downloader_->Shutdown(); }
 
-    if (running_->Off()) {
         cache_.Shutdown();
-
-        try {
-            promise.set_value();
-        } catch (...) {
-        }
+        promise.set_value();
     }
 }
 
 auto BlockOracle::state_machine() noexcept -> bool
 {
-    if (false == running_.get()) { return false; }
+    if (false == running_.load()) { return false; }
 
     return cache_.StateMachine();
 }
@@ -206,9 +193,9 @@ auto BlockOracle::state_machine() noexcept -> bool
 auto BlockOracle::SubmitBlock(const ReadView in) const noexcept -> void
 {
     auto work = MakeWork(Task::ProcessBlock);
-    work->AddFrame(in.data(), in.size());
-    pipeline_->Push(work);
+    work.AddFrame(in.data(), in.size());
+    pipeline_.Push(std::move(work));
 }
 
-BlockOracle::~BlockOracle() { Shutdown().get(); }
+BlockOracle::~BlockOracle() { signal_shutdown().get(); }
 }  // namespace opentxs::blockchain::node::implementation

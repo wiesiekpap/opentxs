@@ -51,7 +51,6 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"      // TODO remove
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"  // TODO remove
-#include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 namespace google
@@ -100,6 +99,16 @@ namespace crypto
 {
 class SymmetricProvider;
 }  // namespace crypto
+
+namespace network
+{
+namespace zeromq
+{
+class Frame;
+class Message;
+class Pipeline;
+}  // namespace zeromq
+}  // namespace network
 
 namespace otx
 {
@@ -420,6 +429,8 @@ public:
     virtual auto Identifier(const opentxs::Item& item) const
         -> OTIdentifier = 0;
     virtual auto Identifier(const ReadView bytes) const -> OTIdentifier = 0;
+    virtual auto Identifier(const opentxs::network::zeromq::Frame& bytes) const
+        -> OTIdentifier = 0;
     OPENTXS_NO_EXPORT virtual auto Identifier(
         const google::protobuf::MessageLite& proto) const -> OTIdentifier = 0;
     OPENTXS_NO_EXPORT virtual auto InternalSession() const noexcept
@@ -509,6 +520,8 @@ public:
     virtual auto NymID() const -> OTNymID = 0;
     virtual auto NymID(const std::string& serialized) const -> OTNymID = 0;
     virtual auto NymID(const opentxs::String& serialized) const -> OTNymID = 0;
+    virtual auto NymID(const opentxs::network::zeromq::Frame& bytes) const
+        -> OTNymID = 0;
     virtual auto NymIDFromPaymentCode(const std::string& serialized) const
         -> OTNymID = 0;
     virtual auto Offer() const
@@ -631,8 +644,8 @@ public:
     virtual auto PeerRequest(const Nym_p& nym, const ReadView& view) const
         noexcept(false) -> OTPeerRequest = 0;
     virtual auto Pipeline(
-        std::function<void(opentxs::network::zeromq::Message&)> callback) const
-        -> OTZMQPipeline = 0;
+        std::function<void(opentxs::network::zeromq::Message&&)> callback) const
+        -> opentxs::network::zeromq::Pipeline = 0;
 #if OT_CASH
     virtual auto Purse(
         const otx::context::Server& context,
@@ -686,6 +699,8 @@ public:
     virtual auto ServerID(const std::string& serialized) const
         -> OTServerID = 0;
     virtual auto ServerID(const opentxs::String& serialized) const
+        -> OTServerID = 0;
+    virtual auto ServerID(const opentxs::network::zeromq::Frame& bytes) const
         -> OTServerID = 0;
     virtual auto SignedFile() const -> std::unique_ptr<OTSignedFile> = 0;
     virtual auto SignedFile(const String& LOCAL_SUBDIR, const String& FILE_NAME)
@@ -840,6 +855,8 @@ public:
     virtual auto UnitID() const -> OTUnitID = 0;
     virtual auto UnitID(const std::string& serialized) const -> OTUnitID = 0;
     virtual auto UnitID(const opentxs::String& serialized) const
+        -> OTUnitID = 0;
+    virtual auto UnitID(const opentxs::network::zeromq::Frame& bytes) const
         -> OTUnitID = 0;
     virtual auto UnitDefinition() const noexcept -> OTUnitDefinition = 0;
     OPENTXS_NO_EXPORT virtual auto UnitDefinition(

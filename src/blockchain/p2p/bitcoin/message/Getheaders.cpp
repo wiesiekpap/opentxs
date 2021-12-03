@@ -9,10 +9,14 @@
 
 #include <cstddef>
 #include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
+#include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Data.hpp"
@@ -160,27 +164,56 @@ Getheaders::Getheaders(
 {
 }
 
-auto Getheaders::payload() const noexcept -> OTData
+auto Getheaders::payload(AllocateOutput out) const noexcept -> bool
 {
-    ProtocolVersionField version{version_};
-    auto output = Data::Factory(&version, sizeof(version));
-    output += Data::Factory(CompactSize(payload_.size()).Encode());
+    try {
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-    for (const auto& hash : payload_) {
-        if (32 == hash->size()) {
-            output += hash;
-        } else {
-            LogError()(OT_PRETTY_CLASS())("Invalid hash: ")(hash->asHex())
-                .Flush();
+        static constexpr auto fixed =
+            sizeof(ProtocolVersionField) + standard_hash_size_;
+        const auto hashes = payload_.size();
+        const auto cs = CompactSize(hashes).Encode();
+        const auto bytes = fixed + cs.size() + (hashes * standard_hash_size_);
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
         }
-    }
 
-    if (32 == stop_->size()) {
-        output += stop_;
-    } else {
-        output += block::BlankHash();
-    }
+        const auto data = ProtocolVersionField{version_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(
+            i, static_cast<const void*>(&data), sizeof(ProtocolVersionField));
+        std::advance(i, sizeof(ProtocolVersionField));
+        std::memcpy(i, cs.data(), cs.size());
+        std::advance(i, cs.size());
 
-    return output;
+        for (const auto& hash : payload_) {
+            std::memcpy(i, hash->data(), standard_hash_size_);
+            std::advance(i, standard_hash_size_);
+        }
+
+        const auto& stop = [this]() -> const auto&
+        {
+            if (standard_hash_size_ == stop_->size()) {
+
+                return stop_.get();
+            } else {
+                static const auto blank = block::BlankHash();
+
+                return blank.get();
+            }
+        }
+        ();
+
+        std::memcpy(i, stop.data(), stop.size());
+        std::advance(i, stop.size());
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
+    }
 }
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation

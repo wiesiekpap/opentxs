@@ -9,16 +9,17 @@
 
 #include <cstddef>
 #include <cstring>
+#include <functional>
+#include <iterator>
+#include <stdexcept>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
-
-// "opentxs::blockchain::p2p::bitcoin::message::implemenetationGetcfcheckpt::"
 
 namespace opentxs::factory
 {
@@ -97,15 +98,28 @@ Getcfcheckpt::Getcfcheckpt(
 {
 }
 
-auto Getcfcheckpt::payload() const noexcept -> OTData
+auto Getcfcheckpt::payload(AllocateOutput out) const noexcept -> bool
 {
     try {
-        BitcoinFormat raw(header().Network(), type_, stop_);
-        auto output = Data::Factory(&raw, sizeof(raw));
+        if (!out) { throw std::runtime_error{"invalid output allocator"}; }
 
-        return output;
-    } catch (...) {
-        return Data::Factory();
+        static constexpr auto bytes = sizeof(BitcoinFormat);
+        auto output = out(bytes);
+
+        if (false == output.valid(bytes)) {
+            throw std::runtime_error{"failed to allocate output space"};
+        }
+
+        const auto data = BitcoinFormat{header().Network(), type_, stop_};
+        auto* i = output.as<std::byte>();
+        std::memcpy(i, static_cast<const void*>(&data), bytes);
+        std::advance(i, bytes);
+
+        return true;
+    } catch (const std::exception& e) {
+        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+        return false;
     }
 }
 }  // namespace opentxs::blockchain::p2p::bitcoin::message::implementation
