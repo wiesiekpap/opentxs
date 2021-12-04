@@ -157,11 +157,6 @@ auto MessageProcessor::cleanup() noexcept -> void
 {
     if (auto running = running_.exchange(false); running) {
         zmq_batch_.ClearCallbacks();
-        zmq_thread_->Modify(
-            frontend_.ID(), [](auto& socket) { socket.Stop(); });
-        zmq_thread_->Modify(
-            notification_.ID(), [](auto& socket) { socket.Stop(); });
-        api_.Network().ZeroMQ().Internal().Stop(zmq_batch_.id_);
     }
 }
 
@@ -639,5 +634,7 @@ MessageProcessor::~MessageProcessor()
     cleanup();
 
     if (thread_.joinable()) { thread_.join(); }
+
+    api_.Network().ZeroMQ().Internal().Stop(zmq_batch_.id_);
 }
 }  // namespace opentxs::server
