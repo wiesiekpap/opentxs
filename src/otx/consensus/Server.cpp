@@ -944,8 +944,7 @@ auto Server::attempt_delivery(
 
             if (false == updated) {
                 LogError()(OT_PRETTY_CLASS())("Unable to update ")(
-                    message.m_strCommand)(" with new "
-                                          "request number")
+                    message.m_strCommand)(" with new request number")
                     .Flush();
                 status = SendResult::TIMEOUT;
                 reply.reset();
@@ -967,8 +966,7 @@ auto Server::attempt_delivery(
 
             if (SendResult::VALID_REPLY == status) {
                 LogVerbose()(OT_PRETTY_CLASS())("Success delivering ")(
-                    message.m_strCommand)(" (second "
-                                          "attempt)")
+                    message.m_strCommand)(" (second attempt)")
                     .Flush();
                 process_reply(contextLock, client, {}, *reply, reason);
 

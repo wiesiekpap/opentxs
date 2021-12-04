@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "network/zeromq/socket/Pipeline.hpp"  // IWYU pragma: associated
 
-#include <cassert>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -25,6 +24,7 @@
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
+#include "opentxs/util/Log.hpp"
 #include "util/Gatekeeper.hpp"
 
 namespace opentxs::factory
@@ -75,6 +75,16 @@ Pipeline::Pipeline(
     , to_dealer_(batch_.sockets_.at(6))
     , thread_(nullptr)
 {
+    const auto done = gate_.get();
+
+    if (done) {
+        LogConsole()(OT_PRETTY_CLASS())(
+            "Close() was called before the constructor was finished")
+            .Flush();
+
+        return;
+    }
+
     batch_.listen_callbacks_.emplace_back(ListenCallback::Factory(callback));
 
     auto rc = sub_.ClearSubscriptions();
@@ -146,13 +156,9 @@ Pipeline::Pipeline(
 auto Pipeline::Close() const noexcept -> bool
 {
     gate_.shutdown();
-    batch_.ClearCallbacks();
 
     if (auto sent = shutdown_.exchange(true); false == sent) {
-        auto [queued, promise] =
-            thread_->Modify(sub_.ID(), [](auto& socket) { socket.Stop(); });
-
-        assert(queued);
+        batch_.ClearCallbacks();
     }
 
     return true;

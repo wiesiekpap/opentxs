@@ -236,7 +236,7 @@ auto SubchainCache::GetLastIndexed(
 
         return load_last_indexed(subchain);
     } catch (const std::exception& e) {
-        LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+        LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
 
         return std::nullopt;
     }

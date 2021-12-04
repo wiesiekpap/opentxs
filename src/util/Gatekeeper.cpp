@@ -8,6 +8,7 @@
 #include "util/Gatekeeper.hpp"  // IWYU pragma: associated
 
 #include <atomic>
+#include <future>
 #include <thread>
 
 #include "internal/util/LogMacros.hpp"
@@ -15,7 +16,16 @@
 namespace opentxs
 {
 struct Gatekeeper::Imp {
-    std::atomic_int count_{0};
+    std::atomic_int count_;
+    std::promise<void> promise_;
+    std::shared_future<void> future_;
+
+    Imp() noexcept
+        : count_(0)
+        , promise_()
+        , future_(promise_.get_future())
+    {
+    }
 };
 
 struct Ticket::Imp {
@@ -78,17 +88,29 @@ auto Gatekeeper::shutdown() noexcept -> void
     auto& count = imp_->count_;
     auto jobs = count.load();
 
-    if (0 > jobs) { return; }
+    if (0 > jobs) {
+        imp_->future_.get();
+
+        return;
+    }
 
     static constexpr auto shutdown{-1};
 
-    while (false == count.compare_exchange_strong(jobs, shutdown)) { ; }
+    while (false == count.compare_exchange_strong(jobs, shutdown)) {
+        if (0 > jobs) {
+            imp_->future_.get();
+
+            return;
+        }
+    }
 
     OT_ASSERT(0 <= jobs);
 
     const auto target = shutdown - jobs;
 
     while (count.load() > target) { std::this_thread::yield(); }
+
+    imp_->promise_.set_value();
 }
 
 Ticket::operator bool() const noexcept
