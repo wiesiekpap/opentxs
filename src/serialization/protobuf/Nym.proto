@@ -24,4 +24,5 @@ message Nym
     optional NymIDSource source = 6;
     repeated Authority activeCredentials = 7;
     repeated Authority revokedCredentials = 8;
+    optional Signature signature = 9;
 }

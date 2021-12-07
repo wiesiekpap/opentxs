@@ -6,7 +6,6 @@
 #pragma once
 
 #include <string>
-#include <thread>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -27,7 +26,7 @@ auto Args(bool lowlevel = false, int argc = 0, char** argv = nullptr) noexcept
     -> const ot::Options&;
 auto GetQT() noexcept -> QObject*;
 auto Home() noexcept -> const std::string&;
-auto StartQT(bool lowlevel = false) noexcept -> std::thread;
+auto StartQT(bool lowlevel = false) noexcept -> void;
 auto StopQT() noexcept -> void;
 auto WipeHome() noexcept -> void;
 }  // namespace ottest

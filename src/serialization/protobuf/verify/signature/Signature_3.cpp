@@ -43,9 +43,9 @@ auto CheckProto_3(
         case SIGROLE_CONTEXT:
         case SIGROLE_ACCOUNT:
         case SIGROLE_SERVERREQUEST:
-        case SIGROLE_SERVERREPLY: {
-            break;
-        }
+        case SIGROLE_SERVERREPLY:
+        case SIGROLE_NYM: {
+        } break;
         case SIGROLE_ERROR:
         default: {
             FAIL_2("invalid role", input.role())

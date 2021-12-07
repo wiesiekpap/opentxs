@@ -7,7 +7,6 @@
 
 #include <gtest/gtest.h>
 #include <string>
-#include <thread>
 
 class QCoreApplication;
 
@@ -22,8 +21,5 @@ public:
     OTTestEnvironment() noexcept;
 
     ~OTTestEnvironment() override;
-
-private:
-    std::thread qt_event_loop_;
 };
 }  // namespace ottest
