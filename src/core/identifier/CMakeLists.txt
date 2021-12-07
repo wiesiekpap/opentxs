@@ -4,8 +4,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set(cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Algorithm.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Nym.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Server.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Type.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/UnitDefinition.hpp"
 )
 

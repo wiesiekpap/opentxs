@@ -298,10 +298,17 @@ auto Contacts::import_contacts(const rLock& lock) -> void
     auto nyms = api_.Wallet().NymList();
 
     for (const auto& it : nyms) {
-        const auto nymID = identifier::Nym::Factory(it.first);
-        const auto contactID = api_.Storage().ContactOwnerNym(nymID->str());
+        const auto nymID = api_.Factory().NymID(it.first);
+        const auto contactID = [&] {
+            auto out = api_.Factory().Identifier();
+            out->Assign(nymID->data(), nymID->size());
 
-        if (contactID.empty()) {
+            return out;
+        }();
+
+        api_.Storage().ContactOwnerNym(nymID->str());
+
+        if (contactID->empty()) {
             const auto nym = api_.Wallet().Nym(nymID);
 
             if (false == bool(nym)) {

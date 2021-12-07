@@ -18,6 +18,7 @@
 #include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
+#include "serialization/protobuf/Verification.pb.h"
 #include "serialization/protobuf/VerificationGroup.pb.h"
 #include "serialization/protobuf/VerificationSet.pb.h"
 

@@ -16,8 +16,10 @@ extern "C" {
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
+#include <iterator>
 #include <limits>
 #include <sstream>
+#include <utility>
 
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
@@ -195,9 +197,12 @@ Data::Data(const void* data, std::size_t size) noexcept
 }
 
 Data::Data(const Vector& v) noexcept
-    : data_(
-          static_cast<const std::uint8_t*>(v.data()),
-          static_cast<const std::uint8_t*>(v.data()) + v.size())
+    : Data(Vector(v))
+{
+}
+
+Data::Data(Vector&& v) noexcept
+    : data_(std::move(v))
 {
 }
 
@@ -293,23 +298,21 @@ auto Data::asHex() const -> std::string
     return out.str();
 }
 
-void Data::Assign(const opentxs::Data& rhs)
+auto Data::Assign(const void* data, const std::size_t size) noexcept -> bool
 {
-    // can't assign to self.
-    if (&dynamic_cast<const Data&>(rhs) == this) { return; }
+    auto rhs = [&]() -> Vector {
+        if ((data == nullptr) || (size == 0)) {
 
-    data_ = dynamic_cast<const Data&>(rhs).data_;
-}
+            return {};
+        } else {
+            const auto* i = static_cast<const std::uint8_t*>(data);
 
-void Data::Assign(const void* data, const std::size_t& size)
-{
-    Release();
+            return {i, std::next(i, size)};
+        }
+    }();
+    data_.swap(rhs);
 
-    if (data != nullptr && size > 0) {
-        auto start = static_cast<const std::uint8_t*>(data);
-        const std::uint8_t* end = start + size;
-        data_.assign(start, end);
-    }
+    return true;
 }
 
 auto Data::check_sub(const std::size_t pos, const std::size_t target) const
@@ -335,12 +338,15 @@ void Data::concatenate(const Vector& data)
     }
 }
 
-void Data::Concatenate(const void* data, const std::size_t& size)
+auto Data::Concatenate(const void* data, const std::size_t size) noexcept
+    -> bool
 {
-    if ((size == 0) || (nullptr == data)) { return; }
+    if ((size == 0) || (nullptr == data)) { return false; }
 
     Data temp(data, size);
     concatenate(temp.data_);
+
+    return true;
 }
 
 auto Data::DecodeHex(const std::string& hex) -> bool
@@ -433,7 +439,7 @@ auto Data::IsNull() const -> bool
     return true;
 }
 
-auto Data::Randomize(const std::size_t& size) -> bool
+auto Data::Randomize(const std::size_t size) -> bool
 {
     SetSize(size);
 

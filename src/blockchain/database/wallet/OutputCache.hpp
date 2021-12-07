@@ -10,6 +10,7 @@
 #pragma once
 
 #include <robin_hood.h>
+#include <algorithm>
 #include <cstddef>
 #include <map>
 #include <memory>

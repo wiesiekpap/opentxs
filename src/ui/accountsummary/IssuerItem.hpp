@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"

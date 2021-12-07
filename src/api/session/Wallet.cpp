@@ -30,6 +30,7 @@
 #include "internal/protobuf/verify/Nym.hpp"
 #include "internal/protobuf/verify/Purse.hpp"
 #include "internal/protobuf/verify/ServerContract.hpp"
+#include "internal/protobuf/verify/UnitDefinition.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
@@ -390,7 +391,7 @@ auto Wallet::BasketContract(
     UnitDefinition(id, timeout);
 
     Lock mapLock(unit_map_lock_);
-    auto it = unit_map_.find(id.str());
+    auto it = unit_map_.find(id);
 
     if (unit_map_.end() == it) {
         throw std::runtime_error("Basket contract ID not found");
@@ -1071,25 +1072,24 @@ auto Wallet::Nym(
         return nullptr;
     }
 
-    const std::string nym = id.str();
     Lock mapLock(nym_map_lock_);
-    bool inMap = (nym_map_.find(nym) != nym_map_.end());
+    bool inMap = (nym_map_.find(id) != nym_map_.end());
     bool valid = false;
 
     if (!inMap) {
         auto serialized = proto::Nym{};
         auto alias = std::string{};
-        bool loaded = api_.Storage().Load(nym, serialized, alias, true);
+        bool loaded = api_.Storage().Load(id.str(), serialized, alias, true);
 
         if (loaded) {
-            auto& pNym = nym_map_[nym].second;
+            auto& pNym = nym_map_[id].second;
             pNym.reset(opentxs::Factory::Nym(api_, serialized, alias));
 
             if (pNym && pNym->CompareID(id)) {
                 valid = pNym->VerifyPseudonym();
                 pNym->SetAliasStartup(alias);
             } else {
-                nym_map_.erase(nym);
+                nym_map_.erase(id);
             }
         } else {
             dht_nym_requester_->Send([&] {
@@ -1109,7 +1109,7 @@ auto Wallet::Nym(
                 while (std::chrono::high_resolution_clock::now() < end) {
                     std::this_thread::sleep_for(interval);
                     mapLock.lock();
-                    bool found = (nym_map_.find(nym) != nym_map_.end());
+                    bool found = (nym_map_.find(id) != nym_map_.end());
                     mapLock.unlock();
 
                     if (found) { break; }
@@ -1120,19 +1120,18 @@ auto Wallet::Nym(
             }
         }
     } else {
-        auto& pNym = nym_map_[nym].second;
+        auto& pNym = nym_map_[id].second;
         if (pNym) { valid = pNym->VerifyPseudonym(); }
     }
 
-    if (valid) { return nym_map_[nym].second; }
+    if (valid) { return nym_map_[id].second; }
 
     return nullptr;
 }
 
 auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
 {
-    const auto& id = serialized.nymid();
-    const auto nymID = identifier::Nym::Factory(id);
+    const auto nymID = api_.Factory().NymID(serialized.nymid());
 
     if (nymID->empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid nym ID.").Flush();
@@ -1159,11 +1158,12 @@ auto Wallet::Nym(const proto::Nym& serialized) const -> Nym_p
         if (false == candidate.CompareID(nymID)) { return existing; }
 
         if (candidate.VerifyPseudonym()) {
-            LogDetail()(OT_PRETTY_CLASS())("Saving updated nym ")(id).Flush();
+            LogDetail()(OT_PRETTY_CLASS())("Saving updated nym ")(nymID)
+                .Flush();
             candidate.WriteCredentials();
             SaveCredentialIDs(candidate);
             Lock mapLock(nym_map_lock_);
-            auto& mapNym = nym_map_[id].second;
+            auto& mapNym = nym_map_[nymID].second;
             // TODO update existing nym rather than destroying it
             mapNym.reset(pCandidate.release());
             notify(nymID);
@@ -1220,13 +1220,14 @@ auto Wallet::Nym(
     }
 
     auto& nym = *pNym;
+    const auto& id = nym.ID();
 
     if (nym.VerifyPseudonym()) {
         nym.SetAlias(name);
 
         {
             Lock mapLock(nym_map_lock_);
-            auto it = nym_map_.find(nym.ID().str());
+            auto it = nym_map_.find(id);
 
             if (nym_map_.end() != it) { return it->second.second; }
         }
@@ -1235,11 +1236,11 @@ auto Wallet::Nym(
             nym_to_contact(nym, name);
 
             {
-                auto nymfile = mutable_nymfile(pNym, pNym, nym.ID(), reason);
+                auto nymfile = mutable_nymfile(pNym, pNym, id, reason);
             }
 
             Lock mapLock(nym_map_lock_);
-            auto& pMapNym = nym_map_[nym.ID().str()].second;
+            auto& pMapNym = nym_map_[id].second;
             pMapNym = pNym;
             nym_created_publisher_->Send([&] {
                 auto work = opentxs::network::zeromq::tagged_message(
@@ -1273,7 +1274,7 @@ auto Wallet::mutable_Nym(
     }
 
     Lock mapLock(nym_map_lock_);
-    auto it = nym_map_.find(nym);
+    auto it = nym_map_.find(id);
 
     if (nym_map_.end() == it) { OT_FAIL }
 
@@ -1371,32 +1372,19 @@ auto Wallet::nymfile_lock(const identifier::Nym& nymID) const -> std::mutex&
     return output;
 }
 
-auto Wallet::NymByIDPartialMatch(const std::string& partialId) const -> Nym_p
+auto Wallet::NymByIDPartialMatch(const std::string& hint) const -> Nym_p
 {
-    Lock mapLock(nym_map_lock_);
-    bool inMap = (nym_map_.find(partialId) != nym_map_.end());
-    bool valid = false;
+    const auto str = api_.Factory().NymID(hint)->str();
 
-    if (!inMap) {
-        for (auto& it : nym_map_) {
-            if (it.first.compare(0, partialId.length(), partialId) == 0)
-                if (it.second.second->VerifyPseudonym())
-                    return it.second.second;
-        }
-        for (auto& it : nym_map_) {
-            if (it.second.second->Alias().compare(
-                    0, partialId.length(), partialId) == 0)
-                if (it.second.second->VerifyPseudonym())
-                    return it.second.second;
-        }
-    } else {
-        auto& pNym = nym_map_[partialId].second;
-        if (pNym) { valid = pNym->VerifyPseudonym(); }
+    for (const auto& [id, alias] : api_.Storage().NymList()) {
+        const auto match = (id.compare(0, hint.length(), hint) == 0) ||
+                           (id.compare(0, str.length(), str) == 0) ||
+                           (alias.compare(0, hint.length(), hint) == 0);
+
+        if (match) { return Nym(api_.Factory().NymID(id)); }
     }
 
-    if (valid) { return nym_map_[partialId].second; }
-
-    return nullptr;
+    return {};
 }
 
 auto Wallet::NymList() const -> ObjectList { return api_.Storage().NymList(); }
@@ -2019,11 +2007,10 @@ auto Wallet::mutable_Purse(
 
 auto Wallet::RemoveServer(const identifier::Server& id) const -> bool
 {
-    std::string server(id.str());
     Lock mapLock(server_map_lock_);
-    auto deleted = server_map_.erase(server);
+    auto deleted = server_map_.erase(id);
 
-    if (0 != deleted) { return api_.Storage().RemoveServer(server); }
+    if (0 != deleted) { return api_.Storage().RemoveServer(id.str()); }
 
     return false;
 }
@@ -2031,11 +2018,10 @@ auto Wallet::RemoveServer(const identifier::Server& id) const -> bool
 auto Wallet::RemoveUnitDefinition(const identifier::UnitDefinition& id) const
     -> bool
 {
-    std::string unit(id.str());
     Lock mapLock(unit_map_lock_);
-    auto deleted = unit_map_.erase(unit);
+    auto deleted = unit_map_.erase(id);
 
-    if (0 != deleted) { return api_.Storage().RemoveUnitDefinition(unit); }
+    if (0 != deleted) { return api_.Storage().RemoveUnitDefinition(id.str()); }
 
     return false;
 }
@@ -2255,8 +2241,7 @@ auto Wallet::SetNymAlias(const identifier::Nym& id, const std::string& alias)
     const -> bool
 {
     Lock mapLock(nym_map_lock_);
-    auto& nym = nym_map_[id.str()].second;
-
+    auto& nym = nym_map_[id].second;
     nym->SetAlias(alias);
 
     return api_.Storage().SetNymAlias(id.str(), alias);
@@ -2274,15 +2259,14 @@ auto Wallet::Server(
         throw std::runtime_error{"Attempting to load a null notary contract"};
     }
 
-    const std::string server = id.str();
     Lock mapLock(server_map_lock_);
-    bool inMap = (server_map_.find(server) != server_map_.end());
+    bool inMap = (server_map_.find(id) != server_map_.end());
     bool valid = false;
 
     if (!inMap) {
         auto serialized = proto::ServerContract{};
         auto alias = std::string{};
-        bool loaded = api_.Storage().Load(server, serialized, alias, true);
+        bool loaded = api_.Storage().Load(id.str(), serialized, alias, true);
 
         if (loaded) {
             auto nym = Nym(identifier::Nym::Factory(serialized.nymid()));
@@ -2292,7 +2276,7 @@ auto Wallet::Server(
             }
 
             if (nym) {
-                auto& pServer = server_map_[server];
+                auto& pServer = server_map_[id];
                 pServer =
                     opentxs::Factory::ServerContract(api_, nym, serialized);
 
@@ -2300,7 +2284,7 @@ auto Wallet::Server(
                     valid = true;  // Factory() performs validation
                     pServer->InitAlias(alias);
                 } else {
-                    server_map_.erase(server);
+                    server_map_.erase(id);
                 }
             }
         } else {
@@ -2321,8 +2305,7 @@ auto Wallet::Server(
                 while (std::chrono::high_resolution_clock::now() < end) {
                     std::this_thread::sleep_for(interval);
                     mapLock.lock();
-                    bool found =
-                        (server_map_.find(server) != server_map_.end());
+                    bool found = (server_map_.find(id) != server_map_.end());
                     mapLock.unlock();
 
                     if (found) { break; }
@@ -2333,11 +2316,11 @@ auto Wallet::Server(
             }
         }
     } else {
-        auto& pServer = server_map_[server];
+        auto& pServer = server_map_[id];
         if (pServer) { valid = pServer->Validate(); }
     }
 
-    if (valid) { return OTServerContract{server_map_[server]}; }
+    if (valid) { return OTServerContract{server_map_[id]}; }
 
     throw std::runtime_error("Server contract not found");
 }
@@ -2353,8 +2336,16 @@ auto Wallet::server(std::unique_ptr<contract::Server> contract) const
         throw std::runtime_error("Invalid server contract");
     }
 
-    const auto server = contract->ID()->str();
-    const auto id = api_.Factory().ServerID(server);
+    const auto id = [&] {
+        const auto generic = contract->ID();
+        auto output = api_.Factory().ServerID();
+        output->Assign(generic);
+
+        return output;
+    }();
+
+    OT_ASSERT(false == id->empty());
+
     const auto serverNymName = contract->EffectiveName();
 
     if (serverNymName != contract->Name()) {
@@ -2362,13 +2353,15 @@ auto Wallet::server(std::unique_ptr<contract::Server> contract) const
     }
 
     auto serialized = proto::ServerContract{};
+
     if (false == contract->Serialize(serialized)) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize contract.").Flush();
     }
+
     if (api_.Storage().Store(serialized, contract->Alias())) {
         {
             Lock mapLock(server_map_lock_);
-            server_map_[server].reset(contract.release());
+            server_map_[id].reset(contract.release());
         }
 
         publish_server(id);
@@ -2377,7 +2370,7 @@ auto Wallet::server(std::unique_ptr<contract::Server> contract) const
             .Flush();
     }
 
-    return Server(identifier::Server::Factory(server));
+    return Server(id);
 }
 
 auto Wallet::Server(const proto::ServerContract& contract) const
@@ -2387,8 +2380,7 @@ auto Wallet::Server(const proto::ServerContract& contract) const
         throw std::runtime_error("Invalid serialized server contract");
     }
 
-    const auto& server = contract.id();
-    auto serverID = identifier::Server::Factory(server);
+    const auto serverID = api_.Factory().ServerID(contract.id());
 
     if (serverID->empty()) { throw std::runtime_error("Invalid server id"); }
 
@@ -2396,45 +2388,53 @@ auto Wallet::Server(const proto::ServerContract& contract) const
 
     if (nymID->empty()) { throw std::runtime_error("Invalid nym ID"); }
 
+    find_nym_->Send([&] {
+        auto work =
+            opentxs::network::zeromq::tagged_message(WorkType::OTXSearchNym);
+        work.AddFrame(nymID);
+
+        return work;
+    }());
     auto nym = Nym(nymID);
 
-    if (false == bool(nym) && contract.has_publicnym()) {
-        nym = Nym(contract.publicnym());
+    if (!nym && contract.has_publicnym()) { nym = Nym(contract.publicnym()); }
+
+    if (!nym) { throw std::runtime_error("Invalid nym"); }
+
+    auto candidate = std::unique_ptr<contract::Server>{
+        opentxs::Factory::ServerContract(api_, nym, contract)};
+
+    if (!candidate) {
+        throw std::runtime_error("Failed to instantiate contract");
     }
 
-    if (nym) {
-        auto candidate = std::unique_ptr<contract::Server>{
-            opentxs::Factory::ServerContract(api_, nym, contract)};
-
-        if (candidate) {
-            if (candidate->Validate()) {
-                if (serverID.get() != candidate->ID()) {
-                    LogError()(OT_PRETTY_CLASS())("Wrong contract ID.").Flush();
-                    serverID->Assign(candidate->ID());
-                }
-
-                auto serialized = proto::ServerContract{};
-                if (false == candidate->Serialize(serialized)) {
-                    LogError()(OT_PRETTY_CLASS())(
-                        " Failed to serialize server contract.")
-                        .Flush();
-                }
-                const auto stored = api_.Storage().Store(
-                    serialized, candidate->EffectiveName());
-
-                if (stored) {
-                    {
-                        Lock mapLock(server_map_lock_);
-                        server_map_[server].reset(candidate.release());
-                    }
-
-                    publish_server(serverID);
-                }
-            }
-        }
-    } else {
-        LogError()(OT_PRETTY_CLASS())("Invalid nym.").Flush();
+    if (false == candidate->Validate()) {
+        throw std::runtime_error("Invalid contract");
     }
+
+    if (serverID.get() != candidate->ID()) {
+        throw std::runtime_error("Wrong contract ID");
+    }
+
+    auto serialized = proto::ServerContract{};
+
+    if (false == candidate->Serialize(serialized)) {
+        throw std::runtime_error("Failed to serialize server contract");
+    }
+
+    const auto stored =
+        api_.Storage().Store(serialized, candidate->EffectiveName());
+
+    if (false == stored) {
+        throw std::runtime_error("Failed to save server contract");
+    }
+
+    {
+        Lock mapLock(server_map_lock_);
+        server_map_[serverID].reset(candidate.release());
+    }
+
+    publish_server(serverID);
 
     return Server(serverID);
 }
@@ -2452,7 +2452,6 @@ auto Wallet::Server(
     const opentxs::PasswordPrompt& reason,
     const VersionNumber version) const -> OTServerContract
 {
-    std::string server;
     auto nym = Nym(identifier::Nym::Factory(nymid));
 
     if (nym) {
@@ -2484,7 +2483,7 @@ auto Wallet::Server(
         LogError()(OT_PRETTY_CLASS())("Error: Nym does not exist.").Flush();
     }
 
-    return Server(identifier::Server::Factory(server));
+    return Server(identifier::Server::Factory(std::string{}));
 }
 
 auto Wallet::ServerList() const -> ObjectList
@@ -2543,13 +2542,12 @@ auto Wallet::SetServerAlias(
     const identifier::Server& id,
     const std::string& alias) const -> bool
 {
-    const std::string server = id.str();
-    const bool saved = api_.Storage().SetServerAlias(server, alias);
+    const bool saved = api_.Storage().SetServerAlias(id.str(), alias);
 
     if (saved) {
         {
             Lock mapLock(server_map_lock_);
-            server_map_.erase(server);
+            server_map_.erase(id);
         }
 
         publish_server(id);
@@ -2564,13 +2562,12 @@ auto Wallet::SetUnitDefinitionAlias(
     const identifier::UnitDefinition& id,
     const std::string& alias) const -> bool
 {
-    const std::string unit = id.str();
-    const bool saved = api_.Storage().SetUnitDefinitionAlias(unit, alias);
+    const bool saved = api_.Storage().SetUnitDefinitionAlias(id.str(), alias);
 
     if (saved) {
         {
             Lock mapLock(unit_map_lock_);
-            unit_map_.erase(unit);
+            unit_map_.erase(id);
         }
 
         publish_unit(id);
@@ -2599,15 +2596,14 @@ auto Wallet::UnitDefinition(
         throw std::runtime_error{"Attempting to load a null unit definition"};
     }
 
-    const std::string unit = id.str();
     Lock mapLock(unit_map_lock_);
-    bool inMap = (unit_map_.find(unit) != unit_map_.end());
+    bool inMap = (unit_map_.find(id) != unit_map_.end());
     bool valid = false;
 
     if (!inMap) {
         auto serialized = proto::UnitDefinition{};
         std::string alias;
-        bool loaded = api_.Storage().Load(unit, serialized, alias, true);
+        bool loaded = api_.Storage().Load(id.str(), serialized, alias, true);
 
         if (loaded) {
             auto nym = Nym(identifier::Nym::Factory(serialized.nymid()));
@@ -2617,14 +2613,14 @@ auto Wallet::UnitDefinition(
             }
 
             if (nym) {
-                auto& pUnit = unit_map_[unit];
+                auto& pUnit = unit_map_[id];
                 pUnit = opentxs::Factory::UnitDefinition(api_, nym, serialized);
 
                 if (pUnit) {
                     valid = true;  // Factory() performs validation
                     pUnit->InitAlias(alias);
                 } else {
-                    unit_map_.erase(unit);
+                    unit_map_.erase(id);
                 }
             }
         } else {
@@ -2645,7 +2641,7 @@ auto Wallet::UnitDefinition(
                 while (std::chrono::high_resolution_clock::now() < end) {
                     std::this_thread::sleep_for(interval);
                     mapLock.lock();
-                    bool found = (unit_map_.find(unit) != unit_map_.end());
+                    bool found = (unit_map_.find(id) != unit_map_.end());
                     mapLock.unlock();
 
                     if (found) { break; }
@@ -2656,11 +2652,11 @@ auto Wallet::UnitDefinition(
             }
         }
     } else {
-        auto& pUnit = unit_map_[unit];
+        auto& pUnit = unit_map_[id];
         if (pUnit) { valid = pUnit->Validate(); }
     }
 
-    if (valid) { return OTUnitDefinition{unit_map_[unit]}; }
+    if (valid) { return OTUnitDefinition{unit_map_[id]}; }
 
     throw std::runtime_error("Unit definition does not exist");
 }
@@ -2676,21 +2672,27 @@ auto Wallet::unit_definition(std::shared_ptr<contract::Unit>&& contract) const
         throw std::runtime_error("Invalid unit definition contract");
     }
 
-    const auto unit = contract->ID()->str();
-    const auto id = api_.Factory().UnitID(unit);
+    const auto id = [&] {
+        auto out = api_.Factory().UnitID();
+        out->Assign(contract->ID());
+
+        return out;
+    }();
 
     auto serialized = proto::UnitDefinition{};
+
     if (false == contract->Serialize(serialized)) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize unit definition")
             .Flush();
     }
+
     if (api_.Storage().Store(serialized, contract->Alias())) {
         {
             Lock mapLock(unit_map_lock_);
-            auto it = unit_map_.find(unit);
+            auto it = unit_map_.find(id);
 
             if (unit_map_.end() == it) {
-                unit_map_.emplace(unit, std::move(contract));
+                unit_map_.emplace(id, std::move(contract));
             } else {
                 it->second = std::move(contract);
             }
@@ -2701,15 +2703,26 @@ auto Wallet::unit_definition(std::shared_ptr<contract::Unit>&& contract) const
         LogError()(OT_PRETTY_CLASS())("Failed to save unit definition").Flush();
     }
 
-    return UnitDefinition(identifier::UnitDefinition::Factory(unit));
+    return UnitDefinition(id);
 }
 
 auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
     -> OTUnitDefinition
 {
-    const auto unit = contract.id();
-    auto unitID = api_.Factory().UnitID(unit);
+    if (false == proto::Validate(contract, VERBOSE)) {
+        throw std::runtime_error("Invalid serialized unit definition");
+    }
+
+    const auto unitID = api_.Factory().UnitID(contract.id());
+
+    if (unitID->empty()) {
+        throw std::runtime_error("Invalid unit definition id");
+    }
+
     const auto nymID = api_.Factory().NymID(contract.nymid());
+
+    if (nymID->empty()) { throw std::runtime_error("Invalid nym ID"); }
+
     find_nym_->Send([&] {
         auto work =
             opentxs::network::zeromq::tagged_message(WorkType::OTXSearchNym);
@@ -2717,47 +2730,44 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
 
         return work;
     }());
-
     auto nym = Nym(nymID);
 
     if (!nym && contract.has_publicnym()) { nym = Nym(contract.publicnym()); }
 
-    if (nym) {
-        auto candidate = opentxs::Factory::UnitDefinition(api_, nym, contract);
+    if (!nym) { throw std::runtime_error("Invalid nym"); }
 
-        if (candidate) {
-            if (candidate->Validate()) {
-                if (unitID.get() != candidate->ID()) {
-                    LogError()(OT_PRETTY_CLASS())("Wrong contract ID.").Flush();
-                    unitID->Assign(candidate->ID());
-                }
+    auto candidate = opentxs::Factory::UnitDefinition(api_, nym, contract);
 
-                auto serialized = proto::UnitDefinition{};
-                if (false == candidate->Serialize(serialized)) {
-                    LogError()(OT_PRETTY_CLASS())(
-                        " Failed to serialize unit definition.")
-                        .Flush();
-                }
-                const auto stored =
-                    api_.Storage().Store(serialized, candidate->Alias());
-
-                if (stored) {
-                    {
-                        Lock mapLock(unit_map_lock_);
-                        auto it = unit_map_.find(unit);
-
-                        if (unit_map_.end() == it) {
-                            unit_map_.emplace(unit, std::move(candidate));
-                        } else {
-                            it->second = std::move(candidate);
-                        }
-                    }
-
-                    publish_unit(unitID);
-                }
-            }
-        }
+    if (!candidate) {
+        throw std::runtime_error("Failed to instantiate contract");
     }
+
+    if (false == candidate->Validate()) {
+        throw std::runtime_error("Invalid contract");
+    }
+
+    if (unitID.get() != candidate->ID()) {
+        throw std::runtime_error("Wrong contract ID");
+    }
+
+    auto serialized = proto::UnitDefinition{};
+
+    if (false == candidate->Serialize(serialized)) {
+        throw std::runtime_error("Failed to serialize unit definition");
+    }
+
+    const auto stored = api_.Storage().Store(serialized, candidate->Alias());
+
+    if (false == stored) {
+        throw std::runtime_error("Failed to save unit definition");
+    }
+
+    {
+        Lock mapLock(unit_map_lock_);
+        unit_map_[unitID] = candidate;
+    }
+
+    publish_unit(unitID);
 
     return UnitDefinition(unitID);
 }

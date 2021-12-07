@@ -10,11 +10,12 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <string_view>
+#include <typeindex>
 #include <utility>
-#include <variant>
 
 #include "internal/network/zeromq/message/Factory.hpp"
 #include "internal/util/LogMacros.hpp"

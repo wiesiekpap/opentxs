@@ -84,6 +84,9 @@ Server::Server(
     const PasswordPrompt& reason)
     : manager_(manager)
     , reason_(reason)
+    , init_promise_()
+    , init_future_(init_promise_.get_future())
+    , have_id_(false)
     , mainFile_(*this, reason_)
     , notary_(*this, reason_, manager_)
     , transactor_(*this, reason_)
@@ -149,8 +152,10 @@ void Server::ProcessCron()
     // Such as sweeping server accounts after expiration dates, etc.
 }
 
-auto Server::GetServerID() const -> const identifier::Server&
+auto Server::GetServerID() const noexcept -> const identifier::Server&
 {
+    init_future_.get();
+
     return m_notaryID;
 }
 
@@ -347,31 +352,35 @@ void Server::CreateMainFile(bool& mainFileExists)
     }
 
     auto& wallet = manager_.Wallet();
-    const auto existing = String::Factory(
-        OTDB::QueryPlainString(
-            manager_, manager_.DataFolder(), SERVER_CONTRACT_FILE, "", "", "")
-            .data());
+    const auto contract = [&] {
+        const auto existing = String::Factory(OTDB::QueryPlainString(
+                                                  manager_,
+                                                  manager_.DataFolder(),
+                                                  SERVER_CONTRACT_FILE,
+                                                  "",
+                                                  "",
+                                                  "")
+                                                  .data());
 
-    if (false == existing->empty()) {
-        LogError()(OT_PRETTY_CLASS())("Existing contract found. Restoring.")
-            .Flush();
-    }
+        if (existing->empty()) {
 
-    const auto serialized =
-        existing->empty()
-            ? proto::ServerContract{}
-            : proto::StringToProto<proto::ServerContract>(existing);
-    const auto contract =
-        existing->empty()
-            ? wallet.Server(
-                  nymID.str(),
-                  name,
-                  terms,
-                  endpoints,
-                  reason_,
-                  (inproc) ? std::max(2u, contract::Server::DefaultVersion)
-                           : contract::Server::DefaultVersion)
-            : wallet.Internal().Server(serialized);
+            return wallet.Server(
+                nymID.str(),
+                name,
+                terms,
+                endpoints,
+                reason_,
+                (inproc) ? std::max(2u, contract::Server::DefaultVersion)
+                         : contract::Server::DefaultVersion);
+        } else {
+            LogError()(OT_PRETTY_CLASS())("Existing contract found. Restoring.")
+                .Flush();
+            const auto serialized =
+                proto::StringToProto<proto::ServerContract>(existing);
+
+            return wallet.Internal().Server(serialized);
+        }
+    }();
     std::string strNotaryID{};
     std::string strHostname{};
     std::uint32_t nPort{0};
@@ -469,11 +478,9 @@ void Server::Init(bool readOnly)
 
     if (false == mainFileExists) {
         if (readOnly) {
-            LogError()(OT_PRETTY_CLASS())(
-                "Error: Main file non-existent "
-                "(")(WalletFilename().Get())("). Plus, unable to "
-                                             "create, since read-only "
-                                             "flag is set.")
+            LogError()(OT_PRETTY_CLASS())("Error: Main file non-existent (")(
+                WalletFilename().Get())(
+                "). Plus, unable to create, since read-only flag is set.")
                 .Flush();
             OT_FAIL;
         } else {
@@ -481,24 +488,24 @@ void Server::Init(bool readOnly)
         }
     }
 
-    if (mainFileExists) {
-        if (false == mainFile_.LoadMainFile(readOnly)) {
-            LogError()(OT_PRETTY_CLASS())(
-                "Error in Loading Main File, re-creating.")
-                .Flush();
-            OTDB::EraseValueByKey(
-                manager_,
-                manager_.DataFolder(),
-                ".",
-                WalletFilename().Get(),
-                "",
-                "");
-            CreateMainFile(mainFileExists);
+    OT_ASSERT(mainFileExists);
 
-            OT_ASSERT(mainFileExists);
+    if (false == mainFile_.LoadMainFile(readOnly)) {
+        LogError()(OT_PRETTY_CLASS())(
+            "Error in Loading Main File, re-creating.")
+            .Flush();
+        OTDB::EraseValueByKey(
+            manager_,
+            manager_.DataFolder(),
+            ".",
+            WalletFilename().Get(),
+            "",
+            "");
+        CreateMainFile(mainFileExists);
 
-            if (!mainFile_.LoadMainFile(readOnly)) { OT_FAIL; }
-        }
+        OT_ASSERT(mainFileExists);
+
+        if (!mainFile_.LoadMainFile(readOnly)) { OT_FAIL; }
     }
 
     auto password = manager_.Crypto().Encode().Nonce(16);
@@ -914,6 +921,18 @@ auto Server::nymbox_push(
     output.Internal().AddFrame(push);
 
     return output;
+}
+
+auto Server::SetNotaryID(const identifier::Server& id) noexcept -> void
+{
+    OT_ASSERT(false == id.empty());
+
+    if (const auto alreadySet = have_id_.exchange(true); false == alreadySet) {
+        m_notaryID = id;
+        init_promise_.set_value();
+    } else {
+        OT_ASSERT(m_notaryID == id);
+    }
 }
 
 auto Server::TransportKey(Data& pubkey) const -> OTSecret

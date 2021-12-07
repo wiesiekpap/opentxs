@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
+#include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Types.hpp"

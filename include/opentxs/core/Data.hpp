@@ -122,17 +122,19 @@ public:
     virtual auto operator+=(const std::uint32_t rhs) -> Data& = 0;
     /// Bytes will be stored in big endian order
     virtual auto operator+=(const std::uint64_t rhs) -> Data& = 0;
-    virtual void Assign(const Data& source) = 0;
-    virtual void Assign(const ReadView source) = 0;
-    virtual void Assign(const void* data, const std::size_t& size) = 0;
+    virtual auto Assign(const Data& source) noexcept -> bool = 0;
+    virtual auto Assign(const ReadView source) noexcept -> bool = 0;
+    virtual auto Assign(const void* data, const std::size_t size) noexcept
+        -> bool = 0;
     virtual auto at(const std::size_t position) -> std::byte& = 0;
     virtual auto begin() -> iterator = 0;
     virtual auto data() -> void* = 0;
     virtual auto DecodeHex(const std::string& hex) -> bool = 0;
-    virtual void Concatenate(const ReadView data) = 0;
-    virtual void Concatenate(const void* data, const std::size_t& size) = 0;
+    virtual auto Concatenate(const ReadView data) noexcept -> bool = 0;
+    virtual auto Concatenate(const void* data, const std::size_t size) noexcept
+        -> bool = 0;
     virtual auto end() -> iterator = 0;
-    virtual auto Randomize(const std::size_t& size) -> bool = 0;
+    virtual auto Randomize(const std::size_t size) -> bool = 0;
     virtual void Release() = 0;
     virtual void resize(const std::size_t size) = 0;
     virtual void SetSize(const std::size_t size) = 0;

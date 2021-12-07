@@ -314,7 +314,7 @@ protected:
               primaryID,
               [&] {
                   auto out = api.Factory().Identifier();
-                  out->Randomize(32);
+                  out->Randomize();
 
                   return out;
               }(),

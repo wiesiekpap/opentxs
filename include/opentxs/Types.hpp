@@ -159,12 +159,6 @@ enum class NymCapability : std::uint8_t {
     SIGN_CHILDCRED = 3,
 };
 
-enum class ID : std::uint8_t {
-    invalid = 0,
-    sha256 = 1,
-    blake2b = 2,
-};
-
 enum class ContractType : std::uint8_t {
     invalid = 0,
     nym = 1,

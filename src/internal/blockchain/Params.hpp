@@ -14,6 +14,8 @@
 #pragma once
 
 #include <boost/container/flat_map.hpp>
+#include <boost/container/vector.hpp>
+#include <boost/move/algo/move.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <functional>

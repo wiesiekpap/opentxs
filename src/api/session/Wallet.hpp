@@ -393,9 +393,9 @@ private:
     using AccountMap = std::map<OTIdentifier, AccountLock>;
     using NymLock =
         std::pair<std::mutex, std::shared_ptr<identity::internal::Nym>>;
-    using NymMap = std::map<std::string, NymLock>;
-    using ServerMap = std::map<std::string, std::shared_ptr<contract::Server>>;
-    using UnitMap = std::map<std::string, std::shared_ptr<contract::Unit>>;
+    using NymMap = std::map<OTNymID, NymLock>;
+    using ServerMap = std::map<OTServerID, std::shared_ptr<contract::Server>>;
+    using UnitMap = std::map<OTUnitID, std::shared_ptr<contract::Unit>>;
     using IssuerID = std::pair<OTIdentifier, OTIdentifier>;
     using IssuerLock =
         std::pair<std::mutex, std::shared_ptr<api::client::Issuer>>;

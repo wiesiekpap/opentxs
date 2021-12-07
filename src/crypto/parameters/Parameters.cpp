@@ -13,8 +13,8 @@
 #include <map>
 #include <memory>
 #include <string_view>
+#include <typeindex>
 #include <utility>
-#include <variant>
 
 #include "crypto/parameters/Imp.hpp"
 #include "internal/crypto/Parameters.hpp"

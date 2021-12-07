@@ -348,7 +348,9 @@ private:
     auto pattern_id(const SubchainIndex& subchain, const Bip32Index index)
         const noexcept -> pPatternID
     {
-        auto preimage = OTData{subchain};
+
+        auto preimage = api_.Factory().Data();
+        preimage->Assign(subchain);
         preimage->Concatenate(&index, sizeof(index));
         auto output = api_.Factory().Identifier();
         output->CalculateDigest(preimage->Bytes());
@@ -361,7 +363,8 @@ private:
         const filter::Type type,
         const VersionNumber version) const noexcept -> pSubchainIndex
     {
-        auto preimage = OTData{subaccount};
+        auto preimage = api_.Factory().Data();
+        preimage->Assign(subaccount);
         preimage->Concatenate(&subchain, sizeof(subchain));
         preimage->Concatenate(&type, sizeof(type));
         preimage->Concatenate(&version, sizeof(version));

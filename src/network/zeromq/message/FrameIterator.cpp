@@ -11,8 +11,8 @@
 #include <memory>
 #include <stdexcept>
 #include <string_view>
+#include <typeindex>
 #include <utility>
-#include <variant>
 
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/message/FrameIterator.hpp"

@@ -81,23 +81,31 @@ public:
     auto GetSize() const -> std::size_t final { return size(); }
     auto size() const -> std::size_t final { return data_.size(); }
 
-    void Assign(const opentxs::Data& source) final;
-    void Assign(ReadView source) final { Assign(source.data(), source.size()); }
-    void Assign(const void* data, const std::size_t& size) final;
+    auto Assign(const opentxs::Data& source) noexcept -> bool final
+    {
+        return Assign(source.data(), source.size());
+    }
+    auto Assign(ReadView source) noexcept -> bool final
+    {
+        return Assign(source.data(), source.size());
+    }
+    auto Assign(const void* data, const std::size_t size) noexcept
+        -> bool override;
     auto at(const std::size_t position) -> std::byte& final
     {
         return reinterpret_cast<std::byte&>(data_.at(position));
     }
     auto begin() -> iterator final { return iterator(this, 0); }
-    void Concatenate(const ReadView data) final
+    auto Concatenate(const ReadView data) noexcept -> bool final
     {
-        Concatenate(data.data(), data.size());
+        return Concatenate(data.data(), data.size());
     }
-    void Concatenate(const void* data, const std::size_t& size) final;
+    auto Concatenate(const void* data, const std::size_t size) noexcept
+        -> bool override;
     auto data() -> void* final { return data_.data(); }
     auto DecodeHex(const std::string& hex) -> bool final;
     auto end() -> iterator final { return iterator(this, data_.size()); }
-    auto Randomize(const std::size_t& size) -> bool final;
+    auto Randomize(const std::size_t size) -> bool override;
     void Release() final;
     void resize(const std::size_t size) final { data_.resize(size); }
     void SetSize(const std::size_t size) final;
@@ -116,10 +124,11 @@ protected:
     void Initialize();
 
     Data() noexcept;
-    explicit Data(const void* data, std::size_t size) noexcept;
-    explicit Data(const Armored& source) noexcept;
-    explicit Data(const Vector& sourceVector) noexcept;
-    explicit Data(const std::vector<std::byte>& sourceVector) noexcept;
+    Data(const void* data, std::size_t size) noexcept;
+    Data(const Armored& source) noexcept;
+    Data(const Vector& sourceVector) noexcept;
+    Data(Vector&& data) noexcept;
+    Data(const std::vector<std::byte>& sourceVector) noexcept;
 
 private:
     friend opentxs::Data;
