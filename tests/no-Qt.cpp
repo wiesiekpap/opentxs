@@ -5,13 +5,11 @@
 
 #include "Basic.hpp"  // IWYU pragma: associated
 
-#include <thread>
-
 namespace ottest
 {
 auto GetQT() noexcept -> QObject* { return nullptr; }
 
-auto StartQT(bool) noexcept -> std::thread { return {}; }
+auto StartQT(bool) noexcept -> void {}
 
 auto StopQT() noexcept -> void {}
 }  // namespace ottest
