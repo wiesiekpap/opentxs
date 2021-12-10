@@ -17,6 +17,7 @@
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/Nym.pb.h"
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 

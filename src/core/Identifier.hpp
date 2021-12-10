@@ -3,11 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/identifier/Algorithm.hpp"
+// IWYU pragma: no_include "opentxs/core/identifier/Type.hpp"
+
 #pragma once
 
 #include <cstddef>
 #include <iosfwd>
 #include <string>
+#include <tuple>
 
 #include "Proto.hpp"
 #include "core/Data.hpp"
@@ -48,6 +52,9 @@ class Identifier final : virtual public opentxs::Identifier,
 {
 public:
     using ot_super = Data;
+    using Decoded = std::tuple<Vector, identifier::Algorithm, identifier::Type>;
+
+    static auto decode(ReadView encoded) noexcept -> Decoded;
 
     using ot_super::operator==;
     auto operator==(const opentxs::Identifier& rhs) const noexcept -> bool final
@@ -80,23 +87,45 @@ public:
         return Data::operator>=(rhs);
     }
 
-    void GetString(String& theStr) const final;
+    auto Algorithm() const -> identifier::Algorithm final { return algorithm_; }
+    auto GetString(String& theStr) const -> void final;
     auto str() const -> std::string final;
-    auto Type() const -> const ID& final { return type_; }
 
-    auto CalculateDigest(const ReadView bytes, const ID type) -> bool final;
-    void SetString(const std::string& encoded) final;
-    void SetString(const String& encoded) final;
+    using Data::Assign;
+    auto Assign(const void* data, const std::size_t size) noexcept
+        -> bool final;
+    auto CalculateDigest(const ReadView bytes, const identifier::Algorithm type)
+        -> bool final;
+    using Data::Concatenate;
+    auto Concatenate(const void* data, const std::size_t size) noexcept
+        -> bool final;
+    using ot_super::Randomize;
+    auto Randomize(const std::size_t size) -> bool final;
+    auto Randomize() -> bool final;
+    using opentxs::Identifier::SetString;
+    auto SetString(const std::string& encoded) -> void final;
+    auto SetString(const String& encoded) -> void final;
+    auto SetString(const ReadView encoded) -> void;
     using ot_super::swap;
-    void swap(opentxs::Identifier& rhs) final;
+    auto swap(opentxs::Identifier& rhs) -> void final;
 
-    explicit Identifier(const std::string& rhs);
-    explicit Identifier(const String& rhs);
-    explicit Identifier(const identity::Nym& nym);
-    explicit Identifier(const Contract& contract);
-    explicit Identifier(const Vector& data, const ID type);
-    Identifier(const contact::ClaimType type, const proto::HDPath& path);
-    Identifier();
+    Identifier(const identity::Nym& nym) noexcept;
+    Identifier(const Contract& contract) noexcept;
+    Identifier(
+        const contact::ClaimType type,
+        const proto::HDPath& path) noexcept;
+    Identifier(
+        Vector&& data,
+        identifier::Algorithm algorithm,
+        identifier::Type type) noexcept;
+    Identifier(Decoded&& data) noexcept;
+    Identifier(
+        const Vector& data,
+        identifier::Algorithm algorithm,
+        identifier::Type type) noexcept;
+    Identifier(identifier::Type type) noexcept;
+    Identifier(const Identifier& rhs) noexcept;
+    Identifier() noexcept;
 
     ~Identifier() final = default;
 
@@ -106,22 +135,36 @@ private:
     friend opentxs::identifier::Server;
     friend opentxs::identifier::UnitDefinition;
 
-    static constexpr auto DefaultType = ID{ID::blake2b};
-    static constexpr auto MinimumSize = std::size_t{10};
+    identifier::Algorithm algorithm_;
+    identifier::Type type_;
 
-    ID type_;
+    static constexpr auto prefix_ = "ot";
+    static constexpr auto minimum_encoded_bytes_ = std::size_t{6};
+    static constexpr auto header_bytes_ = sizeof(algorithm_);
+
+    static auto contract_contents_to_identifier(const Contract& in)
+        -> Identifier*;
+    static auto hash_bytes(const identifier::Algorithm type) noexcept
+        -> std::size_t;
+    static auto IDToHashType(const identifier::Algorithm type)
+        -> crypto::HashType;
+    static auto is_compatible(
+        identifier::Type lhs,
+        identifier::Type rhs) noexcept -> bool;
+    static auto is_supported(const identifier::Algorithm type) noexcept -> bool;
+    static auto is_supported(const identifier::Type type) noexcept -> bool;
+    static auto path_to_data(
+        const contact::ClaimType type,
+        const proto::HDPath& path) -> OTData;
+    static auto required_payload(const identifier::Algorithm type) noexcept
+        -> std::size_t
+    {
+        return header_bytes_ + hash_bytes(type);
+    }
 
     auto clone() const -> Identifier* final;
     auto to_string() const noexcept -> std::string;
 
-    static auto contract_contents_to_identifier(const Contract& in)
-        -> Identifier*;
-    static auto IDToHashType(const ID type) -> crypto::HashType;
-    static auto path_to_data(
-        const contact::ClaimType type,
-        const proto::HDPath& path) -> OTData;
-
-    Identifier(const Identifier& rhs) = delete;
     Identifier(Identifier&& rhs) = delete;
     auto operator=(const Identifier& rhs) -> Identifier& = delete;
     auto operator=(Identifier&& rhs) -> Identifier& = delete;

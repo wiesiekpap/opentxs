@@ -167,8 +167,10 @@ public:
     OPENTXS_NO_EXPORT static auto UUID(
         const api::Session& api,
         const proto::PaymentWorkflow& workflown) -> OTIdentifier;
-    static auto UUID(const Identifier& notary, const TransactionNumber& number)
-        -> OTIdentifier;
+    static auto UUID(
+        const api::Session& api,
+        const Identifier& notary,
+        const TransactionNumber& number) -> OTIdentifier;
 
     /** Record a failed transfer attempt */
     virtual auto AbortTransfer(

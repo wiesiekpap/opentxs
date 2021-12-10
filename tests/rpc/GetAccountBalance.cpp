@@ -32,9 +32,9 @@ namespace rpc = opentxs::rpc;
 
 namespace ottest
 {
-constexpr auto issuer_{"otysEksLyHmDZyPDTM4TYvcXEcu18bnZw5V"};
-constexpr auto brian_{"ot22MuKFsBJrjjubXRGK83RRruTxtCefLzdD"};
-constexpr auto chris_{"ot2C1sgqWjrt6sMJcY2SJLLcB3qMCgJQRmxU"};
+constexpr auto issuer_{"ot7hHUscwkkUhMUKJrARzYKY9ETK8mpnfx9C9AGw1s5kvvfuVWXA"};
+constexpr auto brian_{"ot7EHjKRgHXokMd8DdRz5Cq7mrfCeWjWzjNsp61vxR2KVkqfzxBk"};
+constexpr auto chris_{"ot6ri54FZpHm5u96HJZkR1VPHQMf4ECDkGAWc2EpjwpHfN9tuC1s"};
 
 TEST_F(RPC_fixture, preconditions)
 {

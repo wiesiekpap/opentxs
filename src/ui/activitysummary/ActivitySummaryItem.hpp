@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <thread>

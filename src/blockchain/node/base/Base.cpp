@@ -794,7 +794,7 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
         }
 
         auto id = api_.Factory().Identifier();
-        id->Randomize(32);
+        id->Randomize();
         auto proposal = proto::BlockchainTransactionProposal{};
         proposal.set_version(proposal_version_);
         proposal.set_id(id->str());
@@ -927,7 +927,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
             out.set_version(proposal_version_);
             out.set_id([&] {
                 auto id = api_.Factory().Identifier();
-                id->Randomize(32);
+                id->Randomize();
 
                 return id->str();
             }());

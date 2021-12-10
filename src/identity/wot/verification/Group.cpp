@@ -22,6 +22,7 @@
 #include "opentxs/identity/wot/verification/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/Verification.pb.h"
 #include "serialization/protobuf/VerificationGroup.pb.h"
 #include "serialization/protobuf/VerificationIdentity.pb.h"
 

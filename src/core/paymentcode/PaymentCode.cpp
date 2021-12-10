@@ -12,8 +12,8 @@
 #include <cstring>
 #include <string>
 #include <string_view>
+#include <typeindex>
 #include <utility>
-#include <variant>
 #include <vector>
 
 #include "internal/util/LogMacros.hpp"

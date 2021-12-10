@@ -22,7 +22,6 @@ extern "C" {
 #include <map>
 #include <optional>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 
 #include "blockchain/database/common/BlockFilter.hpp"

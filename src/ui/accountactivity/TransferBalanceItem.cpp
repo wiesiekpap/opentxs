@@ -249,6 +249,7 @@ auto TransferBalanceItem::UUID() const noexcept -> std::string
     if (transfer_) {
 
         return api::client::Workflow::UUID(
+                   api_,
                    transfer_->GetPurportedNotaryID(),
                    transfer_->GetTransactionNum())
             ->str();

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <QList>
 #include <QObject>
 #include <QString>
 #include <QValidator>

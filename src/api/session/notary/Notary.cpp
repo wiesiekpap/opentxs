@@ -439,10 +439,6 @@ void Notary::mint() const
 {
     opentxs::Lock updateLock(mint_update_lock_, std::defer_lock);
 
-    while (server_.GetServerID().empty()) {
-        Sleep(std::chrono::milliseconds(50));
-    }
-
     const std::string serverID{server_.GetServerID().str()};
 
     OT_ASSERT(false == serverID.empty());

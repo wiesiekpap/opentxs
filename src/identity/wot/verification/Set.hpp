@@ -18,6 +18,7 @@
 #include "opentxs/identity/wot/verification/Set.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+#include "serialization/protobuf/VerificationGroup.pb.h"
 
 namespace opentxs
 {

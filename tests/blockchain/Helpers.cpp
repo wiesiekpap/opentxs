@@ -5,7 +5,6 @@
 
 #include "Helpers.hpp"  // IWYU pragma: associated
 
-#include <boost/move/algo/detail/set_difference.hpp>
 #include <boost/move/algo/move.hpp>
 #include <chrono>
 #include <future>

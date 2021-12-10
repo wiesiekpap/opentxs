@@ -213,9 +213,8 @@ auto MainFile::CreateMainFile(
         LogConsole()(OT_PRETTY_CLASS())("Error loading server nym.").Flush();
     } else {
         LogVerbose()(OT_PRETTY_CLASS())(
-            "OKAY, we have apparently created the new "
-            "server. "
-            "Let's try to load up your new server contract...")
+            "OKAY, we have apparently created the new server. Let's try to "
+            "load up your new server contract...")
             .Flush();
 
         return true;

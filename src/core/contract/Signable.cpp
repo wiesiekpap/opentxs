@@ -112,7 +112,11 @@ auto Signable::init_serialized(const Lock& lock) noexcept(false) -> void
     const auto id = GetID(lock);
 
     if (id_.get() != id) {
-        throw std::runtime_error("Calculated id does not match serialized id");
+        const auto error = std::string{"Calculated id ("} + id->str() +
+                           ") does not match serialized id (" + id_->str() +
+                           ")";
+
+        throw std::runtime_error(error);
     }
 }
 

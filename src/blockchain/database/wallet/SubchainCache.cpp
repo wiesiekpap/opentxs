@@ -638,7 +638,8 @@ auto SubchainCache::subchain_index(
     const filter::Type type,
     const VersionNumber version) const noexcept -> pSubchainIndex
 {
-    auto preimage = OTData{subaccount};
+    auto preimage = api_.Factory().Data();
+    preimage->Assign(subaccount);
     preimage->Concatenate(&subchain, sizeof(subchain));
     preimage->Concatenate(&type, sizeof(type));
     preimage->Concatenate(&version, sizeof(version));

@@ -210,7 +210,7 @@ auto ChequeBalanceItem::UUID() const noexcept -> std::string
     if (cheque_) {
 
         return api::client::Workflow::UUID(
-                   cheque_->GetNotaryID(), cheque_->GetTransactionNum())
+                   api_, cheque_->GetNotaryID(), cheque_->GetTransactionNum())
             ->str();
     }
 

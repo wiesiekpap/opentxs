@@ -6,6 +6,7 @@
 #pragma once
 
 #include <boost/container/flat_map.hpp>
+#include <boost/container/vector.hpp>
 #include <chrono>
 #include <cstddef>
 #include <deque>
@@ -16,6 +17,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 

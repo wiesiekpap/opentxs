@@ -6,6 +6,8 @@
 #pragma once
 
 #include <cstddef>
+#include <deque>
+#include <exception>
 #include <functional>
 #include <future>
 #include <iosfwd>
@@ -15,10 +17,12 @@
 #include <vector>
 
 #include "blockchain/DownloadManager.hpp"
+#include "blockchain/DownloadTask.hpp"
 #include "blockchain/node/FilterOracle.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/FilterType.hpp"

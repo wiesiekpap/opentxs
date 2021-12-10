@@ -20,6 +20,7 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/ui/Blockchains.hpp"
 #include "opentxs/ui/qt/AccountActivity.hpp"

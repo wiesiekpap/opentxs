@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
+#include <cassert>
 #include <memory>
 #include <string>
 
@@ -23,6 +24,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Pimpl.hpp"
 
 using namespace opentxs;
 
@@ -33,59 +35,72 @@ namespace ottest
 class Test_CreateNymHD : public ::testing::Test
 {
 public:
-    const ot::api::session::Client& client_;
+    static constexpr auto alice_expected_id_{
+        "ot7tXhmDT3Q3874WZfCxy11zYNwwcmYAFSD6Xs9T6ZEAhVsbP3B5"};
+    static constexpr auto bob_expected_id_{
+        "ot7kUuaecPG1bmzegKT5ZtbTe3D3hQ2iEypdd6Utabuv4os9aAhM"};
+    static constexpr auto eve_expected_id_{
+        "ot7owt6GhKH2pzofJgv8EiacwEc9hQGA7HuteEkk5mBUnzazCe8T"};
+    static constexpr auto frank_expected_id_{
+        "ot7rmPxUNXetg4zA4rGLub4uUG5SPzeeN9nWA7TqBGDzoXpnJRCq"};
+
+    const ot::api::session::Client& api_;
     ot::OTPasswordPrompt reason_;
     std::string SeedA_;
     std::string SeedB_;
     std::string SeedC_;
     std::string SeedD_;
-    std::string AliceID, BobID, EveID, FrankID;
     std::string Alice, Bob;
 
     Test_CreateNymHD()
-        : client_(ot::Context().StartClientSession(0))
-        , reason_(client_.Factory().PasswordPrompt(__func__))
+        : api_(ot::Context().StartClientSession(0))
+        , reason_(api_.Factory().PasswordPrompt(__func__))
         // these fingerprints are deterministic so we can share them among tests
-        , SeedA_(client_.InternalClient().Exec().Wallet_ImportSeed(
+        , SeedA_(api_.InternalClient().Exec().Wallet_ImportSeed(
               "spike nominee miss inquiry fee nothing belt list other daughter "
               "leave valley twelve gossip paper",
               ""))
-        , SeedB_(client_.InternalClient().Exec().Wallet_ImportSeed(
+        , SeedB_(api_.InternalClient().Exec().Wallet_ImportSeed(
               "glimpse destroy nation advice seven useless candy move number "
               "toast insane anxiety proof enjoy lumber",
               ""))
-        , SeedC_(client_.InternalClient().Exec().Wallet_ImportSeed(
+        , SeedC_(api_.InternalClient().Exec().Wallet_ImportSeed(
               "park cabbage quit",
               ""))
-        , SeedD_(client_.InternalClient().Exec().Wallet_ImportSeed(
+        , SeedD_(api_.InternalClient().Exec().Wallet_ImportSeed(
               "federal dilemma rare",
               ""))
-        , AliceID("ot24XFA1wKynjaAB59dx7PwEzGg37U8Q2yXG")
-        , BobID("ot274uRuN1VezD47R7SqAH27s2WKP1U5jKWk")
-        , EveID("otwz4jCuiVg7UF2i1NgCSvTWeDS29EAHeL6")
-        , FrankID("otogQecfWnoJn5Juy5z5Si3mS53rTb7LgGe")
-        , Alice(client_.Wallet()
-                    .Nym({SeedA_, 0, 1}, reason_, "Alice")
-                    ->ID()
-                    .str())
-        , Bob(client_.Wallet().Nym({SeedB_, 0, 1}, reason_, "Bob")->ID().str())
+        , Alice(api_.Wallet().Nym({SeedA_, 0, 1}, reason_, "Alice")->ID().str())
+        , Bob(api_.Wallet().Nym({SeedB_, 0, 1}, reason_, "Bob")->ID().str())
     {
+        assert(false == Alice.empty());
+        assert(false == Bob.empty());
     }
 };
 
 TEST_F(Test_CreateNymHD, TestNym_DeterministicIDs)
 {
-
-    EXPECT_STREQ(AliceID.c_str(), Alice.c_str());
-    EXPECT_STREQ(BobID.c_str(), Bob.c_str());
+    EXPECT_EQ(Alice, alice_expected_id_);
+    EXPECT_EQ(Bob, bob_expected_id_);
 }
 
 TEST_F(Test_CreateNymHD, TestNym_ABCD)
 {
-    const auto NymA = client_.Wallet().Nym(identifier::Nym::Factory(Alice));
-    const auto NymB = client_.Wallet().Nym(identifier::Nym::Factory(Bob));
-    const auto NymC = client_.Wallet().Nym({SeedA_, 1}, reason_, "Charly");
-    const auto NymD = client_.Wallet().Nym({SeedB_, 1}, reason_, "Dave");
+    const auto aliceID = api_.Factory().NymID(Alice);
+    const auto bobID = api_.Factory().NymID(Bob);
+
+    assert(false == aliceID->empty());
+    assert(false == bobID->empty());
+
+    const auto NymA = api_.Wallet().Nym(aliceID);
+    const auto NymB = api_.Wallet().Nym(bobID);
+    const auto NymC = api_.Wallet().Nym({SeedA_, 1}, reason_, "Charly");
+    const auto NymD = api_.Wallet().Nym({SeedB_, 1}, reason_, "Dave");
+
+    ASSERT_TRUE(NymA);
+    ASSERT_TRUE(NymB);
+    ASSERT_TRUE(NymC);
+    ASSERT_TRUE(NymD);
 
     // Alice
     EXPECT_TRUE(NymA->HasPath());
@@ -129,7 +144,7 @@ TEST_F(Test_CreateNymHD, TestNym_ABCD)
 
 TEST_F(Test_CreateNymHD, TestNym_Dave)
 {
-    const auto NymD = client_.Wallet().Nym({SeedB_, 1}, reason_, "Dave");
+    const auto NymD = api_.Wallet().Nym({SeedB_, 1}, reason_, "Dave");
 
     ASSERT_TRUE(NymD);
 
@@ -148,11 +163,11 @@ TEST_F(Test_CreateNymHD, TestNym_Dave)
 
 TEST_F(Test_CreateNymHD, TestNym_Eve)
 {
-    const auto NymE = client_.Wallet().Nym({SeedB_, 2, 1}, reason_, "Eve");
+    const auto NymE = api_.Wallet().Nym({SeedB_, 2, 1}, reason_, "Eve");
 
     ASSERT_TRUE(NymE);
 
-    EXPECT_EQ(EveID, NymE->ID().str());
+    EXPECT_EQ(eve_expected_id_, NymE->ID().str());
 
     EXPECT_TRUE(NymE->HasPath());
     EXPECT_STREQ(NymE->PathRoot().c_str(), SeedB_.c_str());
@@ -169,12 +184,12 @@ TEST_F(Test_CreateNymHD, TestNym_Eve)
 
 TEST_F(Test_CreateNymHD, TestNym_Frank)
 {
-    const auto NymF = client_.Wallet().Nym({SeedB_, 3, 3}, reason_, "Frank");
-    const auto NymF2 = client_.Wallet().Nym({SeedA_, 3, 3}, reason_, "Frank");
+    const auto NymF = api_.Wallet().Nym({SeedB_, 3, 3}, reason_, "Frank");
+    const auto NymF2 = api_.Wallet().Nym({SeedA_, 3, 3}, reason_, "Frank");
 
     EXPECT_NE(NymF->ID(), NymF2->ID());
 
-    EXPECT_EQ(FrankID, NymF->ID().str());
+    EXPECT_EQ(frank_expected_id_, NymF->ID().str());
 
     EXPECT_TRUE(NymF->HasPath());
     EXPECT_TRUE(NymF2->HasPath());
@@ -198,8 +213,8 @@ TEST_F(Test_CreateNymHD, TestNym_Frank)
 
 TEST_F(Test_CreateNymHD, TestNym_NonnegativeIndex)
 {
-    const auto Nym1 = client_.Wallet().Nym({SeedC_, 0}, reason_, "Nym1");
-    const auto Nym2 = client_.Wallet().Nym({SeedC_, 0}, reason_, "Nym2");
+    const auto Nym1 = api_.Wallet().Nym({SeedC_, 0}, reason_, "Nym1");
+    const auto Nym2 = api_.Wallet().Nym({SeedC_, 0}, reason_, "Nym2");
 
     EXPECT_TRUE(Nym1->HasPath());
     EXPECT_TRUE(Nym2->HasPath());
@@ -212,8 +227,8 @@ TEST_F(Test_CreateNymHD, TestNym_NonnegativeIndex)
 
 TEST_F(Test_CreateNymHD, TestNym_NegativeIndex)
 {
-    const auto Nym1 = client_.Wallet().Nym({SeedD_, -1}, reason_, "Nym1");
-    const auto Nym2 = client_.Wallet().Nym({SeedD_, -1}, reason_, "Nym2");
+    const auto Nym1 = api_.Wallet().Nym({SeedD_, -1}, reason_, "Nym1");
+    const auto Nym2 = api_.Wallet().Nym({SeedD_, -1}, reason_, "Nym2");
 
     EXPECT_TRUE(Nym1->HasPath());
     EXPECT_TRUE(Nym2->HasPath());

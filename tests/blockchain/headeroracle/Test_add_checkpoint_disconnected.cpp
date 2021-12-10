@@ -24,7 +24,7 @@ TEST_F(Test_HeaderOracle, add_checkpoint_disconnected)
     const auto [height, hash] = header_oracle_.GetCheckpoint();
 
     EXPECT_EQ(height, 2);
-    EXPECT_EQ(hash, get_block_hash(BLOCK_9));
+    EXPECT_EQ(hash->asHex(), get_block_hash(BLOCK_9)->asHex());
     EXPECT_TRUE(verify_post_state(post_state_9_));
     EXPECT_TRUE(verify_best_chain(best_chain_9_));
     EXPECT_TRUE(verify_siblings(siblings_9_));

@@ -413,15 +413,18 @@ auto Workflow::UUID(
         }
     }
 
-    return UUID(notaryID, number);
+    return UUID(api, notaryID, number);
 }
 
-auto Workflow::UUID(const Identifier& notary, const TransactionNumber& number)
-    -> OTIdentifier
+auto Workflow::UUID(
+    const api::Session& api,
+    const Identifier& notary,
+    const TransactionNumber& number) -> OTIdentifier
 {
     LogTrace()(OT_PRETTY_STATIC(Workflow))("UUID for notary ")(
         notary)(" and transaction number ")(number)(" is ");
-    OTData preimage{notary};
+    auto preimage = api.Factory().Data();
+    preimage->Assign(notary);
     preimage->Concatenate(&number, sizeof(number));
     auto output = Identifier::Factory();
     output->CalculateDigest(preimage->Bytes());

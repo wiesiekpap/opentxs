@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "blockchain/bitcoin/Inventory.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/Types.hpp"

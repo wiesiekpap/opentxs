@@ -12,6 +12,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/identifier/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -51,6 +52,9 @@ OPENTXS_EXPORT auto operator>=(
 
 namespace opentxs
 {
+OPENTXS_EXPORT auto default_identifier_algorithm() noexcept
+    -> identifier::Algorithm;
+
 /** An Identifier is basically a 256 bit hash value. This class makes it easy to
  * convert IDs back and forth to strings. */
 class OPENTXS_EXPORT Identifier : virtual public Data
@@ -92,12 +96,15 @@ public:
     using ot_super::operator>=;
     virtual auto operator>=(const Identifier& rhs) const noexcept -> bool = 0;
 
+    virtual auto Algorithm() const -> identifier::Algorithm = 0;
     virtual void GetString(String& theStr) const = 0;
-    virtual auto Type() const -> const ID& = 0;
 
     virtual auto CalculateDigest(
         const ReadView bytes,
-        const ID type = ID::blake2b) -> bool = 0;
+        const identifier::Algorithm type = default_identifier_algorithm())
+        -> bool = 0;
+    using opentxs::Data::Randomize;
+    virtual auto Randomize() -> bool = 0;
     virtual void SetString(const std::string& encoded) = 0;
     virtual void SetString(const String& encoded) = 0;
     using ot_super::swap;

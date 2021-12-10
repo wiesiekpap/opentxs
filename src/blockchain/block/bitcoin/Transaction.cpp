@@ -40,6 +40,7 @@
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Algorithm.hpp"
 #include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Log.hpp"
@@ -509,7 +510,8 @@ auto Transaction::IDNormalized() const noexcept -> const Identifier&
         OT_ASSERT(serialized);
 
         auto output = api_.Factory().Identifier();
-        output->CalculateDigest(reader(preimage), ID::sha256);
+        output->CalculateDigest(
+            reader(preimage), identifier::Algorithm::sha256);
 
         return output;
     });

@@ -5,9 +5,11 @@
 
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <future>
 #include <map>
 #include <memory>
 #include <string>
@@ -69,7 +71,7 @@ public:
         core::AddressType& type,
         std::string& hostname,
         std::uint32_t& port) const -> bool;
-    auto GetServerID() const -> const identifier::Server&;
+    auto GetServerID() const noexcept -> const identifier::Server&;
     auto GetServerNym() const -> const identity::Nym&;
     auto TransportKey(Data& pubkey) const -> OTSecret;
     auto IsFlaggedForShutdown() const -> bool;
@@ -122,6 +124,9 @@ private:
 
     const api::session::Notary& manager_;
     const PasswordPrompt& reason_;
+    std::promise<void> init_promise_;
+    std::shared_future<void> init_future_;
+    std::atomic<bool> have_id_;
     MainFile mainFile_;
     Notary notary_;
     Transactor transactor_;
@@ -160,10 +165,7 @@ private:
     auto parse_seed_backup(const std::string& input) const
         -> std::pair<std::string, std::string>;
     auto ServerNymID() const -> const std::string& { return m_strServerNymID; }
-    void SetNotaryID(const identifier::Server& notaryID)
-    {
-        m_notaryID = notaryID;
-    }
+    auto SetNotaryID(const identifier::Server& notaryID) noexcept -> void;
     void SetServerNymID(const char* strNymID) { m_strServerNymID = strNymID; }
 
     auto SendInstrumentToNym(

@@ -468,7 +468,7 @@ public:
     auto random() const noexcept -> ot::OTIdentifier
     {
         auto out = api_.Factory().Identifier();
-        out->Randomize(32);
+        out->Randomize();
 
         return out;
     }

@@ -687,20 +687,9 @@ auto Account::GenerateNewAccount(
     Account::AccountType acctType,
     std::int64_t stashTransNum) -> bool
 {
-    // First we generate a secure random number into a binary object...
-    auto payload = Data::Factory();
-    // TODO: hardcoding. Plus: is 100 bytes of random a little much here?
-    if (!payload->Randomize(100)) {
-        LogError()(OT_PRETTY_CLASS())(
-            "Failed trying to acquire random numbers.")
-            .Flush();
-        return false;
-    }
-
-    // Next we calculate that binary object into a message digest (an
-    // OTIdentifier).
     auto newID = api_.Factory().Identifier();
-    if (!newID->CalculateDigest(payload->Bytes())) {
+
+    if (!newID->Randomize()) {
         LogError()(OT_PRETTY_CLASS())("Error generating new account ID.")
             .Flush();
         return false;
