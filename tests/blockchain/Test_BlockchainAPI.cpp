@@ -222,8 +222,8 @@ public:
             reason_p_.reset(new ot::OTPasswordPrompt{
                 api.Factory().PasswordPrompt(__func__)});
             invalid_nym_p_.reset(new ot::OTNymID{api.Factory().NymID("junk")});
-            nym_not_in_wallet_p_.reset(new ot::OTNymID{
-                api.Factory().NymID("ottaRUsttUuJZj738f9AE6kJJMBp6iedFYQ")});
+            nym_not_in_wallet_p_.reset(new ot::OTNymID{api.Factory().NymID(
+                "ot2xuVYn8io5LpjK7itnUT7ujx8n5Rt3GKs5xXeh9nfZja2SwB5jEq6")});
             const_cast<std::string&>(fingerprint_a_) =
                 api.InternalClient().Exec().Wallet_ImportSeed(
                     "response seminar brave tip suit recall often sound stick "

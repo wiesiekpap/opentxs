@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "opentxs/blind/Token.hpp"
-#include "opentxs/blind/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
@@ -509,18 +507,6 @@ public:
         const api::Session& api,
         const ReadView& serialized) noexcept(false)
         -> std::unique_ptr<crypto::Envelope>;
-#if OT_CASH
-    static auto MintLucre(const api::Session& api) -> blind::Mint*;
-    static auto MintLucre(
-        const api::Session& api,
-        const String& strNotaryID,
-        const String& strInstrumentDefinitionID) -> blind::Mint*;
-    static auto MintLucre(
-        const api::Session& api,
-        const String& strNotaryID,
-        const String& strServerNymID,
-        const String& strInstrumentDefinitionID) -> blind::Mint*;
-#endif
     static auto NoticeAcknowledgement(
         const api::Session& api,
         const Nym_p& nym,
@@ -613,40 +599,6 @@ public:
         const identity::Source& source,
         const proto::Credential& credential)
         -> identity::credential::internal::Primary*;
-#if OT_CASH
-    static auto Purse(const api::Session& api, const proto::Purse& serialized)
-        -> blind::Purse*;
-    static auto Purse(const api::Session& api, const ReadView& serialized)
-        -> blind::Purse*;
-    static auto Purse(
-        const api::Session& api,
-        const otx::context::Server&,
-        const blind::CashType type,
-        const blind::Mint& mint,
-        const Amount& totalValue,
-        const opentxs::PasswordPrompt& reason) -> blind::Purse*;
-    static auto Purse(
-        const api::Session& api,
-        const identity::Nym& owner,
-        const identifier::Server& server,
-        const identity::Nym& serverNym,
-        const blind::CashType type,
-        const blind::Mint& mint,
-        const Amount& totalValue,
-        const opentxs::PasswordPrompt& reason) -> blind::Purse*;
-    static auto Purse(
-        const api::Session& api,
-        const blind::Purse& request,
-        const identity::Nym& requester,
-        const opentxs::PasswordPrompt& reason) -> blind::Purse*;
-    static auto Purse(
-        const api::Session& api,
-        const identity::Nym& owner,
-        const identifier::Server& server,
-        const identifier::UnitDefinition& unit,
-        const blind::CashType type,
-        const opentxs::PasswordPrompt& reason) -> blind::Purse*;
-#endif
     static auto RPC(const api::Context& native) -> rpc::internal::RPC*;
     static auto SecondaryCredential(
         const api::Session& api,
@@ -711,23 +663,6 @@ public:
         const Nym_p& nym,
         const proto::PeerRequest& serialized) noexcept
         -> std::shared_ptr<contract::peer::request::StoreSecret>;
-#if OT_CASH
-    static auto Token(const blind::Token& token, blind::Purse& purse) noexcept
-        -> std::unique_ptr<blind::Token>;
-    static auto Token(
-        const api::Session& api,
-        blind::Purse& purse,
-        const proto::Token& serialized) noexcept(false)
-        -> std::unique_ptr<blind::Token>;
-    static auto Token(
-        const api::Session& api,
-        const identity::Nym& owner,
-        const blind::Mint& mint,
-        const blind::Token::Denomination value,
-        blind::Purse& purse,
-        const opentxs::PasswordPrompt& reason) noexcept(false)
-        -> std::unique_ptr<blind::Token>;
-#endif
     static auto UnitDefinition(const api::Session& api) noexcept
         -> std::shared_ptr<contract::Unit>;
     static auto UnitDefinition(

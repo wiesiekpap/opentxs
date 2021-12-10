@@ -36,13 +36,13 @@ class Test_CreateNymHD : public ::testing::Test
 {
 public:
     static constexpr auto alice_expected_id_{
-        "ot7tXhmDT3Q3874WZfCxy11zYNwwcmYAFSD6Xs9T6ZEAhVsbP3B5"};
+        "ot2xuVaYSXY9rZsm9oFHHPjy9uDrCJPG3DNyExF4uUHV2aCLuCvS8f3"};
     static constexpr auto bob_expected_id_{
-        "ot7kUuaecPG1bmzegKT5ZtbTe3D3hQ2iEypdd6Utabuv4os9aAhM"};
+        "ot2xuVSVeLyKCRrEpjPPwdra3UgwrZVLfhvxnZnA8oiy5FwiDDEW1KU"};
     static constexpr auto eve_expected_id_{
-        "ot7owt6GhKH2pzofJgv8EiacwEc9hQGA7HuteEkk5mBUnzazCe8T"};
+        "ot2xuVVxcrbQ8SsU3YQ2K6uEsTrF3xbLfwNq6f3BH5aUEXWSPuaANe9"};
     static constexpr auto frank_expected_id_{
-        "ot7rmPxUNXetg4zA4rGLub4uUG5SPzeeN9nWA7TqBGDzoXpnJRCq"};
+        "ot2xuVYn8io5LpjK7itnUT7ujx8n5Rt3GKs5xXeh9nfZja2SwB5jEq6"};
 
     const ot::api::session::Client& api_;
     ot::OTPasswordPrompt reason_;

@@ -17,6 +17,9 @@
 #include "internal/api/FactoryAPI.hpp"
 #include "internal/api/crypto/Asymmetric.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#if OT_CASH
+#include "internal/blind/Factory.hpp"
+#endif  // OT_CASH
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -1465,7 +1468,7 @@ auto Factory::Mint() const -> std::unique_ptr<blind::Mint>
     std::unique_ptr<blind::Mint> pMint;
 
 #if OT_CASH_USING_LUCRE
-    pMint.reset(opentxs::Factory::MintLucre(api_));
+    pMint.reset(factory::MintLucre(api_));
 
     OT_ASSERT(false != bool(pMint));
 
@@ -1480,15 +1483,14 @@ auto Factory::Mint() const -> std::unique_ptr<blind::Mint>
 }
 
 auto Factory::Mint(
-    const String& strNotaryID,
-    const String& strInstrumentDefinitionID) const
+    const identifier::Server& notary,
+    const identifier::UnitDefinition& unit) const
     -> std::unique_ptr<blind::Mint>
 {
     std::unique_ptr<blind::Mint> pMint;
 
 #if OT_CASH_USING_LUCRE
-    pMint.reset(opentxs::Factory::MintLucre(
-        api_, strNotaryID, strInstrumentDefinitionID));
+    pMint.reset(factory::MintLucre(api_, notary, unit));
 
     OT_ASSERT(false != bool(pMint));
 #else
@@ -1502,16 +1504,15 @@ auto Factory::Mint(
 }
 
 auto Factory::Mint(
-    const String& strNotaryID,
-    const String& strServerNymID,
-    const String& strInstrumentDefinitionID) const
+    const identifier::Server& notary,
+    const identifier::Nym& serverNym,
+    const identifier::UnitDefinition& unit) const
     -> std::unique_ptr<blind::Mint>
 {
     std::unique_ptr<blind::Mint> pMint;
 
 #if OT_CASH_USING_LUCRE
-    pMint.reset(opentxs::Factory::MintLucre(
-        api_, strNotaryID, strServerNymID, strInstrumentDefinitionID));
+    pMint.reset(factory::MintLucre(api_, notary, serverNym, unit));
 
     OT_ASSERT(false != bool(pMint));
 #else
@@ -1945,14 +1946,13 @@ auto Factory::Purse(
     const blind::CashType type) const -> std::unique_ptr<blind::Purse>
 {
     return std::unique_ptr<blind::Purse>(
-        opentxs::Factory::Purse(api_, context, type, mint, totalValue, reason));
+        factory::Purse(api_, context, type, mint, totalValue, reason));
 }
 
 auto Factory::Purse(const proto::Purse& serialized) const
     -> std::unique_ptr<blind::Purse>
 {
-    return std::unique_ptr<blind::Purse>(
-        opentxs::Factory::Purse(api_, serialized));
+    return std::unique_ptr<blind::Purse>(factory::Purse(api_, serialized));
 }
 
 auto Factory::Purse(
@@ -1963,7 +1963,7 @@ auto Factory::Purse(
     const blind::CashType type) const -> std::unique_ptr<blind::Purse>
 {
     return std::unique_ptr<blind::Purse>(
-        opentxs::Factory::Purse(api_, owner, server, unit, type, reason));
+        factory::Purse(api_, owner, server, unit, type, reason));
 }
 #endif  // OT_CASH
 

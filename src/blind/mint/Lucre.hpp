@@ -25,19 +25,25 @@ class Mint;
 class Token;
 }  // namespace blind
 
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
 namespace identity
 {
 class Nym;
 }  // namespace identity
 
-class Factory;
 class PasswordPrompt;
 class String;
 }  // namespace opentxs
 
 namespace opentxs::blind::mint::implementation
 {
-class Lucre final : Mint
+class Lucre final : public Mint
 {
 public:
     auto AddDenomination(
@@ -55,20 +61,17 @@ public:
         const blind::Token& token,
         const PasswordPrompt& reason) -> bool final;
 
-    ~Lucre() final = default;
-
-private:
-    friend opentxs::Factory;
-
     Lucre(const api::Session& api);
     Lucre(
         const api::Session& api,
-        const String& strNotaryID,
-        const String& strInstrumentDefinitionID);
+        const identifier::Server& notary,
+        const identifier::UnitDefinition& unit);
     Lucre(
         const api::Session& api,
-        const String& strNotaryID,
-        const String& strServerNymID,
-        const String& strInstrumentDefinitionID);
+        const identifier::Server& notary,
+        const identifier::Nym& serverNym,
+        const identifier::UnitDefinition& unit);
+
+    ~Lucre() final = default;
 };
 }  // namespace opentxs::blind::mint::implementation

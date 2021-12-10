@@ -10,6 +10,8 @@ set(cxx-install-headers
 if(OT_CASH_EXPORT)
   add_library(
     opentxs-blind OBJECT
+    "${opentxs_SOURCE_DIR}/src/internal/blind/Blind.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/blind/Factory.hpp"
     "Blind.cpp"
     "Mint.cpp"
     "Mint.hpp"

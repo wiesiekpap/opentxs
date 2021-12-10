@@ -46,7 +46,6 @@ class LucreTokenData;
 class Token;
 }  // namespace proto
 
-class Factory;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -94,8 +93,6 @@ public:
     ~Lucre() final = default;
 
 private:
-    friend opentxs::Factory;
-
     const VersionNumber lucre_version_;
     OTString signature_;
     std::shared_ptr<proto::Ciphertext> private_;

@@ -550,7 +550,7 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const identifier::Nym& id,
     proto::Nym& output,
     const bool checking) const -> bool
 {
@@ -559,15 +559,16 @@ auto Storage::Load(
     return Load(id, output, notUsed, checking);
 }
 
-auto Storage::Load(
-    const std::string& id,
+auto Storage::LoadNym(
+    const identifier::Nym& id,
     AllocateOutput destination,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::Nym>();
     auto alias = std::string{};
 
-    if (false == Root().Tree().Nyms().Nym(id).Load(temp, alias, checking)) {
+    if (false ==
+        Root().Tree().Nyms().Nym(id.str()).Load(temp, alias, checking)) {
         LogError()(OT_PRETTY_CLASS())("Failed to load nym ")(id).Flush();
 
         return false;
@@ -579,13 +580,14 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const identifier::Nym& id,
     proto::Nym& output,
     std::string& alias,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::Nym>(output);
-    const auto rc = Root().Tree().Nyms().Nym(id).Load(temp, alias, checking);
+    const auto rc =
+        Root().Tree().Nyms().Nym(id.str()).Load(temp, alias, checking);
 
     if (rc && temp) { output = *temp; }
 
@@ -805,7 +807,7 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const identifier::Server& id,
     proto::ServerContract& output,
     const bool checking) const -> bool
 {
@@ -815,13 +817,14 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const identifier::Server& id,
     proto::ServerContract& output,
     std::string& alias,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::ServerContract>(output);
-    const auto rc = Root().Tree().Servers().Load(id, temp, alias, checking);
+    const auto rc =
+        Root().Tree().Servers().Load(id.str(), temp, alias, checking);
 
     if (rc && temp) { output = *temp; }
 
@@ -854,7 +857,7 @@ auto Storage::Load(proto::Ciphertext& output, const bool checking) const -> bool
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const identifier::UnitDefinition& id,
     proto::UnitDefinition& output,
     const bool checking) const -> bool
 {
@@ -864,13 +867,13 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const std::string& id,
+    const identifier::UnitDefinition& id,
     proto::UnitDefinition& output,
     std::string& alias,
     const bool checking) const -> bool
 {
     auto temp = std::make_shared<proto::UnitDefinition>(output);
-    const auto rc = Root().Tree().Units().Load(id, temp, alias, checking);
+    const auto rc = Root().Tree().Units().Load(id.str(), temp, alias, checking);
 
     if (rc && temp) { output = *temp; }
 
@@ -1605,8 +1608,8 @@ auto Storage::SetDefaultSeed(const std::string& id) const -> bool
         .SetDefault(id);
 }
 
-auto Storage::SetNymAlias(const std::string& id, const std::string& alias) const
-    -> bool
+auto Storage::SetNymAlias(const identifier::Nym& id, const std::string& alias)
+    const -> bool
 {
     return mutable_Root()
         .get()
@@ -1614,7 +1617,7 @@ auto Storage::SetNymAlias(const std::string& id, const std::string& alias) const
         .get()
         .mutable_Nyms()
         .get()
-        .mutable_Nym(id)
+        .mutable_Nym(id.str())
         .get()
         .SetAlias(alias);
 }
@@ -1724,8 +1727,9 @@ auto Storage::SetSeedAlias(const std::string& id, const std::string& alias)
         .SetAlias(id, alias);
 }
 
-auto Storage::SetServerAlias(const std::string& id, const std::string& alias)
-    const -> bool
+auto Storage::SetServerAlias(
+    const identifier::Server& id,
+    const std::string& alias) const -> bool
 {
     return mutable_Root()
         .get()
@@ -1733,7 +1737,7 @@ auto Storage::SetServerAlias(const std::string& id, const std::string& alias)
         .get()
         .mutable_Servers()
         .get()
-        .SetAlias(id, alias);
+        .SetAlias(id.str(), alias);
 }
 
 auto Storage::SetThreadAlias(
@@ -1757,7 +1761,7 @@ auto Storage::SetThreadAlias(
 }
 
 auto Storage::SetUnitDefinitionAlias(
-    const std::string& id,
+    const identifier::UnitDefinition& id,
     const std::string& alias) const -> bool
 {
     return mutable_Root()
@@ -1766,7 +1770,7 @@ auto Storage::SetUnitDefinitionAlias(
         .get()
         .mutable_Units()
         .get()
-        .SetAlias(id, alias);
+        .SetAlias(id.str(), alias);
 }
 
 auto Storage::ServerAlias(const std::string& id) const -> std::string

@@ -100,6 +100,13 @@ namespace crypto
 class SymmetricProvider;
 }  // namespace crypto
 
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
 namespace network
 {
 namespace zeromq
@@ -508,13 +515,13 @@ public:
 #if OT_CASH
     virtual auto Mint() const -> std::unique_ptr<blind::Mint> = 0;
     virtual auto Mint(
-        const String& strNotaryID,
-        const String& strInstrumentDefinitionID) const
+        const identifier::Server& notary,
+        const identifier::UnitDefinition& unit) const
         -> std::unique_ptr<blind::Mint> = 0;
     virtual auto Mint(
-        const String& strNotaryID,
-        const String& strServerNymID,
-        const String& strInstrumentDefinitionID) const
+        const identifier::Server& notary,
+        const identifier::Nym& serverNym,
+        const identifier::UnitDefinition& unit) const
         -> std::unique_ptr<blind::Mint> = 0;
 #endif
     virtual auto NymID() const -> OTNymID = 0;

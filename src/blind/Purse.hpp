@@ -64,13 +64,12 @@ namespace proto
 class Purse;
 }  // namespace proto
 
-class Factory;
 class PasswordPrompt;
 }  // namespace opentxs
 
 namespace opentxs::blind::implementation
 {
-class Purse final : virtual public blind::Purse
+class Purse final : public blind::Purse
 {
 public:
     auto at(const std::size_t position) const -> const Token& final
@@ -141,12 +140,34 @@ public:
         OTSecret&& secondaryKeyPassword,
         std::unique_ptr<const OTSymmetricKey> secondaryKey,
         std::unique_ptr<const OTEnvelope> secondaryEncrypted);
+    Purse(
+        const api::Session& api,
+        const identifier::Server& server,
+        const identifier::UnitDefinition& unit,
+        const blind::CashType type);
+    Purse(
+        const api::Session& api,
+        const VersionNumber version,
+        const blind::CashType type,
+        const identifier::Server& notary,
+        const identifier::UnitDefinition& unit,
+        const blind::PurseType state,
+        const Amount& totalValue,
+        const Time validFrom,
+        const Time validTo,
+        const std::vector<OTToken>& tokens,
+        const std::shared_ptr<OTSymmetricKey> primary,
+        const std::vector<proto::Envelope>& primaryPasswords,
+        const std::shared_ptr<const OTSymmetricKey> secondaryKey,
+        const std::shared_ptr<const OTEnvelope> secondaryEncrypted,
+        std::optional<OTSecret> secondaryKeyPassword);
+    Purse(const api::Session& api, const Purse& owner);
+    Purse(const api::Session& api, const proto::Purse& serialized);
+    Purse(const api::Session& api, const ReadView& serialized);
 
     ~Purse() final = default;
 
 private:
-    friend opentxs::Factory;
-
     static const opentxs::crypto::key::symmetric::Algorithm mode_;
 
     const api::Session& api_;
@@ -184,30 +205,6 @@ private:
     void apply_times(const Token& token);
     void recalculate_times();
 
-    Purse(
-        const api::Session& api,
-        const identifier::Server& server,
-        const identifier::UnitDefinition& unit,
-        const blind::CashType type);
-    Purse(
-        const api::Session& api,
-        const VersionNumber version,
-        const blind::CashType type,
-        const identifier::Server& notary,
-        const identifier::UnitDefinition& unit,
-        const blind::PurseType state,
-        const Amount& totalValue,
-        const Time validFrom,
-        const Time validTo,
-        const std::vector<OTToken>& tokens,
-        const std::shared_ptr<OTSymmetricKey> primary,
-        const std::vector<proto::Envelope>& primaryPasswords,
-        const std::shared_ptr<const OTSymmetricKey> secondaryKey,
-        const std::shared_ptr<const OTEnvelope> secondaryEncrypted,
-        std::optional<OTSecret> secondaryKeyPassword);
-    Purse(const api::Session& api, const Purse& owner);
-    Purse(const api::Session& api, const proto::Purse& serialized);
-    Purse(const api::Session& api, const ReadView& serialized);
     Purse() = delete;
     Purse(const Purse&);
     Purse(Purse&&) = delete;

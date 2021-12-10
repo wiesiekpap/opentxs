@@ -64,6 +64,13 @@ class Symmetric;
 }  // namespace key
 }  // namespace crypto
 
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
 namespace proto
 {
 class Bip47Channel;
@@ -218,16 +225,16 @@ public:
         proto::Credential& cred,
         const bool checking = false) const -> bool final;
     auto Load(
-        const std::string& id,
+        const identifier::Nym& id,
         proto::Nym& nym,
         const bool checking = false) const -> bool final;
     auto Load(
-        const std::string& id,
+        const identifier::Nym& id,
         proto::Nym& nym,
         std::string& alias,
         const bool checking = false) const -> bool final;
-    auto Load(
-        const std::string& id,
+    auto LoadNym(
+        const identifier::Nym& id,
         AllocateOutput destination,
         const bool checking = false) const -> bool final;
     auto Load(
@@ -276,11 +283,11 @@ public:
         std::string& alias,
         const bool checking = false) const -> bool final;
     auto Load(
-        const std::string& id,
+        const identifier::Server& id,
         proto::ServerContract& contract,
         const bool checking = false) const -> bool final;
     auto Load(
-        const std::string& id,
+        const identifier::Server& id,
         proto::ServerContract& contract,
         std::string& alias,
         const bool checking = false) const -> bool final;
@@ -291,11 +298,11 @@ public:
     auto Load(proto::Ciphertext& output, const bool checking = false) const
         -> bool final;
     auto Load(
-        const std::string& id,
+        const identifier::UnitDefinition& id,
         proto::UnitDefinition& contract,
         const bool checking = false) const -> bool final;
     auto Load(
-        const std::string& id,
+        const identifier::UnitDefinition& id,
         proto::UnitDefinition& contract,
         std::string& alias,
         const bool checking = false) const -> bool final;
@@ -368,7 +375,7 @@ public:
     auto SetContactAlias(const std::string& id, const std::string& alias) const
         -> bool final;
     auto SetDefaultSeed(const std::string& id) const -> bool final;
-    auto SetNymAlias(const std::string& id, const std::string& alias) const
+    auto SetNymAlias(const identifier::Nym& id, const std::string& alias) const
         -> bool final;
     auto SetPeerRequestTime(
         const std::string& nymID,
@@ -381,14 +388,15 @@ public:
         const bool unread) const -> bool final;
     auto SetSeedAlias(const std::string& id, const std::string& alias) const
         -> bool final;
-    auto SetServerAlias(const std::string& id, const std::string& alias) const
-        -> bool final;
+    auto SetServerAlias(const identifier::Server& id, const std::string& alias)
+        const -> bool final;
     auto SetThreadAlias(
         const std::string& nymId,
         const std::string& threadId,
         const std::string& alias) const -> bool final;
-    auto SetUnitDefinitionAlias(const std::string& id, const std::string& alias)
-        const -> bool final;
+    auto SetUnitDefinitionAlias(
+        const identifier::UnitDefinition& id,
+        const std::string& alias) const -> bool final;
     auto Store(
         const std::string& accountID,
         const std::string& data,

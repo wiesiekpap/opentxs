@@ -19,6 +19,9 @@
 #include "Proto.tpp"
 #include "internal/api/client/Factory.hpp"
 #include "internal/api/session/Session.hpp"
+#if OT_CASH
+#include "internal/blind/Factory.hpp"
+#endif  // OT_CASH
 #include "internal/contact/Contact.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/identity/Identity.hpp"
@@ -1079,7 +1082,7 @@ auto Wallet::Nym(
     if (!inMap) {
         auto serialized = proto::Nym{};
         auto alias = std::string{};
-        bool loaded = api_.Storage().Load(id.str(), serialized, alias, true);
+        bool loaded = api_.Storage().Load(id, serialized, alias, true);
 
         if (loaded) {
             auto& pNym = nym_map_[id].second;
@@ -1953,8 +1956,7 @@ auto Wallet::purse(
         return {};
     }
 
-    std::unique_ptr<blind::Purse> output{
-        opentxs::Factory::Purse(api_, serialized)};
+    std::unique_ptr<blind::Purse> output{factory::Purse(api_, serialized)};
 
     if (false == bool(output)) {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate purse").Flush();
@@ -1988,8 +1990,7 @@ auto Wallet::mutable_Purse(
 
         OT_ASSERT(nym);
 
-        pPurse.reset(
-            opentxs::Factory::Purse(api_, *nym, server, unit, type, reason));
+        pPurse.reset(factory::Purse(api_, *nym, server, unit, type, reason));
     }
 
     OT_ASSERT(pPurse);
@@ -2244,7 +2245,7 @@ auto Wallet::SetNymAlias(const identifier::Nym& id, const std::string& alias)
     auto& nym = nym_map_[id].second;
     nym->SetAlias(alias);
 
-    return api_.Storage().SetNymAlias(id.str(), alias);
+    return api_.Storage().SetNymAlias(id, alias);
 }
 
 auto Wallet::Server(
@@ -2266,7 +2267,7 @@ auto Wallet::Server(
     if (!inMap) {
         auto serialized = proto::ServerContract{};
         auto alias = std::string{};
-        bool loaded = api_.Storage().Load(id.str(), serialized, alias, true);
+        bool loaded = api_.Storage().Load(id, serialized, alias, true);
 
         if (loaded) {
             auto nym = Nym(identifier::Nym::Factory(serialized.nymid()));
@@ -2493,20 +2494,22 @@ auto Wallet::ServerList() const -> ObjectList
 
 auto Wallet::server_to_nym(Identifier& input) const -> OTNymID
 {
-    auto output = identifier::Nym::Factory();
-    auto nym = Nym(identifier::Nym::Factory(input.str()));  // TODO conversion
-    const bool inputIsNymID = bool(nym);
+    auto output = api_.Factory().NymID();
+    output->Assign(input);
+    const auto inputIsNymID = [&] {
+        auto nym = Nym(output);
+
+        return nym.operator bool();
+    }();
 
     if (inputIsNymID) {
-        output->Assign(input);
         const auto list = ServerList();
         std::size_t matches = 0;
 
-        for (const auto& item : list) {
-            const auto& serverID = item.first;
-
+        for (const auto& [serverID, alias] : list) {
             try {
-                auto server = Server(identifier::Server::Factory(serverID));
+                const auto id = api_.Factory().ServerID(serverID);
+                auto server = Server(id);
 
                 if (server->Nym()->ID() == input) {
                     matches++;
@@ -2519,16 +2522,17 @@ auto Wallet::server_to_nym(Identifier& input) const -> OTNymID
 
         OT_ASSERT(2 > matches);
     } else {
+        output->Release();
+
         try {
-            const auto contract = Server(
-                identifier::Server::Factory(input.str()));  // TODO conversion
-            auto serialized = proto::ServerContract{};
-            if (false == contract->Serialize(serialized)) {
-                LogDetail()(OT_PRETTY_CLASS())(
-                    " Failed to serialize server contract: ")(input)
-                    .Flush();
-            }
-            output->SetString(serialized.nymid());
+            const auto notaryID = [&] {
+                auto out = api_.Factory().ServerID();
+                out->Assign(input);
+
+                return out;
+            }();
+            const auto contract = Server(notaryID);
+            output = contract->Nym()->ID();
         } catch (...) {
             LogDetail()(OT_PRETTY_CLASS())("Non-existent server: ")(input)
                 .Flush();
@@ -2542,7 +2546,7 @@ auto Wallet::SetServerAlias(
     const identifier::Server& id,
     const std::string& alias) const -> bool
 {
-    const bool saved = api_.Storage().SetServerAlias(id.str(), alias);
+    const bool saved = api_.Storage().SetServerAlias(id, alias);
 
     if (saved) {
         {
@@ -2553,6 +2557,9 @@ auto Wallet::SetServerAlias(
         publish_server(id);
 
         return true;
+    } else {
+        LogError()(OT_PRETTY_CLASS())("Failed to save server contract ")(id)
+            .Flush();
     }
 
     return false;
@@ -2562,7 +2569,7 @@ auto Wallet::SetUnitDefinitionAlias(
     const identifier::UnitDefinition& id,
     const std::string& alias) const -> bool
 {
-    const bool saved = api_.Storage().SetUnitDefinitionAlias(id.str(), alias);
+    const bool saved = api_.Storage().SetUnitDefinitionAlias(id, alias);
 
     if (saved) {
         {
@@ -2573,6 +2580,9 @@ auto Wallet::SetUnitDefinitionAlias(
         publish_unit(id);
 
         return true;
+    } else {
+        LogError()(OT_PRETTY_CLASS())("Failed to save unit definition ")(id)
+            .Flush();
     }
 
     return false;
@@ -2603,7 +2613,7 @@ auto Wallet::UnitDefinition(
     if (!inMap) {
         auto serialized = proto::UnitDefinition{};
         std::string alias;
-        bool loaded = api_.Storage().Load(id.str(), serialized, alias, true);
+        bool loaded = api_.Storage().Load(id, serialized, alias, true);
 
         if (loaded) {
             auto nym = Nym(identifier::Nym::Factory(serialized.nymid()));

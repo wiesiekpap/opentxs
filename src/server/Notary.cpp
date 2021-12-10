@@ -23,6 +23,9 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#if OT_CASH
+#include "internal/blind/Factory.hpp"
+#endif  // OT_CASH
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -8472,7 +8475,7 @@ void Notary::process_cash_withdrawal(
     }
 
     std::unique_ptr<blind::Purse> pRequestPurse{
-        Factory::Purse(manager_, serializedPurse)};
+        factory::Purse(manager_, serializedPurse)};
 
     if (false == bool(pRequestPurse)) {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate request purse")
@@ -8494,7 +8497,7 @@ void Notary::process_cash_withdrawal(
     }
 
     std::unique_ptr<blind::Purse> pReplyPurse{
-        Factory::Purse(manager_, requestPurse, context.RemoteNym(), reason_)};
+        factory::Purse(manager_, requestPurse, context.RemoteNym(), reason_)};
 
     if (false == bool(pReplyPurse)) {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate reply purse")

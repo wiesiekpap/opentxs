@@ -12,6 +12,9 @@
 
 #include "2_Factory.hpp"
 #include "Proto.tpp"
+#if OT_CASH
+#include "internal/blind/Factory.hpp"
+#endif  // OT_CASH
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "internal/protobuf/Check.hpp"
@@ -290,7 +293,7 @@ Object::Object(
         } break;
         case (contract::peer::PeerObjectType::Cash): {
 #if OT_CASH
-            purse_.reset(opentxs::Factory::Purse(api_, serialized.purse()));
+            purse_.reset(factory::Purse(api_, serialized.purse()));
 #endif
         } break;
         default: {
