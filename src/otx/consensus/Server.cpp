@@ -4024,9 +4024,10 @@ auto Server::process_get_mint_response(const Lock& lock, const Message& reply)
     -> bool
 {
     auto serialized = String::Factory(reply.m_ascPayload);
+    const auto server = api_.Factory().ServerID(reply.m_strNotaryID);
+    const auto unit = api_.Factory().UnitID(reply.m_strInstrumentDefinitionID);
 
-    auto mint = api_.Factory().Mint(
-        reply.m_strNotaryID, reply.m_strInstrumentDefinitionID);
+    auto mint = api_.Factory().Mint(server, unit);
 
     OT_ASSERT(mint);
 
@@ -4245,12 +4246,12 @@ auto Server::process_get_unit_definition_response(
     const Message& reply) -> bool
 {
     update_nymbox_hash(lock, reply);
-    const auto unitID =
-        api_.Factory().UnitID(reply.m_strInstrumentDefinitionID);
+    const auto id =
+        api_.Factory().Identifier(reply.m_strInstrumentDefinitionID);
 
     if (reply.m_ascPayload->empty()) {
         LogError()(OT_PRETTY_CLASS())(
-            "Server reply does not contain unit definition ")(unitID)
+            "Server reply does not contain contract ")(id)
             .Flush();
 
         return false;
@@ -4260,52 +4261,44 @@ auto Server::process_get_unit_definition_response(
 
     switch (static_cast<ContractType>(reply.enum_)) {
         case ContractType::nym: {
-            auto serialized = proto::Factory<proto::Nym>(raw);
-            auto contract = api_.Wallet().Nym(serialized);
+            const auto serialized = proto::Factory<proto::Nym>(raw);
+            const auto contract = api_.Wallet().Nym(serialized);
 
-            if (contract) { return (unitID->str() == serialized.nymid()); }
+            if (contract) {
+                return (id == contract->ID());
+            } else {
+                LogError()(OT_PRETTY_CLASS())("Invalid nym").Flush();
+            }
         } break;
         case ContractType::server: {
-            try {
-                const auto serialized =
-                    proto::Factory<proto::ServerContract>(raw);
-                api_.Wallet().Internal().Server(serialized);
+            const auto serialized = proto::Factory<proto::ServerContract>(raw);
 
-                return (unitID->str() == serialized.id());
+            try {
+                const auto contract =
+                    api_.Wallet().Internal().Server(serialized);
+
+                return (id == contract->ID());
             } catch (...) {
+                LogError()(OT_PRETTY_CLASS())("Invalid server contract")
+                    .Flush();
             }
         } break;
         case ContractType::unit: {
             auto serialized = proto::Factory<proto::UnitDefinition>(raw);
 
             try {
-                api_.Wallet().Internal().UnitDefinition(serialized);
+                const auto contract =
+                    api_.Wallet().Internal().UnitDefinition(serialized);
 
-                return (unitID->str() == serialized.id());
+                return (id == contract->ID());
             } catch (...) {
+                LogError()(OT_PRETTY_CLASS())("Invalid unit definition")
+                    .Flush();
             }
         } break;
         case ContractType::invalid:
         default: {
-            auto serialized = proto::Factory<proto::UnitDefinition>(raw);
-
-            try {
-                api_.Wallet().Internal().UnitDefinition(serialized);
-
-                return (unitID->str() == serialized.id());
-            } catch (...) {
-                // Maybe it's actually a server contract?
-                auto serializedServerContract =
-                    proto::Factory<proto::ServerContract>(raw);
-
-                try {
-                    auto serverContract = api_.Wallet().Internal().Server(
-                        serializedServerContract);
-
-                    return (unitID->str() == serializedServerContract.id());
-                } catch (...) {
-                }
-            }
+            LogError()(OT_PRETTY_CLASS())("invalid contract type").Flush();
         }
     }
 
@@ -6259,8 +6252,7 @@ void Server::process_incoming_cash_withdrawal(
         return;
     }
 
-    auto pMint = api_.Factory().Mint(
-        String::Factory(server_id_), String::Factory(requestPurse.Unit()));
+    auto pMint = api_.Factory().Mint(server_id_, requestPurse.Unit());
 
     if (pMint) {
         LogInsane()(OT_PRETTY_CLASS())("Mint loaded").Flush();

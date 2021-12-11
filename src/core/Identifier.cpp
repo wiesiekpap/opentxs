@@ -213,6 +213,45 @@ auto operator>=(const OTUnitID& lhs, const opentxs::Identifier& rhs) noexcept
     return lhs.get().operator>=(rhs);
 }
 
+auto print(identifier::Algorithm in) noexcept -> const char*
+{
+    static const auto map =
+        robin_hood::unordered_flat_map<identifier::Algorithm, const char*>{
+            {identifier::Algorithm::invalid, "invalid"},
+            {identifier::Algorithm::sha256, "sha256"},
+            {identifier::Algorithm::blake2b160, "blake2b160"},
+            {identifier::Algorithm::blake2b256, "blake2b256"},
+        };
+
+    try {
+
+        return map.at(in);
+    } catch (...) {
+
+        return "unknown";
+    }
+}
+
+auto print(identifier::Type in) noexcept -> const char*
+{
+    static const auto map =
+        robin_hood::unordered_flat_map<identifier::Type, const char*>{
+            {identifier::Type::invalid, "invalid"},
+            {identifier::Type::generic, "generic"},
+            {identifier::Type::nym, "nym"},
+            {identifier::Type::notary, "notary"},
+            {identifier::Type::unitdefinition, "unit definition"},
+        };
+
+    try {
+
+        return map.at(in);
+    } catch (...) {
+
+        return "unknown";
+    }
+}
+
 auto Identifier::Factory() -> OTIdentifier
 {
     auto out = std::make_unique<Imp>(identifier::Type::generic);
@@ -547,6 +586,21 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
 
         auto* i = reinterpret_cast<const std::uint8_t*>(bytes.data());
         std::advance(i, sizeof(algorithm_));
+        const auto serializedType = [&] {
+            auto out = boost::endian::little_uint16_buf_t{};
+            std::memcpy(static_cast<void*>(&out), i, sizeof(out));
+            std::advance(i, sizeof(out));
+
+            return out;
+        }();
+
+        type = static_cast<identifier::Type>(serializedType.value());
+
+        if (false == is_supported(type)) {
+            algorithm = identifier::Algorithm::invalid;
+
+            throw std::runtime_error{"unsupported type"};
+        }
 
         if (required_payload(algorithm) != length) {
             const auto error = std::string{"invalid payload ("} +
@@ -557,7 +611,7 @@ auto Identifier::decode(ReadView in) noexcept -> Decoded
 
         data = Vector{i, i + (length - header_bytes_)};
     } catch (const std::runtime_error& e) {
-        LogTrace()(OT_PRETTY_STATIC(Identifier))(e.what()).Flush();
+        LogError()(OT_PRETTY_STATIC(Identifier))(e.what()).Flush();  // FIXME
     }
 
     return output;
@@ -685,8 +739,28 @@ auto Identifier::Randomize() -> bool
 auto Identifier::SetString(const ReadView encoded) -> void
 {
     auto [data, algorithm, type] = decode(encoded);
-    data_.swap(data);
-    algorithm_ = algorithm;
+
+    if (identifier::Algorithm::invalid == algorithm) {
+        data_.clear();
+
+        return;
+    }
+
+    if (is_compatible(type_, type)) {
+        data_.swap(data);
+        algorithm_ = algorithm;
+
+        // NOTE upgrading from generic to a more specific type is allowed. The
+        // reverse is not
+        if (identifier::Type::generic == type_) { type_ = type; }
+    } else {
+        std::cerr << OT_PRETTY_CLASS() << "trying to import a "
+                  << opentxs::print(type) << " string into a "
+                  << opentxs::print(type_) << " identifier" << std::endl;
+        data_.clear();
+        algorithm_ = identifier::Algorithm::invalid;
+        type_ = identifier::Type::invalid;
+    }
 }
 
 auto Identifier::SetString(const String& encoded) -> void
@@ -727,13 +801,17 @@ auto Identifier::to_string() const noexcept -> std::string
 
         if (0 == payload) { return out; }
 
-        out->resize(sizeof(algorithm_) + payload);
+        const auto type = boost::endian::little_uint16_buf_t{
+            static_cast<std::uint16_t>(type_)};
+        out->resize(sizeof(algorithm_) + sizeof(type) + payload);
 
         OT_ASSERT(out->size() == required_payload(algorithm_));
 
         auto* i = static_cast<std::byte*>(out->data());
         std::memcpy(i, &algorithm_, sizeof(algorithm_));
         std::advance(i, sizeof(algorithm_));
+        std::memcpy(i, static_cast<const void*>(&type), sizeof(type));
+        std::advance(i, sizeof(type));
         std::memcpy(i, data(), payload);
         std::advance(i, payload);
 

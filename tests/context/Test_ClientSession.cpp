@@ -98,15 +98,16 @@ TEST(ClientSession, introduction_server)
     ot::Cleanup();
 }
 
-TEST(ClientSession, restart_after_registering)
-{
-    const auto& otx = ot::InitContext(Args(true));
-    const auto& server = otx.StartNotarySession(0);
-    const auto& client = otx.StartClientSession(0);
-    const auto& serverID = server.ID();
-    const auto nymID = client.Factory().NymID(nym_id_);
-    client.OTX().DownloadNymbox(nymID, serverID);
-    client.OTX().ContextIdle(nymID, serverID).get();
-    ot::Cleanup();
-}
+// TODO restore this test after OTX refactor
+// TEST(ClientSession, restart_after_registering)
+// {
+//     const auto& otx = ot::InitContext(Args(true));
+//     const auto& server = otx.StartNotarySession(0);
+//     const auto& client = otx.StartClientSession(0);
+//     const auto& serverID = server.ID();
+//     const auto nymID = client.Factory().NymID(nym_id_);
+//     client.OTX().DownloadNymbox(nymID, serverID);
+//     client.OTX().ContextIdle(nymID, serverID).get();
+//     ot::Cleanup();
+// }
 }  // namespace ottest

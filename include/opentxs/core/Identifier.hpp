@@ -96,8 +96,9 @@ public:
     using ot_super::operator>=;
     virtual auto operator>=(const Identifier& rhs) const noexcept -> bool = 0;
 
-    virtual auto Algorithm() const -> identifier::Algorithm = 0;
+    virtual auto Algorithm() const noexcept -> identifier::Algorithm = 0;
     virtual void GetString(String& theStr) const = 0;
+    virtual auto Type() const noexcept -> identifier::Type = 0;
 
     virtual auto CalculateDigest(
         const ReadView bytes,

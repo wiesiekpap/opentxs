@@ -16,11 +16,11 @@ extern "C" {
 #include <limits>
 #include <utility>
 
-#include "2_Factory.hpp"
 #include "blind/Lucre.hpp"
 #include "blind/Mint.hpp"
 #include "blind/token/Lucre.hpp"
 #include "crypto/library/openssl/OpenSSL_BIO.hpp"
+#include "internal/blind/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -30,6 +30,8 @@ extern "C" {
 #include "opentxs/core/Contract.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
@@ -39,32 +41,30 @@ extern "C" {
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-namespace opentxs
+namespace opentxs::factory
 {
-auto Factory::MintLucre(const api::Session& api) -> blind::Mint*
+auto MintLucre(const api::Session& api) -> blind::Mint*
 {
     return new blind::mint::implementation::Lucre(api);
 }
 
-auto Factory::MintLucre(
+auto MintLucre(
     const api::Session& api,
-    const String& strNotaryID,
-    const String& strInstrumentDefinitionID) -> blind::Mint*
+    const identifier::Server& notary,
+    const identifier::UnitDefinition& unit) -> blind::Mint*
 {
-    return new blind::mint::implementation::Lucre(
-        api, strNotaryID, strInstrumentDefinitionID);
+    return new blind::mint::implementation::Lucre(api, notary, unit);
 }
 
-auto Factory::MintLucre(
+auto MintLucre(
     const api::Session& api,
-    const String& strNotaryID,
-    const String& strServerNymID,
-    const String& strInstrumentDefinitionID) -> blind::Mint*
+    const identifier::Server& notary,
+    const identifier::Nym& serverNym,
+    const identifier::UnitDefinition& unit) -> blind::Mint*
 {
-    return new blind::mint::implementation::Lucre(
-        api, strNotaryID, strServerNymID, strInstrumentDefinitionID);
+    return new blind::mint::implementation::Lucre(api, notary, serverNym, unit);
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
 namespace opentxs::blind::mint::implementation
 {
@@ -76,20 +76,34 @@ Lucre::Lucre(const api::Session& api)
 
 Lucre::Lucre(
     const api::Session& api,
-    const String& strNotaryID,
-    const String& strInstrumentDefinitionID)
-    : Contract(api, strInstrumentDefinitionID)
-    , Mint(api, strNotaryID, strInstrumentDefinitionID)
+    const identifier::Server& notary,
+    const identifier::UnitDefinition& unit)
+    : Contract(
+          api,
+          [&] {
+              auto out = String::Factory();
+              unit.GetString(out);
+
+              return out;
+          }())
+    , Mint(api, notary, unit)
 {
 }
 
 Lucre::Lucre(
     const api::Session& api,
-    const String& strNotaryID,
-    const String& strServerNymID,
-    const String& strInstrumentDefinitionID)
-    : Contract(api, strInstrumentDefinitionID)
-    , Mint(api, strNotaryID, strServerNymID, strInstrumentDefinitionID)
+    const identifier::Server& notary,
+    const identifier::Nym& serverNym,
+    const identifier::UnitDefinition& unit)
+    : Contract(
+          api,
+          [&] {
+              auto out = String::Factory();
+              unit.GetString(out);
+
+              return out;
+          }())
+    , Mint(api, notary, serverNym, unit)
 {
 }
 

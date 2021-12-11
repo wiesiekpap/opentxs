@@ -20,3 +20,7 @@ target_sources(
     "StateMachine.hpp"
     "StateMachine.tpp"
 )
+target_include_directories(
+  opentxs-common SYSTEM
+  PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
+)

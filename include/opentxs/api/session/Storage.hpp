@@ -39,6 +39,13 @@ class Storage;
 }  // namespace session
 }  // namespace api
 
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
 namespace proto
 {
 class Bip47Channel;
@@ -176,16 +183,16 @@ public:
         proto::Credential& cred,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
-        const std::string& id,
+        const identifier::Nym& id,
         proto::Nym& nym,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
-        const std::string& id,
+        const identifier::Nym& id,
         proto::Nym& nym,
         std::string& alias,
         const bool checking = false) const -> bool = 0;
-    virtual auto Load(
-        const std::string& id,
+    virtual auto LoadNym(
+        const identifier::Nym& id,
         AllocateOutput destination,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
@@ -234,11 +241,11 @@ public:
         std::string& alias,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
-        const std::string& id,
+        const identifier::Server& id,
         proto::ServerContract& contract,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
-        const std::string& id,
+        const identifier::Server& id,
         proto::ServerContract& contract,
         std::string& alias,
         const bool checking = false) const -> bool = 0;
@@ -249,11 +256,11 @@ public:
     virtual auto Load(proto::Ciphertext& output, const bool checking = false)
         const -> bool = 0;
     virtual auto Load(
-        const std::string& id,
+        const identifier::UnitDefinition& id,
         proto::UnitDefinition& contract,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
-        const std::string& id,
+        const identifier::UnitDefinition& id,
         proto::UnitDefinition& contract,
         std::string& alias,
         const bool checking = false) const -> bool = 0;
@@ -329,8 +336,9 @@ public:
         const std::string& id,
         const std::string& alias) const -> bool = 0;
     virtual auto SetDefaultSeed(const std::string& id) const -> bool = 0;
-    virtual auto SetNymAlias(const std::string& id, const std::string& alias)
-        const -> bool = 0;
+    virtual auto SetNymAlias(
+        const identifier::Nym& id,
+        const std::string& alias) const -> bool = 0;
     virtual auto SetPeerRequestTime(
         const std::string& nymID,
         const std::string& id,
@@ -342,14 +350,15 @@ public:
         const bool unread) const -> bool = 0;
     virtual auto SetSeedAlias(const std::string& id, const std::string& alias)
         const -> bool = 0;
-    virtual auto SetServerAlias(const std::string& id, const std::string& alias)
-        const -> bool = 0;
+    virtual auto SetServerAlias(
+        const identifier::Server& id,
+        const std::string& alias) const -> bool = 0;
     virtual auto SetThreadAlias(
         const std::string& nymId,
         const std::string& threadId,
         const std::string& alias) const -> bool = 0;
     virtual auto SetUnitDefinitionAlias(
-        const std::string& id,
+        const identifier::UnitDefinition& id,
         const std::string& alias) const -> bool = 0;
     virtual auto Store(
         const std::string& accountID,

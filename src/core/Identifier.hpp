@@ -87,9 +87,13 @@ public:
         return Data::operator>=(rhs);
     }
 
-    auto Algorithm() const -> identifier::Algorithm final { return algorithm_; }
+    auto Algorithm() const noexcept -> identifier::Algorithm final
+    {
+        return algorithm_;
+    }
     auto GetString(String& theStr) const -> void final;
     auto str() const -> std::string final;
+    auto Type() const noexcept -> identifier::Type final { return type_; }
 
     using Data::Assign;
     auto Assign(const void* data, const std::size_t size) noexcept
@@ -140,7 +144,7 @@ private:
 
     static constexpr auto prefix_ = "ot";
     static constexpr auto minimum_encoded_bytes_ = std::size_t{6};
-    static constexpr auto header_bytes_ = sizeof(algorithm_);
+    static constexpr auto header_bytes_ = sizeof(algorithm_) + sizeof(type_);
 
     static auto contract_contents_to_identifier(const Contract& in)
         -> Identifier*;

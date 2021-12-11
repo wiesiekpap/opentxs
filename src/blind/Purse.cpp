@@ -18,12 +18,12 @@
 #include <utility>
 #include <vector>
 
-#include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "blind/Token.hpp"
 #include "internal/api/crypto/Symmetric.hpp"
 #include "internal/blind/Blind.hpp"
+#include "internal/blind/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
@@ -51,11 +51,11 @@
 
 #define OT_PURSE_VERSION 1
 
-namespace opentxs
+namespace opentxs::factory
 {
 using ReturnType = blind::implementation::Purse;
 
-auto Factory::Purse(
+auto Purse(
     const api::Session& api,
     const otx::context::Server& context,
     const blind::CashType type,
@@ -74,7 +74,7 @@ auto Factory::Purse(
         reason);
 }
 
-auto Factory::Purse(
+auto Purse(
     const api::Session& api,
     const identity::Nym& nym,
     const identifier::Server& server,
@@ -130,19 +130,18 @@ auto Factory::Purse(
     return output.release();
 }
 
-auto Factory::Purse(const api::Session& api, const proto::Purse& serialized)
+auto Purse(const api::Session& api, const proto::Purse& serialized)
     -> blind::Purse*
 {
     return new blind::implementation::Purse(api, serialized);
 }
 
-auto Factory::Purse(const api::Session& api, const ReadView& serialized)
-    -> blind::Purse*
+auto Purse(const api::Session& api, const ReadView& serialized) -> blind::Purse*
 {
     return new blind::implementation::Purse(api, serialized);
 }
 
-auto Factory::Purse(
+auto Purse(
     const api::Session& api,
     const blind::Purse& request,
     const identity::Nym& requester,
@@ -161,7 +160,7 @@ auto Factory::Purse(
     return output;
 }
 
-auto Factory::Purse(
+auto Purse(
     const api::Session& api,
     const identity::Nym& owner,
     const identifier::Server& server,
@@ -176,7 +175,7 @@ auto Factory::Purse(
     const auto added = output->AddNym(owner, reason);
 
     if (false == added) {
-        LogError()(OT_PRETTY_STATIC(Factory))("Failed to encrypt purse")
+        LogError()("opentxs::factory::")(__func__)(": Failed to encrypt purse")
             .Flush();
 
         return nullptr;
@@ -184,7 +183,7 @@ auto Factory::Purse(
 
     return output;
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
 namespace opentxs::blind::implementation
 {
@@ -341,7 +340,7 @@ Purse::Purse(const api::Session& api, const proto::Purse& in)
     OT_ASSERT(primary_);
 
     for (const auto& serialized : in.token()) {
-        tokens_.emplace_back(Factory::Token(api_, *this, serialized).release());
+        tokens_.emplace_back(factory::Token(api_, *this, serialized).release());
     }
 }
 
@@ -506,7 +505,7 @@ auto Purse::GeneratePrototokens(
         try {
             workingAmount -= tokenAmount;
             std::shared_ptr<Token> pToken{
-                Factory::Token(api_, owner, mint, tokenAmount, *this, reason)};
+                factory::Token(api_, owner, mint, tokenAmount, *this, reason)};
 
             if (false == bool(pToken)) {
                 LogError()(OT_PRETTY_STATIC(Purse))(
@@ -634,7 +633,7 @@ auto Purse::Push(
         return false;
     }
 
-    auto copy = Factory::Token(*original, *this);
+    auto copy = factory::Token(*original, *this);
 
     OT_ASSERT(copy);
 

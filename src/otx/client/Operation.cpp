@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "otx/client/Operation.hpp"  // IWYU pragma: associated
 
+#include <robin_hood.h>
 #include <atomic>
 #include <chrono>
 #include <cstdint>
@@ -65,6 +66,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Type.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/transaction/Helpers.hpp"
 #include "opentxs/crypto/Envelope.hpp"
@@ -797,7 +799,22 @@ auto Operation::construct_download_contract() -> std::shared_ptr<Message>
     CREATE_MESSAGE(getInstrumentDefinition, -1, true, true);
 
     message.m_strInstrumentDefinitionID = String::Factory(generic_id_);
-    message.enum_ = static_cast<std::uint8_t>(contract_type_);
+    message.enum_ = static_cast<std::uint8_t>([&] {
+        static const auto map =
+            robin_hood::unordered_flat_map<identifier::Type, ContractType>{
+                {identifier::Type::nym, ContractType::nym},
+                {identifier::Type::notary, ContractType::server},
+                {identifier::Type::unitdefinition, ContractType::unit},
+            };
+
+        try {
+
+            return map.at(generic_id_->Type());
+        } catch (...) {
+
+            return ContractType::invalid;
+        }
+    }());
 
     FINISH_MESSAGE(getInstrumentDefinition);
 }
@@ -1380,8 +1397,7 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
         return {};
     }
 
-    auto pMint{api_.Factory().Mint(
-        String::Factory(serverID), String::Factory(unitID))};
+    auto pMint{api_.Factory().Mint(serverID, unitID)};
 
     if (false == bool(pMint)) {
         LogError()(OT_PRETTY_CLASS())("Missing mint").Flush();

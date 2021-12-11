@@ -922,95 +922,76 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
     reply.SetSuccess(true);
     reply.SetBool(false);
     reply.SetEnum(msgIn.enum_);
-    const auto nymID =
-        identifier::Nym::Factory(msgIn.m_strInstrumentDefinitionID);
-    const auto serverID =
-        identifier::Server::Factory(msgIn.m_strInstrumentDefinitionID);
-    const auto unitID =
-        identifier::UnitDefinition::Factory(msgIn.m_strInstrumentDefinitionID);
+    const auto& api = server_.API();
     auto serialized = Data::Factory();
 
-    if (0 == msgIn.enum_) {
-        // try everything
-        try {
-            const auto unitDefinition =
-                server_.API().Wallet().UnitDefinition(unitID);
-            auto proto = proto::UnitDefinition{};
-            if (false == unitDefinition->Serialize(proto, true)) {
-                LogError()(OT_PRETTY_CLASS())(
-                    "Failed to serialize unit definition.")
-                    .Flush();
-            }
-            serialized = manager_.Factory().Data(proto);
-            reply.SetPayload(serialized);
-            reply.SetBool(true);
-        } catch (...) {
-        }
+    switch (static_cast<ContractType>(msgIn.enum_)) {
+        case ContractType::nym: {
+            const auto id =
+                api.Factory().NymID(msgIn.m_strInstrumentDefinitionID);
+            auto contract = api.Wallet().Nym(id);
 
-        try {
-            const auto server = server_.API().Wallet().Server(serverID);
-            auto proto = proto::ServerContract{};
-            if (false == server->Serialize(proto, true)) {
-                LogError()(OT_PRETTY_CLASS())(
-                    "Failed to serialize server contract.")
-                    .Flush();
+            if (contract) {
+                auto publicNym = proto::Nym{};
+                if (false == contract->Serialize(publicNym)) {
+                    LogError()(OT_PRETTY_CLASS())("Failed to serialize nym.")
+                        .Flush();
+                    return false;
+                }
+                serialized = manager_.Factory().Data(publicNym);
+                reply.SetPayload(serialized);
+                reply.SetBool(true);
             }
-            serialized = manager_.Factory().Data(proto);
-            reply.SetPayload(serialized);
-            reply.SetBool(true);
+        } break;
+        case ContractType::server: {
+            const auto id =
+                api.Factory().ServerID(msgIn.m_strInstrumentDefinitionID);
 
-            return true;
-        } catch (...) {
-        }
-    } else if (ContractType::nym == static_cast<ContractType>(msgIn.enum_)) {
-        auto contract = server_.API().Wallet().Nym(nymID);
+            try {
+                const auto contract = api.Wallet().Server(id);
+                auto proto = proto::ServerContract{};
 
-        if (contract) {
-            auto publicNym = proto::Nym{};
-            if (false == contract->Serialize(publicNym)) {
-                LogError()(OT_PRETTY_CLASS())("Failed to serialize nym.")
-                    .Flush();
-                return false;
-            }
-            serialized = manager_.Factory().Data(publicNym);
-            reply.SetPayload(serialized);
-            reply.SetBool(true);
-        }
-    } else if (ContractType::server == static_cast<ContractType>(msgIn.enum_)) {
-        try {
-            const auto contract = server_.API().Wallet().Server(serverID);
-            auto proto = proto::ServerContract{};
-            if (false == contract->Serialize(proto, true)) {
-                LogError()(OT_PRETTY_CLASS())(
-                    "Failed to serialize server contract.")
-                    .Flush();
-                return false;
-            }
-            serialized = manager_.Factory().Data(proto);
-            reply.SetPayload(serialized);
-            reply.SetBool(true);
+                if (false == contract->Serialize(proto, true)) {
+                    LogError()(OT_PRETTY_CLASS())(
+                        "Failed to serialize server contract.")
+                        .Flush();
+                    return false;
+                }
 
-            return true;
-        } catch (...) {
-        }
-    } else if (ContractType::unit == static_cast<ContractType>(msgIn.enum_)) {
-        try {
-            const auto contract = server_.API().Wallet().UnitDefinition(unitID);
-            auto proto = proto::UnitDefinition{};
-            if (false == contract->Serialize(proto, true)) {
-                LogError()(OT_PRETTY_CLASS())(
-                    "Failed to serialize unit definition.")
-                    .Flush();
+                serialized = manager_.Factory().Data(proto);
+                reply.SetPayload(serialized);
+                reply.SetBool(true);
+
+                return true;
+            } catch (...) {
             }
-            serialized = manager_.Factory().Data(proto);
-            reply.SetPayload(serialized);
-            reply.SetBool(true);
-        } catch (...) {
+        } break;
+        case ContractType::unit: {
+            const auto id =
+                api.Factory().UnitID(msgIn.m_strInstrumentDefinitionID);
+
+            try {
+                const auto contract = api.Wallet().UnitDefinition(id);
+                auto proto = proto::UnitDefinition{};
+
+                if (false == contract->Serialize(proto, true)) {
+                    LogError()(OT_PRETTY_CLASS())(
+                        "Failed to serialize unit definition.")
+                        .Flush();
+                }
+
+                serialized = manager_.Factory().Data(proto);
+                reply.SetPayload(serialized);
+                reply.SetBool(true);
+            } catch (...) {
+            }
+        } break;
+        default: {
+            LogError()(OT_PRETTY_CLASS())("Invalid type: ")(msgIn.enum_)
+                .Flush();
+            reply.SetSuccess(true);
+            reply.SetBool(false);
         }
-    } else {
-        LogError()(OT_PRETTY_CLASS())("Invalid type: ")(msgIn.enum_).Flush();
-        reply.SetSuccess(false);
-        reply.SetBool(false);
     }
 
     return true;

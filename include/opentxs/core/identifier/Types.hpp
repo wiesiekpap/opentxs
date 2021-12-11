@@ -12,3 +12,9 @@ namespace opentxs::identifier
 enum class Algorithm : std::uint8_t;
 enum class Type : std::uint16_t;
 }  // namespace opentxs::identifier
+
+namespace opentxs
+{
+auto print(identifier::Algorithm) noexcept -> const char*;
+auto print(identifier::Type) noexcept -> const char*;
+}  // namespace opentxs

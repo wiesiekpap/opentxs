@@ -165,7 +165,7 @@ public:
         {
             auto bytes = ot::Space{};
 
-            EXPECT_TRUE(api.Storage().Load(id->str(), ot::writer(bytes)));
+            EXPECT_TRUE(api.Storage().LoadNym(id, ot::writer(bytes)));
             EXPECT_TRUE(ot::valid(ot::reader(bytes)));
 
             pNym.reset(ot::Factory::Nym(api, ot::reader(bytes), alias));

@@ -2337,9 +2337,7 @@ auto OT_API::IsBasketCurrency(const identifier::UnitDefinition& id) const
 {
     auto contract = proto::UnitDefinition{};
 
-    if (false == api_.Storage().Load(id.str(), contract, true)) {
-        return false;
-    }
+    if (false == api_.Storage().Load(id, contract, true)) { return false; }
 
     return (contract::UnitType::Basket == translate(contract.type()));
 }
@@ -2354,7 +2352,7 @@ auto OT_API::GetBasketMemberCount(const identifier::UnitDefinition& id) const
 {
     auto serialized = proto::UnitDefinition{};
 
-    if (false == api_.Storage().Load(id.str(), serialized, true)) { return 0; }
+    if (false == api_.Storage().Load(id, serialized, true)) { return 0; }
 
     if (contract::UnitType::Basket != translate(serialized.type())) {
         return 0;
@@ -2376,9 +2374,7 @@ auto OT_API::GetBasketMemberType(
 {
     auto serialized = proto::UnitDefinition{};
 
-    if (false == api_.Storage().Load(id.str(), serialized, true)) {
-        return false;
-    }
+    if (false == api_.Storage().Load(id, serialized, true)) { return false; }
 
     if (contract::UnitType::Basket != translate(serialized.type())) {
         return false;
@@ -2409,7 +2405,7 @@ auto OT_API::GetBasketMemberMinimumTransferAmount(
 {
     auto serialized = proto::UnitDefinition{};
 
-    if (false == api_.Storage().Load(id.str(), serialized, true)) { return 0; }
+    if (false == api_.Storage().Load(id, serialized, true)) { return 0; }
 
     if (contract::UnitType::Basket != translate(serialized.type())) {
         return 0;
@@ -2434,7 +2430,7 @@ auto OT_API::GetBasketMinimumTransferAmount(
 {
     auto serialized = proto::UnitDefinition{};
 
-    if (false == api_.Storage().Load(id.str(), serialized, true)) { return 0; }
+    if (false == api_.Storage().Load(id, serialized, true)) { return 0; }
 
     if (contract::UnitType::Basket != translate(serialized.type())) {
         return 0;

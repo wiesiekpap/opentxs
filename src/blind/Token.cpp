@@ -11,11 +11,11 @@
 #include <stdexcept>
 #include <string>
 
-#include "2_Factory.hpp"
 #if OT_CASH_USING_LUCRE
 #include "blind/token/Lucre.hpp"
 #endif  // OT_CASH_USING_LUCRE
 #include "internal/blind/Blind.hpp"
+#include "internal/blind/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/blind/Purse.hpp"
@@ -27,11 +27,11 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Token.pb.h"
 
-namespace opentxs
+namespace opentxs::factory
 {
 using ReturnType = blind::token::implementation::Lucre;
 
-auto Factory::Token(const blind::Token& token, blind::Purse& purse) noexcept
+auto Token(const blind::Token& token, blind::Purse& purse) noexcept
     -> std::unique_ptr<blind::Token>
 {
     switch (token.Type()) {
@@ -46,7 +46,7 @@ auto Factory::Token(const blind::Token& token, blind::Purse& purse) noexcept
     }
 }
 
-auto Factory::Token(
+auto Token(
     const api::Session& api,
     blind::Purse& purse,
     const proto::Token& serialized) noexcept(false)
@@ -63,7 +63,7 @@ auto Factory::Token(
     }
 }
 
-auto Factory::Token(
+auto Token(
     const api::Session& api,
     const identity::Nym& owner,
     const blind::Mint& mint,
@@ -82,7 +82,7 @@ auto Factory::Token(
         }
     }
 }
-}  // namespace opentxs
+}  // namespace opentxs::factory
 
 namespace opentxs::blind::token::implementation
 {

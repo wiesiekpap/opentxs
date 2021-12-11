@@ -34,6 +34,13 @@ class Wallet;
 class Session;
 }  // namespace api
 
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
 namespace identity
 {
 class Nym;
@@ -136,13 +143,13 @@ protected:
     Mint(const api::Session& api);
     Mint(
         const api::Session& api,
-        const String& strNotaryID,
-        const String& strInstrumentDefinitionID);
+        const identifier::Server& notary,
+        const identifier::UnitDefinition& unit);
     Mint(
         const api::Session& api,
-        const String& strNotaryID,
-        const String& strServerNymID,
-        const String& strInstrumentDefinitionID);
+        const identifier::Server& notary,
+        const identifier::Nym& serverNym,
+        const identifier::UnitDefinition& unit);
 
 private:
     Mint() = delete;

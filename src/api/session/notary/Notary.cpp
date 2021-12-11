@@ -210,7 +210,10 @@ void Notary::generate_mint(
     const std::string& unitID,
     const std::uint32_t series) const
 {
-    auto mint = GetPrivateMint(Factory().UnitID(unitID), series);
+    const auto unit = Factory().UnitID(unitID);
+    const auto server = Factory().ServerID(serverID);
+    const auto& nym = server_.GetServerNym();
+    auto mint = GetPrivateMint(unit, series);
 
     if (mint) {
         LogError()(OT_PRETTY_CLASS())("Mint already exists.").Flush();
@@ -218,18 +221,12 @@ void Notary::generate_mint(
         return;
     }
 
-    const std::string nymID{NymID().str()};
     const std::string seriesID =
         std::string(SERIES_DIVIDER) + std::to_string(series);
-    mint.reset(
-        factory_
-            .Mint(
-                String::Factory(nymID.c_str()), String::Factory(unitID.c_str()))
-            .release());
+    mint.reset(factory_.Mint(server, nym.ID(), unit).release());
 
     OT_ASSERT(mint)
 
-    const auto& nym = server_.GetServerNym();
     const auto now = Clock::now();
     const std::chrono::seconds expireInterval(
         std::chrono::hours(MINT_EXPIRE_MONTHS * 30 * 24));
@@ -251,8 +248,8 @@ void Notary::generate_mint(
         now,
         validTo,
         expires,
-        Factory().UnitID(unitID),
-        Factory().ServerID(serverID),
+        unit,
+        server,
         nym,
         1,
         10,
@@ -410,10 +407,8 @@ auto Notary::load_private_mint(
 {
     OT_ASSERT(verify_lock(lock, mint_lock_));
 
-    std::shared_ptr<blind::Mint> mint{factory_.Mint(
-        String::Factory(ID()),
-        String::Factory(NymID()),
-        String::Factory(unitID.c_str()))};
+    std::shared_ptr<blind::Mint> mint{
+        factory_.Mint(ID(), NymID(), Factory().UnitID(unitID))};
 
     OT_ASSERT(mint);
 
@@ -428,7 +423,7 @@ auto Notary::load_public_mint(
     OT_ASSERT(verify_lock(lock, mint_lock_));
 
     std::shared_ptr<blind::Mint> mint{
-        factory_.Mint(String::Factory(ID()), String::Factory(unitID.c_str()))};
+        factory_.Mint(ID(), Factory().UnitID(unitID))};
 
     OT_ASSERT(mint);
 

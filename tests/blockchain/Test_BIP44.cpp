@@ -57,7 +57,7 @@ class Test_BIP44 : public ::testing::Test
 protected:
     static constexpr auto count_{1000u};
     static constexpr auto account_id_{
-        "ot8bpPxnic9FKQ1vLYZkLf7DMYHiXcznGYYgxvevquJbTHTACAKU"};
+        "ot2xkvDhg67hCe4xvgz3KHj89JhEJp3UbLxFy2CunoZoKGCxhPYVkR9"};
 
     const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;

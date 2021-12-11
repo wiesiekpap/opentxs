@@ -128,6 +128,13 @@ class Parameters;
 class SymmetricProvider;
 }  // namespace crypto
 
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
 namespace identity
 {
 class Nym;
@@ -533,13 +540,13 @@ public:
 #if OT_CASH
     auto Mint() const -> std::unique_ptr<blind::Mint> final;
     auto Mint(
-        const String& strNotaryID,
-        const String& strInstrumentDefinitionID) const
+        const identifier::Server& notary,
+        const identifier::UnitDefinition& unit) const
         -> std::unique_ptr<blind::Mint> final;
     auto Mint(
-        const String& strNotaryID,
-        const String& strServerNymID,
-        const String& strInstrumentDefinitionID) const
+        const identifier::Server& notary,
+        const identifier::Nym& serverNym,
+        const identifier::UnitDefinition& unit) const
         -> std::unique_ptr<blind::Mint> final;
 #endif
     auto NymID() const -> OTNymID final;

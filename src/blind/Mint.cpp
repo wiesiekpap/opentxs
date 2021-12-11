@@ -40,14 +40,14 @@ namespace opentxs::blind::mint::implementation
 {
 Mint::Mint(
     const api::Session& api,
-    const String& strNotaryID,
-    const String& strServerNymID,
-    const String& strInstrumentDefinitionID)
+    const identifier::Server& notary,
+    const identifier::Nym& serverNym,
+    const identifier::UnitDefinition& unit)
     : m_mapPrivate()
     , m_mapPublic()
-    , m_NotaryID(api.Factory().ServerID(strNotaryID))
-    , m_ServerNymID(api.Factory().NymID(strServerNymID))
-    , m_InstrumentDefinitionID(api.Factory().UnitID(strInstrumentDefinitionID))
+    , m_NotaryID(notary)
+    , m_ServerNymID(serverNym)
+    , m_InstrumentDefinitionID(unit)
     , m_nDenominationCount(0)
     , m_bSavePrivateKeys(false)
     , m_nSeries(0)
@@ -59,22 +59,22 @@ Mint::Mint(
     m_strFoldername->Set(api.Internal().Legacy().Mint());
     m_strFilename->Format(
         "%s%s%s",
-        strNotaryID.Get(),
+        m_NotaryID->str().c_str(),
         api::Legacy::PathSeparator(),
-        strInstrumentDefinitionID.Get());
+        m_InstrumentDefinitionID->str().c_str());
 
     InitMint();
 }
 
 Mint::Mint(
     const api::Session& api,
-    const String& strNotaryID,
-    const String& strInstrumentDefinitionID)
+    const identifier::Server& notary,
+    const identifier::UnitDefinition& unit)
     : m_mapPrivate()
     , m_mapPublic()
-    , m_NotaryID(api.Factory().ServerID(strNotaryID))
+    , m_NotaryID(notary)
     , m_ServerNymID(api.Factory().NymID())
-    , m_InstrumentDefinitionID(api.Factory().UnitID(strInstrumentDefinitionID))
+    , m_InstrumentDefinitionID(unit)
     , m_nDenominationCount(0)
     , m_bSavePrivateKeys(false)
     , m_nSeries(0)
@@ -86,9 +86,9 @@ Mint::Mint(
     m_strFoldername->Set(api.Internal().Legacy().Mint());
     m_strFilename->Format(
         "%s%s%s",
-        strNotaryID.Get(),
+        m_NotaryID->str().c_str(),
         api::Legacy::PathSeparator(),
-        strInstrumentDefinitionID.Get());
+        m_InstrumentDefinitionID->str().c_str());
 
     InitMint();
 }
