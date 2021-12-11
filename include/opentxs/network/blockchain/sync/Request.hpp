@@ -9,8 +9,9 @@
 
 #include <vector>
 
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/network/blockchain/sync/Types.hpp"
 
 namespace opentxs
 {
@@ -20,25 +21,34 @@ namespace blockchain
 {
 namespace sync
 {
+class State;
+}  // namespace sync
+}  // namespace blockchain
+}  // namespace network
+}  // namespace opentxs
+
+namespace opentxs::network::blockchain::sync
+{
 class OPENTXS_EXPORT Request final : public Base
 {
 public:
-    using StateData = std::vector<sync::State>;
+    class Imp;
 
     auto State() const noexcept -> const StateData&;
 
-    Request(StateData in) noexcept;
-    OPENTXS_NO_EXPORT Request() noexcept;
+    OPENTXS_NO_EXPORT Request(Imp* imp) noexcept;
 
     ~Request() final;
 
 private:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow-field"
+    Imp* imp_;
+#pragma GCC diagnostic pop
+
     Request(const Request&) = delete;
     Request(Request&&) = delete;
     auto operator=(const Request&) -> Request& = delete;
     auto operator=(Request&&) -> Request& = delete;
 };
-}  // namespace sync
-}  // namespace blockchain
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::blockchain::sync

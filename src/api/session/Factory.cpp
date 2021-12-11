@@ -30,6 +30,7 @@
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/XML.hpp"
@@ -103,6 +104,7 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
+#include "opentxs/network/blockchain/sync/Base.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/util/Log.hpp"
@@ -601,6 +603,12 @@ auto Factory::BlockchainAddress(
 {
     return OTBlockchainAddress{
         factory::BlockchainAddress(api_, serialized).release()};
+}
+
+auto Factory::BlockchainSyncMessage(const opentxs::network::zeromq::Message& in)
+    const noexcept -> std::unique_ptr<opentxs::network::blockchain::sync::Base>
+{
+    return factory::BlockchainSyncMessage(api_, in);
 }
 #endif  // OT_BLOCKCHAIN
 

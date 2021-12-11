@@ -133,6 +133,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/CurrencyContract.hpp"
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/contract/SecurityContract.hpp"

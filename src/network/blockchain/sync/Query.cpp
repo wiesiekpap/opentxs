@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
@@ -25,41 +26,81 @@ class Message;
 }  // namespace network
 }  // namespace opentxs
 
+namespace opentxs::factory
+{
+using ReturnType = network::blockchain::sync::Query;
+
+auto BlockchainSyncQuery() noexcept -> ReturnType
+{
+    return {std::make_unique<ReturnType::Imp>().release()};
+}
+
+auto BlockchainSyncQuery(int arg) noexcept -> ReturnType
+{
+    return {std::make_unique<ReturnType::Imp>(arg).release()};
+}
+
+auto BlockchainSyncQuery_p(int arg) noexcept -> std::unique_ptr<ReturnType>
+{
+    return std::make_unique<ReturnType>(
+        std::make_unique<ReturnType::Imp>(arg).release());
+}
+}  // namespace opentxs::factory
+
 namespace opentxs::network::blockchain::sync
 {
-struct QueryImp final : public Base::Imp {
-    const Query& parent_;
+class Query::Imp final : public Base::Imp
+{
+public:
+    Query* parent_;
 
-    auto asQuery() const noexcept -> const Query& final { return parent_; }
+    auto asQuery() const noexcept -> const Query& final
+    {
+        if (nullptr != parent_) {
+
+            return *parent_;
+        } else {
+
+            return Base::Imp::asQuery();
+        }
+    }
 
     auto serialize(zeromq::Message& out) const noexcept -> bool final
     {
         return serialize_type(out);
     }
 
-    QueryImp(const Query& parent) noexcept
-        : Imp(Imp::default_version_, MessageType::query, {}, {}, {})
-        , parent_(parent)
+    Imp() noexcept
+        : Base::Imp()
+        , parent_(nullptr)
+    {
+    }
+    Imp(int) noexcept
+        : Base::Imp(Base::Imp::default_version_, MessageType::query, {}, {}, {})
+        , parent_(nullptr)
     {
     }
 
 private:
-    QueryImp() noexcept;
-    QueryImp(const QueryImp&) = delete;
-    QueryImp(QueryImp&&) = delete;
-    auto operator=(const QueryImp&) -> QueryImp& = delete;
-    auto operator=(QueryImp&&) -> QueryImp& = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 
-Query::Query(int) noexcept
-    : Base(std::make_unique<QueryImp>(*this))
+Query::Query(Imp* imp) noexcept
+    : Base(imp)
+    , imp_(imp)
 {
+    imp_->parent_ = this;
 }
 
-Query::Query() noexcept
-    : Base(std::make_unique<Imp>())
+Query::~Query()
 {
+    if (nullptr != Query::imp_) {
+        delete Query::imp_;
+        Query::imp_ = nullptr;
+        Base::imp_ = nullptr;
+    }
 }
-
-Query::~Query() = default;
 }  // namespace opentxs::network::blockchain::sync

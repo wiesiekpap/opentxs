@@ -14,6 +14,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/otx/Types.hpp"
@@ -248,7 +249,7 @@ struct Operation {
         const std::shared_ptr<Cheque> cheque) -> bool = 0;
     virtual auto DownloadContract(
         const Identifier& ID,
-        const ContractType type = ContractType::invalid) -> bool = 0;
+        const contract::Type type = contract::Type::invalid) -> bool = 0;
     virtual auto GetFuture() -> Future = 0;
     virtual auto IssueUnitDefinition(
         const std::shared_ptr<const proto::UnitDefinition> unitDefinition,

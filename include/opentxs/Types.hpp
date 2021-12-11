@@ -159,13 +159,6 @@ enum class NymCapability : std::uint8_t {
     SIGN_CHILDCRED = 3,
 };
 
-enum class ContractType : std::uint8_t {
-    invalid = 0,
-    nym = 1,
-    server = 2,
-    unit = 3,
-};
-
 enum class itemType : std::uint8_t {
     // TRANSFER
     transfer,    // this item is an outgoing transfer, probably part of an

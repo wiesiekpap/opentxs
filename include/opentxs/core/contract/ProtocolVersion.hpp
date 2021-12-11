@@ -9,15 +9,11 @@
 
 #include <cstdint>
 
-namespace opentxs
+namespace opentxs::contract
 {
-namespace contract
-{
-enum class ProtocolVersion : std::uint8_t {
+enum class ProtocolVersion : std::uint32_t {
     Error = 0,
     Legacy = 1,
     Notify = 2,
 };
-
-}  // namespace contract
-}  // namespace opentxs
+}  // namespace opentxs::contract

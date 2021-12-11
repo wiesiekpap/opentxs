@@ -5,12 +5,16 @@
 
 #pragma once
 
-#include <cstddef>
+#include "opentxs/core/contract/Types.hpp"  // IWYU pragma: associated
+
 #include <cstdint>
 
 namespace opentxs::contract
 {
-enum class ProtocolVersion : std::uint32_t;
-enum class Type : std::uint32_t;
-enum class UnitType : std::uint32_t;
+enum class Type : std::uint32_t {
+    invalid = 0,
+    nym = 1,
+    server = 2,
+    unit = 3,
+};
 }  // namespace opentxs::contract

@@ -20,8 +20,11 @@
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/Blockchain.hpp"
+#include "internal/network/blockchain/sync/Factory.hpp"
+#include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
@@ -40,8 +43,6 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
-
-#define SYNC_SERVER "opentxs::blockchain::node::base::SyncServer::"
 
 namespace opentxs::blockchain::node::base
 {
@@ -240,14 +241,14 @@ private:
     }
     auto process_position(const Position& pos) noexcept -> void
     {
-        LogTrace()(SYNC_SERVER)(__func__)(": processing block ")(
+        LogTrace()(OT_PRETTY_CLASS())(__func__)(": processing block ")(
             pos.second->asHex())(" at height ")(pos.first)
             .Flush();
 
         try {
             auto current = known();
             auto hashes = header_.Ancestors(current, pos, 2000);
-            LogTrace()(SYNC_SERVER)(__func__)(
+            LogTrace()(OT_PRETTY_CLASS())(__func__)(
                 ": current position best known position is block ")(
                 current.second->asHex())(" at height ")(current.first)
                 .Flush();
@@ -255,7 +256,7 @@ private:
             OT_ASSERT(0 < hashes.size());
 
             if (1 == hashes.size()) {
-                LogTrace()(SYNC_SERVER)(__func__)(
+                LogTrace()(OT_PRETTY_CLASS())(__func__)(
                     ": current position matches incoming block ")(
                     pos.second->asHex())(" at height ")(pos.first)
                     .Flush();
@@ -276,11 +277,11 @@ private:
                 const auto& last = hashes.back();
 
                 if (first.first <= current.first) {
-                    LogTrace()(SYNC_SERVER)(__func__)(": reorg detected")
+                    LogTrace()(OT_PRETTY_CLASS())(__func__)(": reorg detected")
                         .Flush();
                 }
 
-                LogTrace()(SYNC_SERVER)(__func__)(
+                LogTrace()(OT_PRETTY_CLASS())(__func__)(
                     ": scheduling download starting from block ")(
                     first.second->asHex())(" at height ")(first.first)(
                     " until block ")(last.second->asHex())(" at height ")(
@@ -300,11 +301,11 @@ private:
             return output;
         }();
         namespace bcsync = network::blockchain::sync;
-        const auto base = bcsync::Factory(api_, incoming);
+        const auto base = api_.Factory().BlockchainSyncMessage(incoming);
 
         if (auto type = base->Type();
             type != bcsync::MessageType::sync_request) {
-            LogError()(SYNC_SERVER)(__func__)(
+            LogError()(OT_PRETTY_CLASS())(__func__)(
                 ": Invalid or unsupported message type ")(opentxs::print(type))
                 .Flush();
 
@@ -323,8 +324,8 @@ private:
             const auto& position = state.Position();
             auto [needSync, parent, data] = hello(lock, position);
             const auto& [height, hash] = parent;
-            auto reply =
-                bcsync::Data{WorkType::SyncReply, std::move(data), {}, {}};
+            auto reply = factory::BlockchainSyncData(
+                WorkType::SyncReply, std::move(data), {}, {});
             auto send{true};
 
             if (needSync) { send = db_.LoadSync(height, reply); }
@@ -335,7 +336,7 @@ private:
                 OTSocket::send_message(lock, socket_.get(), std::move(out));
             }
         } catch (const std::exception& e) {
-            LogError()(SYNC_SERVER)(__func__)(": ")(e.what()).Flush();
+            LogError()(OT_PRETTY_CLASS())(__func__)(": ")(e.what()).Flush();
         }
     }
     auto queue_processing(DownloadedData&& data) noexcept -> void
@@ -391,14 +392,14 @@ private:
                     reader(filterBytes));
                 task->process(1);
             } catch (const std::exception& e) {
-                LogError()(SYNC_SERVER)(__func__)(": ")(e.what()).Flush();
+                LogError()(OT_PRETTY_CLASS())(__func__)(": ")(e.what()).Flush();
                 task->redownload();
                 break;
             }
         }
 
         if (previousFilterHeader->empty() || (0 == items.size())) {
-            LogError()(SYNC_SERVER)(__func__)(": missing data").Flush();
+            LogError()(OT_PRETTY_CLASS())(__func__)(": missing data").Flush();
 
             return;
         }
@@ -408,12 +409,11 @@ private:
 
         if (false == stored) { OT_FAIL; }
 
-        using Data = network::blockchain::sync::Data;
-        const auto msg = Data{
+        const auto msg = factory::BlockchainSyncData(
             WorkType::NewBlock,
             {chain_, pos},
             std::move(items),
-            previousFilterHeader->Bytes()};
+            previousFilterHeader->Bytes());
         auto work = network::zeromq::Message{};
 
         if (msg.Serialize(work) && zmq_running_) {
@@ -454,7 +454,8 @@ private:
 
             if (0 > events) {
                 const auto error = ::zmq_errno();
-                LogError()(SYNC_SERVER)(__func__)(": ")(::zmq_strerror(error))
+                LogError()(OT_PRETTY_CLASS())(__func__)(": ")(
+                    ::zmq_strerror(error))
                     .Flush();
 
                 continue;

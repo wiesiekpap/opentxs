@@ -24,10 +24,12 @@
 #include <vector>
 
 #include "internal/api/client/Client.hpp"
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
@@ -178,7 +180,7 @@ private:
 
         try {
             namespace bcsync = opentxs::network::blockchain::sync;
-            const auto base = bcsync::Factory(api_, incoming);
+            const auto base = api_.Factory().BlockchainSyncMessage(incoming);
             const auto type = base->Type();
 
             switch (type) {
@@ -195,8 +197,8 @@ private:
             }
 
             {
-                const auto ack = bcsync::Acknowledgement{
-                    parent_.Hello(), update_public_endpoint_};
+                const auto ack = factory::BlockchainSyncAcknowledgement(
+                    parent_.Hello(), update_public_endpoint_);
                 auto msg = opentxs::network::zeromq::reply_to_message(incoming);
 
                 if (ack.Serialize(msg)) {

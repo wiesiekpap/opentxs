@@ -6,6 +6,7 @@
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/network/blockchain/sync/Factory.hpp"
     "Acknowledgement.cpp"
     "Base.cpp"
     "Base.hpp"

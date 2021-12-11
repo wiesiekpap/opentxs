@@ -10,44 +10,81 @@
 #include <memory>
 #include <utility>
 
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 
+namespace opentxs::factory
+{
+using ReturnType = network::blockchain::sync::Request;
+
+auto BlockchainSyncRequest() noexcept -> ReturnType
+{
+    return {std::make_unique<ReturnType::Imp>().release()};
+}
+
+auto BlockchainSyncRequest(network::blockchain::sync::StateData in) noexcept
+    -> ReturnType
+{
+    return {std::make_unique<ReturnType::Imp>(std::move(in)).release()};
+}
+
+auto BlockchainSyncRequest_p(network::blockchain::sync::StateData in) noexcept
+    -> std::unique_ptr<ReturnType>
+{
+    return std::make_unique<ReturnType>(
+        std::make_unique<ReturnType::Imp>(std::move(in)).release());
+}
+}  // namespace opentxs::factory
+
 namespace opentxs::network::blockchain::sync
 {
-struct RequestImp final : public Base::Imp {
-    const Request& parent_;
+class Request::Imp final : public Base::Imp
+{
+public:
+    Request* parent_;
 
-    auto asRequest() const noexcept -> const Request& final { return parent_; }
+    auto asRequest() const noexcept -> const Request& final
+    {
+        if (nullptr != parent_) {
 
-    RequestImp(const Request& parent, Request::StateData state) noexcept
-        : Imp(Imp::default_version_,
+            return *parent_;
+        } else {
+
+            return Base::Imp::asRequest();
+        }
+    }
+
+    Imp() noexcept
+        : Base::Imp()
+        , parent_(nullptr)
+    {
+    }
+    Imp(StateData state) noexcept
+        : Base::Imp(
+              Base::Imp::default_version_,
               MessageType::sync_request,
               std::move(state),
               {},
               {})
-        , parent_(parent)
+        , parent_(nullptr)
     {
     }
 
 private:
-    RequestImp() noexcept;
-    RequestImp(const RequestImp&) = delete;
-    RequestImp(RequestImp&&) = delete;
-    auto operator=(const RequestImp&) -> RequestImp& = delete;
-    auto operator=(RequestImp&&) -> RequestImp& = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 
-Request::Request(StateData in) noexcept
-    : Base(std::make_unique<RequestImp>(*this, std::move(in)))
+Request::Request(Imp* imp) noexcept
+    : Base(imp)
+    , imp_(imp)
 {
-}
-
-Request::Request() noexcept
-    : Base(std::make_unique<Imp>())
-{
+    imp_->parent_ = this;
 }
 
 auto Request::State() const noexcept -> const StateData&
@@ -55,5 +92,12 @@ auto Request::State() const noexcept -> const StateData&
     return imp_->state_;
 }
 
-Request::~Request() = default;
+Request::~Request()
+{
+    if (nullptr != Request::imp_) {
+        delete Request::imp_;
+        Request::imp_ = nullptr;
+        Base::imp_ = nullptr;
+    }
+}
 }  // namespace opentxs::network::blockchain::sync

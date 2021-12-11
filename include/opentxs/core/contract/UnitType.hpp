@@ -9,16 +9,12 @@
 
 #include <cstdint>
 
-namespace opentxs
+namespace opentxs::contract
 {
-namespace contract
-{
-enum class UnitType : std::uint8_t {
+enum class UnitType : std::uint32_t {
     Error = 0,
     Currency = 1,
     Security = 2,
     Basket = 3,
 };
-
-}  // namespace contract
-}  // namespace opentxs
+}  // namespace opentxs::contract

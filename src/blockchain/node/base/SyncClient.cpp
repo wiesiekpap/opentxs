@@ -222,7 +222,7 @@ private:
 
     auto add_to_queue(network::zeromq::Message&& msg) noexcept -> void
     {
-        const auto base = bcsync::Factory(api_, msg);
+        const auto base = api_.Factory().BlockchainSyncMessage(msg);
         const auto& data = base->asData();
         const auto& blocks = data.Blocks();
         update_remote_position(data.State());
@@ -347,7 +347,7 @@ private:
                     running_ = false;
                 } break;
                 case Task::Ack: {
-                    const auto base = bcsync::Factory(api_, msg);
+                    const auto base = api_.Factory().BlockchainSyncMessage(msg);
                     const auto& ack = base->asAcknowledgement();
                     update_remote_position(ack.State(chain_));
                     activity_ = Clock::now();
@@ -487,7 +487,8 @@ private:
         }
 
         if (blank() == queue_position_) {
-            const auto base = bcsync::Factory(api_, queue_.back());
+            const auto base =
+                api_.Factory().BlockchainSyncMessage(queue_.back());
             update_queue_position(base->asData());
         }
     }

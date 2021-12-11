@@ -72,6 +72,8 @@ namespace internal
 class Factory;
 }  // namespace internal
 }  // namespace session
+
+class Session;
 }  // namespace api
 
 namespace blind
@@ -114,6 +116,14 @@ class UnitDefinition;
 
 namespace network
 {
+namespace blockchain
+{
+namespace sync
+{
+class Base;
+}  // namespace sync
+}  // namespace blockchain
+
 namespace zeromq
 {
 class Frame;
@@ -337,6 +347,9 @@ public:
     virtual auto BlockchainAddress(
         const opentxs::blockchain::p2p::Address::SerializedType& serialized)
         const -> OTBlockchainAddress = 0;
+    virtual auto BlockchainSyncMessage(
+        const opentxs::network::zeromq::Message& in) const noexcept
+        -> std::unique_ptr<opentxs::network::blockchain::sync::Base> = 0;
     using BlockHeaderP = std::unique_ptr<opentxs::blockchain::block::Header>;
     OPENTXS_NO_EXPORT virtual auto BlockHeader(
         const proto::BlockchainBlockHeader& serialized) const

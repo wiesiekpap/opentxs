@@ -13,6 +13,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/network/blockchain/sync/Types.hpp"
 
 namespace opentxs
 {
@@ -22,10 +23,18 @@ namespace blockchain
 {
 namespace sync
 {
+class State;
+}  // namespace sync
+}  // namespace blockchain
+}  // namespace network
+}  // namespace opentxs
+
+namespace opentxs::network::blockchain::sync
+{
 class OPENTXS_EXPORT Acknowledgement final : public Base
 {
 public:
-    using StateData = std::vector<sync::State>;
+    class Imp;
 
     auto Endpoint() const noexcept -> const std::string&;
     auto State() const noexcept -> const StateData&;
@@ -33,20 +42,19 @@ public:
     auto State(opentxs::blockchain::Type chain) const noexcept(false)
         -> const sync::State&;
 
-    OPENTXS_NO_EXPORT Acknowledgement(
-        StateData in,
-        std::string endpoint) noexcept;
-    OPENTXS_NO_EXPORT Acknowledgement() noexcept;
+    OPENTXS_NO_EXPORT Acknowledgement(Imp* imp) noexcept;
 
     ~Acknowledgement() final;
 
 private:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow-field"
+    Imp* imp_;
+#pragma GCC diagnostic pop
+
     Acknowledgement(const Acknowledgement&) = delete;
     Acknowledgement(Acknowledgement&&) = delete;
     auto operator=(const Acknowledgement&) -> Acknowledgement& = delete;
     auto operator=(Acknowledgement&&) -> Acknowledgement& = delete;
 };
-}  // namespace sync
-}  // namespace blockchain
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::blockchain::sync

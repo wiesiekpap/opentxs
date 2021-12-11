@@ -7,33 +7,28 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <vector>
-
 #include "opentxs/network/blockchain/sync/Base.hpp"
 
-namespace opentxs
-{
-namespace network
-{
-namespace blockchain
-{
-namespace sync
+namespace opentxs::network::blockchain::sync
 {
 class OPENTXS_EXPORT Query final : public Base
 {
 public:
-    Query(int) noexcept;
-    OPENTXS_NO_EXPORT Query() noexcept;
+    class Imp;
+
+    OPENTXS_NO_EXPORT Query(Imp* imp) noexcept;
 
     ~Query() final;
 
 private:
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow-field"
+    Imp* imp_;
+#pragma GCC diagnostic pop
+
     Query(const Query&) = delete;
     Query(Query&&) = delete;
     auto operator=(const Query&) -> Query& = delete;
     auto operator=(Query&&) -> Query& = delete;
 };
-}  // namespace sync
-}  // namespace blockchain
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::blockchain::sync

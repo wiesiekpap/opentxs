@@ -58,6 +58,7 @@
 #include "opentxs/core/NymFile.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
@@ -373,7 +374,7 @@ Operation::Operation(
     , target_nym_id_(identifier::Nym::Factory())
     , target_server_id_(identifier::Server::Factory())
     , target_unit_id_(identifier::UnitDefinition::Factory())
-    , contract_type_(ContractType::invalid)
+    , contract_type_(contract::Type::invalid)
     , unit_definition_()
     , account_id_(Identifier::Factory())
     , generic_id_(Identifier::Factory())
@@ -801,10 +802,10 @@ auto Operation::construct_download_contract() -> std::shared_ptr<Message>
     message.m_strInstrumentDefinitionID = String::Factory(generic_id_);
     message.enum_ = static_cast<std::uint8_t>([&] {
         static const auto map =
-            robin_hood::unordered_flat_map<identifier::Type, ContractType>{
-                {identifier::Type::nym, ContractType::nym},
-                {identifier::Type::notary, ContractType::server},
-                {identifier::Type::unitdefinition, ContractType::unit},
+            robin_hood::unordered_flat_map<identifier::Type, contract::Type>{
+                {identifier::Type::nym, contract::Type::nym},
+                {identifier::Type::notary, contract::Type::server},
+                {identifier::Type::unitdefinition, contract::Type::unit},
             };
 
         try {
@@ -812,7 +813,7 @@ auto Operation::construct_download_contract() -> std::shared_ptr<Message>
             return map.at(generic_id_->Type());
         } catch (...) {
 
-            return ContractType::invalid;
+            return contract::Type::invalid;
         }
     }());
 
@@ -903,7 +904,7 @@ auto Operation::construct_publish_nym() -> std::shared_ptr<Message>
     PREPARE_CONTEXT();
     CREATE_MESSAGE(registerContract, -1, true, true);
 
-    message.enum_ = static_cast<std::uint8_t>(ContractType::nym);
+    message.enum_ = static_cast<std::uint8_t>(contract::Type::nym);
     auto publicNym = proto::Nym{};
     if (false == contract->Serialize(publicNym)) {
         LogError()(OT_PRETTY_CLASS())("Failed to serialize nym: ")(
@@ -924,7 +925,7 @@ auto Operation::construct_publish_server() -> std::shared_ptr<Message>
         PREPARE_CONTEXT();
         CREATE_MESSAGE(registerContract, -1, true, true);
 
-        message.enum_ = static_cast<std::uint8_t>(ContractType::server);
+        message.enum_ = static_cast<std::uint8_t>(contract::Type::server);
         auto serialized = proto::ServerContract{};
         if (false == contract->Serialize(serialized, true)) {
             LogError()(OT_PRETTY_CLASS())(
@@ -952,7 +953,7 @@ auto Operation::construct_publish_unit() -> std::shared_ptr<Message>
         PREPARE_CONTEXT();
         CREATE_MESSAGE(registerContract, -1, true, true);
 
-        message.enum_ = static_cast<std::uint8_t>(ContractType::unit);
+        message.enum_ = static_cast<std::uint8_t>(contract::Type::unit);
         auto serialized = proto::UnitDefinition{};
         if (false == contract->Serialize(serialized)) {
             LogError()(OT_PRETTY_CLASS())(
@@ -1650,8 +1651,9 @@ auto Operation::download_box_receipt(
     return otx::LastReplyStatus::MessageSuccess == std::get<0>(result->get());
 }
 
-auto Operation::DownloadContract(const Identifier& ID, const ContractType type)
-    -> bool
+auto Operation::DownloadContract(
+    const Identifier& ID,
+    const contract::Type type) -> bool
 {
     START()
 
@@ -2353,7 +2355,7 @@ void Operation::reset()
     target_nym_id_ = identifier::Nym::Factory();
     target_server_id_ = identifier::Server::Factory();
     target_unit_id_ = identifier::UnitDefinition::Factory();
-    contract_type_ = ContractType::invalid;
+    contract_type_ = contract::Type::invalid;
     unit_definition_.reset();
     account_id_ = Identifier::Factory();
     generic_id_ = Identifier::Factory();

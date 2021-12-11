@@ -25,12 +25,14 @@
 #include <vector>
 
 #include "Proto.tpp"
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -383,8 +385,7 @@ private:
                 }
             }
             ();
-            const auto sync =
-                opentxs::network::blockchain::sync::Factory(api_, msg);
+            const auto sync = api_.Factory().BlockchainSyncMessage(msg);
             const auto type = sync->Type();
             using Type = opentxs::network::blockchain::sync::MessageType;
             auto dummy = std::mutex{};
@@ -422,10 +423,9 @@ private:
 
                         if (client.empty()) { continue; }
 
-                        using Ack =
-                            opentxs::network::blockchain::sync::Acknowledgement;
+                        namespace bcsync = opentxs::network::blockchain::sync;
                         auto data = [&] {
-                            auto out = Ack::StateData{};
+                            auto out = bcsync::StateData{};
                             const auto proto = [&] {
                                 auto out = proto::BlockchainP2PChainState{};
                                 state.Serialize(out);
@@ -437,7 +437,9 @@ private:
 
                             return out;
                         }();
-                        const auto notification = Ack{std::move(data), ep};
+                        const auto notification =
+                            factory::BlockchainSyncAcknowledgement(
+                                std::move(data), ep);
                         auto msg = opentxs::network::zeromq::Message{};
                         msg.AddFrame(client);
                         msg.StartBody();
@@ -549,18 +551,18 @@ private:
 
                 auto& server = servers_.at(provider);
                 const auto request = [&] {
-                    using Request = opentxs::network::blockchain::sync::Request;
+                    namespace otsync = opentxs::network::blockchain::sync;
                     const auto proto =
                         proto::Factory<proto::BlockchainP2PChainState>(
                             body.at(2));
                     auto states = [&] {
-                        auto out = Request::StateData{};
+                        auto out = otsync::StateData{};
                         out.emplace_back(api_, proto);
 
                         return out;
                     }();
 
-                    return Request{std::move(states)};
+                    return factory::BlockchainSyncRequest(std::move(states));
                 }();
 
                 auto msg = opentxs::network::zeromq::Message{};
@@ -642,8 +644,7 @@ private:
                 auto msg = opentxs::network::zeromq::Message{};
                 msg.AddFrame(endpoint);
                 msg.StartBody();
-                using Query = opentxs::network::blockchain::sync::Query;
-                const auto query = Query{0};
+                const auto query = factory::BlockchainSyncQuery(0);
 
                 if (false == query.Serialize(msg)) { OT_FAIL; }
 

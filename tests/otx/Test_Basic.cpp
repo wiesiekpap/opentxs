@@ -59,6 +59,7 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -1562,7 +1563,7 @@ TEST_F(Test_Basic, downloadServerContract_missing)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started =
-        stateMachine.DownloadContract(server_2_id_, ContractType::server);
+        stateMachine.DownloadContract(server_2_id_, contract::Type::server);
 
     ASSERT_TRUE(started);
 
@@ -1660,7 +1661,7 @@ TEST_F(Test_Basic, downloadServerContract)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started =
-        stateMachine.DownloadContract(server_2_id_, ContractType::server);
+        stateMachine.DownloadContract(server_2_id_, contract::Type::server);
 
     ASSERT_TRUE(started);
 
@@ -1755,7 +1756,7 @@ TEST_F(Test_Basic, getInstrumentDefinition_missing)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.DownloadContract(
-        find_unit_definition_id_2(), ContractType::unit);
+        find_unit_definition_id_2(), contract::Type::unit);
 
     ASSERT_TRUE(started);
 
@@ -1848,7 +1849,7 @@ TEST_F(Test_Basic, getInstrumentDefinition_Alice)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.DownloadContract(
-        find_unit_definition_id_2(), ContractType::unit);
+        find_unit_definition_id_2(), contract::Type::unit);
 
     ASSERT_TRUE(started);
 
@@ -1896,7 +1897,7 @@ TEST_F(Test_Basic, getInstrumentDefinition_Bob)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.DownloadContract(
-        find_unit_definition_id_1(), ContractType::unit);
+        find_unit_definition_id_1(), contract::Type::unit);
 
     ASSERT_TRUE(started);
 
