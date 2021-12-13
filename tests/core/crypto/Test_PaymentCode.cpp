@@ -10,8 +10,10 @@
 #include <type_traits>
 
 #include "internal/api/session/Client.hpp"
+#include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -19,8 +21,6 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/NymData.hpp"
-#include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/UnitType.hpp"
@@ -30,7 +30,7 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/NymEditor.hpp"
 
 using namespace opentxs;
 

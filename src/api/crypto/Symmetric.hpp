@@ -44,7 +44,7 @@ class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 class Symmetric final : public internal::Symmetric
 {
@@ -96,4 +96,4 @@ private:
     auto operator=(const Symmetric&) -> Symmetric& = delete;
     auto operator=(Symmetric&&) -> Symmetric& = delete;
 };
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

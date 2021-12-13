@@ -30,7 +30,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"

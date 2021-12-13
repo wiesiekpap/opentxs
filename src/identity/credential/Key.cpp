@@ -14,15 +14,16 @@
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Base.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/crypto/OTSignatureMetadata.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
@@ -615,7 +616,7 @@ auto Key::VerifySig(
     auto& signature = *serialized->add_signature();
     signature.CopyFrom(sig);
     signature.clear_signature();
-    auto plaintext = api_.Factory().Data(*serialized);
+    auto plaintext = api_.Factory().InternalSession().Data(*serialized);
 
     return Verify(plaintext, sig, opentxs::crypto::key::asymmetric::Role::Sign);
 }

@@ -14,7 +14,7 @@
 
 namespace opentxs::factory
 {
-using ReturnType = api::implementation::Factory;
+using ReturnType = api::imp::Factory;
 
 auto FactoryAPI(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<api::Factory>
@@ -23,7 +23,7 @@ auto FactoryAPI(const api::Crypto& crypto) noexcept
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 Factory::Factory(const api::Crypto& crypto) noexcept
     : crypto_(crypto)
@@ -46,4 +46,4 @@ auto Factory::SecretFromText(const std::string_view text) const noexcept
 {
     return OTSecret{factory::Secret(text, false).release()};
 }
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

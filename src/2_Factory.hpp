@@ -19,22 +19,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-namespace implementation
-{
-class UI;
-}  // namespace implementation
-
-namespace internal
-{
-struct Contacts;
-struct Pair;
-}  // namespace internal
-
-class Contacts;
-}  // namespace client
-
 namespace crypto
 {
 namespace internal
@@ -83,26 +67,6 @@ class Crypto;
 class Legacy;
 class Settings;
 }  // namespace api
-
-namespace blind
-{
-namespace implementation
-{
-class Purse;
-}  // namespace implementation
-
-namespace token
-{
-namespace implementation
-{
-class Token;
-}  // namespace implementation
-}  // namespace token
-
-class Mint;
-class Purse;
-class Token;
-}  // namespace blind
 
 namespace contract
 {

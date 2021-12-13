@@ -13,9 +13,9 @@
 #include <utility>
 
 #include "core/Amount.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Numbers.hpp"
 
 using namespace opentxs;
 

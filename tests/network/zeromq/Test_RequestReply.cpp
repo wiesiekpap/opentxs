@@ -13,6 +13,7 @@
 
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
@@ -25,7 +26,6 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 

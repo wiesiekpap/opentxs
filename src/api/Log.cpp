@@ -38,14 +38,14 @@ namespace opentxs::factory
 auto Log(const zmq::Context& zmq, const std::string& endpoint) noexcept
     -> std::unique_ptr<api::internal::Log>
 {
-    using ReturnType = api::implementation::Log;
+    using ReturnType = api::imp::Log;
     internal::Log::Start();
 
     return std::make_unique<ReturnType>(zmq, endpoint);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 Log::Log(const zmq::Context& zmq, const std::string& endpoint)
     : callback_(opentxs::network::zeromq::ListenCallback::Factory(
@@ -135,4 +135,4 @@ void Log::print_android(
     }
 }
 #endif
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

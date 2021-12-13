@@ -21,7 +21,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
@@ -39,6 +39,11 @@ class Client;
 }  // namespace session
 }  // namespace api
 
+namespace contact
+{
+class ContactSection;
+}  // namespace contact
+
 namespace network
 {
 namespace zeromq
@@ -54,8 +59,6 @@ namespace ui
 {
 class ContactSection;
 }  // namespace ui
-
-class ContactSection;
 }  // namespace opentxs
 
 namespace opentxs::ui::implementation
@@ -114,12 +117,12 @@ private:
     {
         return ContactSectionList::last(id);
     }
-    auto process_section(const opentxs::ContactSection& section) noexcept
+    auto process_section(const contact::ContactSection& section) noexcept
         -> std::set<ContactSectionRowID>;
     auto reindex(
         const implementation::ContactSortKey& key,
         implementation::CustomData& custom) noexcept -> bool final;
-    auto startup(const opentxs::ContactSection section) noexcept -> void;
+    auto startup(const contact::ContactSection section) noexcept -> void;
 
     ContactSection() = delete;
     ContactSection(const ContactSection&) = delete;

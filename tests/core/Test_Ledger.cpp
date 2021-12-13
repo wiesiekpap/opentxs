@@ -8,20 +8,20 @@
 
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace ot = opentxs;

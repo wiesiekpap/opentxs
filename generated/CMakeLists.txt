@@ -3,6 +3,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+add_subdirectory(license)
+add_subdirectory(size)
+
 if(BIP32_EXPORT)
   set(OPENTXS_HAVE_HD_KEYS "true")
   set(OPENTXS_DEFAULT_CRED_TYPE "identity::CredentialType::HD")
@@ -45,7 +48,6 @@ if(RSA_EXPORT)
 else()
   set(OPENTXS_CRYPTO_HAVE_RSA "false")
 endif()
-
 
 configure_file(
   "Version.hpp.in"

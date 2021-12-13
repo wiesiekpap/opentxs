@@ -33,8 +33,8 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -47,15 +47,15 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Contacts;
-}  // namespace client
-
 namespace crypto
 {
 class Blockchain;
 }  // namespace crypto
+
+namespace session
+{
+class Contacts;
+}  // namespace session
 
 class Session;
 }  // namespace api
@@ -121,7 +121,7 @@ public:
 
     PaymentCode(
         const api::Session& api,
-        const api::client::Contacts& contacts,
+        const api::session::Contacts& contacts,
         const Account& parent,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
@@ -131,7 +131,7 @@ public:
         Identifier& id) noexcept(false);
     PaymentCode(
         const api::Session& api,
-        const api::client::Contacts& contacts,
+        const api::session::Contacts& contacts,
         const Account& parent,
         const SerializedType& serialized,
         Identifier& id,

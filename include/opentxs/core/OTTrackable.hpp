@@ -8,8 +8,8 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Instrument.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Numbers.hpp"
 

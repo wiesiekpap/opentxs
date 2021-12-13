@@ -20,16 +20,8 @@ extern "C" {
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Log.hpp"
-#include "util/ByteLiterals.hpp"
+#include "util/FileSize.hpp"
 #include "util/ScopeGuard.hpp"
-
-#if OS_SUPPORTS_LARGE_SPARSE_FILES
-#define OT_LMDB_SIZE 1_TiB
-#elif OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT
-#define OT_LMDB_SIZE 4_GiB
-#else
-#define OT_LMDB_SIZE 512_MiB
-#endif
 
 namespace opentxs::storage::lmdb
 {
@@ -564,7 +556,7 @@ private:
         OT_ASSERT(set);
         OT_ASSERT(nullptr != env_);
 
-        set = 0 == ::mdb_env_set_mapsize(env_, OT_LMDB_SIZE);
+        set = 0 == ::mdb_env_set_mapsize(env_, db_file_size());
 
         OT_ASSERT(set);
 

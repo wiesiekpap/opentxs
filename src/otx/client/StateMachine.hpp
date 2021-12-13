@@ -19,19 +19,20 @@
 #include <vector>
 
 #include "core/StateMachine.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/session/OTX.hpp"
+#include "internal/api/session/OTX.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/UniqueQueue.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -46,6 +47,7 @@ namespace api
 namespace session
 {
 class Client;
+class OTX;
 }  // namespace session
 }  // namespace api
 
@@ -180,29 +182,25 @@ class StateMachine final : public opentxs::internal::StateMachine,
                            public otx::client::internal::StateMachine
 {
 public:
-    using BackgroundTask = api::client::OTX::BackgroundTask;
+    using BackgroundTask = api::session::OTX::BackgroundTask;
     using ContextID = std::pair<OTNymID, OTServerID>;
-    using Future = api::client::OTX::Future;
+    using Future = api::session::OTX::Future;
     using RefreshTask = std::pair<int, std::promise<void>>;
-    using Result = api::client::OTX::Result;
-    using TaskID = api::client::OTX::TaskID;
+    using Result = api::session::OTX::Result;
+    using TaskID = api::session::OTX::TaskID;
     using Thread = std::function<void()>;
 
     union Params {
         CheckNymTask check_nym_;
         DepositPaymentTask deposit_payment_;
         DownloadContractTask download_contract_;
-#if OT_CASH
         DownloadMintTask download_mint_;
-#endif
         DownloadNymboxTask download_nymbox_;
         DownloadUnitDefinitionTask download_unit_definition_;
         GetTransactionNumbersTask get_transaction_numbers_;
         IssueUnitDefinitionTask issue_unit_definition_;
         MessageTask send_message_;
-#if OT_CASH
         PayCashTask send_cash_;
-#endif
         PaymentTask send_payment_;
         PeerReplyTask peer_reply_;
         PeerRequestTask peer_request_;
@@ -212,9 +210,7 @@ public:
         RegisterNymTask register_nym_;
         SendChequeTask send_cheque_;
         SendTransferTask send_transfer_;
-#if OT_CASH
         WithdrawCashTask withdraw_cash_;
-#endif
 
         Params() { memset(static_cast<void*>(this), 0, sizeof(Params)); }
         ~Params() {}
@@ -249,7 +245,7 @@ public:
 
     StateMachine(
         const api::session::Client& client,
-        const api::client::internal::OTX& parent,
+        const api::session::OTX& parent,
         const Flag& running,
         const api::session::Client& api,
         const ContextID& id,
@@ -266,7 +262,7 @@ private:
     enum class State : int { needServerContract, needRegistration, ready };
 
     const api::session::Client& client_;
-    const api::client::internal::OTX& parent_;
+    const api::session::OTX& parent_;
     std::atomic<TaskID>& next_task_id_;
     const UniqueQueue<CheckNymTask>& missing_nyms_;
     const UniqueQueue<CheckNymTask>& outdated_nyms_;
@@ -278,17 +274,13 @@ private:
     UniqueQueue<CheckNymTask> check_nym_;
     UniqueQueue<DepositPaymentTask> deposit_payment_;
     UniqueQueue<DownloadContractTask> download_contract_;
-#if OT_CASH
     UniqueQueue<DownloadMintTask> download_mint_;
-#endif  // OT_CASH
     UniqueQueue<DownloadNymboxTask> download_nymbox_;
     UniqueQueue<DownloadUnitDefinitionTask> download_unit_definition_;
     UniqueQueue<GetTransactionNumbersTask> get_transaction_numbers_;
     UniqueQueue<IssueUnitDefinitionTask> issue_unit_definition_;
     UniqueQueue<MessageTask> send_message_;
-#if OT_CASH
     UniqueQueue<PayCashTask> send_cash_;
-#endif  // OT_CASH
     UniqueQueue<PaymentTask> send_payment_;
     UniqueQueue<PeerReplyTask> peer_reply_;
     UniqueQueue<PeerRequestTask> peer_request_;
@@ -298,9 +290,7 @@ private:
     UniqueQueue<RegisterNymTask> register_nym_;
     UniqueQueue<SendChequeTask> send_cheque_;
     UniqueQueue<SendTransferTask> send_transfer_;
-#if OT_CASH
     UniqueQueue<WithdrawCashTask> withdraw_cash_;
-#endif  // OT_CASH
     Params param_;
     TaskID task_id_{};
     std::atomic<int> counter_;
@@ -320,7 +310,7 @@ private:
     void associate_message_id(const Identifier& messageID, const TaskID taskID)
         const
     {
-        return parent_.associate_message_id(messageID, taskID);
+        return parent_.Internal().associate_message_id(messageID, taskID);
     }
     auto bump_task(const bool bump) const -> bool;
     auto check_admin(const otx::context::Server& context) const -> bool;
@@ -344,10 +334,8 @@ private:
         const DepositPaymentTask& task,
         UniqueQueue<DepositPaymentTask>& retry) const -> bool;
 
-#if OT_CASH
     auto download_mint(const TaskID taskID, const DownloadMintTask& task) const
         -> bool;
-#endif
     auto download_nym(const TaskID taskID, const CheckNymTask& id) const
         -> bool;
     auto download_nymbox(const TaskID taskID) const -> bool;
@@ -367,13 +355,14 @@ private:
     auto finish_task(const TaskID taskID, const bool success, Result&& result)
         const -> bool override
     {
-        return parent_.finish_task(taskID, success, std::move(result));
+        return parent_.Internal().finish_task(
+            taskID, success, std::move(result));
     }
     auto get_admin(const TaskID taskID, const Secret& password) const -> bool;
     auto get_nym_fetch(const identifier::Server& serverID) const
         -> UniqueQueue<OTNymID>&
     {
-        return parent_.get_nym_fetch(serverID);
+        return parent_.Internal().get_nym_fetch(serverID);
     }
     template <typename T>
     auto get_task() const -> const UniqueQueue<T>&;
@@ -394,10 +383,8 @@ private:
         -> bool;
     auto next_task_id() const -> TaskID override { return ++next_task_id_; }
     auto pay_nym(const TaskID taskID, const PaymentTask& task) const -> bool;
-#if OT_CASH
     auto pay_nym_cash(const TaskID taskID, const PayCashTask& Task) const
         -> bool;
-#endif  // OT_CASH
     auto process_inbox(const TaskID taskID, const ProcessInboxTask& accountID)
         const -> bool;
     auto publish_server_contract(
@@ -423,12 +410,10 @@ private:
     auto start_task(const TaskID taskID, bool success) const
         -> BackgroundTask override
     {
-        return parent_.start_task(taskID, success);
+        return parent_.Internal().start_task(taskID, success);
     }
-#if OT_CASH
     auto withdraw_cash(const TaskID taskID, const WithdrawCashTask& task) const
         -> bool;
-#endif  // OT_CASH
     auto write_and_send_cheque(const TaskID taskID, const SendChequeTask& task)
         const -> TaskDone;
     auto write_and_send_cheque_wrapper(

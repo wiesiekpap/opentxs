@@ -28,11 +28,7 @@ class Context;
 }  // namespace network
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace network
+namespace opentxs::api::network
 {
 class OPENTXS_EXPORT Network
 {
@@ -59,6 +55,4 @@ private:
     auto operator=(const Network&) -> Network& = delete;
     auto operator=(Network&&) -> Network& = delete;
 };
-}  // namespace network
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::network

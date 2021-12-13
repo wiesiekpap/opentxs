@@ -28,7 +28,6 @@
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Symmetric.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/blind/CashType.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/Blockchain.hpp"
 #endif  // OT_BLOCKCHAIN
@@ -45,7 +44,6 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/OTTransaction.hpp"
@@ -72,6 +70,7 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -85,9 +84,18 @@
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
+#include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
+
+namespace google
+{
+namespace protobuf
+{
+class MessageLite;
+}  // namespace protobuf
+}  // namespace google
 
 namespace opentxs
 {
@@ -95,12 +103,6 @@ namespace api
 {
 class Session;
 }  // namespace api
-
-namespace blind
-{
-class Mint;
-class Purse;
-}  // namespace blind
 
 namespace blockchain
 {
@@ -167,6 +169,12 @@ class Pipeline;
 
 namespace otx
 {
+namespace blind
+{
+class Mint;
+class Purse;
+}  // namespace blind
+
 namespace context
 {
 class Server;
@@ -177,6 +185,7 @@ namespace proto
 {
 class AsymmetricKey;
 class BlockchainBlockHeader;
+class Identifier;
 class PaymentCode;
 class PeerObject;
 class PeerReply;
@@ -206,7 +215,7 @@ class OTTransactionType;
 class PeerObject;
 }  // namespace opentxs
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 class Factory : virtual public internal::Factory
 {
@@ -485,6 +494,8 @@ public:
     auto Identifier(const ProtobufType& proto) const -> OTIdentifier final;
     auto Identifier(const opentxs::network::zeromq::Frame& bytes) const
         -> OTIdentifier final;
+    auto Identifier(const proto::Identifier& in) const noexcept
+        -> OTIdentifier final;
     auto Item(const String& serialized) const
         -> std::unique_ptr<opentxs::Item> final;
     auto Item(const std::string& serialized) const
@@ -552,24 +563,37 @@ public:
         const identifier::UnitDefinition& CURRENCY_TYPE_ID,
         const Amount& lScale) const -> std::unique_ptr<OTMarket> final;
     auto Message() const -> std::unique_ptr<opentxs::Message> final;
-#if OT_CASH
-    auto Mint() const -> std::unique_ptr<blind::Mint> final;
+    auto Mint() const noexcept -> otx::blind::Mint final;
+    auto Mint(const otx::blind::CashType type) const noexcept
+        -> otx::blind::Mint final;
     auto Mint(
         const identifier::Server& notary,
-        const identifier::UnitDefinition& unit) const
-        -> std::unique_ptr<blind::Mint> final;
+        const identifier::UnitDefinition& unit) const noexcept
+        -> otx::blind::Mint final;
+    auto Mint(
+        const otx::blind::CashType type,
+        const identifier::Server& notary,
+        const identifier::UnitDefinition& unit) const noexcept
+        -> otx::blind::Mint final;
     auto Mint(
         const identifier::Server& notary,
         const identifier::Nym& serverNym,
-        const identifier::UnitDefinition& unit) const
-        -> std::unique_ptr<blind::Mint> final;
-#endif
+        const identifier::UnitDefinition& unit) const noexcept
+        -> otx::blind::Mint final;
+    auto Mint(
+        const otx::blind::CashType type,
+        const identifier::Server& notary,
+        const identifier::Nym& serverNym,
+        const identifier::UnitDefinition& unit) const noexcept
+        -> otx::blind::Mint final;
     auto NymID() const -> OTNymID final;
     auto NymID(const std::string& serialized) const -> OTNymID final;
     auto NymID(const opentxs::String& serialized) const -> OTNymID final;
-    auto NymIDFromPaymentCode(const std::string& serialized) const
-        -> OTNymID final;
     auto NymID(const opentxs::network::zeromq::Frame& bytes) const
+        -> OTNymID final;
+    auto NymID(const proto::Identifier& in) const noexcept -> OTNymID final;
+    auto NymID(const opentxs::Identifier& in) const noexcept -> OTNymID final;
+    auto NymIDFromPaymentCode(const std::string& serialized) const
         -> OTNymID final;
     auto Offer() const -> std::unique_ptr<OTOffer> final;
     auto Offer(
@@ -649,12 +673,8 @@ public:
         const std::string& payment,
         const bool isPayment) const
         -> std::unique_ptr<opentxs::PeerObject> override;
-#if OT_CASH
-    auto PeerObject(
-        const Nym_p& senderNym,
-        const std::shared_ptr<blind::Purse> purse) const
+    auto PeerObject(const Nym_p& senderNym, otx::blind::Purse&& purse) const
         -> std::unique_ptr<opentxs::PeerObject> override;
-#endif
     auto PeerObject(
         const OTPeerRequest request,
         const OTPeerReply reply,
@@ -682,25 +702,36 @@ public:
     auto Pipeline(
         std::function<void(opentxs::network::zeromq::Message&&)> callback) const
         -> opentxs::network::zeromq::Pipeline final;
-#if OT_CASH
     auto Purse(
         const otx::context::Server& context,
         const identifier::UnitDefinition& unit,
-        const blind::Mint& mint,
+        const otx::blind::Mint& mint,
         const Amount& totalValue,
-        const opentxs::PasswordPrompt& reason,
-        const blind::CashType type) const
-        -> std::unique_ptr<blind::Purse> final;
-    auto Purse(const proto::Purse& serialized) const
-        -> std::unique_ptr<blind::Purse> final;
+        const opentxs::PasswordPrompt& reason) const noexcept
+        -> otx::blind::Purse final;
+    auto Purse(
+        const otx::context::Server& context,
+        const identifier::UnitDefinition& unit,
+        const otx::blind::Mint& mint,
+        const Amount& totalValue,
+        const otx::blind::CashType type,
+        const opentxs::PasswordPrompt& reason) const noexcept
+        -> otx::blind::Purse final;
+    auto Purse(const proto::Purse& serialized) const noexcept
+        -> otx::blind::Purse final;
     auto Purse(
         const identity::Nym& owner,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
-        const opentxs::PasswordPrompt& reason,
-        const blind::CashType type) const
-        -> std::unique_ptr<blind::Purse> final;
-#endif  // OT_CASH
+        const opentxs::PasswordPrompt& reason) const noexcept
+        -> otx::blind::Purse final;
+    auto Purse(
+        const identity::Nym& owner,
+        const identifier::Server& server,
+        const identifier::UnitDefinition& unit,
+        const otx::blind::CashType type,
+        const opentxs::PasswordPrompt& reason) const noexcept
+        -> otx::blind::Purse final;
     auto ReplyAcknowledgement(
         const Nym_p& nym,
         const identifier::Nym& initiator,
@@ -748,6 +779,12 @@ public:
     auto ServerID(const opentxs::String& serialized) const -> OTServerID final;
     auto ServerID(const opentxs::network::zeromq::Frame& bytes) const
         -> OTServerID final;
+    auto ServerID(const proto::Identifier& in) const noexcept
+        -> OTServerID final;
+    auto ServerID(const opentxs::Identifier& in) const noexcept
+        -> OTServerID final;
+    auto ServerID(const google::protobuf::MessageLite& proto) const
+        -> OTIdentifier final;
     auto SignedFile() const -> std::unique_ptr<OTSignedFile> final;
     auto SignedFile(const String& LOCAL_SUBDIR, const String& FILE_NAME) const
         -> std::unique_ptr<OTSignedFile> final;
@@ -868,6 +905,10 @@ public:
     auto UnitID(const opentxs::String& serialized) const -> OTUnitID final;
     auto UnitID(const opentxs::network::zeromq::Frame& bytes) const
         -> OTUnitID final;
+    auto UnitID(const proto::Identifier& in) const noexcept -> OTUnitID final;
+    auto UnitID(const opentxs::Identifier& in) const noexcept -> OTUnitID final;
+    auto UnitID(const google::protobuf::MessageLite& proto) const
+        -> OTIdentifier final;
     auto UnitDefinition() const noexcept -> OTUnitDefinition final;
     auto UnitDefinition(
         const Nym_p& nym,
@@ -896,4 +937,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

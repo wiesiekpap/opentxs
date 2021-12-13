@@ -10,6 +10,7 @@
 #include <list>
 #include <memory>
 
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
@@ -19,9 +20,9 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -169,7 +170,7 @@ auto Request::GetID(const Lock& lock) const -> OTIdentifier
 auto Request::GetID(const api::Session& api, const SerializedType& contract)
     -> OTIdentifier
 {
-    return api.Factory().Identifier(contract);
+    return api.Factory().InternalSession().Identifier(contract);
 }
 
 auto Request::IDVersion(const Lock& lock) const -> SerializedType
@@ -195,11 +196,11 @@ auto Request::IDVersion(const Lock& lock) const -> SerializedType
     return contract;
 }
 
-auto Request::Serialize() const -> OTData
+auto Request::Serialize() const noexcept -> OTData
 {
     Lock lock(lock_);
 
-    return api_.Factory().Data(contract(lock));
+    return api_.Factory().InternalSession().Data(contract(lock));
 }
 
 auto Request::Serialize(SerializedType& output) const -> bool

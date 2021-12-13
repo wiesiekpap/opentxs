@@ -23,7 +23,6 @@ namespace opentxs::factory
 {
 auto parse_pkt_block(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept(false)
     -> std::shared_ptr<blockchain::block::bitcoin::Block>
@@ -86,8 +85,8 @@ auto parse_pkt_block(
     const auto proofEnd{it};
     auto sizeData = ReturnType::CalculatedSize{
         in.size(), network::blockchain::bitcoin::CompactSize{}};
-    auto [index, transactions] = parse_transactions(
-        api, blockchain, chain, in, header, sizeData, it, expectedSize);
+    auto [index, transactions] =
+        parse_transactions(api, chain, in, header, sizeData, it, expectedSize);
 
     return std::make_shared<ReturnType>(
         api,

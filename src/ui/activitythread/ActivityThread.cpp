@@ -25,11 +25,11 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -41,9 +41,9 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -517,14 +517,12 @@ auto ActivityThread::process_item(
             const auto& tx = *pTx;
             text = Widget::api_.Crypto().Blockchain().ActivityDescription(
                 primary_id_, chain, tx);
-            const auto amount = tx.NetBalanceChange(
-                Widget::api_.Crypto().Blockchain(), primary_id_);
+            const auto amount = tx.NetBalanceChange(primary_id_);
             custom.emplace_back(new std::string{item.txid()});
             custom.emplace_back(new opentxs::Amount{amount});
             custom.emplace_back(
                 new std::string{blockchain::internal::Format(chain, amount)});
-            custom.emplace_back(
-                new std::string{tx.Memo(Widget::api_.Crypto().Blockchain())});
+            custom.emplace_back(new std::string{tx.Memo()});
 
             outgoing = (0 > amount);
         } break;
@@ -599,7 +597,7 @@ auto ActivityThread::process_otx(const Message& in) noexcept -> void
 
     OT_ASSERT(2 < body.size());
 
-    const auto id = body.at(1).as<api::client::OTX::TaskID>();
+    const auto id = body.at(1).as<api::session::OTX::TaskID>();
     auto done = [&] {
         auto output = std::optional<ActivityThreadRowID>{};
         auto lock = rLock{recursive_lock_};

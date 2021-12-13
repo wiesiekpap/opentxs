@@ -28,7 +28,7 @@
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/util/Numbers.hpp"

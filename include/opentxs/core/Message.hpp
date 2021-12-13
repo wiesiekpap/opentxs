@@ -29,10 +29,10 @@ namespace api
 {
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Factory;
-}  // namespace implementation
+}  // namespace imp
 }  // namespace session
 
 class Session;
@@ -103,7 +103,7 @@ protected:
     bool m_bIsSigned{false};
 
 private:
-    friend api::session::implementation::Factory;
+    friend api::session::imp::Factory;
 
     using TypeMap = std::map<MessageType, std::string>;
     using ReverseTypeMap = std::map<std::string, MessageType>;

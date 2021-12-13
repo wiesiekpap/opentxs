@@ -24,13 +24,13 @@ auto SessionCryptoAPI(
     const api::session::Storage& storage) noexcept
     -> std::unique_ptr<api::session::Crypto>
 {
-    using ReturnType = api::session::implementation::Crypto;
+    using ReturnType = api::session::imp::Crypto;
 
     return std::make_unique<ReturnType>(parent, session, factory, storage);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 Crypto::Crypto(
     api::Crypto& parent,
@@ -86,4 +86,4 @@ auto Crypto::PrepareShutdown() noexcept -> void
 }
 
 Crypto::~Crypto() = default;
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

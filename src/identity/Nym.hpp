@@ -20,11 +20,11 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactData.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Parameters.hpp"
@@ -101,7 +101,7 @@ public:
     {
         return const_iterator(this, size());
     }
-    auto Claims() const -> const opentxs::ContactData& final;
+    auto Claims() const -> const contact::ContactData& final;
     auto CompareID(const identity::Nym& RHS) const -> bool final;
     auto CompareID(const identifier::Nym& rhs) const -> bool final;
     auto ContactCredentialVersion() const -> VersionNumber final;
@@ -265,7 +265,7 @@ private:
     std::uint32_t index_;
     std::string alias_;
     std::atomic<std::uint64_t> revision_;
-    mutable std::unique_ptr<opentxs::ContactData> contact_data_;
+    mutable std::unique_ptr<contact::ContactData> contact_data_;
     CredentialMap active_;
     CredentialMap m_mapRevokedSets;
     // Revoked child credential IDs

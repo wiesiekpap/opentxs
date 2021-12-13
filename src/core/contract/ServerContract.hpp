@@ -14,10 +14,11 @@
 #include "core/contract/Signable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/ServerContract.pb.h"
@@ -52,8 +53,8 @@ public:
         core::AddressType& actual,
         const core::AddressType& preferred) const -> bool final;
     auto EffectiveName() const -> std::string final;
-    auto Name() const -> std::string final { return name_; }
-    auto Serialize() const -> OTData final;
+    auto Name() const noexcept -> std::string final { return name_; }
+    auto Serialize() const noexcept -> OTData final;
     auto Serialize(AllocateOutput destination, bool includeNym = false) const
         -> bool final;
     auto Serialize(proto::ServerContract& output, bool includeNym = false) const
@@ -67,7 +68,7 @@ public:
     {
         contract::implementation::Signable::SetAlias(alias);
     }
-    void SetAlias(const std::string& alias) final;
+    auto SetAlias(const std::string& alias) noexcept -> bool final;
 
     Server(
         const api::Session& api,
@@ -77,7 +78,7 @@ public:
         const std::string& name,
         std::list<contract::Server::Endpoint>&& endpoints,
         OTData&& key,
-        const std::string& id = {},
+        OTServerID&& id,
         Signatures&& signatures = {});
     Server(
         const api::Session& api,

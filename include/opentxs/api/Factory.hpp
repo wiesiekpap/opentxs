@@ -20,9 +20,7 @@ class Factory;
 }  // namespace api
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
+namespace opentxs::api
 {
 class OPENTXS_EXPORT Factory
 {
@@ -49,5 +47,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api

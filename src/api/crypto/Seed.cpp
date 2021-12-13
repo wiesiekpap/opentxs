@@ -34,8 +34,8 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip39.hpp"
@@ -68,14 +68,14 @@ auto SeedAPI(
     const crypto::Bip32& bip32,
     const crypto::Bip39& bip39) noexcept -> std::unique_ptr<api::crypto::Seed>
 {
-    using ReturnType = api::crypto::implementation::Seed;
+    using ReturnType = api::crypto::imp::Seed;
 
     return std::make_unique<ReturnType>(
         api, factory, asymmetric, symmetric, storage, bip32, bip39);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 Seed::Seed(
     const api::Session& api,
@@ -736,4 +736,4 @@ auto Seed::Words(const std::string& seedID, const PasswordPrompt& reason) const
         return {};
     }
 }
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

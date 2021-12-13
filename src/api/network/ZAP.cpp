@@ -24,11 +24,11 @@ class Context;
 
 auto Factory::ZAP(const network::zeromq::Context& context) -> api::network::ZAP*
 {
-    return new api::network::implementation::ZAP(context);
+    return new api::network::imp::ZAP(context);
 }
 }  // namespace opentxs
 
-namespace opentxs::api::network::implementation
+namespace opentxs::api::network::imp
 {
 ZAP::ZAP(const opentxs::network::zeromq::Context& context)
     : context_(context)
@@ -47,4 +47,4 @@ auto ZAP::SetDefaultPolicy(const Policy policy) const -> bool
 {
     return callback_->SetPolicy(policy);
 }
-}  // namespace opentxs::api::network::implementation
+}  // namespace opentxs::api::network::imp

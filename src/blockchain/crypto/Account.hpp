@@ -35,8 +35,8 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/util/Log.hpp"
@@ -45,10 +45,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
 class Contacts;
-}  // namespace client
+}  // namespace session
 
 class Session;
 }  // namespace api
@@ -165,7 +165,7 @@ public:
 
     Account(
         const api::Session& api,
-        const api::client::Contacts& contacts,
+        const api::session::Contacts& contacts,
         const crypto::Wallet& parent,
         const AccountIndex& index,
         const identifier::Nym& nym,
@@ -324,7 +324,7 @@ private:
         NodeGroup<PaymentCodeAccounts, crypto::PaymentCode>;
 
     const api::Session& api_;
-    const api::client::Contacts& contacts_;
+    const api::session::Contacts& contacts_;
     const crypto::Wallet& parent_;
     const AccountIndex& account_index_;
     const opentxs::blockchain::Type chain_;

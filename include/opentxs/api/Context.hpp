@@ -15,6 +15,8 @@
 #include "opentxs/api/Periodic.hpp"
 #include "opentxs/util/Bytes.hpp"
 
+class QObject;
+
 namespace opentxs
 {
 namespace api
@@ -65,11 +67,7 @@ class Base;
 class Options;
 }  // namespace opentxs
 
-class QObject;
-
-namespace opentxs
-{
-namespace api
+namespace opentxs::api
 {
 class OPENTXS_EXPORT Context : virtual public Periodic
 {
@@ -147,5 +145,4 @@ private:
     auto operator=(const Context&) -> Context& = delete;
     auto operator=(Context&&) -> Context& = delete;
 };
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api

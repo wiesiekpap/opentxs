@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"         // IWYU pragma: associated
 #include "opentxs/identity/Types.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -25,6 +26,5 @@ constexpr auto value(const CredentialRole in) noexcept
 {
     return static_cast<std::uint8_t>(in);
 }
-
 }  // namespace identity
 }  // namespace opentxs

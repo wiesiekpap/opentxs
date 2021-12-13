@@ -11,11 +11,16 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
 class Contacts;
-}  // namespace client
+}  // namespace session
 }  // namespace api
+
+namespace contact
+{
+class Contact;
+}  // namespace contact
 
 namespace proto
 {
@@ -28,7 +33,7 @@ namespace opentxs::api::crypto::internal
 class Blockchain : virtual public api::crypto::Blockchain
 {
 public:
-    virtual auto Contacts() const noexcept -> const api::client::Contacts& = 0;
+    virtual auto Contacts() const noexcept -> const api::session::Contacts& = 0;
     virtual auto KeyEndpoint() const noexcept -> const std::string& = 0;
     virtual auto KeyGenerated(const Chain chain) const noexcept -> void = 0;
     auto Internal() const noexcept -> const Blockchain& final { return *this; }
@@ -50,11 +55,11 @@ public:
         const Chain chain,
         const PasswordPrompt& reason) const noexcept(false)
         -> const opentxs::blockchain::crypto::PaymentCode& = 0;
-    virtual auto ProcessContact(const Contact& contact) const noexcept
+    virtual auto ProcessContact(const contact::Contact& contact) const noexcept
         -> bool = 0;
     virtual auto ProcessMergedContact(
-        const Contact& parent,
-        const Contact& child) const noexcept -> bool = 0;
+        const contact::Contact& parent,
+        const contact::Contact& child) const noexcept -> bool = 0;
     virtual auto ProcessTransaction(
         const Chain chain,
         const opentxs::blockchain::block::bitcoin::Transaction& transaction,

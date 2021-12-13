@@ -25,7 +25,7 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -37,10 +37,10 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/identifier/Algorithm.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
@@ -57,7 +57,6 @@ using ReturnType = blockchain::block::bitcoin::implementation::Transaction;
 
 auto BitcoinTransaction(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const Time& time,
     const boost::endian::little_int32_buf_t& version,
@@ -145,7 +144,6 @@ auto BitcoinTransaction(
 
 auto BitcoinTransaction(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const std::size_t position,
     const Time& time,
@@ -178,7 +176,6 @@ auto BitcoinTransaction(
                 instantiatedInputs.emplace_back(
                     factory::BitcoinTransactionInput(
                         api,
-                        blockchain,
                         chain,
                         ReadView{
                             reinterpret_cast<const char*>(&op), sizeof(op)},
@@ -208,7 +205,6 @@ auto BitcoinTransaction(
                 instantiatedOutputs.emplace_back(
                     factory::BitcoinTransactionOutput(
                         api,
-                        blockchain,
                         chain,
                         counter++,
                         Amount{output.value_.value()},
@@ -261,7 +257,6 @@ auto BitcoinTransaction(
 
 auto BitcoinTransaction(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const proto::BlockchainTransaction& in) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>
 {
@@ -298,7 +293,6 @@ auto BitcoinTransaction(
                     index,
                     factory::BitcoinTransactionInput(
                         api,
-                        blockchain,
                         chain,
                         input,
                         (0u == index) && in.is_generation()));
@@ -322,8 +316,7 @@ auto BitcoinTransaction(
                 const auto index = output.index();
                 map.emplace(
                     index,
-                    factory::BitcoinTransactionOutput(
-                        api, blockchain, chain, output));
+                    factory::BitcoinTransactionOutput(api, chain, output));
             }
 
             std::transform(
@@ -428,25 +421,23 @@ Transaction::Transaction(const Transaction& rhs) noexcept
 {
 }
 
-auto Transaction::AssociatedLocalNyms(const api::crypto::Blockchain& blockchain)
-    const noexcept -> std::vector<OTNymID>
+auto Transaction::AssociatedLocalNyms() const noexcept -> std::vector<OTNymID>
 {
     auto output = std::vector<OTNymID>{};
-    inputs_->AssociatedLocalNyms(blockchain, output);
-    outputs_->AssociatedLocalNyms(blockchain, output);
+    inputs_->AssociatedLocalNyms(output);
+    outputs_->AssociatedLocalNyms(output);
     dedup(output);
 
     return output;
 }
 
 auto Transaction::AssociatedRemoteContacts(
-    const api::crypto::Blockchain& blockchain,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const identifier::Nym& nym) const noexcept -> std::vector<OTIdentifier>
 {
     auto output = std::vector<OTIdentifier>{};
-    inputs_->AssociatedRemoteContacts(blockchain, output);
-    outputs_->AssociatedRemoteContacts(blockchain, output);
+    inputs_->AssociatedRemoteContacts(output);
+    outputs_->AssociatedRemoteContacts(output);
     dedup(output);
     const auto mask = contacts.ContactID(nym);
     output.erase(std::remove(output.begin(), output.end(), mask), output.end());
@@ -626,13 +617,12 @@ auto Transaction::Keys() const noexcept -> std::vector<crypto::Key>
     return out;
 }
 
-auto Transaction::Memo(const api::crypto::Blockchain& blockchain) const noexcept
-    -> std::string
+auto Transaction::Memo() const noexcept -> std::string
 {
     if (auto memo = cache_.memo(); false == memo.empty()) { return memo; }
 
     for (const auto& output : *outputs_) {
-        auto note = output.Note(blockchain);
+        auto note = output.Note();
 
         if (false == note.empty()) { return note; }
     }
@@ -641,7 +631,6 @@ auto Transaction::Memo(const api::crypto::Blockchain& blockchain) const noexcept
 }
 
 auto Transaction::MergeMetadata(
-    const api::crypto::Blockchain& api,
     const blockchain::Type chain,
     const internal::Transaction& rhs) noexcept -> void
 {
@@ -651,7 +640,7 @@ auto Transaction::MergeMetadata(
         return;
     }
 
-    if (false == inputs_->MergeMetadata(api, rhs.Inputs().Internal())) {
+    if (false == inputs_->MergeMetadata(rhs.Inputs().Internal())) {
         LogError()(OT_PRETTY_CLASS())("Failed to merge inputs").Flush();
 
         return;
@@ -663,15 +652,13 @@ auto Transaction::MergeMetadata(
         return;
     }
 
-    cache_.merge(api, rhs);
+    cache_.merge(rhs);
 }
 
-auto Transaction::NetBalanceChange(
-    const api::crypto::Blockchain& blockchain,
-    const identifier::Nym& nym) const noexcept -> opentxs::Amount
+auto Transaction::NetBalanceChange(const identifier::Nym& nym) const noexcept
+    -> opentxs::Amount
 {
-    return inputs_->NetBalanceChange(blockchain, nym) +
-           outputs_->NetBalanceChange(blockchain, nym);
+    return inputs_->NetBalanceChange(nym) + outputs_->NetBalanceChange(nym);
 }
 
 auto Transaction::Print() const noexcept -> std::string
@@ -865,8 +852,7 @@ auto Transaction::Serialize(const AllocateOutput destination) const noexcept
     return serialize(destination, false);
 }
 
-auto Transaction::Serialize(const api::crypto::Blockchain& blockchain)
-    const noexcept -> std::optional<SerializeType>
+auto Transaction::Serialize() const noexcept -> std::optional<SerializeType>
 {
     auto output = SerializeType{};
     output.set_version(std::max(default_version_, serialize_version_));
@@ -883,9 +869,9 @@ auto Transaction::Serialize(const api::crypto::Blockchain& blockchain)
         return {};
     }
 
-    if (false == inputs_->Serialize(blockchain, output)) { return {}; }
+    if (false == inputs_->Serialize(output)) { return {}; }
 
-    if (false == outputs_->Serialize(blockchain, output)) { return {}; }
+    if (false == outputs_->Serialize(output)) { return {}; }
 
     // TODO optional uint32 confirmations = 9;
     // TODO optional string blockhash = 10;

@@ -43,11 +43,7 @@ class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace crypto
+namespace opentxs::api::crypto
 {
 class OPENTXS_EXPORT Asymmetric
 {
@@ -217,6 +213,4 @@ private:
     auto operator=(const Asymmetric&) -> Asymmetric& = delete;
     auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
-}  // namespace crypto
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::crypto

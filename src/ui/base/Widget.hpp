@@ -13,11 +13,10 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
@@ -29,17 +28,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-namespace internal
-{
-struct UI;
-}  // namespace internal
-}  // namespace client
-
 namespace session
 {
 class Client;
+class UI;
 }  // namespace session
 }  // namespace api
 
@@ -144,14 +136,8 @@ public:
         auto operator=(const MessageProcessor&) -> MessageProcessor& = delete;
     };
 
-    auto ClearCallbacks() const noexcept -> void override
-    {
-        ui_.ClearUICallbacks(widget_id_);
-    }
-    auto SetCallback(SimpleCallback cb) const noexcept -> void final
-    {
-        ui_.RegisterUICallback(WidgetID(), cb);
-    }
+    auto ClearCallbacks() const noexcept -> void override;
+    auto SetCallback(SimpleCallback cb) const noexcept -> void final;
     auto WidgetID() const noexcept -> OTIdentifier final { return widget_id_; }
 
     ~Widget() override;
@@ -164,10 +150,7 @@ protected:
 
     virtual void setup_listeners(
         const ListenerDefinitions& definitions) noexcept;
-    auto UpdateNotify() const noexcept -> void
-    {
-        ui_.ActivateUICallback(WidgetID());
-    }
+    auto UpdateNotify() const noexcept -> void;
 
     Widget(
         const api::session::Client& api,
@@ -175,7 +158,7 @@ protected:
         const SimpleCallback& cb = {}) noexcept;
 
 private:
-    const api::client::internal::UI& ui_;
+    const api::session::UI& ui_;
     std::vector<OTZMQListenCallback> callbacks_;
     std::vector<OTZMQSubscribeSocket> listeners_;
 

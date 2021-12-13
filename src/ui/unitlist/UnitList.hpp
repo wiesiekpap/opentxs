@@ -15,7 +15,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"

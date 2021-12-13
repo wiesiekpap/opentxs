@@ -19,7 +19,7 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageContacts.pb.h"
 #include "storage/tree/Node.hpp"

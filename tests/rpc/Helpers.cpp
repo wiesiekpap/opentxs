@@ -19,22 +19,22 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/Language.hpp"
@@ -441,7 +441,7 @@ auto RPC_fixture::IssueUnit(
     const auto& serverID = server.ID();
     const auto reason = api.Factory().PasswordPrompt(__func__);
     const auto contract = api.Wallet().CurrencyContract(
-        issuer, shortname, terms, unitOfAccount, reason, displayDefinition, 1);
+        issuer, shortname, terms, unitOfAccount, 1, displayDefinition, reason);
 
     if (0u == contract->Version()) { return {}; }
 

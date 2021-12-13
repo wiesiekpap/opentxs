@@ -22,9 +22,9 @@
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -42,6 +42,7 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
@@ -161,11 +162,11 @@ const HrpMap hrp_map_{
 const HrpReverseMap hrp_reverse_map_{reverse_map(hrp_map_)};
 }  // namespace opentxs::api::crypto
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 Blockchain::Imp::Imp(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     api::crypto::Blockchain& parent) noexcept
     : api_(api)
     , contacts_(contacts)
@@ -1108,13 +1109,15 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
     return tree.GetPaymentCode().at(accountID);
 }
 
-auto Blockchain::Imp::ProcessContact(const Contact&) const noexcept -> bool
+auto Blockchain::Imp::ProcessContact(const contact::Contact&) const noexcept
+    -> bool
 {
     return false;
 }
 
-auto Blockchain::Imp::ProcessMergedContact(const Contact&, const Contact&)
-    const noexcept -> bool
+auto Blockchain::Imp::ProcessMergedContact(
+    const contact::Contact&,
+    const contact::Contact&) const noexcept -> bool
 {
     return false;
 }
@@ -1310,4 +1313,4 @@ auto Blockchain::Imp::Wallet(const opentxs::blockchain::Type chain) const
 
     return wallets_.Get(chain);
 }
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

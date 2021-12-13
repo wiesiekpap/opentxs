@@ -13,18 +13,13 @@
 #include <tuple>
 
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
 class Session;
 }  // namespace api
 
@@ -82,9 +77,7 @@ public:
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> = 0;
-    virtual auto ExtractPatterns(
-        const api::Session& api,
-        const api::crypto::Blockchain& blockchain) const noexcept
+    virtual auto ExtractPatterns(const api::Session& api) const noexcept
         -> std::vector<PatternID> = 0;
     virtual auto IsNotification(
         const std::uint8_t version,

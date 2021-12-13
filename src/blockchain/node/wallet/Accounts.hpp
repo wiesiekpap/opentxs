@@ -20,11 +20,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
 class Session;
 }  // namespace api
 
@@ -97,7 +92,6 @@ public:
 
     Accounts(
         const api::Session& api,
-        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const Type chain,

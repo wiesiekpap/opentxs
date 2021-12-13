@@ -39,7 +39,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -62,11 +62,9 @@ namespace opentxs::blockchain::block::bitcoin::implementation
 class Output final : public internal::Output
 {
 public:
-    auto AssociatedLocalNyms(
-        const api::crypto::Blockchain& blockchain,
-        std::vector<OTNymID>& output) const noexcept -> void final;
+    auto AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
+        -> void final;
     auto AssociatedRemoteContacts(
-        const api::crypto::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void final;
     auto CalculateSize() const noexcept -> std::size_t final;
     auto clone() const noexcept -> std::unique_ptr<internal::Output> final
@@ -92,19 +90,15 @@ public:
     {
         return cache_.position();
     }
-    auto NetBalanceChange(
-        const api::crypto::Blockchain& blockchain,
-        const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
-    auto Note(const api::crypto::Blockchain& blockchain) const noexcept
-        -> std::string final;
+    auto NetBalanceChange(const identifier::Nym& nym) const noexcept
+        -> opentxs::Amount final;
+    auto Note() const noexcept -> std::string final;
     auto Payee() const noexcept -> ContactID final { return cache_.payee(); }
     auto Payer() const noexcept -> ContactID final { return cache_.payer(); }
     auto Print() const noexcept -> std::string final;
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
-    auto Serialize(
-        const api::crypto::Blockchain& blockchain,
-        SerializeType& destination) const noexcept -> bool final;
+    auto Serialize(SerializeType& destination) const noexcept -> bool final;
     auto SigningSubscript() const noexcept
         -> std::unique_ptr<internal::Script> final
     {
@@ -162,7 +156,6 @@ public:
 
     Output(
         const api::Session& api,
-        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t index,
         const blockchain::Amount& value,
@@ -171,7 +164,6 @@ public:
         const VersionNumber version = default_version_) noexcept(false);
     Output(
         const api::Session& api,
-        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t index,
         const blockchain::Amount& value,
@@ -180,7 +172,6 @@ public:
         const VersionNumber version = default_version_) noexcept(false);
     Output(
         const api::Session& api,
-        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const VersionNumber version,
         const std::uint32_t index,
@@ -263,7 +254,6 @@ private:
     static const VersionNumber key_version_;
 
     const api::Session& api_;
-    const api::crypto::Blockchain& crypto_;
     const blockchain::Type chain_;
     const VersionNumber serialize_version_;
     const std::uint32_t index_;

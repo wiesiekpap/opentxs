@@ -14,7 +14,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Peer.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 
 namespace ba = boost::asio;
 namespace ip = ba::ip;

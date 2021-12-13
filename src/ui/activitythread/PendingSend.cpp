@@ -12,7 +12,7 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "ui/activitythread/ActivityThreadItem.hpp"
 #include "ui/base/Widget.hpp"

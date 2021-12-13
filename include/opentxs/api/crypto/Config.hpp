@@ -30,11 +30,7 @@ class Config;
 }  // namespace api
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace crypto
+namespace opentxs::api::crypto
 {
 auto HaveHDKeys() noexcept -> bool;
 auto HaveSupport(opentxs::crypto::ParameterType) noexcept -> bool;
@@ -69,6 +65,4 @@ private:
     auto operator=(const Config&) -> Config& = delete;
     auto operator=(Config&&) -> Config& = delete;
 };
-}  // namespace crypto
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::crypto

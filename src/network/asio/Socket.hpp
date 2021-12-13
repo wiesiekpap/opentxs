@@ -23,7 +23,7 @@ namespace network
 {
 namespace internal
 {
-struct Asio;
+class Asio;
 }  // namespace internal
 }  // namespace network
 }  // namespace api

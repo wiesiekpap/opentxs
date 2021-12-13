@@ -8,10 +8,17 @@
 #include <memory>
 #include <string>
 
+#include "opentxs/Types.hpp"
+
 namespace opentxs
 {
 namespace api
 {
+namespace crypto
+{
+class Blockchain;
+}  // namespace crypto
+
 namespace network
 {
 class Asio;
@@ -19,13 +26,18 @@ class Asio;
 
 namespace session
 {
+class Activity;
 class Client;
+class Contacts;
 class Crypto;
 class Endpoints;
 class Factory;
 class Notary;
+class OTX;
 class Storage;
+class UI;
 class Wallet;
+class Workflow;
 }  // namespace session
 
 class Context;
@@ -53,6 +65,10 @@ class Options;
 
 namespace opentxs::factory
 {
+auto ActivityAPI(
+    const api::Session& api,
+    const api::session::Contacts& contact) noexcept
+    -> std::unique_ptr<api::session::Activity>;
 auto ClientSession(
     const api::Context& parent,
     Flag& running,
@@ -62,6 +78,8 @@ auto ClientSession(
     const network::zeromq::Context& context,
     const std::string& dataFolder,
     const int instance) noexcept -> std::unique_ptr<api::session::Client>;
+auto ContactAPI(const api::session::Client& api) noexcept
+    -> std::unique_ptr<api::session::Contacts>;
 auto EndpointsAPI(const int instance) noexcept
     -> std::unique_ptr<api::session::Endpoints>;
 auto NotarySession(
@@ -73,6 +91,11 @@ auto NotarySession(
     const network::zeromq::Context& context,
     const std::string& dataFolder,
     const int instance) -> std::unique_ptr<api::session::Notary>;
+auto OTX(
+    const Flag& running,
+    const api::session::Client& api,
+    const ContextLockCallback& lockCallback) noexcept
+    -> std::unique_ptr<api::session::OTX>;
 auto SessionCryptoAPI(
     api::Crypto& parent,
     const api::Session& session,
@@ -89,8 +112,17 @@ auto StorageAPI(
     const Flag& running,
     const opentxs::storage::Config& config) noexcept
     -> std::unique_ptr<api::session::Storage>;
+auto UI(
+    const api::session::Client& api,
+    const api::crypto::Blockchain& blockchain,
+    const Flag& running) noexcept -> std::unique_ptr<api::session::UI>;
 auto WalletAPI(const api::session::Client& parent) noexcept
     -> std::unique_ptr<api::session::Wallet>;
 auto WalletAPI(const api::session::Notary& parent) noexcept
     -> std::unique_ptr<api::session::Wallet>;
+auto Workflow(
+    const api::Session& api,
+    const api::session::Activity& activity,
+    const api::session::Contacts& contact) noexcept
+    -> std::unique_ptr<api::session::Workflow>;
 }  // namespace opentxs::factory

@@ -13,12 +13,11 @@
 #include <utility>
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
-#include "internal/api/network/Network.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "util/JobCounter.hpp"

@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "ui/base/List.hpp"
 
 namespace opentxs::factory

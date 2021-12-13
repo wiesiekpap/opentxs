@@ -38,7 +38,7 @@
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Log.hpp"
@@ -49,11 +49,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
 class Session;
 }  // namespace api
 
@@ -98,19 +93,16 @@ auto parse_header(
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>;
 auto parse_normal_block(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept(false)
     -> std::shared_ptr<blockchain::block::bitcoin::Block>;
 auto parse_pkt_block(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept(false)
     -> std::shared_ptr<blockchain::block::bitcoin::Block>;
 auto parse_transactions(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in,
     const blockchain::block::bitcoin::Header& header,

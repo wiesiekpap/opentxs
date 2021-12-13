@@ -9,7 +9,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Iterator.hpp"
 
 namespace opentxs
 {

@@ -5,7 +5,7 @@
 
 // IWYU pragma: no_include "api/client/blockchain/database/Database.hpp"
 // IWYU pragma: no_include "internal/blockchain/node/Node.hpp"
-// IWYU pragma: no_include "opentxs/api/client/Contacts.hpp"
+// IWYU pragma: no_include "opentxs/api/session/Contacts.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Account.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/AddressStyle.hpp"
@@ -36,7 +36,6 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Types.hpp"
@@ -48,7 +47,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -58,11 +57,11 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
 class Activity;
 class Contacts;
-}  // namespace client
+}  // namespace session
 
 class Legacy;
 class Session;
@@ -83,6 +82,11 @@ namespace node
 class Manager;
 }  // namespace node
 }  // namespace blockchain
+
+namespace contact
+{
+class Contact;
+}  // namespace contact
 
 namespace identifier
 {
@@ -119,7 +123,7 @@ class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 class Blockchain final : virtual public internal::Blockchain
 {
@@ -162,7 +166,7 @@ public:
         const Data& pubkey) const noexcept -> std::string final;
     auto Confirm(const Key key, const opentxs::blockchain::block::Txid& tx)
         const noexcept -> bool final;
-    auto Contacts() const noexcept -> const api::client::Contacts& final;
+    auto Contacts() const noexcept -> const api::session::Contacts& final;
     auto DecodeAddress(const std::string& encoded) const noexcept
         -> DecodedAddress final;
     auto EncodeAddress(const Style style, const Chain chain, const Data& data)
@@ -229,9 +233,11 @@ public:
         -> const opentxs::blockchain::crypto::PaymentCode& final;
     auto PubkeyHash(const Chain chain, const Data& pubkey) const noexcept(false)
         -> OTData final;
-    auto ProcessContact(const Contact& contact) const noexcept -> bool final;
-    auto ProcessMergedContact(const Contact& parent, const Contact& child)
-        const noexcept -> bool final;
+    auto ProcessContact(const contact::Contact& contact) const noexcept
+        -> bool final;
+    auto ProcessMergedContact(
+        const contact::Contact& parent,
+        const contact::Contact& child) const noexcept -> bool final;
     auto ProcessTransaction(
         const Chain chain,
         const opentxs::blockchain::block::bitcoin::Transaction& transaction,
@@ -271,8 +277,8 @@ public:
 
     Blockchain(
         const api::Session& api,
-        const api::client::Activity& activity,
-        const api::client::Contacts& contacts,
+        const api::session::Activity& activity,
+        const api::session::Contacts& contacts,
         const api::Legacy& legacy,
         const std::string& dataFolder,
         const Options& args) noexcept;
@@ -288,4 +294,4 @@ private:
     auto operator=(const Blockchain&) -> Blockchain& = delete;
     auto operator=(Blockchain&&) -> Blockchain& = delete;
 };
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

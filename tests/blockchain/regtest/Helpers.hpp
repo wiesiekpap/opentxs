@@ -55,9 +55,13 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/identity/Nym.hpp"
+#include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Options.hpp"
 #include "ui/Helpers.hpp"
@@ -118,6 +122,7 @@ namespace blockchain
 {
 namespace sync
 {
+class Base;
 class Block;
 class State;
 }  // namespace sync
@@ -230,6 +235,7 @@ struct SyncRequestor {
 
     auto get(const std::size_t index) const -> const zmq::Message&;
     auto request(const Position& pos) const noexcept -> bool;
+    auto request(const otsync::Base& command) const noexcept -> bool;
     auto wait(const bool hard = true) noexcept -> bool;
 
     SyncRequestor(
@@ -586,6 +592,10 @@ private:
 class Regtest_fixture_sync : public Regtest_fixture_base
 {
 protected:
+    static const User alex_;
+    static std::optional<ot::OTServerContract> notary_;
+    static std::optional<ot::OTUnitDefinition> unit_;
+
     SyncSubscriber& sync_sub_;
     SyncRequestor& sync_req_;
 

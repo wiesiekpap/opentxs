@@ -19,7 +19,7 @@ class String;
 
 namespace fs = boost::filesystem;
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 class Legacy final : public api::Legacy
 {
@@ -114,4 +114,4 @@ private:
     auto operator=(const Legacy&) -> Legacy& = delete;
     auto operator=(Legacy&&) -> Legacy& = delete;
 };
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

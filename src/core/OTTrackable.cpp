@@ -11,10 +11,10 @@
 
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Instrument.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 
 namespace opentxs
 {

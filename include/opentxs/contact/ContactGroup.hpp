@@ -17,19 +17,22 @@
 #include <string>
 
 #include "opentxs/contact/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 
 namespace opentxs
 {
+namespace contact
+{
+class ContactItem;
+}  // namespace contact
+
 namespace proto
 {
 class ContactSection;
 }  // namespace proto
-
-class ContactItem;
 }  // namespace opentxs
 
-namespace opentxs
+namespace opentxs::contact
 {
 class OPENTXS_EXPORT ContactGroup
 {
@@ -78,4 +81,4 @@ private:
     auto operator=(const ContactGroup&) -> ContactGroup& = delete;
     auto operator=(ContactGroup&&) -> ContactGroup& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::contact

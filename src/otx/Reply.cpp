@@ -13,6 +13,7 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/ServerReply.hpp"
@@ -212,7 +213,7 @@ auto Reply::full_version(const Lock& lock) const -> proto::ServerReply
 
 auto Reply::GetID(const Lock& lock) const -> OTIdentifier
 {
-    return api_.Factory().Identifier(id_version(lock));
+    return api_.Factory().InternalSession().Identifier(id_version(lock));
 }
 
 auto Reply::id_version(const Lock& lock) const -> proto::ServerReply
@@ -233,11 +234,11 @@ auto Reply::id_version(const Lock& lock) const -> proto::ServerReply
     return output;
 }
 
-auto Reply::Serialize() const -> OTData
+auto Reply::Serialize() const noexcept -> OTData
 {
     Lock lock(lock_);
 
-    return api_.Factory().Data(full_version(lock));
+    return api_.Factory().InternalSession().Data(full_version(lock));
 }
 
 auto Reply::Serialize(AllocateOutput destination) const -> bool

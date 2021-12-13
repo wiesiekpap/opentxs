@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 #include <cstddef>
 #include <cstdint>
 
@@ -14,3 +16,10 @@ enum class ProtocolVersion : std::uint32_t;
 enum class Type : std::uint32_t;
 enum class UnitType : std::uint32_t;
 }  // namespace opentxs::contract
+
+namespace opentxs
+{
+OPENTXS_EXPORT auto print(contract::ProtocolVersion) noexcept -> const char*;
+OPENTXS_EXPORT auto print(contract::Type) noexcept -> const char*;
+OPENTXS_EXPORT auto print(contract::UnitType) noexcept -> const char*;
+}  // namespace opentxs

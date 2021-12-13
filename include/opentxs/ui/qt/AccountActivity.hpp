@@ -5,11 +5,12 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 #include <QObject>
 #include <QString>
 #include <QVariant>
 
-#include "opentxs/opentxs_export.hpp"              // IWYU pragma: keep
 #include "opentxs/ui/qt/AmountValidator.hpp"       // IWYU pragma: keep
 #include "opentxs/ui/qt/DestinationValidator.hpp"  // IWYU pragma: keep
 #include "opentxs/ui/qt/DisplayScale.hpp"          // IWYU pragma: keep

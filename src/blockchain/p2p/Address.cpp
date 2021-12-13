@@ -11,6 +11,7 @@
 #include <cstring>
 #include <stdexcept>
 
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
@@ -18,7 +19,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainPeerAddress.pb.h"
@@ -185,7 +186,7 @@ auto Address::calculate_id(
         Clock::from_time_t(0),
         {});
 
-    return api.Factory().Identifier(serialized);
+    return api.Factory().InternalSession().Identifier(serialized);
 }
 
 auto Address::Display() const noexcept -> std::string

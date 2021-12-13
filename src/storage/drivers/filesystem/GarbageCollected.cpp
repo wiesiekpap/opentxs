@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <memory>
 
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/storage/drivers/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"

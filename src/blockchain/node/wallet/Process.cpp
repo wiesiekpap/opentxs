@@ -19,7 +19,7 @@
 #include "blockchain/node/wallet/Progress.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
 #include "blockchain/node/wallet/Work.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"

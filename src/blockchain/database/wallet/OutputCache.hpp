@@ -30,7 +30,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/blockchain/node/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"

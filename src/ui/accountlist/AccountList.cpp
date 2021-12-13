@@ -18,6 +18,7 @@
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
+#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"

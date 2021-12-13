@@ -31,9 +31,9 @@
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
@@ -42,19 +42,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-namespace blockchain
-{
-class Deterministic;
-}  // namespace blockchain
-}  // namespace client
-
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
 class Session;
 }  // namespace api
 
@@ -118,7 +105,6 @@ public:
 
     NotificationStateData(
         const api::Session& api,
-        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         Accounts& parent,
         const WalletDatabase& db,

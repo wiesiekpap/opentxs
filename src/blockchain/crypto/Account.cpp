@@ -34,13 +34,13 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/Bip47Channel.pb.h"
@@ -50,7 +50,7 @@ namespace opentxs::factory
 {
 auto BlockchainAccountKeys(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
@@ -70,7 +70,7 @@ namespace opentxs::blockchain::crypto::implementation
 {
 Account::Account(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const crypto::Wallet& parent,
     const AccountIndex& index,
     const identifier::Nym& nym,

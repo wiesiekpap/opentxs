@@ -7,35 +7,39 @@
 #include <chrono>
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <utility>
 
+#include "1_Internal.hpp"  // IWYU pragma: keep
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "internal/blind/Factory.hpp"
+#include "internal/otx/blind/Factory.hpp"
+#include "internal/otx/blind/Mint.hpp"
+#include "internal/otx/blind/Purse.hpp"
+#include "internal/otx/blind/Token.hpp"
+#include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blind/CashType.hpp"
-#include "opentxs/blind/Mint.hpp"
-#include "opentxs/blind/Purse.hpp"
-#include "opentxs/blind/PurseType.hpp"
-#include "opentxs/blind/Token.hpp"
-#include "opentxs/blind/TokenState.hpp"
-#include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/otx/blind/CashType.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/otx/blind/PurseType.hpp"
+#include "opentxs/otx/blind/Token.hpp"
+#include "opentxs/otx/blind/TokenState.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -56,9 +60,9 @@ public:
     static ot::OTNymID bob_nym_id_;
     static const ot::OTServerID server_id_;
     static const ot::OTUnitID unit_id_;
-    static std::shared_ptr<ot::blind::Mint> mint_;
-    static std::shared_ptr<ot::blind::Purse> request_purse_;
-    static std::shared_ptr<ot::blind::Purse> issue_purse_;
+    static std::optional<ot::otx::blind::Mint> mint_;
+    static std::optional<ot::otx::blind::Purse> request_purse_;
+    static std::optional<ot::otx::blind::Purse> issue_purse_;
     static ot::Space serialized_bytes_;
     static ot::Time valid_from_;
     static ot::Time valid_to_;
@@ -107,16 +111,16 @@ ot::OTNymID Test_Basic::bob_nym_id_{ot::identifier::Nym::Factory()};
 const ot::OTServerID Test_Basic::server_id_{ot::identifier::Server::Factory()};
 const ot::OTUnitID Test_Basic::unit_id_{
     ot::identifier::UnitDefinition::Factory()};
-std::shared_ptr<ot::blind::Mint> Test_Basic::mint_{};
-std::shared_ptr<ot::blind::Purse> Test_Basic::request_purse_{};
-std::shared_ptr<ot::blind::Purse> Test_Basic::issue_purse_{};
+std::optional<ot::otx::blind::Mint> Test_Basic::mint_{std::nullopt};
+std::optional<ot::otx::blind::Purse> Test_Basic::request_purse_{std::nullopt};
+std::optional<ot::otx::blind::Purse> Test_Basic::issue_purse_{std::nullopt};
 ot::Space Test_Basic::serialized_bytes_{};
 ot::Time Test_Basic::valid_from_;
 ot::Time Test_Basic::valid_to_;
 
 TEST_F(Test_Basic, generateMint)
 {
-    mint_.reset(api_.Factory().Mint(server_id_, unit_id_).release());
+    mint_.emplace(api_.Factory().Mint(server_id_, unit_id_));
 
     ASSERT_TRUE(mint_);
 
@@ -130,7 +134,7 @@ TEST_F(Test_Basic, generateMint)
     const auto validTo = now + validInterval;
     valid_from_ = now;
     valid_to_ = validTo;
-    mint_->GenerateNewMint(
+    mint_->Internal().GenerateNewMint(
         api_.Wallet(),
         0,
         now,
@@ -159,19 +163,19 @@ TEST_F(Test_Basic, requestPurse)
     ASSERT_TRUE(bob_);
     ASSERT_TRUE(mint_);
 
-    request_purse_.reset(ot::factory::Purse(
+    request_purse_.emplace(ot::factory::Purse(
         api_,
         *alice_,
         server_id_,
         *bob_,
-        ot::blind::CashType::Lucre,
+        ot::otx::blind::CashType::Lucre,
         *mint_,
         REQUEST_PURSE_VALUE,
         reason_));
 
-    ASSERT_TRUE(request_purse_);
+    ASSERT_TRUE(request_purse_.has_value());
 
-    auto& purse = *request_purse_;
+    auto& purse = request_purse_.value();
 
     ASSERT_TRUE(purse.IsUnlocked());
     EXPECT_EQ(
@@ -181,8 +185,8 @@ TEST_F(Test_Basic, requestPurse)
         ot::Clock::to_time_t(purse.LatestValidFrom()),
         ot::Clock::to_time_t(valid_from_));
     EXPECT_EQ(server_id_, purse.Notary());
-    EXPECT_EQ(purse.State(), ot::blind::PurseType::Request);
-    EXPECT_EQ(purse.Type(), ot::blind::CashType::Lucre);
+    EXPECT_EQ(purse.State(), ot::otx::blind::PurseType::Request);
+    EXPECT_EQ(purse.Type(), ot::otx::blind::CashType::Lucre);
     EXPECT_EQ(unit_id_, purse.Unit());
     EXPECT_EQ(purse.Value(), REQUEST_PURSE_VALUE);
     ASSERT_EQ(purse.size(), 2);
@@ -191,8 +195,8 @@ TEST_F(Test_Basic, requestPurse)
 
     EXPECT_EQ(server_id_, token1.Notary());
     EXPECT_EQ(token1.Series(), 0);
-    EXPECT_EQ(token1.State(), ot::blind::TokenState::Blinded);
-    EXPECT_EQ(token1.Type(), ot::blind::CashType::Lucre);
+    EXPECT_EQ(token1.State(), ot::otx::blind::TokenState::Blinded);
+    EXPECT_EQ(token1.Type(), ot::otx::blind::CashType::Lucre);
     EXPECT_EQ(unit_id_, token1.Unit());
     EXPECT_EQ(
         ot::Clock::to_time_t(token1.ValidFrom()),
@@ -206,8 +210,8 @@ TEST_F(Test_Basic, requestPurse)
 
     EXPECT_EQ(server_id_, token2.Notary());
     EXPECT_EQ(token2.Series(), 0);
-    EXPECT_EQ(token2.State(), ot::blind::TokenState::Blinded);
-    EXPECT_EQ(token2.Type(), ot::blind::CashType::Lucre);
+    EXPECT_EQ(token2.State(), ot::otx::blind::TokenState::Blinded);
+    EXPECT_EQ(token2.Type(), ot::otx::blind::CashType::Lucre);
     EXPECT_EQ(unit_id_, token2.Unit());
     EXPECT_EQ(
         ot::Clock::to_time_t(token2.ValidFrom()),
@@ -224,28 +228,27 @@ TEST_F(Test_Basic, serialize_deserialize)
 
     request_purse_->Serialize(opentxs::writer(serialized_bytes_));
 
-    std::unique_ptr<ot::blind::Purse> restored{
-        ot::factory::Purse(api_, ot::reader(serialized_bytes_))};
+    auto restored = ot::factory::Purse(api_, ot::reader(serialized_bytes_));
 
     ASSERT_TRUE(restored);
 
     EXPECT_EQ(
         ot::Clock::to_time_t(request_purse_->EarliestValidTo()),
-        ot::Clock::to_time_t(restored->EarliestValidTo()));
+        ot::Clock::to_time_t(restored.EarliestValidTo()));
     EXPECT_EQ(
         ot::Clock::to_time_t(request_purse_->LatestValidFrom()),
-        ot::Clock::to_time_t(restored->LatestValidFrom()));
-    EXPECT_EQ(request_purse_->Notary(), restored->Notary());
-    EXPECT_EQ(request_purse_->State(), restored->State());
-    EXPECT_EQ(request_purse_->Type(), restored->Type());
-    EXPECT_EQ(request_purse_->Unit(), restored->Unit());
-    EXPECT_EQ(request_purse_->Value(), restored->Value());
+        ot::Clock::to_time_t(restored.LatestValidFrom()));
+    EXPECT_EQ(request_purse_->Notary(), restored.Notary());
+    EXPECT_EQ(request_purse_->State(), restored.State());
+    EXPECT_EQ(request_purse_->Type(), restored.Type());
+    EXPECT_EQ(request_purse_->Unit(), restored.Unit());
+    EXPECT_EQ(request_purse_->Value(), restored.Value());
 
-    EXPECT_EQ(2, restored->size());
+    EXPECT_EQ(2, restored.size());
 
-    for (std::size_t i = 0; i < restored->size(); ++i) {
+    for (std::size_t i = 0; i < restored.size(); ++i) {
         auto& token_a = request_purse_->at(i);
-        auto& token_b = restored->at(i);
+        auto& token_b = restored.at(i);
 
         EXPECT_EQ(token_a.Notary(), token_b.Notary());
         EXPECT_EQ(token_a.Series(), token_b.Series());
@@ -264,23 +267,22 @@ TEST_F(Test_Basic, serialize_deserialize)
 
 TEST_F(Test_Basic, sign)
 {
-    std::unique_ptr<ot::blind::Purse> restored{
-        ot::factory::Purse(api_, ot::reader(serialized_bytes_))};
+    auto requestPurse = ot::factory::Purse(api_, ot::reader(serialized_bytes_));
 
-    ASSERT_TRUE(restored);
+    ASSERT_TRUE(requestPurse);
 
     ASSERT_TRUE(mint_);
     ASSERT_TRUE(alice_);
     ASSERT_TRUE(bob_);
 
-    auto& requestPurse = *restored;
     auto& alice = *alice_;
     auto& bob = *bob_;
 
     EXPECT_TRUE(requestPurse.Unlock(bob, reason_));
     ASSERT_TRUE(requestPurse.IsUnlocked());
 
-    issue_purse_.reset(ot::factory::Purse(api_, requestPurse, alice, reason_));
+    issue_purse_.emplace(
+        ot::factory::Purse(api_, requestPurse, alice, reason_));
 
     ASSERT_TRUE(issue_purse_);
 
@@ -289,26 +291,25 @@ TEST_F(Test_Basic, sign)
     EXPECT_TRUE(issuePurse.IsUnlocked());
 
     auto& mint = *mint_;
-    auto pToken = requestPurse.Pop();
+    auto token = requestPurse.Pop();
     const auto added = issuePurse.AddNym(bob, reason_);
 
     EXPECT_TRUE(added);
 
-    while (pToken) {
-        auto& token = *pToken;
-        const auto signature = mint.SignToken(bob, token, reason_);
+    while (token) {
+        const auto signature = mint.Internal().SignToken(bob, token, reason_);
 
         EXPECT_TRUE(signature);
-        EXPECT_TRUE(ot::blind::TokenState::Signed == token.State());
+        EXPECT_TRUE(ot::otx::blind::TokenState::Signed == token.State());
 
-        const auto push = issuePurse.Push(pToken, reason_);
+        const auto push = issuePurse.Push(std::move(token), reason_);
 
         EXPECT_TRUE(push);
 
-        pToken = requestPurse.Pop();
+        token = requestPurse.Pop();
     }
 
-    EXPECT_TRUE(ot::blind::PurseType::Issue == issuePurse.State());
+    EXPECT_TRUE(ot::otx::blind::PurseType::Issue == issuePurse.State());
     EXPECT_EQ(issuePurse.Notary().str(), requestPurse.Notary().str());
     EXPECT_EQ(issuePurse.Type(), requestPurse.Type());
     EXPECT_EQ(issuePurse.Unit().str(), requestPurse.Unit().str());
@@ -326,21 +327,19 @@ TEST_F(Test_Basic, process)
 
     auto bytes = ot::Space{};
     issuePurse.Serialize(opentxs::writer(bytes));
-    std::unique_ptr<ot::blind::Purse> restored{
-        ot::factory::Purse(api_, ot::reader(bytes))};
+    auto purse = ot::factory::Purse(api_, ot::reader(bytes));
 
-    ASSERT_TRUE(restored);
+    ASSERT_TRUE(purse);
 
-    auto& purse = *restored;
     auto& mint = *mint_;
     auto& alice = *alice_;
 
     EXPECT_TRUE(purse.Unlock(alice, reason_));
     ASSERT_TRUE(purse.IsUnlocked());
-    EXPECT_TRUE(purse.Process(alice, mint, reason_));
-    EXPECT_TRUE(ot::blind::PurseType::Normal == purse.State());
+    EXPECT_TRUE(purse.Internal().Process(alice, mint, reason_));
+    EXPECT_TRUE(ot::otx::blind::PurseType::Normal == purse.State());
 
-    issue_purse_ = std::move(restored);
+    issue_purse_.emplace(std::move(purse));
 }
 
 TEST_F(Test_Basic, verify)
@@ -357,13 +356,9 @@ TEST_F(Test_Basic, verify)
 
     auto bytes = ot::Space{};
     issuePurse.Serialize(opentxs::writer(bytes));
-    std::unique_ptr<ot::blind::Purse> restored{
-        ot::factory::Purse(api_, ot::reader(bytes))};
+    auto purse = ot::factory::Purse(api_, ot::reader(bytes));
 
-    ASSERT_TRUE(restored);
-
-    auto& purse = *restored;
-
+    ASSERT_TRUE(purse);
     EXPECT_TRUE(purse.Unlock(bob, reason_));
     ASSERT_TRUE(purse.IsUnlocked());
 
@@ -372,18 +367,18 @@ TEST_F(Test_Basic, verify)
     for (const auto& token : purse) {
         EXPECT_FALSE(token.IsSpent(reason_));
 
-        const auto verified = mint.VerifyToken(bob, token, reason_);
+        const auto verified = mint.Internal().VerifyToken(bob, token, reason_);
 
         EXPECT_TRUE(verified);
     }
 
-    issue_purse_ = std::move(restored);
+    issue_purse_.emplace(std::move(purse));
 }
 
 TEST_F(Test_Basic, wallet)
 {
     {
-        auto purse =
+        auto& purse =
             api_.Wallet().Purse(alice_nym_id_, server_id_, unit_id_, true);
 
         EXPECT_FALSE(purse);
@@ -395,11 +390,11 @@ TEST_F(Test_Basic, wallet)
             server_id_,
             unit_id_,
             reason_,
-            ot::blind::CashType::Lucre);
+            ot::otx::blind::CashType::Lucre);
     }
 
     {
-        auto purse =
+        auto& purse =
             api_.Wallet().Purse(alice_nym_id_, server_id_, unit_id_, false);
 
         EXPECT_TRUE(purse);
@@ -413,7 +408,7 @@ TEST_F(Test_Basic, PushPop)
         server_id_,
         unit_id_,
         reason_,
-        ot::blind::CashType::Lucre);
+        ot::otx::blind::CashType::Lucre);
     auto& purse = purseEditor.get();
 
     ASSERT_TRUE(issue_purse_);
@@ -429,9 +424,9 @@ TEST_F(Test_Basic, PushPop)
     auto token = issuePurse.Pop();
 
     while (token) {
-        EXPECT_TRUE(token->MarkSpent(reason_));
-        EXPECT_TRUE(token->IsSpent(reason_));
-        EXPECT_TRUE(purse.Push(token, reason_));
+        EXPECT_TRUE(token.Internal().MarkSpent(reason_));
+        EXPECT_TRUE(token.IsSpent(reason_));
+        EXPECT_TRUE(purse.Push(std::move(token), reason_));
 
         token = issuePurse.Pop();
     }

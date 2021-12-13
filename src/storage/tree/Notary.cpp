@@ -15,7 +15,7 @@
 #include "internal/protobuf/verify/SpentTokenList.hpp"
 #include "internal/protobuf/verify/StorageNotary.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/storage/Driver.hpp"
 #include "opentxs/util/Log.hpp"
@@ -29,11 +29,9 @@
 #include "storage/tree/Node.hpp"
 
 #define STORAGE_NOTARY_VERSION 1
-#if OT_CASH
 #define STORAGE_MINT_SERIES_VERSION 1
 #define STORAGE_MINT_SERIES_HASH_VERSION 2
 #define STORAGE_MINT_SPENT_LIST_VERSION 1
-#endif
 
 namespace opentxs::storage
 {
@@ -43,9 +41,7 @@ Notary::Notary(
     const std::string& id)
     : Node(storage, hash)
     , id_(id)
-#if OT_CASH
     , mint_map_()
-#endif
 {
     if (check_hash(hash)) {
         init(hash);
@@ -54,7 +50,6 @@ Notary::Notary(
     }
 }
 
-#if OT_CASH
 auto Notary::CheckSpent(
     const identifier::UnitDefinition& unit,
     const MintSeries series,
@@ -127,7 +122,6 @@ auto Notary::get_or_create_list(
 
     return *output;
 }
-#endif
 
 void Notary::init(const std::string& hash)
 {
@@ -143,7 +137,6 @@ void Notary::init(const std::string& hash)
     init_version(STORAGE_NOTARY_VERSION, *serialized);
     id_ = serialized->id();
 
-#if OT_CASH
     for (const auto& it : serialized->series()) {
         auto& unitMap = mint_map_[it.unit()];
 
@@ -152,10 +145,8 @@ void Notary::init(const std::string& hash)
             unitMap[series] = storageHash.hash();
         }
     }
-#endif
 }
 
-#if OT_CASH
 auto Notary::MarkSpent(
     const identifier::UnitDefinition& unit,
     const MintSeries series,
@@ -178,7 +169,6 @@ auto Notary::MarkSpent(
 
     return driver_.StoreProto(list, hash);
 }
-#endif
 
 auto Notary::save(const Lock& lock) const -> bool
 {
@@ -201,7 +191,6 @@ auto Notary::serialize() const -> proto::StorageNotary
     serialized.set_version(version_);
     serialized.set_id(id_);
 
-#if OT_CASH
     for (const auto& [unitID, seriesMap] : mint_map_) {
         auto& series = *serialized.add_series();
         series.set_version(STORAGE_MINT_SERIES_VERSION);
@@ -218,7 +207,6 @@ auto Notary::serialize() const -> proto::StorageNotary
             storageHash.set_type(proto::STORAGEHASH_PROTO);
         }
     }
-#endif
 
     return serialized;
 }

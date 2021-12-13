@@ -20,8 +20,8 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -33,17 +33,20 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace contact
+{
+class ContactGroup;
+class ContactItem;
+class ContactSection;
+}  // namespace contact
+
 namespace proto
 {
 class ContactData;
 }  // namespace proto
-
-class ContactGroup;
-class ContactItem;
-class ContactSection;
 }  // namespace opentxs
 
-namespace opentxs
+namespace opentxs::contact
 {
 class OPENTXS_EXPORT ContactData
 {
@@ -155,4 +158,4 @@ private:
     auto operator=(const ContactData&) -> ContactData& = delete;
     auto operator=(ContactData&&) -> ContactData& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::contact

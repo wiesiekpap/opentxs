@@ -38,11 +38,7 @@ class Data;
 class Secret;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace crypto
+namespace opentxs::api::crypto
 {
 class OPENTXS_EXPORT Hash
 {
@@ -114,6 +110,4 @@ private:
     auto operator=(const Hash&) -> Hash& = delete;
     auto operator=(Hash&&) -> Hash& = delete;
 };
-}  // namespace crypto
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::crypto

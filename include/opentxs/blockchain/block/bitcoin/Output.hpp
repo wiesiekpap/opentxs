@@ -16,14 +16,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-}  // namespace api
-
 namespace blockchain
 {
 namespace block
@@ -61,8 +53,7 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Output& = 0;
-    virtual auto Note(const api::crypto::Blockchain& blockchain) const noexcept
-        -> std::string = 0;
+    virtual auto Note() const noexcept -> std::string = 0;
     virtual auto Keys() const noexcept -> std::vector<crypto::Key> = 0;
     virtual auto Payee() const noexcept -> ContactID = 0;
     virtual auto Payer() const noexcept -> ContactID = 0;

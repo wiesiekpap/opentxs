@@ -325,7 +325,7 @@ if(${CMAKE_CXX_COMPILER_ID}
    Clang
 )
   set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -Wno-c++2a-compat -Wno-c++20-compat -Wno-comma -Wno-disabled-macro-expansion -Wno-documentation -Wno-documentation-unknown-command -Wno-extra-semi-stmt -Wno-implicit-int-conversion -Wno-redundant-parens -Wno-unused-template -Wno-reserved-identifier"
+      "${CMAKE_CXX_FLAGS} -Wno-c++2a-compat -Wno-c++20-compat -Wno-comma -Wno-disabled-macro-expansion -Wno-documentation -Wno-documentation-unknown-command -Wno-extra-semi-stmt -Wno-implicit-int-conversion -Wno-redundant-parens -Wno-unused-template -Wno-reserved-identifier -Wno-inline-namespace-reopened-noninline"
   )
 endif()
 
@@ -710,15 +710,12 @@ if(OT_CASH_USING_LUCRE)
   endif()
 
   set(CASH_LUCRE_EXPORT 1)
-  set(OT_CASH_EXPORT 1)
 else()
   set(CASH_LUCRE_EXPORT 0)
-  set(OT_CASH_EXPORT 0)
 endif()
 
 if(FALSE)
   set(CASH_MM_EXPORT 1)
-  set(OT_CASH_EXPORT 1)
 else()
   set(CASH_MM_EXPORT 0)
 endif()

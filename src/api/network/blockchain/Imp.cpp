@@ -499,7 +499,7 @@ auto BlockchainImp::start(
             auto [it, added] = networks_.emplace(
                 type,
                 factory::BlockchainNetworkBitcoin(
-                    api_, *crypto_, *this, type, config, seednode, endpoint));
+                    api_, type, config, seednode, endpoint));
             LogVerbose()(OT_PRETTY_CLASS())("started chain ")(
                 static_cast<std::uint32_t>(type))
                 .Flush();

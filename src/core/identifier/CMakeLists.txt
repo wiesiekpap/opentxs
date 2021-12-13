@@ -3,14 +3,25 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/core/identifier/Factory.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/core/identifier/Identifier.hpp"
+    "Base.cpp"
+    "Base.hpp"
+)
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Algorithm.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Generic.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Nym.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Server.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Type.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Types.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/UnitDefinition.hpp"
 )
+target_link_libraries(opentxs-common PRIVATE opentxs-core-otprotob)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

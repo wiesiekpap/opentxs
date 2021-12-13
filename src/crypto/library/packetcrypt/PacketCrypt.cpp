@@ -36,8 +36,8 @@ extern "C" {
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

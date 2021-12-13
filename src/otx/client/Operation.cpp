@@ -27,31 +27,28 @@
 #include "core/StateMachine.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Client.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/blind/Mint.hpp"
+#include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
+#include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/UnitDefinition.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/PaymentWorkflowState.hpp"
-#include "opentxs/api/client/Workflow.hpp"
+#include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#if OT_CASH
-#include "opentxs/blind/Mint.hpp"
-#include "opentxs/blind/Purse.hpp"
-#endif  // OT_CASH
-#include "opentxs/client/OT_API.hpp"
+#include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Message.hpp"
@@ -65,6 +62,7 @@
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/Type.hpp"
@@ -75,6 +73,9 @@
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -387,9 +388,7 @@ Operation::Operation(
     , payment_()
     , inbox_()
     , outbox_()
-#if OT_CASH
     , purse_()
-#endif
     , affected_accounts_()
     , redownload_accounts_()
     , numbers_()
@@ -466,12 +465,10 @@ auto Operation::construct() -> std::shared_ptr<Message>
 
             return construct_convey_payment();
         }
-#if OT_CASH
         case otx::OperationType::DepositCash: {
 
             return construct_deposit_cash();
         }
-#endif
         case otx::OperationType::DepositCheque: {
 
             return construct_deposit_cheque();
@@ -480,12 +477,10 @@ auto Operation::construct() -> std::shared_ptr<Message>
 
             return construct_download_contract();
         }
-#if OT_CASH
         case otx::OperationType::DownloadMint: {
 
             return construct_download_mint();
         }
-#endif
         case otx::OperationType::GetTransactionNumbers: {
 
             return construct_get_transaction_numbers();
@@ -518,12 +513,10 @@ auto Operation::construct() -> std::shared_ptr<Message>
 
             return construct_request_admin();
         }
-#if OT_CASH
         case otx::OperationType::SendCash: {
 
             return construct_send_cash();
         }
-#endif
         case otx::OperationType::SendMessage: {
 
             return construct_send_message();
@@ -540,12 +533,10 @@ auto Operation::construct() -> std::shared_ptr<Message>
 
             return construct_send_transfer();
         }
-#if OT_CASH
         case otx::OperationType::WithdrawCash: {
 
             return construct_withdraw_cash();
         }
-#endif
         default: {
             LogError()(OT_PRETTY_CLASS())("Unknown message type").Flush();
         }
@@ -643,7 +634,6 @@ auto Operation::construct_convey_payment() -> std::shared_ptr<Message>
         object, recipientNym, context, requestNumber);
 }
 
-#if OT_CASH
 auto Operation::construct_deposit_cash() -> std::shared_ptr<Message>
 {
     if (false == bool(purse_)) {
@@ -672,14 +662,13 @@ auto Operation::construct_deposit_cash() -> std::shared_ptr<Message>
 
     item.SetAttachment([&] {
         auto proto = proto::Purse{};
-        purse.Serialize(proto);
+        purse.Internal().Serialize(proto);
 
-        return api_.Factory().Data(proto);
+        return api_.Factory().InternalSession().Data(proto);
     }());
 
     FINISH_TRANSACTION();
 }
-#endif
 
 auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
 {
@@ -804,7 +793,7 @@ auto Operation::construct_download_contract() -> std::shared_ptr<Message>
         static const auto map =
             robin_hood::unordered_flat_map<identifier::Type, contract::Type>{
                 {identifier::Type::nym, contract::Type::nym},
-                {identifier::Type::notary, contract::Type::server},
+                {identifier::Type::notary, contract::Type::notary},
                 {identifier::Type::unitdefinition, contract::Type::unit},
             };
 
@@ -820,7 +809,6 @@ auto Operation::construct_download_contract() -> std::shared_ptr<Message>
     FINISH_MESSAGE(getInstrumentDefinition);
 }
 
-#if OT_CASH
 auto Operation::construct_download_mint() -> std::shared_ptr<Message>
 {
     try {
@@ -838,7 +826,6 @@ auto Operation::construct_download_mint() -> std::shared_ptr<Message>
 
     FINISH_MESSAGE(getMint);
 }
-#endif
 
 auto Operation::construct_get_account_data(const Identifier& accountID)
     -> std::shared_ptr<Message>
@@ -880,7 +867,8 @@ auto Operation::construct_issue_unit_definition() -> std::shared_ptr<Message>
 
             return {};
         }
-        message.m_ascPayload = api_.Factory().Armored(serialized);
+        message.m_ascPayload =
+            api_.Factory().InternalSession().Armored(serialized);
 
         FINISH_MESSAGE(registerInstrumentDefinition);
     } catch (...) {
@@ -912,7 +900,7 @@ auto Operation::construct_publish_nym() -> std::shared_ptr<Message>
             .Flush();
         return {};
     }
-    message.m_ascPayload = api_.Factory().Armored(publicNym);
+    message.m_ascPayload = api_.Factory().InternalSession().Armored(publicNym);
 
     FINISH_MESSAGE(registerContract);
 }
@@ -925,7 +913,7 @@ auto Operation::construct_publish_server() -> std::shared_ptr<Message>
         PREPARE_CONTEXT();
         CREATE_MESSAGE(registerContract, -1, true, true);
 
-        message.enum_ = static_cast<std::uint8_t>(contract::Type::server);
+        message.enum_ = static_cast<std::uint8_t>(contract::Type::notary);
         auto serialized = proto::ServerContract{};
         if (false == contract->Serialize(serialized, true)) {
             LogError()(OT_PRETTY_CLASS())(
@@ -934,7 +922,8 @@ auto Operation::construct_publish_server() -> std::shared_ptr<Message>
 
             return {};
         }
-        message.m_ascPayload = api_.Factory().Armored(serialized);
+        message.m_ascPayload =
+            api_.Factory().InternalSession().Armored(serialized);
 
         FINISH_MESSAGE(registerContract);
     } catch (...) {
@@ -962,7 +951,8 @@ auto Operation::construct_publish_unit() -> std::shared_ptr<Message>
 
             return {};
         }
-        message.m_ascPayload = api_.Factory().Armored(serialized);
+        message.m_ascPayload =
+            api_.Factory().InternalSession().Armored(serialized);
 
         FINISH_MESSAGE(registerContract);
     } catch (...) {
@@ -1015,7 +1005,7 @@ auto Operation::construct_register_nym() -> std::shared_ptr<Message>
         LogError()(OT_PRETTY_CLASS())("Failed to serialize nym.");
         return {};
     }
-    message.m_ascPayload = api_.Factory().Armored(publicNym);
+    message.m_ascPayload = api_.Factory().InternalSession().Armored(publicNym);
 
     FINISH_MESSAGE(registerNym);
 }
@@ -1058,7 +1048,8 @@ auto Operation::construct_send_nym_object(
 
         return {};
     }
-    auto plaintext = api_.Factory().Armored(output, "PEER OBJECT");
+    auto plaintext =
+        api_.Factory().InternalSession().Armored(output, "PEER OBJECT");
     auto sealed =
         envelope->Seal({recipient, context.Nym()}, plaintext->Bytes(), reason_);
 
@@ -1084,7 +1075,6 @@ auto Operation::construct_send_nym_object(
     FINISH_MESSAGE(sendNymMessage);
 }
 
-#if OT_CASH
 auto Operation::construct_send_cash() -> std::shared_ptr<Message>
 {
     const auto pRecipient = api_.Wallet().Nym(target_nym_id_);
@@ -1096,7 +1086,7 @@ auto Operation::construct_send_cash() -> std::shared_ptr<Message>
         return {};
     }
 
-    if (false == bool(purse_)) {
+    if (false == purse_.has_value()) {
         LogError()(OT_PRETTY_CLASS())("Invalid purse").Flush();
 
         return {};
@@ -1104,7 +1094,8 @@ auto Operation::construct_send_cash() -> std::shared_ptr<Message>
 
     PREPARE_CONTEXT();
 
-    const auto pObject = api_.Factory().PeerObject(context.Nym(), purse_);
+    const auto pObject =
+        api_.Factory().PeerObject(context.Nym(), std::move(purse_.value()));
 
     if (false == bool(pObject)) {
         LogError()(OT_PRETTY_CLASS())("Failed to create peer object");
@@ -1116,7 +1107,6 @@ auto Operation::construct_send_cash() -> std::shared_ptr<Message>
 
     return construct_send_nym_object(object, pRecipient, context, -1);
 }
-#endif
 
 auto Operation::construct_send_message() -> std::shared_ptr<Message>
 {
@@ -1368,7 +1358,6 @@ auto Operation::construct_send_transfer() -> std::shared_ptr<Message>
     FINISH_MESSAGE(notarizeTransaction);
 }
 
-#if OT_CASH
 auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
 {
     const Amount totalAmount(amount_);
@@ -1406,7 +1395,7 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
         return {};
     }
 
-    auto& mint = *pMint;
+    auto& mint = pMint.Internal();
     const bool validMint = mint.LoadMint() && mint.VerifyMint(serverNym);
 
     if (false == validMint) {
@@ -1415,27 +1404,25 @@ auto Operation::construct_withdraw_cash() -> std::shared_ptr<Message>
         return {};
     }
 
-    auto pPurse{
-        api_.Factory().Purse(context, unitID, mint, totalAmount, reason_)};
+    auto purse =
+        api_.Factory().Purse(context, unitID, pMint, totalAmount, reason_);
 
-    if (false == bool(pPurse)) {
+    if (false == bool(purse)) {
         LogError()(OT_PRETTY_CLASS())("Failed to construct purse").Flush();
 
         return {};
     }
 
-    auto& purse = *pPurse;
     item.SetNote(String::Factory("Gimme cash!"));
     item.SetAttachment([&] {
         auto proto = proto::Purse{};
-        purse.Serialize(proto);
+        purse.Internal().Serialize(proto);
 
-        return api_.Factory().Data(proto);
+        return api_.Factory().InternalSession().Data(proto);
     }());
 
     FINISH_TRANSACTION();
 }
-#endif
 
 auto Operation::context() const -> Editor<otx::context::Server>
 {
@@ -1455,10 +1442,9 @@ auto Operation::ConveyPayment(
     return start(lock, otx::OperationType::ConveyPayment, {});
 }
 
-#if OT_CASH
 auto Operation::DepositCash(
     const Identifier& depositAccountID,
-    const std::shared_ptr<blind::Purse> purse) -> bool
+    blind::Purse&& purse) -> bool
 {
     if (false == bool(purse)) {
         LogError()(OT_PRETTY_CLASS())("Invalid purse").Flush();
@@ -1478,13 +1464,13 @@ auto Operation::DepositCash(
     const auto& nym = *context.Nym();
     const auto& serverNym = context.RemoteNym();
 
-    if (false == purse->Unlock(nym, reason_)) {
+    if (false == purse.Unlock(nym, reason_)) {
         LogError()(OT_PRETTY_CLASS())("Failed to unlock pursed").Flush();
 
         return false;
     }
 
-    if (false == purse->AddNym(serverNym, reason_)) {
+    if (false == purse.AddNym(serverNym, reason_)) {
         LogError()(OT_PRETTY_CLASS())("Failed to encrypt purse to notary")
             .Flush();
 
@@ -1495,11 +1481,10 @@ auto Operation::DepositCash(
 
     account_id_ = depositAccountID;
     affected_accounts_.insert(depositAccountID);
-    purse_ = purse;
+    purse_.emplace(std::move(purse));
 
     return start(lock, otx::OperationType::DepositCash, {});
 }
-#endif
 
 auto Operation::DepositCheque(
     const Identifier& depositAccountID,
@@ -2368,9 +2353,7 @@ void Operation::reset()
     payment_.reset();
     inbox_.reset();
     outbox_.reset();
-#if OT_CASH
     purse_.reset();
-#endif
     affected_accounts_.clear();
     redownload_accounts_.clear();
     numbers_.clear();
@@ -2380,7 +2363,6 @@ void Operation::reset()
     set_id_ = {};
 }
 
-#if OT_CASH
 auto Operation::SendCash(
     const identifier::Nym& recipientID,
     const Identifier& workflowID) -> bool
@@ -2414,22 +2396,20 @@ auto Operation::SendCash(
             return out;
         }();
 
-        auto [state, pPurse] =
-            api::client::Workflow::InstantiatePurse(api_, workflow);
+        auto [state, purse] =
+            api::session::Workflow::InstantiatePurse(api_, workflow);
 
-        if (api::client::PaymentWorkflowState::Unsent != state) {
+        if (otx::client::PaymentWorkflowState::Unsent != state) {
             LogError()(OT_PRETTY_CLASS())("Incorrect workflow state").Flush();
 
             return false;
         }
 
-        if (false == bool(pPurse)) {
+        if (false == bool(purse)) {
             LogError()(OT_PRETTY_CLASS())("Purse not found").Flush();
 
             return false;
         }
-
-        auto& purse = *pPurse;
 
         if (false == purse.Unlock(sender, reason_)) {
             LogError()(OT_PRETTY_CLASS())("Failed to unlock pursed").Flush();
@@ -2449,7 +2429,7 @@ auto Operation::SendCash(
 
         target_nym_id_ = recipientID;
         generic_id_ = workflowID;
-        purse_ = std::move(pPurse);
+        purse_.emplace(std::move(purse));
 
         return start(lock, otx::OperationType::SendCash, {});
     } catch (const std::exception& e) {
@@ -2458,7 +2438,6 @@ auto Operation::SendCash(
         return false;
     }
 }
-#endif
 
 auto Operation::SendMessage(
     const identifier::Nym& recipient,
@@ -2745,11 +2724,9 @@ void Operation::update_workflow(
         case otx::OperationType::ConveyPayment: {
             update_workflow_convey_payment(request, result);
         } break;
-#if OT_CASH
         case otx::OperationType::SendCash: {
             update_workflow_send_cash(request, result);
         } break;
-#endif
         default: {
         }
     }
@@ -2799,7 +2776,6 @@ void Operation::update_workflow_convey_payment(
     }
 }
 
-#if OT_CASH
 void Operation::update_workflow_send_cash(
     const Message& request,
     const otx::context::Server::DeliveryResult& result) const
@@ -2807,7 +2783,6 @@ void Operation::update_workflow_send_cash(
     api_.Workflow().SendCash(
         nym_id_, target_nym_id_, generic_id_, request, result.second.get());
 }
-#endif
 
 auto Operation::UpdateAccount(const Identifier& accountID) -> bool
 {
@@ -2819,7 +2794,6 @@ auto Operation::UpdateAccount(const Identifier& accountID) -> bool
     return start(lock, otx::OperationType::RefreshAccount, {});
 }
 
-#if OT_CASH
 auto Operation::WithdrawCash(const Identifier& accountID, const Amount& amount)
     -> bool
 {
@@ -2831,7 +2805,6 @@ auto Operation::WithdrawCash(const Identifier& accountID, const Amount& amount)
 
     return start(lock, otx::OperationType::WithdrawCash, {});
 }
-#endif
 
 Operation::~Operation()
 {

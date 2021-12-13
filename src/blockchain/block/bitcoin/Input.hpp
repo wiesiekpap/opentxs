@@ -39,7 +39,7 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
@@ -74,11 +74,9 @@ class Input final : public internal::Input
 public:
     static const VersionNumber default_version_;
 
-    auto AssociatedLocalNyms(
-        const api::crypto::Blockchain& blockchain,
-        std::vector<OTNymID>& output) const noexcept -> void final;
+    auto AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
+        -> void final;
     auto AssociatedRemoteContacts(
-        const api::crypto::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void final;
     auto CalculateSize(const bool normalized) const noexcept
         -> std::size_t final;
@@ -103,11 +101,10 @@ public:
     {
         return cache_.keys();
     }
-    auto NetBalanceChange(
-        const api::crypto::Blockchain& blockchain,
-        const identifier::Nym& nym) const noexcept -> opentxs::Amount final
+    auto NetBalanceChange(const identifier::Nym& nym) const noexcept
+        -> opentxs::Amount final
     {
-        return cache_.net_balance_change(blockchain, nym);
+        return cache_.net_balance_change(nym);
     }
     auto Payer() const noexcept -> OTIdentifier { return cache_.payer(); }
     auto PreviousOutput() const noexcept -> const Outpoint& final
@@ -119,10 +116,8 @@ public:
         -> std::optional<std::size_t> final;
     auto SerializeNormalized(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
-    auto Serialize(
-        const api::crypto::Blockchain& blockchain,
-        const std::uint32_t index,
-        SerializeType& destination) const noexcept -> bool final;
+    auto Serialize(const std::uint32_t index, SerializeType& destination)
+        const noexcept -> bool final;
     auto SetKeyData(const KeyData& data) noexcept -> void final
     {
         return cache_.set(data);
@@ -148,18 +143,14 @@ public:
     auto AddMultisigSignatures(const Signatures& signatures) noexcept
         -> bool final;
     auto AddSignatures(const Signatures& signatures) noexcept -> bool final;
-    auto AssociatePreviousOutput(
-        const api::crypto::Blockchain& blockchain,
-        const internal::Output& output) noexcept -> bool final;
+    auto AssociatePreviousOutput(const internal::Output& output) noexcept
+        -> bool final;
     auto Internal() noexcept -> internal::Input& final { return *this; }
-    auto MergeMetadata(
-        const api::crypto::Blockchain& blockchain,
-        const internal::Input& rhs) noexcept -> bool final;
+    auto MergeMetadata(const internal::Input& rhs) noexcept -> bool final;
     auto ReplaceScript() noexcept -> bool final;
 
     Input(
         const api::Session& api,
-        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t sequence,
         Outpoint&& previous,
@@ -169,7 +160,6 @@ public:
         std::optional<std::size_t> size) noexcept(false);
     Input(
         const api::Session& api,
-        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t sequence,
         Outpoint&& previous,
@@ -180,7 +170,6 @@ public:
         boost::container::flat_set<crypto::Key>&& keys) noexcept(false);
     Input(
         const api::Session& api,
-        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t sequence,
         Outpoint&& previous,
@@ -191,7 +180,6 @@ public:
         std::optional<std::size_t> size = {}) noexcept(false);
     Input(
         const api::Session& api,
-        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const std::uint32_t sequence,
         Outpoint&& previous,
@@ -213,7 +201,9 @@ public:
     ~Input() final = default;
 
 private:
-    struct Cache {
+    class Cache
+    {
+    public:
         template <typename F>
         auto for_each_key(F cb) const noexcept -> void
         {
@@ -221,19 +211,14 @@ private:
             std::for_each(std::begin(keys_), std::end(keys_), cb);
         }
         auto keys() const noexcept -> std::vector<crypto::Key>;
-        auto net_balance_change(
-            const api::crypto::Blockchain& blockchain,
-            const identifier::Nym& nym) const noexcept -> opentxs::Amount;
+        auto net_balance_change(const identifier::Nym& nym) const noexcept
+            -> opentxs::Amount;
         auto payer() const noexcept -> OTIdentifier;
         auto spends() const noexcept(false) -> const internal::Output&;
 
         auto add(crypto::Key&& key) noexcept -> void;
-        auto associate(
-            const api::crypto::Blockchain& blockchain,
-            const internal::Output& in) noexcept -> bool;
-        auto merge(
-            const api::crypto::Blockchain& blockchain,
-            const internal::Input& rhs) noexcept -> bool;
+        auto associate(const internal::Output& in) noexcept -> bool;
+        auto merge(const internal::Input& rhs) noexcept -> bool;
         auto reset_size() noexcept -> void;
         auto set(const KeyData& data) noexcept -> void;
         template <typename F>
@@ -252,16 +237,18 @@ private:
             std::unique_ptr<const internal::Output>&& output,
             std::optional<std::size_t>&& size,
             boost::container::flat_set<crypto::Key>&& keys) noexcept
-            : lock_()
+            : api_(api)
+            , lock_()
             , previous_output_(std::move(output))
             , size_(std::move(size))
             , normalized_size_()
             , keys_(std::move(keys))
-            , payer_(api.Factory().Identifier())
+            , payer_(api_.Factory().Identifier())
         {
         }
         Cache(const Cache& rhs) noexcept
-            : lock_()
+            : api_(rhs.api_)
+            , lock_()
             , previous_output_()
             , size_()
             , normalized_size_()
@@ -284,7 +271,8 @@ private:
         }
 
     private:
-        mutable std::recursive_mutex lock_{};
+        const api::Session& api_;
+        mutable std::recursive_mutex lock_;
         std::unique_ptr<const internal::Output> previous_output_;
         std::optional<std::size_t> size_;
         std::optional<std::size_t> normalized_size_;
@@ -322,8 +310,7 @@ private:
     auto serialize(const AllocateOutput destination, const bool normalized)
         const noexcept -> std::optional<std::size_t>;
 
-    auto index_elements(const api::crypto::Blockchain& blockchain) noexcept
-        -> void;
+    auto index_elements() noexcept -> void;
 
     Input() = delete;
     Input(Input&&) = delete;

@@ -34,6 +34,11 @@ class Client;
 }  // namespace session
 }  // namespace api
 
+namespace contact
+{
+class Contact;
+}  // namespace contact
+
 namespace network
 {
 namespace zeromq
@@ -47,7 +52,6 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 
-class Contact;
 class Identifier;
 }  // namespace opentxs
 
@@ -108,7 +112,7 @@ private:
     auto update(ContactRowInterface& row, CustomData& custom) const noexcept
         -> void;
 
-    auto process_contact(const opentxs::Contact& contact) noexcept -> void;
+    auto process_contact(const contact::Contact& contact) noexcept -> void;
     auto process_contact(const Message& message) noexcept -> void;
     auto startup() noexcept -> void;
 

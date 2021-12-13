@@ -10,22 +10,20 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace client
-{
-namespace internal
-{
-struct UI;
-}  // namespace internal
-}  // namespace client
-}  // namespace api
-
 namespace identifier
 {
 class Nym;
 class Server;
 }  // namespace identifier
+
+namespace otx
+{
+namespace client
+{
+class Pair;
+class ServerAction;
+}  // namespace client
+}  // namespace otx
 
 class OT_API;
 class OTAPI_Exec;
@@ -42,13 +40,14 @@ public:
     {
         return *this;
     }
-    virtual auto InternalUI() const noexcept -> const client::internal::UI& = 0;
     using Session::Lock;
     virtual auto Lock(
         const identifier::Nym& nymID,
         const identifier::Server& serverID) const -> std::recursive_mutex& = 0;
     virtual auto OTAPI(const std::string& wallet = "") const
         -> const OT_API& = 0;
+    virtual auto Pair() const -> const otx::client::Pair& = 0;
+    virtual auto ServerAction() const -> const otx::client::ServerAction& = 0;
 
     virtual auto Init() -> void = 0;
     auto InternalClient() noexcept -> internal::Client& final { return *this; }

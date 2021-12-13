@@ -6,10 +6,13 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <tuple>
 #include <utility>
 
+#include "internal/api/network/Dht.hpp"
 #include "network/DhtConfig.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -24,6 +27,11 @@ namespace opentxs
 {
 namespace api
 {
+namespace network
+{
+class Dht;
+}  // namespace network
+
 namespace session
 {
 class Endpoints;
@@ -48,20 +56,24 @@ class UnitDefinition;
 }  // namespace proto
 }  // namespace opentxs
 
-namespace opentxs::api::network::implementation
+namespace opentxs::api::network::imp
 {
-class Dht final : virtual public opentxs::api::network::Dht
+class Dht final : virtual public internal::Dht
 {
 public:
-    void GetPublicNym(const std::string& key) const final;
-    void GetServerContract(const std::string& key) const final;
-    void GetUnitDefinition(const std::string& key) const final;
-    void Insert(const std::string& key, const std::string& value) const final;
-    void Insert(const proto::Nym& nym) const final;
-    void Insert(const proto::ServerContract& contract) const final;
-    void Insert(const proto::UnitDefinition& contract) const final;
-    auto OpenDHT() const -> const opentxs::network::OpenDHT& final;
-    void RegisterCallbacks(const CallbackMap& callbacks) const final;
+    auto GetPublicNym(const std::string& key) const noexcept -> void final;
+    auto GetServerContract(const std::string& key) const noexcept -> void final;
+    auto GetUnitDefinition(const std::string& key) const noexcept -> void final;
+    auto Insert(const std::string& key, const std::string& value) const noexcept
+        -> void final;
+    auto Insert(const proto::Nym& nym) const noexcept -> void final;
+    auto Insert(const proto::ServerContract& contract) const noexcept
+        -> void final;
+    auto Insert(const proto::UnitDefinition& contract) const noexcept
+        -> void final;
+    auto OpenDHT() const noexcept -> const opentxs::network::OpenDHT& final;
+    auto RegisterCallbacks(const CallbackMap& callbacks) const noexcept
+        -> void final;
 
     Dht(const api::Session& api,
         const opentxs::network::zeromq::Context& zeromq,
@@ -72,8 +84,9 @@ public:
 
 private:
     const api::Session& api_;
-    mutable CallbackMap callback_map_;
     const opentxs::network::DhtConfig config_;
+    mutable std::shared_mutex lock_;
+    mutable CallbackMap callback_map_;
     std::unique_ptr<opentxs::network::OpenDHT> node_;
     OTZMQReplyCallback request_nym_callback_;
     OTZMQReplySocket request_nym_socket_;
@@ -86,21 +99,21 @@ private:
         const api::Session& api,
         const std::string key,
         const DhtResults& values,
-        NotifyCB notifyCB) -> bool;
+        NotifyCB notifyCB) noexcept -> bool;
     static auto ProcessServerContract(
         const api::Session& api,
         const std::string key,
         const DhtResults& values,
-        NotifyCB notifyCB) -> bool;
+        NotifyCB notifyCB) noexcept -> bool;
     static auto ProcessUnitDefinition(
         const api::Session& api,
         const std::string key,
         const DhtResults& values,
-        NotifyCB notifyCB) -> bool;
+        NotifyCB notifyCB) noexcept -> bool;
 
     auto process_request(
         const opentxs::network::zeromq::Message& incoming,
-        void (Dht::*get)(const std::string&) const) const
+        void (Dht::*get)(const std::string&) const) const noexcept
         -> opentxs::network::zeromq::Message;
 
     Dht() = delete;
@@ -109,4 +122,4 @@ private:
     auto operator=(const Dht&) -> Dht& = delete;
     auto operator=(Dht&&) -> Dht& = delete;
 };
-}  // namespace opentxs::api::network::implementation
+}  // namespace opentxs::api::network::imp

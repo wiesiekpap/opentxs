@@ -21,7 +21,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
@@ -29,14 +29,14 @@
 
 namespace zmq = opentxs::network::zeromq;
 
-using ReturnType = opentxs::api::crypto::implementation::Blockchain;
-
 namespace opentxs::factory
 {
+using ReturnType = api::crypto::imp::Blockchain;
+
 auto BlockchainAPI(
     const api::Session& api,
-    const api::client::Activity& activity,
-    const api::client::Contacts& contacts,
+    const api::session::Activity& activity,
+    const api::session::Contacts& contacts,
     const api::Legacy& legacy,
     const std::string& dataFolder,
     const Options& args) noexcept -> std::shared_ptr<api::crypto::Blockchain>
@@ -78,7 +78,7 @@ auto Blockchain::Bip44Path(
 }
 }  // namespace opentxs::api::crypto
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 auto Blockchain::Account(const identifier::Nym& nymID, const Chain chain) const
     noexcept(false) -> const opentxs::blockchain::crypto::Account&
@@ -168,7 +168,7 @@ auto Blockchain::Confirm(
     return imp_->Confirm(key, tx);
 }
 
-auto Blockchain::Contacts() const noexcept -> const api::client::Contacts&
+auto Blockchain::Contacts() const noexcept -> const api::session::Contacts&
 {
     return imp_->Contacts();
 }
@@ -333,14 +333,15 @@ auto Blockchain::PaymentCodeSubaccount(
         nymID, local, remote, path, chain, reason);
 }
 
-auto Blockchain::ProcessContact(const Contact& contact) const noexcept -> bool
+auto Blockchain::ProcessContact(const contact::Contact& contact) const noexcept
+    -> bool
 {
     return imp_->ProcessContact(contact);
 }
 
 auto Blockchain::ProcessMergedContact(
-    const Contact& parent,
-    const Contact& child) const noexcept -> bool
+    const contact::Contact& parent,
+    const contact::Contact& child) const noexcept -> bool
 {
     return imp_->ProcessMergedContact(parent, child);
 }
@@ -422,4 +423,4 @@ auto Blockchain::Wallet(const Chain chain) const noexcept(false)
 }
 
 Blockchain::~Blockchain() = default;
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

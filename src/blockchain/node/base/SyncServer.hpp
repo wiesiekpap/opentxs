@@ -325,7 +325,7 @@ private:
             auto [needSync, parent, data] = hello(lock, position);
             const auto& [height, hash] = parent;
             auto reply = factory::BlockchainSyncData(
-                WorkType::SyncReply, std::move(data), {}, {});
+                WorkType::P2PBlockchainSyncReply, std::move(data), {}, {});
             auto send{true};
 
             if (needSync) { send = db_.LoadSync(height, reply); }
@@ -410,7 +410,7 @@ private:
         if (false == stored) { OT_FAIL; }
 
         const auto msg = factory::BlockchainSyncData(
-            WorkType::NewBlock,
+            WorkType::P2PBlockchainNewBlock,
             {chain_, pos},
             std::move(items),
             previousFilterHeader->Bytes());

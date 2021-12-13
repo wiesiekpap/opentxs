@@ -46,7 +46,7 @@ auto Node::check_hash(const std::string& hash) const -> bool
 
 auto Node::delete_item(const std::string& id) -> bool
 {
-    Lock lock(write_lock_);
+    auto lock = Lock{write_lock_};
 
     return delete_item(lock, id);
 }
@@ -91,7 +91,7 @@ auto Node::get_alias(const std::string& id) const -> std::string
 auto Node::List() const -> ObjectList
 {
     ObjectList output;
-    Lock lock(write_lock_);
+    auto lock = Lock{write_lock_};
 
     for (const auto& it : item_map_) {
         output.push_back({it.first, std::get<1>(it.second)});
@@ -198,18 +198,28 @@ void Node::serialize_index(
     output.set_alias(std::get<1>(metadata));
 }
 
-auto Node::set_alias(const std::string& id, const std::string& alias) -> bool
+auto Node::set_alias(const std::string& id, const std::string& value) -> bool
 {
-    std::string output;
-    Lock lock(write_lock_);
+    auto lock = Lock{write_lock_};
 
-    const bool exists = (item_map_.end() != item_map_.find(id));
+    if (auto it = item_map_.find(id); item_map_.end() != it) {
+        auto& [hash, alias, revision, b] = it->second;
+        auto old = alias;
+        alias = value;
 
-    if (!exists) { return false; }
+        if (false == save(lock)) {
+            alias.swap(old);
+            LogError()(OT_PRETTY_CLASS())("Failed to save node").Flush();
 
-    std::get<1>(item_map_[id]) = alias;
+            return false;
+        }
 
-    return save(lock);
+        return true;
+    }
+
+    LogError()(OT_PRETTY_CLASS())("item ")(id)(" does not exist").Flush();
+
+    return false;
 }
 
 void Node::set_hash(
@@ -245,7 +255,7 @@ auto Node::store_raw(
     const std::string& id,
     const std::string& alias) -> bool
 {
-    Lock lock(write_lock_);
+    auto lock = Lock{write_lock_};
 
     return store_raw(lock, data, id, alias);
 }

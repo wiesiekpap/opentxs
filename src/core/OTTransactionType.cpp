@@ -15,9 +15,9 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/transaction/Helpers.hpp"
 #include "opentxs/util/Log.hpp"
 

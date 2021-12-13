@@ -16,14 +16,14 @@
 #include "internal/contact/Contact.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/Attribute.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/ContactItem.pb.h"
 
-namespace opentxs
+namespace opentxs::contact
 {
 static auto extract_attributes(const proto::ContactItem& serialized)
     -> std::set<contact::Attribute>
@@ -442,4 +442,4 @@ auto ContactItem::Value() const -> const std::string& { return imp_->value_; }
 auto ContactItem::Version() const -> VersionNumber { return imp_->version_; }
 
 ContactItem::~ContactItem() = default;
-}  // namespace opentxs
+}  // namespace opentxs::contact

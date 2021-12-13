@@ -11,7 +11,7 @@
 #include <set>
 #include <vector>
 
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 
 namespace opentxs
 {

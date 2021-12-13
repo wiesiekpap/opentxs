@@ -21,8 +21,8 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "util/Container.hpp"
@@ -84,34 +84,31 @@ auto Inputs::AnyoneCanPay(const std::size_t index) noexcept -> bool
     }
 }
 
-auto Inputs::AssociatedLocalNyms(
-    const api::crypto::Blockchain& blockchain,
-    std::vector<OTNymID>& output) const noexcept -> void
+auto Inputs::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
+    -> void
 {
     std::for_each(
         std::begin(inputs_), std::end(inputs_), [&](const auto& item) {
-            item->AssociatedLocalNyms(blockchain, output);
+            item->AssociatedLocalNyms(output);
         });
 }
 
 auto Inputs::AssociatedRemoteContacts(
-    const api::crypto::Blockchain& blockchain,
     std::vector<OTIdentifier>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(inputs_), std::end(inputs_), [&](const auto& item) {
-            item->AssociatedRemoteContacts(blockchain, output);
+            item->AssociatedRemoteContacts(output);
         });
 }
 
 auto Inputs::AssociatePreviousOutput(
-    const api::crypto::Blockchain& blockchain,
     const std::size_t index,
     const internal::Output& output) noexcept -> bool
 {
     try {
 
-        return inputs_.at(index)->AssociatePreviousOutput(blockchain, output);
+        return inputs_.at(index)->AssociatePreviousOutput(output);
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())("Invalid index").Flush();
 
@@ -223,9 +220,7 @@ auto Inputs::Keys() const noexcept -> std::vector<crypto::Key>
     return out;
 }
 
-auto Inputs::MergeMetadata(
-    const api::crypto::Blockchain& api,
-    const internal::Inputs& rhs) noexcept -> bool
+auto Inputs::MergeMetadata(const internal::Inputs& rhs) noexcept -> bool
 {
     const auto count = size();
 
@@ -239,7 +234,7 @@ auto Inputs::MergeMetadata(
         auto& l = *inputs_.at(i);
         auto& r = rhs.at(i).Internal();
 
-        if (false == l.MergeMetadata(api, r)) {
+        if (false == l.MergeMetadata(r)) {
             LogError()(OT_PRETTY_CLASS())("Failed to merge input ")(i).Flush();
 
             return false;
@@ -249,16 +244,15 @@ auto Inputs::MergeMetadata(
     return true;
 }
 
-auto Inputs::NetBalanceChange(
-    const api::crypto::Blockchain& blockchain,
-    const identifier::Nym& nym) const noexcept -> opentxs::Amount
+auto Inputs::NetBalanceChange(const identifier::Nym& nym) const noexcept
+    -> opentxs::Amount
 {
     return std::accumulate(
         std::begin(inputs_),
         std::end(inputs_),
         opentxs::Amount{0},
         [&](const auto prev, const auto& input) -> auto {
-            return prev + input->NetBalanceChange(blockchain, nym);
+            return prev + input->NetBalanceChange(nym);
         });
 }
 
@@ -327,9 +321,8 @@ auto Inputs::Serialize(const AllocateOutput destination) const noexcept
     return serialize(destination, false);
 }
 
-auto Inputs::Serialize(
-    const api::crypto::Blockchain& blockchain,
-    proto::BlockchainTransaction& destination) const noexcept -> bool
+auto Inputs::Serialize(proto::BlockchainTransaction& destination) const noexcept
+    -> bool
 {
     auto index = std::uint32_t{0};
 
@@ -338,7 +331,7 @@ auto Inputs::Serialize(
 
         auto& out = *destination.add_input();
 
-        if (false == input->Serialize(blockchain, index, out)) { return false; }
+        if (false == input->Serialize(index, out)) { return false; }
 
         ++index;
     }

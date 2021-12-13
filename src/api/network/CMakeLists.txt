@@ -9,6 +9,9 @@ add_subdirectory(blockchain)
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/api/network/Asio.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/api/network/Blockchain.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/api/network/Dht.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/api/network/Factory.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/api/network/Network.hpp"
     "Blockchain.cpp"

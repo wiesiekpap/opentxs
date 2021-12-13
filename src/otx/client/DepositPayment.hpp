@@ -6,11 +6,10 @@
 #pragma once
 
 #include "core/StateMachine.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/api/session/OTX.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 
 namespace opentxs
 {
@@ -27,7 +26,7 @@ class PaymentTasks;
 class DepositPayment final : public opentxs::internal::StateMachine
 {
 public:
-    using TaskID = api::client::OTX::TaskID;
+    using TaskID = api::session::OTX::TaskID;
 
     DepositPayment(
         client::internal::StateMachine& parent,
@@ -41,7 +40,7 @@ private:
     const TaskID task_id_;
     DepositPaymentTask payment_;
     Depositability state_;
-    api::client::OTX::Result result_;
+    api::session::OTX::Result result_;
     PaymentTasks& payment_tasks_;
 
     auto deposit() -> bool;

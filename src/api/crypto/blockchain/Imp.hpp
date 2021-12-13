@@ -33,8 +33,8 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -47,15 +47,15 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Contacts;
-}  // namespace client
-
 namespace crypto
 {
 class Blockchain;
 }  // namespace crypto
+
+namespace session
+{
+class Contacts;
+}  // namespace session
 
 class Session;
 }  // namespace api
@@ -92,6 +92,11 @@ class Manager;
 }  // namespace node
 }  // namespace blockchain
 
+namespace contact
+{
+class Contact;
+}  // namespace contact
+
 namespace identifier
 {
 class Nym;
@@ -107,6 +112,11 @@ class Data;
 }  // namespace sync
 }  // namespace blockchain
 
+namespace contact
+{
+class Contact;
+}  // namespace contact
+
 namespace zeromq
 {
 namespace socket
@@ -121,14 +131,13 @@ namespace proto
 class HDPath;
 }  // namespace proto
 
-class Contact;
 class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 struct Blockchain::Imp {
     using IDLock = std::map<OTIdentifier, std::mutex>;
@@ -178,7 +187,7 @@ struct Blockchain::Imp {
         const Data& pubkey) const noexcept -> std::string;
     auto Confirm(const Key key, const opentxs::blockchain::block::Txid& tx)
         const noexcept -> bool;
-    auto Contacts() const noexcept -> const api::client::Contacts&
+    auto Contacts() const noexcept -> const api::session::Contacts&
     {
         return contacts_;
     }
@@ -238,10 +247,11 @@ struct Blockchain::Imp {
         const opentxs::blockchain::Type chain,
         const PasswordPrompt& reason) const noexcept(false)
         -> const opentxs::blockchain::crypto::PaymentCode&;
-    virtual auto ProcessContact(const Contact& contact) const noexcept -> bool;
+    virtual auto ProcessContact(const contact::Contact& contact) const noexcept
+        -> bool;
     virtual auto ProcessMergedContact(
-        const Contact& parent,
-        const Contact& child) const noexcept -> bool;
+        const contact::Contact& parent,
+        const contact::Contact& child) const noexcept -> bool;
     virtual auto ProcessTransaction(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::bitcoin::Transaction& in,
@@ -285,14 +295,14 @@ struct Blockchain::Imp {
     virtual auto Init() noexcept -> void;
 
     Imp(const api::Session& api,
-        const api::client::Contacts& contacts,
+        const api::session::Contacts& contacts,
         api::crypto::Blockchain& parent) noexcept;
 
     virtual ~Imp() = default;
 
 protected:
     const api::Session& api_;
-    const api::client::Contacts& contacts_;
+    const api::session::Contacts& contacts_;
     const DecodedAddress blank_;
     mutable std::mutex lock_;
     mutable IDLock nym_lock_;
@@ -338,4 +348,4 @@ private:
     {
     }
 };
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

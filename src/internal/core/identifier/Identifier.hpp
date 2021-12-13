@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -12,6 +13,14 @@
 
 namespace opentxs
 {
+template <>
+struct make_blank<OTIdentifier> {
+    static auto value(const api::Session&) -> OTIdentifier
+    {
+        return Identifier::Factory();
+    }
+};
+
 template <>
 struct make_blank<OTNymID> {
     static auto value(const api::Session&) -> OTNymID

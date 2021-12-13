@@ -33,7 +33,7 @@ class Factory;
 class Flag;
 }  // namespace opentxs
 
-namespace opentxs::api::network::implementation
+namespace opentxs::api::network::imp
 {
 class ZMQ final : virtual public opentxs::api::network::ZMQ
 {
@@ -82,4 +82,4 @@ private:
     auto operator=(const ZMQ&) -> ZMQ& = delete;
     auto operator=(const ZMQ&&) -> ZMQ& = delete;
 };
-}  // namespace opentxs::api::network::implementation
+}  // namespace opentxs::api::network::imp

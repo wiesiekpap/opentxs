@@ -2699,7 +2699,7 @@ auto Test_HeaderOracle_base::init_network(
     }();
 
     return ot::factory::BlockchainNetworkBitcoin(
-        api, api.Crypto().Blockchain(), type, config, "do not init peers", "");
+        api, type, config, "do not init peers", "");
 }
 
 auto Test_HeaderOracle_base::make_position(

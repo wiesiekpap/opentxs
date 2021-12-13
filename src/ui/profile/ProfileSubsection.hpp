@@ -19,7 +19,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -36,6 +36,11 @@ namespace session
 class Client;
 }  // namespace session
 }  // namespace api
+
+namespace contact
+{
+class ContactGroup;
+}  // namespace contact
 
 namespace identifier
 {
@@ -57,8 +62,6 @@ namespace ui
 {
 class ProfileSubsection;
 }  // namespace ui
-
-class ContactGroup;
 }  // namespace opentxs
 
 namespace opentxs::ui::implementation
@@ -130,11 +133,11 @@ private:
     {
         return ProfileSubsectionList::last(id);
     }
-    auto process_group(const opentxs::ContactGroup& group) noexcept
+    auto process_group(const contact::ContactGroup& group) noexcept
         -> std::set<ProfileSubsectionRowID>;
     auto reindex(const ProfileSectionSortKey& key, CustomData& custom) noexcept
         -> bool final;
-    auto startup(const opentxs::ContactGroup group) noexcept -> void;
+    auto startup(const contact::ContactGroup group) noexcept -> void;
 
     ProfileSubsection() = delete;
     ProfileSubsection(const ProfileSubsection&) = delete;

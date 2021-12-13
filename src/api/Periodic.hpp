@@ -23,7 +23,7 @@ namespace opentxs
 class Flag;
 }  // namespace opentxs
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 class Periodic : virtual public api::Periodic
 {
@@ -63,4 +63,4 @@ private:
 
     void thread();
 };
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

@@ -18,7 +18,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "ui/accountactivity/BalanceItem.hpp"
 

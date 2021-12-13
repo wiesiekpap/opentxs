@@ -25,9 +25,9 @@ extern "C" {
 #include "internal/util/String.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/NymFile.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

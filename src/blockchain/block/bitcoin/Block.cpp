@@ -39,8 +39,8 @@
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Container.hpp"
 
@@ -154,7 +154,6 @@ auto BitcoinBlock(
 }
 auto BitcoinBlock(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept
     -> std::shared_ptr<blockchain::block::bitcoin::Block>
@@ -168,11 +167,11 @@ auto BitcoinBlock(
             case blockchain::Type::Litecoin:
             case blockchain::Type::Litecoin_testnet4:
             case blockchain::Type::UnitTest: {
-                return parse_normal_block(api, blockchain, chain, in);
+                return parse_normal_block(api, chain, in);
             }
             case blockchain::Type::PKT:
             case blockchain::Type::PKT_testnet: {
-                return parse_pkt_block(api, blockchain, chain, in);
+                return parse_pkt_block(api, chain, in);
             }
             case blockchain::Type::Unknown:
             case blockchain::Type::Ethereum_frontier:
@@ -195,7 +194,6 @@ auto BitcoinBlock(
 
 auto parse_normal_block(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in) noexcept(false)
     -> std::shared_ptr<blockchain::block::bitcoin::Block>
@@ -213,8 +211,8 @@ auto parse_normal_block(
     const auto& header = *pHeader;
     auto sizeData = ReturnType::CalculatedSize{
         in.size(), network::blockchain::bitcoin::CompactSize{}};
-    auto [index, transactions] = parse_transactions(
-        api, blockchain, chain, in, header, sizeData, it, expectedSize);
+    auto [index, transactions] =
+        parse_transactions(api, chain, in, header, sizeData, it, expectedSize);
 
     return std::make_shared<ReturnType>(
         api,

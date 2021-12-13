@@ -10,7 +10,7 @@
 #include <deque>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs

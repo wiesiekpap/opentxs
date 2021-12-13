@@ -22,6 +22,7 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/crypto/Symmetric.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Config.hpp"
@@ -41,7 +42,7 @@
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/identity/Authority.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
@@ -147,7 +148,8 @@ auto Envelope::Armored(opentxs::Armored& ciphertext) const noexcept -> bool
     auto serialized = proto::Envelope{};
     if (false == Serialize(serialized)) { return false; }
 
-    return ciphertext.SetData(api_.Factory().Data(serialized));
+    return ciphertext.SetData(
+        api_.Factory().InternalSession().Data(serialized));
 }
 
 auto Envelope::attach_session_keys(

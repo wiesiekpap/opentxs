@@ -21,7 +21,7 @@
 #include "internal/protobuf/verify/BlockchainPeerAddress.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainPeerAddress.pb.h"
 #include "util/LMDB.hpp"

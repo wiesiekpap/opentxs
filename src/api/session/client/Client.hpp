@@ -14,19 +14,18 @@
 #include <type_traits>
 
 #include "api/session/Session.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/api/session/Client.hpp"
+#include "internal/otx/client/Pair.hpp"
+#include "internal/otx/client/ServerAction.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/Pair.hpp"
-#include "opentxs/api/client/ServerAction.hpp"
-#include "opentxs/api/client/UI.hpp"
-#include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
+#include "opentxs/api/session/Activity.hpp"
+#include "opentxs/api/session/Contacts.hpp"
+#include "opentxs/api/session/OTX.hpp"
+#include "opentxs/api/session/UI.hpp"
+#include "opentxs/api/session/Workflow.hpp"
 
 namespace opentxs
 {
@@ -35,17 +34,18 @@ namespace api
 namespace session
 {
 class Client;
+class Contacts;
 }  // namespace session
-
-class Context;
-class Crypto;
-class Legacy;
-class Settings;
 
 namespace crypto
 {
 class Blockchain;
 }  // namespace crypto
+
+class Context;
+class Crypto;
+class Legacy;
+class Settings;
 }  // namespace api
 
 namespace identifier
@@ -62,6 +62,15 @@ class Context;
 }  // namespace zeromq
 }  // namespace network
 
+namespace otx
+{
+namespace client
+{
+class Pair;
+class ServerAction;
+}  // namespace client
+}  // namespace otx
+
 class Flag;
 class Identifier;
 class OTAPI_Exec;
@@ -69,28 +78,24 @@ class OT_API;
 class Options;
 }  // namespace opentxs
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 class Client final : public internal::Client, public Session
 {
 public:
-    auto Activity() const -> const api::client::Activity& final;
-    auto Contacts() const -> const api::client::Contacts& final;
+    auto Activity() const -> const session::Activity& final;
+    auto Contacts() const -> const session::Contacts& final;
     auto Exec(const std::string& wallet = "") const -> const OTAPI_Exec& final;
-    auto InternalUI() const noexcept -> const client::internal::UI& final
-    {
-        return *ui_;
-    }
     using Session::Lock;
     auto Lock(const identifier::Nym& nymID, const identifier::Server& serverID)
         const -> std::recursive_mutex& final;
     auto NewNym(const identifier::Nym& id) const noexcept -> void final;
     auto OTAPI(const std::string& wallet = "") const -> const OT_API& final;
-    auto OTX() const -> const client::OTX& final;
-    auto Pair() const -> const api::client::Pair& final;
-    auto ServerAction() const -> const client::ServerAction& final;
-    auto UI() const -> const api::client::UI& final;
-    auto Workflow() const -> const client::Workflow& final;
+    auto OTX() const -> const session::OTX& final;
+    auto Pair() const -> const otx::client::Pair& final;
+    auto ServerAction() const -> const otx::client::ServerAction& final;
+    auto UI() const -> const session::UI& final;
+    auto Workflow() const -> const session::Workflow& final;
     auto ZMQ() const -> const api::network::ZMQ& final;
 
     auto Init() -> void final;
@@ -112,22 +117,22 @@ public:
 
 private:
     std::unique_ptr<network::ZMQ> zeromq_;
-    std::unique_ptr<client::internal::Contacts> contacts_;
-    std::unique_ptr<client::Activity> activity_;
+    std::unique_ptr<session::Contacts> contacts_;
+    std::unique_ptr<session::Activity> activity_;
     std::shared_ptr<crypto::Blockchain> blockchain_;
-    std::unique_ptr<client::Workflow> workflow_;
+    std::unique_ptr<session::Workflow> workflow_;
     std::unique_ptr<OT_API> ot_api_;
     std::unique_ptr<OTAPI_Exec> otapi_exec_;
-    std::unique_ptr<client::ServerAction> server_action_;
-    std::unique_ptr<client::OTX> otx_;
-    std::unique_ptr<client::internal::Pair> pair_;
-    std::unique_ptr<client::internal::UI> ui_;
+    std::unique_ptr<otx::client::ServerAction> server_action_;
+    std::unique_ptr<session::OTX> otx_;
+    std::unique_ptr<otx::client::Pair> pair_;
+    std::unique_ptr<session::UI> ui_;
     mutable std::mutex map_lock_;
     mutable std::map<ContextID, std::recursive_mutex> context_locks_;
 
     auto get_lock(const ContextID context) const -> std::recursive_mutex&;
 
-    void Cleanup();
+    auto Cleanup() -> void;
 
     Client() = delete;
     Client(const Client&) = delete;
@@ -135,4 +140,4 @@ private:
     auto operator=(const Client&) -> Client& = delete;
     auto operator=(Client&&) -> Client& = delete;
 };
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

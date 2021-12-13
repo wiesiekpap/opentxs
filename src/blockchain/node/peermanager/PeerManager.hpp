@@ -36,7 +36,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/asio/Socket.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -50,14 +50,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace network
-{
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace network
-
 class Session;
 }  // namespace api
 
@@ -153,7 +145,6 @@ public:
 
         Peers(
             const api::Session& api,
-            const api::network::internal::Blockchain& network,
             const node::internal::Config& config,
             const node::internal::Mempool& mempool,
             const node::internal::Network& node,
@@ -285,7 +276,6 @@ public:
 
     PeerManager(
         const api::Session& api,
-        const api::network::internal::Blockchain& network,
         const node::internal::Config& config,
         const node::internal::Mempool& mempool,
         const node::internal::Network& node,
@@ -337,7 +327,6 @@ private:
         Jobs() = delete;
     };
 
-    const api::network::internal::Blockchain& network_;
     const node::internal::Network& node_;
     const node::internal::PeerDatabase& database_;
     const Type chain_;

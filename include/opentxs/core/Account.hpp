@@ -15,10 +15,10 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Numbers.hpp"
 
@@ -28,10 +28,10 @@ namespace api
 {
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Wallet;
-}  // namespace implementation
+}  // namespace imp
 
 namespace server
 {
@@ -150,7 +150,7 @@ public:
 
 private:
     friend OTWallet;
-    friend opentxs::api::session::implementation::Wallet;
+    friend opentxs::api::session::imp::Wallet;
     friend opentxs::api::session::server::Wallet;
 
     AccountType acctType_{err_acct};

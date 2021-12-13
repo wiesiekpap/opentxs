@@ -28,10 +28,10 @@ namespace api
 {
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Factory;
-}  // namespace implementation
+}  // namespace imp
 }  // namespace session
 
 class Session;
@@ -388,7 +388,7 @@ protected:
     auto GetNextProcessDate() const -> const Time { return m_tNextProcessDate; }
 
 private:
-    friend api::session::implementation::Factory;
+    friend api::session::imp::Factory;
 
     // In OTSmartContract, none of this normal crap is used.
     // The Sender/Recipient are unused.

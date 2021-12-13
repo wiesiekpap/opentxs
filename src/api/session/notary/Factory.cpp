@@ -35,7 +35,7 @@ auto SessionFactoryAPI(const api::session::Notary& parent) noexcept
 namespace opentxs::api::session::server
 {
 Factory::Factory(const api::session::Notary& parent)
-    : session::implementation::Factory(parent)
+    : session::imp::Factory(parent)
     , server_(parent)
 {
 }

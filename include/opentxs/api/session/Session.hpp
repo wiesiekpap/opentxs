@@ -50,9 +50,7 @@ class Options;
 
 class QObject;
 
-namespace opentxs
-{
-namespace api
+namespace opentxs::api
 {
 class OPENTXS_EXPORT Session : virtual public Periodic
 {
@@ -88,5 +86,4 @@ private:
     auto operator=(const Session&) -> Session& = delete;
     auto operator=(Session&&) -> Session& = delete;
 };
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api

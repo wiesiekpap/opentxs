@@ -12,7 +12,7 @@
 #include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/ui/ProfileItem.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -95,7 +95,7 @@ public:
     ~ProfileItem() final = default;
 
 private:
-    std::unique_ptr<opentxs::ContactItem> item_;
+    std::unique_ptr<contact::ContactItem> item_;
 
     auto add_claim(const Claim& claim) const noexcept -> bool;
     auto as_claim() const noexcept -> Claim;

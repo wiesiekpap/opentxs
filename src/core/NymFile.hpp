@@ -15,9 +15,9 @@
 
 #include "internal/core/Core.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Pimpl.hpp"

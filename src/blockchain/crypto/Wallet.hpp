@@ -15,7 +15,6 @@
 #include <set>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -24,17 +23,17 @@
 #include "opentxs/blockchain/crypto/Account.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
 class Contacts;
-}  // namespace client
+}  // namespace session
 
 class Session;
 }  // namespace api
@@ -104,7 +103,7 @@ public:
 
     Wallet(
         const api::Session& api,
-        const api::client::Contacts& contacts,
+        const api::session::Contacts& contacts,
         const api::crypto::Blockchain& parent,
         const AccountIndex& index,
         const opentxs::blockchain::Type chain) noexcept;
@@ -117,7 +116,7 @@ private:
     const api::crypto::Blockchain& parent_;
     const AccountIndex& account_index_;
     const api::Session& api_;
-    const api::client::Contacts& contacts_;
+    const api::session::Contacts& contacts_;
     const opentxs::blockchain::Type chain_;
     mutable std::mutex lock_;
     std::vector<std::unique_ptr<crypto::Account>> trees_;

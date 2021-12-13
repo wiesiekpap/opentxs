@@ -24,7 +24,7 @@
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 #include "ui/base/Combined.hpp"
@@ -159,7 +159,7 @@ ProfileSection::ProfileSection(
     startup_ = std::make_unique<std::thread>(
         &ProfileSection::startup,
         this,
-        extract_custom<opentxs::ContactSection>(custom));
+        extract_custom<contact::ContactSection>(custom));
 
     OT_ASSERT(startup_)
 }
@@ -216,7 +216,7 @@ auto ProfileSection::Name(const std::string& lang) const noexcept -> std::string
 }
 
 auto ProfileSection::process_section(
-    const opentxs::ContactSection& section) noexcept
+    const contact::ContactSection& section) noexcept
     -> std::set<ProfileSectionRowID>
 {
     OT_ASSERT(row_id_ == section.Type())
@@ -229,7 +229,7 @@ auto ProfileSection::process_section(
         const ProfileSectionRowID key{row_id_, type};
 
         if (check_type(key)) {
-            CustomData custom{new opentxs::ContactGroup(*group)};
+            CustomData custom{new contact::ContactGroup(*group)};
             add_item(key, sort_key(key), custom);
             active.emplace(key);
         }
@@ -242,7 +242,7 @@ auto ProfileSection::reindex(const ProfileSortKey&, CustomData& custom) noexcept
     -> bool
 {
     delete_inactive(
-        process_section(extract_custom<opentxs::ContactSection>(custom)));
+        process_section(extract_custom<contact::ContactSection>(custom)));
 
     return true;
 }
@@ -297,7 +297,7 @@ auto ProfileSection::sort_key(const ProfileSectionRowID type) noexcept -> int
     return sort_keys_.at(type.first).at(translate(type.second));
 }
 
-void ProfileSection::startup(const opentxs::ContactSection section) noexcept
+void ProfileSection::startup(const contact::ContactSection section) noexcept
 {
     process_section(section);
     finish_startup();

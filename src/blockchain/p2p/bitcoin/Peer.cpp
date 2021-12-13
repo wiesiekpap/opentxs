@@ -57,11 +57,11 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/p2p/Peer.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep

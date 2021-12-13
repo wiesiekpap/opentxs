@@ -8,8 +8,8 @@
 #include <iterator>
 #include <string>
 
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"

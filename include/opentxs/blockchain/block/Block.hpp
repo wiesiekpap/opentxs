@@ -17,7 +17,7 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 namespace opentxs

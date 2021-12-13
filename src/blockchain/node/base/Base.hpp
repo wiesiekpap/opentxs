@@ -19,7 +19,6 @@
 #include "blockchain/node/Mempool.hpp"
 #include "core/Shutdown.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -53,19 +52,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
-namespace network
-{
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace network
-
 class Session;
 }  // namespace api
 
@@ -141,8 +127,6 @@ public:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    const api::crypto::Blockchain& crypto_;
-    const api::network::internal::Blockchain& network_;
     const Type chain_;
 
     auto AddBlock(const std::shared_ptr<const block::bitcoin::Block> block)
@@ -276,8 +260,6 @@ protected:
 
     Base(
         const api::Session& api,
-        const api::crypto::Blockchain& crypto,
-        const api::network::internal::Blockchain& network,
         const Type type,
         const node::internal::Config& config,
         const std::string& seednode,

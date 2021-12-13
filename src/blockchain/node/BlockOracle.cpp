@@ -13,11 +13,13 @@
 
 #include "blockchain/node/blockoracle/BlockDownloader.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
@@ -30,7 +32,6 @@ namespace opentxs::factory
 {
 auto BlockOracle(
     const api::Session& api,
-    const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Network& node,
     const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::BlockDatabase& db,
@@ -40,8 +41,7 @@ auto BlockOracle(
 {
     using ReturnType = blockchain::node::implementation::BlockOracle;
 
-    return std::make_unique<ReturnType>(
-        api, network, node, header, db, chain, shutdown);
+    return std::make_unique<ReturnType>(api, node, header, db, chain, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -49,7 +49,6 @@ namespace opentxs::blockchain::node::implementation
 {
 BlockOracle::BlockOracle(
     const api::Session& api,
-    const api::network::internal::Blockchain& network,
     const internal::Network& node,
     const HeaderOracle& header,
     const internal::BlockDatabase& db,
@@ -63,8 +62,8 @@ BlockOracle::BlockOracle(
           api,
           node,
           db,
-          network.BlockAvailable(),
-          network.BlockQueueUpdate(),
+          api_.Network().Blockchain().Internal().BlockAvailable(),
+          api_.Network().Blockchain().Internal().BlockQueueUpdate(),
           chain)
     , block_downloader_([&]() -> std::unique_ptr<BlockDownloader> {
         using Policy = database::BlockStorage;

@@ -31,7 +31,6 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/OTTransaction.hpp"
@@ -55,6 +54,7 @@
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -80,11 +80,6 @@ class Client;
 }  // namespace session
 }  // namespace api
 
-namespace blind
-{
-class Purse;
-}  // namespace blind
-
 namespace blockchain
 {
 namespace block
@@ -100,6 +95,14 @@ class Header;
 }  // namespace block
 }  // namespace blockchain
 
+namespace otx
+{
+namespace blind
+{
+class Purse;
+}  // namespace blind
+}  // namespace otx
+
 namespace proto
 {
 class BlockchainBlockHeader;
@@ -114,7 +117,7 @@ class PeerObject;
 
 namespace opentxs::api::session::client
 {
-class Factory final : public session::implementation::Factory
+class Factory final : public session::imp::Factory
 {
 public:
 #if OT_BLOCKCHAIN
@@ -166,12 +169,8 @@ public:
         const std::string& payment,
         const bool isPayment) const
         -> std::unique_ptr<opentxs::PeerObject> final;
-#if OT_CASH
-    auto PeerObject(
-        const Nym_p& senderNym,
-        const std::shared_ptr<blind::Purse> purse) const
+    auto PeerObject(const Nym_p& senderNym, otx::blind::Purse&&) const
         -> std::unique_ptr<opentxs::PeerObject> final;
-#endif
     auto PeerObject(
         const OTPeerRequest request,
         const OTPeerReply reply,

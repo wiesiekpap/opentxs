@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "IncomingConnectionManager.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -30,11 +30,12 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/util/Log.hpp"
@@ -45,7 +46,6 @@ namespace opentxs::blockchain::node::implementation
 {
 PeerManager::Peers::Peers(
     const api::Session& api,
-    const api::network::internal::Blockchain& network,
     const internal::Config& config,
     const node::internal::Mempool& mempool,
     const internal::Network& node,
@@ -70,7 +70,7 @@ PeerManager::Peers::Peers(
     , block_(block)
     , database_(database)
     , parent_(parent)
-    , connected_peers_(network.PeerUpdate())
+    , connected_peers_(api_.Network().Blockchain().Internal().PeerUpdate())
     , policy_(policy)
     , running_(running)
     , shutdown_endpoint_(shutdown)

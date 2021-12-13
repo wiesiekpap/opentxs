@@ -28,7 +28,6 @@
 #include "internal/protobuf/verify/BlockchainBlockHeader.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/Block.hpp"
@@ -63,7 +62,7 @@ auto SessionFactoryAPI(const api::session::Client& parent) noexcept
 namespace opentxs::api::session::client
 {
 Factory::Factory(const api::session::Client& parent)
-    : session::implementation::Factory(parent)
+    : session::imp::Factory(parent)
     , client_(parent)
 {
 }
@@ -74,8 +73,7 @@ auto Factory::BitcoinBlock(
     const ReadView bytes) const noexcept
     -> std::shared_ptr<const opentxs::blockchain::block::bitcoin::Block>
 {
-    return factory::BitcoinBlock(
-        client_, client_.Crypto().Blockchain(), chain, bytes);
+    return factory::BitcoinBlock(client_, chain, bytes);
 }
 
 auto Factory::BitcoinBlock(
@@ -109,7 +107,6 @@ auto Factory::BitcoinGenerationTransaction(
     const auto serializedVersion = boost::endian::little_int32_buf_t{version};
     const auto locktime = boost::endian::little_uint32_buf_t{0};
     const auto sequence = boost::endian::little_uint32_buf_t{0xffffffff};
-    const auto& blockchain = client_.Crypto().Blockchain();
     const auto cb = [&] {
         const auto bip34 =
             opentxs::blockchain::block::bitcoin::internal::EncodeBip34(height);
@@ -127,7 +124,6 @@ auto Factory::BitcoinGenerationTransaction(
         opentxs::blockchain::block::bitcoin::internal::Input>>{};
     inputs.emplace_back(factory::BitcoinTransactionInput(
         api_,
-        blockchain,
         chain,
         outpoint.Bytes(),
         cs,
@@ -148,7 +144,6 @@ auto Factory::BitcoinGenerationTransaction(
         script.Serialize(writer(bytes));
         outputs.emplace_back(factory::BitcoinTransactionOutput(
             api_,
-            blockchain,
             chain,
             static_cast<std::uint32_t>(++index),
             Amount{amount},
@@ -158,7 +153,6 @@ auto Factory::BitcoinGenerationTransaction(
 
     return factory::BitcoinTransaction(
         api_,
-        blockchain,
         chain,
         Clock::now(),
         serializedVersion,
@@ -179,7 +173,6 @@ auto Factory::BitcoinTransaction(
 
     return factory::BitcoinTransaction(
         api_,
-        client_.Crypto().Blockchain(),
         chain,
         isGeneration ? 0u : std::numeric_limits<std::size_t>::max(),
         time,
@@ -283,17 +276,12 @@ auto Factory::PeerObject(
     return std::unique_ptr<opentxs::PeerObject>{
         opentxs::factory::PeerObject(client_, senderNym, payment, isPayment)};
 }
-
-#if OT_CASH
-auto Factory::PeerObject(
-    const Nym_p& senderNym,
-    const std::shared_ptr<blind::Purse> purse) const
-    -> std::unique_ptr<opentxs::PeerObject>
+auto Factory::PeerObject(const Nym_p& senderNym, otx::blind::Purse&& purse)
+    const -> std::unique_ptr<opentxs::PeerObject>
 {
     return std::unique_ptr<opentxs::PeerObject>{
-        opentxs::factory::PeerObject(client_, senderNym, purse)};
+        opentxs::factory::PeerObject(client_, senderNym, std::move(purse))};
 }
-#endif
 
 auto Factory::PeerObject(
     const OTPeerRequest request,
@@ -317,8 +305,8 @@ auto Factory::PeerObject(
     const proto::PeerObject& serialized) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
-    return std::unique_ptr<opentxs::PeerObject>{opentxs::factory::PeerObject(
-        client_.Contacts(), client_, signerNym, serialized)};
+    return std::unique_ptr<opentxs::PeerObject>{
+        opentxs::factory::PeerObject(client_, signerNym, serialized)};
 }
 
 auto Factory::PeerObject(
@@ -327,7 +315,7 @@ auto Factory::PeerObject(
     const opentxs::PasswordPrompt& reason) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
-    return std::unique_ptr<opentxs::PeerObject>{opentxs::factory::PeerObject(
-        client_.Contacts(), client_, recipientNym, encrypted, reason)};
+    return std::unique_ptr<opentxs::PeerObject>{
+        opentxs::factory::PeerObject(client_, recipientNym, encrypted, reason)};
 }
 }  // namespace opentxs::api::session::client

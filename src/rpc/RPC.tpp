@@ -9,7 +9,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -26,7 +25,7 @@ namespace opentxs::rpc::implementation
 {
 template <typename T>
 void RPC::evaluate_register_account(
-    const api::client::OTX::Result& result,
+    const api::session::OTX::Result& result,
     T& output) const
 {
     // TODO use structured binding
@@ -51,7 +50,7 @@ void RPC::evaluate_register_account(
 
 template <typename T>
 void RPC::evaluate_register_nym(
-    const api::client::OTX::Result& result,
+    const api::session::OTX::Result& result,
     T& output) const
 {
     // TODO use structured binding

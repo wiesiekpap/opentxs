@@ -27,17 +27,15 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
+#include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/NymData.hpp"
-#include "opentxs/client/OT_API.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -46,6 +44,7 @@
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -54,6 +53,7 @@
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "otx/client/StateMachine.hpp"
@@ -152,7 +152,7 @@ namespace opentxs::otx::client::implementation
 {
 StateMachine::StateMachine(
     const api::session::Client& client,
-    const api::client::internal::OTX& parent,
+    const api::session::OTX& parent,
     const Flag& running,
     const api::session::Client& api,
     const ContextID& id,
@@ -179,17 +179,13 @@ StateMachine::StateMachine(
     , check_nym_()
     , deposit_payment_()
     , download_contract_()
-#if OT_CASH
     , download_mint_()
-#endif  // OT_CASH
     , download_nymbox_()
     , download_unit_definition_()
     , get_transaction_numbers_()
     , issue_unit_definition_()
     , send_message_()
-#if OT_CASH
     , send_cash_()
-#endif  // OT_CASH
     , send_payment_()
     , peer_reply_()
     , peer_request_()
@@ -199,9 +195,7 @@ StateMachine::StateMachine(
     , register_nym_()
     , send_cheque_()
     , send_transfer_()
-#if OT_CASH
     , withdraw_cash_()
-#endif  // OT_CASH
     , param_()
     , task_id_()
     , counter_(0)
@@ -457,7 +451,6 @@ auto StateMachine::deposit_cheque_wrapper(
     return output;
 }
 
-#if OT_CASH
 auto StateMachine::download_mint(
     const TaskID taskID,
     const DownloadMintTask& task) const -> bool
@@ -466,7 +459,6 @@ auto StateMachine::download_mint(
 
     return finish_task(taskID, success, std::move(result));
 }
-#endif
 
 auto StateMachine::download_nym(const TaskID taskID, const CheckNymTask& id)
     const -> bool
@@ -724,9 +716,7 @@ auto StateMachine::main_loop() noexcept -> bool
     run_task<DownloadContractTask>(&StateMachine::download_server);
     run_task<DownloadUnitDefinitionTask>(
         &StateMachine::download_unit_definition);
-#if OT_CASH
     run_task<DownloadMintTask>(&StateMachine::download_mint);
-#endif
 
     // Messaging
     run_task<DownloadNymboxTask>(&StateMachine::download_nymbox);
@@ -743,10 +733,8 @@ auto StateMachine::main_loop() noexcept -> bool
     run_task<DepositPaymentTask>(
         &StateMachine::deposit_cheque_wrapper, retryDepositPayment);
     run_task<SendTransferTask>(&StateMachine::send_transfer);
-#if OT_CASH
     run_task<WithdrawCashTask>(&StateMachine::withdraw_cash);
     run_task<PayCashTask>(&StateMachine::pay_nym_cash);
-#endif
 
     // Account maintenance
     run_task<RegisterAccountTask>(&StateMachine::register_account_wrapper);
@@ -812,7 +800,6 @@ auto StateMachine::pay_nym(const TaskID taskID, const PaymentTask& task) const
     return finish_task(taskID, success, std::move(result));
 }
 
-#if OT_CASH
 auto StateMachine::pay_nym_cash(const TaskID taskID, const PayCashTask& task)
     const -> bool
 {
@@ -824,7 +811,6 @@ auto StateMachine::pay_nym_cash(const TaskID taskID, const PayCashTask& task)
 
     return finish_task(taskID, success, std::move(result));
 }
-#endif  // OT_CASH
 
 auto StateMachine::process_inbox(
     const TaskID taskID,
@@ -1130,7 +1116,6 @@ auto StateMachine::state_machine() noexcept -> bool
     }
 }
 
-#if OT_CASH
 auto StateMachine::withdraw_cash(
     const TaskID taskID,
     const WithdrawCashTask& task) const -> bool
@@ -1141,7 +1126,6 @@ auto StateMachine::withdraw_cash(
 
     return finish_task(taskID, success, std::move(result));
 }
-#endif  // OT_CASH
 
 auto StateMachine::write_and_send_cheque(
     const TaskID taskID,

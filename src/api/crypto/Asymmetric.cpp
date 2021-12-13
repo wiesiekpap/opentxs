@@ -42,13 +42,13 @@ namespace opentxs::factory
 auto AsymmetricAPI(const api::Session& api) noexcept
     -> std::unique_ptr<api::crypto::Asymmetric>
 {
-    using ReturnType = api::crypto::implementation::Asymmetric;
+    using ReturnType = api::crypto::imp::Asymmetric;
 
     return std::make_unique<ReturnType>(api);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 const VersionNumber Asymmetric::serialized_path_version_{1};
 
@@ -626,4 +626,4 @@ auto Asymmetric::serialize_path(
 
     return output;
 }
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

@@ -22,14 +22,14 @@
 #include "network/DhtConfig.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/api/network/Dht.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -49,7 +49,7 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
 {
-using ReturnType = api::network::implementation::Dht;
+using ReturnType = api::network::imp::Dht;
 
 auto DhtAPI(
     const api::Session& api,
@@ -132,7 +132,7 @@ auto DhtAPI(
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::network::implementation
+namespace opentxs::api::network::imp
 {
 Dht::Dht(
     const api::Session& api,
@@ -140,8 +140,9 @@ Dht::Dht(
     const api::session::Endpoints& endpoints,
     opentxs::network::DhtConfig&& config) noexcept
     : api_(api)
-    , callback_map_()
     , config_(std::move(config))
+    , lock_()
+    , callback_map_()
     , node_(factory::OpenDHT(config_))
     , request_nym_callback_{zmq::ReplyCallback::Factory(
           [=](const zmq::Message& incoming)
@@ -173,29 +174,31 @@ Dht::Dht(
     request_unit_socket_->Start(endpoints.DhtRequestUnit());
 }
 
-void Dht::Insert(const std::string& key, const std::string& value) const
+auto Dht::Insert(const std::string& key, const std::string& value)
+    const noexcept -> void
 {
     node_->Insert(key, value);
 }
 
-void Dht::Insert(const identity::Nym::Serialized& nym) const
+auto Dht::Insert(const identity::Nym::Serialized& nym) const noexcept -> void
 {
     node_->Insert(nym.nymid(), proto::ToString(nym));
 }
 
-void Dht::Insert(const proto::ServerContract& contract) const
+auto Dht::Insert(const proto::ServerContract& contract) const noexcept -> void
 {
     node_->Insert(contract.id(), proto::ToString(contract));
 }
 
-void Dht::Insert(const proto::UnitDefinition& contract) const
+auto Dht::Insert(const proto::UnitDefinition& contract) const noexcept -> void
 {
     node_->Insert(contract.id(), proto::ToString(contract));
 }
 
-void Dht::GetPublicNym(const std::string& key) const
+auto Dht::GetPublicNym(const std::string& key) const noexcept -> void
 {
-    auto it = callback_map_.find(Dht::Callback::PUBLIC_NYM);
+    auto lock = sLock{lock_};
+    auto it = callback_map_.find(contract::Type::nym);
     bool haveCB = (it != callback_map_.end());
     NotifyCB notifyCB;
 
@@ -209,9 +212,10 @@ void Dht::GetPublicNym(const std::string& key) const
     node_->Retrieve(key, gcb);
 }
 
-void Dht::GetServerContract(const std::string& key) const
+auto Dht::GetServerContract(const std::string& key) const noexcept -> void
 {
-    auto it = callback_map_.find(Dht::Callback::SERVER_CONTRACT);
+    auto lock = sLock{lock_};
+    auto it = callback_map_.find(contract::Type::notary);
     bool haveCB = (it != callback_map_.end());
     NotifyCB notifyCB;
 
@@ -225,9 +229,10 @@ void Dht::GetServerContract(const std::string& key) const
     node_->Retrieve(key, gcb);
 }
 
-void Dht::GetUnitDefinition(const std::string& key) const
+auto Dht::GetUnitDefinition(const std::string& key) const noexcept -> void
 {
-    auto it = callback_map_.find(Dht::Callback::ASSET_CONTRACT);
+    auto lock = sLock{lock_};
+    auto it = callback_map_.find(contract::Type::unit);
     bool haveCB = (it != callback_map_.end());
     NotifyCB notifyCB;
 
@@ -241,11 +246,14 @@ void Dht::GetUnitDefinition(const std::string& key) const
     node_->Retrieve(key, gcb);
 }
 
-auto Dht::OpenDHT() const -> const opentxs::network::OpenDHT& { return *node_; }
+auto Dht::OpenDHT() const noexcept -> const opentxs::network::OpenDHT&
+{
+    return *node_;
+}
 
 auto Dht::process_request(
     const zmq::Message& incoming,
-    void (Dht::*get)(const std::string&) const) const
+    void (Dht::*get)(const std::string&) const) const noexcept
     -> opentxs::network::zeromq::Message
 {
     OT_ASSERT(nullptr != get)
@@ -274,7 +282,7 @@ auto Dht::ProcessPublicNym(
     const api::Session& api,
     const std::string key,
     const DhtResults& values,
-    NotifyCB notifyCB) -> bool
+    NotifyCB notifyCB) noexcept -> bool
 {
     std::string theresult;
     bool foundData = false;
@@ -300,7 +308,7 @@ auto Dht::ProcessPublicNym(
             if (existing->Revision() >= publicNym.revision()) { continue; }
         }
 
-        auto saved = api.Wallet().Nym(publicNym);
+        auto saved = api.Wallet().Internal().Nym(publicNym);
 
         if (!saved) { continue; }
 
@@ -328,7 +336,7 @@ auto Dht::ProcessServerContract(
     const api::Session& api,
     const std::string key,
     const DhtResults& values,
-    NotifyCB notifyCB) -> bool
+    NotifyCB notifyCB) noexcept -> bool
 {
     std::string theresult;
     bool foundData = false;
@@ -378,7 +386,7 @@ auto Dht::ProcessUnitDefinition(
     const api::Session& api,
     const std::string key,
     const DhtResults& values,
-    NotifyCB notifyCB) -> bool
+    NotifyCB notifyCB) noexcept -> bool
 {
     std::string theresult;
     bool foundData = false;
@@ -426,8 +434,9 @@ auto Dht::ProcessUnitDefinition(
     return foundData;
 }
 
-void Dht::RegisterCallbacks(const CallbackMap& callbacks) const
+auto Dht::RegisterCallbacks(const CallbackMap& callbacks) const noexcept -> void
 {
+    auto lock = eLock{lock_};
     callback_map_ = callbacks;
 }
-}  // namespace opentxs::api::network::implementation
+}  // namespace opentxs::api::network::imp

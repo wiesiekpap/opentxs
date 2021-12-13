@@ -26,7 +26,7 @@ namespace network
 {
 namespace internal
 {
-struct Asio;
+class Asio;
 }  // namespace internal
 }  // namespace network
 }  // namespace api
@@ -46,11 +46,7 @@ class Context;
 }  // namespace network
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace network
+namespace opentxs::api::network
 {
 class OPENTXS_EXPORT Asio
 {
@@ -91,6 +87,4 @@ private:
     auto operator=(const Asio&) -> Asio& = delete;
     auto operator=(Asio&&) -> Asio& = delete;
 };
-}  // namespace network
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::network

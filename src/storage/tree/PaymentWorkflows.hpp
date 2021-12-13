@@ -13,10 +13,10 @@
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/PaymentWorkflowState.hpp"
-#include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/Editor.hpp"
+#include "opentxs/otx/client/PaymentWorkflowState.hpp"
+#include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/StoragePaymentWorkflows.pb.h"
 #include "storage/tree/Node.hpp"
@@ -41,15 +41,15 @@ class PaymentWorkflows final : public Node
 {
 public:
     using State = std::pair<
-        api::client::PaymentWorkflowType,
-        api::client::PaymentWorkflowState>;
+        otx::client::PaymentWorkflowType,
+        otx::client::PaymentWorkflowState>;
     using Workflows = std::set<std::string>;
 
     auto GetState(const std::string& workflowID) const -> State;
     auto ListByAccount(const std::string& accountID) const -> Workflows;
     auto ListByState(
-        api::client::PaymentWorkflowType type,
-        api::client::PaymentWorkflowState state) const -> Workflows;
+        otx::client::PaymentWorkflowType type,
+        otx::client::PaymentWorkflowState state) const -> Workflows;
     auto ListByUnit(const std::string& unitID) const -> Workflows;
     auto Load(
         const std::string& id,
@@ -71,7 +71,7 @@ private:
     std::map<std::string, Workflows> account_workflow_map_;
     std::map<std::string, Workflows> unit_workflow_map_;
     std::map<std::string, State> workflow_state_map_;
-    std::map<api::client::PaymentWorkflowType, Workflows> type_workflow_map_;
+    std::map<otx::client::PaymentWorkflowType, Workflows> type_workflow_map_;
     std::map<State, Workflows> state_workflow_map_;
 
     auto save(const Lock& lock) const -> bool final;
@@ -80,16 +80,16 @@ private:
     void add_state_index(
         const Lock& lock,
         const std::string& workflowID,
-        api::client::PaymentWorkflowType type,
-        api::client::PaymentWorkflowState state);
+        otx::client::PaymentWorkflowType type,
+        otx::client::PaymentWorkflowState state);
     void delete_by_value(const std::string& value);
     void init(const std::string& hash) final;
     void reindex(
         const Lock& lock,
         const std::string& workflowID,
-        const api::client::PaymentWorkflowType type,
-        const api::client::PaymentWorkflowState newState,
-        api::client::PaymentWorkflowState& state);
+        const otx::client::PaymentWorkflowType type,
+        const otx::client::PaymentWorkflowState newState,
+        otx::client::PaymentWorkflowState& state);
 
     PaymentWorkflows(const Driver& storage, const std::string& key);
     PaymentWorkflows() = delete;

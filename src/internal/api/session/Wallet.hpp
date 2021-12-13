@@ -5,16 +5,26 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "opentxs/api/session/Wallet.hpp"
 
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/Shared.hpp"
-#include "opentxs/blind/CashType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Editor.hpp"
+#include "opentxs/otx/blind/CashType.hpp"
 
 namespace opentxs
 {
+namespace otx
+{
+namespace client
+{
+class Issuer;
+}  // namespace client
+}  // namespace otx
+
 namespace proto
 {
 class Credential;
@@ -80,6 +90,10 @@ public:
     virtual auto mutable_ClientContext(
         const identifier::Nym& remoteNymID,
         const PasswordPrompt& reason) const -> Editor<otx::context::Client> = 0;
+    virtual auto Issuer(
+        const identifier::Nym& nymID,
+        const identifier::Nym& issuerID) const
+        -> std::shared_ptr<const otx::client::Issuer> = 0;
     /**   Load or create an Issuer object
      *
      *    \param[in] nymID the identifier of the local nym
@@ -87,20 +101,22 @@ public:
      */
     virtual auto mutable_Issuer(
         const identifier::Nym& nymID,
-        const identifier::Nym& issuerID) const -> Editor<client::Issuer> = 0;
+        const identifier::Nym& issuerID) const
+        -> Editor<otx::client::Issuer> = 0;
+
+    using session::Wallet::Nym;
+    virtual auto Nym(const identity::Nym::Serialized& nym) const -> Nym_p = 0;
 
     virtual auto mutable_Nymfile(
         const identifier::Nym& id,
         const PasswordPrompt& reason) const -> Editor<opentxs::NymFile> = 0;
-#if OT_CASH
     virtual auto mutable_Purse(
         const identifier::Nym& nym,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
         const PasswordPrompt& reason,
-        const blind::CashType = blind::CashType::Lucre) const
-        -> Editor<blind::Purse> = 0;
-#endif
+        const otx::blind::CashType = otx::blind::CashType::Lucre) const
+        -> Editor<otx::blind::Purse, std::shared_mutex> = 0;
     /**   Load or create a ServerContext object
      *
      *    \param[in] localNymID the identifier of the nym who owns the context

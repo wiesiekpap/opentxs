@@ -8,9 +8,9 @@
 #include <future>
 #include <memory>
 
-#include "internal/api/client/Client.hpp"
-#include "opentxs/api/client/OTX.hpp"
+#include "internal/core/identifier/Identifier.hpp"
 #include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -58,9 +58,7 @@ using CheckNymTask = OTNymID;
 using DepositPaymentTask =
     std::tuple<OTUnitID, OTIdentifier, std::shared_ptr<const OTPayment>>;
 using DownloadContractTask = OTServerID;
-#if OT_CASH
 using DownloadMintTask = std::pair<OTUnitID, int>;
-#endif  // OT_CASH
 using DownloadNymboxTask = OT_DownloadNymboxType;
 using DownloadUnitDefinitionTask = OTUnitID;
 using GetTransactionNumbersTask = OT_GetTransactionNumbersType;
@@ -69,10 +67,8 @@ using IssueUnitDefinitionTask =
     std::tuple<OTUnitID, std::string, core::UnitType>;
 /** MessageTask: recipientID, message */
 using MessageTask = std::tuple<OTNymID, std::string, std::shared_ptr<SetID>>;
-#if OT_CASH
 /** PayCashTask: recipientID, workflow ID */
 using PayCashTask = std::pair<OTNymID, OTIdentifier>;
-#endif  // OT_CASH
 /** PaymentTask: recipientID, payment */
 using PaymentTask = std::pair<OTNymID, std::shared_ptr<const OTPayment>>;
 /** PeerReplyTask: targetNymID, peer reply, peer request */
@@ -93,10 +89,8 @@ using SendChequeTask =
  */
 using SendTransferTask =
     std::tuple<OTIdentifier, OTIdentifier, Amount, std::string>;
-#if OT_CASH
 /** WithdrawCashTask: Account ID, amount*/
 using WithdrawCashTask = std::pair<OTIdentifier, Amount>;
-#endif  // OT_CASH
 }  // namespace opentxs::otx::client
 
 namespace opentxs
@@ -112,7 +106,6 @@ struct make_blank<otx::client::DepositPaymentTask> {
             nullptr};
     }
 };
-#if OT_CASH
 template <>
 struct make_blank<otx::client::DownloadMintTask> {
     static auto value(const api::Session& api) -> otx::client::DownloadMintTask
@@ -120,7 +113,6 @@ struct make_blank<otx::client::DownloadMintTask> {
         return {make_blank<OTUnitID>::value(api), 0};
     }
 };
-#endif  // OT_CASH
 template <>
 struct make_blank<otx::client::IssueUnitDefinitionTask> {
     static auto value(const api::Session& api)
@@ -136,7 +128,6 @@ struct make_blank<otx::client::MessageTask> {
         return {make_blank<OTNymID>::value(api), "", nullptr};
     }
 };
-#if OT_CASH
 template <>
 struct make_blank<otx::client::PayCashTask> {
     static auto value(const api::Session& api) -> otx::client::PayCashTask
@@ -146,7 +137,6 @@ struct make_blank<otx::client::PayCashTask> {
             make_blank<OTIdentifier>::value(api)};
     }
 };
-#endif  // OT_CASH
 template <>
 struct make_blank<otx::client::PaymentTask> {
     static auto value(const api::Session& api) -> otx::client::PaymentTask
@@ -211,7 +201,6 @@ struct make_blank<otx::client::SendTransferTask> {
             ""};
     }
 };
-#if OT_CASH
 template <>
 struct make_blank<otx::client::WithdrawCashTask> {
     static auto value(const api::Session& api) -> otx::client::WithdrawCashTask
@@ -219,7 +208,6 @@ struct make_blank<otx::client::WithdrawCashTask> {
         return {make_blank<OTIdentifier>::value(api), 0};
     }
 };
-#endif  // OT_CASH
 }  // namespace opentxs
 
 namespace opentxs::otx::client::internal
@@ -239,11 +227,9 @@ struct Operation {
     virtual auto ConveyPayment(
         const identifier::Nym& recipient,
         const std::shared_ptr<const OTPayment> payment) -> bool = 0;
-#if OT_CASH
     virtual auto DepositCash(
         const Identifier& depositAccountID,
-        const std::shared_ptr<blind::Purse> purse) -> bool = 0;
-#endif
+        blind::Purse&& purse) -> bool = 0;
     virtual auto DepositCheque(
         const Identifier& depositAccountID,
         const std::shared_ptr<Cheque> cheque) -> bool = 0;
@@ -263,11 +249,9 @@ struct Operation {
     virtual auto PublishContract(const identifier::UnitDefinition& id)
         -> bool = 0;
     virtual auto RequestAdmin(const String& password) -> bool = 0;
-#if OT_CASH
     virtual auto SendCash(
         const identifier::Nym& recipient,
         const Identifier& workflowID) -> bool = 0;
-#endif
     virtual auto SendMessage(
         const identifier::Nym& recipient,
         const String& message,
@@ -298,18 +282,16 @@ struct Operation {
         const identifier::Nym& targetNymID,
         const otx::context::Server::ExtraArgs& args = {}) -> bool = 0;
     virtual auto UpdateAccount(const Identifier& accountID) -> bool = 0;
-#if OT_CASH
     virtual auto WithdrawCash(const Identifier& accountID, const Amount& amount)
         -> bool = 0;
-#endif
 
     virtual ~Operation() = default;
 };
 
 struct StateMachine {
-    using BackgroundTask = api::client::OTX::BackgroundTask;
-    using Result = api::client::OTX::Result;
-    using TaskID = api::client::OTX::TaskID;
+    using BackgroundTask = api::session::OTX::BackgroundTask;
+    using Result = api::session::OTX::Result;
+    using TaskID = api::session::OTX::TaskID;
 
     virtual auto api() const -> const api::Session& = 0;
     virtual auto DepositPayment(const otx::client::DepositPaymentTask& params)

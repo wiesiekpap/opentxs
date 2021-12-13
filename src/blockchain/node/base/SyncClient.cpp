@@ -21,11 +21,12 @@
 
 #include "api/network/blockchain/SyncClient.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -59,9 +60,7 @@ struct SyncClient::Imp {
     const std::string endpoint_;
     std::atomic<State> state_;
 
-    Imp(const api::Session& api,
-        const api::network::internal::Blockchain& network,
-        const Type chain) noexcept
+    Imp(const api::Session& api, const Type chain) noexcept
         : endpoint_(network::zeromq::MakeArbitraryInproc())
         , state_(State::Init)
         , api_(api)
@@ -78,7 +77,8 @@ struct SyncClient::Imp {
 
             OT_ASSERT(0 == rc);
 
-            const auto& endpoint = network.SyncEndpoint();
+            const auto& endpoint =
+                api_.Network().Blockchain().Internal().SyncEndpoint();
             rc = ::zmq_connect(out.get(), endpoint.c_str());
 
             OT_ASSERT(0 == rc);
@@ -512,11 +512,8 @@ private:
     auto operator=(Imp&&) -> Imp& = delete;
 };
 
-SyncClient::SyncClient(
-    const api::Session& api,
-    const api::network::internal::Blockchain& network,
-    const Type chain) noexcept
-    : imp_(std::make_unique<Imp>(api, network, chain))
+SyncClient::SyncClient(const api::Session& api, const Type chain) noexcept
+    : imp_(std::make_unique<Imp>(api, chain))
 {
 }
 

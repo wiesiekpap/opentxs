@@ -28,8 +28,8 @@
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 
@@ -45,20 +45,24 @@ class Client;
 class Session;
 }  // namespace api
 
+namespace contact
+{
 class ContactData;
 class ContactGroup;
 class ContactItem;
-class Identifier;
-class PaymentCode;
+}  // namespace contact
 
 namespace proto
 {
 class Contact;
 class Nym;
 }  // namespace proto
+
+class Identifier;
+class PaymentCode;
 }  // namespace opentxs
 
-namespace opentxs
+namespace opentxs::contact
 {
 class OPENTXS_EXPORT Contact
 {
@@ -148,4 +152,4 @@ private:
     auto operator=(const Contact&) -> Contact& = delete;
     auto operator=(Contact&&) -> Contact& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::contact

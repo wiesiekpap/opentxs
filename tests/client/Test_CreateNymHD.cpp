@@ -9,13 +9,13 @@
 #include <string>
 
 #include "internal/api/session/Client.hpp"
+#include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"

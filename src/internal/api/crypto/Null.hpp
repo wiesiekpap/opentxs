@@ -18,6 +18,7 @@ namespace api
 {
 namespace session
 {
+class Contacts;
 class Factory;
 }  // namespace session
 }  // namespace api
@@ -96,7 +97,7 @@ public:
     {
         return {};
     }
-    auto Contacts() const noexcept -> const api::client::Contacts& final
+    auto Contacts() const noexcept -> const api::session::Contacts& final
     {
         OT_FAIL;  // TODO return a blank object
     }
@@ -218,12 +219,12 @@ public:
     {
         throw std::out_of_range{""};
     }
-    auto ProcessContact(const Contact&) const noexcept -> bool final
+    auto ProcessContact(const contact::Contact&) const noexcept -> bool final
     {
         return {};
     }
-    auto ProcessMergedContact(const Contact&, const Contact&) const noexcept
-        -> bool final
+    auto ProcessMergedContact(const contact::Contact&, const contact::Contact&)
+        const noexcept -> bool final
     {
         return {};
     }

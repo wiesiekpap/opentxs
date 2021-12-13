@@ -24,7 +24,7 @@ class Legacy;
 }  // namespace api
 }  // namespace opentxs
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 class Settings final : public api::Settings
 {
@@ -68,20 +68,35 @@ public:
         const String& strSection,
         const String& strKey,
         const String& strValue,
+        bool& out_bNewOrUpdate) const -> bool final;
+    auto Set_str(
+        const String& strSection,
+        const String& strKey,
+        const String& strValue,
         bool& out_bNewOrUpdate,
-        const String& strComment = String::Factory()) const -> bool final;
+        const String& strComment) const -> bool final;
+    auto Set_long(
+        const String& strSection,
+        const String& strKey,
+        const std::int64_t& lValue,
+        bool& out_bNewOrUpdate) const -> bool final;
     auto Set_long(
         const String& strSection,
         const String& strKey,
         const std::int64_t& lValue,
         bool& out_bNewOrUpdate,
-        const String& strComment = String::Factory()) const -> bool final;
+        const String& strComment) const -> bool final;
     auto Set_bool(
         const String& strSection,
         const String& strKey,
         const bool& bValue,
         bool& out_bNewOrUpdate,
         const String& strComment = String::Factory()) const -> bool final;
+    auto Set_bool(
+        const String& strSection,
+        const String& strKey,
+        const bool& bValue,
+        bool& out_bNewOrUpdate) const -> bool final;
 
     // Check for a Section, if the section dosn't exist, it will be made and
     // out_bIsNewSection will be true.)
@@ -97,29 +112,53 @@ public:
         const String& strKey,
         const String& strDefault,
         std::string& out_strResult,
+        bool& out_bIsNew) const -> bool final;
+    auto CheckSet_str(
+        const String& strSection,
+        const String& strKey,
+        const String& strDefault,
+        std::string& out_strResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const -> bool final;
+        const String& strComment) const -> bool final;
+    auto CheckSet_str(
+        const String& strSection,
+        const String& strKey,
+        const String& strDefault,
+        String& out_strResult,
+        bool& out_bIsNew) const -> bool final;
     auto CheckSet_str(
         const String& strSection,
         const String& strKey,
         const String& strDefault,
         String& out_strResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const -> bool final;
+        const String& strComment) const -> bool final;
+    auto CheckSet_long(
+        const String& strSection,
+        const String& strKey,
+        const std::int64_t& lDefault,
+        std::int64_t& out_lResult,
+        bool& out_bIsNew) const -> bool final;
     auto CheckSet_long(
         const String& strSection,
         const String& strKey,
         const std::int64_t& lDefault,
         std::int64_t& out_lResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const -> bool final;
+        const String& strComment) const -> bool final;
+    auto CheckSet_bool(
+        const String& strSection,
+        const String& strKey,
+        const bool& bDefault,
+        bool& out_bResult,
+        bool& out_bIsNew) const -> bool final;
     auto CheckSet_bool(
         const String& strSection,
         const String& strKey,
         const bool& bDefault,
         bool& out_bResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const -> bool final;
+        const String& strComment) const -> bool final;
 
     // Set Option helper function for setting bool's
     auto SetOption_bool(
@@ -135,6 +174,8 @@ public:
 
 private:
     class SettingsPvt;
+
+    static const OTString blank_;
 
     const api::Legacy& legacy_;
     std::unique_ptr<SettingsPvt> pvt_;
@@ -157,4 +198,4 @@ private:
     Settings(const Settings&) = delete;
     auto operator=(const Settings&) -> Settings& = delete;
 };
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

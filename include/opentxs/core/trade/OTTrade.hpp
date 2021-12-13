@@ -14,10 +14,10 @@
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/cron/OTCronItem.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/trade/OTMarket.hpp"
 #include "opentxs/core/trade/OTOffer.hpp"
@@ -28,10 +28,10 @@ namespace api
 {
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Factory;
-}  // namespace implementation
+}  // namespace imp
 }  // namespace session
 
 class Session;
@@ -227,7 +227,7 @@ protected:
     void onRemovalFromCron(const PasswordPrompt& reason) override;
 
 private:
-    friend api::session::implementation::Factory;
+    friend api::session::imp::Factory;
 
     using ot_super = OTCronItem;
 

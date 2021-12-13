@@ -5,13 +5,12 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"        // IWYU pragma: associated
 #include "opentxs/contact/Types.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 
-namespace opentxs
-{
-namespace contact
+namespace opentxs::contact
 {
 enum class SectionType : std::uint8_t {
     Error = 0,
@@ -26,5 +25,4 @@ enum class SectionType : std::uint8_t {
     Contract = 9,
     Procedure = 10,
 };
-}  // namespace contact
-}  // namespace opentxs
+}  // namespace opentxs::contact

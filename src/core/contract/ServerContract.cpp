@@ -17,6 +17,7 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/protobuf/Check.hpp"
@@ -82,7 +83,14 @@ auto Factory::ServerContract(
         auto key = api.Factory().Data();
         nym->TransportKey(key, reason);
         auto output = std::make_unique<ReturnType>(
-            api, nym, version, terms, name, std::move(list), std::move(key));
+            api,
+            nym,
+            version,
+            terms,
+            name,
+            std::move(list),
+            std::move(key),
+            api.Factory().ServerID());
 
         OT_ASSERT(output);
 
@@ -144,21 +152,21 @@ Server::Server(
     const std::string& name,
     std::list<contract::Server::Endpoint>&& endpoints,
     OTData&& key,
-    const std::string& id,
+    OTServerID&& id,
     Signatures&& signatures)
     : Signable(
           api,
           nym,
           version,
           terms,
-          "",
-          api.Factory().Identifier(id),
+          nym ? nym->Name() : "",
+          id,
           std::move(signatures))
     , listen_params_(std::move(endpoints))
     , name_(name)
     , transport_key_(std::move(key))
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     first_time_init(lock);
 }
 
@@ -174,13 +182,13 @@ Server::Server(
           serialized.name(),
           extract_endpoints(serialized),
           api.Factory().Data(serialized.transportkey(), StringStyle::Raw),
-          serialized.id(),
+          api.Factory().ServerID(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
               : Signatures{})
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
     init_serialized(lock);
 }
 
@@ -227,7 +235,7 @@ auto Server::extract_endpoints(const proto::ServerContract& serialized) noexcept
 
 auto Server::GetID(const Lock& lock) const -> OTIdentifier
 {
-    return api_.Factory().Identifier(IDVersion(lock));
+    return api_.Factory().InternalSession().ServerID(IDVersion(lock));
 }
 
 auto Server::ConnectInfo(
@@ -314,11 +322,13 @@ auto Server::IDVersion(const Lock& lock) const -> proto::ServerContract
     return contract;
 }
 
-void Server::SetAlias(const std::string& alias)
+auto Server::SetAlias(const std::string& alias) noexcept -> bool
 {
     InitAlias(alias);
     api_.Wallet().SetServerAlias(
         identifier::Server::Factory(id_->str()), alias);  // TODO conversion
+
+    return true;
 }
 
 auto Server::SigVersion(const Lock& lock) const -> proto::ServerContract
@@ -329,11 +339,11 @@ auto Server::SigVersion(const Lock& lock) const -> proto::ServerContract
     return contract;
 }
 
-auto Server::Serialize() const -> OTData
+auto Server::Serialize() const noexcept -> OTData
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
-    return api_.Factory().Data(contract(lock));
+    return api_.Factory().InternalSession().Data(contract(lock));
 }
 
 auto Server::Serialize(AllocateOutput destination, bool includeNym) const
@@ -353,7 +363,7 @@ auto Server::Serialize(AllocateOutput destination, bool includeNym) const
 auto Server::Serialize(proto::ServerContract& serialized, bool includeNym) const
     -> bool
 {
-    Lock lock(lock_);
+    auto lock = Lock{lock_};
 
     serialized = contract(lock);
 

@@ -15,13 +15,13 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/blockchain/FilterType.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -44,7 +44,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/TxoTag.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -442,7 +442,7 @@ TEST_F(Regtest_payment_code, first_outgoing_transaction)
     const auto& tx = *pTX;
 
     {
-        const auto nyms = tx.AssociatedLocalNyms(blockchain);
+        const auto nyms = tx.AssociatedLocalNyms();
 
         EXPECT_GT(nyms.size(), 0);
 
@@ -452,8 +452,7 @@ TEST_F(Regtest_payment_code, first_outgoing_transaction)
         }
     }
     {
-        const auto contacts =
-            tx.AssociatedRemoteContacts(blockchain, contact, me);
+        const auto contacts = tx.AssociatedRemoteContacts(contact, me);
 
         EXPECT_GT(contacts.size(), 0);
 
@@ -1160,7 +1159,7 @@ TEST_F(Regtest_payment_code, bob_first_incoming_transaction)
     const auto& tx = *pTX;
 
     {
-        const auto nyms = tx.AssociatedLocalNyms(blockchain);
+        const auto nyms = tx.AssociatedLocalNyms();
 
         EXPECT_GT(nyms.size(), 0);
 
@@ -1170,8 +1169,7 @@ TEST_F(Regtest_payment_code, bob_first_incoming_transaction)
         }
     }
     {
-        const auto contacts =
-            tx.AssociatedRemoteContacts(blockchain, contact, me);
+        const auto contacts = tx.AssociatedRemoteContacts(contact, me);
 
         EXPECT_GT(contacts.size(), 0);
 
@@ -1467,7 +1465,7 @@ TEST_F(Regtest_payment_code, alice_second_outgoing_transaction)
     const auto& tx = *pTX;
 
     {
-        const auto nyms = tx.AssociatedLocalNyms(blockchain);
+        const auto nyms = tx.AssociatedLocalNyms();
 
         EXPECT_GT(nyms.size(), 0);
 
@@ -1477,8 +1475,7 @@ TEST_F(Regtest_payment_code, alice_second_outgoing_transaction)
         }
     }
     {
-        const auto contacts =
-            tx.AssociatedRemoteContacts(blockchain, contact, me);
+        const auto contacts = tx.AssociatedRemoteContacts(contact, me);
 
         EXPECT_GT(contacts.size(), 0);
 

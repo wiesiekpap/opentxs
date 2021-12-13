@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
 namespace opentxs

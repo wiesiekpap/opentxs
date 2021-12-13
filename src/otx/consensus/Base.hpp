@@ -19,7 +19,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
@@ -60,7 +60,7 @@ public:
     auto HaveLocalNymboxHash() const -> bool final;
     auto HaveRemoteNymboxHash() const -> bool final;
     auto IssuedNumbers() const -> std::set<TransactionNumber> final;
-    auto Name() const -> std::string final;
+    auto Name() const noexcept -> std::string final;
     auto NymboxHashMatch() const -> bool final;
     auto LegacyDataFolder() const -> std::string final;
     auto LocalNymboxHash() const -> OTIdentifier final;
@@ -73,7 +73,7 @@ public:
     auto RemoteNym() const -> const identity::Nym& final;
     auto RemoteNymboxHash() const -> OTIdentifier final;
     auto Request() const -> RequestNumber final;
-    auto Serialize() const -> OTData final;
+    auto Serialize() const noexcept -> OTData final;
     auto Serialize(proto::Context& out) const -> bool final;
     auto VerifyAcknowledgedNumber(const RequestNumber& req) const -> bool final;
     auto VerifyAvailableNumber(const TransactionNumber& number) const

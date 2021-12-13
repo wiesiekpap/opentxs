@@ -24,11 +24,6 @@ class Client;
 }  // namespace session
 }  // namespace api
 
-namespace blind
-{
-class Purse;
-}  // namespace blind
-
 namespace identifier
 {
 class Nym;
@@ -48,6 +43,11 @@ class UnitDefinition;
 
 namespace otx
 {
+namespace blind
+{
+class Purse;
+}  // namespace blind
+
 namespace context
 {
 class TransactionStatement;
@@ -94,10 +94,8 @@ public:
     virtual auto Highest() const -> TransactionNumber = 0;
     virtual auto isAdmin() const -> bool = 0;
     virtual void Join() const = 0;
-#if OT_CASH
     virtual auto Purse(const identifier::UnitDefinition& id) const
-        -> std::shared_ptr<const blind::Purse> = 0;
-#endif
+        -> const otx::blind::Purse& = 0;
     virtual auto Revision() const -> std::uint64_t = 0;
     virtual auto ShouldRename(
         const std::string& defaultName = "localhost") const -> bool = 0;
@@ -147,11 +145,10 @@ public:
         const bool withAcknowledgments = true,
         const bool withNymboxHash = false)
         -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
-#if OT_CASH
     virtual auto mutable_Purse(
         const identifier::UnitDefinition& id,
-        const PasswordPrompt& reason) -> Editor<blind::Purse> = 0;
-#endif
+        const PasswordPrompt& reason)
+        -> Editor<otx::blind::Purse, std::shared_mutex> = 0;
     virtual auto NextTransactionNumber(const MessageType reason)
         -> OTManagedNumber = 0;
     virtual auto PingNotary(const PasswordPrompt& reason)

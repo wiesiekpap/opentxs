@@ -18,7 +18,7 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
-#include "util/ByteLiterals.hpp"
+#include "util/FileSize.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -30,32 +30,25 @@ auto tsv(const Input& in) noexcept -> ReadView
     return {reinterpret_cast<const char*>(&in), sizeof(in)};
 }
 
-constexpr auto target_file_size_ =
-#if OS_SUPPORTS_LARGE_SPARSE_FILES
-    std::size_t{8_TiB};
-#else
-    std::size_t{1_GiB};
-#endif  // OT_VALGRIND
-
 constexpr auto get_file_count(const std::size_t bytes) noexcept -> std::size_t
 {
     return std::max(
         std::size_t{1},
-        ((bytes + 1u) / target_file_size_) +
-            std::min(std::size_t{1}, (bytes + 1u) % target_file_size_));
+        ((bytes + 1u) / mapped_file_size()) +
+            std::min(std::size_t{1}, (bytes + 1u) % mapped_file_size()));
 }
 
 using Offset = std::pair<std::size_t, std::size_t>;
 
 constexpr auto get_offset(const std::size_t in) noexcept -> Offset
 {
-    return Offset{in / target_file_size_, in % target_file_size_};
+    return Offset{in / mapped_file_size(), in % mapped_file_size()};
 }
 
 constexpr auto get_start_position(const std::size_t file) noexcept
     -> std::size_t
 {
-    return file * target_file_size_;
+    return file * mapped_file_size();
 }
 
 struct MappedFileStorage::Imp {
@@ -102,16 +95,16 @@ struct MappedFileStorage::Imp {
 
         try {
             if (fs::exists(path)) {
-                if (target_file_size_ == fs::file_size(path)) {
+                if (mapped_file_size() == fs::file_size(path)) {
                     params.new_file_size = 0;
                 } else {
                     LogError()(OT_PRETTY_CLASS())("Incorrect size for ")(path)
                         .Flush();
                     fs::remove(path);
-                    params.new_file_size = target_file_size_;
+                    params.new_file_size = mapped_file_size();
                 }
             } else {
-                params.new_file_size = target_file_size_;
+                params.new_file_size = mapped_file_size();
             }
         } catch (const std::exception& e) {
             LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
@@ -264,18 +257,18 @@ struct MappedFileStorage::Imp {
     {
         static_assert(1 == get_file_count(0));
         static_assert(1 == get_file_count(1));
-        static_assert(1 == get_file_count(target_file_size_ - 1u));
-        static_assert(2 == get_file_count(target_file_size_));
-        static_assert(2 == get_file_count(target_file_size_ + 1u));
-        static_assert(4 == get_file_count(3u * target_file_size_));
+        static_assert(1 == get_file_count(mapped_file_size() - 1u));
+        static_assert(2 == get_file_count(mapped_file_size()));
+        static_assert(2 == get_file_count(mapped_file_size() + 1u));
+        static_assert(4 == get_file_count(3u * mapped_file_size()));
         static_assert(Offset{0, 0} == get_offset(0));
         static_assert(
-            Offset{0, target_file_size_ - 1u} ==
-            get_offset(target_file_size_ - 1u));
-        static_assert(Offset{1, 0} == get_offset(target_file_size_));
-        static_assert(Offset{1, 1} == get_offset(target_file_size_ + 1u));
+            Offset{0, mapped_file_size() - 1u} ==
+            get_offset(mapped_file_size() - 1u));
+        static_assert(Offset{1, 0} == get_offset(mapped_file_size()));
+        static_assert(Offset{1, 1} == get_offset(mapped_file_size() + 1u));
         static_assert(0 == get_start_position(0));
-        static_assert(target_file_size_ == get_start_position(1));
+        static_assert(mapped_file_size() == get_start_position(1));
 
         {
             const auto offset = get_offset(next_position_);

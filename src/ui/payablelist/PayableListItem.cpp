@@ -11,8 +11,8 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

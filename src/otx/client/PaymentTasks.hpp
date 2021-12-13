@@ -9,11 +9,10 @@
 #include <mutex>
 
 #include "core/StateMachine.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/api/session/OTX.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "otx/client/DepositPayment.hpp"
 
@@ -22,7 +21,7 @@ namespace opentxs::otx::client::implementation
 class PaymentTasks final : public opentxs::internal::StateMachine
 {
 public:
-    using BackgroundTask = api::client::OTX::BackgroundTask;
+    using BackgroundTask = api::session::OTX::BackgroundTask;
 
     auto GetAccountLock(const identifier::UnitDefinition& unit) -> std::mutex&;
     auto Queue(const DepositPaymentTask& task) -> BackgroundTask;
@@ -31,7 +30,7 @@ public:
     ~PaymentTasks() final = default;
 
 private:
-    using Future = api::client::OTX::Future;
+    using Future = api::session::OTX::Future;
     using TaskMap = std::map<OTIdentifier, implementation::DepositPayment>;
 
     static auto error_task() -> BackgroundTask;

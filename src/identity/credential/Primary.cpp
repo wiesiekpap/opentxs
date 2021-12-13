@@ -14,6 +14,7 @@
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Key.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "internal/protobuf/Check.hpp"
@@ -22,7 +23,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
@@ -292,7 +293,7 @@ auto Primary::Verify(
     signature.CopyFrom(masterSig);
     signature.clear_signature();
 
-    return Verify(api_.Factory().Data(copy), masterSig);
+    return Verify(api_.Factory().InternalSession().Data(copy), masterSig);
 }
 
 auto Primary::verify_against_source(const Lock& lock) const -> bool

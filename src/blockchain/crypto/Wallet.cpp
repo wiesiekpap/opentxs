@@ -21,14 +21,14 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory
 {
 auto BlockchainWalletKeys(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const api::crypto::Blockchain& parent,
     const blockchain::crypto::AccountIndex& index,
     const blockchain::Type chain) noexcept
@@ -44,7 +44,7 @@ namespace opentxs::blockchain::crypto::implementation
 {
 Wallet::Wallet(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const api::crypto::Blockchain& parent,
     const AccountIndex& index,
     const opentxs::blockchain::Type chain) noexcept

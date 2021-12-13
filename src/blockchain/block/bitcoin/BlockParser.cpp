@@ -59,7 +59,6 @@ auto parse_header(
 
 auto parse_transactions(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const blockchain::Type chain,
     const ReadView in,
     const blockchain::block::bitcoin::Header& header,
@@ -105,12 +104,7 @@ auto parse_transactions(
         transactions.emplace(
             reader(txid),
             BitcoinTransaction(
-                api,
-                blockchain,
-                chain,
-                ++counter,
-                header.Timestamp(),
-                std::move(data)));
+                api, chain, ++counter, header.Timestamp(), std::move(data)));
     }
 
     const auto merkle = ReturnType::calculate_merkle_value(api, chain, index);

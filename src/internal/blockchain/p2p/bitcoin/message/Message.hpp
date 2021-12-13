@@ -29,8 +29,8 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 
 namespace opentxs
 {

@@ -10,21 +10,21 @@
 #include <set>
 
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Contacts;
-}  // namespace client
-
 namespace crypto
 {
 class Blockchain;
 }  // namespace crypto
+
+namespace session
+{
+class Contacts;
+}  // namespace session
 
 class Session;
 }  // namespace api
@@ -63,7 +63,7 @@ namespace opentxs::factory
 {
 auto BlockchainAccountKeys(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const blockchain::crypto::Wallet& parent,
     const blockchain::crypto::AccountIndex& index,
     const identifier::Nym& id,
@@ -85,7 +85,7 @@ auto BlockchainHDSubaccount(
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>;
 auto BlockchainPCSubaccount(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
@@ -96,14 +96,14 @@ auto BlockchainPCSubaccount(
     -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainPCSubaccount(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const proto::Bip47Channel& serialized,
     Identifier& id) noexcept
     -> std::unique_ptr<blockchain::crypto::PaymentCode>;
 auto BlockchainWalletKeys(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const api::crypto::Blockchain& parent,
     const blockchain::crypto::AccountIndex& index,
     const blockchain::Type chain) noexcept

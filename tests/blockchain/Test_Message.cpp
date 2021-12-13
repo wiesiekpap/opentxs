@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "1_Internal.hpp"  // IWYU pragma: keep
 #include "blockchain/p2p/bitcoin/Header.hpp"
 #include "blockchain/p2p/bitcoin/message/Getblocks.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"

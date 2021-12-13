@@ -5,13 +5,12 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"        // IWYU pragma: associated
 #include "opentxs/contact/Types.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 
-namespace opentxs
-{
-namespace contact
+namespace opentxs::contact
 {
 enum class ClaimType : std::uint32_t {
     Error = 0,
@@ -439,5 +438,4 @@ enum class ClaimType : std::uint32_t {
     ZWD = 422,    // Zimbabwe Dollar
     Custom = 423,
 };
-}  // namespace contact
-}  // namespace opentxs
+}  // namespace opentxs::contact

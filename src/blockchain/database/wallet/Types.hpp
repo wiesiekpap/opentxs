@@ -137,7 +137,6 @@ struct hash<Key> {
 
 namespace opentxs::blockchain::database::wallet
 {
-using Common = api::client::blockchain::database::implementation::Database;
 using Parent = node::internal::WalletDatabase;
 using SubchainIndex = Parent::SubchainIndex;
 using pSubchainIndex = Parent::pSubchainIndex;

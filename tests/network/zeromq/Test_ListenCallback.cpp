@@ -8,10 +8,10 @@
 #include <string>
 #include <utility>
 
+#include "opentxs/Version.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
 namespace zmq = opentxs::network::zeromq;

@@ -24,13 +24,13 @@ namespace opentxs::factory
 auto Symmetric(const api::Session& api) noexcept
     -> std::unique_ptr<api::crypto::Symmetric>
 {
-    using ReturnType = api::crypto::implementation::Symmetric;
+    using ReturnType = api::crypto::imp::Symmetric;
 
     return std::make_unique<ReturnType>(api);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 Symmetric::Symmetric(const api::Session& api) noexcept
     : api_(api)
@@ -103,4 +103,4 @@ auto Symmetric::Key(
     return api_.Factory().SymmetricKey(
         provider, seed, salt, operations, difficulty, parallel, bytes, type);
 }
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

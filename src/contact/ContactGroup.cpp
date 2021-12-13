@@ -14,12 +14,12 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/ContactSection.pb.h"
 
-namespace opentxs
+namespace opentxs::contact
 {
 struct ContactGroup::Imp {
     const std::string nym_{};
@@ -327,4 +327,4 @@ auto ContactGroup::Type() const -> const contact::ClaimType&
 }
 
 ContactGroup::~ContactGroup() = default;
-}  // namespace opentxs
+}  // namespace opentxs::contact

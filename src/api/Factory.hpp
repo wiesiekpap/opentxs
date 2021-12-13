@@ -24,7 +24,7 @@ class Factory;
 }  // namespace api
 }  // namespace opentxs
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 class Factory final : public internal::Factory
 {
@@ -47,4 +47,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

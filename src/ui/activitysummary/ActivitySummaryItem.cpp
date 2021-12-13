@@ -18,15 +18,15 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/UniqueQueue.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"

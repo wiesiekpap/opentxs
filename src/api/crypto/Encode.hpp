@@ -32,7 +32,7 @@ class OTPassword;
 class Secret;
 }  // namespace opentxs
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 class Encode final : public internal::Encode
 {
@@ -76,4 +76,4 @@ private:
     Encode(const Encode&) = delete;
     auto operator=(const Encode&) -> Encode& = delete;
 };
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

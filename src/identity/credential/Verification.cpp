@@ -14,6 +14,7 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
@@ -21,7 +22,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
@@ -99,7 +100,7 @@ auto Verification::VerificationID(
     const api::Session& api,
     const proto::Verification& item) -> std::string
 {
-    return api.Factory().Identifier(item)->str();
+    return api.Factory().InternalSession().Identifier(item)->str();
 }
 }  // namespace opentxs::identity::credential
 

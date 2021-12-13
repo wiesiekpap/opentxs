@@ -90,7 +90,7 @@ class Options;
 class PasswordPrompt;
 }  // namespace opentxs
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 class Session : virtual public internal::Session,
                 public ZMQ,
@@ -204,4 +204,4 @@ private:
     auto operator=(const Session&) -> Session& = delete;
     auto operator=(Session&&) -> Session& = delete;
 };
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

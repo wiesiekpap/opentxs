@@ -13,11 +13,10 @@
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentEvent.pb.h"
@@ -94,9 +93,8 @@ auto BlockchainBalanceItem::reindex(
     auto output = BalanceItem::reindex(key, custom);
     const auto chain = extract_custom<blockchain::Type>(custom, 3);
     const auto txid = extract_custom<OTData>(custom, 5);
-    const auto amount =
-        tx.NetBalanceChange(Widget::api_.Crypto().Blockchain(), nym_id_);
-    const auto memo = tx.Memo(Widget::api_.Crypto().Blockchain());
+    const auto amount = tx.NetBalanceChange(nym_id_);
+    const auto memo = tx.Memo();
     const auto text = extract_custom<std::string>(custom, 4);
     const auto conf = extract_custom<int>(custom, 6);
 

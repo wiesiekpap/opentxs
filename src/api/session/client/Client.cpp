@@ -22,31 +22,32 @@
 #include "api/session/base/Storage.hpp"
 #include "core/Shutdown.hpp"
 #include "internal/api/Context.hpp"
-#include "internal/api/client/Client.hpp"
-#include "internal/api/client/Factory.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/api/network/Factory.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/session/Contacts.hpp"
 #include "internal/api/session/Crypto.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/api/session/UI.hpp"
+#include "internal/otx/client/Factory.hpp"
+#include "internal/otx/client/Pair.hpp"
+#include "internal/otx/client/ServerAction.hpp"
+#include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
+#include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/Pair.hpp"
-#include "opentxs/api/client/ServerAction.hpp"
-#include "opentxs/api/client/UI.hpp"
-#include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
+#include "opentxs/api/session/Activity.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/OTX.hpp"
+#include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/OTAPI_Exec.hpp"
-#include "opentxs/client/OT_API.hpp"
+#include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
@@ -65,7 +66,7 @@ auto ClientSession(
     const std::string& dataFolder,
     const int instance) noexcept -> std::unique_ptr<api::session::Client>
 {
-    using ReturnType = api::session::implementation::Client;
+    using ReturnType = api::session::imp::Client;
 
     try {
         return std::make_unique<ReturnType>(
@@ -85,7 +86,7 @@ auto ClientSession(
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 Client::Client(
     const api::Context& parent,
@@ -147,7 +148,6 @@ Client::Client(
     , otx_(factory::OTX(
           running_,
           *this,
-          *ot_api_->m_pClient,
           std::bind(&Client::get_lock, this, std::placeholders::_1)))
     , pair_(factory::PairAPI(running_, *this))
     , ui_(factory::UI(*this, *blockchain_, running_))
@@ -173,7 +173,7 @@ Client::Client(
         *blockchain_, parent_.Internal().Legacy(), dataFolder, args_);
 }
 
-auto Client::Activity() const -> const api::client::Activity&
+auto Client::Activity() const -> const session::Activity&
 {
     OT_ASSERT(activity_)
 
@@ -184,7 +184,7 @@ auto Client::Cleanup() -> void
 {
     LogDetail()(OT_PRETTY_CLASS())("Shutting down and cleaning up.").Flush();
     shutdown_sender_.Activate();
-    ui_->Shutdown();
+    ui_->Internal().Shutdown();
     ui_.reset();
     pair_.reset();
     otx_.reset();
@@ -194,7 +194,7 @@ auto Client::Cleanup() -> void
     workflow_.reset();
 #if OT_BLOCKCHAIN
     network_.Blockchain().Internal().Shutdown();
-    contacts_->prepare_shutdown();
+    contacts_->Internal().prepare_shutdown();
 #endif  // OT_BLOCKCHAIN
     crypto_.InternalSession().PrepareShutdown();
     blockchain_.reset();
@@ -204,7 +204,7 @@ auto Client::Cleanup() -> void
     Session::cleanup();
 }
 
-auto Client::Contacts() const -> const api::client::Contacts&
+auto Client::Contacts() const -> const api::session::Contacts&
 {
     OT_ASSERT(contacts_)
 
@@ -228,7 +228,7 @@ auto Client::Exec(const std::string&) const -> const OTAPI_Exec&
 auto Client::Init() -> void
 {
 #if OT_BLOCKCHAIN
-    contacts_->init(blockchain_);
+    contacts_->Internal().init(blockchain_);
     crypto_.InternalSession().Init(blockchain_);
 #endif  // OT_BLOCKCHAIN
 
@@ -238,7 +238,7 @@ auto Client::Init() -> void
     pair_->init();
     blockchain_->Internal().Init();
     StartBlockchain();
-    ui_->Init();
+    ui_->Internal().Init();
 }
 
 auto Client::Lock(
@@ -261,21 +261,21 @@ auto Client::OTAPI(const std::string&) const -> const OT_API&
     return *ot_api_;
 }
 
-auto Client::OTX() const -> const api::client::OTX&
+auto Client::OTX() const -> const api::session::OTX&
 {
     OT_ASSERT(otx_);
 
     return *otx_;
 }
 
-auto Client::Pair() const -> const api::client::Pair&
+auto Client::Pair() const -> const otx::client::Pair&
 {
     OT_ASSERT(pair_);
 
     return *pair_;
 }
 
-auto Client::ServerAction() const -> const api::client::ServerAction&
+auto Client::ServerAction() const -> const otx::client::ServerAction&
 {
     OT_ASSERT(server_action_);
 
@@ -302,17 +302,17 @@ void Client::StartContacts()
 {
     OT_ASSERT(contacts_);
 
-    contacts_->start();
+    contacts_->Internal().start();
 }
 
-auto Client::UI() const -> const api::client::UI&
+auto Client::UI() const -> const api::session::UI&
 {
     OT_ASSERT(ui_)
 
     return *ui_;
 }
 
-auto Client::Workflow() const -> const api::client::Workflow&
+auto Client::Workflow() const -> const session::Workflow&
 {
     OT_ASSERT(workflow_);
 
@@ -331,4 +331,4 @@ Client::~Client()
     running_.Off();
     Cleanup();
 }
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

@@ -19,13 +19,12 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
+#include "opentxs/api/session/OTX.hpp"
+#include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
@@ -34,7 +33,6 @@
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/PaymentCode.hpp"
@@ -44,6 +42,7 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/display/Scale.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -69,6 +68,7 @@
 #include "opentxs/ui/PayableListItem.hpp"
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "ui/Helpers.hpp"
@@ -89,15 +89,6 @@ class Notary;
 #define UNIT_DEFINITION_TERMS "YOLO"
 #define UNIT_DEFINITION_TLA "USD"
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
-#define UNIT_DEFINITION_DISPLAY_DEFINITION                                     \
-    {                                                                          \
-        u8"USD",                                                               \
-        {                                                                      \
-            {                                                                  \
-                u8"dollars", { u8"$", u8"", {{10, 0}}, 2, 3 }                  \
-            }                                                                  \
-        }                                                                      \
-    }
 #define CHEQUE_AMOUNT_1 100
 #define CHEQUE_AMOUNT_2 75
 #define CHEQUE_MEMO "memo"
@@ -1173,9 +1164,8 @@ TEST_F(Integration, issue_dollars)
         UNIT_DEFINITION_CONTRACT_NAME,
         UNIT_DEFINITION_TERMS,
         UNIT_DEFINITION_UNIT_OF_ACCOUNT,
-        issuer_.Reason(),
-        UNIT_DEFINITION_DISPLAY_DEFINITION,
-        1);
+        1,
+        issuer_.Reason());
 
     EXPECT_EQ(UNIT_DEFINITION_CONTRACT_VERSION, contract->Version());
     EXPECT_EQ(ot::contract::UnitType::Currency, contract->Type());

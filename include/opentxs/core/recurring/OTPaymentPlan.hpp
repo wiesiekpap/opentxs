@@ -23,10 +23,10 @@ namespace api
 {
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Factory;
-}  // namespace implementation
+}  // namespace imp
 
 class Wallet;
 }  // namespace session
@@ -268,7 +268,7 @@ public:
     ~OTPaymentPlan() override;
 
 private:
-    friend api::session::implementation::Factory;
+    friend api::session::imp::Factory;
 
     OTPaymentPlan(const api::Session& api);
     OTPaymentPlan(

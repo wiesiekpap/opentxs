@@ -13,7 +13,7 @@
 
 #include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::factory

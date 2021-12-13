@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "1_Internal.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "opentxs/OT.hpp"
@@ -31,7 +32,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -138,7 +138,6 @@ TEST_F(Test_BitcoinTransaction, serialization)
 {
     const auto transaction = ot::factory::BitcoinTransaction(
         api_,
-        api_.Crypto().Blockchain(),
         ot::blockchain::Type::Bitcoin,
         std::numeric_limits<std::size_t>::max(),
         ot::Clock::now(),
@@ -409,7 +408,6 @@ TEST_F(Test_BitcoinTransaction, normalized_id)
 {
     const auto transaction1 = ot::factory::BitcoinTransaction(
         api_,
-        api_.Crypto().Blockchain(),
         ot::blockchain::Type::Bitcoin,
         std::numeric_limits<std::size_t>::max(),
         ot::Clock::now(),
@@ -417,7 +415,6 @@ TEST_F(Test_BitcoinTransaction, normalized_id)
             api_, ot::blockchain::Type::Bitcoin, tx_bytes_->Bytes()));
     const auto transaction2 = ot::factory::BitcoinTransaction(
         api_,
-        api_.Crypto().Blockchain(),
         ot::blockchain::Type::Bitcoin,
         std::numeric_limits<std::size_t>::max(),
         ot::Clock::now(),

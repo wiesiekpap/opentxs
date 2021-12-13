@@ -32,9 +32,7 @@ class Bip39;
 }  // namespace crypto
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
+namespace opentxs::api
 {
 class OPENTXS_EXPORT Crypto
 {
@@ -61,5 +59,4 @@ private:
     auto operator=(const Crypto&) -> Crypto& = delete;
     auto operator=(Crypto&&) -> Crypto& = delete;
 };
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api

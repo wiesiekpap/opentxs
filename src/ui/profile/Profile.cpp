@@ -27,7 +27,6 @@
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactSection.hpp"
@@ -38,6 +37,7 @@
 #include "opentxs/ui/Profile.hpp"
 #include "opentxs/ui/ProfileSection.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "ui/base/List.hpp"
 
 template struct std::pair<int, std::string>;
@@ -273,7 +273,7 @@ void Profile::process_nym(const identity::Nym& nym) noexcept
         auto& type = section.first;
 
         if (check_type(type)) {
-            CustomData custom{new opentxs::ContactSection(*section.second)};
+            CustomData custom{new contact::ContactSection(*section.second)};
             add_item(type, sort_key(type), custom);
             active.emplace(type);
         }

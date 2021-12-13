@@ -1,0 +1,24 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#include "0_stdafx.hpp"                      // IWYU pragma: associated
+#include "1_Internal.hpp"                    // IWYU pragma: associated
+#include "internal/api/session/Factory.hpp"  // IWYU pragma: associated
+
+#include "api/session/ui/Imp-base.hpp"
+
+namespace opentxs::factory
+{
+auto UI(
+    const api::session::Client& api,
+    const api::crypto::Blockchain& blockchain,
+    const Flag& running) noexcept -> std::unique_ptr<api::session::UI>
+{
+    using ReturnType = api::session::imp::UI;
+
+    return std::make_unique<ReturnType>(
+        std::make_unique<api::session::imp::UI::Imp>(api, blockchain, running));
+}
+}  // namespace opentxs::factory

@@ -50,7 +50,7 @@
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -66,11 +66,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
 class Session;
 }  // namespace api
 
@@ -144,7 +139,6 @@ public:
 
     Wallet(
         const api::Session& api,
-        const api::crypto::Blockchain& crypto,
         const node::internal::Network& parent,
         const node::internal::WalletDatabase& db,
         const node::internal::Mempool& mempool,
@@ -175,7 +169,6 @@ private:
     const node::internal::Network& parent_;
     const node::internal::WalletDatabase& db_;
     const node::internal::Mempool& mempool_;
-    const api::crypto::Blockchain& crypto_;
     const Type chain_;
     const TaskCallback task_finished_;
     std::atomic_bool enabled_;

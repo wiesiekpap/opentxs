@@ -3,9 +3,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+add_subdirectory(blind)
 add_subdirectory(client)
 add_subdirectory(common)
 add_subdirectory(consensus)
+add_subdirectory(server)
 add_subdirectory(smartcontract)
 
 target_sources(

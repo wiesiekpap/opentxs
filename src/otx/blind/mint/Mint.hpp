@@ -1,0 +1,159 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#pragma once
+
+#include <irrxml/irrXML.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <iosfwd>
+#include <map>
+
+#include "internal/otx/blind/Mint.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
+#include "opentxs/core/Armored.hpp"
+#include "opentxs/core/Contract.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/util/Time.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+namespace session
+{
+class Wallet;
+}  // namespace session
+
+class Session;
+}  // namespace api
+
+namespace identifier
+{
+class Nym;
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
+namespace identity
+{
+class Nym;
+}  // namespace identity
+
+class PasswordPrompt;
+class String;
+}  // namespace opentxs
+
+namespace opentxs::otx::blind
+{
+class Mint::Imp : public otx::blind::internal::Mint
+{
+public:
+    auto AccountID() const -> OTIdentifier override;
+    auto Expired() const -> bool override { return {}; }
+    auto GetDenomination(std::int32_t) const -> Amount override { return {}; }
+    auto GetDenominationCount() const -> std::int32_t override { return {}; }
+
+    auto GetExpiration() const -> Time override { return {}; }
+    auto GetLargestDenomination(const Amount&) const -> Amount override
+    {
+        return {};
+    }
+    auto GetPrivate(Armored&, const Amount&) const -> bool override
+    {
+        return {};
+    }
+    auto GetPublic(Armored&, const Amount&) const -> bool override
+    {
+        return {};
+    }
+    auto GetSeries() const -> std::int32_t override { return {}; }
+    auto GetValidFrom() const -> Time override { return {}; }
+    auto GetValidTo() const -> Time override { return {}; }
+    auto InstrumentDefinitionID() const
+        -> const identifier::UnitDefinition& override;
+    virtual auto isValid() const noexcept -> bool { return false; }
+
+    auto AddDenomination(
+        const identity::Nym&,
+        const Amount&,
+        const std::size_t,
+        const PasswordPrompt&) -> bool override
+    {
+        return {};
+    }
+    auto GenerateNewMint(
+        const api::session::Wallet&,
+        const std::int32_t,
+        const Time,
+        const Time,
+        const Time,
+        const identifier::UnitDefinition&,
+        const identifier::Server&,
+        const identity::Nym&,
+        const Amount&,
+        const Amount&,
+        const Amount&,
+        const Amount&,
+        const Amount&,
+        const Amount&,
+        const Amount&,
+        const Amount&,
+        const Amount&,
+        const Amount&,
+        const std::size_t,
+        const PasswordPrompt&) -> void override
+    {
+    }
+    auto LoadContract() -> bool override { return {}; }
+    auto LoadMint(const char*) -> bool override { return {}; }
+    auto Release() -> void override {}
+    auto Release_Mint() -> void override {}
+    auto ReleaseDenominations() -> void override {}
+    auto SaveMint(const char* szAppend = nullptr) -> bool override
+    {
+        return {};
+    }
+    auto SetInstrumentDefinitionID(const identifier::UnitDefinition&)
+        -> void override
+    {
+    }
+    auto SetSavePrivateKeys(bool) -> void override {}
+    auto SignToken(
+        const identity::Nym&,
+        opentxs::otx::blind::Token&,
+        const PasswordPrompt&) -> bool override
+    {
+        return {};
+    }
+    auto UpdateContents(const PasswordPrompt& reason) -> void override {}
+    auto VerifyContractID() const -> bool override { return {}; }
+    auto VerifyMint(const identity::Nym& theOperator) -> bool override
+    {
+        return {};
+    }
+    auto VerifyToken(
+        const identity::Nym&,
+        const opentxs::otx::blind::Token&,
+        const PasswordPrompt&) -> bool override
+    {
+        return {};
+    }
+
+    Imp(const api::Session& api) noexcept;
+    Imp(const api::Session& api,
+        const identifier::UnitDefinition& unit) noexcept;
+
+    ~Imp() override = default;
+
+private:
+    Imp() = delete;
+};
+}  // namespace opentxs::otx::blind

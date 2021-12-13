@@ -21,7 +21,7 @@ namespace network
 {
 namespace internal
 {
-struct Blockchain;
+class Blockchain;
 }  // namespace internal
 }  // namespace network
 }  // namespace api
@@ -35,11 +35,7 @@ class Manager;
 }  // namespace blockchain
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace network
+namespace opentxs::api::network
 {
 class OPENTXS_EXPORT Blockchain
 {
@@ -83,6 +79,4 @@ private:
     auto operator=(const Blockchain&) -> Blockchain& = delete;
     auto operator=(Blockchain&&) -> Blockchain& = delete;
 };
-}  // namespace network
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::network

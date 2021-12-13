@@ -15,7 +15,7 @@
 
 #include "opentxs/core/Flag.hpp"
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 Periodic::Periodic(Flag& running)
     : running_(running)
@@ -87,4 +87,4 @@ void Periodic::thread()
 }
 
 Periodic::~Periodic() { Shutdown(); }
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

@@ -30,8 +30,8 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/AccountList.hpp"
@@ -81,14 +81,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace network
-{
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace network
-
 namespace session
 {
 class Client;
@@ -1519,7 +1511,6 @@ auto BlockchainActivityThreadItem(
     -> std::shared_ptr<ui::implementation::ActivityThreadRowInternal>;
 auto BlockchainSelectionModel(
     const api::session::Client& api,
-    const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::BlockchainSelection>;

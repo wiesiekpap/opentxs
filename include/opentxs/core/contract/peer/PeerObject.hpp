@@ -18,10 +18,13 @@
 
 namespace opentxs
 {
+namespace otx
+{
 namespace blind
 {
 class Purse;
 }  // namespace blind
+}  // namespace otx
 
 namespace proto
 {
@@ -38,24 +41,22 @@ namespace opentxs
 class OPENTXS_EXPORT PeerObject
 {
 public:
-    virtual auto Message() const -> const std::unique_ptr<std::string>& = 0;
-    virtual auto Nym() const -> const Nym_p& = 0;
-    virtual auto Payment() const -> const std::unique_ptr<std::string>& = 0;
-#if OT_CASH
-    virtual auto Purse() const -> std::shared_ptr<blind::Purse> = 0;
-#endif
-    virtual auto Request() const -> const OTPeerRequest = 0;
-    virtual auto Reply() const -> const OTPeerReply = 0;
-    OPENTXS_NO_EXPORT virtual auto Serialize(proto::PeerObject&) const
+    virtual auto Message() const noexcept
+        -> const std::unique_ptr<std::string>& = 0;
+    virtual auto Nym() const noexcept -> const Nym_p& = 0;
+    virtual auto Payment() const noexcept
+        -> const std::unique_ptr<std::string>& = 0;
+    virtual auto Purse() const noexcept -> const otx::blind::Purse& = 0;
+    virtual auto Request() const noexcept -> const OTPeerRequest = 0;
+    virtual auto Reply() const noexcept -> const OTPeerReply = 0;
+    OPENTXS_NO_EXPORT virtual auto Serialize(proto::PeerObject&) const noexcept
         -> bool = 0;
-    virtual auto Type() const -> contract::peer::PeerObjectType = 0;
-    virtual auto Validate() const -> bool = 0;
+    virtual auto Type() const noexcept -> contract::peer::PeerObjectType = 0;
+    virtual auto Validate() const noexcept -> bool = 0;
 
-    virtual auto Message() -> std::unique_ptr<std::string>& = 0;
-    virtual auto Payment() -> std::unique_ptr<std::string>& = 0;
-#if OT_CASH
-    virtual auto Purse() -> std::shared_ptr<blind::Purse>& = 0;
-#endif
+    virtual auto Message() noexcept -> std::unique_ptr<std::string>& = 0;
+    virtual auto Payment() noexcept -> std::unique_ptr<std::string>& = 0;
+    virtual auto Purse() noexcept -> otx::blind::Purse& = 0;
 
     virtual ~PeerObject() = default;
 
@@ -65,7 +66,7 @@ protected:
 private:
     PeerObject(const PeerObject&) = delete;
     PeerObject(PeerObject&&) = delete;
-    auto operator=(const PeerObject&) -> PeerObject& = delete;
-    auto operator=(PeerObject&&) -> PeerObject& = delete;
+    auto operator=(const PeerObject&) noexcept -> PeerObject& = delete;
+    auto operator=(PeerObject&&) noexcept -> PeerObject& = delete;
 };
 }  // namespace opentxs

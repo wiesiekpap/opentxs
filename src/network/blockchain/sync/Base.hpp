@@ -52,8 +52,14 @@ public:
     static auto translate(const RemoteType in) noexcept -> LocalType;
 
     virtual auto asAcknowledgement() const noexcept -> const Acknowledgement&;
+    virtual auto asPublishContract() const noexcept -> const PublishContract&;
+    virtual auto asPublishContractReply() const noexcept
+        -> const PublishContractReply&;
     virtual auto asData() const noexcept -> const Data&;
     virtual auto asQuery() const noexcept -> const Query&;
+    virtual auto asQueryContract() const noexcept -> const QueryContract&;
+    virtual auto asQueryContractReply() const noexcept
+        -> const QueryContractReply&;
     virtual auto asRequest() const noexcept -> const Request&;
     virtual auto serialize(zeromq::Message& out) const noexcept -> bool;
     auto serialize_type(zeromq::Message& out) const noexcept -> bool;

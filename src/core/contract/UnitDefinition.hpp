@@ -20,11 +20,11 @@
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 
@@ -65,8 +65,8 @@ public:
     auto EraseAccountRecord(
         const std::string& dataFolder,
         const Identifier& theAcctID) const -> bool override;
-    auto Name() const -> std::string override { return short_name_; }
-    auto Serialize() const -> OTData override;
+    auto Name() const noexcept -> std::string override { return short_name_; }
+    auto Serialize() const noexcept -> OTData override;
     auto Serialize(AllocateOutput destination, bool includeNym = false) const
         -> bool override;
     auto Serialize(SerializedType&, bool includeNym = false) const
@@ -85,7 +85,7 @@ public:
     {
         contract::implementation::Signable::SetAlias(alias);
     }
-    void SetAlias(const std::string& alias) override;
+    auto SetAlias(const std::string& alias) noexcept -> bool override;
 
     ~Unit() override = default;
 

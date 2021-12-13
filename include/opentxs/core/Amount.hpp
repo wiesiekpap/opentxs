@@ -63,6 +63,15 @@ auto operator>=(const unsigned long long int lhs, const Amount& rhs) noexcept
 
 template <typename T>
 auto operator*(T lhs, const Amount& rhs) noexcept(false) -> Amount;
+
+auto signed_amount(
+    long long int ip,
+    unsigned long long int fp = 0,
+    unsigned long long int div = 0) -> Amount;
+auto unsigned_amount(
+    unsigned long long int ip,
+    unsigned long long int fp = 0,
+    unsigned long long int div = 0) -> Amount;
 }  // namespace opentxs
 
 namespace opentxs
@@ -125,15 +134,6 @@ public:
     OPENTXS_NO_EXPORT static auto SerializeBitcoinSize() noexcept
         -> std::size_t;
 
-    static auto signed_amount(
-        long long int ip,
-        unsigned long long int fp = 0,
-        unsigned long long int div = 0) -> Amount;
-    static auto unsigned_amount(
-        unsigned long long int ip,
-        unsigned long long int fp = 0,
-        unsigned long long int div = 0) -> Amount;
-
     struct Imp;
 
     OPENTXS_NO_EXPORT auto Internal() const noexcept -> Imp&;
@@ -146,6 +146,7 @@ public:
     Amount(unsigned long long int);
     Amount(std::string_view str, bool normalize = false) noexcept(false);
     Amount(const opentxs::network::zeromq::Frame&);
+    OPENTXS_NO_EXPORT Amount(const Imp&);
     Amount() noexcept;
     Amount(const Amount& rhs) noexcept;
     Amount(Amount&& rhs) noexcept;
@@ -155,8 +156,6 @@ public:
     ~Amount();
 
 private:
-    Amount(const Imp&);
-
     friend auto operator<(const int lhs, const Amount& rhs) noexcept -> bool;
     friend auto operator<(const long int lhs, const Amount& rhs) noexcept
         -> bool;

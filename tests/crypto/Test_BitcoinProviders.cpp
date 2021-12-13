@@ -15,6 +15,7 @@
 
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Config.hpp"
@@ -25,9 +26,9 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip39.hpp"
@@ -39,7 +40,6 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
-#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;

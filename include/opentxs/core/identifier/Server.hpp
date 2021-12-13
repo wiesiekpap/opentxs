@@ -7,7 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs

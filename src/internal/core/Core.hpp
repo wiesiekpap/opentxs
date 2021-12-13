@@ -16,9 +16,9 @@
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/NymFile.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 #include "serialization/protobuf/ContractEnums.pb.h"
@@ -52,13 +52,6 @@ struct make_blank;
 template <>
 struct make_blank<OTData> {
     static auto value(const api::Session&) -> OTData { return Data::Factory(); }
-};
-template <>
-struct make_blank<OTIdentifier> {
-    static auto value(const api::Session&) -> OTIdentifier
-    {
-        return Identifier::Factory();
-    }
 };
 }  // namespace opentxs
 

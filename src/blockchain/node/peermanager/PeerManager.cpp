@@ -13,13 +13,15 @@
 #include <string_view>
 
 #include "core/Worker.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
+#include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/Block.hpp"
@@ -37,7 +39,6 @@ namespace opentxs::factory
 {
 auto BlockchainPeerManager(
     const api::Session& api,
-    const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Mempool& mempool,
     const blockchain::node::internal::Network& node,
@@ -55,7 +56,6 @@ auto BlockchainPeerManager(
 
     return std::make_unique<ReturnType>(
         api,
-        network,
         config,
         mempool,
         node,
@@ -74,7 +74,6 @@ namespace opentxs::blockchain::node::implementation
 {
 PeerManager::PeerManager(
     const api::Session& api,
-    const api::network::internal::Blockchain& network,
     const internal::Config& config,
     const node::internal::Mempool& mempool,
     const internal::Network& node,
@@ -88,14 +87,12 @@ PeerManager::PeerManager(
     const std::string& shutdown) noexcept
     : internal::PeerManager()
     , Worker(api, std::chrono::milliseconds(100))
-    , network_(network)
     , node_(node)
     , database_(database)
     , chain_(chain)
     , jobs_(api)
     , peers_(
           api,
-          network,
           config,
           mempool,
           node,
@@ -324,7 +321,7 @@ auto PeerManager::pipeline(zmq::Message&& message) noexcept -> void
             }
 
             peers_.Disconnect(id);
-            network_.UpdatePeer(chain_, "");
+            api_.Network().Blockchain().Internal().UpdatePeer(chain_, "");
             do_work();
         } break;
         case Work::AddPeer: {
@@ -466,7 +463,7 @@ auto PeerManager::VerifyPeer(const int id, const std::string& address)
         verified_peers_.emplace(id);
     }
 
-    network_.UpdatePeer(chain_, address);
+    api_.Network().Blockchain().Internal().UpdatePeer(chain_, address);
 }
 
 PeerManager::~PeerManager() { signal_shutdown().get(); }

@@ -46,7 +46,7 @@ namespace opentxs::factory
 auto CryptoConfig(const api::Settings& settings) noexcept
     -> std::unique_ptr<api::crypto::Config>
 {
-    using ReturnType = api::crypto::implementation::Config;
+    using ReturnType = api::crypto::imp::Config;
 
     return std::make_unique<ReturnType>(settings);
 }
@@ -73,7 +73,7 @@ auto HaveSupport(opentxs::crypto::key::symmetric::Algorithm val) noexcept
 }
 }  // namespace opentxs::api::crypto
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 Config::Config(const api::Settings& settings) noexcept
     : config_(settings)
@@ -181,4 +181,4 @@ auto Config::PublicKeysizeMax() const -> std::uint32_t
 {
     return sp_nPublicKeysizeMax;
 }
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

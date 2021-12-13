@@ -17,10 +17,10 @@
 #include <string>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/crypto/Signature.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
 

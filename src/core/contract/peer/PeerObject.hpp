@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "opentxs/Types.hpp"
@@ -15,6 +16,7 @@
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/PeerObject.pb.h"
 
@@ -22,18 +24,21 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Contacts;
-}  // namespace client
+class Client;
+}  // namespace session
 
 class Session;
 }  // namespace api
 
+namespace otx
+{
 namespace blind
 {
 class Purse;
 }  // namespace blind
+}  // namespace otx
 
 namespace proto
 {
@@ -50,34 +55,66 @@ namespace opentxs::peer::implementation
 class Object final : virtual public opentxs::PeerObject
 {
 public:
+    auto Message() const noexcept -> const std::unique_ptr<std::string>& final
+    {
+        return message_;
+    }
+    auto Nym() const noexcept -> const Nym_p& final { return nym_; }
+    auto Payment() const noexcept -> const std::unique_ptr<std::string>& final
+    {
+        return payment_;
+    }
+    auto Purse() const noexcept -> const otx::blind::Purse& final
+    {
+        return purse_;
+    }
+    auto Request() const noexcept -> const OTPeerRequest final
+    {
+        return request_;
+    }
+    auto Reply() const noexcept -> const OTPeerReply final { return reply_; }
+    auto Serialize(proto::PeerObject& output) const noexcept -> bool final;
+    auto Type() const noexcept -> contract::peer::PeerObjectType final
+    {
+        return type_;
+    }
+    auto Validate() const noexcept -> bool final;
+
+    auto Message() noexcept -> std::unique_ptr<std::string>& final
+    {
+        return message_;
+    }
+    auto Payment() noexcept -> std::unique_ptr<std::string>& final
+    {
+        return payment_;
+    }
+    auto Purse() noexcept -> otx::blind::Purse& final { return purse_; }
+
     Object(
-        const api::client::Contacts& contacts,
-        const api::Session& api,
+        const api::session::Client& api,
         const Nym_p& signerNym,
-        const proto::PeerObject serialized);
+        const proto::PeerObject serialized) noexcept;
     Object(
         const api::Session& api,
         const Nym_p& senderNym,
-        const std::string& message);
-#if OT_CASH
+        const std::string& message) noexcept;
     Object(
         const api::Session& api,
         const Nym_p& senderNym,
-        const std::shared_ptr<blind::Purse> purse);
-#endif
+        otx::blind::Purse&& purse) noexcept;
     Object(
         const api::Session& api,
         const std::string& payment,
-        const Nym_p& senderNym);
+        const Nym_p& senderNym) noexcept;
     Object(
         const api::Session& api,
         const OTPeerRequest request,
         const OTPeerReply reply,
-        const VersionNumber version);
+        const VersionNumber version) noexcept;
     Object(
         const api::Session& api,
         const OTPeerRequest request,
-        const VersionNumber version);
+        const VersionNumber version) noexcept;
     Object(
         const api::Session& api,
         const Nym_p& nym,
@@ -85,50 +122,22 @@ public:
         const std::string& payment,
         const OTPeerReply reply,
         const OTPeerRequest request,
-#if OT_CASH
-        const std::shared_ptr<blind::Purse> purse,
-#endif
+        otx::blind::Purse&& purse,
         const contract::peer::PeerObjectType type,
-        const VersionNumber version);
+        const VersionNumber version) noexcept;
 
-    auto Message() const -> const std::unique_ptr<std::string>& final
-    {
-        return message_;
-    }
-    auto Nym() const -> const Nym_p& final { return nym_; }
-    auto Payment() const -> const std::unique_ptr<std::string>& final
-    {
-        return payment_;
-    }
-#if OT_CASH
-    auto Purse() const -> std::shared_ptr<blind::Purse> final { return purse_; }
-#endif
-    auto Request() const -> const OTPeerRequest final { return request_; }
-    auto Reply() const -> const OTPeerReply final { return reply_; }
-    auto Serialize(proto::PeerObject& output) const -> bool final;
-    auto Type() const -> contract::peer::PeerObjectType final { return type_; }
-    auto Validate() const -> bool final;
-
-    auto Message() -> std::unique_ptr<std::string>& final { return message_; }
-    auto Payment() -> std::unique_ptr<std::string>& final { return payment_; }
-#if OT_CASH
-    auto Purse() -> std::shared_ptr<blind::Purse>& final { return purse_; }
-#endif
-
-    ~Object() final = default;
+    ~Object() final;
 
 private:
     const api::Session& api_;
-    Nym_p nym_{nullptr};
-    std::unique_ptr<std::string> message_{nullptr};
-    std::unique_ptr<std::string> payment_{nullptr};
-    OTPeerReply reply_{nullptr};
-    OTPeerRequest request_{nullptr};
-#if OT_CASH
-    std::shared_ptr<blind::Purse> purse_{nullptr};
-#endif
-    contract::peer::PeerObjectType type_{contract::peer::PeerObjectType::Error};
-    VersionNumber version_{0};
+    Nym_p nym_;
+    std::unique_ptr<std::string> message_;
+    std::unique_ptr<std::string> payment_;
+    OTPeerReply reply_;
+    OTPeerRequest request_;
+    otx::blind::Purse purse_;
+    contract::peer::PeerObjectType type_;
+    VersionNumber version_;
 
     Object() = delete;
 };

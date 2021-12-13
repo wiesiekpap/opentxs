@@ -24,6 +24,7 @@
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
@@ -37,14 +38,14 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
-#include "opentxs/client/NymData.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/HD.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 
@@ -52,7 +53,6 @@ namespace opentxs::blockchain::node::wallet
 {
 NotificationStateData::NotificationStateData(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     Accounts& parent,
     const WalletDatabase& db,
@@ -65,7 +65,6 @@ NotificationStateData::NotificationStateData(
     proto::HDPath&& path) noexcept
     : SubchainStateData(
           api,
-          crypto,
           node,
           parent,
           db,
@@ -215,8 +214,9 @@ auto NotificationStateData::process(
                 "decoded incoming notification from ")(sender.asBase58())(
                 " on ")(DisplayString(node_.Chain()))(" for ")(code_.asBase58())
                 .Flush();
-            const auto& account = crypto_.Internal().PaymentCodeSubaccount(
-                owner_, code_, sender, path_, node_.Chain(), reason);
+            const auto& account =
+                api_.Crypto().Blockchain().Internal().PaymentCodeSubaccount(
+                    owner_, code_, sender, path_, node_.Chain(), reason);
             LogVerbose()(OT_PRETTY_CLASS())("Created new account ")(
                 account.ID())
                 .Flush();

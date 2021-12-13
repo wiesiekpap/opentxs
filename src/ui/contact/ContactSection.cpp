@@ -19,7 +19,7 @@
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
@@ -136,7 +136,7 @@ ContactSection::ContactSection(
     startup_ = std::make_unique<std::thread>(
         &ContactSection::startup,
         this,
-        extract_custom<opentxs::ContactSection>(custom));
+        extract_custom<contact::ContactSection>(custom));
 
     OT_ASSERT(startup_)
 }
@@ -160,7 +160,7 @@ auto ContactSection::construct_row(
 }
 
 auto ContactSection::process_section(
-    const opentxs::ContactSection& section) noexcept
+    const contact::ContactSection& section) noexcept
     -> std::set<ContactSectionRowID>
 {
     OT_ASSERT(row_id_ == section.Type())
@@ -173,7 +173,7 @@ auto ContactSection::process_section(
         const ContactSectionRowID key{row_id_, type};
 
         if (check_type(key)) {
-            CustomData custom{new opentxs::ContactGroup(*group)};
+            CustomData custom{new contact::ContactGroup(*group)};
             add_item(key, sort_key(key), custom);
             active.emplace(key);
         }
@@ -187,7 +187,7 @@ auto ContactSection::reindex(
     implementation::CustomData& custom) noexcept -> bool
 {
     delete_inactive(
-        process_section(extract_custom<opentxs::ContactSection>(custom)));
+        process_section(extract_custom<contact::ContactSection>(custom)));
 
     return true;
 }
@@ -197,7 +197,7 @@ auto ContactSection::sort_key(const ContactSectionRowID type) noexcept -> int
     return sort_keys_.at(type.first).at(translate(type.second));
 }
 
-void ContactSection::startup(const opentxs::ContactSection section) noexcept
+void ContactSection::startup(const contact::ContactSection section) noexcept
 {
     process_section(section);
     finish_startup();

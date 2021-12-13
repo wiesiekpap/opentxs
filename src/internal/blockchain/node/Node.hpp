@@ -47,7 +47,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -62,20 +62,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-namespace blockchain
-{
-namespace database
-{
-namespace implementation
-{
-class Database;
-}  // namespace implementation
-}  // namespace database
-}  // namespace blockchain
-}  // namespace client
-
 namespace crypto
 {
 class Blockchain;
@@ -473,8 +459,8 @@ struct PeerManager {
 struct Network : virtual public node::Manager {
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
-        SyncReply = value(WorkType::SyncReply),
-        SyncNewBlock = value(WorkType::NewBlock),
+        SyncReply = value(WorkType::P2PBlockchainSyncReply),
+        SyncNewBlock = value(WorkType::P2PBlockchainNewBlock),
         SubmitBlockHeader = OT_ZMQ_INTERNAL_SIGNAL + 0,
         SubmitBlock = OT_ZMQ_INTERNAL_SIGNAL + 2,
         Heartbeat = OT_ZMQ_INTERNAL_SIGNAL + 3,

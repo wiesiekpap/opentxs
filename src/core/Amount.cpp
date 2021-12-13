@@ -17,20 +17,23 @@ namespace be = boost::endian;
 
 namespace opentxs
 {
-
-auto Amount::signed_amount(
+auto signed_amount(
     long long int ip,
     unsigned long long int fp,
     unsigned long long int div) -> Amount
 {
+    using Imp = Amount::Imp;
+
     return Amount(Imp::shift_left(ip) + (Imp::shift_left(fp) / div));
 }
 
-auto Amount::unsigned_amount(
+auto unsigned_amount(
     unsigned long long int ip,
     unsigned long long int fp,
     unsigned long long int div) -> Amount
 {
+    using Imp = Amount::Imp;
+
     return Amount(Imp::shift_left(ip) + (Imp::shift_left(fp) / div));
 }
 

@@ -19,12 +19,13 @@
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -46,8 +47,7 @@ struct Accounts::Imp {
         auto [it, added] = map_.try_emplace(
             nym,
             api_,
-            crypto_,
-            crypto_.Account(nym, chain_),
+            api_.Crypto().Blockchain().Account(nym, chain_),
             node_,
             parent_,
             db_,
@@ -171,7 +171,6 @@ struct Accounts::Imp {
     }
 
     Imp(const api::Session& api,
-        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         Accounts& parent,
         const node::internal::WalletDatabase& db,
@@ -179,7 +178,6 @@ struct Accounts::Imp {
         const std::function<void(const Identifier&, const char*)>&
             taskFinished) noexcept
         : api_(api)
-        , crypto_(crypto)
         , node_(node)
         , parent_(parent)
         , db_(db)
@@ -202,7 +200,6 @@ private:
     using PCMap = std::map<OTIdentifier, NotificationStateData>;
 
     const api::Session& api_;
-    const api::crypto::Blockchain& crypto_;
     const node::internal::Network& node_;
     Accounts& parent_;
     const node::internal::WalletDatabase& db_;
@@ -252,7 +249,6 @@ private:
         payment_codes_.try_emplace(
             std::move(accountID),
             api_,
-            crypto_,
             node_,
             parent_,
             db_,
@@ -273,14 +269,12 @@ private:
 
 Accounts::Accounts(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
     const Type chain,
     const std::function<void(const Identifier&, const char*)>&
         taskFinished) noexcept
-    : imp_(std::make_unique<
-           Imp>(api, crypto, node, *this, db, chain, taskFinished))
+    : imp_(std::make_unique<Imp>(api, node, *this, db, chain, taskFinished))
 {
     imp_->Init();
 }

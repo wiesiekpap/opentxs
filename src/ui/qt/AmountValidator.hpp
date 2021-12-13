@@ -18,6 +18,7 @@
 #include "1_Internal.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/ui/AccountActivity.hpp"

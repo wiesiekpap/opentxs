@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"              // IWYU pragma: associated
 #include "opentxs/core/contract/Types.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
@@ -14,7 +15,7 @@ namespace opentxs::contract
 enum class Type : std::uint32_t {
     invalid = 0,
     nym = 1,
-    server = 2,
+    notary = 2,
     unit = 3,
 };
 }  // namespace opentxs::contract

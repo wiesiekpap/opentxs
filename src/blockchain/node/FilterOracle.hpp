@@ -49,14 +49,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace network
-{
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace network
-
 class Session;
 }  // namespace api
 
@@ -174,7 +166,6 @@ public:
 
     FilterOracle(
         const api::Session& api,
-        const api::network::internal::Blockchain& crypto,
         const internal::Config& config,
         const internal::Network& node,
         const HeaderOracle& header,

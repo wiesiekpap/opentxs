@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 #include <cstdint>
 
 namespace opentxs
@@ -50,19 +52,22 @@ enum class WorkType : OTZMQWorkType {
     DHTRequestNym = 1021,
     DHTRequestServer = 1022,
     DHTRequestUnit = 1023,
-    SyncRequest = 1024,
-    SyncAcknowledgement = 1025,
-    SyncReply = 1026,
-    NewBlock = 1027,
-    SyncQuery = 1028,
+    P2PBlockchainSyncRequest = 1024,
+    P2PBlockchainSyncAck = 1025,
+    P2PBlockchainSyncReply = 1026,
+    P2PBlockchainNewBlock = 1027,
+    P2PBlockchainSyncQuery = 1028,
+    P2PResponse = 1029,
+    P2PPublishContract = 1030,
+    P2PQueryContract = 1031,
     AsioRegister = 2048,
     AsioConnect = 2049,
     AsioDisconnect = 2050,
     BitcoinP2P = 3072,
-    OTXP2PRequest = 4096,
-    OTXP2PResponse = 4097,
-    OTXP2PPush = 4098,
-    OTXP2PLegacyXML = 4099,
+    OTXRequest = 4096,
+    OTXResponse = 4097,
+    OTXPush = 4098,
+    OTXLegacyXML = 4099,
 };
 
 constexpr auto value(const WorkType in) noexcept
@@ -254,7 +259,7 @@ constexpr auto value(const WorkType in) noexcept
  *
  *   OTXTaskComplete: reports completion of OTX task
  *       * Additional frames:
- *          1: task is as api::client::OTX::TaskID
+ *          1: task is as api::session::OTX::TaskID
  *          2: resolution as bool (success = true)
  *
  *   DHTRequestNym: request and response messages for dht nym retrieval

@@ -26,18 +26,13 @@
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
 class Session;
 }  // namespace api
 
@@ -154,7 +149,6 @@ public:
 
     Output(
         const api::Session& api,
-        const api::crypto::Blockchain& blockchain,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain,
         const wallet::SubchainData& subchains,

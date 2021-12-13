@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -22,7 +22,7 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -39,14 +39,13 @@ namespace opentxs::factory
 {
 auto BlockchainSelectionModel(
     const api::session::Client& api,
-    const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     -> std::unique_ptr<ui::internal::BlockchainSelection>
 {
     using ReturnType = ui::implementation::BlockchainSelection;
 
-    return std::make_unique<ReturnType>(api, blockchain, type, cb);
+    return std::make_unique<ReturnType>(api, type, cb);
 }
 }  // namespace opentxs::factory
 
@@ -54,12 +53,10 @@ namespace opentxs::ui::implementation
 {
 BlockchainSelection::BlockchainSelection(
     const api::session::Client& api,
-    const api::network::internal::Blockchain& blockchain,
     const ui::Blockchains type,
     const SimpleCallback& cb) noexcept
     : BlockchainSelectionList(api, Identifier::Factory(), cb, false)
     , Worker(api, {})
-    , blockchain_(blockchain)
     , filter_(filter(type))
     , chain_state_([&] {
         auto out = std::map<blockchain::Type, bool>{};
@@ -274,8 +271,10 @@ auto BlockchainSelection::Set(EnabledCallback&& cb) const noexcept -> void
 
 auto BlockchainSelection::startup() noexcept -> void
 {
+    const auto& api = Widget::api_.Network().Blockchain().Internal();
+
     for (const auto& chain : filter_) {
-        process_state(chain, blockchain_.IsEnabled(chain));
+        process_state(chain, api.IsEnabled(chain));
     }
 
     finish_startup();

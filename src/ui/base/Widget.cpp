@@ -9,10 +9,11 @@
 
 #include <iosfwd>
 
-#include "internal/api/session/Client.hpp"
+#include "internal/api/session/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/UI.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -44,11 +45,21 @@ Widget::Widget(
     const SimpleCallback& cb) noexcept
     : api_(api)
     , widget_id_(id)
-    , ui_(api_.InternalClient().InternalUI())
+    , ui_(api_.UI())
     , callbacks_()
     , listeners_()
 {
     if (cb) { SetCallback(cb); }
+}
+
+auto Widget::ClearCallbacks() const noexcept -> void
+{
+    ui_.Internal().ClearUICallbacks(widget_id_);
+}
+
+auto Widget::SetCallback(SimpleCallback cb) const noexcept -> void
+{
+    ui_.Internal().RegisterUICallback(WidgetID(), cb);
 }
 
 auto Widget::setup_listeners(const ListenerDefinitions& definitions) noexcept
@@ -67,6 +78,11 @@ auto Widget::setup_listeners(const ListenerDefinitions& definitions) noexcept
 
         OT_ASSERT(listening)
     }
+}
+
+auto Widget::UpdateNotify() const noexcept -> void
+{
+    ui_.Internal().ActivateUICallback(WidgetID());
 }
 
 Widget::~Widget() { ClearCallbacks(); }

@@ -24,9 +24,6 @@
 #include "internal/api/session/Storage.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/PaymentWorkflowState.hpp"
-#include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/api/client/Types.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -34,11 +31,14 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/otx/client/PaymentWorkflowState.hpp"
+#include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
@@ -110,7 +110,7 @@ class Data;
 class String;
 }  // namespace opentxs
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 // Content-aware storage module for opentxs
 //
@@ -334,8 +334,8 @@ public:
         const std::string& accountID) const -> std::set<std::string> final;
     auto PaymentWorkflowsByState(
         const std::string& nymID,
-        const api::client::PaymentWorkflowType type,
-        const api::client::PaymentWorkflowState state) const
+        const otx::client::PaymentWorkflowType type,
+        const otx::client::PaymentWorkflowState state) const
         -> std::set<std::string> final;
     auto PaymentWorkflowsByUnit(
         const std::string& nymID,
@@ -344,8 +344,8 @@ public:
         const std::string& nymID,
         const std::string& workflowID) const
         -> std::pair<
-            api::client::PaymentWorkflowType,
-            api::client::PaymentWorkflowState> final;
+            otx::client::PaymentWorkflowType,
+            otx::client::PaymentWorkflowState> final;
     auto RelabelThread(const std::string& threadID, const std::string& label)
         const -> bool final;
     auto RemoveBlockchainThreadItem(
@@ -523,4 +523,4 @@ private:
     auto operator=(const Storage&) -> Storage& = delete;
     auto operator=(Storage&&) -> Storage& = delete;
 };
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

@@ -13,8 +13,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/basket/BasketItem.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -23,10 +23,10 @@ namespace api
 {
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Factory;
-}  // namespace implementation
+}  // namespace imp
 }  // namespace session
 
 class Session;
@@ -207,7 +207,7 @@ protected:
     auto ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t final;
 
 private:
-    friend api::session::implementation::Factory;
+    friend api::session::imp::Factory;
 
     Basket(const api::Session& api);
     Basket(

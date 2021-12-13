@@ -1,0 +1,23 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#pragma once
+
+#include <cstddef>
+
+#include "util/ByteLiterals.hpp"
+
+namespace opentxs
+{
+constexpr auto db_file_size() noexcept -> std::size_t
+{
+    return @OT_DB_FILE_SIZE@;
+}
+
+constexpr auto mapped_file_size() noexcept -> std::size_t
+{
+    return @OT_MAPPED_FILE_SIZE@;
+}
+}  // namespace opentxs

@@ -10,7 +10,7 @@
 #include <string>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 
 namespace opentxs
 {

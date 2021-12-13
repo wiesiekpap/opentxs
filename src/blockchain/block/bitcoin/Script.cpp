@@ -22,12 +22,13 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/PaymentCode.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -696,9 +697,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
     return output;
 }
 
-auto Script::ExtractPatterns(
-    const api::Session& api,
-    const api::crypto::Blockchain& blockchain) const noexcept
+auto Script::ExtractPatterns(const api::Session& api) const noexcept
     -> std::vector<PatternID>
 {
     auto output = std::vector<PatternID>{};
@@ -708,7 +707,7 @@ auto Script::ExtractPatterns(
         std::end(hashes),
         std::back_inserter(output),
         [&](const auto& hash) -> auto {
-            return blockchain.IndexItem(hash->Bytes());
+            return api.Crypto().Blockchain().IndexItem(hash->Bytes());
         });
 
     return output;

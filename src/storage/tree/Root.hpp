@@ -34,10 +34,10 @@ class Asio;
 
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Storage;
-}  // namespace implementation
+}  // namespace imp
 }  // namespace session
 }  // namespace api
 
@@ -76,7 +76,7 @@ public:
 private:
     using ot_super = Node;
     friend opentxs::storage::driver::Multiplex;
-    friend api::session::implementation::Storage;
+    friend api::session::imp::Storage;
 
     class GC
     {

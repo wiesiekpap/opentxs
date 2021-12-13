@@ -3,31 +3,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-set(cxx-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/SeedValidator.hpp"
+list(
+  APPEND
+  OPENTXS_QT_PUBLIC_HEADERS
+  "${opentxs_SOURCE_DIR}/include/opentxs/ui/qt/SeedValidator.hpp"
 )
-qt_wrap_cpp(MOC_SRCS ${cxx-install-headers})
-add_library(
-  opentxs-ui-seedvalidator OBJECT
-  "SeedValidator.cpp"
-  ${cxx-install-headers}
-  ${MOC_SRCS}
-)
-target_link_libraries(
-  opentxs-ui-seedvalidator PRIVATE Qt::Gui opentxs::messages
-)
+target_sources(opentxs-common PRIVATE "SeedValidator.cpp")
+target_link_libraries(opentxs-common PRIVATE Qt::Gui opentxs::messages)
 target_link_libraries(opentxs PUBLIC Qt::Gui)
-target_include_directories(
-  opentxs-ui-seedvalidator SYSTEM PRIVATE "${opentxs_SOURCE_DIR}/deps/"
+
+set(OPENTXS_QT_PUBLIC_HEADERS
+    ${OPENTXS_QT_PUBLIC_HEADERS}
+    PARENT_SCOPE
 )
-
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-ui-seedvalidator>)
-add_dependencies(opentxs-ui-seedvalidator generated_code)
-
-if(OPENTXS_STANDALONE)
-  install(
-    FILES ${cxx-install-headers}
-    DESTINATION include/opentxs/ui/qt
-    COMPONENT dev
-  )
-endif()
+set(OPENTXS_QT_PRIVATE_HEADERS
+    ${OPENTXS_QT_PRIVATE_HEADERS}
+    PARENT_SCOPE
+)

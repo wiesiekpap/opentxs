@@ -25,7 +25,7 @@ class OTCron;
 
 namespace opentxs::api::session::server
 {
-class Factory final : public session::implementation::Factory
+class Factory final : public session::imp::Factory
 {
 public:
     auto Cron() const -> std::unique_ptr<OTCron> final;

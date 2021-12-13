@@ -48,7 +48,7 @@ class OTPassword;
 class Secret;
 }  // namespace opentxs
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 class Hash final : public internal::Hash
 {
@@ -154,4 +154,4 @@ private:
     auto operator=(const Hash&) -> Hash& = delete;
     auto operator=(Hash&&) -> Hash& = delete;
 };
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

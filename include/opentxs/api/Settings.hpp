@@ -10,12 +10,13 @@
 #include <cstdint>
 #include <string>
 
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/String.hpp"
-
 namespace opentxs
 {
-namespace api
+class Flag;
+class String;
+}  // namespace opentxs
+
+namespace opentxs::api
 {
 class OPENTXS_EXPORT Settings
 {
@@ -59,20 +60,35 @@ public:
         const String& strSection,
         const String& strKey,
         const String& strValue,
+        bool& out_bNewOrUpdate) const -> bool = 0;
+    virtual auto Set_str(
+        const String& strSection,
+        const String& strKey,
+        const String& strValue,
         bool& out_bNewOrUpdate,
-        const String& strComment = String::Factory()) const -> bool = 0;
+        const String& strComment) const -> bool = 0;
+    virtual auto Set_long(
+        const String& strSection,
+        const String& strKey,
+        const std::int64_t& lValue,
+        bool& out_bNewOrUpdate) const -> bool = 0;
     virtual auto Set_long(
         const String& strSection,
         const String& strKey,
         const std::int64_t& lValue,
         bool& out_bNewOrUpdate,
-        const String& strComment = String::Factory()) const -> bool = 0;
+        const String& strComment) const -> bool = 0;
+    virtual auto Set_bool(
+        const String& strSection,
+        const String& strKey,
+        const bool& bValue,
+        bool& out_bNewOrUpdate) const -> bool = 0;
     virtual auto Set_bool(
         const String& strSection,
         const String& strKey,
         const bool& bValue,
         bool& out_bNewOrUpdate,
-        const String& strComment = String::Factory()) const -> bool = 0;
+        const String& strComment) const -> bool = 0;
 
     // Check for a Section, if the section dosn't exist, it will be made and
     // out_bIsNewSection will be true.)
@@ -88,29 +104,53 @@ public:
         const String& strKey,
         const String& strDefault,
         std::string& out_strResult,
+        bool& out_bIsNew) const -> bool = 0;
+    virtual auto CheckSet_str(
+        const String& strSection,
+        const String& strKey,
+        const String& strDefault,
+        std::string& out_strResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const -> bool = 0;
+        const String& strComment) const -> bool = 0;
+    virtual auto CheckSet_str(
+        const String& strSection,
+        const String& strKey,
+        const String& strDefault,
+        String& out_strResult,
+        bool& out_bIsNew) const -> bool = 0;
     virtual auto CheckSet_str(
         const String& strSection,
         const String& strKey,
         const String& strDefault,
         String& out_strResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const -> bool = 0;
+        const String& strComment) const -> bool = 0;
+    virtual auto CheckSet_long(
+        const String& strSection,
+        const String& strKey,
+        const std::int64_t& lDefault,
+        std::int64_t& out_lResult,
+        bool& out_bIsNew) const -> bool = 0;
     virtual auto CheckSet_long(
         const String& strSection,
         const String& strKey,
         const std::int64_t& lDefault,
         std::int64_t& out_lResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const -> bool = 0;
+        const String& strComment) const -> bool = 0;
+    virtual auto CheckSet_bool(
+        const String& strSection,
+        const String& strKey,
+        const bool& bDefault,
+        bool& out_bResult,
+        bool& out_bIsNew) const -> bool = 0;
     virtual auto CheckSet_bool(
         const String& strSection,
         const String& strKey,
         const bool& bDefault,
         bool& out_bResult,
         bool& out_bIsNew,
-        const String& strComment = String::Factory()) const -> bool = 0;
+        const String& strComment) const -> bool = 0;
 
     // Set Option helper function for setting bool's
     virtual auto SetOption_bool(
@@ -131,5 +171,4 @@ private:
     auto operator=(const Settings&) -> Settings& = delete;
     auto operator=(Settings&&) -> Settings& = delete;
 };
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api

@@ -36,7 +36,6 @@
 
 #include "api/network/asio/Acceptors.hpp"
 #include "core/StateMachine.hpp"
-#include "internal/api/network/Network.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/asio/Endpoint.hpp"
 #include "network/asio/Socket.hpp"  // IWYU pragma: keep

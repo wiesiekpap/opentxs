@@ -69,9 +69,7 @@ public:
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ExtractElements(const filter::Type style) const noexcept
         -> std::vector<Space> final;
-    auto ExtractPatterns(
-        const api::Session& api,
-        const api::crypto::Blockchain& blockchain) const noexcept
+    auto ExtractPatterns(const api::Session& api) const noexcept
         -> std::vector<PatternID> final;
     auto IsNotification(
         const std::uint8_t version,

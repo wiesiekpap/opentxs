@@ -21,7 +21,6 @@
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
@@ -40,6 +39,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -91,16 +91,16 @@ class String;
 namespace opentxs::contract::blank
 {
 struct Signable : virtual public opentxs::contract::Signable {
-    auto Alias() const -> std::string final { return {}; }
-    auto ID() const -> OTIdentifier final { return id_; }
-    auto Name() const -> std::string final { return {}; }
-    auto Nym() const -> Nym_p final { return {}; }
-    auto Terms() const -> const std::string& final { return terms_; }
-    auto Serialize() const -> OTData final { return OTData{id_}; }
-    auto Validate() const -> bool final { return {}; }
-    auto Version() const -> VersionNumber final { return 0; }
+    auto Alias() const noexcept -> std::string final { return {}; }
+    auto ID() const noexcept -> OTIdentifier final { return id_; }
+    auto Name() const noexcept -> std::string final { return {}; }
+    auto Nym() const noexcept -> Nym_p final { return {}; }
+    auto Terms() const noexcept -> const std::string& final { return terms_; }
+    auto Serialize() const noexcept -> OTData final { return OTData{id_}; }
+    auto Validate() const noexcept -> bool final { return {}; }
+    auto Version() const noexcept -> VersionNumber final { return 0; }
 
-    void SetAlias(const std::string&) final {}
+    auto SetAlias(const std::string&) noexcept -> bool final { return {}; }
 
     Signable(const api::Session& api)
         : api_(api)

@@ -24,7 +24,8 @@
 #include "blockchain/node/filteroracle/FilterCheckpoints.hpp"
 #include "blockchain/node/filteroracle/FilterDownloader.hpp"
 #include "blockchain/node/filteroracle/HeaderDownloader.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Factory.hpp"
@@ -32,6 +33,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -51,13 +53,12 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
-using ReturnType = opentxs::blockchain::node::implementation::FilterOracle;
-
 namespace opentxs::factory
 {
+using ReturnType = opentxs::blockchain::node::implementation::FilterOracle;
+
 auto BlockchainFilterOracle(
     const api::Session& api,
-    const api::network::internal::Blockchain& network,
     const blockchain::node::internal::Config& config,
     const blockchain::node::internal::Network& node,
     const blockchain::node::HeaderOracle& header,
@@ -69,16 +70,7 @@ auto BlockchainFilterOracle(
     -> std::unique_ptr<blockchain::node::internal::FilterOracle>
 {
     return std::make_unique<ReturnType>(
-        api,
-        network,
-        config,
-        node,
-        header,
-        block,
-        database,
-        chain,
-        filter,
-        shutdown);
+        api, config, node, header, block, database, chain, filter, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -119,7 +111,6 @@ struct FilterOracle::SyncClientFilterData {
 
 FilterOracle::FilterOracle(
     const api::Session& api,
-    const api::network::internal::Blockchain& network,
     const internal::Config& config,
     const internal::Network& node,
     const HeaderOracle& header,
@@ -133,7 +124,7 @@ FilterOracle::FilterOracle(
     , node_(node)
     , header_(header)
     , database_(database)
-    , filter_notifier_(network.FilterUpdate())
+    , filter_notifier_(api_.Network().Blockchain().Internal().FilterUpdate())
     , chain_(chain)
     , default_type_(filter)
     , lock_()

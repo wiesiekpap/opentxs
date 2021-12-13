@@ -12,15 +12,15 @@
 
 #include "opentxs/core/Types.hpp"
 
-namespace opentxs
-{
-namespace contact
+namespace opentxs::contact
 {
 enum class Attribute : std::uint8_t;
 enum class ClaimType : std::uint32_t;
 enum class SectionType : std::uint8_t;
-}  // namespace contact
+}  // namespace opentxs::contact
 
+namespace opentxs
+{
 OPENTXS_EXPORT auto ClaimToUnit(const contact::ClaimType in) noexcept
     -> core::UnitType;
 OPENTXS_EXPORT auto UnitToClaim(const core::UnitType in) noexcept

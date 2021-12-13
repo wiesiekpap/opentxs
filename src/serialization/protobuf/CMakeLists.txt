@@ -77,6 +77,7 @@ set(PROTO_SOURCES
     HDAccount.proto
     HDPath.proto
     HDSeed.proto
+    Identifier.proto
     InstrumentRevision.proto
     Issuer.proto
     KeyCredential.proto

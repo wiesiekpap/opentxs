@@ -17,13 +17,14 @@
 #include "blockchain/node/wallet/Index.hpp"
 #include "blockchain/node/wallet/ScriptForm.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -44,7 +45,6 @@ namespace opentxs::blockchain::node::wallet
 {
 SubchainStateData::SubchainStateData(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     Accounts& parent,
     const WalletDatabase& db,
@@ -56,7 +56,6 @@ SubchainStateData::SubchainStateData(
     const filter::Type filter,
     const Subchain subchain) noexcept
     : api_(api)
-    , crypto_(crypto)
     , node_(node)
     , parent_(parent)
     , db_(db)
@@ -420,7 +419,7 @@ auto SubchainStateData::ProcessTaskComplete(
 auto SubchainStateData::report_scan(const block::Position& pos) const noexcept
     -> void
 {
-    crypto_.Internal().ReportScan(
+    api_.Crypto().Blockchain().Internal().ReportScan(
         node_.Chain(), owner_, account_type_, id_, subchain_, pos);
 }
 
@@ -429,10 +428,11 @@ auto SubchainStateData::set_key_data(
 {
     const auto keys = tx.Keys();
     auto data = block::KeyData{};
+    const auto& api = api_.Crypto().Blockchain();
 
     for (const auto& key : keys) {
         data.try_emplace(
-            key, crypto_.SenderContact(key), crypto_.RecipientContact(key));
+            key, api.SenderContact(key), api.RecipientContact(key));
     }
 
     tx.Internal().SetKeyData(data);

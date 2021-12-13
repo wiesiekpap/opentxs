@@ -18,7 +18,7 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/OTStorage.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Factory.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/storage/drivers/Drivers.hpp"
@@ -88,12 +88,12 @@ auto StorageAPI(
             std::unique_ptr<OTDB::StorageFS>{OTDB::StorageFS::Instantiate()};
     }
 
-    return std::make_unique<api::session::implementation::Storage>(
+    return std::make_unique<api::session::imp::Storage>(
         crypto, asio, running, config);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 const std::uint32_t Storage::HASH_TYPE = 2;  // BTC160
 
@@ -286,11 +286,7 @@ auto Storage::CheckTokenSpent(
     const std::uint64_t series,
     const std::string& key) const -> bool
 {
-#if OT_CASH
     return Root().Tree().Notary(notary.str()).CheckSpent(unit, series, key);
-#else
-    return false;
-#endif
 }
 
 void Storage::Cleanup_Storage()
@@ -911,7 +907,6 @@ auto Storage::MarkTokenSpent(
     const std::uint64_t series,
     const std::string& key) const -> bool
 {
-#if OT_CASH
     return mutable_Root()
         .get()
         .mutable_Tree()
@@ -919,9 +914,6 @@ auto Storage::MarkTokenSpent(
         .mutable_Notary(notary.str())
         .get()
         .MarkSpent(unit, series, key);
-#else
-    return false;
-#endif
 }
 
 auto Storage::MoveThreadItem(
@@ -1122,8 +1114,8 @@ auto Storage::PaymentWorkflowsByAccount(
 
 auto Storage::PaymentWorkflowsByState(
     const std::string& nymID,
-    const api::client::PaymentWorkflowType type,
-    const api::client::PaymentWorkflowState state) const
+    const otx::client::PaymentWorkflowType type,
+    const otx::client::PaymentWorkflowState state) const
     -> std::set<std::string>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
@@ -1153,7 +1145,7 @@ auto Storage::PaymentWorkflowsByUnit(
 auto Storage::PaymentWorkflowState(
     const std::string& nymID,
     const std::string& workflowID) const -> std::
-    pair<api::client::PaymentWorkflowType, api::client::PaymentWorkflowState>
+    pair<otx::client::PaymentWorkflowType, otx::client::PaymentWorkflowState>
 {
     if (false == Root().Tree().Nyms().Exists(nymID)) {
         LogError()(OT_PRETTY_CLASS())("Nym ")(nymID)(" doesn't exist.").Flush();
@@ -2347,4 +2339,4 @@ auto Storage::verify_write_lock(const Lock& lock) const -> bool
 }
 
 Storage::~Storage() { Cleanup_Storage(); }
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

@@ -23,29 +23,25 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
+#include "internal/otx/client/Pair.hpp"
+#include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
+#include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/Pair.hpp"
-#include "opentxs/api/client/PaymentWorkflowState.hpp"
-#include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
+#include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blind/Purse.hpp"
-#include "opentxs/blind/Token.hpp"
-#include "opentxs/client/OTAPI_Exec.hpp"
-#include "opentxs/client/OT_API.hpp"
+#include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
@@ -53,7 +49,6 @@
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -77,25 +72,30 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
-#include "opentxs/core/display/Scale.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OperationType.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/otx/blind/Token.hpp"
+#include "opentxs/otx/client/PaymentWorkflowState.hpp"
+#include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
-#include "server/Server.hpp"
-#include "server/Transactor.hpp"
+#include "otx/server/Server.hpp"
+#include "otx/server/Transactor.hpp"
 
 using namespace opentxs;
 
@@ -108,37 +108,16 @@ using namespace opentxs;
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
-#define UNIT_DEFINITION_DISPLAY_DEFINITION                                     \
-    {                                                                          \
-        u8"USD",                                                               \
-        {                                                                      \
-            {                                                                  \
-                u8"dollars", { u8"$", u8"", {{10, 0}}, 2, 3 }                  \
-            }                                                                  \
-        }                                                                      \
-    }
 #define UNIT_DEFINITION_CONTRACT_NAME_2 "Mt Gox BTC"
 #define UNIT_DEFINITION_TERMS_2 "YOLO"
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT_2 ot::core::UnitType::BTC
-#define UNIT_DEFINITION_DISPLAY_DEFINITION_2                                   \
-    {                                                                          \
-        u8"BTC",                                                               \
-        {                                                                      \
-            {                                                                  \
-                u8"BTC", { u8"₿", u8"", {{10, 8}}, 0, 8 }                    \
-            }                                                                  \
-        }                                                                      \
-    }
-
 #define MESSAGE_TEXT "example message text"
 #define NEW_SERVER_NAME "Awesome McCoolName"
 #define TEST_SEED                                                              \
     "one two three four five six seven eight nine ten eleven twelve"
 #define TEST_SEED_PASSPHRASE "seed passphrase"
-#if OT_CASH
 #define CASH_AMOUNT 100
 #define MINT_TIME_LIMIT_MINUTES 5
-#endif
 
 namespace ot = opentxs;
 
@@ -183,9 +162,7 @@ public:
         alice_state_machine_;
     static std::unique_ptr<ot::otx::client::internal::Operation>
         bob_state_machine_;
-#if OT_CASH
-    static std::shared_ptr<blind::Purse> untrusted_purse_;
-#endif
+    static std::shared_ptr<otx::blind::Purse> untrusted_purse_;
 
     const ot::api::session::Client& client_1_;
     const ot::api::session::Client& client_2_;
@@ -295,9 +272,9 @@ public:
     void init()
     {
         client_1_.OTX().DisableAutoaccept();
-        client_1_.Pair().Stop().get();
+        client_1_.InternalClient().Pair().Stop().get();
         client_2_.OTX().DisableAutoaccept();
-        client_2_.Pair().Stop().get();
+        client_2_.InternalClient().Pair().Stop().get();
         const_cast<std::string&>(SeedA_) =
             client_1_.InternalClient().Exec().Wallet_ImportSeed(
                 "spike nominee miss inquiry fee nothing belt list other "
@@ -342,9 +319,8 @@ public:
                 UNIT_DEFINITION_CONTRACT_NAME,
                 UNIT_DEFINITION_TERMS,
                 UNIT_DEFINITION_UNIT_OF_ACCOUNT,
-                reason_c1_,
-                UNIT_DEFINITION_DISPLAY_DEFINITION,
-                1);
+                1,
+                reason_c1_);
         EXPECT_EQ(contract::UnitType::Currency, asset_contract_1_->Type());
 
         if (asset_contract_1_->ID()->empty()) {
@@ -362,9 +338,8 @@ public:
                 UNIT_DEFINITION_CONTRACT_NAME_2,
                 UNIT_DEFINITION_TERMS_2,
                 UNIT_DEFINITION_UNIT_OF_ACCOUNT_2,
-                reason_c2_,
-                UNIT_DEFINITION_DISPLAY_DEFINITION_2,
-                1);
+                1,
+                reason_c2_);
         EXPECT_EQ(contract::UnitType::Currency, asset_contract_2_->Type());
 
         if (asset_contract_2_->ID()->empty()) {
@@ -1147,9 +1122,7 @@ std::unique_ptr<ot::otx::client::internal::Operation>
     Test_Basic::alice_state_machine_{nullptr};
 std::unique_ptr<ot::otx::client::internal::Operation>
     Test_Basic::bob_state_machine_{nullptr};
-#if OT_CASH
-std::shared_ptr<blind::Purse> Test_Basic::untrusted_purse_{};
-#endif
+std::shared_ptr<otx::blind::Purse> Test_Basic::untrusted_purse_{};
 
 TEST_F(Test_Basic, zmq_disconnected)
 {
@@ -1563,7 +1536,7 @@ TEST_F(Test_Basic, downloadServerContract_missing)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started =
-        stateMachine.DownloadContract(server_2_id_, contract::Type::server);
+        stateMachine.DownloadContract(server_2_id_, contract::Type::notary);
 
     ASSERT_TRUE(started);
 
@@ -1661,7 +1634,7 @@ TEST_F(Test_Basic, downloadServerContract)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started =
-        stateMachine.DownloadContract(server_2_id_, contract::Type::server);
+        stateMachine.DownloadContract(server_2_id_, contract::Type::notary);
 
     ASSERT_TRUE(started);
 
@@ -2064,8 +2037,8 @@ TEST_F(Test_Basic, send_cheque)
 
     const auto workflows = client_1_.Storage().PaymentWorkflowsByState(
         alice_nym_id_->str(),
-        api::client::PaymentWorkflowType::OutgoingCheque,
-        api::client::PaymentWorkflowState::Conveyed);
+        otx::client::PaymentWorkflowType::OutgoingCheque,
+        otx::client::PaymentWorkflowState::Conveyed);
 
     ASSERT_EQ(1, workflows.size());
 
@@ -2119,8 +2092,8 @@ TEST_F(Test_Basic, getNymbox_receive_cheque)
 
     const auto workflows = client_2_.Storage().PaymentWorkflowsByState(
         bob_nym_id_->str(),
-        api::client::PaymentWorkflowType::IncomingCheque,
-        api::client::PaymentWorkflowState::Conveyed);
+        otx::client::PaymentWorkflowType::IncomingCheque,
+        otx::client::PaymentWorkflowState::Conveyed);
 
     EXPECT_EQ(1, workflows.size());
 
@@ -2176,7 +2149,7 @@ TEST_F(Test_Basic, depositCheque)
     auto [state, pCheque] =
         client_2_.Workflow().InstantiateCheque(bob_nym_id_, workflowID);
 
-    ASSERT_EQ(api::client::PaymentWorkflowState::Conveyed, state);
+    ASSERT_EQ(otx::client::PaymentWorkflowState::Conveyed, state);
     ASSERT_TRUE(pCheque);
 
     std::shared_ptr<Cheque> cheque{std::move(pCheque)};
@@ -2236,8 +2209,8 @@ TEST_F(Test_Basic, depositCheque)
     const auto [wType, wState] = client_2_.Storage().PaymentWorkflowState(
         bob_nym_id_->str(), incoming_cheque_workflow_id_);
 
-    EXPECT_EQ(api::client::PaymentWorkflowType::IncomingCheque, wType);
-    EXPECT_EQ(api::client::PaymentWorkflowState::Completed, wState);
+    EXPECT_EQ(otx::client::PaymentWorkflowType::IncomingCheque, wType);
+    EXPECT_EQ(otx::client::PaymentWorkflowState::Completed, wState);
 }
 
 TEST_F(Test_Basic, getAccountData_after_cheque_deposited)
@@ -2307,9 +2280,9 @@ TEST_F(Test_Basic, getAccountData_after_cheque_deposited)
     const auto [wType, wState] = client_1_.Storage().PaymentWorkflowState(
         alice_nym_id_->str(), outgoing_cheque_workflow_id_);
 
-    EXPECT_EQ(wType, api::client::PaymentWorkflowType::OutgoingCheque);
+    EXPECT_EQ(wType, otx::client::PaymentWorkflowType::OutgoingCheque);
     // TODO should be completed?
-    EXPECT_EQ(wState, api::client::PaymentWorkflowState::Accepted);
+    EXPECT_EQ(wState, otx::client::PaymentWorkflowState::Accepted);
 }
 
 TEST_F(Test_Basic, resync)
@@ -2431,8 +2404,8 @@ TEST_F(Test_Basic, sendTransfer)
 
     const auto workflows = client_1_.Storage().PaymentWorkflowsByState(
         alice_nym_id_->str(),
-        api::client::PaymentWorkflowType::OutgoingTransfer,
-        api::client::PaymentWorkflowState::Acknowledged);
+        otx::client::PaymentWorkflowType::OutgoingTransfer,
+        otx::client::PaymentWorkflowState::Acknowledged);
 
     ASSERT_EQ(1, workflows.size());
 
@@ -2518,8 +2491,8 @@ TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
 
     const auto workflows = client_2_.Storage().PaymentWorkflowsByState(
         bob_nym_id_->str(),
-        api::client::PaymentWorkflowType::IncomingTransfer,
-        api::client::PaymentWorkflowState::Completed);
+        otx::client::PaymentWorkflowType::IncomingTransfer,
+        otx::client::PaymentWorkflowState::Completed);
 
     ASSERT_EQ(1, workflows.size());
 
@@ -2546,11 +2519,11 @@ TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
     EXPECT_EQ(
         client_2_.Workflow().WorkflowType(
             bob_nym_id_, Identifier::Factory(incoming_transfer_workflow_id_)),
-        api::client::PaymentWorkflowType::IncomingTransfer);
+        otx::client::PaymentWorkflowType::IncomingTransfer);
     EXPECT_EQ(
         client_2_.Workflow().WorkflowState(
             bob_nym_id_, Identifier::Factory(incoming_transfer_workflow_id_)),
-        api::client::PaymentWorkflowState::Completed);
+        otx::client::PaymentWorkflowState::Completed);
 }
 
 TEST_F(Test_Basic, getAccountData_after_transfer_accepted)
@@ -2625,8 +2598,8 @@ TEST_F(Test_Basic, getAccountData_after_transfer_accepted)
     const auto [type, state] = client_1_.Storage().PaymentWorkflowState(
         alice_nym_id_->str(), outgoing_transfer_workflow_id_);
 
-    EXPECT_EQ(type, api::client::PaymentWorkflowType::OutgoingTransfer);
-    EXPECT_EQ(state, api::client::PaymentWorkflowState::Completed);
+    EXPECT_EQ(type, otx::client::PaymentWorkflowType::OutgoingTransfer);
+    EXPECT_EQ(state, otx::client::PaymentWorkflowState::Completed);
 }
 
 TEST_F(Test_Basic, register_second_account)
@@ -2766,15 +2739,15 @@ TEST_F(Test_Basic, send_internal_transfer)
         Sleep(std::chrono::milliseconds(100));
         workflows = client_2_.Storage().PaymentWorkflowsByState(
             bob_nym_id_->str(),
-            api::client::PaymentWorkflowType::InternalTransfer,
-            api::client::PaymentWorkflowState::Acknowledged);
+            otx::client::PaymentWorkflowType::InternalTransfer,
+            otx::client::PaymentWorkflowState::Acknowledged);
         count = workflows.size();
 
         if (0 == count) {
             workflows = client_2_.Storage().PaymentWorkflowsByState(
                 bob_nym_id_->str(),
-                api::client::PaymentWorkflowType::InternalTransfer,
-                api::client::PaymentWorkflowState::Conveyed);
+                otx::client::PaymentWorkflowType::InternalTransfer,
+                otx::client::PaymentWorkflowState::Conveyed);
             count = workflows.size();
         }
 
@@ -2860,8 +2833,8 @@ TEST_F(Test_Basic, getAccountData_after_incoming_internal_Transfer)
     const auto [type, state] = client_2_.Storage().PaymentWorkflowState(
         bob_nym_id_->str(), internal_transfer_workflow_id_);
 
-    EXPECT_EQ(type, api::client::PaymentWorkflowType::InternalTransfer);
-    EXPECT_EQ(state, api::client::PaymentWorkflowState::Conveyed);
+    EXPECT_EQ(type, otx::client::PaymentWorkflowType::InternalTransfer);
+    EXPECT_EQ(state, otx::client::PaymentWorkflowState::Conveyed);
     EXPECT_EQ(SECOND_TRANSFER_AMOUNT, serverAccount.get().GetBalance());
 }
 
@@ -2932,8 +2905,8 @@ TEST_F(Test_Basic, getAccountData_after_internal_transfer_accepted)
     const auto [type, state] = client_2_.Storage().PaymentWorkflowState(
         bob_nym_id_->str(), internal_transfer_workflow_id_);
 
-    EXPECT_EQ(type, api::client::PaymentWorkflowType::InternalTransfer);
-    EXPECT_EQ(state, api::client::PaymentWorkflowState::Completed);
+    EXPECT_EQ(type, otx::client::PaymentWorkflowType::InternalTransfer);
+    EXPECT_EQ(state, otx::client::PaymentWorkflowState::Completed);
     EXPECT_EQ(
         CHEQUE_AMOUNT + TRANSFER_AMOUNT - SECOND_TRANSFER_AMOUNT,
         serverAccount.get().GetBalance());
@@ -3618,18 +3591,20 @@ TEST_F(Test_Basic, initiate_store_secret_and_acknowledge_notice)
         contract::peer::PeerRequestType::StoreSecret);
 }
 
-#if OT_CASH
 TEST_F(Test_Basic, waitForCash_Alice)
 {
-    auto mint = server_1_.GetPublicMint(find_unit_definition_id_1());
+    auto CheckMint = [&]() -> bool {
+        return server_1_.GetPublicMint(find_unit_definition_id_1());
+    };
+    auto mint = CheckMint();
     const auto start = Clock::now();
     std::cout << "Pausing for up to " << MINT_TIME_LIMIT_MINUTES
               << " minutes until mint generation is finished." << std::endl;
 
-    while (false == bool(mint)) {
+    while (false == mint) {
         std::cout << "* Waiting for mint..." << std::endl;
         Sleep(std::chrono::seconds(10));
-        mint = server_1_.GetPublicMint(find_unit_definition_id_1());
+        mint = CheckMint();
         const auto wait = Clock::now() - start;
         const auto limit = std::chrono::minutes(MINT_TIME_LIMIT_MINUTES);
 
@@ -3776,19 +3751,16 @@ TEST_F(Test_Basic, send_cash)
         EXPECT_FALSE(token.ID(reason_c2_).empty());
     }
 
-    std::shared_ptr<blind::Purse> pSendPurse{
-        client_2_.Factory().Purse(bob, server_1_id_, unitID, reason_c2_)};
+    auto sendPurse =
+        client_2_.Factory().Purse(bob, server_1_id_, unitID, reason_c2_);
 
-    ASSERT_TRUE(pSendPurse);
-
-    auto& sendPurse = *pSendPurse;
-
+    ASSERT_TRUE(sendPurse);
     ASSERT_TRUE(localPurse.IsUnlocked());
 
     auto token = localPurse.Pop();
 
     while (token) {
-        const auto added = sendPurse.Push(token, reason_c2_);
+        const auto added = sendPurse.Push(std::move(token), reason_c2_);
 
         EXPECT_TRUE(added);
 
@@ -3836,7 +3808,7 @@ TEST_F(Test_Basic, send_cash)
     EXPECT_EQ(localPurse.Value(), 0);
 
     EXPECT_EQ(
-        api::client::PaymentWorkflowState::Conveyed,
+        otx::client::PaymentWorkflowState::Conveyed,
         client_2_.Workflow().WorkflowState(bob_nym_id_, workflowID));
 }
 
@@ -3886,18 +3858,17 @@ TEST_F(Test_Basic, receive_cash)
 
     const auto workflows = client_1_.Storage().PaymentWorkflowsByState(
         alice_nym_id_->str(),
-        api::client::PaymentWorkflowType::IncomingCash,
-        api::client::PaymentWorkflowState::Conveyed);
+        otx::client::PaymentWorkflowType::IncomingCash,
+        otx::client::PaymentWorkflowState::Conveyed);
 
     ASSERT_EQ(1, workflows.size());
 
     const auto& workflowID = Identifier::Factory(*workflows.begin());
-    auto [state, pPurse] =
+    auto [state, incomingPurse] =
         client_1_.Workflow().InstantiatePurse(alice_nym_id_, workflowID);
 
-    ASSERT_TRUE(pPurse);
+    ASSERT_TRUE(incomingPurse);
 
-    auto& incomingPurse = *pPurse;
     auto purseEditor = context.mutable_Purse(unitID, reason_c1_);
     auto& walletPurse = purseEditor.get();
     const auto& alice = *context.Nym();
@@ -3908,7 +3879,7 @@ TEST_F(Test_Basic, receive_cash)
     auto token = incomingPurse.Pop();
 
     while (token) {
-        EXPECT_TRUE(walletPurse.Push(token, reason_c1_));
+        EXPECT_TRUE(walletPurse.Push(std::move(token), reason_c1_));
 
         token = incomingPurse.Pop();
     }
@@ -3932,40 +3903,35 @@ TEST_F(Test_Basic, depositCash)
     // TODO conversion
     const auto unitID =
         identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str());
-    auto pPurse = context.Purse(unitID);
+    auto& walletPurse = context.Purse(unitID);
 
-    ASSERT_TRUE(pPurse);
+    ASSERT_TRUE(walletPurse);
 
-    auto& walletPurse = *pPurse;
+    auto copy{walletPurse};
+    auto sendPurse =
+        client_1_.Factory().Purse(alice, server_1_id_, unitID, reason_c1_);
 
-    OTPurse copy{walletPurse};
-    std::shared_ptr<blind::Purse> pSendPurse{
-        client_1_.Factory().Purse(alice, server_1_id_, unitID, reason_c1_)};
-
-    ASSERT_TRUE(pSendPurse);
-
-    auto& sendPurse = *pSendPurse;
-
+    ASSERT_TRUE(sendPurse);
     ASSERT_TRUE(walletPurse.Unlock(alice, reason_c1_));
-    ASSERT_TRUE(copy->Unlock(alice, reason_c1_));
+    ASSERT_TRUE(copy.Unlock(alice, reason_c1_));
     ASSERT_TRUE(sendPurse.Unlock(alice, reason_c1_));
 
-    auto token = copy->Pop();
+    auto token = copy.Pop();
 
     while (token) {
-        ASSERT_TRUE(sendPurse.Push(token, reason_c1_));
+        ASSERT_TRUE(sendPurse.Push(std::move(token), reason_c1_));
 
-        token = copy->Pop();
+        token = copy.Pop();
     }
 
-    EXPECT_EQ(copy->Value(), 0);
+    EXPECT_EQ(copy.Value(), 0);
     EXPECT_EQ(sendPurse.Value(), CASH_AMOUNT);
     EXPECT_EQ(walletPurse.Value(), CASH_AMOUNT);
 
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
-    auto started = stateMachine.DepositCash(accountID, pSendPurse);
+    auto started = stateMachine.DepositCash(accountID, std::move(sendPurse));
 
     ASSERT_TRUE(started);
 
@@ -4004,12 +3970,11 @@ TEST_F(Test_Basic, depositCash)
     EXPECT_EQ(
         serverAccount.get().GetBalance(), clientAccount.get().GetBalance());
 
-    auto pWalletPurse = context.Purse(unitID);
+    auto& pWalletPurse = context.Purse(unitID);
 
     ASSERT_TRUE(pWalletPurse);
-    EXPECT_EQ(pWalletPurse->Value(), 0);
+    EXPECT_EQ(pWalletPurse.Value(), 0);
 }
-#endif
 
 TEST_F(Test_Basic, cleanup)
 {

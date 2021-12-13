@@ -21,6 +21,7 @@
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
@@ -34,9 +35,9 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/ParameterType.hpp"
 #include "opentxs/crypto/Parameters.hpp"
@@ -1250,7 +1251,7 @@ auto Authority::Verify(const proto::Verification& item) const -> bool
     signature.clear_signature();
 
     return Verify(
-        api_.Factory().Data(serialized),
+        api_.Factory().InternalSession().Data(serialized),
         signatureCopy,
         crypto::key::asymmetric::Role::Sign);
 }

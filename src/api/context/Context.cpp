@@ -60,7 +60,7 @@ auto Context(
     OTCaller* externalPasswordCallback) noexcept
     -> std::unique_ptr<api::internal::Context>
 {
-    using ReturnType = api::implementation::Context;
+    using ReturnType = api::imp::Context;
 
     return std::make_unique<ReturnType>(
         running, args, externalPasswordCallback);
@@ -75,7 +75,7 @@ auto Context::SuggestFolder(const std::string& app) noexcept -> std::string
 }
 }  // namespace opentxs::api
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 Context::Context(
     Flag& running,
@@ -503,4 +503,4 @@ auto Context::ZAP() const noexcept -> const api::network::ZAP&
 }
 
 Context::~Context() { shutdown(); }
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

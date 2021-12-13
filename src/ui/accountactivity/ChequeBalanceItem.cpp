@@ -13,11 +13,11 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/util/Log.hpp"
@@ -110,7 +110,7 @@ auto ChequeBalanceItem::startup(
 
     if (false == bool(cheque_)) {
         cheque_ =
-            api::client::Workflow::InstantiateCheque(api_, workflow).second;
+            api::session::Workflow::InstantiateCheque(api_, workflow).second;
     }
 
     OT_ASSERT(cheque_)
@@ -209,7 +209,7 @@ auto ChequeBalanceItem::UUID() const noexcept -> std::string
 {
     if (cheque_) {
 
-        return api::client::Workflow::UUID(
+        return api::session::Workflow::UUID(
                    api_, cheque_->GetNotaryID(), cheque_->GetTransactionNum())
             ->str();
     }
