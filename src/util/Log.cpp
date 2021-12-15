@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"        // IWYU pragma: associated
 #include "opentxs/util/Log.hpp"  // IWYU pragma: associated
 
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <boost/stacktrace.hpp>
 #include <cassert>
 #include <chrono>
@@ -16,7 +15,6 @@
 #include <memory>
 #include <thread>
 
-#include "core/Amount.hpp"
 #include "internal/util/Log.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -290,34 +288,7 @@ auto Log::operator()(const OTArmored& in) const noexcept -> const Log&
 
 auto Log::operator()(const Amount& in) const noexcept -> const Log&
 {
-    auto amount = std::string{};
-    in.Serialize(opentxs::writer(amount));
-
-    auto raw_amount =
-        in.Internal().amount_.convert_to<bmp::cpp_dec_float_100>() /
-        Amount::Imp::shift_left(1).convert_to<bmp::cpp_dec_float_100>();
-    amount = raw_amount.str(8, std::ios_base::fixed) + " (" + amount + ")";
-
-    return operator()(amount);
-}
-
-auto Log::operator()(const Amount& in, core::UnitType currency) const noexcept
-    -> const Log&
-{
-    auto amount = std::string{};
-    in.Serialize(opentxs::writer(amount));
-
-    if (core::UnitType::Unknown != currency) {
-        amount =
-            display::GetDefinition(currency).Format(in) + " (" + amount + ")";
-    } else {
-        auto raw_amount =
-            in.Internal().amount_.convert_to<bmp::cpp_dec_float_100>() /
-            Amount::Imp::shift_left(1).convert_to<bmp::cpp_dec_float_100>();
-        amount = raw_amount.str(8, std::ios_base::fixed) + " (" + amount + ")";
-    }
-
-    return operator()(amount);
+    return operator()(in.str());
 }
 
 auto Log::operator()(const String& in) const noexcept -> const Log&

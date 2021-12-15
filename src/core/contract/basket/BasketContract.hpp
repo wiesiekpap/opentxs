@@ -51,12 +51,12 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
+        const std::string& name,
+        const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
         const core::UnitType unitOfAccount,
-        const VersionNumber version,
-        const display::Definition& displayDefinition,
-        const Amount& redemptionIncrement);
+        const VersionNumber version);
     Basket(
         const api::Session& api,
         const Nym_p& nym,

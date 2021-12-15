@@ -13,7 +13,7 @@
 #include <string>
 #include <utility>
 
-#include "opentxs/core/display/Definition.hpp"
+#include "display/Definition.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -38,8 +38,7 @@ auto BlockchainAccountActivity::Send(
         const auto& network =
             Widget::api_.Network().Blockchain().GetChain(chain_);
         const auto recipient = Widget::api_.Factory().PaymentCode(address);
-        const auto& definition = blockchain::GetDefinition(chain_);
-        const auto amount = definition.Import(input, scale);
+        const auto amount = scales_.Import(input, scale);
 
         if (0 < recipient.Version()) {
 

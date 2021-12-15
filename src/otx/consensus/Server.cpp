@@ -2866,24 +2866,18 @@ void Server::process_accept_cron_receipt_reply(
         if (bIsAsset) {
             const auto strInstrumentDefinitionID =
                 String::Factory(theTrade->GetInstrumentDefinitionID());
+            const Amount& lAssetsThisTrade = pServerItem->GetAmount();
             pData->instrument_definition_id = strInstrumentDefinitionID->Get();
             // The amount of ASSETS moved, this trade.
-            pData->amount_sold = [&] {
-                auto buf = std::string{};
-                pServerItem->GetAmount().Serialize(writer(buf));
-                return buf;
-            }();
+            pData->amount_sold = lAssetsThisTrade.str();
             pData->asset_acct_id = strAcctID->Get();
             pData->asset_receipt = strServerTransaction->Get();
         } else if (bIsCurrency) {
             const auto strCurrencyID =
                 String::Factory(theTrade->GetCurrencyID());
+            const Amount& lCurrencyThisTrade = pServerItem->GetAmount();
             pData->currency_id = strCurrencyID->Get();
-            pData->currency_paid = [&] {
-                auto buf = std::string{};
-                pServerItem->GetAmount().Serialize(writer(buf));
-                return buf;
-            }();
+            pData->currency_paid = lCurrencyThisTrade.str();
             pData->currency_acct_id = strAcctID->Get();
             pData->currency_receipt = strServerTransaction->Get();
         }
@@ -2892,21 +2886,11 @@ void Server::process_accept_cron_receipt_reply(
         pData->date = std::to_string(Clock::to_time_t(tProcessDate));
 
         // The original offer price. (Might be 0, if it's a market order.)
-        pData->offer_price = [&] {
-            auto buf = std::string{};
-            theOffer->GetPriceLimit().Serialize(writer(buf));
-            return buf;
-        }();
-        pData->finished_so_far = [&] {
-            auto buf = std::string{};
-            theOffer->GetFinishedSoFar().Serialize(writer(buf));
-            return buf;
-        }();
-        pData->scale = [&] {
-            auto buf = std::string{};
-            lScale.Serialize(writer(buf));
-            return buf;
-        }();
+        const Amount& lPriceLimit = theOffer->GetPriceLimit();
+        pData->offer_price = lPriceLimit.str();
+        const Amount& lFinishedSoFar = theOffer->GetFinishedSoFar();
+        pData->finished_so_far = lFinishedSoFar.str();
+        pData->scale = lScale.str();
         pData->is_bid = theOffer->IsBid();
 
         // save to local storage...
@@ -2995,9 +2979,7 @@ void Server::process_accept_cron_receipt_reply(
                             (lCurrencyPaid / (lAmountSold / lScale));
 
                         auto strSalePrice = String::Factory();
-                        auto price = std::string{};
-                        lSalePrice.Serialize(writer(price));
-                        strSalePrice->Format("%s", price.c_str());
+                        strSalePrice->Format("%s", lSalePrice.str().c_str());
 
                         pTradeData->price = strSalePrice->Get();
                     }

@@ -36,7 +36,6 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/basket/Basket.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -2627,10 +2626,10 @@ auto OTAPI_Exec::Basket_GetMemberMinimumTransferAmount(
 auto OTAPI_Exec::GenerateBasketCreation(
     const std::string& serverID,
     const std::string& shortname,
+    const std::string& name,
+    const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
-    const display::Definition& displayDefinition,
-    const Amount& redemptionIncrement,
     const VersionNumber version) const -> std::string
 {
     try {
@@ -2639,12 +2638,12 @@ auto OTAPI_Exec::GenerateBasketCreation(
         const auto basketTemplate = api_.Factory().BasketContract(
             serverContract->Nym(),
             shortname,
+            name,
+            symbol,
             terms,
             weight,
             core::UnitType::Unknown,
-            version,
-            displayDefinition,
-            redemptionIncrement);
+            version);
 
         auto serialized = proto::UnitDefinition{};
         if (false == basketTemplate->Serialize(serialized, true)) {

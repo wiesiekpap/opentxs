@@ -17,6 +17,7 @@
 #include <string>
 #include <type_traits>
 
+#include "display/Definition.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -35,7 +36,6 @@
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
@@ -83,7 +83,14 @@ BlockchainAccountActivity::BlockchainAccountActivity(
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const SimpleCallback& cb) noexcept
-    : AccountActivity(api, nymID, accountID, AccountType::Blockchain, cb)
+    : AccountActivity(
+          api,
+          nymID,
+          accountID,
+          AccountType::Blockchain,
+          cb,
+          display::Definition{
+              blockchain::params::Data::Chains().at(chain).scales_})
     , chain_(chain)
     , confirmed_(0)
     , balance_cb_(zmq::ListenCallback::Factory(
@@ -474,8 +481,7 @@ auto BlockchainAccountActivity::Send(
 {
     try {
 
-        const auto& definition = blockchain::GetDefinition(chain_);
-        return Send(address, definition.Import(amount, scale), memo);
+        return Send(address, scales_.Import(amount, scale), memo);
     } catch (...) {
 
         return false;
@@ -510,8 +516,7 @@ auto BlockchainAccountActivity::ValidateAmount(
 {
     try {
 
-        const auto& definition = blockchain::GetDefinition(chain_);
-        return definition.Format(definition.Import(text));
+        return scales_.Format(scales_.Import(text));
     } catch (...) {
 
         return {};

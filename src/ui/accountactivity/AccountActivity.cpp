@@ -27,9 +27,11 @@ AccountActivity::AccountActivity(
     const identifier::Nym& nymID,
     const Identifier& accountID,
     const AccountType type,
-    const SimpleCallback& cb) noexcept
+    const SimpleCallback& cb,
+    display::Definition&& scales) noexcept
     : AccountActivityList(api, nymID, cb, true)
     , Worker(api, {})
+    , scales_(std::move(scales))
     , callbacks_()
     , balance_(0)
     , account_id_(accountID)

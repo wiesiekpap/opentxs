@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "core/Worker.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -257,8 +256,7 @@ struct AccountActivity::QT {
 
     QT(AccountActivity& parent)
     noexcept
-        : scales_qt_(blockchain::GetDefinition(
-              UnitToBlockchain(parent.Contract().UnitOfAccount())))
+        : scales_qt_(parent.scales_)
         , amount_validator_(parent)
         , destination_validator_(
               parent.Worker::api_,

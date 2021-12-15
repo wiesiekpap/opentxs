@@ -38,11 +38,6 @@ class Context;
 class Session;
 }  // namespace api
 
-namespace display
-{
-class Definition;
-}  // namespace display
-
 namespace identifier
 {
 class Nym;
@@ -146,10 +141,13 @@ protected:
         const ot::api::session::Notary& server,
         const std::string& issuer,
         const std::string& shortname,
+        const std::string& name,
+        const std::string& symbol,
         const std::string& terms,
-        ot::core::UnitType unitOfAccount,
-        const ot::display::Definition& displayDefinition) const noexcept
-        -> std::string;
+        const std::string& tla,
+        const std::string& fraction,
+        std::uint32_t power,
+        ot::core::UnitType unitOfAccount) const noexcept -> std::string;
     auto RefreshAccount(
         const ot::api::session::Client& api,
         const ot::identifier::Nym& nym,

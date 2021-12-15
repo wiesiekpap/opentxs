@@ -192,8 +192,8 @@ auto AccountData::Serialize(proto::AccountData& dest) const noexcept -> bool
     dest.set_unit(imp.unit_);
     dest.set_owner(imp.owner_);
     dest.set_issuer(imp.issuer_);
-    imp.balance_.Serialize(writer(dest.mutable_balance()));
-    imp.pending_.Serialize(writer(dest.mutable_pendingbalance()));
+    dest.set_balance(imp.balance_);
+    dest.set_pendingbalance(imp.pending_);
     dest.set_type(translate(imp.type_));
     dest.set_balanceformatted(imp.balance_formatted_);
     dest.set_pendingbalanceformatted(imp.pending_formatted_);

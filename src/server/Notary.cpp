@@ -178,10 +178,8 @@ void Notary::cancel_cheque(
     }
 
     if (cheque.GetAmount() != 0) {
-        const auto unittype = manager_.Wallet().CurrencyTypeBasedOnUnitType(
-            cheque.GetInstrumentDefinitionID());
         LogError()(OT_PRETTY_CLASS())("Invalid amount (")(
-            cheque.GetAmount(), unittype)(").")
+            cheque.GetAmount().str())(").")
             .Flush();
 
         return;
@@ -1185,14 +1183,10 @@ void Notary::NotarizeTransfer(
                         theFromAccount.get().GetIdentifier(accountHash);
                         theFromAccount.Abort();
                         destinationAccount.Abort();
-                        const auto unittype =
-                            manager_.Wallet().CurrencyTypeBasedOnUnitType(
-                                destinationAccount.get()
-                                    .GetInstrumentDefinitionID());
                         LogError()(OT_PRETTY_CLASS())(
                             "Unable to debit account ")(
                             strAccountID)(" in the amount of: ")(
-                            pItem->GetAmount(), unittype)
+                            pItem->GetAmount().str())
                             .Flush();
                     }
                 }
@@ -2004,34 +1998,26 @@ void Notary::NotarizePayDividend(
                      lAmountPerShare) != lTotalCostOfDividend) {
                     const auto strIssuerAcctID =
                         String::Factory(SHARES_ISSUER_ACCT_ID);
-                    const auto unittype =
-                        manager_.Wallet().CurrencyTypeBasedOnUnitType(
-                            sharesIssuerAccount.get()
-                                .GetInstrumentDefinitionID());
                     LogError()(OT_PRETTY_CLASS())(
                         "ERROR: total payout of dividend as calculated (")(
                         (sharesIssuerAccount.get().GetBalance() * (-1) *
-                         lAmountPerShare),
-                        unittype)(") doesn't match client's request "
-                                  "(")(lTotalCostOfDividend, unittype)(
-                        ") for source "
-                        "acct: ")(strAccountID)
+                         lAmountPerShare)
+                            .str())(
+                        ") doesn't match client's request "
+                        "(")(lTotalCostOfDividend.str())(") for source "
+                                                         "acct: ")(strAccountID)
                         .Flush();
                 } else if (
                     theSourceAccount.get().GetBalance() <
                     lTotalCostOfDividend) {
                     const auto strIssuerAcctID =
                         String::Factory(SHARES_ISSUER_ACCT_ID);
-                    const auto unittype =
-                        manager_.Wallet().CurrencyTypeBasedOnUnitType(
-                            sharesIssuerAccount.get()
-                                .GetInstrumentDefinitionID());
                     LogError()(OT_PRETTY_CLASS())(
                         "FAILURE: not enough funds (")(
-                        theSourceAccount.get().GetBalance(),
-                        unittype)(") to cover total dividend payout (")(
-                        lTotalCostOfDividend,
-                        unittype)(") for source acct: ")(strAccountID)
+                        theSourceAccount.get().GetBalance().str())(
+                        ") to cover otal dividend payout (")(
+                        lTotalCostOfDividend.str())(") for source acct: ")(
+                        strAccountID)
                         .Flush();
                 } else {
                     // Remove all the funds at once (so the balance agreement
@@ -2146,14 +2132,9 @@ void Notary::NotarizePayDividend(
                                     voucherReserveAccount.get().Credit(
                                         lTotalCostOfDividend))  // theVoucherRequest->GetAmount()))
                                 {
-                                    const auto unittype =
-                                        manager_.Wallet()
-                                            .CurrencyTypeBasedOnUnitType(
-                                                voucherReserveAccount.get()
-                                                    .GetInstrumentDefinitionID());
-                                    LogError()(OT_PRETTY_CLASS())(
-                                        "Failed crediting ")(
-                                        lTotalCostOfDividend, unittype)(
+                                    LogError()(OT_PRETTY_CLASS())("Failed "
+                                                                  "crediting ")(
+                                        lTotalCostOfDividend.str())(
                                         "units to voucher reserve account: ")(
                                         strVoucherAcctID)
                                         .Flush();
@@ -2311,16 +2292,14 @@ void Notary::NotarizePayDividend(
                                         // Therefore, we should pay it back to
                                         // the sender himself, now.
                                         //
-                                        const auto unittype =
-                                            manager_.Wallet()
-                                                .CurrencyTypeBasedOnUnitType(
-                                                    PAYOUT_INSTRUMENT_DEFINITION_ID);
                                         LogError()(OT_PRETTY_CLASS())(
-                                            "After dividend payout, with ")(
-                                            lTotalCostOfDividend, unittype)(
+                                            "After dividend payout, "
+                                            "with ")(
+                                            lTotalCostOfDividend.str())(
                                             " units removed initially, there "
-                                            "were ")(lLeftovers, unittype)(
-                                            " units remaining. (Returning them "
+                                            "were ")(lLeftovers.str())(
+                                            " units remaining. "
+                                            "(Returning them "
                                             "to sender...)")
                                             .Flush();
                                         auto theVoucher{manager_.Factory().Cheque(
@@ -2473,21 +2452,15 @@ void Notary::NotarizePayDividend(
                                                             PAYOUT_INSTRUMENT_DEFINITION_ID),
                                                     strSenderNymID =
                                                         String::Factory(NYM_ID);
-                                                const auto unittype =
-                                                    manager_.Wallet()
-                                                        .CurrencyTypeBasedOnUnitType(
-                                                            PAYOUT_INSTRUMENT_DEFINITION_ID);
                                                 LogError()(OT_PRETTY_CLASS())(
                                                     "ERROR failed issuing "
                                                     "voucher (to return "
                                                     "leftovers back to the "
                                                     "dividend payout "
                                                     "initiator.) WAS TRYING TO "
-                                                    "PAY ")(
-                                                    lLeftovers,
-                                                    unittype)(" of "
-                                                              "instrument "
-                                                              "definition ")(
+                                                    "PAY ")(lLeftovers.str())(
+                                                    " of instrument "
+                                                    "definition ")(
                                                     strPayoutInstrumentDefinitionID)(" to Nym ")(
                                                     strSenderNymID)
                                                     .Flush();
@@ -2500,10 +2473,6 @@ void Notary::NotarizePayDividend(
                                                         PAYOUT_INSTRUMENT_DEFINITION_ID),
                                                 strRecipientNymID =
                                                     String::Factory(NYM_ID);
-                                            const auto unittype =
-                                                manager_.Wallet()
-                                                    .CurrencyTypeBasedOnUnitType(
-                                                        PAYOUT_INSTRUMENT_DEFINITION_ID);
                                             LogError()(OT_PRETTY_CLASS())(
                                                 "ERROR!! Failed issuing next "
                                                 "transaction number while "
@@ -2511,7 +2480,7 @@ void Notary::NotarizePayDividend(
                                                 "(while returning leftover "
                                                 "funds, after paying "
                                                 "dividends.) WAS TRYING TO "
-                                                "PAY ")(lLeftovers, unittype)(
+                                                "PAY ")(lLeftovers.str())(
                                                 " of asset type ")(
                                                 strPayoutInstrumentDefinitionID)(" to Nym ")(
                                                 strRecipientNymID)
@@ -5655,9 +5624,10 @@ void Notary::NotarizeMarketOffer(
                     .Flush();
             } else if (
                 theOffer->GetScale() < ServerSettings::GetMinMarketScale()) {
-                LogError()(OT_PRETTY_CLASS())("FAILED verifying Offer, "
-                                              "SCALE: ")(theOffer->GetScale())(
-                    ". (Minimum is ")(ServerSettings::GetMinMarketScale())(".)")
+                LogError()(OT_PRETTY_CLASS())(
+                    "FAILED verifying Offer, "
+                    "SCALE: ")(theOffer->GetScale().str())(". (Minimum is ")(
+                    ServerSettings::GetMinMarketScale())(".)")
                     .Flush();
             } else if (
                 static_cast<std::int64_t>((context.OpenCronItems() / 3)) >=
@@ -7061,14 +7031,10 @@ void Notary::NotarizeProcessInbox(
             break;
         } else if (
             pServerTransaction->GetReceiptAmount(reason_) != item.GetAmount()) {
-            const auto& INSTRUMENT_DEFINITION_ID =
-                theAccount.get().GetInstrumentDefinitionID();
-            const auto unittype = manager_.Wallet().CurrencyTypeBasedOnUnitType(
-                INSTRUMENT_DEFINITION_ID);
-            LogError()(OT_PRETTY_CLASS())("Receipt amounts don't "
-                                          "match: ")(
-                pServerTransaction->GetReceiptAmount(reason_), unittype)(
-                " and ")(item.GetAmount(), unittype)(". Nym ")(strNymID)
+            LogError()(OT_PRETTY_CLASS())(
+                "Receipt amounts don't "
+                "match: ")(pServerTransaction->GetReceiptAmount(reason_).str())(
+                " and ")(item.GetAmount().str())(". Nym ")(strNymID)
                 .Flush();
             bSuccessFindingAllTransactions = false;
             break;
@@ -8950,13 +8916,8 @@ auto Notary::process_token_withdrawal(
             return false;
         }
     } else {
-        const auto& INSTRUMENT_DEFINITION_ID =
-            account.GetInstrumentDefinitionID();
-        const auto unittype = manager_.Wallet().CurrencyTypeBasedOnUnitType(
-            INSTRUMENT_DEFINITION_ID);
         LogError()(OT_PRETTY_CLASS())("Unable to debit account ")(
-            account.GetPurportedAccountID())(" in the amount of: ")(
-            value, unittype)
+            account.GetPurportedAccountID())(" in the amount of: ")(value.str())
             .Flush();
 
         return false;

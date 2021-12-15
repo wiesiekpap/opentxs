@@ -27,7 +27,6 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "serialization/protobuf/GCS.pb.h"
 
@@ -83,11 +82,6 @@ auto HashedSetConstruct(
     const std::vector<ReadView> items) noexcept(false)
     -> std::vector<std::uint64_t>;
 }  // namespace opentxs::gcs
-
-namespace opentxs::blockchain
-{
-auto GetDefinition(blockchain::Type) noexcept -> const display::Definition&;
-}  // namespace opentxs::blockchain
 
 namespace opentxs::blockchain::internal
 {

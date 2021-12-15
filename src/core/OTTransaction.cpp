@@ -27,7 +27,6 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
@@ -2285,12 +2284,10 @@ auto OTTransaction::VerifyBalanceReceipt(
 
         // STILL not found??
         if (false == bool(pTransaction)) {
-            const auto unittype =
-                api_.Storage().AccountUnit(GetRealAccountID());
             LogConsole()(OT_PRETTY_CLASS())("Expected ")(
                 pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") not found. (Amount ")(
-                pSubItem->GetAmount(), unittype)(".)")
+                pSubItem->GetAmount().str())(".)")
                 .Flush();
 
             return false;
@@ -2322,15 +2319,13 @@ auto OTTransaction::VerifyBalanceReceipt(
         lTransactionAmount *= lReceiptAmountMultiplier;
 
         if (pSubItem->GetAmount() != lTransactionAmount) {
-            const auto unittype =
-                api_.Storage().AccountUnit(GetRealAccountID());
             LogConsole()(OT_PRETTY_CLASS())(pszLedgerType)(" transaction (")(
                 lTempTransactionNum)(") amounts don't match: Report says ")(
-                pSubItem->GetAmount(), unittype)(", but expected ")(
-                lTransactionAmount, unittype)(". Trans recpt amt: ")(
-                pTransaction->GetReceiptAmount(reason),
-                unittype)(", (pBalanceItem->GetAmount() == ")(
-                pBalanceItem->GetAmount(), unittype)(".)")
+                pSubItem->GetAmount().str())(", but expected ")(
+                lTransactionAmount.str())(". Trans recpt amt: ")(
+                pTransaction->GetReceiptAmount(reason).str())(
+                ", (pBalanceItem->GetAmount() == ")(
+                pBalanceItem->GetAmount().str())(".)")
                 .Flush();
 
             return false;
@@ -2633,14 +2628,12 @@ auto OTTransaction::VerifyBalanceReceipt(
             // (that was only for outbox items.)
             if (pSubItem->GetAmount() !=
                 (pTransaction->GetReceiptAmount(reason))) {
-                const auto unittype =
-                    api_.Storage().AccountUnit(GetRealAccountID());
                 LogConsole()(OT_PRETTY_CLASS())("Inbox transaction (")(
                     pSubItem->GetTransactionNum())(") amounts don't match: ")(
-                    pSubItem->GetAmount(), unittype)(", expected ")(
-                    pTransaction->GetReceiptAmount(reason))(
+                    pSubItem->GetAmount().str())(", expected ")(
+                    pTransaction->GetReceiptAmount(reason).str())(
                     ". (pBalanceItem->GetAmount() == ")(
-                    pBalanceItem->GetAmount(), unittype)(").")
+                    pBalanceItem->GetAmount().str())(").")
                     .Flush();
                 return false;
             }
@@ -2912,15 +2905,13 @@ auto OTTransaction::VerifyBalanceReceipt(
     // supposed difference from adding up just the new receipts, (Which is
     // probably impossible anyway) then return false.
     if (lActualDifference != lInboxSupposedDifference) {
-        const auto unittype = api_.Storage().AccountUnit(GetRealAccountID());
         LogError()(OT_PRETTY_CLASS())("lActualDifference (")(
-            lActualDifference,
-            unittype)(") is not equal to lInboxSupposedDifference (")(
-            lInboxSupposedDifference,
-            unittype)("). FYI, Inbox balance on old receipt: ")(
-            lReceiptBalanceChange,
-            unittype)(". Inbox balance on current inbox: ")(
-            lInboxBalanceChange, unittype)(".")
+            lActualDifference.str())(
+            ") is not equal to lInboxSupposedDifference (")(
+            lInboxSupposedDifference.str())(
+            "). FYI, Inbox balance on old receipt: ")(
+            lReceiptBalanceChange.str())(". Inbox balance on current inbox: ")(
+            lInboxBalanceChange.str())(".")
             .Flush();
 
         return false;
@@ -2943,12 +2934,11 @@ auto OTTransaction::VerifyBalanceReceipt(
          (account.get().GetBalance() + (lActualDifference * (-1))));
 
     if (wrongBalance) {
-        const auto unittype = api_.Storage().AccountUnit(GetRealAccountID());
         LogError()(OT_PRETTY_CLASS())("lActualDifference in receipts (")(
-            lActualDifference, unittype)(") plus current acct balance (")(
-            account.get().GetBalance(),
-            unittype)(") is NOT equal to last signed balance (")(
-            pBalanceItem->GetAmount(), unittype)(").")
+            lActualDifference.str())(") plus current acct balance (")(
+            account.get().GetBalance().str())(
+            ") is NOT equal to last signed balance (")(
+            pBalanceItem->GetAmount().str())(").")
             .Flush();
 
         return false;
@@ -4499,11 +4489,7 @@ void OTTransaction::SaveAbbrevPaymentInboxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
-        lDisplayValue.Serialize(writer(buf));
-        return buf;
-    }());
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute("transactionNum", std::to_string(GetTransactionNum()));
     pTag->add_attribute(
         "inRefDisplay", std::to_string(GetReferenceNumForDisplay()));
@@ -4594,11 +4580,7 @@ void OTTransaction::SaveAbbrevExpiredBoxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
-        lDisplayValue.Serialize(writer(buf));
-        return buf;
-    }());
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute("transactionNum", std::to_string(GetTransactionNum()));
     pTag->add_attribute(
         "inRefDisplay", std::to_string(GetReferenceNumForDisplay()));
@@ -4810,16 +4792,8 @@ void OTTransaction::SaveAbbrevRecordBoxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("adjustment", [&] {
-        auto buf = std::string{};
-        lAdjustment.Serialize(writer(buf));
-        return buf;
-    }());
-    pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
-        lDisplayValue.Serialize(writer(buf));
-        return buf;
-    }());
+    pTag->add_attribute("adjustment", lAdjustment);
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute(
         "numberOfOrigin", std::to_string(GetRawNumberOfOrigin()));
 
@@ -4979,11 +4953,7 @@ void OTTransaction::SaveAbbreviatedNymboxRecord(
             // IF this transaction is passing through on its
             // way to the paymentInbox, it will have a
             // displayValue.
-            pTag->add_attribute("displayValue", [&] {
-                auto buf = std::string{};
-                lDisplayValue.Serialize(writer(buf));
-                return buf;
-            }());
+            pTag->add_attribute("displayValue", lDisplayValue);
         }
     }
 
@@ -5060,16 +5030,8 @@ void OTTransaction::SaveAbbreviatedOutboxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("adjustment", [&] {
-        auto buf = std::string{};
-        lAdjustment.Serialize(writer(buf));
-        return buf;
-    }());
-    pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
-        lDisplayValue.Serialize(writer(buf));
-        return buf;
-    }());
+    pTag->add_attribute("adjustment", lAdjustment);
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute(
         "numberOfOrigin", std::to_string(GetRawNumberOfOrigin()));
 
@@ -5225,16 +5187,8 @@ void OTTransaction::SaveAbbreviatedInboxRecord(
     pTag->add_attribute("type", strType->Get());
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
-    pTag->add_attribute("adjustment", [&] {
-        auto buf = std::string{};
-        lAdjustment.Serialize(writer(buf));
-        return buf;
-    }());
-    pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
-        lDisplayValue.Serialize(writer(buf));
-        return buf;
-    }());
+    pTag->add_attribute("adjustment", lAdjustment);
+    pTag->add_attribute("displayValue", lDisplayValue);
     pTag->add_attribute(
         "numberOfOrigin", std::to_string(GetRawNumberOfOrigin()));
 

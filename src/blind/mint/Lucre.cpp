@@ -211,7 +211,7 @@ auto Lucre::AddDenomination(
     m_nDenominationCount++;
     bReturnValue = true;
     LogDetail()(OT_PRETTY_CLASS())("Successfully added denomination: ")(
-        denomination)
+        denomination.str())
         .Flush();
 
     return bReturnValue;

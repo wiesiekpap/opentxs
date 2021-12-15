@@ -805,7 +805,7 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
         using Style = blockchain::crypto::AddressStyle;
         auto& output = *proposal.add_output();
         output.set_version(output_version_);
-        amount.Serialize(writer(output.mutable_amount()));
+        output.set_amount(amount);
 
         switch (style) {
             case Style::P2WPKH: {
@@ -937,7 +937,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
             out.set_memo(memo);
             auto& txout = *out.add_output();
             txout.set_version(output_version_);
-            amount.Serialize(writer(txout.mutable_amount()));
+            txout.set_amount(amount);
             txout.set_index(index.value());
             txout.set_paymentcodechannel(account.ID().str());
             const auto pubkey = api_.Factory().Data(key.PublicKey());
@@ -1052,7 +1052,7 @@ auto Base::SendToAddress(
     auto work = MakeWork(Task::SendToAddress);
     work.AddFrame(sender);
     work.AddFrame(address);
-    amount.Serialize(work.AppendBytes());
+    work.AddFrame(amount.str());
     work.AddFrame(memo);
     work.AddFrame(index);
     pipeline_.Push(std::move(work));
@@ -1070,7 +1070,7 @@ auto Base::SendToPaymentCode(
     auto work = MakeWork(Task::SendToPaymentCode);
     work.AddFrame(nymID);
     work.AddFrame(recipient);
-    amount.Serialize(work.AppendBytes());
+    work.AddFrame(amount.str());
     work.AddFrame(memo);
     work.AddFrame(index);
     pipeline_.Push(std::move(work));

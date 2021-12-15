@@ -334,23 +334,23 @@ auto Factory::Basket(std::int32_t nCount, const Amount& lMinimumTransferAmount)
 auto Factory::BasketContract(
     const Nym_p& nym,
     const std::string& shortname,
+    const std::string& name,
+    const std::string& symbol,
     const std::string& terms,
     const std::uint64_t weight,
     const core::UnitType unitOfAccount,
-    const VersionNumber version,
-    const display::Definition& displayDefinition,
-    const Amount& redemptionIncrement) const noexcept(false) -> OTBasketContract
+    const VersionNumber version) const noexcept(false) -> OTBasketContract
 {
     auto output = opentxs::Factory::BasketContract(
         api_,
         nym,
         shortname,
+        name,
+        symbol,
         terms,
         weight,
         unitOfAccount,
-        version,
-        displayDefinition,
-        redemptionIncrement);
+        version);
 
     if (output) {
         return OTBasketContract{std::move(output)};
@@ -876,24 +876,30 @@ auto Factory::CronItem(const String& strCronItem) const
 auto Factory::CurrencyContract(
     const Nym_p& nym,
     const std::string& shortname,
+    const std::string& name,
+    const std::string& symbol,
     const std::string& terms,
+    const std::string& tla,
+    const std::uint32_t power,
+    const std::string& fraction,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
-    const opentxs::PasswordPrompt& reason,
-    const display::Definition& displayDefinition,
-    const Amount& redemptionIncrement) const noexcept(false)
+    const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTCurrencyContract
 {
     auto output = opentxs::Factory::CurrencyContract(
         api_,
         nym,
         shortname,
+        name,
+        symbol,
         terms,
+        tla,
+        power,
+        fraction,
         unitOfAccount,
         version,
-        reason,
-        displayDefinition,
-        redemptionIncrement);
+        reason);
 
     if (output) {
         return OTCurrencyContract{std::move(output)};
@@ -2064,24 +2070,24 @@ auto Factory::Scriptable(const String& strInput) const
 auto Factory::SecurityContract(
     const Nym_p& nym,
     const std::string& shortname,
+    const std::string& name,
+    const std::string& symbol,
     const std::string& terms,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
-    const opentxs::PasswordPrompt& reason,
-    const display::Definition& displayDefinition,
-    const Amount& redemptionIncrement) const noexcept(false)
+    const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTSecurityContract
 {
     auto output = opentxs::Factory::SecurityContract(
         api_,
         nym,
         shortname,
+        name,
+        symbol,
         terms,
         unitOfAccount,
         version,
-        reason,
-        displayDefinition,
-        redemptionIncrement);
+        reason);
 
     if (output) {
         return OTSecurityContract{std::move(output)};

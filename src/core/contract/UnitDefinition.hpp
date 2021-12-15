@@ -8,14 +8,12 @@
 #include <cstdint>
 #include <locale>
 #include <map>
-#include <optional>
 #include <string>
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
@@ -60,16 +58,46 @@ public:
     auto AddAccountRecord(
         const std::string& dataFolder,
         const Account& theAccount) const -> bool override;
+    auto DecimalPower() const -> std::int32_t override { return 0; }
     auto DisplayStatistics(String& strContents) const -> bool override;
     auto EraseAccountRecord(
         const std::string& dataFolder,
         const Identifier& theAcctID) const -> bool override;
+    auto FormatAmountLocale(
+        Amount amount,
+        std::string& str_output,
+        const std::string& str_thousand,
+        const std::string& str_decimal) const -> bool override;
+    auto FormatAmountLocale(Amount amount, std::string& str_output) const
+        -> bool final;
+    auto FormatAmountWithoutSymbolLocale(
+        Amount amount,
+        std::string& str_output,
+        const std::string& str_thousand,
+        const std::string& str_decimal) const -> bool override;
+    auto FormatAmountWithoutSymbolLocale(Amount amount, std::string& str_output)
+        const -> bool final;
+    auto FractionalUnitName() const -> std::string override { return ""; }
+    auto GetCurrencyName() const -> const std::string& override
+    {
+        return primary_unit_name_;
+    }
+    auto GetCurrencySymbol() const -> const std::string& override
+    {
+        return primary_unit_symbol_;
+    }
     auto Name() const -> std::string override { return short_name_; }
     auto Serialize() const -> OTData override;
     auto Serialize(AllocateOutput destination, bool includeNym = false) const
         -> bool override;
     auto Serialize(SerializedType&, bool includeNym = false) const
         -> bool override;
+    auto StringToAmountLocale(
+        Amount& amount,
+        const std::string& str_input,
+        const std::string& str_thousand,
+        const std::string& str_decimal) const -> bool override;
+    auto TLA() const -> std::string override { return short_name_; }
     auto Type() const -> contract::UnitType override = 0;
     auto UnitOfAccount() const -> core::UnitType override
     {
@@ -89,6 +117,7 @@ public:
     ~Unit() override = default;
 
 protected:
+    const std::string primary_unit_symbol_;
     const core::UnitType unit_of_account_;
 
     virtual auto IDVersion(const Lock& lock) const -> SerializedType;
@@ -102,11 +131,11 @@ protected:
         const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
+        const std::string& name,
+        const std::string& symbol,
         const std::string& terms,
         const core::UnitType unitOfAccount,
-        const VersionNumber version,
-        const display::Definition& displayDefinition,
-        const Amount& redemptionIncrement);
+        const VersionNumber version);
     Unit(
         const api::Session& api,
         const Nym_p& nym,
@@ -121,15 +150,11 @@ private:
 
     static const Locale locale_;
 
-    std::optional<display::Definition> display_definition_;
-    const Amount redemption_increment_;
+    const std::string primary_unit_name_;
     const std::string short_name_;
 
     auto contract(const Lock& lock) const -> SerializedType;
     auto GetID(const Lock& lock) const -> OTIdentifier override;
-    auto get_displayscales(const SerializedType&) const
-        -> std::optional<display::Definition>;
-    auto get_unitofaccount(const SerializedType&) const -> core::UnitType;
     auto verify_signature(const Lock& lock, const proto::Signature& signature)
         const -> bool override;
 

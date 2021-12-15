@@ -7,7 +7,9 @@ target_sources(
   opentxs-common
   PRIVATE
     "Definition.cpp"
+    "Definition.hpp"
     "Definition_imp.hpp"
     "Scale.cpp"
+    "Scale.hpp"
     "Scale_imp.hpp"
 )

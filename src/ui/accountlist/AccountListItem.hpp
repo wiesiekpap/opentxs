@@ -79,7 +79,10 @@ public:
         return contract_->ID()->str();
     }
     auto DisplayBalance() const noexcept -> std::string final;
-    auto DisplayUnit() const noexcept -> std::string final;
+    auto DisplayUnit() const noexcept -> std::string final
+    {
+        return contract_->TLA();
+    }
     auto Name() const noexcept -> std::string final;
     auto NotaryID() const noexcept -> std::string final
     {

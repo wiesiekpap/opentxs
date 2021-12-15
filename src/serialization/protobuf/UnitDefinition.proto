@@ -21,14 +21,16 @@ import public "Signature.proto";
 message UnitDefinition {
     optional uint32 version = 1;
     optional string id = 2;
-    optional string issuer = 3;
-    optional string terms = 4;
-    optional string name = 5;
-    optional bytes redemption_increment = 6;
-    optional UnitType type = 7;
-    optional CurrencyParams params = 8; 
-    optional EquityParams security = 9;
-    optional BasketParams basket = 10;
-    optional Nym issuer_nym = 14;
+    optional string nymid = 3;
+    optional Nym publicNym = 4;
+    optional string shortName = 5;
+    optional string terms = 6;
+    optional string name = 7;
+    optional string symbol = 8;
+    optional UnitType type = 9;
+    optional CurrencyParams currency = 10;
+    optional EquityParams security = 11;
+    optional BasketParams basket = 12;
+    optional ContactItemType unitOfAccount = 13;
     optional Signature signature = 15;
 }

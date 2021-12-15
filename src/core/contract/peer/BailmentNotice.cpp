@@ -163,7 +163,7 @@ auto BailmentNotice::IDVersion(const Lock& lock) const -> SerializedType
     pendingbailment.set_serverid(String::Factory(server_)->Get());
     pendingbailment.set_requestid(String::Factory(requestID_)->Get());
     pendingbailment.set_txid(txid_);
-    amount_.Serialize(writer(pendingbailment.mutable_amount()));
+    pendingbailment.set_amount(amount_);
 
     return contract;
 }

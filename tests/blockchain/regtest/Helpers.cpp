@@ -862,10 +862,10 @@ auto Regtest_fixture_base::TestWallet(
         output &= (nBalance == eBalance);
         output &= outpoints;
 
-        EXPECT_EQ(wBalance.first, eBalance.first);
-        EXPECT_EQ(wBalance.second, eBalance.second);
-        EXPECT_EQ(nBalance.first, eBalance.first);
-        EXPECT_EQ(nBalance.second, eBalance.second);
+        EXPECT_EQ(wBalance.first.str(), eBalance.first.str());
+        EXPECT_EQ(wBalance.second.str(), eBalance.second.str());
+        EXPECT_EQ(nBalance.first.str(), eBalance.first.str());
+        EXPECT_EQ(nBalance.second.str(), eBalance.second.str());
         EXPECT_TRUE(outpoints);
 
         return output;

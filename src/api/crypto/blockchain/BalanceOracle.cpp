@@ -64,8 +64,8 @@ struct BalanceOracle::Imp {
             out.AddFrame();
             out.AddFrame(value(type));
             out.AddFrame(chain);
-            balance.first.Serialize(out.AppendBytes());
-            balance.second.Serialize(out.AppendBytes());
+            out.AddFrame(balance.first.str());
+            out.AddFrame(balance.second.str());
         };
         {
             auto out = opentxs::network::zeromq::Message{};
@@ -95,8 +95,8 @@ struct BalanceOracle::Imp {
             out.AddFrame();
             out.AddFrame(value(type));
             out.AddFrame(chain);
-            balance.first.Serialize(out.AppendBytes());
-            balance.second.Serialize(out.AppendBytes());
+            out.AddFrame(balance.first.str());
+            out.AddFrame(balance.second.str());
             out.AddFrame(owner);
         };
         {
@@ -188,8 +188,8 @@ private:
                 auto work = opentxs::network::zeromq::tagged_reply_to_message(
                     in, WorkType::BlockchainBalance);
                 work.AddFrame(chainFrame);
-                output.first.Serialize(work.AppendBytes());
-                output.second.Serialize(work.AppendBytes());
+                work.AddFrame(output.first.str());
+                work.AddFrame(output.second.str());
 
                 if (haveNym) { work.AddFrame(nym); }
 

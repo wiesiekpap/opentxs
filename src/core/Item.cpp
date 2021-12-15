@@ -17,7 +17,6 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
@@ -310,14 +309,11 @@ auto Item::VerifyBalanceStatement(
     // transaction.
     const auto balance = THE_ACCOUNT.GetBalance() + lActualAdjustment;
     if (balance != GetAmount()) {
-        const auto unittype =
-            api_.Storage().AccountUnit(GetDestinationAcctID());
-
         LogConsole()(OT_PRETTY_CLASS())(
-            "This balance statement has a value of ")(GetAmount())(
-            ", but expected ")(balance)(". (Acct balance of ")(
-            THE_ACCOUNT.GetBalance(), unittype)(" plus actualAdjustment of ")(
-            lActualAdjustment, unittype)(").")
+            "This balance statement has a value of ")(GetAmount().str())(
+            ", but expected ")(balance.str())(". (Acct balance of ")(
+            THE_ACCOUNT.GetBalance().str())(" plus actualAdjustment of ")(
+            lActualAdjustment.str())(").")
             .Flush();
 
         return false;
@@ -453,13 +449,10 @@ auto Item::VerifyBalanceStatement(
         // Make sure that the transaction number of each sub-item is found on
         // the appropriate ledger (inbox or outbox).
         if (false == bool(pTransaction)) {
-            const auto unittype =
-                api_.Storage().AccountUnit(GetDestinationAcctID());
-
             LogConsole()(OT_PRETTY_CLASS())("Expected ")(
                 pszLedgerType)(" transaction (server ")(outboxNum)(", client ")(
                 pSubItem->GetTransactionNum())(") not found. (Amount ")(
-                pSubItem->GetAmount(), unittype)(").")
+                pSubItem->GetAmount().str())(").")
                 .Flush();
 
             return false;
@@ -493,16 +486,13 @@ auto Item::VerifyBalanceStatement(
         lTransactionAmount *= lReceiptAmountMultiplier;
 
         if (pSubItem->GetAmount() != lTransactionAmount) {
-            const auto unittype =
-                api_.Storage().AccountUnit(GetDestinationAcctID());
-
             LogConsole()(OT_PRETTY_CLASS())("Transaction (")(
                 pSubItem->GetTransactionNum())(
                 ") amounts don't match: report amount is ")(
-                pSubItem->GetAmount(), unittype)(", but expected ")(
-                lTransactionAmount, unittype)(". Trans Receipt Amt: ")(
-                pTransaction->GetReceiptAmount(reason),
-                unittype)(" (GetAmount() == ")(GetAmount(), unittype)(").")
+                pSubItem->GetAmount().str())(", but expected ")(
+                lTransactionAmount.str())(". Trans Receipt Amt: ")(
+                pTransaction->GetReceiptAmount(reason).str())(
+                " (GetAmount() == ")(GetAmount().str())(").")
                 .Flush();
 
             return false;
@@ -1905,11 +1895,7 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
     tag.add_attribute("fromAccountID", strFromAcctID->Get());
     tag.add_attribute("toAccountID", strToAcctID->Get());
     tag.add_attribute("inReferenceTo", std::to_string(GetReferenceToNum()));
-    tag.add_attribute("amount", [&] {
-        auto buf = std::string{};
-        m_lAmount.Serialize(writer(buf));
-        return buf;
-    }());
+    tag.add_attribute("amount", m_lAmount);
 
     // Only used in server reply item:
     // atBalanceStatement. In cases
@@ -1972,11 +1958,7 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
             tagReport->add_attribute(
                 "type",
                 receiptType->Exists() ? receiptType->Get() : "error_state");
-            tagReport->add_attribute("adjustment", [&] {
-                auto buf = std::string{};
-                pItem->GetAmount().Serialize(writer(buf));
-                return buf;
-            }());
+            tagReport->add_attribute("adjustment", pItem->GetAmount());
             tagReport->add_attribute("accountID", acctID->Get());
             tagReport->add_attribute("nymID", nymID->Get());
             tagReport->add_attribute("notaryID", notaryID->Get());

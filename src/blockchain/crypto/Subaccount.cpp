@@ -153,7 +153,7 @@ auto Subaccount::convert(Activity&& in) noexcept -> proto::BlockchainActivity
     output.set_version(ActivityVersion);
     output.set_txid(txid);
     output.set_output(out);
-    value.Serialize(writer(output.mutable_amount()));
+    output.set_amount(value);
     output.set_account(account);
     output.set_subchain(static_cast<std::uint32_t>(chain));
     output.set_index(index);

@@ -8,16 +8,16 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
-#include "opentxs/core/display/Scale.hpp"
-#include "opentxs/core/UnitType.hpp"
-
-namespace opentxs
-{
-class Amount;
-}  // namespace opentxs
+#include "display/Scale.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 
 namespace opentxs::display
 {
@@ -31,7 +31,6 @@ public:
     using Scales = std::vector<NamedScale>;
     using OptionalInt = Scale::OptionalInt;
 
-    auto DisplayScales() const noexcept -> const Scales&;
     auto Format(
         const Amount amount,
         const Index scale = 0,
@@ -41,9 +40,8 @@ public:
     auto GetScales() const noexcept -> const Map&;
     auto Import(const std::string& formatted, const Index scale = 0) const
         noexcept(false) -> Amount;
-    auto ShortName() const noexcept -> std::string;
 
-    Definition(std::string&& shortname, Scales&& scales) noexcept;
+    Definition(Scales&& scales) noexcept;
     Definition() noexcept;
     Definition(const Definition&) noexcept;
     Definition(Definition&&) noexcept;
@@ -51,13 +49,11 @@ public:
     auto operator=(const Definition&) noexcept -> Definition&;
     auto operator=(Definition&&) noexcept -> Definition&;
 
-    virtual ~Definition();
+    ~Definition();
 
 private:
     struct Imp;
 
-    Imp* imp_;
+    std::unique_ptr<Imp> imp_;
 };
-
-auto GetDefinition(core::UnitType) noexcept -> const Definition&;
 }  // namespace opentxs::display

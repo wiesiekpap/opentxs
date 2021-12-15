@@ -16,7 +16,6 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -68,13 +67,13 @@ auto AccountSummaryItem::DisplayBalance() const noexcept -> std::string
     sLock lock(shared_lock_);
 
     if (0 < contract_->Version()) {
-        const auto& definition = display::GetDefinition(currency_);
-        std::string output = definition.Format(balance_);
+        std::string output{};
+        const auto formatted =
+            contract_->FormatAmountLocale(balance_, output, ",", ".");
 
-        if (0 < output.size()) { return output; }
+        if (formatted) { return output; }
 
-        balance_.Serialize(writer(output));
-        return output;
+        return balance_;
     }
 
     return {};

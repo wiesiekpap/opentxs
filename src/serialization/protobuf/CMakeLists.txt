@@ -66,7 +66,6 @@ set(PROTO_SOURCES
     CreateNym.proto
     Credential.proto
     CurrencyParams.proto
-    DisplayScale.proto
     Enums.proto
     Envelope.proto
     EquityParams.proto
@@ -113,7 +112,6 @@ set(PROTO_SOURCES
     RPCResponse.proto
     RPCStatus.proto
     RPCTask.proto
-    ScaleRatio.proto
     Seed.proto
     SendMessage.proto
     SendPayment.proto

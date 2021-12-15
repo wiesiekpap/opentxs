@@ -756,10 +756,10 @@ public:
     auto GenerateBasketCreation(
         const std::string& nymID,
         const std::string& shortname,
+        const std::string& name,
+        const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
-        const display::Definition& displayDefinition,
-        const Amount& redemptionIncrement,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         -> std::string;
 
