@@ -36,6 +36,12 @@ class Currency final : public unit::Currency,
                        public contract::implementation::Unit
 {
 public:
+    auto DecimalPower() const -> std::int32_t final { return power_; }
+    auto FractionalUnitName() const -> std::string final
+    {
+        return fractional_unit_name_;
+    }
+    auto TLA() const -> std::string final { return tla_; }
     auto Type() const -> contract::UnitType final
     {
         return contract::UnitType::Currency;
@@ -45,11 +51,14 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
+        const std::string& name,
+        const std::string& symbol,
         const std::string& terms,
+        const std::string& tla,
+        const std::uint32_t power,
+        const std::string& fraction,
         const core::UnitType unitOfAccount,
-        const VersionNumber version,
-        const display::Definition& displayDefinition,
-        const Amount& redemptionIncrement);
+        const VersionNumber version);
     Currency(
         const api::Session& api,
         const Nym_p& nym,
@@ -58,6 +67,14 @@ public:
     ~Currency() final = default;
 
 private:
+    // ISO-4217. E.g., USD, AUG, PSE. Take as hint, not as contract.
+    const std::string tla_;
+    // If value is 103, decimal power of 0 displays 103 (actual value.) Whereas
+    // decimal power of 2 displays 1.03 and 4 displays .0103
+    const std::uint32_t power_;
+    // "cents"
+    const std::string fractional_unit_name_;
+
     auto clone() const noexcept -> Currency* final
     {
         return new Currency(*this);

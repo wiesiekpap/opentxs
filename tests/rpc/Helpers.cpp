@@ -34,7 +34,6 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/Language.hpp"
@@ -432,16 +431,28 @@ auto RPC_fixture::IssueUnit(
     const ot::api::session::Notary& server,
     const std::string& issuer,
     const std::string& shortname,
+    const std::string& name,
+    const std::string& symbol,
     const std::string& terms,
-    ot::core::UnitType unitOfAccount,
-    const ot::display::Definition& displayDefinition) const noexcept
-    -> std::string
+    const std::string& tla,
+    const std::string& fraction,
+    std::uint32_t power,
+    ot::core::UnitType unitOfAccount) const noexcept -> std::string
 {
     const auto nymID = api.Factory().NymID(issuer);
     const auto& serverID = server.ID();
     const auto reason = api.Factory().PasswordPrompt(__func__);
-    const auto contract = api.Wallet().CurrencyContract(
-        issuer, shortname, terms, unitOfAccount, reason, displayDefinition, 1);
+    const auto contract = api.Wallet().UnitDefinition(
+        issuer,
+        shortname,
+        name,
+        symbol,
+        terms,
+        tla,
+        power,
+        fraction,
+        unitOfAccount,
+        reason);
 
     if (0u == contract->Version()) { return {}; }
 

@@ -27,7 +27,6 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
@@ -131,15 +130,14 @@ BalanceItem::BalanceItem(
 auto BalanceItem::DisplayAmount() const noexcept -> std::string
 {
     sLock lock(shared_lock_);
-    const auto& amount = effective_amount();
-    const auto& definition =
-        display::GetDefinition(parent_.Contract().UnitOfAccount());
-    std::string output = definition.Format(amount);
+    const auto amount = effective_amount();
+    std::string output{};
+    const auto formatted =
+        parent_.Contract().FormatAmountLocale(amount, output, ",", ".");
 
-    if (0 < output.size()) { return output; }
+    if (formatted) { return output; }
 
-    amount.Serialize(writer(output));
-    return output;
+    return amount;
 }
 
 auto BalanceItem::extract_contacts(

@@ -233,13 +233,10 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         else
             stopActivated_ = false;
 
-        const auto unittype = api_.Wallet().CurrencyTypeBasedOnUnitType(
-            GetInstrumentDefinitionID());
         LogDebug()(OT_PRETTY_CLASS())("Stop order --")(
             stopActivated_ ? "Already activated" : "Will activate")(
             " when price ")(stopActivated_ ? "was" : "reaches")(
-            ('<' == stopSign_) ? "LESS THAN"
-                               : "GREATER THAN")(stopPrice_, unittype)
+            ('<' == stopSign_) ? "LESS THAN" : "GREATER THAN")(stopPrice_.str())
             .Flush();
 
         returnVal = 1;
@@ -306,11 +303,7 @@ void OTTrade::UpdateContents(const PasswordPrompt& reason)
         TagPtr tagStopOrder(new Tag("stopOrder"));
         tagStopOrder->add_attribute("hasActivated", formatBool(stopActivated_));
         tagStopOrder->add_attribute("sign", std::to_string(stopSign_));
-        tagStopOrder->add_attribute("price", [&] {
-            auto buf = std::string{};
-            stopPrice_.Serialize(writer(buf));
-            return buf;
-        }());
+        tagStopOrder->add_attribute("price", stopPrice_);
         tag.add_tag(tagStopOrder);
     }
 

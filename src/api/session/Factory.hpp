@@ -128,11 +128,6 @@ class Parameters;
 class SymmetricProvider;
 }  // namespace crypto
 
-namespace display
-{
-class Definition;
-}  // namespace display
-
 namespace identifier
 {
 class Nym;
@@ -260,12 +255,12 @@ public:
     auto BasketContract(
         const Nym_p& nym,
         const std::string& shortname,
+        const std::string& name,
+        const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
         const core::UnitType unitOfAccount,
-        const VersionNumber version,
-        const display::Definition& displayDefinition,
-        const Amount& redemptionIncrement) const noexcept(false)
+        const VersionNumber version) const noexcept(false)
         -> OTBasketContract final;
     auto BasketContract(
         const Nym_p& nym,
@@ -431,12 +426,15 @@ public:
     auto CurrencyContract(
         const Nym_p& nym,
         const std::string& shortname,
+        const std::string& name,
+        const std::string& symbol,
         const std::string& terms,
+        const std::string& tla,
+        const std::uint32_t power,
+        const std::string& fraction,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
-        const opentxs::PasswordPrompt& reason,
-        const display::Definition& displayDefinition,
-        const Amount& redemptionIncrement) const noexcept(false)
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTCurrencyContract final;
     auto CurrencyContract(
         const Nym_p& nym,
@@ -718,12 +716,12 @@ public:
     auto SecurityContract(
         const Nym_p& nym,
         const std::string& shortname,
+        const std::string& name,
+        const std::string& symbol,
         const std::string& terms,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
-        const opentxs::PasswordPrompt& reason,
-        const display::Definition& displayDefinition,
-        const Amount& redemptionIncrement) const noexcept(false)
+        const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTSecurityContract final;
     auto SecurityContract(
         const Nym_p& nym,

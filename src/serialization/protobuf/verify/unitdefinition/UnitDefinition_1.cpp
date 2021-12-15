@@ -45,10 +45,34 @@ auto CheckProto_1(
         FAIL_2("invalid id", input.id())
     }
 
-    if (!input.has_issuer()) { FAIL_1("missing issuer id") }
+    if (!input.has_nymid()) { FAIL_1("missing nym id") }
 
-    if (MIN_PLAUSIBLE_IDENTIFIER > input.issuer().size()) {
-        FAIL_2("invalid issuer id", input.issuer())
+    if (MIN_PLAUSIBLE_IDENTIFIER > input.nymid().size()) {
+        FAIL_2("invalid nym id", input.nymid())
+    }
+
+    if (input.has_publicnym()) {
+        try {
+            const bool goodPublicNym = Check(
+                input.publicnym(),
+                UnitDefinitionAllowedNym().at(input.version()).first,
+                UnitDefinitionAllowedNym().at(input.version()).second,
+                silent);
+
+            if (!goodPublicNym) { FAIL_1("invalid nym") }
+        } catch (const std::out_of_range&) {
+            FAIL_2(
+                "allowed credential index version not defined for version",
+                input.version())
+        }
+
+        if (input.nymid() != input.publicnym().nymid()) { FAIL_1("wrong nym") }
+    }
+
+    if (!input.has_shortname()) { FAIL_1("missing shortname") }
+
+    if (1 > input.shortname().size()) {
+        FAIL_2("invalid shortname", input.shortname())
     }
 
     if (!input.has_terms()) { FAIL_1("missing terms") }
@@ -59,17 +83,21 @@ auto CheckProto_1(
 
     if (1 > input.name().size()) { FAIL_2("invalid name", input.name()) }
 
+    if (!input.has_symbol()) { FAIL_1("missing symbol") }
+
+    if (1 > input.symbol().size()) { FAIL_2("invalid symbol", input.symbol()) }
+
     if (!input.has_type()) { FAIL_1("missing type") }
 
     bool goodParams = false;
 
     switch (input.type()) {
         case UNITTYPE_CURRENCY: {
-            if (!input.has_params()) { FAIL_1("missing currency params") }
+            if (!input.has_currency()) { FAIL_1("missing currency params") }
 
             try {
                 goodParams = Check(
-                    input.params(),
+                    input.currency(),
                     UnitDefinitionAllowedCurrencyParams()
                         .at(input.version())
                         .first,
@@ -133,25 +161,7 @@ auto CheckProto_1(
         }
     }
 
-    if (input.has_issuer_nym()) {
-        try {
-            const bool goodPublicNym = Check(
-                input.issuer_nym(),
-                UnitDefinitionAllowedNym().at(input.version()).first,
-                UnitDefinitionAllowedNym().at(input.version()).second,
-                silent);
-
-            if (!goodPublicNym) { FAIL_1("invalid issuer") }
-        } catch (const std::out_of_range&) {
-            FAIL_2(
-                "allowed credential index version not defined for version",
-                input.version())
-        }
-
-        if (input.issuer() != input.issuer_nym().nymid()) {
-            FAIL_1("wrong nym")
-        }
-    }
+    CHECK_EXCLUDED(unitofaccount)
 
     if (checkSig) {
         try {

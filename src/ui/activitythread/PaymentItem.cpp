@@ -22,7 +22,6 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -177,9 +176,8 @@ auto PaymentItem::extract(
                 amount = cheque->GetAmount();
 
                 if (0 < contract->Version()) {
-                    const auto& definition =
-                        display::GetDefinition(contract->UnitOfAccount());
-                    displayAmount = definition.Format(amount);
+                    contract->FormatAmountLocale(
+                        amount, displayAmount, ",", ".");
                 }
 
                 payment = api.Factory().Payment(String::Factory(*cheque));

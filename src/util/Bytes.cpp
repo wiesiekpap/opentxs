@@ -107,12 +107,6 @@ auto writer(std::string& in) noexcept -> AllocateOutput
         return {in.data(), in.size()};
     };
 }
-auto writer(std::string* protobuf) noexcept -> AllocateOutput
-{
-    if (nullptr == protobuf) { return {}; }
-
-    return writer(*protobuf);
-}
 auto writer(Space& in) noexcept -> AllocateOutput
 {
     return [&in](const auto size) -> WritableView {

@@ -12,7 +12,6 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/UnitDefinition.hpp"
-#include "internal/contact/Contact.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/UnitDefinition.hpp"
@@ -30,23 +29,16 @@ auto Factory::SecurityContract(
     const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
+    const std::string& name,
+    const std::string& symbol,
     const std::string& terms,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
-    const opentxs::PasswordPrompt& reason,
-    const display::Definition& displayDefinition,
-    const Amount& redemptionIncrement) noexcept
+    const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::unit::Security>
 {
     auto output = std::make_shared<ReturnType>(
-        api,
-        nym,
-        shortname,
-        terms,
-        unitOfAccount,
-        version,
-        displayDefinition,
-        redemptionIncrement);
+        api, nym, shortname, name, symbol, terms, unitOfAccount, version);
 
     if (false == bool(output)) { return {}; }
 
@@ -96,20 +88,12 @@ Security::Security(
     const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
+    const std::string& name,
+    const std::string& symbol,
     const std::string& terms,
     const core::UnitType unitOfAccount,
-    const VersionNumber version,
-    const display::Definition& displayDefinition,
-    const Amount& redemptionIncrement)
-    : Unit(
-          api,
-          nym,
-          shortname,
-          terms,
-          unitOfAccount,
-          version,
-          displayDefinition,
-          redemptionIncrement)
+    const VersionNumber version)
+    : Unit(api, nym, shortname, name, symbol, terms, unitOfAccount, version)
 {
     Lock lock(lock_);
     first_time_init(lock);
@@ -133,7 +117,7 @@ Security::Security(const Security& rhs)
 auto Security::IDVersion(const Lock& lock) const -> proto::UnitDefinition
 {
     auto contract = Unit::IDVersion(lock);
-
+    contract.set_type(translate(Type()));
     auto& security = *contract.mutable_security();
     security.set_version(1);
     security.set_type(proto::EQUITYTYPE_SHARES);

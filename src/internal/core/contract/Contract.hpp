@@ -130,11 +130,43 @@ struct Unit final : virtual public opentxs::contract::Unit, public Signable {
     {
         return {};
     }
+    auto DecimalPower() const -> std::int32_t final { return {}; }
     auto DisplayStatistics(String&) const -> bool final { return {}; }
     auto EraseAccountRecord(const std::string&, const Identifier&) const
         -> bool final
     {
         return {};
+    }
+    auto FormatAmountLocale(
+        Amount,
+        std::string&,
+        const std::string&,
+        const std::string&) const -> bool final
+    {
+        return {};
+    }
+    auto FormatAmountLocale(Amount, std::string&) const -> bool final
+    {
+        return {};
+    }
+    auto FormatAmountWithoutSymbolLocale(
+        Amount amount,
+        std::string&,
+        const std::string&,
+        const std::string&) const -> bool final
+    {
+        return {};
+    }
+    auto FormatAmountWithoutSymbolLocale(Amount amount, std::string&) const
+        -> bool final
+    {
+        return {};
+    }
+    auto FractionalUnitName() const -> std::string final { return {}; }
+    auto GetCurrencyName() const -> const std::string& final { return terms_; }
+    auto GetCurrencySymbol() const -> const std::string& final
+    {
+        return terms_;
     }
     using Signable::Serialize;
     auto Serialize(AllocateOutput destination, bool includeNym = false) const
@@ -144,6 +176,15 @@ struct Unit final : virtual public opentxs::contract::Unit, public Signable {
     }
     auto Serialize(proto::UnitDefinition& output, bool includeNym = false) const
         -> bool final;
+    auto StringToAmountLocale(
+        Amount&,
+        const std::string&,
+        const std::string&,
+        const std::string&) const -> bool final
+    {
+        return {};
+    }
+    auto TLA() const -> std::string final { return {}; }
     auto Type() const -> contract::UnitType final { return {}; }
     auto UnitOfAccount() const -> core::UnitType final { return {}; }
     auto VisitAccountRecords(

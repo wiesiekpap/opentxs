@@ -31,16 +31,6 @@ if(OT_ENABLE_RPC)
   #
   # add_opentx_test(unittests-opentxs-rpc-sync Test_Rpc.cpp)
   # set_tests_properties(unittests-opentxs-rpc-sync PROPERTIES DISABLED TRUE)
-
-  set_tests_properties(
-    unittests-opentxs-rpc-get-account-activity PROPERTIES DISABLED TRUE
-  )
-  set_tests_properties(
-    unittests-opentxs-rpc-get-account-balance PROPERTIES DISABLED TRUE
-  )
-  set_tests_properties(
-    unittests-opentxs-rpc-send-payment PROPERTIES DISABLED TRUE
-  )
 else()
   target_sources(opentxs-test-helpers PRIVATE "Null.cpp")
 endif()

@@ -174,12 +174,10 @@ auto OTPaymentPlan::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             String::Factory(xml->getAttributeValue("completed"));
         m_bInitialPaymentDone = strCompleted->Compare("true");
 
-        const auto unittype = api_.Wallet().CurrencyTypeBasedOnUnitType(
-            GetInstrumentDefinitionID());
         LogDetail()(OT_PRETTY_CLASS())("Initial Payment. Amount: ")(
-            m_lInitialPaymentAmount, unittype)(". Date: ")(
-            GetInitialPaymentDate())(". Completed Date: ")(
-            GetInitialPaymentCompletedDate())(". Number of failed attempts: ")(
+            m_lInitialPaymentAmount.str())(". Date: ")(GetInitialPaymentDate())(
+            ". Completed Date: ")(GetInitialPaymentCompletedDate())(
+            ". Number of failed attempts: ")(
             m_nNumberInitialFailures)(". Date of last failed attempt: ")(
             GetLastFailedInitialPaymentDate())(". Payment ")(
             m_bInitialPaymentDone ? "COMPLETED" : "NOT completed")(".")
@@ -220,7 +218,7 @@ auto OTPaymentPlan::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetDateOfLastFailedPayment(tLastAttempt);
 
         LogDetail()(OT_PRETTY_CLASS())("Payment Plan. Amount per payment: ")(
-            m_lPaymentPlanAmount)(". Seconds between payments: ")(
+            m_lPaymentPlanAmount.str())(". Seconds between payments: ")(
             tBetween.count())(". Payment plan Start Date: ")(
             tStart)(". Length: ")(tLength.count())(
             ". Maximum No. of Payments: ")(
@@ -307,11 +305,7 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
 
         tagInitial->add_attribute(
             "date", formatTimestamp(GetInitialPaymentDate()));
-        tagInitial->add_attribute("amount", [&] {
-            auto buf = std::string{};
-            GetInitialPaymentAmount().Serialize(writer(buf));
-            return buf;
-        }());
+        tagInitial->add_attribute("amount", GetInitialPaymentAmount());
         tagInitial->add_attribute(
             "numberOfAttempts", std::to_string(GetNoInitialFailures()));
         tagInitial->add_attribute(
@@ -332,11 +326,7 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
 
         TagPtr tagPlan(new Tag("paymentPlan"));
 
-        tagPlan->add_attribute("amountPerPayment", [&] {
-            auto buf = std::string{};
-            GetPaymentPlanAmount().Serialize(writer(buf));
-            return buf;
-        }());
+        tagPlan->add_attribute("amountPerPayment", GetPaymentPlanAmount());
         tagPlan->add_attribute(
             "timeBetweenPayments", std::to_string(lTimeBetween.count()));
         tagPlan->add_attribute(

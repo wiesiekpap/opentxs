@@ -157,7 +157,7 @@ auto Outbailment::IDVersion(const Lock& lock) const -> SerializedType
     outbailment.set_version(version_);
     outbailment.set_unitid(String::Factory(unit_)->Get());
     outbailment.set_serverid(String::Factory(server_)->Get());
-    amount_.Serialize(writer(outbailment.mutable_amount()));
+    outbailment.set_amount(amount_);
     outbailment.set_instructions(conditions_);
 
     return contract;

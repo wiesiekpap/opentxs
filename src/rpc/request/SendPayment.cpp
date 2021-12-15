@@ -42,7 +42,7 @@ struct SendPayment final : public Base::Imp {
             payment.set_sourceaccount(source_);
             payment.set_destinationaccount(destination_);
             payment.set_memo(memo_);
-            amount_.Serialize(writer(payment.mutable_amount()));
+            payment.set_amount(amount_);
 
             return true;
         }

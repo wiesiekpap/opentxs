@@ -21,11 +21,9 @@
 #include <utility>
 
 #include "Proto.hpp"
-#include "core/Amount.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -494,10 +492,8 @@ auto Output::Note(const api::crypto::Blockchain& blockchain) const noexcept
 
 auto Output::Print() const noexcept -> std::string
 {
-    const auto& definition = blockchain::GetDefinition(chain_);
-
     auto out = std::stringstream{};
-    out << "    value: " << definition.Format(value_) << '\n';
+    out << "    value: " << value_.str() << '\n';
     out << "    script: " << '\n';
     out << script_->Print();
 
@@ -548,7 +544,7 @@ auto Output::Serialize(
 {
     out.set_version(std::max(default_version_, serialize_version_));
     out.set_index(index_);
-    value_.Serialize(writer(out.mutable_value()));
+    out.set_value(value_);
 
     if (false == script_->Serialize(writer(*out.mutable_script()))) {
         return false;

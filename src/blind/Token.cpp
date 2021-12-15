@@ -212,7 +212,7 @@ auto Token::Serialize(proto::Token& output) const noexcept -> bool
     output.set_notary(notary_->str());
     output.set_mint(unit_->str());
     output.set_series(series_);
-    denomination_.Serialize(writer(output.mutable_denomination()));
+    output.set_denomination(denomination_);
     output.set_validfrom(Clock::to_time_t(valid_from_));
     output.set_validto(Clock::to_time_t(valid_to_));
 

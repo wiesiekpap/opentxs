@@ -1682,7 +1682,7 @@ void OTX::process_account(const zmq::Message& message) const
     const auto accountID = client_.Factory().Identifier(body.at(1));
     const auto balance = Amount{body.at(2)};
     LogVerbose()(OT_PRETTY_CLASS())("Account ")(accountID)(" balance: ")(
-        balance)
+        balance.str())
         .Flush();
 }
 

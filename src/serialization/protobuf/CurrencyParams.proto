@@ -10,13 +10,10 @@ option java_package = "org.opentransactions.proto";
 option java_outer_classname = "OTCurrencyParams";
 option optimize_for = LITE_RUNTIME;
 
-import public "ContactEnums.proto";
-import public "DisplayScale.proto";
-
 message CurrencyParams
 {
     optional uint32 version = 1;
-    optional ContactItemType unit_of_account = 2;
-    optional string short_name = 3;
-    repeated DisplayScale scales = 4;
+    optional string TLA = 2;
+    optional uint32 power = 3;
+    optional string fraction = 4;
 }

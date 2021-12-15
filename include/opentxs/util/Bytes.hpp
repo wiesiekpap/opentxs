@@ -158,6 +158,5 @@ OPENTXS_EXPORT auto space(const std::size_t size) noexcept -> Space;
 OPENTXS_EXPORT auto space(const ReadView bytes) noexcept -> Space;
 OPENTXS_EXPORT auto valid(const ReadView view) noexcept -> bool;
 OPENTXS_EXPORT auto writer(std::string& in) noexcept -> AllocateOutput;
-OPENTXS_EXPORT auto writer(std::string* protobuf) noexcept -> AllocateOutput;
 OPENTXS_EXPORT auto writer(Space& in) noexcept -> AllocateOutput;
 }  // namespace opentxs

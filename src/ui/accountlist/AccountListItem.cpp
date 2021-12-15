@@ -16,7 +16,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "ui/base/Widget.hpp"
@@ -65,19 +64,12 @@ auto AccountListItem::Balance() const noexcept -> Amount
 auto AccountListItem::DisplayBalance() const noexcept -> std::string
 {
     auto output = std::string{};
-    const auto& definition = display::GetDefinition(Unit());
-    output = definition.Format(balance_);
+    const auto formatted =
+        contract_->FormatAmountLocale(balance_, output, ",", ".");
 
-    if (0 < output.size()) { return output; }
+    if (formatted) { return output; }
 
-    balance_.Serialize(writer(output));
-    return output;
-}
-
-auto AccountListItem::DisplayUnit() const noexcept -> std::string
-{
-    const auto& definition = display::GetDefinition(Unit());
-    return definition.ShortName();
+    return balance_;
 }
 
 auto AccountListItem::load_server(

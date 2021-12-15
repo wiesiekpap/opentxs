@@ -16,7 +16,10 @@ message CreateInstrumentDefinition {
     optional uint32 version = 1;
     optional string name = 2;				// unit definition name
     optional string symbol = 3;				// unit of account symbol
-    optional bytes redemptionincrement = 4;
-    optional string terms = 5;				// formal legal description
-    optional ContactItemType unitofaccount = 6;	// see ContactEnums.proto
+    optional string primaryunitname = 4;	// name of a primary unit
+    optional string fractionalunitname = 5;	// name of a fractional unit
+    optional string tla = 6;				// ticker symbol for unit of account
+    optional uint32 power = 7;				// relationship between primary and fractional unit
+    optional string terms = 8;				// formal legal description
+    optional ContactItemType unitofaccount = 9;	// see ContactEnums.proto
 }

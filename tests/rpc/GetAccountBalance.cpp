@@ -17,7 +17,6 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
@@ -78,9 +77,13 @@ TEST_F(RPC_fixture, preconditions)
             server,
             issuer,
             "Mt Gox USD",
+            "dollars",
+            "$",
             "YOLO",
-            ot::core::UnitType::USD,
-            {u8"USD", {{u8"dollars", {u8"$", u8"", {{10, 0}}, 2, 3}}}});
+            "USD",
+            "cents",
+            2,
+            ot::core::UnitType::USD);
 
         EXPECT_FALSE(unit.empty());
 

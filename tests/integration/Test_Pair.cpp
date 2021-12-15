@@ -45,7 +45,6 @@
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -77,17 +76,12 @@ class Notary;
 #define UNIT_DEFINITION_CONTRACT_VERSION 2
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"
+#define UNIT_DEFINITION_PRIMARY_UNIT_NAME "dollars"
+#define UNIT_DEFINITION_SYMBOL "$"
 #define UNIT_DEFINITION_TLA "USD"
+#define UNIT_DEFINITION_POWER 2
+#define UNIT_DEFINITION_FRACTIONAL_UNIT_NAME "cents"
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
-#define UNIT_DEFINITION_DISPLAY_DEFINITION                                     \
-    {                                                                          \
-        u8"USD",                                                               \
-        {                                                                      \
-            {                                                                  \
-                u8"dollars", { u8"$", u8"", {{10, 0}}, 2, 3 }                  \
-            }                                                                  \
-        }                                                                      \
-    }
 
 namespace ottest
 {
@@ -241,14 +235,17 @@ TEST_F(Test_Pair, initial_state)
 
 TEST_F(Test_Pair, issue_dollars)
 {
-    const auto contract = api_issuer_.Wallet().CurrencyContract(
+    const auto contract = api_issuer_.Wallet().UnitDefinition(
         issuer_.nym_id_->str(),
         UNIT_DEFINITION_CONTRACT_NAME,
         UNIT_DEFINITION_TERMS,
+        UNIT_DEFINITION_PRIMARY_UNIT_NAME,
+        UNIT_DEFINITION_SYMBOL,
+        UNIT_DEFINITION_TLA,
+        UNIT_DEFINITION_POWER,
+        UNIT_DEFINITION_FRACTIONAL_UNIT_NAME,
         UNIT_DEFINITION_UNIT_OF_ACCOUNT,
-        issuer_.Reason(),
-        UNIT_DEFINITION_DISPLAY_DEFINITION,
-        1);
+        issuer_.Reason());
 
     EXPECT_EQ(UNIT_DEFINITION_CONTRACT_VERSION, contract->Version());
     EXPECT_EQ(ot::contract::UnitType::Currency, contract->Type());
@@ -413,7 +410,7 @@ TEST_F(Test_Pair, pair_untrusted_state)
         ASSERT_TRUE(subrow->Valid());
         EXPECT_FALSE(subrow->AccountID().empty());
         EXPECT_EQ(subrow->Balance(), 0);
-        EXPECT_EQ(subrow->DisplayBalance(), "$0.00");
+        EXPECT_EQ(subrow->DisplayBalance(), "dollars 0.00");
         EXPECT_FALSE(subrow->AccountID().empty());
         EXPECT_TRUE(subrow->Last());
 
@@ -530,7 +527,7 @@ TEST_F(Test_Pair, pair_trusted_state)
         ASSERT_TRUE(subrow->Valid());
         EXPECT_FALSE(subrow->AccountID().empty());
         EXPECT_EQ(subrow->Balance(), 0);
-        EXPECT_EQ(subrow->DisplayBalance(), "$0.00");
+        EXPECT_EQ(subrow->DisplayBalance(), "dollars 0.00");
         EXPECT_FALSE(subrow->AccountID().empty());
         EXPECT_TRUE(subrow->Last());
     }

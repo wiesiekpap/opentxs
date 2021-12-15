@@ -36,7 +36,6 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -57,15 +56,11 @@ using namespace opentxs;
 
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"
-#define UNIT_DEFINITION_DISPLAY_DEFINITION                                     \
-    {                                                                          \
-        u8"USD",                                                               \
-        {                                                                      \
-            {                                                                  \
-                u8"dollars", { u8"$", u8"", {{10, 0}}, 2, 3 }                  \
-            }                                                                  \
-        }                                                                      \
-    }
+#define UNIT_DEFINITION_PRIMARY_UNIT_NAME "dollars"
+#define UNIT_DEFINITION_SYMBOL "$"
+#define UNIT_DEFINITION_TLA "USD"
+#define UNIT_DEFINITION_POWER 2
+#define UNIT_DEFINITION_FRACTIONAL_UNIT_NAME "cents"
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
 #define CHEQUE_AMOUNT_1 2000
 #define CHEQUE_MEMO_1 "memo"
@@ -346,14 +341,17 @@ TEST_F(Test_DepositCheques, add_contacts)
 TEST_F(Test_DepositCheques, issue_dollars)
 {
     auto reasonI = issuer_client_.Factory().PasswordPrompt(__func__);
-    const auto contract = issuer_client_.Wallet().CurrencyContract(
+    const auto contract = issuer_client_.Wallet().UnitDefinition(
         issuer_nym_id_->str(),
         UNIT_DEFINITION_CONTRACT_NAME,
         UNIT_DEFINITION_TERMS,
+        UNIT_DEFINITION_PRIMARY_UNIT_NAME,
+        UNIT_DEFINITION_SYMBOL,
+        UNIT_DEFINITION_TLA,
+        UNIT_DEFINITION_POWER,
+        UNIT_DEFINITION_FRACTIONAL_UNIT_NAME,
         UNIT_DEFINITION_UNIT_OF_ACCOUNT,
-        reasonI,
-        UNIT_DEFINITION_DISPLAY_DEFINITION,
-        1);
+        reasonI);
 
     EXPECT_EQ(contract::UnitType::Currency, contract->Type());
     EXPECT_TRUE(unit_id_->empty());

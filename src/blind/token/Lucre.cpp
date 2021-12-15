@@ -264,13 +264,13 @@ auto Lucre::GenerateTokenRequest(
 
     if (serializedMint->empty()) {
         LogError()(OT_PRETTY_CLASS())("Failed to get public mint for series ")(
-            denomination_)
+            denomination_.str())
             .Flush();
 
         return false;
     } else {
         LogInsane()(OT_PRETTY_CLASS())("Begin mint series ")(
-            denomination_)
+            denomination_.str())
             .Flush();
         LogInsane()(serializedMint).Flush();
         LogInsane()(OT_PRETTY_CLASS())("End mint").Flush();
@@ -530,13 +530,13 @@ auto Lucre::Process(
 
     if (serializedMint->empty()) {
         LogError()(OT_PRETTY_CLASS())("Failed to get public mint for series ")(
-            denomination_)
+            denomination_.str())
             .Flush();
 
         return false;
     } else {
         LogInsane()(OT_PRETTY_CLASS())("Begin mint series ")(
-            denomination_)
+            denomination_.str())
             .Flush();
         LogInsane()(serializedMint).Flush();
         LogInsane()(OT_PRETTY_CLASS())("End mint").Flush();

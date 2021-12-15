@@ -294,11 +294,7 @@ void Basket::GenerateContents(StringXML& xmlUnsigned, bool bHideAccountID) const
     Tag tag("currencyBasket");
 
     tag.add_attribute("contractCount", std::to_string(m_nSubCount));
-    tag.add_attribute("minimumTransfer", [&] {
-        auto buf = std::string{};
-        m_lMinimumTransfer.Serialize(writer(buf));
-        return buf;
-    }());
+    tag.add_attribute("minimumTransfer", m_lMinimumTransfer);
 
     // Only used in Request Basket (requesting an exchange in/out.)
     // (Versus a basket object used for ISSUING a basket currency, this is

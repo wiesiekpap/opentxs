@@ -77,7 +77,6 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -107,28 +106,20 @@ using namespace opentxs;
 #define SUCCESS true
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"
+#define UNIT_DEFINITION_PRIMARY_UNIT_NAME "dollars"
+#define UNIT_DEFINITION_SYMBOL "$"
+#define UNIT_DEFINITION_TLA "USA"
+#define UNIT_DEFINITION_POWER 2
+#define UNIT_DEFINITION_FRACTIONAL_UNIT_NAME "cents"
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
-#define UNIT_DEFINITION_DISPLAY_DEFINITION                                     \
-    {                                                                          \
-        u8"USD",                                                               \
-        {                                                                      \
-            {                                                                  \
-                u8"dollars", { u8"$", u8"", {{10, 0}}, 2, 3 }                  \
-            }                                                                  \
-        }                                                                      \
-    }
 #define UNIT_DEFINITION_CONTRACT_NAME_2 "Mt Gox BTC"
 #define UNIT_DEFINITION_TERMS_2 "YOLO"
+#define UNIT_DEFINITION_PRIMARY_UNIT_NAME_2 "bitcoins"
+#define UNIT_DEFINITION_SYMBOL_2 "B"
+#define UNIT_DEFINITION_TLA_2 "BTC"
+#define UNIT_DEFINITION_POWER_2 8
+#define UNIT_DEFINITION_FRACTIONAL_UNIT_NAME_2 "satoshis"
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT_2 ot::core::UnitType::BTC
-#define UNIT_DEFINITION_DISPLAY_DEFINITION_2                                   \
-    {                                                                          \
-        u8"BTC",                                                               \
-        {                                                                      \
-            {                                                                  \
-                u8"BTC", { u8"₿", u8"", {{10, 8}}, 0, 8 }                    \
-            }                                                                  \
-        }                                                                      \
-    }
 
 #define MESSAGE_TEXT "example message text"
 #define NEW_SERVER_NAME "Awesome McCoolName"
@@ -337,14 +328,17 @@ public:
     void create_unit_definition_1()
     {
         const_cast<OTUnitDefinition&>(asset_contract_1_) =
-            client_1_.Wallet().CurrencyContract(
+            client_1_.Wallet().UnitDefinition(
                 alice_nym_id_->str(),
                 UNIT_DEFINITION_CONTRACT_NAME,
                 UNIT_DEFINITION_TERMS,
+                UNIT_DEFINITION_PRIMARY_UNIT_NAME,
+                UNIT_DEFINITION_SYMBOL,
+                UNIT_DEFINITION_TLA,
+                UNIT_DEFINITION_POWER,
+                UNIT_DEFINITION_FRACTIONAL_UNIT_NAME,
                 UNIT_DEFINITION_UNIT_OF_ACCOUNT,
-                reason_c1_,
-                UNIT_DEFINITION_DISPLAY_DEFINITION,
-                1);
+                reason_c1_);
         EXPECT_EQ(contract::UnitType::Currency, asset_contract_1_->Type());
 
         if (asset_contract_1_->ID()->empty()) {
@@ -357,14 +351,17 @@ public:
     void create_unit_definition_2()
     {
         const_cast<OTUnitDefinition&>(asset_contract_2_) =
-            client_2_.Wallet().CurrencyContract(
+            client_2_.Wallet().UnitDefinition(
                 bob_nym_id_->str(),
                 UNIT_DEFINITION_CONTRACT_NAME_2,
                 UNIT_DEFINITION_TERMS_2,
+                UNIT_DEFINITION_PRIMARY_UNIT_NAME_2,
+                UNIT_DEFINITION_SYMBOL_2,
+                UNIT_DEFINITION_TLA_2,
+                UNIT_DEFINITION_POWER_2,
+                UNIT_DEFINITION_FRACTIONAL_UNIT_NAME_2,
                 UNIT_DEFINITION_UNIT_OF_ACCOUNT_2,
-                reason_c2_,
-                UNIT_DEFINITION_DISPLAY_DEFINITION_2,
-                1);
+                reason_c2_);
         EXPECT_EQ(contract::UnitType::Currency, asset_contract_2_->Type());
 
         if (asset_contract_2_->ID()->empty()) {

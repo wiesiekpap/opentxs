@@ -213,8 +213,8 @@ auto AccountEvent::Serialize(proto::AccountEvent& dest) const noexcept -> bool
     dest.set_type(translate(imp.type_));
     dest.set_contact(imp.contact_);
     dest.set_workflow(imp.workflow_);
-    imp.amount_.Serialize(writer(dest.mutable_amount()));
-    imp.pending_.Serialize(writer(dest.mutable_pendingamount()));
+    dest.set_amount(imp.amount_);
+    dest.set_pendingamount(imp.pending_);
     dest.set_timestamp(Clock::to_time_t(imp.time_));
     dest.set_memo(imp.memo_);
     dest.set_uuid(imp.uuid_);

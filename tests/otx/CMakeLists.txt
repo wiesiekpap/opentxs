@@ -5,5 +5,3 @@
 
 add_opentx_test(unittests-opentxs-otx Test_Basic.cpp)
 add_opentx_test(unittests-opentxs-otx-messages Test_Messages.cpp)
-
-set_tests_properties(unittests-opentxs-otx PROPERTIES DISABLED TRUE)

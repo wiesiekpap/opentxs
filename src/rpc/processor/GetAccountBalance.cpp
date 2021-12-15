@@ -12,8 +12,8 @@
 #include <type_traits>
 #include <vector>
 
+#include "display/Definition.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/util/Shared.hpp"
@@ -27,7 +27,6 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
@@ -101,15 +100,16 @@ auto RPC::get_account_balance_blockchain(
         api.Network().Blockchain().Start(chain);
         const auto& client = api.Network().Blockchain().GetChain(chain);
         const auto [confirmed, unconfirmed] = client.GetBalance(owner);
-        const auto& definition = blockchain::GetDefinition(chain);
+        const auto& display =
+            blockchain::params::Data::Chains().at(chain).scales_;
         balances.emplace_back(
             accountID.str(),
             blockchain::AccountName(chain),
             blockchain::UnitID(api, chain).str(),
             owner->str(),
             blockchain::IssuerID(api, chain).str(),
-            definition.Format(confirmed),
-            definition.Format(unconfirmed),
+            display.Format(confirmed),
+            display.Format(unconfirmed),
             confirmed,
             unconfirmed,
             AccountType::blockchain);
@@ -132,10 +132,11 @@ auto RPC::get_account_balance_custodial(
         const auto& unit = account.get().GetInstrumentDefinitionID();
         const auto balance = account.get().GetBalance();
         const auto formatted = [&] {
-            const auto& blockchain = api.Crypto().Blockchain();
-            const auto [chain, owner] = blockchain.LookupAccount(accountID);
-            const auto& definition = blockchain::GetDefinition(chain);
-            return definition.Format(balance);
+            auto out = std::string{};
+            const auto contract = api.Wallet().UnitDefinition(unit);
+            contract->FormatAmountLocale(balance, out);
+
+            return out;
         }();
         balances.emplace_back(
             accountID.str(),

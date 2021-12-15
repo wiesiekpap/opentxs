@@ -95,6 +95,32 @@ template class opentxs::Shared<opentxs::Account>;
 
 namespace opentxs::api::session::implementation
 {
+const Wallet::UnitNameMap Wallet::unit_of_account_{
+    {"BTC", proto::CITEMTYPE_BTC},   {"ETH", proto::CITEMTYPE_ETH},
+    {"XRP", proto::CITEMTYPE_XRP},   {"LTC", proto::CITEMTYPE_LTC},
+    {"DAO", proto::CITEMTYPE_DAO},   {"XEM", proto::CITEMTYPE_XEM},
+    {"DAS", proto::CITEMTYPE_DASH},  {"LSK", proto::CITEMTYPE_LSK},
+    {"DGD", proto::CITEMTYPE_DGD},   {"XMR", proto::CITEMTYPE_XMR},
+    {"NXT", proto::CITEMTYPE_NXT},   {"AMP", proto::CITEMTYPE_AMP},
+    {"XLM", proto::CITEMTYPE_XLM},   {"FCT", proto::CITEMTYPE_FCT},
+    {"BTS", proto::CITEMTYPE_BTS},   {"USD", proto::CITEMTYPE_USD},
+    {"EUR", proto::CITEMTYPE_EUR},   {"GBP", proto::CITEMTYPE_GBP},
+    {"INR", proto::CITEMTYPE_INR},   {"AUD", proto::CITEMTYPE_AUD},
+    {"CAD", proto::CITEMTYPE_CAD},   {"SGD", proto::CITEMTYPE_SGD},
+    {"CHF", proto::CITEMTYPE_CHF},   {"MYR", proto::CITEMTYPE_MYR},
+    {"JPY", proto::CITEMTYPE_JPY},   {"CNY", proto::CITEMTYPE_CNY},
+    {"NZD", proto::CITEMTYPE_NZD},   {"THB", proto::CITEMTYPE_THB},
+    {"HUF", proto::CITEMTYPE_HUF},   {"AED", proto::CITEMTYPE_AED},
+    {"HKD", proto::CITEMTYPE_HKD},   {"MXN", proto::CITEMTYPE_MXN},
+    {"ZAR", proto::CITEMTYPE_ZAR},   {"PHP", proto::CITEMTYPE_PHP},
+    {"SEK", proto::CITEMTYPE_SEK},   {"BTT", proto::CITEMTYPE_TNBTC},
+    {"LTT", proto::CITEMTYPE_TNLTC}, {"DAT", proto::CITEMTYPE_TNDASH},
+    {"BCH", proto::CITEMTYPE_BCH},   {"BCT", proto::CITEMTYPE_TNBCH},
+    {"PKT", proto::CITEMTYPE_PKT},   {"PTT", proto::CITEMTYPE_TNPKT},
+};
+const Wallet::UnitNameReverse Wallet::unit_lookup_{
+    reverse_unit_map(unit_of_account_)};
+
 Wallet::Wallet(const api::Session& api)
     : api_(api)
     , context_map_()
@@ -668,7 +694,7 @@ auto Wallet::UpdateAccount(
             auto work = opentxs::network::zeromq::tagged_message(
                 WorkType::AccountUpdated);
             work.AddFrame(accountID);
-            balance.Serialize(work.AppendBytes());
+            work.AddFrame(balance.str());
 
             return work;
         }());
@@ -709,6 +735,10 @@ auto Wallet::extract_unit(const contract::Unit& contract) const
     -> core::UnitType
 {
     try {
+        if (contract.Version() < 2) {
+            return ClaimToUnit(translate(unit_of_account_.at(contract.TLA())));
+        }
+
         return contract.UnitOfAccount();
     } catch (...) {
 
@@ -2586,10 +2616,10 @@ auto Wallet::UnitDefinition(
         bool loaded = api_.Storage().Load(id, serialized, alias, true);
 
         if (loaded) {
-            auto nym = Nym(identifier::Nym::Factory(serialized.issuer()));
+            auto nym = Nym(identifier::Nym::Factory(serialized.nymid()));
 
-            if (!nym && serialized.has_issuer_nym()) {
-                nym = Nym(serialized.issuer_nym());
+            if (!nym && serialized.has_publicnym()) {
+                nym = Nym(serialized.publicnym());
             }
 
             if (nym) {
@@ -2699,7 +2729,7 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
         throw std::runtime_error("Invalid unit definition id");
     }
 
-    const auto nymID = api_.Factory().NymID(contract.issuer());
+    const auto nymID = api_.Factory().NymID(contract.nymid());
 
     if (nymID->empty()) { throw std::runtime_error("Invalid nym ID"); }
 
@@ -2712,7 +2742,7 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
     }());
     auto nym = Nym(nymID);
 
-    if (!nym && contract.has_issuer_nym()) { nym = Nym(contract.issuer_nym()); }
+    if (!nym && contract.has_publicnym()) { nym = Nym(contract.publicnym()); }
 
     if (!nym) { throw std::runtime_error("Invalid nym"); }
 
@@ -2752,14 +2782,17 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
     return UnitDefinition(unitID);
 }
 
-auto Wallet::CurrencyContract(
+auto Wallet::UnitDefinition(
     const std::string& nymid,
     const std::string& shortname,
+    const std::string& name,
+    const std::string& symbol,
     const std::string& terms,
+    const std::string& tla,
+    const std::uint32_t power,
+    const std::string& fraction,
     const core::UnitType unitOfAccount,
     const PasswordPrompt& reason,
-    const display::Definition& displayDefinition,
-    const Amount& redemptionIncrement,
     const VersionNumber version) const -> OTUnitDefinition
 {
     auto unit = std::string{};
@@ -2770,12 +2803,15 @@ auto Wallet::CurrencyContract(
             api_,
             nym,
             shortname,
+            name,
+            symbol,
             terms,
+            tla,
+            power,
+            fraction,
             unitOfAccount,
             version,
-            reason,
-            displayDefinition,
-            redemptionIncrement);
+            reason);
 
         if (contract) {
 
@@ -2791,14 +2827,14 @@ auto Wallet::CurrencyContract(
     return UnitDefinition(identifier::UnitDefinition::Factory(unit));
 }
 
-auto Wallet::SecurityContract(
+auto Wallet::UnitDefinition(
     const std::string& nymid,
     const std::string& shortname,
+    const std::string& name,
+    const std::string& symbol,
     const std::string& terms,
     const core::UnitType unitOfAccount,
     const PasswordPrompt& reason,
-    const display::Definition& displayDefinition,
-    const Amount& redemptionIncrement,
     const VersionNumber version) const -> OTUnitDefinition
 {
     std::string unit;
@@ -2809,12 +2845,12 @@ auto Wallet::SecurityContract(
             api_,
             nym,
             shortname,
+            name,
+            symbol,
             terms,
             unitOfAccount,
             version,
-            reason,
-            displayDefinition,
-            redemptionIncrement);
+            reason);
 
         if (contract) {
 

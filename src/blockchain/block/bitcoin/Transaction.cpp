@@ -108,8 +108,8 @@ auto BitcoinTransaction(
         raw.outputs_.emplace_back();
         auto& out = *raw.outputs_.rbegin();
         try {
-            output.Value().SerializeBitcoin(
-                preallocated(sizeof(out.value_), &out.value_));
+            out.value_ =
+                output.Value().Internal().amount_.convert_to<std::int64_t>();
         } catch (const std::exception& e) {
             LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 

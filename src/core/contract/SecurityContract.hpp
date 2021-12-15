@@ -36,6 +36,7 @@ class Security final : public unit::Security,
                        public contract::implementation::Unit
 {
 public:
+    auto TLA() const -> std::string final { return primary_unit_symbol_; }
     auto Type() const -> contract::UnitType final
     {
         return contract::UnitType::Security;
@@ -45,11 +46,11 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
+        const std::string& name,
+        const std::string& symbol,
         const std::string& terms,
         const core::UnitType unitOfAccount,
-        const VersionNumber version,
-        const display::Definition& displayDefinition,
-        const Amount& redemptionIncrement);
+        const VersionNumber version);
     Security(
         const api::Session& api,
         const Nym_p& nym,
