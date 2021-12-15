@@ -408,8 +408,8 @@ auto Mint::GetPrivate(Armored& theArmor, const Amount& lDenomination) const
 
         return true;
     } catch (...) {
-        LogTrace()(OT_PRETTY_CLASS())("Denomination ")(lDenomination.str())(
-            " not found")
+        LogTrace()(OT_PRETTY_CLASS())("Denomination ")(
+            lDenomination)(" not found")
             .Flush();
 
         return false;
@@ -426,8 +426,8 @@ auto Mint::GetPublic(Armored& theArmor, const Amount& lDenomination) const
 
         return true;
     } catch (...) {
-        LogTrace()(OT_PRETTY_CLASS())("Denomination ")(lDenomination.str())(
-            " not found")
+        LogTrace()(OT_PRETTY_CLASS())("Denomination ")(
+            lDenomination)(" not found")
             .Flush();
 
         return false;
@@ -506,13 +506,21 @@ void Mint::UpdateContents(const PasswordPrompt& reason)
             for (auto& it : m_mapPrivate) {
                 TagPtr tagPrivateInfo(
                     new Tag("mintPrivateInfo", it.second->Get()));
-                tagPrivateInfo->add_attribute("denomination", it.first);
+                tagPrivateInfo->add_attribute("denomination", [&] {
+                    auto amount = std::string{};
+                    it.first.Serialize(writer(amount));
+                    return amount;
+                }());
                 tag.add_tag(tagPrivateInfo);
             }
         }
         for (auto& it : m_mapPublic) {
             TagPtr tagPublicInfo(new Tag("mintPublicInfo", it.second->Get()));
-            tagPublicInfo->add_attribute("denomination", it.first);
+            tagPublicInfo->add_attribute("denomination", [&] {
+                auto amount = std::string{};
+                it.first.Serialize(writer(amount));
+                return amount;
+            }());
             tag.add_tag(tagPublicInfo);
         }
     }
@@ -590,7 +598,7 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             return (-1);  // error condition
         } else {
             LogTrace()(OT_PRETTY_CLASS())(
-                " Loading private key for denomination ")(lDenomination.str())
+                " Loading private key for denomination ")(lDenomination)
                 .Flush();
             m_mapPrivate.emplace(lDenomination, std::move(pArmor));
         }
@@ -609,7 +617,7 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             return (-1);  // error condition
         } else {
             LogTrace()(OT_PRETTY_CLASS())(
-                " Loading public key for denomination ")(lDenomination.str())
+                " Loading public key for denomination ")(lDenomination)
                 .Flush();
             m_mapPublic.emplace(lDenomination, std::move(pArmor));
             // Whether client or server, both sides have public. Each public

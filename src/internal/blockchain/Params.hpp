@@ -26,7 +26,6 @@
 #include <utility>
 #include <vector>
 
-#include "display/Definition.hpp"
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
 #endif  // OT_BLOCKCHAIN
@@ -82,7 +81,6 @@ struct Data {
     std::uint16_t default_port_{};
     std::vector<std::string> dns_seeds_{};
     Amount default_fee_rate_{};  // satoshis per 1000 bytes
-    display::Definition scales_{};
     std::size_t block_download_batch_{};
     ScriptMap scripts_{};
     StylePref styles_{};

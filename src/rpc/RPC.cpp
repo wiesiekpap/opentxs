@@ -69,6 +69,7 @@
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -688,17 +689,17 @@ auto RPC::create_unit_definition(const proto::RPCCommand& command) const
     const auto& createunit = command.createunit();
 
     try {
-        const auto unitdefinition = session.Wallet().UnitDefinition(
+        const auto& definition = display::GetDefinition(
+            ClaimToUnit(translate(createunit.unitofaccount())));
+
+        const auto unitdefinition = session.Wallet().CurrencyContract(
             command.owner(),
-            createunit.primaryunitname(),
             createunit.name(),
-            createunit.symbol(),
             createunit.terms(),
-            createunit.tla(),
-            createunit.power(),
-            createunit.fractionalunitname(),
             ClaimToUnit(translate(createunit.unitofaccount())),
-            reason);
+            reason,
+            definition,
+            Amount{createunit.redemptionincrement()});
 
         output.add_identifier(unitdefinition->ID()->str());
         add_output_status(output, proto::RPCRESPONSE_SUCCESS);
@@ -1061,7 +1062,8 @@ auto RPC::get_pending_payments(const proto::RPCCommand& command) const
                 client.Contacts().ContactID(cheque->GetSenderNymID());
             accountEvent.set_contact(contactID->str());
             accountEvent.set_workflow(paymentWorkflow.id());
-            accountEvent.set_pendingamount(cheque->GetAmount());
+            cheque->GetAmount().Serialize(
+                writer(accountEvent.mutable_pendingamount()));
 
             if (0 < paymentWorkflow.event_size()) {
                 const auto paymentEvent = paymentWorkflow.event(0);

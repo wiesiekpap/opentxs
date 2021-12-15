@@ -15,4 +15,6 @@ namespace core
 enum class AddressType : std::uint8_t;
 enum class UnitType : std::uint32_t;
 }  // namespace core
+
+auto print(core::UnitType) noexcept -> std::string;
 }  // namespace opentxs

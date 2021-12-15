@@ -16,7 +16,6 @@
 #include <sstream>
 #include <type_traits>
 
-#include "display/Scale.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/AddressStyle.hpp"
+#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/UnitType.hpp"
@@ -441,7 +441,7 @@ auto Format(const Type chain, const opentxs::Amount& amount) noexcept
     -> std::string
 {
     try {
-        const auto& definition = params::Data::Chains().at(chain).scales_;
+        const auto& definition = blockchain::GetDefinition(chain);
 
         return definition.Format(amount);
     } catch (...) {
@@ -558,13 +558,6 @@ auto Data::Chains() noexcept -> const ChainData&
                  "dnsseed.emzy.de",
              },
              100000,
-             {{
-                 {u8"BTC", {"", u8"₿", {{10, 8}}, 0, 8}},
-                 {u8"mBTC", {"", u8"mBTC", {{10, 5}}, 0, 5}},
-                 {u8"bits", {"", u8"bits", {{10, 2}}, 0, 2}},
-                 {u8"μBTC", {"", u8"μBTC", {{10, 2}}, 0, 2}},
-                 {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
-             }},
              100,
              {
                  {Style::P2PKH, true},
@@ -621,13 +614,6 @@ auto Data::Chains() noexcept -> const ChainData&
                  "testnet-seed.bitcoin.schildbach.de",
              },
              3113,
-             {{
-                 {u8"BTC", {"", u8"tBTC", {{10, 8}}, 0, 8}},
-                 {u8"mBTC", {"", u8"mBTC", {{10, 5}}, 0, 5}},
-                 {u8"bits", {"", u8"bits", {{10, 2}}, 0, 2}},
-                 {u8"μBTC", {"", u8"μBTC", {{10, 2}}, 0, 2}},
-                 {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
-             }},
              100,
              {
                  {Style::P2PKH, true},
@@ -685,13 +671,6 @@ auto Data::Chains() noexcept -> const ChainData&
                  "dnsseed.electroncash.de",
              },
              1000,
-             {{
-                 {u8"BCH", {"", u8"BCH", {{10, 8}}, 0, 8}},
-                 {u8"mBCH", {"", u8"mBCH", {{10, 5}}, 0, 5}},
-                 {u8"bits", {"", u8"bits", {{10, 2}}, 0, 2}},
-                 {u8"μBCH", {"", u8"μBCH", {{10, 2}}, 0, 2}},
-                 {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
-             }},
              100,
              {
                  {Style::P2PKH, true},
@@ -747,13 +726,6 @@ auto Data::Chains() noexcept -> const ChainData&
                  "testnet-seed.bchd.cash",
              },
              1000,
-             {{
-                 {u8"BCH", {"", u8"tBCH", {{10, 8}}, 0, 8}},
-                 {u8"mBCH", {"", u8"mBCH", {{10, 5}}, 0, 5}},
-                 {u8"bits", {"", u8"bits", {{10, 2}}, 0, 2}},
-                 {u8"μBCH", {"", u8"μBCH", {{10, 2}}, 0, 2}},
-                 {u8"satoshi", {"", u8"satoshis", {{10, 0}}, 0, 0}},
-             }},
              100,
              {
                  {Style::P2PKH, true},
@@ -787,7 +759,6 @@ auto Data::Chains() noexcept -> const ChainData&
              30303,
              {},
              0,
-             {},  // TODO
              0,
              {
                  {Style::P2PKH, false},
@@ -819,7 +790,6 @@ auto Data::Chains() noexcept -> const ChainData&
              30303,
              {},
              0,
-             {},  // TODO
              0,
              {
                  {Style::P2PKH, false},
@@ -873,12 +843,6 @@ auto Data::Chains() noexcept -> const ChainData&
                  "dnsseed.koin-project.com",
              },
              25000,
-             {{
-                 {u8"LTC", {"", u8"Ł", {{10, 8}}, 0, 6}},
-                 {u8"mLTC", {"", u8"mŁ", {{10, 5}}, 0, 3}},
-                 {u8"μLTC", {"", u8"μŁ", {{10, 2}}, 0, 0}},
-                 {u8"photons", {"", u8"photons", {{10, 2}}, 0, 0}},
-             }},
              100,
              {
                  {Style::P2PKH, true},
@@ -933,12 +897,6 @@ auto Data::Chains() noexcept -> const ChainData&
                  "dnsseed-testnet.thrasher.io",
              },
              25000,
-             {{
-                 {u8"LTC", {"", u8"Ł", {{10, 8}}, 0, 6}},
-                 {u8"mLTC", {"", u8"mŁ", {{10, 5}}, 0, 3}},
-                 {u8"μLTC", {"", u8"μŁ", {{10, 2}}, 0, 0}},
-                 {u8"photons", {"", u8"photons", {{10, 2}}, 0, 0}},
-             }},
              100,
              {
                  {Style::P2PKH, true},
@@ -1165,13 +1123,6 @@ auto Data::Chains() noexcept -> const ChainData&
                  "pktdseed.pkt.world",
              },
              1000,
-             {{
-                 {u8"PKT", {"", u8"PKT", {{2, 30}}, 0, 11}},
-                 {u8"mPKT", {"", u8"mPKT", {{2, 30}, {10, -3}}, 0, 8}},
-                 {u8"μPKT", {"", u8"μPKT", {{2, 30}, {10, -6}}, 0, 5}},
-                 {u8"nPKT", {"", u8"nPKT", {{2, 30}, {10, -9}}, 0, 2}},
-                 {u8"pack", {"", u8"pack", {{10, 0}}, 0, 2}},
-             }},
              100,
              {
                  {Style::P2PKH, true},
@@ -1217,13 +1168,6 @@ auto Data::Chains() noexcept -> const ChainData&
                  "testseed.gridfinity.com",
              },
              1000,
-             {{
-                 {u8"PKT", {"", u8"PKT", {{2, 30}}, 0, 11}},
-                 {u8"mPKT", {"", u8"mPKT", {{2, 30}, {10, -3}}, 0, 8}},
-                 {u8"μPKT", {"", u8"μPKT", {{2, 30}, {10, -6}}, 0, 5}},
-                 {u8"nPKT", {"", u8"nPKT", {{2, 30}, {10, -9}}, 0, 2}},
-                 {u8"pack", {"", u8"pack", {{10, 0}}, 0, 2}},
-             }},
              100,
              {
                  {Style::P2PKH, true},
@@ -1274,9 +1218,6 @@ auto Data::Chains() noexcept -> const ChainData&
              18444,
              {},
              1000,
-             {{
-                 {u8"Unit", {"", u8"units", {{10, 8}}, 0, 8}},
-             }},
              100,
              {
                  {Style::P2PKH, true},

@@ -21,6 +21,7 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "blind/Token.hpp"
+#include "core/Amount.hpp"
 #include "internal/api/crypto/Symmetric.hpp"
 #include "internal/blind/Blind.hpp"
 #include "internal/blind/Factory.hpp"
@@ -711,7 +712,7 @@ auto Purse::Serialize(proto::Purse& output) const noexcept -> bool
         output.set_state(translate(state_));
         output.set_notary(notary_->str());
         output.set_mint(unit_->str());
-        output.set_totalvalue(total_value_);
+        total_value_.Serialize(writer(output.mutable_totalvalue()));
         output.set_latestvalidfrom(Clock::to_time_t(latest_valid_from_));
         output.set_earliestvalidto(Clock::to_time_t(earliest_valid_to_));
 

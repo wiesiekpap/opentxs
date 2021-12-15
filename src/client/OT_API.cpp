@@ -51,6 +51,7 @@
 #include "opentxs/core/contract/basket/Basket.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
 #include "opentxs/core/cron/OTCronItem.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -3135,10 +3136,14 @@ auto OT_API::payDividend(
         ((-1) * issuerAccount.get().GetBalance()) * AMOUNT_PER_SHARE;
 
     if (dividendAccount.get().GetBalance() < totalCost) {
+        const auto& dividenddefinitionid =
+            dividendAccount.get().GetInstrumentDefinitionID();
+        const auto unittype =
+            api_.Wallet().CurrencyTypeBasedOnUnitType(dividenddefinitionid);
         LogError()(OT_PRETTY_CLASS())("Failure: There's not enough (")(
-            dividendAccount.get().GetBalance().str())(
+            dividendAccount.get().GetBalance(), unittype)(
             ") in the source account, to cover the total cost of the dividend "
-            "(")(totalCost.str())(").")
+            "(")(totalCost, unittype)(").")
             .Flush();
 
         return output;
@@ -4330,24 +4335,27 @@ auto OT_API::issueMarketOffer(
 
     if (lPriceLimit > 0) { strOfferType = String::Factory("limit order"); }
 
+    const auto unittype =
+        api_.Wallet().CurrencyTypeBasedOnUnitType(currencyContractID);
+    const auto& displaydefinition = display::GetDefinition(unittype);
     if (0 != cStopSign) {
+        const auto price = displaydefinition.Format(lActivationPrice);
         if (lPriceLimit > 0) {
             strOfferType->Format(
                 "stop limit order, at threshhold: %c%s",
                 cStopSign,
-                lActivationPrice.str().c_str());
+                price.c_str());
         } else {
             strOfferType->Format(
-                "stop order, at threshhold: %c%s",
-                cStopSign,
-                lActivationPrice.str().c_str());
+                "stop order, at threshhold: %c%s", cStopSign, price.c_str());
         }
     }
 
     auto strPrice = String::Factory();
 
     if (lPriceLimit > 0) {
-        strPrice->Format("Price: %s\n", lPriceLimit.str().c_str());
+        auto limit = displaydefinition.Format(lPriceLimit);
+        strPrice->Format("Price: %s\n", limit.c_str());
     }
 
     auto offer{api_.Factory().Offer(
@@ -4440,9 +4448,9 @@ auto OT_API::issueMarketOffer(
         openingNumber->Value())(", type: ")(
         bBuyingOrSelling ? "selling" : "buying")(", ")(strOfferType)(", ")(
         strPrice)(".")(" Assets for sale/purchase: ")(
-        lTotalAssetsOnOffer.str())(". In minimum increments of: ")(
-        lMinimumIncrement.str())(". At market of scale: ")(lMarketScale.str())(
-        ". Valid From: ")(VALID_FROM)(". To: ")(VALID_TO)
+        lTotalAssetsOnOffer, unittype)(". In minimum increments of: ")(
+        lMinimumIncrement, unittype)(". At market of scale: ")(
+        lMarketScale)(". Valid From: ")(VALID_FROM)(". To: ")(VALID_TO)
         .Flush();
     auto transaction{api_.Factory().Transaction(
         nymID,

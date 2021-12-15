@@ -1285,7 +1285,11 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
         return {};
     }
 
-    return account.get().GetBalance();
+    return [&] {
+        auto buf = std::string{};
+        account.get().GetBalance().Serialize(writer(buf));
+        return buf;
+    }();
 }
 
 auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)

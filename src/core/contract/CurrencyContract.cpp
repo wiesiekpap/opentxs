@@ -12,6 +12,7 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/UnitDefinition.hpp"
+#include "internal/contact/Contact.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/UnitDefinition.hpp"
@@ -29,29 +30,23 @@ auto Factory::CurrencyContract(
     const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
-    const std::string& name,
-    const std::string& symbol,
     const std::string& terms,
-    const std::string& tla,
-    const std::uint32_t power,
-    const std::string& fraction,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
-    const opentxs::PasswordPrompt& reason) noexcept
+    const opentxs::PasswordPrompt& reason,
+    const display::Definition& displayDefinition,
+    const Amount& redemptionIncrement) noexcept
     -> std::shared_ptr<contract::unit::Currency>
 {
     auto output = std::make_shared<ReturnType>(
         api,
         nym,
         shortname,
-        name,
-        symbol,
         terms,
-        tla,
-        power,
-        fraction,
         unitOfAccount,
-        version);
+        version,
+        displayDefinition,
+        redemptionIncrement);
 
     if (false == bool(output)) { return {}; }
 
@@ -101,18 +96,20 @@ Currency::Currency(
     const api::Session& api,
     const Nym_p& nym,
     const std::string& shortname,
-    const std::string& name,
-    const std::string& symbol,
     const std::string& terms,
-    const std::string& tla,
-    const std::uint32_t power,
-    const std::string& fraction,
     const core::UnitType unitOfAccount,
-    const VersionNumber version)
-    : Unit(api, nym, shortname, name, symbol, terms, unitOfAccount, version)
-    , tla_(tla)
-    , power_(power)
-    , fractional_unit_name_(fraction)
+    const VersionNumber version,
+    const display::Definition& displayDefinition,
+    const Amount& redemptionIncrement)
+    : Unit(
+          api,
+          nym,
+          shortname,
+          terms,
+          unitOfAccount,
+          version,
+          displayDefinition,
+          redemptionIncrement)
 {
     Lock lock(lock_);
     first_time_init(lock);
@@ -123,9 +120,6 @@ Currency::Currency(
     const Nym_p& nym,
     const proto::UnitDefinition serialized)
     : Unit(api, nym, serialized)
-    , tla_(serialized.currency().tla())
-    , power_(serialized.currency().power())
-    , fractional_unit_name_(serialized.currency().fraction())
 {
     Lock lock(lock_);
     init_serialized(lock);
@@ -133,21 +127,12 @@ Currency::Currency(
 
 Currency::Currency(const Currency& rhs)
     : Unit(rhs)
-    , tla_(rhs.tla_)
-    , power_(rhs.power_)
-    , fractional_unit_name_(rhs.fractional_unit_name_)
 {
 }
 
 auto Currency::IDVersion(const Lock& lock) const -> SerializedType
 {
     auto contract = Unit::IDVersion(lock);
-    contract.set_type(translate(contract::UnitType::Currency));
-    auto& currency = *contract.mutable_currency();
-    currency.set_version(1);
-    currency.set_tla(tla_);
-    currency.set_power(power_);
-    currency.set_fraction(fractional_unit_name_);
 
     return contract;
 }

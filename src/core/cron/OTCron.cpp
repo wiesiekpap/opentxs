@@ -226,21 +226,40 @@ auto OTCron::GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount)
         pMarketData->currency_type_id = str_CURRENCY_ID->Get();
         // --------------------------------------------
         const Amount& lScale = pMarket->GetScale();
-
-        pMarketData->scale = lScale.str();
+        pMarketData->scale = [&] {
+            auto buf = std::string{};
+            lScale.Serialize(writer(buf));
+            return buf;
+        }();
 
         const Amount theCurrentBid = pMarket->GetHighestBidPrice();
         const Amount theCurrentAsk = pMarket->GetLowestAskPrice();
 
-        pMarketData->current_bid = theCurrentBid.str();
-        pMarketData->current_ask = theCurrentAsk.str();
+        pMarketData->current_bid = [&] {
+            auto buf = std::string{};
+            theCurrentBid.Serialize(writer(buf));
+            return buf;
+        }();
+        pMarketData->current_ask = [&] {
+            auto buf = std::string{};
+            theCurrentAsk.Serialize(writer(buf));
+            return buf;
+        }();
 
         const Amount& lLastSalePrice = pMarket->GetLastSalePrice();
         const Amount& lTotalAvailableAssets =
             pMarket->GetTotalAvailableAssets();
 
-        pMarketData->total_assets = lTotalAvailableAssets.str();
-        pMarketData->last_sale_price = lLastSalePrice.str();
+        pMarketData->total_assets = [&] {
+            auto buf = std::string{};
+            lTotalAvailableAssets.Serialize(writer(buf));
+            return buf;
+        }();
+        pMarketData->last_sale_price = [&] {
+            auto buf = std::string{};
+            lLastSalePrice.Serialize(writer(buf));
+            return buf;
+        }();
 
         pMarketData->last_sale_date = pMarket->GetLastSaleDate();
 
@@ -546,7 +565,11 @@ void OTCron::UpdateContents(const PasswordPrompt& reason)
         tagMarket->add_attribute(
             "instrumentDefinitionID", str_INSTRUMENT_DEFINITION_ID->Get());
         tagMarket->add_attribute("currencyID", str_CURRENCY_ID->Get());
-        tagMarket->add_attribute("marketScale", pMarket->GetScale());
+        tagMarket->add_attribute("marketScale", [&] {
+            auto buf = std::string{};
+            pMarket->GetScale().Serialize(writer(buf));
+            return buf;
+        }());
         tag.add_tag(tagMarket);
     }
 
