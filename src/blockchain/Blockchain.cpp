@@ -43,6 +43,15 @@ constexpr auto BITMASK(std::uint64_t n) noexcept -> std::uint64_t
 
 namespace bmp = boost::multiprecision;
 
+namespace opentxs::blockchain
+{
+auto GetDefinition(blockchain::Type in) noexcept -> const display::Definition&
+{
+    return display::GetDefinition(BlockchainToUnit(in));
+}
+
+}  // namespace opentxs::blockchain
+
 namespace opentxs::blockchain::block
 {
 auto operator>(const Position& lhs, const Position& rhs) noexcept -> bool

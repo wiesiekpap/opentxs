@@ -73,6 +73,11 @@ namespace crypto
 class Parameters;
 }  // namespace crypto
 
+namespace display
+{
+class Definition;
+}  // namespace display
+
 namespace identity
 {
 namespace internal
@@ -329,27 +334,24 @@ public:
             0)) const noexcept(false) -> OTBasketContract final;
     auto UnitDefinition(const proto::UnitDefinition& contract) const
         -> OTUnitDefinition final;
-    auto UnitDefinition(
+    auto CurrencyContract(
         const std::string& nymid,
         const std::string& shortname,
-        const std::string& name,
-        const std::string& symbol,
         const std::string& terms,
-        const std::string& tla,
-        const std::uint32_t power,
-        const std::string& fraction,
         const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
+        const display::Definition& displayDefinition,
+        const Amount& redemptionIncrement,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         -> OTUnitDefinition final;
-    auto UnitDefinition(
+    auto SecurityContract(
         const std::string& nymid,
         const std::string& shortname,
-        const std::string& name,
-        const std::string& symbol,
         const std::string& terms,
         const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
+        const display::Definition& displayDefinition,
+        const Amount& redemptionIncrement,
         const VersionNumber version = contract::Unit::DefaultVersion) const
         -> OTUnitDefinition final;
     auto CurrencyTypeBasedOnUnitType(
@@ -403,9 +405,6 @@ private:
     using PurseID = std::tuple<OTNymID, OTServerID, OTUnitID>;
     using UnitNameMap = std::map<std::string, proto::ContactItemType>;
     using UnitNameReverse = std::map<proto::ContactItemType, std::string>;
-
-    static const UnitNameMap unit_of_account_;
-    static const UnitNameReverse unit_lookup_;
 
     mutable AccountMap account_map_;
     mutable NymMap nym_map_;

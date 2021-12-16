@@ -47,62 +47,19 @@ public:
     static const VersionNumber DefaultVersion;
     static const VersionNumber MaxVersion;
 
-    static auto formatLongAmount(
-        Amount lValue,
-        const std::int32_t nFactor = 100,
-        const std::int32_t nPower = 2,
-        const char* szCurrencySymbol = "",
-        const char* szThousandSeparator = ",",
-        const char* szDecimalPoint = ".") -> std::string;
-    static auto ParseFormatted(
-        Amount& lResult,
-        const std::string& str_input,
-        const std::int32_t nFactor = 100,
-        const std::int32_t nPower = 2,
-        const char* szThousandSeparator = ",",
-        const char* szDecimalPoint = ".") -> bool;
-    static auto ValidUnits(
-        const VersionNumber version = DefaultVersion) noexcept
-        -> std::set<core::UnitType>;
-
     virtual auto AddAccountRecord(
         const std::string& dataFolder,
         const Account& theAccount) const -> bool = 0;
-    virtual auto DecimalPower() const -> std::int32_t = 0;
     virtual auto DisplayStatistics(String& strContents) const -> bool = 0;
     virtual auto EraseAccountRecord(
         const std::string& dataFolder,
         const Identifier& theAcctID) const -> bool = 0;
-    virtual auto FormatAmountLocale(
-        Amount amount,
-        std::string& str_output,
-        const std::string& str_thousand,
-        const std::string& str_decimal) const -> bool = 0;
-    virtual auto FormatAmountLocale(Amount amount, std::string& str_output)
-        const -> bool = 0;
-    virtual auto FormatAmountWithoutSymbolLocale(
-        Amount amount,
-        std::string& str_output,
-        const std::string& str_thousand,
-        const std::string& str_decimal) const -> bool = 0;
-    virtual auto FormatAmountWithoutSymbolLocale(
-        Amount amount,
-        std::string& str_output) const -> bool = 0;
-    virtual auto FractionalUnitName() const -> std::string = 0;
-    virtual auto GetCurrencyName() const -> const std::string& = 0;
-    virtual auto GetCurrencySymbol() const -> const std::string& = 0;
     using Signable::Serialize;
     OPENTXS_NO_EXPORT virtual auto Serialize(
         SerializedType&,
         bool includeNym = false) const -> bool = 0;
     virtual auto Serialize(AllocateOutput destination, bool includeNym = false)
         const -> bool = 0;
-    virtual auto StringToAmountLocale(
-        Amount& amount,
-        const std::string& str_input,
-        const std::string& str_thousand,
-        const std::string& str_decimal) const -> bool = 0;
-    virtual auto TLA() const -> std::string = 0;
     virtual auto Type() const -> contract::UnitType = 0;
     virtual auto UnitOfAccount() const -> core::UnitType = 0;
     virtual auto VisitAccountRecords(

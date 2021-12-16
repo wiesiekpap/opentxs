@@ -1026,23 +1026,25 @@ private:
         text << "   lock time: " << std::to_string(lock_time_.value()) << '\n';
         text << " input count: " << std::to_string(inputs_.size()) << '\n';
 
+        const auto& definition = blockchain::GetDefinition(chain_);
         for (const auto& [input, value] : inputs_) {
             const auto& outpoint = input->PreviousOutput();
             text << " * " << outpoint.str()
                  << ", sequence: " << std::to_string(input->Sequence())
-                 << ", value: " << value.str() << '\n';
+                 << ", value: " << definition.Format(value) << '\n';
         }
 
         text << "output count: " << std::to_string(outputs_.size()) << '\n';
 
         for (const auto& output : outputs_) {
             text << " * bytes: " << std::to_string(output->CalculateSize())
-                 << ", value: " << output->Value().str() << '\n';
+                 << ", value: " << definition.Format(output->Value()) << '\n';
         }
 
-        text << "total output value: " << output_value_.str() << '\n';
-        text << " total input value: " << input_value_.str() << '\n';
-        text << "               fee: " << (input_value_ - output_value_).str();
+        const auto fee = input_value_ - output_value_;
+        text << "total output value: " << definition.Format(output_value_) << '\n';
+        text << " total input value: " << definition.Format(input_value_) << '\n';
+        text << "               fee: " << definition.Format(fee);
 
         return text.str();
     }

@@ -490,13 +490,13 @@ auto Account::SaveAccount() -> bool
 // credited somewhere else)
 auto Account::Debit(const Amount& amount) -> bool
 {
-    const Amount oldBalance{balanceAmount_->ToLong()};
+    const Amount oldBalance{balanceAmount_->Get()};
     // The MINUS here is the big difference between Debit and Credit
     const auto newBalance{oldBalance - amount};
 
     // fail if integer overflow
-    if ((amount > 0 && oldBalance < INT64_MIN + amount) ||
-        (amount < 0 && oldBalance > INT64_MAX + amount))
+    if ((amount > 0 && oldBalance < Amount{INT64_MIN} + amount) ||
+        (amount < 0 && oldBalance > Amount{INT64_MAX} + amount))
         return false;
 
     // This is where issuer accounts get a pass. They just go negative.
@@ -511,7 +511,9 @@ auto Account::Debit(const Amount& amount) -> bool
     // and it means that we now allow <0 debits on normal accounts,
     // AS LONG AS the result is a HIGHER BALANCE  :-)
     else {
-        balanceAmount_->Format("%s", newBalance.str().c_str());
+        auto amount = std::string{};
+        newBalance.Serialize(writer(amount));
+        balanceAmount_->Format("%s", amount.c_str());
         balanceDate_->Set(String::Factory(getTimestamp()));
         return true;
     }
@@ -521,13 +523,13 @@ auto Account::Debit(const Amount& amount) -> bool
 // debited somewhere else)
 auto Account::Credit(const Amount& amount) -> bool
 {
-    const Amount oldBalance{balanceAmount_->ToLong()};
+    const Amount oldBalance{balanceAmount_->Get()};
     // The PLUS here is the big difference between Debit and Credit.
     const auto newBalance{oldBalance + amount};
 
     // fail if integer overflow
-    if ((amount > 0 && oldBalance > INT64_MAX - amount) ||
-        (amount < 0 && oldBalance < INT64_MIN - amount))
+    if ((amount > 0 && oldBalance > Amount{INT64_MAX} - amount) ||
+        (amount < 0 && oldBalance < Amount{INT64_MIN} - amount))
         return false;
 
     // If the balance gets too big, it may flip to negative due to us using
@@ -551,7 +553,9 @@ auto Account::Credit(const Amount& amount) -> bool
     // and it means that we now allow <0 credits on normal accounts,
     // AS LONG AS the result is a HIGHER BALANCE  :-)
     else {
-        balanceAmount_->Format("%s", newBalance.str().c_str());
+        auto amount = std::string{};
+        newBalance.Serialize(writer(amount));
+        balanceAmount_->Format("%s", amount.c_str());
         balanceDate_->Set(String::Factory(getTimestamp()));
         return true;
     }
@@ -785,7 +789,7 @@ auto Account::GenerateNewAccount(
 
 auto Account::GetBalance() const -> Amount
 {
-    if (balanceAmount_->Exists()) { return Amount{balanceAmount_->ToLong()}; }
+    if (balanceAmount_->Exists()) { return Amount{balanceAmount_->Get()}; }
     return Amount{};
 }
 
@@ -1034,10 +1038,12 @@ auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
         // (Just an easy way to keep the data clean.)
 
         const auto date = parseTimestamp((balanceDate_->Get()));
-        const Amount amount = balanceAmount_->ToLong();
+        const Amount amount{balanceAmount_->Get()};
 
         balanceDate_->Set(String::Factory(formatTimestamp(date)));
-        balanceAmount_->Format("%s", amount.str().c_str());
+        auto balance = std::string{};
+        amount.Serialize(writer(balance));
+        balanceAmount_->Format("%s", balance.c_str());
 
         LogDebug()(OT_PRETTY_CLASS())("BALANCE  -- ")(balanceAmount_).Flush();
         LogDebug()(OT_PRETTY_CLASS())("DATE     --")(balanceDate_).Flush();

@@ -27,6 +27,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #if OT_CASH
 #include "opentxs/blind/Mint.hpp"  // IWYU pragma: keep
@@ -590,9 +591,9 @@ auto UserCommandProcessor::cmd_delete_asset_account(ReplyMessage& reply) const
     const auto balance = account.get().GetBalance();
 
     if (balance != 0) {
+        const auto unittype = server_.API().Storage().AccountUnit(accountID);
         LogError()(OT_PRETTY_CLASS())("Unable to delete account ")(
-            accountID)(" with non-zero "
-                       "balance ")(balance.str())(".")
+            accountID)(" with non-zero balance ")(balance, unittype)(".")
             .Flush();
 
         return false;

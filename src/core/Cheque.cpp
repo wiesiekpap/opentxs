@@ -15,6 +15,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
@@ -80,7 +81,11 @@ void Cheque::UpdateContents([[maybe_unused]] const PasswordPrompt& reason)
     Tag tag("cheque");
 
     tag.add_attribute("version", m_strVersion->Get());
-    tag.add_attribute("amount", m_lAmount);
+    tag.add_attribute("amount", [&] {
+        auto buf = std::string{};
+        m_lAmount.Serialize(writer(buf));
+        return buf;
+    }());
     tag.add_attribute(
         "instrumentDefinitionID", INSTRUMENT_DEFINITION_ID->Get());
     tag.add_attribute("transactionNum", std::to_string(GetTransactionNum()));
@@ -187,8 +192,11 @@ auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
             m_REMITTER_ACCT_ID->Release();
         }
         {
-            LogVerbose()(OT_PRETTY_CLASS())("Cheque Amount: ")(m_lAmount.str())(
-                ". Transaction Number: ")(m_lTransactionNum)(" Valid From: ")(
+            const auto unittype = api_.Wallet().CurrencyTypeBasedOnUnitType(
+                INSTRUMENT_DEFINITION_ID);
+            LogVerbose()(OT_PRETTY_CLASS())("Cheque Amount: ")(
+                m_lAmount, unittype)(". Transaction Number: ")(
+                m_lTransactionNum)(" Valid From: ")(
                 str_valid_from)(" Valid To: ")(
                 str_valid_to)(" InstrumentDefinitionID: ")(
                 strInstrumentDefinitionID)(" NotaryID: ")(

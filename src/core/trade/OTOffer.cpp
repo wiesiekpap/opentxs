@@ -15,6 +15,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Instrument.hpp"
 #include "opentxs/core/String.hpp"
@@ -135,7 +136,8 @@ void OTOffer::GetIdentifier(Identifier& theIdentifier) const
          strAsset = String::Factory(GetInstrumentDefinitionID()),
          strCurrency = String::Factory(GetCurrencyID());
 
-    const Amount& lScale = GetScale();
+    auto lScale = std::string{};
+    GetScale().Serialize(writer(lScale));
 
     // In this way we generate a unique ID that will always be consistent
     // for the same instrument definition id, currency ID, and market scale.
@@ -143,7 +145,7 @@ void OTOffer::GetIdentifier(Identifier& theIdentifier) const
         "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%s\n",
         strAsset->Get(),
         strCurrency->Get(),
-        lScale.str().c_str());
+        lScale.c_str());
 
     theIdentifier.CalculateDigest(strTemp->Bytes());
 }
@@ -312,16 +314,18 @@ auto OTOffer::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetValidFrom(tValidFrom);
         SetValidTo(tValidTo);
 
+        const auto unittype = api_.Wallet().CurrencyTypeBasedOnUnitType(
+            GetInstrumentDefinitionID());
         LogTrace()(OT_PRETTY_CLASS())("Offer Transaction Number: ")(
             m_lTransactionNum)("\n Valid From: ")(tValidFrom)("\n Valid To: ")(
             tValidTo)("\n InstrumentDefinitionID: ")(
             strInstrumentDefinitionID)("\n  CurrencyTypeID: ")(
             strCurrencyTypeID)("\n NotaryID: ")(
-            strNotaryID)("\n Price Limit: ")(GetPriceLimit().str())(
-            ",  Total Assets on Offer: ")(GetTotalAssetsOnOffer().str())(",  ")(
-            (m_bSelling ? "sold" : "bought"))(" so far: ")(
-            GetFinishedSoFar().str())("\n  Scale: ")(GetScale().str())(
-            ".   Minimum Increment: ")(GetMinimumIncrement().str())(
+            strNotaryID)("\n Price Limit: ")(GetPriceLimit(), unittype)(
+            ",  Total Assets on Offer: ")(GetTotalAssetsOnOffer(), unittype)(
+            ",  ")((m_bSelling ? "sold" : "bought"))(" so far: ")(
+            GetFinishedSoFar(), unittype)("\n  Scale: ")(GetScale())(
+            ".   Minimum Increment: ")(GetMinimumIncrement(), unittype)(
             ".  This offer is a")((m_bSelling ? "n ASK" : " BID"))(".")
             .Flush();
 
@@ -350,11 +354,31 @@ void OTOffer::UpdateContents(const PasswordPrompt& reason)
     tag.add_attribute(
         "instrumentDefinitionID", INSTRUMENT_DEFINITION_ID->Get());
     tag.add_attribute("currencyTypeID", CURRENCY_TYPE_ID->Get());
-    tag.add_attribute("priceLimit", GetPriceLimit());
-    tag.add_attribute("totalAssetsOnOffer", GetTotalAssetsOnOffer());
-    tag.add_attribute("finishedSoFar", GetFinishedSoFar());
-    tag.add_attribute("marketScale", GetScale());
-    tag.add_attribute("minimumIncrement", GetMinimumIncrement());
+    tag.add_attribute("priceLimit", [&] {
+        auto buf = std::string{};
+        GetPriceLimit().Serialize(writer(buf));
+        return buf;
+    }());
+    tag.add_attribute("totalAssetsOnOffer", [&] {
+        auto buf = std::string{};
+        GetTotalAssetsOnOffer().Serialize(writer(buf));
+        return buf;
+    }());
+    tag.add_attribute("finishedSoFar", [&] {
+        auto buf = std::string{};
+        GetFinishedSoFar().Serialize(writer(buf));
+        return buf;
+    }());
+    tag.add_attribute("marketScale", [&] {
+        auto buf = std::string{};
+        GetScale().Serialize(writer(buf));
+        return buf;
+    }());
+    tag.add_attribute("minimumIncrement", [&] {
+        auto buf = std::string{};
+        GetMinimumIncrement().Serialize(writer(buf));
+        return buf;
+    }());
     tag.add_attribute("transactionNum", std::to_string(GetTransactionNum()));
     tag.add_attribute("validFrom", formatTimestamp(GetValidFrom()));
     tag.add_attribute("validTo", formatTimestamp(GetValidTo()));

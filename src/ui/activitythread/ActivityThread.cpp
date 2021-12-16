@@ -292,18 +292,18 @@ auto ActivityThread::Pay(
 
     try {
         const auto contract = Widget::api_.Wallet().UnitDefinition(unitID);
-        auto value = Amount{0};
-        const auto converted =
-            contract->StringToAmountLocale(value, amount, "", "");
+        const auto& definition =
+            display::GetDefinition(contract->UnitOfAccount());
+        try {
+            auto value = definition.Import(amount);
 
-        if (false == converted) {
+            return Pay(value, sourceAccount, memo, type);
+        } catch (...) {
             LogError()(OT_PRETTY_CLASS())("Error parsing amount (")(amount)(")")
                 .Flush();
 
             return false;
         }
-
-        return Pay(value, sourceAccount, memo, type);
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())("Missing unit definition (")(unitID)(")")
             .Flush();
@@ -321,7 +321,10 @@ auto ActivityThread::Pay(
     wait_for_startup();
 
     if (0 >= amount) {
-        LogError()(OT_PRETTY_CLASS())("Invalid amount: (")(amount.str())(")")
+        const auto contract = Widget::api_.Wallet().UnitDefinition(
+            Widget::api_.Storage().AccountContract(sourceAccount));
+        LogError()(OT_PRETTY_CLASS())("Invalid amount: (")(
+            amount, contract->UnitOfAccount())(")")
             .Flush();
 
         return false;
@@ -697,7 +700,9 @@ auto ActivityThread::send_cheque(
     try {
         const auto contract = Widget::api_.Wallet().UnitDefinition(
             Widget::api_.Storage().AccountContract(sourceAccount));
-        contract->FormatAmountLocale(amount, displayAmount, ",", ".");
+        const auto& definition =
+            display::GetDefinition(contract->UnitOfAccount());
+        displayAmount = definition.Format(amount);
     } catch (...) {
         LogError()(OT_PRETTY_CLASS())("Failed to load unit definition contract")
             .Flush();
