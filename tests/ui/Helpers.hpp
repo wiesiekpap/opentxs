@@ -244,6 +244,12 @@ auto check_messagable_list_qt(
     const User& user,
     const ContactListData& expected) noexcept -> bool;
 
+auto contact_list_add_contact(
+    const User& user,
+    const std::string& label,
+    const std::string& paymentCode,
+    const std::string& nymID) noexcept -> std::string;
+
 auto init_account_activity(
     const User& user,
     const ot::Identifier& account,

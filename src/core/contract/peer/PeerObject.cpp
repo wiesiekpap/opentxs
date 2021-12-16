@@ -10,7 +10,6 @@
 #include <memory>
 #include <stdexcept>
 
-#include "2_Factory.hpp"
 #include "Proto.tpp"
 #if OT_CASH
 #include "internal/blind/Factory.hpp"

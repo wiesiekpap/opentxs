@@ -251,9 +251,17 @@ auto User::Account(const std::string& type) const noexcept
 auto User::Contact(const std::string& contact) const noexcept
     -> const ot::Identifier&
 {
+    static const auto blank = api_->Factory().Identifier();
+
     ot::Lock lock(lock_);
 
-    return contacts_.at(contact).get();
+    try {
+
+        return contacts_.at(contact).get();
+    } catch (...) {
+
+        return blank;
+    }
 }
 
 auto User::init_basic(
