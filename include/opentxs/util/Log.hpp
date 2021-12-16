@@ -17,6 +17,7 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -56,6 +57,8 @@ public:
     auto operator()(const OTStringXML& in) const noexcept -> const Log&;
     auto operator()(const OTArmored& in) const noexcept -> const Log&;
     auto operator()(const Amount& in) const noexcept -> const Log&;
+    auto operator()(const Amount& in, core::UnitType currency) const noexcept
+        -> const Log&;
     auto operator()(const String& in) const noexcept -> const Log&;
     auto operator()(const StringXML& in) const noexcept -> const Log&;
     auto operator()(const Armored& in) const noexcept -> const Log&;

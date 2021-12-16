@@ -2901,10 +2901,8 @@ void Workflow::update_rpc(
     }
 
     event.set_workflow(workflowID);
-    const auto& amount_string = amount.str();
-    event.set_amount(amount_string.data(), amount_string.size());
-    const auto& pending_string = pending.str();
-    event.set_pendingamount(pending_string.data(), pending_string.size());
+    amount.Serialize(writer(event.mutable_amount()));
+    pending.Serialize(writer(event.mutable_pendingamount()));
     event.set_timestamp(Clock::to_time_t(time));
     event.set_memo(memo);
 

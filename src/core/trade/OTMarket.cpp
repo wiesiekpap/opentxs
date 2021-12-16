@@ -143,7 +143,7 @@ auto OTMarket::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         m_INSTRUMENT_DEFINITION_ID->SetString(strInstrumentDefinitionID);
         m_CURRENCY_TYPE_ID->SetString(strCurrencyTypeID);
 
-        LogConsole()(OT_PRETTY_CLASS())("Market. Scale: ")(m_lScale.str())(".")
+        LogConsole()(OT_PRETTY_CLASS())("Market. Scale: ")(m_lScale)(".")
             .Flush();
 
         LogDetail()(OT_PRETTY_CLASS())("instrumentDefinitionID: ")(
@@ -220,9 +220,17 @@ void OTMarket::UpdateContents(const PasswordPrompt& reason)
     tag.add_attribute(
         "instrumentDefinitionID", INSTRUMENT_DEFINITION_ID->Get());
     tag.add_attribute("currencyTypeID", CURRENCY_TYPE_ID->Get());
-    tag.add_attribute("marketScale", m_lScale);
+    tag.add_attribute("marketScale", [&] {
+        auto buf = std::string{};
+        m_lScale.Serialize(writer(buf));
+        return buf;
+    }());
     tag.add_attribute("lastSaleDate", m_strLastSaleDate);
-    tag.add_attribute("lastSalePrice", m_lLastSalePrice);
+    tag.add_attribute("lastSalePrice", [&] {
+        auto buf = std::string{};
+        m_lLastSalePrice.Serialize(writer(buf));
+        return buf;
+    }());
 
     // Save the offers for sale.
     for (auto& it : m_mapAsks) {
@@ -344,17 +352,40 @@ auto OTMarket::GetNym_OfferList(
 
             if (!pOfferData->stop_sign.compare(">") ||
                 !pOfferData->stop_sign.compare("<")) {
-                const Amount& lStopPrice = pTrade->GetStopPrice();
-                pOfferData->stop_price = lStopPrice.str();
+                pOfferData->stop_price = [&] {
+                    auto buf = std::string{};
+                    pTrade->GetStopPrice().Serialize(writer(buf));
+                    return buf;
+                }();
             }
         }
 
         pOfferData->transaction_id = std::to_string(lTransactionNum);
-        pOfferData->price_per_scale = lPriceLimit.str();
-        pOfferData->total_assets = lTotalAssets.str();
-        pOfferData->finished_so_far = lFinishedSoFar.str();
-        pOfferData->minimum_increment = lMinimumIncrement.str();
-        pOfferData->scale = lScale.str();
+        pOfferData->price_per_scale = [&] {
+            auto buf = std::string{};
+            lPriceLimit.Serialize(writer(buf));
+            return buf;
+        }();
+        pOfferData->total_assets = [&] {
+            auto buf = std::string{};
+            lTotalAssets.Serialize(writer(buf));
+            return buf;
+        }();
+        pOfferData->finished_so_far = [&] {
+            auto buf = std::string{};
+            lFinishedSoFar.Serialize(writer(buf));
+            return buf;
+        }();
+        pOfferData->minimum_increment = [&] {
+            auto buf = std::string{};
+            lMinimumIncrement.Serialize(writer(buf));
+            return buf;
+        }();
+        pOfferData->scale = [&] {
+            auto buf = std::string{};
+            lScale.Serialize(writer(buf));
+            return buf;
+        }();
 
         pOfferData->valid_from = std::to_string(Clock::to_time_t(tValidFrom));
         pOfferData->valid_to = std::to_string(Clock::to_time_t(tValidTo));
@@ -494,9 +525,21 @@ auto OTMarket::GetOfferList(
         const auto tDateAddedToMarket = pOffer->GetDateAddedToMarket();
 
         pOfferData->transaction_id = std::to_string(lTransactionNum);
-        pOfferData->price_per_scale = lPriceLimit.str();
-        pOfferData->available_assets = lAvailableAssets.str();
-        pOfferData->minimum_increment = lMinimumIncrement.str();
+        pOfferData->price_per_scale = [&] {
+            auto buf = std::string{};
+            lPriceLimit.Serialize(writer(buf));
+            return buf;
+        }();
+        pOfferData->available_assets = [&] {
+            auto buf = std::string{};
+            lAvailableAssets.Serialize(writer(buf));
+            return buf;
+        }();
+        pOfferData->minimum_increment = [&] {
+            auto buf = std::string{};
+            lMinimumIncrement.Serialize(writer(buf));
+            return buf;
+        }();
         pOfferData->date = std::to_string(Clock::to_time_t(tDateAddedToMarket));
 
         // *pOfferData is CLONED at this time (I'm still responsible to delete.)
@@ -526,9 +569,21 @@ auto OTMarket::GetOfferList(
         const auto tDateAddedToMarket = pOffer->GetDateAddedToMarket();
 
         pOfferData->transaction_id = std::to_string(lTransactionNum);
-        pOfferData->price_per_scale = lPriceLimit.str();
-        pOfferData->available_assets = lAvailableAssets.str();
-        pOfferData->minimum_increment = lMinimumIncrement.str();
+        pOfferData->price_per_scale = [&] {
+            auto buf = std::string{};
+            lPriceLimit.Serialize(writer(buf));
+            return buf;
+        }();
+        pOfferData->available_assets = [&] {
+            auto buf = std::string{};
+            lAvailableAssets.Serialize(writer(buf));
+            return buf;
+        }();
+        pOfferData->minimum_increment = [&] {
+            auto buf = std::string{};
+            lMinimumIncrement.Serialize(writer(buf));
+            return buf;
+        }();
         pOfferData->date = std::to_string(Clock::to_time_t(tDateAddedToMarket));
 
         // *pOfferData is CLONED at this time (I'm still responsible to delete.)
@@ -918,7 +973,8 @@ void OTMarket::GetIdentifier(Identifier& theIdentifier) const
          strAsset = String::Factory(GetInstrumentDefinitionID()),
          strCurrency = String::Factory(GetCurrencyID());
 
-    Amount lScale = GetScale();
+    auto lScale = std::string{};
+    GetScale().Serialize(writer(lScale));
 
     // In this way we generate a unique ID that will always be consistent
     // for the same instrument definition id, currency ID, and market scale.
@@ -926,7 +982,7 @@ void OTMarket::GetIdentifier(Identifier& theIdentifier) const
         "ASSET TYPE:\n%s\nCURRENCY TYPE:\n%s\nMARKET SCALE:\n%s\n",
         strAsset->Get(),
         strCurrency->Get(),
-        lScale.str().c_str());
+        lScale.c_str());
 
     theIdentifier.CalculateDigest(strTemp->Bytes());
 }
@@ -1900,17 +1956,21 @@ void OTMarket::ProcessTrade(
                     const std::int64_t& lTransactionNum =
                         theOffer.GetTransactionNum();
                     const auto theDate = Clock::now();
-                    const Amount& lPriceLimit =
-                        theOtherOffer.GetPriceLimit();  // Priced per
-                                                        // scale.
-                    const Amount& lAmountSold = lOfferFinished;
 
                     pTradeData->transaction_id =
                         std::to_string(lTransactionNum);
                     pTradeData->date =
                         std::to_string(Clock::to_time_t(theDate));
-                    pTradeData->price = lPriceLimit.str();
-                    pTradeData->amount_sold = lAmountSold.str();
+                    pTradeData->price = [&] {
+                        auto buf = std::string{};
+                        theOtherOffer.GetPriceLimit().Serialize(writer(buf));
+                        return buf;
+                    }();  // Priced per scale.
+                    pTradeData->amount_sold = [&] {
+                        auto buf = std::string{};
+                        lOfferFinished.Serialize(writer(buf));
+                        return buf;
+                    }();
 
                     m_strLastSaleDate = pTradeData->date;
 
@@ -2504,12 +2564,14 @@ auto OTMarket::ProcessTrade(
                 (theOffer.GetMinimumIncrement() >
                  theOffer.GetAmountAvailable())) {
 
+                const auto unittype = wallet.CurrencyTypeBasedOnUnitType(
+                    GetInstrumentDefinitionID());
                 LogVerbose()(OT_PRETTY_CLASS())("Removing market order: ")(
                     theTrade.GetOpeningNum())(". IsFlaggedForRemoval: ")(
-                    theTrade.IsFlaggedForRemoval())(
-                    ". Minimum increment is larger than Amount ")(
-                    "available: ")(theOffer.GetMinimumIncrement().str())(
-                    theOffer.GetAmountAvailable().str())
+                    theTrade.IsFlaggedForRemoval())(". Minimum increment: ")(
+                    theOffer.GetMinimumIncrement(),
+                    unittype)(" is larger than Amount available: ")(
+                    theOffer.GetAmountAvailable(), unittype)
                     .Flush();
 
                 return false;  // remove this trade from cron
@@ -2591,12 +2653,14 @@ auto OTMarket::ProcessTrade(
                 (theOffer.GetMinimumIncrement() >
                  theOffer.GetAmountAvailable())) {
 
+                const auto unittype = wallet.CurrencyTypeBasedOnUnitType(
+                    GetInstrumentDefinitionID());
                 LogVerbose()(OT_PRETTY_CLASS())("Removing market order: ")(
                     theTrade.GetOpeningNum())(". IsFlaggedForRemoval: ")(
-                    theTrade.IsFlaggedForRemoval())(
-                    ". Minimum increment is larger than Amount ")(
-                    "available: ")(theOffer.GetMinimumIncrement().str())(
-                    theOffer.GetAmountAvailable().str())
+                    theTrade.IsFlaggedForRemoval())(". Minimum increment: ")(
+                    theOffer.GetMinimumIncrement(),
+                    unittype)(" is larger than Amount available: ")(
+                    theOffer.GetAmountAvailable(), unittype)
                     .Flush();
 
                 return false;  // remove this trade from the market.
@@ -2620,6 +2684,12 @@ auto OTMarket::ValidateOfferForMarket(OTOffer& theOffer) -> bool
 {
     bool bValidOffer = true;
     auto strReason = String::Factory();
+
+    const auto& definition = display::GetDefinition(
+        api_.Wallet().CurrencyTypeBasedOnUnitType(GetInstrumentDefinitionID()));
+    const auto& offerDefinition =
+        display::GetDefinition(api_.Wallet().CurrencyTypeBasedOnUnitType(
+            theOffer.GetInstrumentDefinitionID()));
 
     if (GetNotaryID() != theOffer.GetNotaryID()) {
         bValidOffer = false;
@@ -2652,8 +2722,8 @@ auto OTMarket::ValidateOfferForMarket(OTOffer& theOffer) -> bool
         bValidOffer = false;
         strReason->Format(
             "Wrong Market Scale on offer. Expected %s, but found %s",
-            GetScale().str().c_str(),
-            theOffer.GetScale().str().c_str());
+            definition.Format(GetScale()).c_str(),
+            offerDefinition.Format(theOffer.GetScale()).c_str());
     }
 
     // The above four items must match in order for it to even be the
@@ -2662,27 +2732,27 @@ auto OTMarket::ValidateOfferForMarket(OTOffer& theOffer) -> bool
         bValidOffer = false;
         strReason->Format(
             "Minimum Increment on offer is <= 0: %s",
-            theOffer.GetMinimumIncrement().str().c_str());
+            offerDefinition.Format(theOffer.GetMinimumIncrement()).c_str());
     } else if (theOffer.GetMinimumIncrement() < GetScale()) {
         bValidOffer = false;
         strReason->Format(
             "Minimum Increment on offer (%s) is less than market scale (%s).",
-            theOffer.GetMinimumIncrement().str().c_str(),
-            GetScale().str().c_str());
+            offerDefinition.Format(theOffer.GetMinimumIncrement()).c_str(),
+            definition.Format(GetScale()).c_str());
     } else if ((theOffer.GetMinimumIncrement() % GetScale()) != 0) {
         bValidOffer = false;
         strReason->Format(
             "Minimum Increment on offer (%s) Mod market scale (%s) is not "
             "equal to zero.",
-            theOffer.GetMinimumIncrement().str().c_str(),
-            GetScale().str().c_str());
+            offerDefinition.Format(theOffer.GetMinimumIncrement()).c_str(),
+            definition.Format(GetScale()).c_str());
     } else if (theOffer.GetMinimumIncrement() > theOffer.GetAmountAvailable()) {
         bValidOffer = false;
         strReason->Format(
             "Minimum Increment on offer (%s) is more than the amount of "
             "assets available for trade on that same offer (%s).",
-            theOffer.GetMinimumIncrement().str().c_str(),
-            theOffer.GetAmountAvailable().str().c_str());
+            offerDefinition.Format(theOffer.GetMinimumIncrement()).c_str(),
+            offerDefinition.Format(theOffer.GetAmountAvailable()).c_str());
     }
 
     if (bValidOffer) {

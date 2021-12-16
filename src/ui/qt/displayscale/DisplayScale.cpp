@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "display/Definition.hpp"
+#include "opentxs/core/display/Definition.hpp"
 
 namespace opentxs::ui
 {

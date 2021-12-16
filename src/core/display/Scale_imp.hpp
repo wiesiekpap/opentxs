@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "0_stdafx.hpp"       // IWYU pragma: associated
-#include "1_Internal.hpp"     // IWYU pragma: associated
-#include "display/Scale.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                    // IWYU pragma: associated
+#include "1_Internal.hpp"                  // IWYU pragma: associated
+#include "opentxs/core/display/Scale.hpp"  // IWYU pragma: associated
 
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <cctype>
@@ -28,6 +28,9 @@ namespace opentxs::display
 struct Scale::Imp {
     const std::string prefix_;
     const std::string suffix_;
+    const OptionalInt default_min_;
+    const OptionalInt default_max_;
+    const std::vector<Ratio> ratios_;
 
     auto format(
         const Amount& amount,
@@ -40,8 +43,10 @@ struct Scale::Imp {
 
         const auto decimalSymbol = locale_.decimal_point();
         const auto seperator = locale_.thousands_sep();
-        const auto& raw_amount = amount.Internal().amount_;
-        const auto scaled = outgoing_ * Imp::Backend{raw_amount};
+        auto raw_amount =
+            amount.Internal().amount_.convert_to<Scale::Imp::Backend>() /
+            Amount::Imp::shift_left(1).convert_to<Scale::Imp::Backend>();
+        const auto scaled = outgoing_ * Scale::Imp::Backend{raw_amount};
         const auto [min, max] = effective_limits(minDecimals, maxDecimals);
         auto fractionalDigits = std::max<unsigned>(max, 1u);
         auto string = scaled.str(fractionalDigits, std::ios_base::fixed);
@@ -90,7 +95,7 @@ struct Scale::Imp {
             }
 
             if (formatDecimals) {
-                if (0u == (counter % 4u)) {
+                if (0u == (counter % 4u) && pushed < string.size()) {
                     static constexpr auto narrowNonBreakingSpace = u8"\u202F";
                     output << narrowNonBreakingSpace;
                     ++counter;
@@ -110,8 +115,9 @@ struct Scale::Imp {
             const auto output = incoming_ * Imp::Backend{Imp::strip(formatted)};
 
             auto amount = Amount{};
-            amount.Internal().amount_ =
-                output.convert_to<Amount::Imp::Backend>();
+            amount.Internal().amount_ = Amount::Imp::shift_left(
+                output.convert_to<Amount::Imp::Backend>());
+
             return amount;
         } catch (const std::exception& e) {
             LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
@@ -129,6 +135,7 @@ struct Scale::Imp {
         , suffix_(suffix)
         , default_min_(defaultMinDecimals)
         , default_max_(defaultMaxDecimals)
+        , ratios_(ratios)
         , incoming_(calculate_incoming_ratio(ratios))
         , outgoing_(calculate_outgoing_ratio(ratios))
         , locale_()
@@ -140,6 +147,7 @@ struct Scale::Imp {
         , suffix_(rhs.suffix_)
         , default_min_(rhs.default_min_)
         , default_max_(rhs.default_max_)
+        , ratios_(rhs.ratios_)
         , incoming_(rhs.incoming_)
         , outgoing_(rhs.outgoing_)
         , locale_()
@@ -152,8 +160,6 @@ private:
     struct Locale : std::numpunct<char> {
     };
 
-    const OptionalInt default_min_;
-    const OptionalInt default_max_;
     const Backend incoming_;
     const Backend outgoing_;
     const Locale locale_;

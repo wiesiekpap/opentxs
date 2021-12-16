@@ -17,6 +17,7 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"
@@ -79,25 +80,17 @@ TEST_F(RPC_fixture, preconditions)
             server1,
             issuer,
             "Mt Gox USD",
-            "dollars",
-            "$",
             "YOLO",
-            "USD",
-            "cents",
-            2,
-            ot::core::UnitType::USD);
+            ot::core::UnitType::USD,
+            {u8"USD", {{u8"dollars", {u8"$", u8"", {{10, 0}}, 2, 3}}}});
         const auto unit2 = IssueUnit(
             session,
             server2,
             issuer,
             "Mt Gox BTC",
-            "bitcoins",
-            "B",
             "YOLO",
-            "BTC",
-            "satoshis",
-            8,
-            ot::core::UnitType::BTC);
+            ot::core::UnitType::BTC,
+            {u8"BTC", {{u8"BTC", {u8"₿", u8"", {{10, 8}}, 0, 8}}}});
 
         EXPECT_FALSE(unit1.empty());
         EXPECT_FALSE(unit2.empty());

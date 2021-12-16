@@ -14,6 +14,8 @@ namespace opentxs
 namespace proto
 {
 auto BasketParamsAllowedBasketItem() noexcept -> const VersionMap&;
+auto CurrencyParamsAllowedDisplayScales() noexcept -> const VersionMap&;
+auto DisplayScaleAllowedScaleRatios() noexcept -> const VersionMap&;
 auto IssuerAllowedPeerRequestHistory() noexcept -> const VersionMap&;
 auto IssuerAllowedUnitAccountMap() noexcept -> const VersionMap&;
 auto PeerRequestHistoryAllowedPeerRequestWorkflow() noexcept

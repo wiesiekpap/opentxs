@@ -22,12 +22,13 @@
 #include <vector>
 
 #include "core/Worker.hpp"
+#include "internal/blockchain/Blockchain.hpp"
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/qt/AmountValidator.hpp"
 #include "opentxs/ui/qt/DestinationValidator.hpp"
@@ -256,7 +257,7 @@ struct AccountActivity::QT {
 
     QT(AccountActivity& parent)
     noexcept
-        : scales_qt_(parent.scales_)
+        : scales_qt_(display::GetDefinition(parent.Contract().UnitOfAccount()))
         , amount_validator_(parent)
         , destination_validator_(
               parent.Worker::api_,

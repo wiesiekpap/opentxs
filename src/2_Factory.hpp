@@ -6,6 +6,7 @@
 #pragma once
 
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
@@ -168,6 +169,11 @@ class Ripemd160;
 class Scrypt;
 }  // namespace crypto
 
+namespace display
+{
+class Definition;
+}  // namespace display
+
 namespace identity
 {
 namespace credential
@@ -313,7 +319,6 @@ class Txos;
 class Units;
 }  // namespace storage
 
-class Amount;
 class DhtConfig;
 class Flag;
 class Libsecp256k1;
@@ -397,12 +402,12 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
-        const std::string& name,
-        const std::string& symbol,
         const std::string& terms,
         const std::uint64_t weight,
         const core::UnitType unitOfAccount,
-        const VersionNumber version) noexcept
+        const VersionNumber version,
+        const display::Definition& displayDefinition,
+        const Amount& redemptionIncrement) noexcept
         -> std::shared_ptr<contract::unit::Basket>;
     static auto BasketContract(
         const api::Session& api,
@@ -482,15 +487,12 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
-        const std::string& name,
-        const std::string& symbol,
         const std::string& terms,
-        const std::string& tla,
-        const std::uint32_t power,
-        const std::string& fraction,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
-        const opentxs::PasswordPrompt& reason) noexcept
+        const opentxs::PasswordPrompt& reason,
+        const display::Definition& displayDefinition,
+        const Amount& redemptionIncrement) noexcept
         -> std::shared_ptr<contract::unit::Currency>;
     static auto CurrencyContract(
         const api::Session& api,
@@ -620,12 +622,12 @@ public:
         const api::Session& api,
         const Nym_p& nym,
         const std::string& shortname,
-        const std::string& name,
-        const std::string& symbol,
         const std::string& terms,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
-        const opentxs::PasswordPrompt& reason) noexcept
+        const opentxs::PasswordPrompt& reason,
+        const display::Definition& displayDefinition,
+        const Amount& redemptionIncrement) noexcept
         -> std::shared_ptr<contract::unit::Security>;
     static auto SecurityContract(
         const api::Session& api,

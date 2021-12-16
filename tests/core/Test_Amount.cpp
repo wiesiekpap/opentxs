@@ -13,6 +13,8 @@
 #include <utility>
 
 #include "core/Amount.hpp"
+#include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -113,7 +115,7 @@ TEST(Amount, ulonglong_constructor)
 TEST(Amount, string_constructor)
 {
     const auto max_amount = ulonglong_max;
-    const auto amount = Amount(std::to_string(max_amount));
+    const auto amount = Amount(std::to_string(max_amount), true);
 
     ASSERT_TRUE(amount == max_amount);
 
@@ -144,8 +146,8 @@ TEST(Amount, zmqframe_constructor)
 {
     auto message = opentxs::network::zeromq::Message{};
 
-    const auto max = std::to_string(ulonglong_max);
-    message.AddFrame(max);
+    const auto max = Amount{ulonglong_max};
+    max.Serialize(message.AppendBytes());
 
     const auto amount = Amount(message.at(0));
     ASSERT_TRUE(amount == ulonglong_max);
@@ -191,29 +193,15 @@ TEST(Amount, move_assignment)
     ASSERT_TRUE(moved == ulonglong_max);
 }
 
-TEST(Amount, str)
-{
-    const auto str = std::to_string(longlong_max);
-
-    const auto amount = Amount(str);
-
-    ASSERT_EQ(str, amount.str());
-}
-
-TEST(Amount, string_operator)
-{
-    const auto amount = Amount(ulonglong_max);
-
-    const std::string conversion_amount = amount;
-
-    ASSERT_EQ(conversion_amount, std::to_string(ulonglong_max));
-}
-
 TEST(Amount, unary_minus_operator)
 {
     auto amount = Amount{1};
 
     ASSERT_TRUE(-amount == -1);
+
+    amount = Amount{-1};
+
+    ASSERT_TRUE(-amount == 1);
 }
 
 // TEST(Amount, SerializeBitcoin)
@@ -366,9 +354,6 @@ TEST(Amount, equal_to)
     ASSERT_TRUE(ulonglong_max == ulonglong_amount);
     ASSERT_FALSE(ulonglong_max - 1 == ulonglong_amount);
 
-    ASSERT_TRUE(ulong_amount == ulong_max);
-    ASSERT_FALSE(ulong_amount == ulong_max - 1);
-
     ASSERT_TRUE(Amount{ulonglong_max} == ulonglong_amount);
     ASSERT_FALSE(Amount{0} == ulonglong_amount);
 }
@@ -502,113 +487,12 @@ TEST(Amount, plus)
 {
     const Amount amount;
 
-    ASSERT_TRUE(1l + amount == 1);
-
-    ASSERT_TRUE(1ll + amount == 1);
-
-    ASSERT_TRUE(1ul + amount == 1);
-
-    const auto long_total_amount = amount + 1l;
-
-    ASSERT_TRUE(long_total_amount == 1l);
-
-    const auto longlong_total_amount = amount + 1ll;
-
-    ASSERT_TRUE(longlong_total_amount == 1ll);
-
-    const auto uint_total_amount = amount + 1u;
-
-    ASSERT_TRUE(uint_total_amount == 1);
-
-    const auto ulong_total_amount = amount + 1ul;
-
-    ASSERT_TRUE(ulong_total_amount == 1ul);
-
-    const auto ulonglong_total_amount = amount + 1ull;
-
-    ASSERT_TRUE(ulonglong_total_amount == 1ull);
-
     ASSERT_TRUE(Amount{1} + amount == 1);
-
-    auto ulonglong_amount = Amount{1};
-    ulonglong_amount += 1ul;
-
-    ASSERT_TRUE(ulonglong_amount == 2);
-
-    ulonglong_amount += Amount{1};
-
-    ASSERT_TRUE(ulonglong_amount == 3);
-
-    try {
-        const auto max = std::numeric_limits<Amount::Imp::Backend>::max();
-        auto amount_max = Amount{max.str()};
-        auto overflow = amount_max + 1l;
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
-
-    try {
-        const auto max = std::numeric_limits<Amount::Imp::Backend>::max();
-        auto amount_max = Amount{max.str()};
-        auto overflow = amount_max + 1ll;
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
-
-    try {
-        const auto max = std::numeric_limits<Amount::Imp::Backend>::max();
-        auto amount_max = Amount{max.str()};
-        auto overflow = amount_max + 1u;
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
-
-    try {
-        const auto max = std::numeric_limits<Amount::Imp::Backend>::max();
-        auto amount_max = Amount{max.str()};
-        auto overflow = amount_max + 1ul;
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
-
-    try {
-        const auto max = std::numeric_limits<Amount::Imp::Backend>::max();
-        auto amount_max = Amount{max.str()};
-        auto overflow = amount_max + 1ull;
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
 
     try {
         const auto max = std::numeric_limits<Amount::Imp::Backend>::max();
         auto amount_max = Amount{max.str()};
         auto overflow = amount_max + Amount{1};
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
-
-    try {
-        const auto max = std::numeric_limits<Amount::Imp::Backend>::max();
-        auto amount_max = Amount{max.str()};
-        amount_max += 1ul;
         EXPECT_TRUE(false);
     } catch (std::overflow_error&) {
         EXPECT_TRUE(true);
@@ -632,102 +516,18 @@ TEST(Amount, minus)
 {
     const Amount amount;
 
-    ASSERT_TRUE(1l - amount == 1);
-
-    const Amount long_amount{long_max};
-
-    const auto long_result_amount = long_amount - 1l;
-
-    ASSERT_TRUE(long_result_amount == long_max - 1l);
-
-    const Amount longlong_amount{longlong_max};
-
-    const auto longlong_result_amount = longlong_amount - 1ll;
-
-    ASSERT_TRUE(longlong_result_amount == longlong_max - 1ll);
-
-    const Amount ulong_amount{ulong_max};
-
-    const auto ulong_result_amount = ulong_amount - 1ul;
-
-    ASSERT_TRUE(ulong_result_amount == ulong_max - 1ul);
-
-    Amount ulonglong_amount{ulonglong_max};
-
-    const auto ulonglong_result_amount = ulonglong_amount - 1ull;
-
-    ASSERT_TRUE(ulonglong_result_amount == ulonglong_max - 1ull);
-
     ASSERT_TRUE(Amount{1} - amount == 1);
 
-    ulonglong_amount = Amount{3};
-    ulonglong_amount -= 1ul;
-
-    ASSERT_TRUE(ulonglong_amount == 2);
+    auto ulonglong_amount = Amount{3};
 
     ulonglong_amount -= Amount{1};
 
-    ASSERT_TRUE(ulonglong_amount == 1);
-
-    try {
-        const auto min = std::numeric_limits<Amount::Imp::Backend>::min();
-        const auto amount = Amount{min.str()};
-        const auto negative_result = amount - 1l;
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
-
-    try {
-        const auto min = std::numeric_limits<Amount::Imp::Backend>::min();
-        const auto amount = Amount{min.str()};
-        const auto negative_result = amount - 1ll;
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
-
-    try {
-        const auto min = std::numeric_limits<Amount::Imp::Backend>::min();
-        const auto amount = Amount{min.str()};
-        const auto negative_result = amount - 1ul;
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
-
-    try {
-        const auto min = std::numeric_limits<Amount::Imp::Backend>::min();
-        const auto amount = Amount{min.str()};
-        const auto negative_result = amount - 1ull;
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
+    ASSERT_TRUE(ulonglong_amount == 2);
 
     try {
         const auto min = std::numeric_limits<Amount::Imp::Backend>::min();
         auto amount_min = Amount{min.str()};
         auto underflow = amount_min - Amount{1};
-        EXPECT_TRUE(false);
-    } catch (std::overflow_error&) {
-        EXPECT_TRUE(true);
-    } catch (...) {
-        EXPECT_TRUE(false);
-    }
-
-    try {
-        const auto min = std::numeric_limits<Amount::Imp::Backend>::min();
-        auto amount_min = Amount{min.str()};
-        amount_min -= 1ul;
         EXPECT_TRUE(false);
     } catch (std::overflow_error&) {
         EXPECT_TRUE(true);
@@ -906,19 +706,19 @@ TEST(Amount, multiply)
 
 TEST(Amount, divide)
 {
-    const Amount int_amount{int_max};
+    const Amount int_amount{int_max - 1};
 
     const auto int_result = int_amount / 2;
 
     ASSERT_TRUE(int_result == int_max / 2);
 
-    const Amount longlong_amount{longlong_max};
+    const Amount longlong_amount{longlong_max - 1};
 
     const auto longlong_result = longlong_amount / 2ll;
 
     ASSERT_TRUE(longlong_result == longlong_max / 2);
 
-    const Amount ulonglong_amount{ulonglong_max};
+    const Amount ulonglong_amount{ulonglong_max - 1};
 
     const auto ulonglong_result = ulonglong_amount / 2ull;
 
