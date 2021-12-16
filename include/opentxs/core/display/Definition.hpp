@@ -43,6 +43,8 @@ public:
         noexcept(false) -> Amount;
     auto ShortName() const noexcept -> std::string;
 
+    virtual auto swap(Definition& rhs) noexcept -> void;
+
     Definition(std::string&& shortname, Scales&& scales) noexcept;
     Definition() noexcept;
     Definition(const Definition&) noexcept;
