@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <cstring>
 #include <iosfwd>
+#include <iostream>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -40,6 +41,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/Type.hpp"
+#include "opentxs/core/identifier/Types.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"

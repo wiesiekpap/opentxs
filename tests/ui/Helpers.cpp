@@ -665,6 +665,17 @@ auto check_messagable_list(
     return output;
 }
 
+auto contact_list_add_contact(
+    const User& user,
+    const std::string& label,
+    const std::string& paymentCode,
+    const std::string& nymID) noexcept -> std::string
+{
+    const auto& widget = user.api_->UI().ContactList(user.nym_id_);
+
+    return widget.AddContact(label, paymentCode, nymID);
+}
+
 auto make_cb(Counter& counter, const std::string name) noexcept
     -> std::function<void()>
 {

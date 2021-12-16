@@ -26,12 +26,15 @@ constexpr auto words_{"response seminar brave tip suit recall often sound "
 constexpr auto name_{"Alice"};
 constexpr auto bob_{"Bob"};
 constexpr auto chris_{"Chris"};
+constexpr auto daniel_{"Daniel"};
 constexpr auto payment_code_1_{
     "PM8TJS2JxQ5ztXUpBBRnpTbcUXbUHy2T1abfrb3KkAAtMEGNbey4oumH7Hc578WgQJhPjBxteQ"
     "5GHHToTYHE3A1w6p7tU6KSoFmWBVbFGjKPisZDbP97"};
 constexpr auto payment_code_2_{
     "PM8TJfV1DQD6VScd5AWsSax8RgK9cUREe939M1d85MwGCKJukyghX6B5E7kqcCyEYu6Tu1ZvdG"
     "8aWh6w8KGhSfjgL8fBKuZS6aUjhV9xLV1R16CcgWhw"};
+constexpr auto payment_code_3_{
+    "PD1kEC92CeshFRQ3V78XPAGmE1ZWy3YR4Ptsjxw8SxHgZvFVkwqjf"};
 
 Counter counter_{1, 0};
 
@@ -126,6 +129,24 @@ TEST_F(Test_ContactList, add_bob_state)
         {true, chris_, chris_, "C", ""},
     }};
 
+    ASSERT_TRUE(wait_for_counter(counter_));
+    EXPECT_TRUE(check_contact_list(alice_, expected));
+    EXPECT_TRUE(check_contact_list_qt(alice_, expected));
+}
+
+TEST_F(Test_ContactList, add_contact_payment_code)
+{
+    counter_.expected_ += 1;
+    const auto expected = ContactListData{{
+        {true, alice_.name_, alice_.name_, "ME", ""},
+        {true, bob_, bob_, "B", ""},
+        {true, chris_, chris_, "C", ""},
+        {false, daniel_, daniel_, "D", ""},
+    }};
+    const auto id =
+        contact_list_add_contact(alice_, "Daniel", payment_code_3_, "");
+
+    EXPECT_FALSE(id.empty());
     ASSERT_TRUE(wait_for_counter(counter_));
     EXPECT_TRUE(check_contact_list(alice_, expected));
     EXPECT_TRUE(check_contact_list_qt(alice_, expected));

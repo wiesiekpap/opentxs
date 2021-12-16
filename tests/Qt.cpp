@@ -7,7 +7,9 @@
 
 #include <opentxs/opentxs.hpp>
 #include <QCoreApplication>
+#include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <future>
 #include <thread>
 

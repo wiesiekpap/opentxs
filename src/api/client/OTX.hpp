@@ -313,15 +313,13 @@ public:
     ~OTX() final;
 
 private:
-    static const std::string DEFAULT_INTRODUCTION_SERVER;
-
     using TaskStatusMap =
         std::map<TaskID, std::pair<ThreadStatus, std::promise<Result>>>;
     using ContextID = std::pair<OTNymID, OTServerID>;
 
     ContextLockCallback lock_callback_;
     const Flag& running_;
-    const api::session::Client& client_;
+    const api::session::Client& api_;
     mutable std::mutex introduction_server_lock_{};
     mutable std::mutex nym_fetch_lock_{};
     mutable std::mutex task_status_lock_{};
@@ -396,8 +394,6 @@ private:
         -> otx::client::implementation::StateMachine&;
     auto get_task(const ContextID& id) const
         -> otx::client::implementation::StateMachine&;
-    auto import_default_introduction_server(const Lock& lock) const
-        -> OTServerID;
     auto load_introduction_server(const Lock& lock) const -> void;
     auto next_task_id() const -> TaskID { return ++next_task_id_; }
     auto process_account(const opentxs::network::zeromq::Message& message) const

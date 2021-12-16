@@ -18,7 +18,6 @@
 #include <utility>
 #include <vector>
 
-#include "2_Factory.hpp"
 #include "Proto.tpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"

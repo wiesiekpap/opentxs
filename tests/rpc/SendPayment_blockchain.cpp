@@ -31,7 +31,6 @@
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
@@ -40,7 +39,6 @@
 #include "opentxs/rpc/request/SendPayment.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/rpc/response/SendPayment.hpp"
-#include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
