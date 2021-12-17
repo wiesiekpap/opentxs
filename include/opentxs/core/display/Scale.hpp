@@ -27,6 +27,8 @@ namespace opentxs::display
 class Scale
 {
 public:
+    struct Imp;
+
     /// A ratio should express the quantity of smallest values (from Amount)
     /// which represent a scale unit.
     using Ratio = std::pair<std::uint8_t, std::int8_t>;
@@ -44,6 +46,10 @@ public:
     auto Ratios() const noexcept -> const std::vector<Ratio>&;
     auto Suffix() const noexcept -> std::string;
 
+    virtual auto swap(Scale& rhs) noexcept -> void;
+
+    OPENTXS_NO_EXPORT Scale(Imp* imp) noexcept;
+    Scale() noexcept;
     Scale(
         const std::string& prefix,
         const std::string& suffix,
@@ -56,8 +62,6 @@ public:
     virtual ~Scale();
 
 private:
-    struct Imp;
-
     Imp* imp_;
 
     auto operator=(const Scale&) -> Scale& = delete;

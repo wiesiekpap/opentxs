@@ -38,9 +38,9 @@ Definition::Definition(const Definition& rhs) noexcept
 }
 
 Definition::Definition(Definition&& rhs) noexcept
-    : imp_(std::move(rhs.imp_))
+    : Definition()
 {
-    OT_ASSERT(imp_);
+    swap(rhs);
 }
 
 auto Definition::operator=(const Definition& rhs) noexcept -> Definition&
@@ -95,7 +95,18 @@ auto Definition::ShortName() const noexcept -> std::string
     return imp_->short_name_;
 }
 
-Definition::~Definition() = default;
+auto Definition::swap(Definition& rhs) noexcept -> void
+{
+    std::swap(imp_, rhs.imp_);
+}
+
+Definition::~Definition()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
 
 auto GetDefinition(core::UnitType in) noexcept -> const Definition&
 {

@@ -30,6 +30,17 @@ Scale::Scale(
     OT_ASSERT(imp_);
 }
 
+Scale::Scale() noexcept
+    : Scale(std::make_unique<Imp>().release())
+{
+}
+
+Scale::Scale(Imp* imp) noexcept
+    : imp_(imp)
+{
+    OT_ASSERT(nullptr != imp);
+}
+
 Scale::Scale(const Scale& rhs) noexcept
     : imp_(std::make_unique<Imp>(*rhs.imp_).release())
 {
@@ -37,9 +48,9 @@ Scale::Scale(const Scale& rhs) noexcept
 }
 
 Scale::Scale(Scale&& rhs) noexcept
-    : imp_(std::move(rhs.imp_))
+    : Scale()
 {
-    OT_ASSERT(imp_);
+    swap(rhs);
 }
 
 auto Scale::DefaultMinDecimals() const noexcept -> OptionalInt
@@ -74,5 +85,13 @@ auto Scale::Ratios() const noexcept -> const std::vector<Ratio>&
 
 auto Scale::Suffix() const noexcept -> std::string { return imp_->suffix_; }
 
-Scale::~Scale() = default;
+auto Scale::swap(Scale& rhs) noexcept -> void { std::swap(imp_, rhs.imp_); }
+
+Scale::~Scale()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
 }  // namespace opentxs::display

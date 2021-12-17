@@ -126,6 +126,17 @@ struct Scale::Imp {
         }
     }
 
+    Imp() noexcept
+        : prefix_{}
+        , suffix_{}
+        , default_min_{}
+        , default_max_{}
+        , ratios_{}
+        , incoming_{}
+        , outgoing_{}
+        , locale_{}
+    {
+    }
     Imp(const std::string& prefix,
         const std::string& suffix,
         const std::vector<Ratio>& ratios,
