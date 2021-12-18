@@ -44,8 +44,7 @@ struct Scale::Imp {
         const auto decimalSymbol = locale_.decimal_point();
         const auto seperator = locale_.thousands_sep();
         auto raw_amount =
-            amount.Internal().amount_.convert_to<Scale::Imp::Backend>() /
-            Amount::Imp::shift_left(1).convert_to<Scale::Imp::Backend>();
+            amount.Internal().extract_float<Scale::Imp::Backend>();
         const auto scaled = outgoing_ * Scale::Imp::Backend{raw_amount};
         const auto [min, max] = effective_limits(minDecimals, maxDecimals);
         auto fractionalDigits = std::max<unsigned>(max, 1u);

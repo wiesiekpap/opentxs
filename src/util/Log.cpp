@@ -293,9 +293,7 @@ auto Log::operator()(const Amount& in) const noexcept -> const Log&
     auto amount = std::string{};
     in.Serialize(opentxs::writer(amount));
 
-    auto raw_amount =
-        in.Internal().amount_.convert_to<bmp::cpp_dec_float_100>() /
-        Amount::Imp::shift_left(1).convert_to<bmp::cpp_dec_float_100>();
+    auto raw_amount = in.Internal().extract_float<bmp::cpp_dec_float_100>();
     amount = raw_amount.str(8, std::ios_base::fixed) + " (" + amount + ")";
 
     return operator()(amount);
@@ -311,9 +309,7 @@ auto Log::operator()(const Amount& in, core::UnitType currency) const noexcept
         amount =
             display::GetDefinition(currency).Format(in) + " (" + amount + ")";
     } else {
-        auto raw_amount =
-            in.Internal().amount_.convert_to<bmp::cpp_dec_float_100>() /
-            Amount::Imp::shift_left(1).convert_to<bmp::cpp_dec_float_100>();
+        auto raw_amount = in.Internal().extract_float<bmp::cpp_dec_float_100>();
         amount = raw_amount.str(8, std::ios_base::fixed) + " (" + amount + ")";
     }
 
