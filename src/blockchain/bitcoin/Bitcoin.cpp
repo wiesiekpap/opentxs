@@ -137,9 +137,8 @@ auto Bip143Hashes::Preimage(
     const auto scriptBytes = script.CalculateSize();
     const auto cs = blockchain::bitcoin::CompactSize{scriptBytes};
     const auto& output = input.Spends();
-    const auto& val =
-        output.Value().Internal().amount_.convert_to<std::int64_t>();
-    const auto value = be::little_int64_buf_t{val};
+    const auto value = be::little_int64_buf_t{
+        output.Value().Internal().extract_int<std::int64_t>()};
     const auto sequence = be::little_uint32_buf_t{input.Sequence()};
     const auto single = get_single(index, total, sigHash);
     const auto& outputs = Outputs(sigHash, single.get());

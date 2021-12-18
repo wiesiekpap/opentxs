@@ -837,7 +837,7 @@ private:
         const auto amount = 148 * fee_rate_ / 1000;
         auto dust = std::size_t{};
         try {
-            dust = amount.Internal().amount_.convert_to<std::size_t>();
+            dust = amount.Internal().extract_int<std::size_t>();
         } catch (const std::exception& e) {
             LogError()(OT_PRETTY_CLASS())("error calculating dust: ")(e.what())
                 .Flush();
@@ -1042,8 +1042,10 @@ private:
         }
 
         const auto fee = input_value_ - output_value_;
-        text << "total output value: " << definition.Format(output_value_) << '\n';
-        text << " total input value: " << definition.Format(input_value_) << '\n';
+        text << "total output value: " << definition.Format(output_value_)
+             << '\n';
+        text << " total input value: " << definition.Format(input_value_)
+             << '\n';
         text << "               fee: " << definition.Format(fee);
 
         return text.str();

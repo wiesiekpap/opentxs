@@ -233,6 +233,32 @@ struct Amount::Imp {
     }
 
     template <typename T>
+    auto extract_int() const noexcept -> T
+    {
+        try {
+            return shift_right().convert_to<T>();
+        } catch (const std::exception& e) {
+            LogError()(OT_PRETTY_CLASS())("Error converting Amount to int: ")(
+                e.what())
+                .Flush();
+            return {};
+        }
+    }
+
+    template <typename T>
+    auto extract_float() const noexcept -> T
+    {
+        try {
+            return amount_.convert_to<T>() / shift_left(1).convert_to<T>();
+        } catch (const std::exception& e) {
+            LogError()(OT_PRETTY_CLASS())("Error converting Amount to float: ")(
+                e.what())
+                .Flush();
+            return {};
+        }
+    }
+
+    template <typename T>
     static auto shift_left(const T& amount) -> Backend
     {
         if (amount < 0) {

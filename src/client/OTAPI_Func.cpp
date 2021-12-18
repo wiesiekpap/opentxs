@@ -273,7 +273,7 @@ OTAPI_Func::OTAPI_Func(
             accountID_ = nymID2;
             try {
                 transactionNumber_ =
-                    int64val.Internal().amount_.convert_to<std::int64_t>();
+                    int64val.Internal().extract_int<std::int64_t>();
             } catch (const std::exception& e) {
                 LogConsole()(OT_PRETTY_CLASS())(
                     "Error setting transaction number. ")(e.what())

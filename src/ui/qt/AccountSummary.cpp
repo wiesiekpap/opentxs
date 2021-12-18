@@ -83,9 +83,7 @@ auto AccountSummaryItem::qt_data(
         } break;
         case AccountSummaryQt::BalanceRole: {
             try {
-                out = Balance()
-                          .Internal()
-                          .amount_.convert_to<unsigned long long>();
+                out = Balance().Internal().extract_int<unsigned long long>();
             } catch (const std::exception& e) {
                 LogError()(OT_PRETTY_CLASS())("Error getting balance.")(
                     e.what())
