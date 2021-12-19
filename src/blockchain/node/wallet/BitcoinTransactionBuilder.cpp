@@ -24,12 +24,12 @@
 #include <string>
 #include <string_view>
 #include <tuple>
-#include <type_traits>
 #include <vector>
 
 #include "Proto.hpp"
 #include "core/Amount.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
+#include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -56,6 +56,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"

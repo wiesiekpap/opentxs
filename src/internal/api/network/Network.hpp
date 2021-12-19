@@ -67,6 +67,7 @@ class Publish;
 
 class Identifier;
 class Options;
+class Timer;
 }  // namespace opentxs
 
 namespace opentxs
@@ -88,6 +89,7 @@ struct Asio {
 
     virtual auto Connect(const ReadView id, Socket& socket) noexcept
         -> bool = 0;
+    virtual auto GetTimer() noexcept -> Timer = 0;
     virtual auto IOContext() noexcept -> boost::asio::io_context& = 0;
     virtual auto Post(ThreadPool type, Callback cb) noexcept -> bool = 0;
     virtual auto Receive(

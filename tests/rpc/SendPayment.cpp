@@ -20,7 +20,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/PaymentType.hpp"

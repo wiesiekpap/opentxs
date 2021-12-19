@@ -16,6 +16,7 @@
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/network/asio/Socket.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -23,10 +24,6 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
-
-#define OT_BLOCKCHAIN_PEER_PING_SECONDS 30
-#define OT_BLOCKCHAIN_PEER_DISCONNECT_SECONDS 40
-#define OT_BLOCKCHAIN_PEER_DOWNLOAD_ADDRESSES_MINUTES 10
 
 namespace zmq = opentxs::network::zeromq;
 
@@ -76,7 +73,7 @@ Peer::Peer(
           address_,
           headerSize))
     , send_promises_()
-    , activity_()
+    , activity_(api_, pipeline_)
     , init_promise_()
     , init_(init_promise_.get_future())
 {
@@ -87,36 +84,25 @@ Peer::Peer(
     trigger();
 }
 
+auto Peer::activity_timeout() noexcept -> void
+{
+    LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
+        address_.Display())(" due to activity timeout.")
+        .Flush();
+    disconnect();
+}
+
 auto Peer::break_promises() noexcept -> void
 {
     state_.break_promises();
     send_promises_.Break();
 }
 
-auto Peer::check_activity() noexcept -> void
-{
-    const auto interval = Clock::now() - activity_.get();
-    const bool disconnect =
-        std::chrono::seconds(OT_BLOCKCHAIN_PEER_DISCONNECT_SECONDS) <= interval;
-    const bool ping =
-        std::chrono::seconds(OT_BLOCKCHAIN_PEER_PING_SECONDS) <= interval;
-
-    if (disconnect) {
-        LogConsole()("Disconnecting ")(display_chain_)(" peer ")(
-            address_.Display())(" due to activity timeout.")
-            .Flush();
-        this->disconnect();
-    } else if (ping) {
-        this->ping();
-    }
-}
-
 auto Peer::check_download_peers() noexcept -> void
 {
     const auto interval = Clock::now() - download_peers_.get();
     const bool download =
-        std::chrono::minutes(OT_BLOCKCHAIN_PEER_DOWNLOAD_ADDRESSES_MINUTES) <=
-        interval;
+        std::chrono::minutes(peer_download_interval_) <= interval;
 
     if (download) { request_addresses(); }
 }
@@ -385,6 +371,12 @@ auto Peer::pipeline(zmq::Message&& message) noexcept -> void
                 reset_block_job();
             }
         } break;
+        case Task::ActivityTimeout: {
+            activity_timeout();
+        } break;
+        case Task::NeedPing: {
+            if (State::Run == state_.value_.load()) { ping(); }
+        } break;
         case Task::Body: {
             activity_.Bump();
             connection_->on_body(std::move(message));
@@ -434,7 +426,6 @@ auto Peer::process_state_machine() noexcept -> void
             check_init();
         } break;
         case State::Run: {
-            check_activity();
             check_jobs();
             check_download_peers();
         } break;

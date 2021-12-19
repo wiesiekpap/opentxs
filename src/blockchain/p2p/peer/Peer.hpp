@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <boost/system/error_code.hpp>
 #include <robin_hood.h>
 #include <atomic>
 #include <chrono>
@@ -25,6 +24,7 @@
 #include <utility>
 #include <vector>
 
+#include "blockchain/p2p/peer/Activity.hpp"
 #include "blockchain/p2p/peer/Address.hpp"
 #include "blockchain/p2p/peer/ConnectionManager.hpp"
 #include "core/Worker.hpp"
@@ -45,7 +45,6 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Log.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -309,18 +308,6 @@ protected:
 private:
     friend Worker<Peer, api::Session>;
 
-    struct Activity {
-        auto get() const noexcept -> Time;
-
-        void Bump() noexcept;
-
-        Activity() noexcept;
-
-    private:
-        mutable std::mutex lock_;
-        Time activity_;
-    };
-
     struct SendPromises {
         void Break();
         auto NewPromise() -> std::pair<std::future<bool>, int>;
@@ -334,6 +321,8 @@ private:
         std::map<int, std::promise<bool>> map_;
     };
 
+    static constexpr auto peer_download_interval_ = std::chrono::minutes{10};
+
     const Time init_start_;
     const bool verify_filter_checkpoint_;
     const int id_;
@@ -341,7 +330,7 @@ private:
     const std::size_t untrusted_connection_id_;
     std::unique_ptr<peer::ConnectionManager> connection_;
     SendPromises send_promises_;
-    Activity activity_;
+    peer::Activity activity_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
 
@@ -357,8 +346,8 @@ private:
 
     auto get_activity() const noexcept -> Time;
 
+    auto activity_timeout() noexcept -> void;
     auto break_promises() noexcept -> void;
-    auto check_activity() noexcept -> void;
     auto check_download_peers() noexcept -> void;
     auto check_init() noexcept -> void;
     auto check_jobs() noexcept -> void;

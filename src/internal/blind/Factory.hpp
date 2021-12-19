@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "opentxs/blind/Types.hpp"
 #include "opentxs/blind/Token.hpp"
+#include "opentxs/blind/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 namespace opentxs

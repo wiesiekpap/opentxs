@@ -12,8 +12,8 @@
 #include <optional>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::display

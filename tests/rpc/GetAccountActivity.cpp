@@ -17,7 +17,7 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"

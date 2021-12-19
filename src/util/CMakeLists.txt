@@ -5,10 +5,11 @@
 
 add_library(
   opentxs-util OBJECT
+  "${opentxs_SOURCE_DIR}/src/internal/util/Exclusive.hpp"
   "${opentxs_SOURCE_DIR}/src/internal/util/Log.hpp"
   "${opentxs_SOURCE_DIR}/src/internal/util/LogMacros.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/util/Exclusive.hpp"
   "${opentxs_SOURCE_DIR}/src/internal/util/Shared.hpp"
+  "${opentxs_SOURCE_DIR}/src/internal/util/Timer.hpp"
   "${opentxs_SOURCE_DIR}/src/internal/util/Types.hpp"
   "Allocator.hpp"
   "AsyncValue.hpp"
@@ -38,6 +39,8 @@ add_library(
   "Thread.cpp"
   "Thread.hpp"
   "Time.cpp"
+  "Timer.cpp"
+  "Timer.hpp"
   "Work.hpp"
 )
 target_include_directories(

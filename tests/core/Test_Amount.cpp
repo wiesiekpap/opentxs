@@ -13,11 +13,9 @@
 #include <utility>
 
 #include "core/Amount.hpp"
-#include "opentxs/core/display/Definition.hpp"
-#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 using namespace opentxs;
 

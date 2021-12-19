@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: associated
 
-#include <boost/cstdint.hpp>
 #include <boost/endian/buffers.hpp>
 #include <algorithm>
 #include <cstring>
@@ -21,7 +20,6 @@
 #include <utility>
 
 #include "Proto.hpp"
-#include "core/Amount.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/node/Node.hpp"

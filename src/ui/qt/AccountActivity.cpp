@@ -22,12 +22,13 @@
 #include <vector>
 
 #include "core/Worker.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/qt/AmountValidator.hpp"

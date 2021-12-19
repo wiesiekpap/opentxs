@@ -11,4 +11,6 @@ add_opentx_test(unittests-opentxs-integration-deposit Test_DepositCheques.cpp)
 add_opentx_test(unittests-opentxs-integration-pair Test_Pair.cpp)
 
 set_tests_properties(unittests-opentxs-integration PROPERTIES DISABLED TRUE)
-set_tests_properties(unittests-opentxs-integration-pair PROPERTIES DISABLED TRUE)
+set_tests_properties(
+  unittests-opentxs-integration-pair PROPERTIES DISABLED TRUE
+)

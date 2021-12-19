@@ -27,9 +27,9 @@
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/Subchain.hpp"
 #include "blockchain/database/wallet/Types.hpp"
+#include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Crypto.hpp"
@@ -42,6 +42,7 @@
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -987,7 +988,7 @@ auto OutputCache::Print(const eLock&) const noexcept -> void
     auto output = std::map<node::TxoState, Output>{};
 
     const auto& definition = blockchain::GetDefinition(chain_);
-    
+
     for (const auto& data : outputs_) {
         const auto& outpoint = data.first;
         const auto& item = data.second->Internal();

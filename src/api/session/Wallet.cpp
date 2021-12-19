@@ -22,7 +22,6 @@
 #if OT_CASH
 #include "internal/blind/Factory.hpp"
 #endif  // OT_CASH
-#include "internal/contact/Contact.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
@@ -50,7 +49,6 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/NymFile.hpp"
@@ -78,7 +76,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
-#include "serialization/protobuf/ContactEnums.pb.h"
 #include "serialization/protobuf/Context.pb.h"
 #include "serialization/protobuf/Credential.pb.h"
 #include "serialization/protobuf/Issuer.pb.h"  // IWYU pragma: keep

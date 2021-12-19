@@ -47,8 +47,16 @@ class Client;
 class Session;
 }  // namespace api
 
-class OT_API;
+namespace display
+{
+class Definition;
+}  // namespace display
 
+class OT_API;
+}  // namespace opentxs
+
+namespace opentxs
+{
 class OPENTXS_EXPORT OTAPI_Exec : Lockable
 {
 public:

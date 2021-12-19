@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
+
 #pragma once
 
 #include <cstdint>
@@ -15,15 +17,14 @@
 #include "core/contract/Signable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 
