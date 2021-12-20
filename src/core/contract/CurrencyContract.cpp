@@ -12,13 +12,9 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/UnitDefinition.hpp"
-#include "internal/contact/Contact.hpp"
-#include "internal/core/contract/Contract.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/contract/UnitType.hpp"
-#include "serialization/protobuf/CurrencyParams.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 

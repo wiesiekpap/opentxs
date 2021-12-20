@@ -25,6 +25,7 @@
 #include "api/network/asio/Context.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/network/Network.hpp"
+#include "internal/util/Timer.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
@@ -82,6 +83,7 @@ struct Asio::Imp final : public api::network::internal::Asio,
         -> bool final;
     auto GetPublicAddress4() const noexcept -> std::shared_future<OTData>;
     auto GetPublicAddress6() const noexcept -> std::shared_future<OTData>;
+    auto GetTimer() noexcept -> Timer final;
     auto Init() noexcept -> void;
     auto IOContext() noexcept -> boost::asio::io_context& final;
     auto Post(ThreadPool type, Asio::Callback cb) noexcept -> bool final;

@@ -254,6 +254,11 @@ auto Asio::Imp::GetPublicAddress6() const noexcept -> std::shared_future<OTData>
     return ipv6_future_;
 }
 
+auto Asio::Imp::GetTimer() noexcept -> Timer
+{
+    return opentxs::factory::Timer(io_context_);
+}
+
 auto Asio::Imp::Init() noexcept -> void
 {
     auto lock = eLock{lock_};

@@ -21,7 +21,6 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "blind/Token.hpp"
-#include "core/Amount.hpp"
 #include "internal/api/crypto/Symmetric.hpp"
 #include "internal/blind/Blind.hpp"
 #include "internal/blind/Factory.hpp"

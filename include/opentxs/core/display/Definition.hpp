@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
+
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -11,8 +13,8 @@
 #include <optional>
 #include <string>
 
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/display/Scale.hpp"
-#include "opentxs/core/UnitType.hpp"
 
 namespace opentxs
 {

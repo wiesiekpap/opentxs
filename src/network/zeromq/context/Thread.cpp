@@ -20,6 +20,7 @@
 #include <set>
 #include <string>
 #include <thread>
+#include <type_traits>
 
 #include "internal/network/zeromq/Pool.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"

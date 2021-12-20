@@ -15,6 +15,7 @@
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/rpc/AccountType.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/AccountData.pb.h"
 

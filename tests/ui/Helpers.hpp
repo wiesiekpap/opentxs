@@ -3,10 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/.hpp"
+// IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 // IWYU pragma: no_include "opentxs/ui/Blockchains.hpp"
 
 #pragma once
@@ -27,7 +28,6 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/UnitType.hpp"
 #include "opentxs/ui/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"

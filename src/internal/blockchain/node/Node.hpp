@@ -426,6 +426,8 @@ struct PeerManager {
         JobAvailableCfheaders = OT_ZMQ_INTERNAL_SIGNAL + 4,
         JobAvailableCfilters = OT_ZMQ_INTERNAL_SIGNAL + 5,
         JobAvailableBlock = OT_ZMQ_INTERNAL_SIGNAL + 6,
+        ActivityTimeout = OT_ZMQ_INTERNAL_SIGNAL + 124,
+        NeedPing = OT_ZMQ_INTERNAL_SIGNAL + 125,
         Body = OT_ZMQ_INTERNAL_SIGNAL + 126,
         Header = OT_ZMQ_INTERNAL_SIGNAL + 127,
         Heartbeat = OT_ZMQ_HEARTBEAT_SIGNAL,

@@ -51,6 +51,11 @@ class NumericHash;
 class Work;
 }  // namespace blockchain
 
+namespace display
+{
+class Definition;
+}  // namespace display
+
 namespace proto
 {
 class GCS;

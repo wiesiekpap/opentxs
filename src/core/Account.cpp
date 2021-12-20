@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 
 #include "core/OTStorage.hpp"
 #include "internal/api/Legacy.hpp"
@@ -33,6 +34,7 @@
 #include "opentxs/core/util/Tag.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

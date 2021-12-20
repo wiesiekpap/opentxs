@@ -8,17 +8,12 @@
 #include "core/contract/UnitDefinition.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <cctype>
 #include <cmath>  // IWYU pragma: keep
-#include <cstdint>
-#include <deque>
-#include <iomanip>
-#include <iterator>
 #include <list>
 #include <memory>
-#include <set>
 #include <sstream>  // IWYU pragma: keep
 #include <utility>
+#include <vector>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
@@ -29,20 +24,20 @@
 #include "internal/contact/Contact.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/Contact.hpp"
 #include "internal/protobuf/verify/UnitDefinition.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/AccountVisitor.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
+#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"

@@ -7,6 +7,7 @@
 
 // IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/contact/SectionType.hpp"
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 

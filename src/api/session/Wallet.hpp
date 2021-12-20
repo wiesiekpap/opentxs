@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 
 #pragma once
 
@@ -33,10 +34,11 @@
 #include "opentxs/blind/CashType.hpp"
 #include "opentxs/client/NymData.hpp"
 #include "opentxs/core/Account.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
-#include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"

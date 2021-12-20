@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
+
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -22,6 +24,14 @@
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Time.hpp"
+
+namespace boost
+{
+namespace system
+{
+class error_code;
+}  // namespace system
+}  // namespace boost
 
 namespace opentxs
 {
@@ -72,6 +82,8 @@ public:
     auto operator()(const identifier::UnitDefinition& in) const noexcept
         -> const Log&;
     auto operator()(const Time in) const noexcept -> const Log&;
+    auto operator()(const boost::system::error_code& error) const noexcept
+        -> const Log&;
     template <typename T>
     auto operator()(const T& in) const noexcept -> const Log&
     {

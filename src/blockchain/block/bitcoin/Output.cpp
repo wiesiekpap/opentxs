@@ -21,11 +21,10 @@
 #include <utility>
 
 #include "Proto.hpp"
-#include "core/Amount.hpp"
+#include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
-#include "internal/blockchain/Blockchain.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -39,6 +38,7 @@
 #include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Bytes.hpp"

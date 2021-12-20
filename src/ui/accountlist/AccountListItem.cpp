@@ -19,6 +19,7 @@
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "ui/base/Widget.hpp"
 
 namespace opentxs::factory

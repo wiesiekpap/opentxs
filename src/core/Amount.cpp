@@ -7,11 +7,7 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "opentxs/core/Amount.hpp"  // IWYU pragma: associated
 
-#include <boost/cstdint.hpp>
 #include <boost/endian/buffers.hpp>
-#include <cstdint>
-#include <exception>
-#include <limits>
 #include <memory>
 
 #include "core/Amount.hpp"

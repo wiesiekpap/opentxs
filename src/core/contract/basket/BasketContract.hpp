@@ -13,6 +13,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
@@ -27,6 +28,11 @@ namespace api
 {
 class Session;
 }  // namespace api
+
+namespace display
+{
+class Definition;
+}  // namespace display
 
 class PasswordPrompt;
 }  // namespace opentxs

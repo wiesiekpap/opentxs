@@ -8,11 +8,18 @@
 
 #include <robin_hood.h>
 #include <cstddef>
+#include <memory>
+#include <optional>
 #include <stdexcept>
+#include <string>
+#include <utility>
 
 #include "core/display/Definition_imp.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/display/Scale.hpp"
 
 namespace opentxs::display
 {

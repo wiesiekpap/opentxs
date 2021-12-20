@@ -29,6 +29,14 @@
 #include "opentxs/util/Time.hpp"
 #include "util/Gatekeeper.hpp"
 
+namespace boost
+{
+namespace system
+{
+class error_code;
+}  // namespace system
+}  // namespace boost
+
 namespace opentxs
 {
 struct Log::Imp final : public internal::Log {
@@ -45,7 +53,10 @@ struct Log::Imp final : public internal::Log {
 
     static Logger logger_;
 
+    auto active() const noexcept -> bool;
     auto operator()(const char* in) const noexcept -> const opentxs::Log&;
+    auto operator()(const boost::system::error_code& error) const noexcept
+        -> const opentxs::Log&;
 
     [[noreturn]] auto Assert(
         const char* file,

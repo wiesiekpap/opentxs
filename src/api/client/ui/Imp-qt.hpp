@@ -4,6 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 
 #pragma once
 
@@ -19,7 +20,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/ui/Blockchains.hpp"

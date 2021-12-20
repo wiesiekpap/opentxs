@@ -7,11 +7,14 @@
 #include "1_Internal.hpp"        // IWYU pragma: associated
 #include "opentxs/util/Log.hpp"  // IWYU pragma: associated
 
-#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <boost/multiprecision/cpp_dec_float.hpp>  // IWYU pragma: keep
+#include <boost/multiprecision/cpp_int.hpp>
 #include <boost/stacktrace.hpp>
+#include <boost/system/error_code.hpp>
 #include <cassert>
 #include <chrono>
 #include <cstdlib>
+#include <exception>
 #include <future>
 #include <memory>
 #include <thread>
@@ -27,6 +30,8 @@
 #include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/StringXML.hpp"
+#include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -36,6 +41,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Log.hpp"
 
@@ -77,17 +83,9 @@ Log::Imp::Imp(const int logLevel, opentxs::Log& parent) noexcept
 {
 }
 
-auto Log::Imp::operator()(const char* in) const noexcept -> const opentxs::Log&
+auto Log::Imp::active() const noexcept -> bool
 {
-    if (logger_.verbosity_.load() < level_) { return parent_; }
-
-    auto id = std::string{};
-
-    if (auto done = logger_.running_.get(); false == done) {
-        std::get<1>(get_buffer(id)) << in;
-    }
-
-    return parent_;
+    return logger_.verbosity_.load() >= level_;
 }
 
 auto Log::Imp::Assert(
@@ -167,6 +165,33 @@ auto Log::Imp::get_buffer(std::string& out) noexcept -> Logger::Source&
     return buffer.source_->second;
 }
 
+auto Log::Imp::operator()(const char* in) const noexcept -> const opentxs::Log&
+{
+    if (false == active()) { return parent_; }
+
+    auto id = std::string{};
+
+    if (auto done = logger_.running_.get(); false == done) {
+        std::get<1>(get_buffer(id)) << in;
+    }
+
+    return parent_;
+}
+
+auto Log::Imp::operator()(const boost::system::error_code& error) const noexcept
+    -> const opentxs::Log&
+{
+    if (false == active()) { return parent_; }
+
+    auto id = std::string{};
+
+    if (auto done = logger_.running_.get(); false == done) {
+        std::get<1>(get_buffer(id)) << error.message();
+    }
+
+    return parent_;
+}
+
 auto Log::Imp::send(const bool terminate) const noexcept -> void
 {
     if (auto done = logger_.running_.get(); false == done) {
@@ -244,6 +269,8 @@ auto Log::operator()(const std::string& in) const noexcept -> const Log&
 auto Log::operator()(const std::chrono::nanoseconds& in) const noexcept
     -> const Log&
 {
+    if (false == imp_->active()) { return *this; }
+
     auto value = std::stringstream{};
     static constexpr auto nanoThreshold = std::chrono::microseconds{2};
     static constexpr auto microThreshold = std::chrono::milliseconds{2};
@@ -290,6 +317,8 @@ auto Log::operator()(const OTArmored& in) const noexcept -> const Log&
 
 auto Log::operator()(const Amount& in) const noexcept -> const Log&
 {
+    if (false == imp_->active()) { return *this; }
+
     auto amount = std::string{};
     in.Serialize(opentxs::writer(amount));
 
@@ -302,6 +331,8 @@ auto Log::operator()(const Amount& in) const noexcept -> const Log&
 auto Log::operator()(const Amount& in, core::UnitType currency) const noexcept
     -> const Log&
 {
+    if (false == imp_->active()) { return *this; }
+
     auto amount = std::string{};
     in.Serialize(opentxs::writer(amount));
 
@@ -338,6 +369,8 @@ auto Log::operator()(const OTIdentifier& in) const noexcept -> const Log&
 
 auto Log::operator()(const Identifier& in) const noexcept -> const Log&
 {
+    if (false == imp_->active()) { return *this; }
+
     return operator()(in.str().c_str());
 }
 
@@ -348,6 +381,8 @@ auto Log::operator()(const OTNymID& in) const noexcept -> const Log&
 
 auto Log::operator()(const identifier::Nym& in) const noexcept -> const Log&
 {
+    if (false == imp_->active()) { return *this; }
+
     return operator()(in.str().c_str());
 }
 
@@ -358,6 +393,8 @@ auto Log::operator()(const OTServerID& in) const noexcept -> const Log&
 
 auto Log::operator()(const identifier::Server& in) const noexcept -> const Log&
 {
+    if (false == imp_->active()) { return *this; }
+
     return operator()(in.str().c_str());
 }
 
@@ -369,12 +406,22 @@ auto Log::operator()(const OTUnitID& in) const noexcept -> const Log&
 auto Log::operator()(const identifier::UnitDefinition& in) const noexcept
     -> const Log&
 {
+    if (false == imp_->active()) { return *this; }
+
     return operator()(in.str().c_str());
 }
 
 auto Log::operator()(const Time in) const noexcept -> const Log&
 {
+    if (false == imp_->active()) { return *this; }
+
     return operator()(formatTimestamp(in));
+}
+
+auto Log::operator()(const boost::system::error_code& error) const noexcept
+    -> const Log&
+{
+    return imp_->operator()(error);
 }
 
 auto Log::Assert(const char* file, const std::size_t line) const noexcept

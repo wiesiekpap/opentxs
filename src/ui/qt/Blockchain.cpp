@@ -13,12 +13,12 @@
 #include <string>
 #include <utility>
 
-#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/ui/AccountActivity.hpp"
 #include "opentxs/ui/qt/AccountList.hpp"
 #include "ui/base/Widget.hpp"

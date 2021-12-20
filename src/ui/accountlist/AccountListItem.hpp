@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/UnitType.hpp"
+
 #pragma once
 
 #include <iosfwd>
@@ -16,7 +18,7 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/ui/AccountListItem.hpp"
