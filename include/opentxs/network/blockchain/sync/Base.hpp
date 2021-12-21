@@ -9,19 +9,12 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <memory>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/network/blockchain/sync/Types.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
-namespace api
-{
-class Session;
-}  // namespace api
-
 namespace network
 {
 namespace blockchain
@@ -43,22 +36,12 @@ class Message;
 }  // namespace network
 }  // namespace opentxs
 
-namespace opentxs
+namespace opentxs::network::blockchain::sync
 {
-namespace network
-{
-namespace blockchain
-{
-namespace sync
-{
-OPENTXS_EXPORT auto Factory(
-    const api::Session& api,
-    const zeromq::Message& in) noexcept -> std::unique_ptr<Base>;
-
 class OPENTXS_EXPORT Base
 {
 public:
-    struct Imp;
+    class Imp;
 
     auto asAcknowledgement() const noexcept -> const Acknowledgement&;
     auto asData() const noexcept -> const Data&;
@@ -74,9 +57,9 @@ public:
     virtual ~Base();
 
 protected:
-    std::unique_ptr<Imp> imp_;
+    Imp* imp_;
 
-    Base(std::unique_ptr<Imp> imp) noexcept;
+    Base(Imp* imp) noexcept;
 
 private:
     Base(const Base&) = delete;
@@ -84,7 +67,4 @@ private:
     auto operator=(const Base&) -> Base& = delete;
     auto operator=(Base&&) -> Base& = delete;
 };
-}  // namespace sync
-}  // namespace blockchain
-}  // namespace network
-}  // namespace opentxs
+}  // namespace opentxs::network::blockchain::sync

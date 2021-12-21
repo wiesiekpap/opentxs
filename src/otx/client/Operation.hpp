@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/contract/ContractType.hpp"
+
 #pragma once
 
 #include <atomic>
@@ -29,6 +31,7 @@
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/contract/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -105,7 +108,7 @@ public:
     auto DepositCheque(
         const Identifier& depositAccountID,
         const std::shared_ptr<Cheque> cheque) -> bool override;
-    auto DownloadContract(const Identifier& ID, const ContractType type)
+    auto DownloadContract(const Identifier& ID, const contract::Type type)
         -> bool override;
     auto GetFuture() -> Future override;
     auto IssueUnitDefinition(
@@ -209,7 +212,7 @@ private:
     OTNymID target_nym_id_;
     OTServerID target_server_id_;
     OTUnitID target_unit_id_;
-    ContractType contract_type_;
+    contract::Type contract_type_;
     std::shared_ptr<const proto::UnitDefinition> unit_definition_;
     OTIdentifier account_id_;
     OTIdentifier generic_id_;

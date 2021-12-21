@@ -11,8 +11,10 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "Proto.tpp"
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/BlockchainP2PSync.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -22,36 +24,85 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
+#include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/BlockchainP2PSync.pb.h"
+
+namespace opentxs::factory
+{
+using ReturnType = network::blockchain::sync::Data;
+
+auto BlockchainSyncData() noexcept -> ReturnType
+{
+    return {std::make_unique<ReturnType::Imp>().release()};
+}
+
+auto BlockchainSyncData(
+    WorkType type,
+    network::blockchain::sync::State state,
+    network::blockchain::sync::SyncData blocks,
+    ReadView cfheader) noexcept -> ReturnType
+{
+    return {std::make_unique<ReturnType::Imp>(
+                type, std::move(state), std::move(blocks), cfheader)
+                .release()};
+}
+
+auto BlockchainSyncData_p(
+    WorkType type,
+    network::blockchain::sync::State state,
+    network::blockchain::sync::SyncData blocks,
+    ReadView cfheader) noexcept -> std::unique_ptr<ReturnType>
+{
+    return std::make_unique<ReturnType>(
+        std::make_unique<ReturnType::Imp>(
+            type, std::move(state), std::move(blocks), cfheader)
+            .release());
+}
+}  // namespace opentxs::factory
 
 namespace opentxs::network::blockchain::sync
 {
-struct DataImp final : public Base::Imp {
-    const Data& parent_;
+class Data::Imp final : public Base::Imp
+{
+public:
+    Data* parent_;
 
-    auto asData() const noexcept -> const Data& final { return parent_; }
+    auto asData() const noexcept -> const Data& final
+    {
+        if (nullptr != parent_) {
 
-    DataImp(
-        const Data& parent,
-        WorkType type,
+            return *parent_;
+        } else {
+
+            return Base::Imp::asData();
+        }
+    }
+
+    Imp() noexcept
+        : Base::Imp()
+        , parent_(nullptr)
+    {
+    }
+    Imp(WorkType type,
         sync::State state,
-        Data::SyncData blocks,
+        SyncData blocks,
         ReadView cfheader) noexcept(false)
-        : Imp(
+        : Base::Imp(
               Imp::default_version_,
               translate(type),
               [&] {
-                  auto out = std::vector<State>{};
+                  auto out = StateData{};
                   out.emplace_back(std::move(state));
 
                   return out;
               }(),
               std::string{cfheader},
               std::move(blocks))
-        , parent_(parent)
+        , parent_(nullptr)
     {
         switch (type_) {
             case MessageType::sync_reply: {
@@ -69,30 +120,17 @@ struct DataImp final : public Base::Imp {
     }
 
 private:
-    DataImp() noexcept;
-    DataImp(const DataImp&) = delete;
-    DataImp(DataImp&&) = delete;
-    auto operator=(const DataImp&) -> DataImp& = delete;
-    auto operator=(DataImp&&) -> DataImp& = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 
-Data::Data(
-    WorkType type,
-    sync::State state,
-    SyncData blocks,
-    ReadView cfheader) noexcept(false)
-    : Base(std::make_unique<DataImp>(
-          *this,
-          type,
-          std::move(state),
-          std::move(blocks),
-          cfheader))
+Data::Data(Imp* imp) noexcept
+    : Base(imp)
+    , imp_(imp)
 {
-}
-
-Data::Data() noexcept
-    : Base(std::make_unique<Imp>())
-{
+    imp_->parent_ = this;
 }
 
 auto Data::Add(ReadView data) noexcept -> bool
@@ -128,9 +166,11 @@ auto Data::Add(ReadView data) noexcept -> bool
 
 auto Data::Blocks() const noexcept -> const SyncData& { return imp_->blocks_; }
 
-auto Data::LastPosition(const api::Session& api) const noexcept -> Position
+auto Data::LastPosition(const api::Session& api) const noexcept
+    -> opentxs::blockchain::block::Position
 {
-    static const auto blank = Position{-1, api.Factory().Data()};
+    static const auto blank =
+        opentxs::blockchain::block::Position{-1, api.Factory().Data()};
 #if OT_BLOCKCHAIN
     const auto& blocks = imp_->blocks_;
 
@@ -160,5 +200,12 @@ auto Data::State() const noexcept -> const sync::State&
     return imp_->state_.front();
 }
 
-Data::~Data() = default;
+Data::~Data()
+{
+    if (nullptr != Data::imp_) {
+        delete Data::imp_;
+        Data::imp_ = nullptr;
+        Base::imp_ = nullptr;
+    }
+}
 }  // namespace opentxs::network::blockchain::sync

@@ -28,6 +28,7 @@
 
 #include "integration/Helpers.hpp"
 #include "internal/blockchain/Params.hpp"
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -1616,12 +1617,12 @@ auto SyncRequestor::get(const std::size_t index) const -> const zmq::Message&
 auto SyncRequestor::request(const Position& pos) const noexcept -> bool
 {
     auto msg = opentxs::network::zeromq::Message{};
-    const auto req = otsync::Request{[&] {
-        auto out = otsync::Request::StateData{};
+    const auto req = opentxs::factory::BlockchainSyncRequest([&] {
+        auto out = otsync::StateData{};
         out.emplace_back(test_chain_, pos);
 
         return out;
-    }()};
+    }());
 
     if (false == req.Serialize(msg)) {
         EXPECT_TRUE(false);
@@ -1662,7 +1663,7 @@ struct SyncSubscriber::Imp {
     auto check_update(ot::network::zeromq::Message&& in) noexcept -> void
     {
         namespace bcsync = ot::network::blockchain::sync;
-        const auto base = bcsync::Factory(api_, in);
+        const auto base = api_.Factory().BlockchainSyncMessage(in);
 
         try {
             const auto& data = base->asData();

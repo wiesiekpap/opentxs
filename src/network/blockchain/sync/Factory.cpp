@@ -8,6 +8,7 @@
 #include "opentxs/network/blockchain/sync/Base.hpp"  // IWYU pragma: associated
 
 #include <iterator>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -17,6 +18,7 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/BlockchainP2PHello.hpp"
 #include "internal/protobuf/verify/BlockchainP2PSync.hpp"
@@ -44,10 +46,12 @@
 #include "serialization/protobuf/BlockchainP2PHello.pb.h"
 #include "serialization/protobuf/BlockchainP2PSync.pb.h"
 
-namespace opentxs::network::blockchain::sync
+namespace opentxs::factory
 {
-auto Factory(const api::Session& api, const zeromq::Message& in) noexcept
-    -> std::unique_ptr<Base>
+auto BlockchainSyncMessage(
+    const api::Session& api,
+    const network::zeromq::Message& in) noexcept
+    -> std::unique_ptr<network::blockchain::sync::Base>
 {
     const auto b = in.Body();
 
@@ -65,7 +69,7 @@ auto Factory(const api::Session& api, const zeromq::Message& in) noexcept
             }
         }();
 
-        if (WorkType::SyncQuery == type) { return std::make_unique<Query>(0); }
+        if (WorkType::SyncQuery == type) { return BlockchainSyncQuery_p(0); }
 
         if (1 >= b.size()) { throw std::runtime_error{"Insufficient frames"}; }
 
@@ -79,7 +83,7 @@ auto Factory(const api::Session& api, const zeromq::Message& in) noexcept
         }
 
         auto chains = [&] {
-            auto out = std::vector<State>{};
+            auto out = std::vector<network::blockchain::sync::State>{};
 
             for (const auto& state : hello.state()) {
                 auto hash = [&] {
@@ -88,7 +92,7 @@ auto Factory(const api::Session& api, const zeromq::Message& in) noexcept
 
                     return out;
                 }();
-                out.emplace_back(State{
+                out.emplace_back(network::blockchain::sync::State{
                     static_cast<opentxs::blockchain::Type>(state.chain()),
                     {state.height(), std::move(hash)}});
             }
@@ -104,7 +108,7 @@ auto Factory(const api::Session& api, const zeromq::Message& in) noexcept
                 }
 
                 const auto& cfheaderFrame = b.at(2);
-                auto data = std::vector<Block>{};
+                auto data = std::vector<network::blockchain::sync::Block>{};
                 using Chain = opentxs::blockchain::Type;
                 auto chain = std::optional<Chain>{std::nullopt};
                 using FilterType = opentxs::blockchain::filter::Type;
@@ -152,7 +156,7 @@ auto Factory(const api::Session& api, const zeromq::Message& in) noexcept
                     throw std::runtime_error{"missing state"};
                 }
 
-                return std::make_unique<Data>(
+                return BlockchainSyncData_p(
                     type,
                     std::move(chains.front()),
                     std::move(data),
@@ -166,12 +170,12 @@ auto Factory(const api::Session& api, const zeromq::Message& in) noexcept
 
                 const auto& endpointFrame = b.at(2);
 
-                return std::make_unique<Acknowledgement>(
+                return BlockchainSyncAcknowledgement_p(
                     std::move(chains), std::string{endpointFrame.Bytes()});
             }
             case WorkType::SyncRequest: {
 
-                return std::make_unique<Request>(std::move(chains));
+                return BlockchainSyncRequest_p(std::move(chains));
             }
             case WorkType::SyncQuery: {
                 OT_FAIL;
@@ -181,11 +185,9 @@ auto Factory(const api::Session& api, const zeromq::Message& in) noexcept
             }
         }
     } catch (const std::exception& e) {
-        LogError()("opentxs::network::blockchain::sync::Base::")(__func__)(
-            ": ")(e.what())
-            .Flush();
+        LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
-        return std::make_unique<Base>();
+        return std::make_unique<network::blockchain::sync::Base>();
     }
 }
-}  // namespace opentxs::network::blockchain::sync
+}  // namespace opentxs::factory

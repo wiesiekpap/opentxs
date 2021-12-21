@@ -8,17 +8,19 @@
 #include "opentxs/network/blockchain/sync/Base.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
+#include <memory>
 #include <stdexcept>
 #include <utility>
 
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/blockchain/sync/Base.hpp"
-#include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
-#include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/blockchain/sync/Acknowledgement.hpp"  // IWYU pragma: keep
+#include "opentxs/network/blockchain/sync/Data.hpp"  // IWYU pragma: keep
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
-#include "opentxs/network/blockchain/sync/Query.hpp"
-#include "opentxs/network/blockchain/sync/Request.hpp"
+#include "opentxs/network/blockchain/sync/Query.hpp"    // IWYU pragma: keep
+#include "opentxs/network/blockchain/sync/Request.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
@@ -83,41 +85,41 @@ Base::Imp::Imp() noexcept
 {
 }
 
-Base::Base(std::unique_ptr<Imp> imp) noexcept
-    : imp_(std::move(imp))
+Base::Base(Imp* imp) noexcept
+    : imp_(imp)
 {
-    OT_ASSERT(imp_);
+    OT_ASSERT(nullptr != imp_);
 }
 
 Base::Base() noexcept
-    : Base(std::make_unique<Imp>())
+    : Base(std::make_unique<Imp>().release())
 {
 }
 
 auto Base::Imp::asAcknowledgement() const noexcept -> const Acknowledgement&
 {
-    static const auto blank = Acknowledgement{};
+    static const auto blank = factory::BlockchainSyncAcknowledgement();
 
     return blank;
 }
 
 auto Base::Imp::asData() const noexcept -> const Data&
 {
-    static const auto blank = Data{};
+    static const auto blank = factory::BlockchainSyncData();
 
     return blank;
 }
 
 auto Base::Imp::asQuery() const noexcept -> const Query&
 {
-    static const auto blank = Query{};
+    static const auto blank = factory::BlockchainSyncQuery();
 
     return blank;
 }
 
 auto Base::Imp::asRequest() const noexcept -> const Request&
 {
-    static const auto blank = Request{};
+    static const auto blank = factory::BlockchainSyncRequest();
 
     return blank;
 }
@@ -218,5 +220,11 @@ auto Base::Type() const noexcept -> MessageType { return imp_->type_; }
 
 auto Base::Version() const noexcept -> VersionNumber { return imp_->version_; }
 
-Base::~Base() = default;
+Base::~Base()
+{
+    if (nullptr != imp_) {
+        delete imp_;
+        imp_ = nullptr;
+    }
+}
 }  // namespace opentxs::network::blockchain::sync

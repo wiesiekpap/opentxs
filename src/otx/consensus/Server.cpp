@@ -65,6 +65,7 @@
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/basket/Basket.hpp"
@@ -4279,8 +4280,8 @@ auto Server::process_get_unit_definition_response(
 
     const auto raw = Data::Factory(reply.m_ascPayload);
 
-    switch (static_cast<ContractType>(reply.enum_)) {
-        case ContractType::nym: {
+    switch (static_cast<contract::Type>(reply.enum_)) {
+        case contract::Type::nym: {
             const auto serialized = proto::Factory<proto::Nym>(raw);
             const auto contract = api_.Wallet().Nym(serialized);
 
@@ -4290,7 +4291,7 @@ auto Server::process_get_unit_definition_response(
                 LogError()(OT_PRETTY_CLASS())("Invalid nym").Flush();
             }
         } break;
-        case ContractType::server: {
+        case contract::Type::server: {
             const auto serialized = proto::Factory<proto::ServerContract>(raw);
 
             try {
@@ -4303,7 +4304,7 @@ auto Server::process_get_unit_definition_response(
                     .Flush();
             }
         } break;
-        case ContractType::unit: {
+        case contract::Type::unit: {
             auto serialized = proto::Factory<proto::UnitDefinition>(raw);
 
             try {
@@ -4316,7 +4317,7 @@ auto Server::process_get_unit_definition_response(
                     .Flush();
             }
         } break;
-        case ContractType::invalid:
+        case contract::Type::invalid:
         default: {
             LogError()(OT_PRETTY_CLASS())("invalid contract type").Flush();
         }

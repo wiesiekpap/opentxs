@@ -8,9 +8,11 @@
 #include <gtest/gtest.h>
 #include <utility>
 
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
@@ -42,7 +44,7 @@ TEST_F(Regtest_fixture_sync, sync_genesis)
 
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
-        const auto base = otsync::Factory(client_1_, msg);
+        const auto base = client_1_.Factory().BlockchainSyncMessage(msg);
 
         ASSERT_TRUE(base);
         ASSERT_EQ(base->Type(), otsync::MessageType::sync_ack);
@@ -56,7 +58,7 @@ TEST_F(Regtest_fixture_sync, sync_genesis)
     }
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
-        const auto base = otsync::Factory(client_1_, msg);
+        const auto base = client_1_.Factory().BlockchainSyncMessage(msg);
 
         ASSERT_TRUE(base);
         ASSERT_EQ(base->Type(), otsync::MessageType::sync_reply);
@@ -96,7 +98,7 @@ TEST_F(Regtest_fixture_sync, sync_full)
 
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
-        const auto base = otsync::Factory(client_1_, msg);
+        const auto base = client_1_.Factory().BlockchainSyncMessage(msg);
 
         ASSERT_TRUE(base);
         ASSERT_EQ(base->Type(), otsync::MessageType::sync_ack);
@@ -110,7 +112,7 @@ TEST_F(Regtest_fixture_sync, sync_full)
     }
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
-        const auto base = otsync::Factory(client_1_, msg);
+        const auto base = client_1_.Factory().BlockchainSyncMessage(msg);
 
         ASSERT_TRUE(base);
         ASSERT_EQ(base->Type(), otsync::MessageType::sync_reply);
@@ -144,7 +146,7 @@ TEST_F(Regtest_fixture_sync, sync_partial)
 
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
-        const auto base = otsync::Factory(client_1_, msg);
+        const auto base = client_1_.Factory().BlockchainSyncMessage(msg);
 
         ASSERT_TRUE(base);
         ASSERT_EQ(base->Type(), otsync::MessageType::sync_ack);
@@ -158,7 +160,7 @@ TEST_F(Regtest_fixture_sync, sync_partial)
     }
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
-        const auto base = otsync::Factory(client_1_, msg);
+        const auto base = client_1_.Factory().BlockchainSyncMessage(msg);
 
         ASSERT_TRUE(base);
         ASSERT_EQ(base->Type(), otsync::MessageType::sync_reply);
@@ -201,7 +203,7 @@ TEST_F(Regtest_fixture_sync, sync_reorg)
 
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
-        const auto base = otsync::Factory(client_1_, msg);
+        const auto base = client_1_.Factory().BlockchainSyncMessage(msg);
 
         ASSERT_TRUE(base);
         ASSERT_EQ(base->Type(), otsync::MessageType::sync_ack);
@@ -215,7 +217,7 @@ TEST_F(Regtest_fixture_sync, sync_reorg)
     }
     {
         const auto& msg = sync_req_.get(++sync_req_.checked_);
-        const auto base = otsync::Factory(client_1_, msg);
+        const auto base = client_1_.Factory().BlockchainSyncMessage(msg);
 
         ASSERT_TRUE(base);
         ASSERT_EQ(base->Type(), otsync::MessageType::sync_reply);
@@ -235,7 +237,7 @@ TEST_F(Regtest_fixture_sync, sync_reorg)
 
 TEST_F(Regtest_fixture_sync, query)
 {
-    const auto original = otsync::Query{0};
+    const auto original = opentxs::factory::BlockchainSyncQuery(0);
 
     EXPECT_EQ(original.Type(), otsync::MessageType::query);
     EXPECT_NE(original.Version(), 0);
@@ -257,7 +259,7 @@ TEST_F(Regtest_fixture_sync, query)
         EXPECT_EQ(header.size(), 0);
         EXPECT_EQ(body.size(), 1);
 
-        auto recovered = otsync::Factory(client_1_, serialized);
+        auto recovered = client_1_.Factory().BlockchainSyncMessage(serialized);
 
         ASSERT_TRUE(recovered);
 
@@ -290,7 +292,7 @@ TEST_F(Regtest_fixture_sync, query)
         EXPECT_EQ(header.size(), 2);
         EXPECT_EQ(body.size(), 1);
 
-        auto recovered = otsync::Factory(client_1_, serialized);
+        auto recovered = client_1_.Factory().BlockchainSyncMessage(serialized);
 
         ASSERT_TRUE(recovered);
 

@@ -3,12 +3,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/network/blockchain/sync/Block.hpp"
+// IWYU pragma: no_include "opentxs/network/blockchain/sync/State.hpp"
+
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 namespace opentxs
 {
@@ -21,6 +25,12 @@ namespace sync
 using TypeEnum = std::uint32_t;
 
 enum class MessageType : TypeEnum;
+
+class Block;
+class State;
+
+using StateData = std::vector<sync::State>;
+using SyncData = std::vector<Block>;
 }  // namespace sync
 }  // namespace blockchain
 }  // namespace network

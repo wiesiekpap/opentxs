@@ -43,6 +43,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UniqueQueue.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -906,7 +907,7 @@ auto StateMachine::register_account(
     try {
         client_.Wallet().UnitDefinition(unitID);
     } catch (...) {
-        DO_OPERATION(DownloadContract, unitID, ContractType::unit);
+        DO_OPERATION(DownloadContract, unitID, contract::Type::unit);
 
         if (false == success) {
             return finish_task(taskID, success, std::move(result));

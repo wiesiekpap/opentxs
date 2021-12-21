@@ -33,7 +33,9 @@ class Message;
 
 namespace opentxs::network::blockchain::sync
 {
-struct Base::Imp {
+class Base::Imp
+{
+public:
     using LocalType = MessageType;
     using RemoteType = WorkType;
 

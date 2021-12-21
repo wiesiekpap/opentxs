@@ -149,6 +149,14 @@ class Nym;
 
 namespace network
 {
+namespace blockchain
+{
+namespace sync
+{
+class Base;
+}  // namespace sync
+}  // namespace blockchain
+
 namespace zeromq
 {
 class Frame;
@@ -364,6 +372,9 @@ public:
     auto BlockchainAddress(
         const opentxs::blockchain::p2p::Address::SerializedType& serialized)
         const -> OTBlockchainAddress final;
+    auto BlockchainSyncMessage(
+        const opentxs::network::zeromq::Message& in) const noexcept
+        -> std::unique_ptr<opentxs::network::blockchain::sync::Base> final;
     auto BlockHeader(const proto::BlockchainBlockHeader& serialized) const
         -> BlockHeaderP override
     {

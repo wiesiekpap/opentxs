@@ -27,6 +27,7 @@ target_include_directories(
   PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 set(cxx-install-headers
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/ContractType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/CurrencyContract.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/ProtocolVersion.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/contract/SecurityContract.hpp"

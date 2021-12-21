@@ -10,51 +10,88 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
+#include "internal/network/blockchain/sync/Factory.hpp"
 #include "network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 
+namespace opentxs::factory
+{
+using ReturnType = network::blockchain::sync::Acknowledgement;
+
+auto BlockchainSyncAcknowledgement() noexcept -> ReturnType
+{
+    return {std::make_unique<ReturnType::Imp>().release()};
+}
+
+auto BlockchainSyncAcknowledgement(
+    network::blockchain::sync::StateData in,
+    std::string endpoint) noexcept -> ReturnType
+{
+    return {
+        std::make_unique<ReturnType::Imp>(std::move(in), std::move(endpoint))
+            .release()};
+}
+
+auto BlockchainSyncAcknowledgement_p(
+    network::blockchain::sync::StateData in,
+    std::string endpoint) noexcept -> std::unique_ptr<ReturnType>
+{
+    return std::make_unique<ReturnType>(
+        std::make_unique<ReturnType::Imp>(std::move(in), std::move(endpoint))
+            .release());
+}
+}  // namespace opentxs::factory
+
 namespace opentxs::network::blockchain::sync
 {
-struct AckImp final : public Base::Imp {
-    const Acknowledgement& parent_;
+class Acknowledgement::Imp final : public Base::Imp
+{
+public:
+    Acknowledgement* parent_;
 
     auto asAcknowledgement() const noexcept -> const Acknowledgement& final
     {
-        return parent_;
+        if (nullptr != parent_) {
+
+            return *parent_;
+        } else {
+
+            return Base::Imp::asAcknowledgement();
+        }
     }
 
-    AckImp(
-        const Acknowledgement& parent,
-        Acknowledgement::StateData state,
-        std::string endpoint) noexcept
-        : Imp(Imp::default_version_,
+    Imp() noexcept
+        : Base::Imp()
+        , parent_(nullptr)
+    {
+    }
+    Imp(StateData state, std::string endpoint) noexcept
+        : Base::Imp(
+              Base::Imp::default_version_,
               MessageType::sync_ack,
               std::move(state),
               std::move(endpoint),
               {})
-        , parent_(parent)
+        , parent_(nullptr)
     {
     }
 
 private:
-    AckImp() noexcept;
-    AckImp(const AckImp&) = delete;
-    AckImp(AckImp&&) = delete;
-    auto operator=(const AckImp&) -> AckImp& = delete;
-    auto operator=(AckImp&&) -> AckImp& = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 
-Acknowledgement::Acknowledgement(StateData in, std::string endpoint) noexcept
-    : Base(std::make_unique<AckImp>(*this, std::move(in), std::move(endpoint)))
+Acknowledgement::Acknowledgement(Imp* imp) noexcept
+    : Base(imp)
+    , imp_(imp)
 {
-}
-
-Acknowledgement::Acknowledgement() noexcept
-    : Base(std::make_unique<Imp>())
-{
+    imp_->parent_ = this;
 }
 
 auto Acknowledgement::Endpoint() const noexcept -> const std::string&
@@ -78,5 +115,12 @@ auto Acknowledgement::State(opentxs::blockchain::Type chain) const
         "specified chain does not exist in acknowledgement"};
 }
 
-Acknowledgement::~Acknowledgement() = default;
+Acknowledgement::~Acknowledgement()
+{
+    if (nullptr != Acknowledgement::imp_) {
+        delete Acknowledgement::imp_;
+        Acknowledgement::imp_ = nullptr;
+        Base::imp_ = nullptr;
+    }
+}
 }  // namespace opentxs::network::blockchain::sync

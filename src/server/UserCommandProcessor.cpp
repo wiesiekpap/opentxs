@@ -51,6 +51,7 @@
 #include "opentxs/core/NymFile.hpp"
 #include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
@@ -926,8 +927,8 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
     const auto& api = server_.API();
     auto serialized = Data::Factory();
 
-    switch (static_cast<ContractType>(msgIn.enum_)) {
-        case ContractType::nym: {
+    switch (static_cast<contract::Type>(msgIn.enum_)) {
+        case contract::Type::nym: {
             const auto id =
                 api.Factory().NymID(msgIn.m_strInstrumentDefinitionID);
             auto contract = api.Wallet().Nym(id);
@@ -944,7 +945,7 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
                 reply.SetBool(true);
             }
         } break;
-        case ContractType::server: {
+        case contract::Type::server: {
             const auto id =
                 api.Factory().ServerID(msgIn.m_strInstrumentDefinitionID);
 
@@ -967,7 +968,7 @@ auto UserCommandProcessor::cmd_get_instrument_definition(
             } catch (...) {
             }
         } break;
-        case ContractType::unit: {
+        case contract::Type::unit: {
             const auto id =
                 api.Factory().UnitID(msgIn.m_strInstrumentDefinitionID);
 
@@ -2032,15 +2033,15 @@ auto UserCommandProcessor::cmd_register_contract(ReplyMessage& reply) const
 
     OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_register_contract);
 
-    const auto type = static_cast<ContractType>(msgIn.enum_);
+    const auto type = static_cast<contract::Type>(msgIn.enum_);
 
     switch (type) {
-        case (ContractType::nym): {
+        case (contract::Type::nym): {
             const auto nym =
                 proto::Factory<proto::Nym>(Data::Factory(msgIn.m_ascPayload));
             reply.SetSuccess(bool(server_.API().Wallet().Nym(nym)));
         } break;
-        case (ContractType::server): {
+        case (contract::Type::server): {
             const auto server = proto::Factory<proto::ServerContract>(
                 Data::Factory(msgIn.m_ascPayload));
             try {
@@ -2051,7 +2052,7 @@ auto UserCommandProcessor::cmd_register_contract(ReplyMessage& reply) const
                 reply.SetSuccess(false);
             }
         } break;
-        case (ContractType::unit): {
+        case (contract::Type::unit): {
             try {
                 server_.API().Wallet().Internal().UnitDefinition(
                     proto::Factory<proto::UnitDefinition>(
