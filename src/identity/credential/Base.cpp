@@ -15,6 +15,7 @@
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
 #include "identity/credential/Base.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/identity/Identity.hpp"
@@ -25,9 +26,9 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/Signable.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
@@ -121,7 +122,7 @@ auto Base::asString(const bool asPrivate) const -> std::string
     if (false == Serialize(credential, asPrivate, WITH_SIGNATURES)) {
         return {};
     }
-    dataCredential = api_.Factory().Data(credential);
+    dataCredential = api_.Factory().InternalSession().Data(credential);
     auto armoredCredential = api_.Factory().Armored(dataCredential);
     armoredCredential->WriteArmoredString(stringCredential, "Credential");
 
@@ -169,7 +170,7 @@ auto Base::GetID(const Lock& lock) const -> OTIdentifier
 
     if (idVersion->has_id()) { idVersion->clear_id(); }
 
-    return api_.Factory().Identifier(*idVersion);
+    return api_.Factory().InternalSession().Identifier(*idVersion);
 }
 
 void Base::init(
@@ -344,12 +345,12 @@ auto Base::serialize(
     return serializedCredential;
 }
 
-auto Base::Serialize() const -> OTData
+auto Base::Serialize() const noexcept -> OTData
 {
     auto serialized = proto::Credential{};
     Serialize(serialized, Private() ? AS_PRIVATE : AS_PUBLIC, WITH_SIGNATURES);
 
-    return api_.Factory().Data(serialized);
+    return api_.Factory().InternalSession().Data(serialized);
 }
 
 auto Base::Serialize(
@@ -411,7 +412,7 @@ auto Base::validate(const Lock& lock) const -> bool
     return verify_internally(lock);
 }
 
-auto Base::Validate() const -> bool
+auto Base::Validate() const noexcept -> bool
 {
     Lock lock(lock_);
 

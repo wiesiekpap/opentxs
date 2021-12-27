@@ -8,8 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "internal/api/client/Client.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 
@@ -21,7 +20,7 @@ namespace network
 {
 namespace internal
 {
-struct Blockchain;
+class Blockchain;
 }  // namespace internal
 }  // namespace network
 
@@ -32,7 +31,6 @@ class Session;
 namespace opentxs::api::network::blockchain
 {
 struct SyncServer {
-    using Blockchain = internal::Blockchain;
     using Chain = opentxs::blockchain::Type;
 
     auto Endpoint(const Chain chain) const noexcept -> std::string;
@@ -45,7 +43,7 @@ struct SyncServer {
         const std::string& update,
         const std::string& publicUpdate) noexcept -> bool;
 
-    SyncServer(const api::Session& api, Blockchain& parent) noexcept;
+    SyncServer(const api::Session& api, internal::Blockchain& parent) noexcept;
 
     ~SyncServer();
 

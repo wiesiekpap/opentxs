@@ -46,11 +46,11 @@ namespace opentxs
 auto Factory::ZMQ(const api::Session& api, const Flag& running)
     -> api::network::ZMQ*
 {
-    return new api::network::implementation::ZMQ(api, running);
+    return new api::network::imp::ZMQ(api, running);
 }
 }  // namespace opentxs
 
-namespace opentxs::api::network::implementation
+namespace opentxs::api::network::imp
 {
 ZMQ::ZMQ(const api::Session& api, const Flag& running)
     : api_(api)
@@ -296,4 +296,4 @@ auto ZMQ::verify_lock(const Lock& lock) const -> bool
 }
 
 ZMQ::~ZMQ() { server_connections_.clear(); }
-}  // namespace opentxs::api::network::implementation
+}  // namespace opentxs::api::network::imp

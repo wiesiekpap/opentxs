@@ -29,11 +29,7 @@ class Symmetric;
 class Secret;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace crypto
+namespace opentxs::api::crypto
 {
 class OPENTXS_EXPORT Symmetric
 {
@@ -84,6 +80,4 @@ private:
     auto operator=(const Symmetric&) -> Symmetric& = delete;
     auto operator=(Symmetric&&) -> Symmetric& = delete;
 };
-}  // namespace crypto
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::crypto

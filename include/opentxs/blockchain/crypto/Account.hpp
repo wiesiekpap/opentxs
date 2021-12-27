@@ -16,8 +16,8 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Iterator.hpp"
 
 namespace opentxs
 {

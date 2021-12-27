@@ -9,10 +9,12 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
+namespace session
 {
-class Contacts;
-}  // namespace client
+class Client;
+}  // namespace session
+
+class Session;
 }  // namespace api
 }  // namespace opentxs
 
@@ -28,13 +30,10 @@ auto PeerObject(
     const Nym_p& senderNym,
     const std::string& payment,
     const bool isPayment) noexcept -> std::unique_ptr<opentxs::PeerObject>;
-#if OT_CASH
 auto PeerObject(
     const api::Session& api,
     const Nym_p& senderNym,
-    const std::shared_ptr<blind::Purse> purse) noexcept
-    -> std::unique_ptr<opentxs::PeerObject>;
-#endif
+    otx::blind::Purse&& purse) noexcept -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerObject(
     const api::Session& api,
     const OTPeerRequest request,
@@ -47,14 +46,12 @@ auto PeerObject(
     const VersionNumber version) noexcept
     -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerObject(
-    const api::client::Contacts& contacts,
-    const api::Session& api,
+    const api::session::Client& api,
     const Nym_p& signerNym,
     const proto::PeerObject& serialized) noexcept
     -> std::unique_ptr<opentxs::PeerObject>;
 auto PeerObject(
-    const api::client::Contacts& contacts,
-    const api::Session& api,
+    const api::session::Client& api,
     const Nym_p& recipientNym,
     const opentxs::Armored& encrypted,
     const opentxs::PasswordPrompt& reason) noexcept

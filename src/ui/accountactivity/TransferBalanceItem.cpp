@@ -14,10 +14,10 @@
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/util/Log.hpp"
@@ -127,7 +127,7 @@ auto TransferBalanceItem::startup(
 
     if (false == bool(transfer_)) {
         transfer_ =
-            api::client::Workflow::InstantiateTransfer(api_, workflow).second;
+            api::session::Workflow::InstantiateTransfer(api_, workflow).second;
     }
 
     OT_ASSERT(transfer_)
@@ -248,7 +248,7 @@ auto TransferBalanceItem::UUID() const noexcept -> std::string
 {
     if (transfer_) {
 
-        return api::client::Workflow::UUID(
+        return api::session::Workflow::UUID(
                    api_,
                    transfer_->GetPurportedNotaryID(),
                    transfer_->GetTransactionNum())

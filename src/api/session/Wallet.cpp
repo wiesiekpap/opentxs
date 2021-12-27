@@ -17,15 +17,15 @@
 #include "2_Factory.hpp"
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "internal/api/client/Factory.hpp"
 #include "internal/api/session/Session.hpp"
-#if OT_CASH
-#include "internal/blind/Factory.hpp"
-#endif  // OT_CASH
 #include "internal/core/Core.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/otx/OTX.hpp"
+#include "internal/otx/blind/Factory.hpp"
+#include "internal/otx/blind/Purse.hpp"
+#include "internal/otx/client/Factory.hpp"
+#include "internal/otx/client/Issuer.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
 #include "internal/protobuf/Check.hpp"
@@ -37,17 +37,12 @@
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
-#if OT_CASH
-#include "opentxs/blind/Purse.hpp"
-#endif  // #if OT_CASH
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -60,6 +55,7 @@
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -71,8 +67,10 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -90,7 +88,7 @@
 template class opentxs::Exclusive<opentxs::Account>;
 template class opentxs::Shared<opentxs::Account>;
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 Wallet::Wallet(const api::Session& api)
     : api_(api)
@@ -110,10 +108,8 @@ Wallet::Wallet(const api::Session& api)
     , peer_lock_()
     , nymfile_map_lock_()
     , nymfile_lock_()
-#if OT_CASH
     , purse_lock_()
-    , purse_id_lock_()
-#endif
+    , purse_map_()
     , account_publisher_(api_.Network().ZeroMQ().PublishSocket())
     , issuer_publisher_(api_.Network().ZeroMQ().PublishSocket())
     , nym_publisher_(api_.Network().ZeroMQ().PublishSocket())
@@ -713,19 +709,6 @@ auto Wallet::extract_unit(const contract::Unit& contract) const
     }
 }
 
-#if OT_CASH
-auto Wallet::get_purse_lock(
-    const identifier::Nym& nym,
-    const identifier::Server& server,
-    const identifier::UnitDefinition& unit) const -> std::mutex&
-{
-    Lock lock(purse_lock_);
-    const PurseID id{nym, server, unit};
-
-    return purse_id_lock_[id];
-}
-#endif
-
 auto Wallet::context(
     const identifier::Nym& localNymID,
     const identifier::Nym& remoteNymID) const
@@ -927,7 +910,7 @@ auto Wallet::IssuerList(const identifier::Nym& nymID) const -> std::set<OTNymID>
 auto Wallet::Issuer(
     const identifier::Nym& nymID,
     const identifier::Nym& issuerID) const
-    -> std::shared_ptr<const api::client::Issuer>
+    -> std::shared_ptr<const otx::client::Issuer>
 {
     auto& [lock, pIssuer] = issuer(nymID, issuerID, false);
 
@@ -936,18 +919,18 @@ auto Wallet::Issuer(
 
 auto Wallet::mutable_Issuer(
     const identifier::Nym& nymID,
-    const identifier::Nym& issuerID) const -> Editor<api::client::Issuer>
+    const identifier::Nym& issuerID) const -> Editor<otx::client::Issuer>
 {
     auto& [lock, pIssuer] = issuer(nymID, issuerID, true);
 
     OT_ASSERT(pIssuer);
 
-    std::function<void(api::client::Issuer*, const Lock&)> callback =
-        [=](api::client::Issuer* in, const Lock& lock) -> void {
+    std::function<void(otx::client::Issuer*, const Lock&)> callback =
+        [=](otx::client::Issuer* in, const Lock& lock) -> void {
         this->save(lock, in);
     };
 
-    return Editor<api::client::Issuer>(lock, pIssuer.get(), callback);
+    return Editor<otx::client::Issuer>(lock, pIssuer.get(), callback);
 }
 
 auto Wallet::issuer(
@@ -1898,13 +1881,19 @@ auto Wallet::PeerRequestUpdate(
     }
 }
 
-#if OT_CASH
 auto Wallet::purse(
     const identifier::Nym& nym,
     const identifier::Server& server,
     const identifier::UnitDefinition& unit,
-    const bool checking) const -> std::unique_ptr<blind::Purse>
+    const bool checking) const -> PurseMap::mapped_type&
 {
+    const auto id = PurseID{nym, server, unit};
+    auto lock = Lock{purse_lock_};
+    auto& out = purse_map_[id];
+    auto& [mutex, purse] = out;
+
+    if (purse) { return out; }
+
     auto serialized = proto::Purse{};
     const auto loaded =
         api_.Storage().Load(nym, server, unit, serialized, checking);
@@ -1914,33 +1903,31 @@ auto Wallet::purse(
             LogError()(OT_PRETTY_CLASS())("Purse does not exist").Flush();
         }
 
-        return {};
+        return out;
     }
 
     if (false == proto::Validate(serialized, VERBOSE)) {
         LogError()(OT_PRETTY_CLASS())("Invalid purse").Flush();
 
-        return {};
+        return out;
     }
 
-    std::unique_ptr<blind::Purse> output{factory::Purse(api_, serialized)};
+    purse = factory::Purse(api_, serialized);
 
-    if (false == bool(output)) {
+    if (false == bool(purse)) {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate purse").Flush();
-
-        return {};
     }
 
-    return output;
+    return out;
 }
 
 auto Wallet::Purse(
     const identifier::Nym& nym,
     const identifier::Server& server,
     const identifier::UnitDefinition& unit,
-    const bool checking) const -> std::unique_ptr<const blind::Purse>
+    const bool checking) const -> const otx::blind::Purse&
 {
-    return purse(nym, server, unit, checking);
+    return purse(nym, server, unit, checking).second;
 }
 
 auto Wallet::mutable_Purse(
@@ -1948,30 +1935,28 @@ auto Wallet::mutable_Purse(
     const identifier::Server& server,
     const identifier::UnitDefinition& unit,
     const PasswordPrompt& reason,
-    const blind::CashType type) const -> Editor<blind::Purse>
+    const otx::blind::CashType type) const
+    -> Editor<otx::blind::Purse, std::shared_mutex>
 {
-    auto pPurse = purse(nymID, server, unit, true);
+    auto& [mutex, purse] = this->purse(nymID, server, unit, true);
 
-    if (false == bool(pPurse)) {
+    if (!purse) {
         const auto nym = Nym(nymID);
 
         OT_ASSERT(nym);
 
-        pPurse.reset(factory::Purse(api_, *nym, server, unit, type, reason));
+        purse = factory::Purse(api_, *nym, server, unit, type, reason);
     }
 
-    OT_ASSERT(pPurse);
+    OT_ASSERT(purse);
 
-    const OTNymID otNymID{nymID};
-    std::function<void(blind::Purse*, const Lock&)> callback =
-        [=](blind::Purse* in, const Lock& lock) -> void {
-        this->save(lock, otNymID, in);
-    };
-
-    return Editor<blind::Purse>(
-        get_purse_lock(nymID, server, unit), pPurse.release(), callback);
+    return Editor<otx::blind::Purse, std::shared_mutex>(
+        mutex,
+        &purse,
+        [this, nym = OTNymID{nymID}](auto* in, const auto& lock) -> void {
+            this->save(lock, nym, in);
+        });
 }
-#endif
 
 auto Wallet::RemoveServer(const identifier::Server& id) const -> bool
 {
@@ -2108,7 +2093,7 @@ void Wallet::save(
     api_.Storage().Store(context->GetContract(lock));
 }
 
-void Wallet::save(const Lock& lock, api::client::Issuer* in) const
+void Wallet::save(const Lock& lock, otx::client::Issuer* in) const
 {
     OT_ASSERT(nullptr != in)
     OT_ASSERT(lock.owns_lock())
@@ -2131,18 +2116,19 @@ void Wallet::save(const Lock& lock, api::client::Issuer* in) const
     }());
 }
 
-#if OT_CASH
-void Wallet::save(const Lock& lock, const OTNymID nym, blind::Purse* in) const
+void Wallet::save(const eLock& lock, const OTNymID nym, otx::blind::Purse* in)
+    const
 {
     OT_ASSERT(nullptr != in)
     OT_ASSERT(lock.owns_lock())
 
-    std::unique_ptr<blind::Purse> pPurse{in};
+    auto& purse = *in;
 
-    auto& purse = *pPurse;
+    if (!purse) { OT_FAIL; }
+
     const auto serialized = [&] {
         auto proto = proto::Purse{};
-        purse.Serialize(proto);
+        purse.Internal().Serialize(proto);
 
         return proto;
     }();
@@ -2153,7 +2139,6 @@ void Wallet::save(const Lock& lock, const OTNymID nym, blind::Purse* in) const
 
     OT_ASSERT(stored);
 }
-#endif
 
 void Wallet::save(NymData* nymData, const Lock& lock) const
 {
@@ -2313,12 +2298,7 @@ auto Wallet::server(std::unique_ptr<contract::Server> contract) const
     }();
 
     OT_ASSERT(false == id->empty());
-
-    const auto serverNymName = contract->EffectiveName();
-
-    if (serverNymName != contract->Name()) {
-        contract->SetAlias(serverNymName);
-    }
+    OT_ASSERT(contract->Alias() == contract->EffectiveName());
 
     auto serialized = proto::ServerContract{};
 
@@ -2749,15 +2729,80 @@ auto Wallet::UnitDefinition(const proto::UnitDefinition& contract) const
     return UnitDefinition(unitID);
 }
 
+auto Wallet::UnitDefinition(const ReadView contract) const -> OTUnitDefinition
+{
+    return UnitDefinition(
+        opentxs::proto::Factory<proto::UnitDefinition>(contract));
+}
+
 auto Wallet::CurrencyContract(
     const std::string& nymid,
     const std::string& shortname,
     const std::string& terms,
     const core::UnitType unitOfAccount,
-    const PasswordPrompt& reason,
-    const display::Definition& displayDefinition,
     const Amount& redemptionIncrement,
-    const VersionNumber version) const -> OTUnitDefinition
+    const PasswordPrompt& reason) const -> OTUnitDefinition
+{
+    return CurrencyContract(
+        nymid,
+        shortname,
+        terms,
+        unitOfAccount,
+        redemptionIncrement,
+        display::GetDefinition(unitOfAccount),
+        contract::Unit::DefaultVersion,
+        reason);
+}
+
+auto Wallet::CurrencyContract(
+    const std::string& nymid,
+    const std::string& shortname,
+    const std::string& terms,
+    const core::UnitType unitOfAccount,
+    const Amount& redemptionIncrement,
+    const display::Definition& displayDefinition,
+    const PasswordPrompt& reason) const -> OTUnitDefinition
+{
+    return CurrencyContract(
+        nymid,
+        shortname,
+        terms,
+        unitOfAccount,
+        redemptionIncrement,
+        displayDefinition,
+        contract::Unit::DefaultVersion,
+        reason);
+}
+
+auto Wallet::CurrencyContract(
+    const std::string& nymid,
+    const std::string& shortname,
+    const std::string& terms,
+    const core::UnitType unitOfAccount,
+    const Amount& redemptionIncrement,
+    const VersionNumber version,
+    const PasswordPrompt& reason) const -> OTUnitDefinition
+{
+    return CurrencyContract(
+        nymid,
+        shortname,
+        terms,
+        unitOfAccount,
+        redemptionIncrement,
+        display::GetDefinition(unitOfAccount),
+        version,
+        reason);
+}
+
+auto Wallet::CurrencyContract(
+    const std::string& nymid,
+    const std::string& shortname,
+    const std::string& terms,
+    const core::UnitType unitOfAccount,
+    const Amount& redemptionIncrement,
+    const display::Definition& displayDefinition,
+    const VersionNumber version,
+    const PasswordPrompt& reason) const -> OTUnitDefinition
 {
     auto unit = std::string{};
     auto nym = Nym(identifier::Nym::Factory(nymid));
@@ -2844,4 +2889,4 @@ auto Wallet::SaveCredential(const proto::Credential& credential) const -> bool
 {
     return api_.Storage().Store(credential);
 }
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

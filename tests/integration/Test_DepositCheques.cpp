@@ -11,24 +11,23 @@
 
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/NymData.hpp"
-#include "opentxs/client/OTAPI_Exec.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
@@ -36,7 +35,7 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
-#include "opentxs/core/display/Scale.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -45,7 +44,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -57,15 +56,6 @@ using namespace opentxs;
 
 #define UNIT_DEFINITION_CONTRACT_NAME "Mt Gox USD"
 #define UNIT_DEFINITION_TERMS "YOLO"
-#define UNIT_DEFINITION_DISPLAY_DEFINITION                                     \
-    {                                                                          \
-        u8"USD",                                                               \
-        {                                                                      \
-            {                                                                  \
-                u8"dollars", { u8"$", u8"", {{10, 0}}, 2, 3 }                  \
-            }                                                                  \
-        }                                                                      \
-    }
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
 #define CHEQUE_AMOUNT_1 2000
 #define CHEQUE_MEMO_1 "memo"
@@ -351,9 +341,8 @@ TEST_F(Test_DepositCheques, issue_dollars)
         UNIT_DEFINITION_CONTRACT_NAME,
         UNIT_DEFINITION_TERMS,
         UNIT_DEFINITION_UNIT_OF_ACCOUNT,
-        reasonI,
-        UNIT_DEFINITION_DISPLAY_DEFINITION,
-        1);
+        1,
+        reasonI);
 
     EXPECT_EQ(contract::UnitType::Currency, contract->Type());
     EXPECT_TRUE(unit_id_->empty());

@@ -25,7 +25,7 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -36,15 +36,15 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Contacts;
-}  // namespace client
-
 namespace crypto
 {
 class Blockchain;
 }  // namespace crypto
+
+namespace session
+{
+class Contacts;
+}  // namespace session
 
 class Session;
 }  // namespace api
@@ -78,11 +78,9 @@ class Transaction final : public internal::Transaction
 public:
     static const VersionNumber default_version_;
 
-    auto AssociatedLocalNyms(const api::crypto::Blockchain& blockchain)
-        const noexcept -> std::vector<OTNymID> final;
+    auto AssociatedLocalNyms() const noexcept -> std::vector<OTNymID> final;
     auto AssociatedRemoteContacts(
-        const api::crypto::Blockchain& blockchain,
-        const api::client::Contacts& contacts,
+        const api::session::Contacts& contacts,
         const identifier::Nym& nym) const noexcept
         -> std::vector<OTIdentifier> final;
     auto BlockPosition() const noexcept -> std::optional<std::size_t> final
@@ -129,15 +127,13 @@ public:
     auto IsGeneration() const noexcept -> bool final { return is_generation_; }
     auto Keys() const noexcept -> std::vector<crypto::Key> final;
     auto Locktime() const noexcept -> std::uint32_t final { return lock_time_; }
-    auto Memo(const api::crypto::Blockchain& blockchain) const noexcept
-        -> std::string final;
+    auto Memo() const noexcept -> std::string final;
     auto MinedPosition() const noexcept -> const block::Position& final
     {
         return cache_.position();
     }
-    auto NetBalanceChange(
-        const api::crypto::Blockchain& blockchain,
-        const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
+    auto NetBalanceChange(const identifier::Nym& nym) const noexcept
+        -> opentxs::Amount final;
     auto Outputs() const noexcept -> const bitcoin::Outputs& final
     {
         return *outputs_;
@@ -145,18 +141,16 @@ public:
     auto SegwitFlag() const noexcept -> std::byte final { return segwit_flag_; }
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
-    auto Serialize(const api::crypto::Blockchain& blockchain) const noexcept
-        -> std::optional<SerializeType> final;
+    auto Serialize() const noexcept -> std::optional<SerializeType> final;
     auto Timestamp() const noexcept -> Time final { return time_; }
     auto Version() const noexcept -> std::int32_t final { return version_; }
     auto WTXID() const noexcept -> const Txid& final { return wtxid_; }
 
     auto AssociatePreviousOutput(
-        const api::crypto::Blockchain& blockchain,
         const std::size_t index,
         const internal::Output& output) noexcept -> bool final
     {
-        return inputs_->AssociatePreviousOutput(blockchain, index, output);
+        return inputs_->AssociatePreviousOutput(index, output);
     }
     auto ForTestingOnlyAddKey(
         const std::size_t index,
@@ -166,7 +160,6 @@ public:
     }
     auto Internal() noexcept -> internal::Transaction& final { return *this; }
     auto MergeMetadata(
-        const api::crypto::Blockchain& blockchain,
         const blockchain::Type chain,
         const internal::Transaction& rhs) noexcept -> void final;
     auto Print() const noexcept -> std::string final;
@@ -205,16 +198,16 @@ public:
     ~Transaction() final = default;
 
 private:
-    struct Cache {
+    class Cache
+    {
+    public:
         auto chains() const noexcept -> std::vector<blockchain::Type>;
         auto height() const noexcept -> block::Height;
         auto memo() const noexcept -> std::string;
         auto position() const noexcept -> const block::Position&;
 
         auto add(blockchain::Type chain) noexcept -> void;
-        auto merge(
-            const api::crypto::Blockchain& api,
-            const internal::Transaction& rhs) noexcept -> void;
+        auto merge(const internal::Transaction& rhs) noexcept -> void;
         template <typename F>
         auto normalized(F cb) noexcept -> const Identifier&
         {
@@ -248,10 +241,10 @@ private:
         Cache(const Cache& rhs) noexcept;
 
     private:
-        mutable std::recursive_mutex lock_{};
-        std::optional<OTIdentifier> normalized_id_{};
-        std::optional<std::size_t> size_{};
-        std::optional<std::size_t> normalized_size_{};
+        mutable std::recursive_mutex lock_;
+        std::optional<OTIdentifier> normalized_id_;
+        std::optional<std::size_t> size_;
+        std::optional<std::size_t> normalized_size_;
         std::string memo_;
         std::vector<blockchain::Type> chains_;
         block::Position mined_position_;

@@ -26,7 +26,6 @@
 #include "api/crypto/blockchain/Blockchain.hpp"
 #include "api/crypto/blockchain/Imp.hpp"
 #include "blockchain/database/common/Database.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
@@ -52,16 +51,16 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Activity;
-class Contacts;
-}  // namespace client
-
 namespace crypto
 {
 class Blockchain;
 }  // namespace crypto
+
+namespace session
+{
+class Activity;
+class Contacts;
+}  // namespace session
 
 class Legacy;
 class Session;
@@ -82,6 +81,11 @@ class Transaction;
 }  // namespace bitcoin
 }  // namespace block
 }  // namespace blockchain
+
+namespace contact
+{
+class Contact;
+}  // namespace contact
 
 namespace identifier
 {
@@ -105,7 +109,6 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 
-class Contact;
 class Data;
 class Identifier;
 class Options;
@@ -114,7 +117,7 @@ class PasswordPrompt;
 
 namespace zmq = opentxs::network::zeromq;
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 struct BlockchainImp final : public Blockchain::Imp {
     using Txid = opentxs::blockchain::block::Txid;
@@ -146,9 +149,11 @@ struct BlockchainImp final : public Blockchain::Imp {
             const opentxs::blockchain::block::bitcoin::Transaction> final;
     auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList final;
-    auto ProcessContact(const Contact& contact) const noexcept -> bool final;
-    auto ProcessMergedContact(const Contact& parent, const Contact& child)
-        const noexcept -> bool final;
+    auto ProcessContact(const contact::Contact& contact) const noexcept
+        -> bool final;
+    auto ProcessMergedContact(
+        const contact::Contact& parent,
+        const contact::Contact& child) const noexcept -> bool final;
     auto ProcessTransaction(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::bitcoin::Transaction& in,
@@ -179,8 +184,8 @@ struct BlockchainImp final : public Blockchain::Imp {
 
     BlockchainImp(
         const api::Session& api,
-        const api::client::Activity& activity,
-        const api::client::Contacts& contacts,
+        const api::session::Activity& activity,
+        const api::session::Contacts& contacts,
         const api::Legacy& legacy,
         const std::string& dataFolder,
         const Options& args,
@@ -189,8 +194,7 @@ struct BlockchainImp final : public Blockchain::Imp {
     ~BlockchainImp() final = default;
 
 private:
-    api::crypto::Blockchain& parent_;
-    const api::client::Activity& activity_;
+    const api::session::Activity& activity_;
     const std::string key_generated_endpoint_;
     OTZMQPublishSocket transaction_updates_;
     OTZMQPublishSocket key_updates_;
@@ -224,4 +228,4 @@ private:
         const opentxs::blockchain::block::bitcoin::Transaction& tx)
         const noexcept -> bool;
 };
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

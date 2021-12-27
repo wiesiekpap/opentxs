@@ -35,6 +35,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -51,8 +52,8 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
@@ -198,6 +199,7 @@ struct Output::Imp {
         const node::TxoState created) noexcept -> bool
     {
         auto lock = eLock{lock_};
+        const auto& api = api_.Crypto().Blockchain();
 
         try {
             const auto isGeneration = original.IsGeneration();
@@ -224,8 +226,7 @@ struct Output::Imp {
                 try {
                     auto& existing = cache_.GetOutput(lock, outpoint);
 
-                    if (!copy.AssociatePreviousOutput(
-                            blockchain_, inputIndex, existing)) {
+                    if (!copy.AssociatePreviousOutput(inputIndex, existing)) {
                         LogError()(OT_PRETTY_CLASS())(
                             "Error associating previous output to input")
                             .Flush();
@@ -317,7 +318,7 @@ struct Output::Imp {
                         continue;
                     }
 
-                    const auto& owner = blockchain_.Owner(key);
+                    const auto& owner = api.Owner(key);
 
                     if (owner.empty()) {
                         LogError()(OT_PRETTY_CLASS())(
@@ -337,8 +338,7 @@ struct Output::Imp {
             const auto reason = api_.Factory().PasswordPrompt(
                 "Save a received blockchain transaction");
 
-            if (!blockchain_.Internal().ProcessTransaction(
-                    chain_, copy, reason)) {
+            if (!api.Internal().ProcessTransaction(chain_, copy, reason)) {
                 throw std::runtime_error{
                     "Error adding transaction to database"};
             }
@@ -400,6 +400,7 @@ struct Output::Imp {
         OT_ASSERT(false == transaction.IsGeneration());
 
         auto lock = eLock{lock_};
+        const auto& api = api_.Crypto().Blockchain();
 
         try {
             for (const auto& input : transaction.Inputs()) {
@@ -490,7 +491,7 @@ struct Output::Imp {
                 }
 
                 for (const auto& key : keys) {
-                    const auto& owner = blockchain_.Owner(key);
+                    const auto& owner = api.Owner(key);
 
                     if (false == associate(lock, tx, outpoint, key)) {
                         throw std::runtime_error{
@@ -538,7 +539,7 @@ struct Output::Imp {
             const auto reason = api_.Factory().PasswordPrompt(
                 "Save an outgoing blockchain transaction");
 
-            if (!blockchain_.Internal().ProcessTransaction(
+            if (!api.Internal().ProcessTransaction(
                     chain_, transaction, reason)) {
                 throw std::runtime_error{
                     "Error adding transaction to database"};
@@ -948,6 +949,7 @@ struct Output::Imp {
             position.second->asHex())(" at height ")(position.first)
             .Flush();
         auto lock = eLock{lock_};
+        const auto& api = api_.Crypto().Blockchain();
 
         try {
             // TODO rebroadcast transactions which have become unconfirmed
@@ -1003,7 +1005,7 @@ struct Output::Imp {
                 const auto& txid = api_.Factory().Data(id.Txid());
 
                 for (const auto& key : output.Keys()) {
-                    blockchain_.Unconfirm(key, txid);
+                    api.Unconfirm(key, txid);
                 }
             }
 
@@ -1017,13 +1019,11 @@ struct Output::Imp {
     }
 
     Imp(const api::Session& api,
-        const api::crypto::Blockchain& blockchain,
         const storage::lmdb::LMDB& lmdb,
         const blockchain::Type chain,
         const wallet::SubchainData& subchains,
         wallet::Proposal& proposals) noexcept
         : api_(api)
-        , blockchain_(blockchain)
         , lmdb_(lmdb)
         , chain_(chain)
         , subchain_(subchains)
@@ -1044,7 +1044,6 @@ struct Output::Imp {
 
 private:
     const api::Session& api_;
-    const api::crypto::Blockchain& blockchain_;
     const storage::lmdb::LMDB& lmdb_;
     const blockchain::Type chain_;
     const wallet::SubchainData& subchain_;
@@ -1317,10 +1316,11 @@ private:
     }
     auto publish_balance(const eLock& lock) const noexcept -> void
     {
-        blockchain_.Internal().UpdateBalance(chain_, get_balance(lock));
+        const auto& api = api_.Crypto().Blockchain();
+        api.Internal().UpdateBalance(chain_, get_balance(lock));
 
         for (const auto& [nym, balance] : get_balances(lock)) {
-            blockchain_.Internal().UpdateBalance(nym, chain_, balance);
+            api.Internal().UpdateBalance(nym, chain_, balance);
         }
     }
     auto translate(std::vector<UTXO>&& outputs) const noexcept
@@ -1740,13 +1740,11 @@ private:
 
 Output::Output(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::Type chain,
     const wallet::SubchainData& subchains,
     wallet::Proposal& proposals) noexcept
-    : imp_(std::make_unique<
-           Imp>(api, blockchain, lmdb, chain, subchains, proposals))
+    : imp_(std::make_unique<Imp>(api, lmdb, chain, subchains, proposals))
 {
     OT_ASSERT(imp_);
 }

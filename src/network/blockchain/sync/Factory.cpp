@@ -29,12 +29,19 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Block.hpp"
 #include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/blockchain/sync/MessageType.hpp"
+#include "opentxs/network/blockchain/sync/PublishContract.hpp"
+#include "opentxs/network/blockchain/sync/PublishContractReply.hpp"
 #include "opentxs/network/blockchain/sync/Query.hpp"
+#include "opentxs/network/blockchain/sync/QueryContract.hpp"
+#include "opentxs/network/blockchain/sync/QueryContractReply.hpp"
 #include "opentxs/network/blockchain/sync/Request.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/network/blockchain/sync/Types.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -56,10 +63,12 @@ auto BlockchainSyncMessage(
     const auto b = in.Body();
 
     try {
-        if (0 >= b.size()) { throw std::runtime_error{"Insufficient frames"}; }
+        if (0 >= b.size()) {
+            throw std::runtime_error{"missing message type frame"};
+        }
 
         const auto& typeFrame = b.at(0);
-        const auto type = [&] {
+        const auto work = [&] {
             try {
 
                 return typeFrame.as<WorkType>();
@@ -69,9 +78,88 @@ auto BlockchainSyncMessage(
             }
         }();
 
-        if (WorkType::SyncQuery == type) { return BlockchainSyncQuery_p(0); }
+        switch (work) {
+            case WorkType::P2PBlockchainSyncQuery: {
 
-        if (1 >= b.size()) { throw std::runtime_error{"Insufficient frames"}; }
+                return BlockchainSyncQuery_p(0);
+            }
+            case WorkType::P2PResponse: {
+                if (1 >= b.size()) {
+                    throw std::runtime_error{"missing response type frame"};
+                }
+
+                using MessageType = network::blockchain::sync::MessageType;
+                const auto request = b.at(1).as<MessageType>();
+
+                switch (request) {
+                    case MessageType::publish_contract: {
+                        if (3 >= b.size()) {
+                            throw std::runtime_error{
+                                "Insufficient frames (publish contract "
+                                "response)"};
+                        }
+
+                        const auto& id = b.at(2);
+                        const auto& success = b.at(3);
+
+                        return BlockchainSyncPublishContractReply_p(
+                            api, id.Bytes(), success.Bytes());
+                    }
+                    case MessageType::contract_query: {
+                        if (4 >= b.size()) {
+                            throw std::runtime_error{
+                                "Insufficient frames (query contract "
+                                "response)"};
+                        }
+
+                        const auto& contractType = b.at(2);
+                        const auto& id = b.at(3);
+                        const auto& payload = b.at(4);
+
+                        return BlockchainSyncQueryContractReply_p(
+                            api,
+                            contractType.as<contract::Type>(),
+                            id.Bytes(),
+                            payload.Bytes());
+                    }
+                    default: {
+                        throw std::runtime_error{
+                            std::string{"unknown or invalid response type: "} +
+                            opentxs::print(request)};
+                    }
+                }
+            }
+            case WorkType::P2PPublishContract: {
+                if (3 >= b.size()) {
+                    throw std::runtime_error{
+                        "Insufficient frames (publish contract)"};
+                }
+
+                const auto& contractType = b.at(1);
+                const auto& id = b.at(2);
+                const auto& payload = b.at(3);
+
+                return BlockchainSyncPublishContract_p(
+                    api,
+                    contractType.as<contract::Type>(),
+                    id.Bytes(),
+                    payload.Bytes());
+            }
+            case WorkType::P2PQueryContract: {
+                if (1 >= b.size()) {
+                    throw std::runtime_error{
+                        "Insufficient frames (query contract)"};
+                }
+
+                const auto& id = b.at(1);
+
+                return BlockchainSyncQueryContract_p(api, id.Bytes());
+            }
+            default: {
+            }
+        }
+
+        if (1 >= b.size()) { throw std::runtime_error{"missing hello frame"}; }
 
         const auto& helloFrame = b.at(1);
 
@@ -79,7 +167,7 @@ auto BlockchainSyncMessage(
             proto::Factory<proto::BlockchainP2PHello>(helloFrame);
 
         if (false == proto::Validate(hello, VERBOSE)) {
-            throw std::runtime_error{"Invalid hello"};
+            throw std::runtime_error{"invalid hello"};
         }
 
         auto chains = [&] {
@@ -100,11 +188,12 @@ auto BlockchainSyncMessage(
             return out;
         }();
 
-        switch (type) {
-            case WorkType::NewBlock:
-            case WorkType::SyncReply: {
+        switch (work) {
+            case WorkType::P2PBlockchainNewBlock:
+            case WorkType::P2PBlockchainSyncReply: {
                 if (3 > b.size()) {
-                    throw std::runtime_error{"Insufficient frames"};
+                    throw std::runtime_error{
+                        "insufficient frames (block data)"};
                 }
 
                 const auto& cfheaderFrame = b.at(2);
@@ -121,7 +210,7 @@ auto BlockchainSyncMessage(
                         proto::Factory<proto::BlockchainP2PSync>(*i);
 
                     if (false == proto::Validate(sync, VERBOSE)) {
-                        throw std::runtime_error{"Invalid sync data"};
+                        throw std::runtime_error{"invalid sync data"};
                     }
 
                     const auto incomingChain = static_cast<Chain>(sync.chain());
@@ -133,15 +222,15 @@ auto BlockchainSyncMessage(
                     if (chain.has_value()) {
                         if (incomingHeight != ++height) {
                             throw std::runtime_error{
-                                "Non-contiguous sync data"};
+                                "non-contiguous sync data"};
                         }
 
                         if (incomingChain != chain.value()) {
-                            throw std::runtime_error{"Incorrect chain"};
+                            throw std::runtime_error{"incorrect chain"};
                         }
 
                         if (incomingType != filterType.value()) {
-                            throw std::runtime_error{"Incorrect filter type"};
+                            throw std::runtime_error{"incorrect filter type"};
                         }
                     } else {
                         chain = incomingChain;
@@ -157,15 +246,14 @@ auto BlockchainSyncMessage(
                 }
 
                 return BlockchainSyncData_p(
-                    type,
+                    work,
                     std::move(chains.front()),
                     std::move(data),
                     cfheaderFrame.Bytes());
             }
-            case WorkType::SyncAcknowledgement: {
-
-                if (3 > b.size()) {
-                    throw std::runtime_error{"Insufficient frames"};
+            case WorkType::P2PBlockchainSyncAck: {
+                if (2 >= b.size()) {
+                    throw std::runtime_error{"missing endpoint frame"};
                 }
 
                 const auto& endpointFrame = b.at(2);
@@ -173,15 +261,18 @@ auto BlockchainSyncMessage(
                 return BlockchainSyncAcknowledgement_p(
                     std::move(chains), std::string{endpointFrame.Bytes()});
             }
-            case WorkType::SyncRequest: {
+            case WorkType::P2PBlockchainSyncRequest: {
 
                 return BlockchainSyncRequest_p(std::move(chains));
             }
-            case WorkType::SyncQuery: {
+            case WorkType::P2PBlockchainSyncQuery:
+            case WorkType::P2PResponse:
+            case WorkType::P2PPublishContract:
+            case WorkType::P2PQueryContract: {
                 OT_FAIL;
             }
             default: {
-                throw std::runtime_error{"Unsupported type"};
+                throw std::runtime_error{"unsupported type"};
             }
         }
     } catch (const std::exception& e) {

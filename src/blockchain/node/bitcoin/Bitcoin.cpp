@@ -10,10 +10,6 @@
 #include "Proto.tpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Factory.hpp"
-#include "internal/blockchain/node/Node.hpp"
-#include "opentxs/api/network/Blockchain.hpp"
-#include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"  // IWYU pragma: keep
 
@@ -21,8 +17,6 @@ namespace opentxs::factory
 {
 auto BlockchainNetworkBitcoin(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
-    const api::network::internal::Blockchain& network,
     const blockchain::Type type,
     const blockchain::node::internal::Config& config,
     const std::string& seednode,
@@ -32,26 +26,7 @@ auto BlockchainNetworkBitcoin(
     using ReturnType = blockchain::node::base::Bitcoin;
 
     return std::make_unique<ReturnType>(
-        api, crypto, network, type, config, seednode, syncEndpoint);
-}
-
-auto BlockchainNetworkBitcoin(
-    const api::Session& api,
-    const api::crypto::Blockchain& crypto,
-    const blockchain::Type type,
-    const blockchain::node::internal::Config& config,
-    const std::string& seednode,
-    const std::string& syncEndpoint) noexcept
-    -> std::unique_ptr<blockchain::node::internal::Network>
-{
-    return BlockchainNetworkBitcoin(
-        api,
-        crypto,
-        api.Network().Blockchain().Internal(),
-        type,
-        config,
-        seednode,
-        syncEndpoint);
+        api, type, config, seednode, syncEndpoint);
 }
 }  // namespace opentxs::factory
 
@@ -59,13 +34,11 @@ namespace opentxs::blockchain::node::base
 {
 Bitcoin::Bitcoin(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
-    const api::network::internal::Blockchain& network,
     const Type type,
     const internal::Config& config,
     const std::string& seednode,
     const std::string& syncEndpoint)
-    : ot_super(api, crypto, network, type, config, seednode, syncEndpoint)
+    : ot_super(api, type, config, seednode, syncEndpoint)
 {
     init();
 }

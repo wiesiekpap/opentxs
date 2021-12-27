@@ -22,6 +22,7 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/paymentcode/Preimage.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/protobuf/Check.hpp"
@@ -115,8 +116,8 @@ auto PaymentCode::operator==(const proto::PaymentCode& rhs) const noexcept
 {
     auto lhs = proto::PaymentCode{};
     if (false == Serialize(lhs)) { return false; }
-    const auto LHData = api_.Factory().Data(lhs);
-    const auto RHData = api_.Factory().Data(rhs);
+    const auto LHData = api_.Factory().InternalSession().Data(lhs);
+    const auto RHData = api_.Factory().InternalSession().Data(rhs);
 
     return (LHData == RHData);
 }
@@ -1227,6 +1228,7 @@ auto PaymentCode::Verify(
     signature.CopyFrom(sourceSignature);
     signature.clear_signature();
 
-    return key_->Verify(api_.Factory().Data(copy), sourceSignature);
+    return key_->Verify(
+        api_.Factory().InternalSession().Data(copy), sourceSignature);
 }
 }  // namespace opentxs::implementation

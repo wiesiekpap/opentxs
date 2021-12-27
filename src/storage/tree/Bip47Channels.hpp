@@ -17,8 +17,8 @@
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "serialization/protobuf/StorageBip47Contexts.pb.h"
 #include "storage/tree/Node.hpp"
 

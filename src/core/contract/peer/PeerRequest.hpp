@@ -10,7 +10,6 @@
 #include "core/contract/Signable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/peer/BailmentNotice.hpp"
 #include "opentxs/core/contract/peer/BailmentRequest.hpp"
 #include "opentxs/core/contract/peer/ConnectionRequest.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -73,21 +73,21 @@ public:
     auto asOutbailment() const noexcept -> const request::Outbailment& override;
     auto asStoreSecret() const noexcept -> const request::StoreSecret& override;
 
-    auto Alias() const -> std::string final { return Name(); }
+    auto Alias() const noexcept -> std::string final { return Name(); }
     auto Initiator() const -> const identifier::Nym& final
     {
         return initiator_;
     }
-    auto Name() const -> std::string final { return id_->str(); }
+    auto Name() const noexcept -> std::string final { return id_->str(); }
     auto Recipient() const -> const identifier::Nym& final
     {
         return recipient_;
     }
-    auto Serialize() const -> OTData final;
+    auto Serialize() const noexcept -> OTData final;
     auto Serialize(SerializedType&) const -> bool final;
     auto Server() const -> const identifier::Server& final { return server_; }
     auto Type() const -> PeerRequestType final { return type_; }
-    void SetAlias(const std::string&) final {}
+    auto SetAlias(const std::string&) noexcept -> bool final { return false; }
 
     ~Request() override = default;
 

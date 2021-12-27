@@ -7,7 +7,9 @@
 #include "1_Internal.hpp"                            // IWYU pragma: associated
 #include "opentxs/network/blockchain/sync/Base.hpp"  // IWYU pragma: associated
 
+#include <boost/endian/buffers.hpp>
 #include <robin_hood.h>
+#include <cstdint>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -19,7 +21,11 @@
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"  // IWYU pragma: keep
 #include "opentxs/network/blockchain/sync/Data.hpp"  // IWYU pragma: keep
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
-#include "opentxs/network/blockchain/sync/Query.hpp"    // IWYU pragma: keep
+#include "opentxs/network/blockchain/sync/PublishContract.hpp"  // IWYU pragma: keep
+#include "opentxs/network/blockchain/sync/PublishContractReply.hpp"  // IWYU pragma: keep
+#include "opentxs/network/blockchain/sync/Query.hpp"  // IWYU pragma: keep
+#include "opentxs/network/blockchain/sync/QueryContract.hpp"  // IWYU pragma: keep
+#include "opentxs/network/blockchain/sync/QueryContractReply.hpp"  // IWYU pragma: keep
 #include "opentxs/network/blockchain/sync/Request.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -35,25 +41,34 @@ using RemoteType = Base::Imp::RemoteType;
 using ForwardMap = robin_hood::unordered_flat_map<LocalType, RemoteType>;
 using ReverseMap = robin_hood::unordered_flat_map<RemoteType, LocalType>;
 
-auto map() noexcept -> const ForwardMap&;
-auto map() noexcept -> const ForwardMap&
+auto MessageToWork() noexcept -> const ForwardMap&;
+auto MessageToWork() noexcept -> const ForwardMap&
 {
     static const auto data = ForwardMap{
-        {MessageType::sync_request, WorkType::SyncRequest},
-        {MessageType::sync_ack, WorkType::SyncAcknowledgement},
-        {MessageType::sync_reply, WorkType::SyncReply},
-        {MessageType::new_block_header, WorkType::NewBlock},
-        {MessageType::query, WorkType::SyncQuery},
+        {MessageType::sync_request, WorkType::P2PBlockchainSyncRequest},
+        {MessageType::sync_ack, WorkType::P2PBlockchainSyncAck},
+        {MessageType::sync_reply, WorkType::P2PBlockchainSyncReply},
+        {MessageType::new_block_header, WorkType::P2PBlockchainNewBlock},
+        {MessageType::query, WorkType::P2PBlockchainSyncQuery},
+        {MessageType::publish_contract, WorkType::P2PPublishContract},
+        {MessageType::publish_ack, WorkType::P2PResponse},
+        {MessageType::contract_query, WorkType::P2PQueryContract},
+        {MessageType::contract, WorkType::P2PResponse},
     };
 
     return data;
 }
 
-auto reverse_map() noexcept -> const ReverseMap&;
-auto reverse_map() noexcept -> const ReverseMap&
+auto WorkToMessage() noexcept -> const ReverseMap&;
+auto WorkToMessage() noexcept -> const ReverseMap&
 {
-    static const auto data =
-        reverse_arbitrary_map<LocalType, RemoteType, ReverseMap>(map());
+    static const auto data = [] {
+        auto out = reverse_arbitrary_map<LocalType, RemoteType, ReverseMap>(
+            MessageToWork());
+        out.erase(WorkType::P2PResponse);
+
+        return out;
+    }();
 
     return data;
 }
@@ -110,9 +125,39 @@ auto Base::Imp::asData() const noexcept -> const Data&
     return blank;
 }
 
+auto Base::Imp::asPublishContract() const noexcept -> const PublishContract&
+{
+    static const auto blank = factory::BlockchainSyncPublishContract();
+
+    return blank;
+}
+
+auto Base::Imp::asPublishContractReply() const noexcept
+    -> const PublishContractReply&
+{
+    static const auto blank = factory::BlockchainSyncPublishContractReply();
+
+    return blank;
+}
+
 auto Base::Imp::asQuery() const noexcept -> const Query&
 {
     static const auto blank = factory::BlockchainSyncQuery();
+
+    return blank;
+}
+
+auto Base::Imp::asQueryContract() const noexcept -> const QueryContract&
+{
+    static const auto blank = factory::BlockchainSyncQueryContract();
+
+    return blank;
+}
+
+auto Base::Imp::asQueryContractReply() const noexcept
+    -> const QueryContractReply&
+{
+    static const auto blank = factory::BlockchainSyncQueryContractReply();
 
     return blank;
 }
@@ -182,19 +227,23 @@ auto Base::Imp::serialize_type(zeromq::Message& out) const noexcept -> bool
         return false;
     }
 
-    out.AddFrame(translate(type_));
+    using Buffer = boost::endian::little_uint16_buf_t;
+
+    static_assert(sizeof(Buffer) == sizeof(decltype(translate(type_))));
+
+    out.AddFrame(Buffer{static_cast<std::uint16_t>(translate(type_))});
 
     return true;
 }
 
 auto Base::Imp::translate(const LocalType in) noexcept -> RemoteType
 {
-    return map().at(in);
+    return MessageToWork().at(in);
 }
 
 auto Base::Imp::translate(const RemoteType in) noexcept -> LocalType
 {
-    return reverse_map().at(in);
+    return WorkToMessage().at(in);
 }
 
 auto Base::asAcknowledgement() const noexcept -> const Acknowledgement&
@@ -204,7 +253,28 @@ auto Base::asAcknowledgement() const noexcept -> const Acknowledgement&
 
 auto Base::asData() const noexcept -> const Data& { return imp_->asData(); }
 
+auto Base::asPublishContract() const noexcept -> const PublishContract&
+{
+    return imp_->asPublishContract();
+}
+
+auto Base::asPublishContractReply() const noexcept
+    -> const PublishContractReply&
+{
+    return imp_->asPublishContractReply();
+}
+
 auto Base::asQuery() const noexcept -> const Query& { return imp_->asQuery(); }
+
+auto Base::asQueryContract() const noexcept -> const QueryContract&
+{
+    return imp_->asQueryContract();
+}
+
+auto Base::asQueryContractReply() const noexcept -> const QueryContractReply&
+{
+    return imp_->asQueryContractReply();
+}
 
 auto Base::asRequest() const noexcept -> const Request&
 {

@@ -53,7 +53,7 @@ struct Account::Factory<crypto::HD, proto::HDAccount> {
 template <>
 struct Account::Factory<
     crypto::PaymentCode,
-    api::client::Contacts,
+    api::session::Contacts,
     opentxs::PaymentCode,
     opentxs::PaymentCode,
     proto::HDPath,
@@ -62,7 +62,7 @@ struct Account::Factory<
         const api::Session& api,
         const Account& parent,
         Identifier& id,
-        const api::client::Contacts& contacts,
+        const api::session::Contacts& contacts,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
@@ -78,7 +78,7 @@ struct Account::Factory<
 template <>
 struct Account::Factory<
     crypto::PaymentCode,
-    api::client::Contacts,
+    api::session::Contacts,
     opentxs::PaymentCode,
     opentxs::PaymentCode,
     proto::HDPath,
@@ -88,7 +88,7 @@ struct Account::Factory<
         const api::Session& api,
         const Account& parent,
         Identifier& id,
-        const api::client::Contacts& contacts,
+        const api::session::Contacts& contacts,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
@@ -102,12 +102,12 @@ struct Account::Factory<
 };
 template <>
 struct Account::
-    Factory<crypto::PaymentCode, api::client::Contacts, proto::Bip47Channel> {
+    Factory<crypto::PaymentCode, api::session::Contacts, proto::Bip47Channel> {
     static auto get(
         const api::Session& api,
         const Account& parent,
         Identifier& id,
-        const api::client::Contacts& contacts,
+        const api::session::Contacts& contacts,
         const proto::Bip47Channel& data) noexcept
         -> std::unique_ptr<crypto::PaymentCode>
     {

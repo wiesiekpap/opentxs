@@ -38,16 +38,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace network
-{
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-
-class Blockchain;
-}  // namespace network
-
 class Session;
 }  // namespace api
 
@@ -122,7 +112,6 @@ public:
 
     BlockOracle(
         const api::Session& api,
-        const api::network::internal::Blockchain& network,
         const internal::Network& node,
         const HeaderOracle& header,
         const internal::BlockDatabase& db,

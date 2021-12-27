@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/util/Bytes.hpp"

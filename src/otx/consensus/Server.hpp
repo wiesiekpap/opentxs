@@ -27,10 +27,10 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/OTTransaction.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -58,11 +58,6 @@ class Client;
 class Session;
 }  // namespace api
 
-namespace blind
-{
-class Purse;
-}  // namespace blind
-
 namespace identifier
 {
 class Nym;
@@ -88,6 +83,11 @@ class Publish;
 
 namespace otx
 {
+namespace blind
+{
+class Purse;
+}  // namespace blind
+
 class Reply;
 }  // namespace otx
 
@@ -126,10 +126,8 @@ public:
     auto HaveSufficientNumbers(const MessageType reason) const -> bool final;
     auto Highest() const -> TransactionNumber final;
     auto isAdmin() const -> bool final;
-#if OT_CASH
     auto Purse(const identifier::UnitDefinition& id) const
-        -> std::shared_ptr<const blind::Purse> final;
-#endif
+        -> const otx::blind::Purse& final;
     auto Revision() const -> std::uint64_t final;
     auto ShouldRename(const std::string& defaultName = "") const -> bool final;
     auto StaleNym() const -> bool final;
@@ -182,11 +180,10 @@ public:
         const bool withNymboxHash = false)
         -> std::pair<RequestNumber, std::unique_ptr<Message>> final;
     void Join() const final;
-#if OT_CASH
     auto mutable_Purse(
         const identifier::UnitDefinition& id,
-        const PasswordPrompt& reason) -> Editor<blind::Purse> final;
-#endif
+        const PasswordPrompt& reason)
+        -> Editor<blind::Purse, std::shared_mutex> final;
     auto NextTransactionNumber(const MessageType reason)
         -> OTManagedNumber final;
     auto PingNotary(const PasswordPrompt& reason) -> NetworkReplyMessage final;
@@ -417,7 +414,6 @@ private:
         const Identifier& accountID,
         const Item& acceptItemReceipt,
         const Message& reply) const;
-#if OT_CASH
     auto process_incoming_cash(
         const Lock& lock,
         const api::session::Client& client,
@@ -427,7 +423,6 @@ private:
     void process_incoming_cash_withdrawal(
         const Item& item,
         const PasswordPrompt& reason) const;
-#endif
     void process_incoming_instrument(
         const std::shared_ptr<OTTransaction> receipt,
         const PasswordPrompt& reason) const;
@@ -574,10 +569,8 @@ private:
     auto process_get_market_recent_trades_response(
         const Lock& lock,
         const Message& reply) -> bool;
-#if OT_CASH
     auto process_get_mint_response(const Lock& lock, const Message& reply)
         -> bool;
-#endif
     auto process_get_nym_market_offers_response(
         const Lock& lock,
         const Message& reply) -> bool;
@@ -648,11 +641,9 @@ private:
         const Message& reply,
         const itemType type,
         OTTransaction& response);
-#if OT_CASH
     void process_response_transaction_cash_deposit(
         Item& replyItem,
         const PasswordPrompt& reason);
-#endif
     void process_response_transaction_cheque_deposit(
         const api::session::Client& client,
         const Identifier& accountID,
@@ -688,7 +679,6 @@ private:
         const Message& reply,
         const itemType type,
         OTTransaction& response);
-#if OT_CASH
     void process_response_transaction_withdrawal(
         const Lock& lock,
         const api::session::Client& client,
@@ -696,7 +686,6 @@ private:
         const itemType type,
         OTTransaction& response,
         const PasswordPrompt& reason);
-#endif
     auto process_unregister_nym_response(
         const Lock& lock,
         const Message& reply,

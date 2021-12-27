@@ -34,9 +34,9 @@ namespace opentxs::api::network::blockchain
 struct SyncClient {
     enum class Task : OTZMQWorkType {
         Shutdown = value(WorkType::Shutdown),
-        Ack = value(WorkType::SyncAcknowledgement),
-        Reply = value(WorkType::SyncReply),
-        Push = value(WorkType::NewBlock),
+        Ack = value(WorkType::P2PBlockchainSyncAck),
+        Reply = value(WorkType::P2PBlockchainSyncReply),
+        Push = value(WorkType::P2PBlockchainNewBlock),
         Server = value(WorkType::SyncServerUpdated),
         Register = OT_ZMQ_INTERNAL_SIGNAL + 0,
         Request = OT_ZMQ_INTERNAL_SIGNAL + 1,

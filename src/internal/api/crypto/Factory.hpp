@@ -9,12 +9,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Activity;
-class Contacts;
-}  // namespace client
-
 namespace crypto
 {
 class Asymmetric;
@@ -28,6 +22,8 @@ class Symmetric;
 
 namespace session
 {
+class Activity;
+class Contacts;
 class Factory;
 class Storage;
 }  // namespace session
@@ -57,8 +53,8 @@ auto AsymmetricAPI(const api::Session& api) noexcept
     -> std::unique_ptr<api::crypto::Asymmetric>;
 auto BlockchainAPI(
     const api::Session& api,
-    const api::client::Activity& activity,
-    const api::client::Contacts& contacts,
+    const api::session::Activity& activity,
+    const api::session::Contacts& contacts,
     const api::Legacy& legacy,
     const std::string& dataFolder,
     const Options& args) noexcept -> std::shared_ptr<api::crypto::Blockchain>;

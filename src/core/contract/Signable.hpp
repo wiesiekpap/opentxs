@@ -10,8 +10,8 @@
 #include <string>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/Signable.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -34,14 +34,14 @@ namespace opentxs::contract::implementation
 class Signable : virtual public opentxs::contract::Signable
 {
 public:
-    auto Alias() const -> std::string override;
-    auto ID() const -> OTIdentifier override;
-    auto Nym() const -> Nym_p override;
-    auto Terms() const -> const std::string& override;
-    auto Validate() const -> bool override;
-    auto Version() const -> VersionNumber override;
+    auto Alias() const noexcept -> std::string override;
+    auto ID() const noexcept -> OTIdentifier override;
+    auto Nym() const noexcept -> Nym_p override;
+    auto Terms() const noexcept -> const std::string& override;
+    auto Validate() const noexcept -> bool override;
+    auto Version() const noexcept -> VersionNumber override;
 
-    auto SetAlias(const std::string& alias) -> void override;
+    auto SetAlias(const std::string& alias) noexcept -> bool override;
 
     ~Signable() override = default;
 
@@ -89,6 +89,14 @@ protected:
         const std::string& conditions,
         const std::string& alias,
         OTIdentifier&& id,
+        Signatures&& signatures) noexcept;
+    Signable(
+        const api::Session& api,
+        const Nym_p& nym,
+        const VersionNumber version,
+        const std::string& conditions,
+        const std::string& alias,
+        const Identifier& id,
         Signatures&& signatures) noexcept;
     Signable(const Signable&) noexcept;
     Signable(Signable&&) = delete;

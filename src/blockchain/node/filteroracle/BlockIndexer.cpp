@@ -17,7 +17,7 @@
 
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/DownloadTask.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"

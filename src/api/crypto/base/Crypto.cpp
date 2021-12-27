@@ -39,13 +39,13 @@ namespace opentxs::factory
 auto CryptoAPI(const api::Settings& settings) noexcept
     -> std::unique_ptr<api::Crypto>
 {
-    using ReturnType = api::implementation::Crypto;
+    using ReturnType = api::imp::Crypto;
 
     return std::make_unique<ReturnType>(settings);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 const opentxs::crypto::blank::EcdsaProvider Crypto::blank_{};
 
@@ -275,4 +275,4 @@ auto Crypto::SymmetricProvider(opentxs::crypto::key::symmetric::Source type)
 auto Crypto::Util() const noexcept -> const crypto::Util& { return util_; }
 
 Crypto::~Crypto() { Cleanup(); }
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

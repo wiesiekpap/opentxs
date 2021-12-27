@@ -14,20 +14,19 @@
 #include <vector>
 
 #include "Proto.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/session/Types.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/PaymentWorkflowType.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/api/session/Crypto.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -72,8 +71,8 @@ auto BalanceItem(
             accountID,
             ui::implementation::extract_custom<blockchain::Type>(custom, 3),
             ui::implementation::extract_custom<OTData>(custom, 5),
-            tx.NetBalanceChange(api.Crypto().Blockchain(), nymID),
-            tx.Memo(api.Crypto().Blockchain()),
+            tx.NetBalanceChange(nymID),
+            tx.Memo(),
             ui::implementation::extract_custom<std::string>(custom, 4));
     }
 #endif  // OT_BLOCKCHAIN
@@ -82,20 +81,20 @@ auto BalanceItem(
         ui::implementation::BalanceItem::recover_workflow(custom).type();
 
     switch (translate(type)) {
-        case api::client::PaymentWorkflowType::OutgoingCheque:
-        case api::client::PaymentWorkflowType::IncomingCheque:
-        case api::client::PaymentWorkflowType::OutgoingInvoice:
-        case api::client::PaymentWorkflowType::IncomingInvoice: {
+        case otx::client::PaymentWorkflowType::OutgoingCheque:
+        case otx::client::PaymentWorkflowType::IncomingCheque:
+        case otx::client::PaymentWorkflowType::OutgoingInvoice:
+        case otx::client::PaymentWorkflowType::IncomingInvoice: {
             return std::make_shared<ui::implementation::ChequeBalanceItem>(
                 parent, api, rowID, sortKey, custom, nymID, accountID);
         }
-        case api::client::PaymentWorkflowType::OutgoingTransfer:
-        case api::client::PaymentWorkflowType::IncomingTransfer:
-        case api::client::PaymentWorkflowType::InternalTransfer: {
+        case otx::client::PaymentWorkflowType::OutgoingTransfer:
+        case otx::client::PaymentWorkflowType::IncomingTransfer:
+        case otx::client::PaymentWorkflowType::InternalTransfer: {
             return std::make_shared<ui::implementation::TransferBalanceItem>(
                 parent, api, rowID, sortKey, custom, nymID, accountID);
         }
-        case api::client::PaymentWorkflowType::Error:
+        case otx::client::PaymentWorkflowType::Error:
         default: {
             LogError()("opentxs::factory::")(__func__)(
                 "Unhandled workflow type (")(type)(")")
@@ -162,29 +161,29 @@ auto BalanceItem::extract_type(const proto::PaymentWorkflow& workflow) noexcept
     -> StorageBox
 {
     switch (translate(workflow.type())) {
-        case api::client::PaymentWorkflowType::OutgoingCheque: {
+        case otx::client::PaymentWorkflowType::OutgoingCheque: {
 
             return StorageBox::OUTGOINGCHEQUE;
         }
-        case api::client::PaymentWorkflowType::IncomingCheque: {
+        case otx::client::PaymentWorkflowType::IncomingCheque: {
 
             return StorageBox::INCOMINGCHEQUE;
         }
-        case api::client::PaymentWorkflowType::OutgoingTransfer: {
+        case otx::client::PaymentWorkflowType::OutgoingTransfer: {
 
             return StorageBox::OUTGOINGTRANSFER;
         }
-        case api::client::PaymentWorkflowType::IncomingTransfer: {
+        case otx::client::PaymentWorkflowType::IncomingTransfer: {
 
             return StorageBox::INCOMINGTRANSFER;
         }
-        case api::client::PaymentWorkflowType::InternalTransfer: {
+        case otx::client::PaymentWorkflowType::InternalTransfer: {
 
             return StorageBox::INTERNALTRANSFER;
         }
-        case api::client::PaymentWorkflowType::Error:
-        case api::client::PaymentWorkflowType::OutgoingInvoice:
-        case api::client::PaymentWorkflowType::IncomingInvoice:
+        case otx::client::PaymentWorkflowType::Error:
+        case otx::client::PaymentWorkflowType::OutgoingInvoice:
+        case otx::client::PaymentWorkflowType::IncomingInvoice:
         default: {
 
             return StorageBox::UNKNOWN;

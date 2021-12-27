@@ -20,13 +20,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-class Context;
-}  // namespace api
-
-class OTCaller;
-
 api::internal::Context* instance_pointer_{nullptr};
 OTFlag running_{Flag::Factory(true)};
 

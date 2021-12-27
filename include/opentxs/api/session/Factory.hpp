@@ -3,6 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/otx/blind/CashType.hpp"
+
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -11,7 +13,6 @@
 #include <string>
 
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/blind/CashType.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/Types.hpp"
@@ -19,7 +20,6 @@
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
@@ -41,6 +41,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -51,15 +52,8 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"      // TODO remove
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"  // TODO remove
+#include "opentxs/otx/blind/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
-
-namespace google
-{
-namespace protobuf
-{
-class MessageLite;
-}  // namespace protobuf
-}  // namespace google
 
 namespace opentxs
 {
@@ -75,11 +69,6 @@ class Factory;
 
 class Session;
 }  // namespace api
-
-namespace blind
-{
-class Mint;
-}  // namespace blind
 
 namespace blockchain
 {
@@ -134,6 +123,12 @@ class Pipeline;
 
 namespace otx
 {
+namespace blind
+{
+class Mint;
+class Purse;
+}  // namespace blind
+
 namespace context
 {
 class Server;
@@ -174,11 +169,7 @@ class Secret;
 class PaymentCode;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace session
+namespace opentxs::api::session
 {
 class OPENTXS_EXPORT Factory : virtual public api::Factory
 {
@@ -189,11 +180,6 @@ public:
     virtual auto Armored(const opentxs::String& input) const -> OTArmored = 0;
     virtual auto Armored(const opentxs::crypto::Envelope& input) const
         -> OTArmored = 0;
-    OPENTXS_NO_EXPORT virtual auto Armored(
-        const google::protobuf::MessageLite& input) const -> OTArmored = 0;
-    OPENTXS_NO_EXPORT virtual auto Armored(
-        const google::protobuf::MessageLite& input,
-        const std::string& header) const -> OTString = 0;
     virtual auto AsymmetricKey(
         const opentxs::crypto::Parameters& params,
         const opentxs::PasswordPrompt& reason,
@@ -421,8 +407,6 @@ public:
         -> OTCurrencyContract = 0;
     virtual auto Data() const -> OTData = 0;
     virtual auto Data(const opentxs::Armored& input) const -> OTData = 0;
-    OPENTXS_NO_EXPORT virtual auto Data(
-        const google::protobuf::MessageLite& input) const -> OTData = 0;
     virtual auto Data(const opentxs::network::zeromq::Frame& input) const
         -> OTData = 0;
     virtual auto Data(const std::uint8_t input) const -> OTData = 0;
@@ -453,8 +437,6 @@ public:
     virtual auto Identifier(const ReadView bytes) const -> OTIdentifier = 0;
     virtual auto Identifier(const opentxs::network::zeromq::Frame& bytes) const
         -> OTIdentifier = 0;
-    OPENTXS_NO_EXPORT virtual auto Identifier(
-        const google::protobuf::MessageLite& proto) const -> OTIdentifier = 0;
     OPENTXS_NO_EXPORT virtual auto InternalSession() const noexcept
         -> const internal::Factory& = 0;
     virtual auto Item(const String& serialized) const
@@ -527,18 +509,29 @@ public:
         const identifier::UnitDefinition& CURRENCY_TYPE_ID,
         const Amount& lScale) const -> std::unique_ptr<OTMarket> = 0;
     virtual auto Message() const -> std::unique_ptr<opentxs::Message> = 0;
-#if OT_CASH
-    virtual auto Mint() const -> std::unique_ptr<blind::Mint> = 0;
+    virtual auto Mint() const noexcept -> otx::blind::Mint = 0;
+    virtual auto Mint(const otx::blind::CashType type) const noexcept
+        -> otx::blind::Mint = 0;
     virtual auto Mint(
         const identifier::Server& notary,
-        const identifier::UnitDefinition& unit) const
-        -> std::unique_ptr<blind::Mint> = 0;
+        const identifier::UnitDefinition& unit) const noexcept
+        -> otx::blind::Mint = 0;
+    virtual auto Mint(
+        const otx::blind::CashType type,
+        const identifier::Server& notary,
+        const identifier::UnitDefinition& unit) const noexcept
+        -> otx::blind::Mint = 0;
     virtual auto Mint(
         const identifier::Server& notary,
         const identifier::Nym& serverNym,
-        const identifier::UnitDefinition& unit) const
-        -> std::unique_ptr<blind::Mint> = 0;
-#endif
+        const identifier::UnitDefinition& unit) const noexcept
+        -> otx::blind::Mint = 0;
+    virtual auto Mint(
+        const otx::blind::CashType type,
+        const identifier::Server& notary,
+        const identifier::Nym& serverNym,
+        const identifier::UnitDefinition& unit) const noexcept
+        -> otx::blind::Mint = 0;
     virtual auto NymID() const -> OTNymID = 0;
     virtual auto NymID(const std::string& serialized) const -> OTNymID = 0;
     virtual auto NymID(const opentxs::String& serialized) const -> OTNymID = 0;
@@ -627,12 +620,8 @@ public:
         const Nym_p& senderNym,
         const std::string& payment,
         const bool isPayment) const -> std::unique_ptr<opentxs::PeerObject> = 0;
-#if OT_CASH
-    virtual auto PeerObject(
-        const Nym_p& senderNym,
-        const std::shared_ptr<blind::Purse> purse) const
-        -> std::unique_ptr<opentxs::PeerObject> = 0;
-#endif
+    virtual auto PeerObject(const Nym_p& senderNym, otx::blind::Purse&& purse)
+        const -> std::unique_ptr<opentxs::PeerObject> = 0;
     virtual auto PeerObject(
         const OTPeerRequest request,
         const OTPeerReply reply,
@@ -668,25 +657,36 @@ public:
     virtual auto Pipeline(
         std::function<void(opentxs::network::zeromq::Message&&)> callback) const
         -> opentxs::network::zeromq::Pipeline = 0;
-#if OT_CASH
     virtual auto Purse(
         const otx::context::Server& context,
         const identifier::UnitDefinition& unit,
-        const blind::Mint& mint,
+        const otx::blind::Mint& mint,
         const Amount& totalValue,
-        const opentxs::PasswordPrompt& reason,
-        const blind::CashType type = blind::CashType::Lucre) const
-        -> std::unique_ptr<blind::Purse> = 0;
-    OPENTXS_NO_EXPORT virtual auto Purse(const proto::Purse& serialized) const
-        -> std::unique_ptr<blind::Purse> = 0;
+        const opentxs::PasswordPrompt& reason) const noexcept
+        -> otx::blind::Purse = 0;
+    virtual auto Purse(
+        const otx::context::Server& context,
+        const identifier::UnitDefinition& unit,
+        const otx::blind::Mint& mint,
+        const Amount& totalValue,
+        const otx::blind::CashType type,
+        const opentxs::PasswordPrompt& reason) const noexcept
+        -> otx::blind::Purse = 0;
+    OPENTXS_NO_EXPORT virtual auto Purse(
+        const proto::Purse& serialized) const noexcept -> otx::blind::Purse = 0;
     virtual auto Purse(
         const identity::Nym& owner,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
-        const opentxs::PasswordPrompt& reason,
-        const blind::CashType type = blind::CashType::Lucre) const
-        -> std::unique_ptr<blind::Purse> = 0;
-#endif  // OT_CASH
+        const opentxs::PasswordPrompt& reason) const noexcept
+        -> otx::blind::Purse = 0;
+    virtual auto Purse(
+        const identity::Nym& owner,
+        const identifier::Server& server,
+        const identifier::UnitDefinition& unit,
+        const otx::blind::CashType type,
+        const opentxs::PasswordPrompt& reason) const noexcept
+        -> otx::blind::Purse = 0;
     virtual auto ReplyAcknowledgement(
         const Nym_p& nym,
         const identifier::Nym& initiator,
@@ -900,6 +900,4 @@ private:
     auto operator=(const Factory&) -> Factory& = delete;
     auto operator=(Factory&&) -> Factory& = delete;
 };
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::session

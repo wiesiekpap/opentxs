@@ -13,8 +13,8 @@
 #include "internal/identity/credential/Credential.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/Signable.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
@@ -90,7 +90,7 @@ public:
     auto SelfSignature(CredentialModeFlag version = PUBLIC_VERSION) const
         -> Signature final;
     using Signable::Serialize;
-    auto Serialize() const -> OTData final;
+    auto Serialize() const noexcept -> OTData final;
     auto Serialize(
         SerializedType& serialized,
         const SerializationModeFlag asPrivate,
@@ -101,7 +101,7 @@ public:
         Secret& privateKey,
         const PasswordPrompt& reason) const -> bool override;
     auto Type() const -> identity::CredentialType final { return type_; }
-    auto Validate() const -> bool final;
+    auto Validate() const noexcept -> bool final;
     auto Verify(
         const Data& plaintext,
         const proto::Signature& sig,
@@ -177,7 +177,7 @@ private:
     // Returns the serialized form to prevent unnecessary serializations
     auto isValid(const Lock& lock, std::shared_ptr<SerializedType>& credential)
         const -> bool;
-    auto Name() const -> std::string final { return id_->str(); }
+    auto Name() const noexcept -> std::string final { return id_->str(); }
     auto verify_master_signature(const Lock& lock) const -> bool;
 
     void add_master_signature(

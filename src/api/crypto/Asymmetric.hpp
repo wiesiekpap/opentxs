@@ -61,7 +61,7 @@ class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 class Asymmetric final : virtual public api::crypto::internal::Asymmetric
 {
@@ -258,4 +258,4 @@ private:
     auto operator=(const Asymmetric&) -> Asymmetric& = delete;
     auto operator=(Asymmetric&&) -> Asymmetric& = delete;
 };
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

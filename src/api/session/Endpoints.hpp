@@ -36,7 +36,7 @@ class Context;
 }  // namespace network
 }  // namespace opentxs
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 class Endpoints final : public internal::Endpoints
 {
@@ -114,4 +114,4 @@ private:
     auto operator=(const Endpoints&) -> Endpoints& = delete;
     auto operator=(Endpoints&&) -> Endpoints& = delete;
 };
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

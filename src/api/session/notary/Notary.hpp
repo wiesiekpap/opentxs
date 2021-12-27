@@ -25,7 +25,7 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
-#include "server/Server.hpp"
+#include "otx/server/Server.hpp"
 
 namespace opentxs
 {
@@ -35,11 +35,6 @@ class Context;
 class Crypto;
 class Settings;
 }  // namespace api
-
-namespace blind
-{
-class Mint;
-}  // namespace blind
 
 namespace identifier
 {
@@ -56,6 +51,14 @@ class Context;
 }  // namespace zeromq
 }  // namespace network
 
+namespace otx
+{
+namespace blind
+{
+class Mint;
+}  // namespace blind
+}  // namespace otx
+
 namespace server
 {
 class MessageProcessor;
@@ -66,7 +69,7 @@ class Flag;
 class Options;
 }  // namespace opentxs
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 class Notary final : public session::internal::Notary, public Session
 {
@@ -75,13 +78,11 @@ public:
     auto DropOutgoing(const int count) const -> void final;
     auto GetAdminNym() const -> std::string final;
     auto GetAdminPassword() const -> std::string final;
-#if OT_CASH
     auto GetPrivateMint(
         const identifier::UnitDefinition& unitID,
-        std::uint32_t series) const -> std::shared_ptr<blind::Mint> final;
-    auto GetPublicMint(const identifier::UnitDefinition& unitID) const
-        -> std::shared_ptr<const blind::Mint> final;
-#endif  // OT_CASH
+        std::uint32_t series) const noexcept -> otx::blind::Mint& final;
+    auto GetPublicMint(const identifier::UnitDefinition& unitID) const noexcept
+        -> otx::blind::Mint& final;
     auto GetUserName() const -> std::string final;
     auto GetUserTerms() const -> std::string final;
     auto ID() const -> const identifier::Server& final;
@@ -91,9 +92,7 @@ public:
     auto Server() const -> opentxs::server::Server& final { return server_; }
     auto SetMintKeySize(const std::size_t size) const -> void final
     {
-#if OT_CASH
         mint_key_size_.store(size);
-#endif  // OT_CASH
     }
     auto UpdateMint(const identifier::UnitDefinition& unitID) const
         -> void final;
@@ -113,16 +112,13 @@ public:
     ~Notary() final;
 
 private:
-#if OT_CASH
-    using MintSeries = std::map<std::string, std::shared_ptr<blind::Mint>>;
-#endif  // OT_CASH
+    using MintSeries = std::map<std::string, otx::blind::Mint>;
 
     const OTPasswordPrompt reason_;
     std::unique_ptr<opentxs::server::Server> server_p_;
     opentxs::server::Server& server_;
     std::unique_ptr<opentxs::server::MessageProcessor> message_processor_p_;
     opentxs::server::MessageProcessor& message_processor_;
-#if OT_CASH
     std::thread mint_thread_;
     mutable std::mutex mint_lock_;
     mutable std::mutex mint_update_lock_;
@@ -130,40 +126,34 @@ private:
     mutable std::map<std::string, MintSeries> mints_;
     mutable std::deque<std::string> mints_to_check_;
     mutable std::atomic<std::size_t> mint_key_size_;
-#endif  // OT_CASH
 
-#if OT_CASH
-    void generate_mint(
+    auto generate_mint(
         const std::string& serverID,
         const std::string& unitID,
-        const std::uint32_t series) const;
+        const std::uint32_t series) const -> void;
     auto last_generated_series(
         const std::string& serverID,
         const std::string& unitID) const -> std::int32_t;
     auto load_private_mint(
         const opentxs::Lock& lock,
         const std::string& unitID,
-        const std::string seriesID) const -> std::shared_ptr<blind::Mint>;
+        const std::string seriesID) const -> otx::blind::Mint;
     auto load_public_mint(
         const opentxs::Lock& lock,
         const std::string& unitID,
-        const std::string seriesID) const -> std::shared_ptr<blind::Mint>;
-    void mint() const;
-#endif  // OT_CASH
+        const std::string seriesID) const -> otx::blind::Mint;
+    auto mint() const -> void;
     auto verify_lock(const opentxs::Lock& lock, const std::mutex& mutex) const
         -> bool;
-#if OT_CASH
     auto verify_mint(
         const opentxs::Lock& lock,
         const std::string& unitID,
         const std::string seriesID,
-        std::shared_ptr<blind::Mint>& mint) const
-        -> std::shared_ptr<blind::Mint>;
+        otx::blind::Mint&& mint) const -> otx::blind::Mint;
     auto verify_mint_directory(const std::string& serverID) const -> bool;
-#endif  // OT_CASH
 
-    void Cleanup();
-    void Start() final;
+    auto Cleanup() -> void;
+    auto Start() -> void final;
 
     Notary() = delete;
     Notary(const Notary&) = delete;
@@ -171,4 +161,4 @@ private:
     auto operator=(const Notary&) -> Notary& = delete;
     auto operator=(Notary&&) -> Notary& = delete;
 };
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

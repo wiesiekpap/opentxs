@@ -17,9 +17,6 @@
 #include "internal/api/FactoryAPI.hpp"
 #include "internal/api/crypto/Asymmetric.hpp"
 #include "internal/api/crypto/Factory.hpp"
-#if OT_CASH
-#include "internal/blind/Factory.hpp"
-#endif  // OT_CASH
 #if OT_BLOCKCHAIN
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -27,11 +24,14 @@
 #include "internal/core/Factory.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/core/identifier/Factory.hpp"
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
 #include "internal/network/blockchain/sync/Factory.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"
+#include "internal/otx/blind/Factory.hpp"
+#include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
@@ -47,10 +47,6 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
-#if OT_CASH
-#include "opentxs/blind/Mint.hpp"
-#include "opentxs/blind/Purse.hpp"
-#endif  // OT_CASH
 #include "opentxs/blockchain/Types.hpp"
 #if OT_BLOCKCHAIN
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
@@ -58,7 +54,6 @@
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Message.hpp"
@@ -87,8 +82,10 @@
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/cron/OTCronItem.hpp"
 #include "opentxs/core/crypto/OTSignedFile.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Type.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/recurring/OTPaymentPlan.hpp"
 #include "opentxs/core/script/OTScriptable.hpp"
@@ -107,6 +104,9 @@
 #include "opentxs/network/blockchain/sync/Base.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/otx/blind/CashType.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
@@ -121,7 +121,7 @@
 #include "serialization/protobuf/UnitDefinition.pb.h"
 #include "util/HDIndex.hpp"
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 Factory::Factory(const api::Session& api)
     : api::internal::Factory()
@@ -787,11 +787,9 @@ auto Factory::Contract(const opentxs::String& strInput) const
             pContract.reset(new opentxs::Message(api_));
             OT_ASSERT(false != bool(pContract));
         } else if (strFirstLine->Contains("-----BEGIN SIGNED MINT-----")) {
-#if OT_CASH
             auto mint = Mint();
-            pContract.reset(mint.release());
+            pContract.reset(mint.Release());
             OT_ASSERT(false != bool(pContract));
-#endif  // OT_CASH
         } else if (strFirstLine->Contains("-----BEGIN SIGNED FILE-----")) {
             OT_ASSERT(false != bool(pContract));
         }
@@ -1061,6 +1059,12 @@ auto Factory::Identifier(const opentxs::network::zeromq::Frame& bytes) const
     out->Assign(bytes.data(), bytes.size());
 
     return out;
+}
+
+auto Factory::Identifier(const proto::Identifier& in) const noexcept
+    -> OTIdentifier
+{
+    return factory::IdentifierGeneric(in);
 }
 
 auto Factory::instantiate_secp256k1(
@@ -1464,69 +1468,84 @@ auto Factory::Message() const -> std::unique_ptr<opentxs::Message>
     return message;
 }
 
-#if OT_CASH
-auto Factory::Mint() const -> std::unique_ptr<blind::Mint>
+auto Factory::Mint(const otx::blind::CashType type) const noexcept
+    -> otx::blind::Mint
 {
-    std::unique_ptr<blind::Mint> pMint;
+    switch (type) {
+        case otx::blind::CashType::Lucre: {
 
-#if OT_CASH_USING_LUCRE
-    pMint.reset(factory::MintLucre(api_));
+            return factory::MintLucre(api_);
+        }
+        default: {
+            LogError()(OT_PRETTY_CLASS())("unsupported cash type: ")(
+                opentxs::print(type))
+                .Flush();
 
-    OT_ASSERT(false != bool(pMint));
+            return otx::blind::Mint{api_};
+        }
+    }
+}
 
-#else
-    LogError()(OT_PRETTY_CLASS())(
-        "Open-Transactions isn't built with any digital cash algorithms, "
-        "so it's impossible to instantiate a mint.")
-        .Flush();
-#endif
+auto Factory::Mint() const noexcept -> otx::blind::Mint
+{
+    return Mint(otx::blind::CashType::Lucre);
+}
 
-    return pMint;
+auto Factory::Mint(
+    const otx::blind::CashType type,
+    const identifier::Server& notary,
+    const identifier::UnitDefinition& unit) const noexcept -> otx::blind::Mint
+{
+    switch (type) {
+        case otx::blind::CashType::Lucre: {
+
+            return factory::MintLucre(api_, notary, unit);
+        }
+        default: {
+            LogError()(OT_PRETTY_CLASS())("unsupported cash type: ")(
+                opentxs::print(type))
+                .Flush();
+
+            return otx::blind::Mint{api_};
+        }
+    }
 }
 
 auto Factory::Mint(
     const identifier::Server& notary,
-    const identifier::UnitDefinition& unit) const
-    -> std::unique_ptr<blind::Mint>
+    const identifier::UnitDefinition& unit) const noexcept -> otx::blind::Mint
 {
-    std::unique_ptr<blind::Mint> pMint;
+    return Mint(otx::blind::CashType::Lucre, notary, unit);
+}
 
-#if OT_CASH_USING_LUCRE
-    pMint.reset(factory::MintLucre(api_, notary, unit));
+auto Factory::Mint(
+    const otx::blind::CashType type,
+    const identifier::Server& notary,
+    const identifier::Nym& serverNym,
+    const identifier::UnitDefinition& unit) const noexcept -> otx::blind::Mint
+{
+    switch (type) {
+        case otx::blind::CashType::Lucre: {
 
-    OT_ASSERT(false != bool(pMint));
-#else
-    LogError()(OT_PRETTY_CLASS())(
-        "Open-Transactions isn't built with any digital cash algorithms, "
-        "so it's impossible to instantiate a mint.")
-        .Flush();
-#endif
+            return factory::MintLucre(api_, notary, serverNym, unit);
+        }
+        default: {
+            LogError()(OT_PRETTY_CLASS())("unsupported cash type: ")(
+                opentxs::print(type))
+                .Flush();
 
-    return pMint;
+            return otx::blind::Mint{api_};
+        }
+    }
 }
 
 auto Factory::Mint(
     const identifier::Server& notary,
     const identifier::Nym& serverNym,
-    const identifier::UnitDefinition& unit) const
-    -> std::unique_ptr<blind::Mint>
+    const identifier::UnitDefinition& unit) const noexcept -> otx::blind::Mint
 {
-    std::unique_ptr<blind::Mint> pMint;
-
-#if OT_CASH_USING_LUCRE
-    pMint.reset(factory::MintLucre(api_, notary, serverNym, unit));
-
-    OT_ASSERT(false != bool(pMint));
-#else
-    LogError()(OT_PRETTY_CLASS())(
-        "Open-Transactions isn't built with any digital cash algorithms, "
-        "so it's impossible to instantiate a mint.")
-        .Flush();
-#endif
-
-    return pMint;
+    return Mint(otx::blind::CashType::Lucre, notary, serverNym, unit);
 }
-#endif
 
 auto Factory::NymID() const -> OTNymID { return identifier::Nym::Factory(); }
 
@@ -1545,6 +1564,23 @@ auto Factory::NymID(const opentxs::network::zeromq::Frame& bytes) const
 {
     auto out = NymID();
     out->Assign(bytes.data(), bytes.size());
+
+    return out;
+}
+
+auto Factory::NymID(const proto::Identifier& in) const noexcept -> OTNymID
+{
+    return factory::IdentifierNym(in);
+}
+
+auto Factory::NymID(const opentxs::Identifier& in) const noexcept -> OTNymID
+{
+    auto out = NymID();
+
+    if ((identifier::Type::nym == in.Type() ||
+         (identifier::Type::generic == in.Type()))) {
+        out->Assign(in);
+    }
 
     return out;
 }
@@ -1784,10 +1820,9 @@ auto Factory::PeerObject(
     return {};
 }
 
-#if OT_CASH
 auto Factory::PeerObject(
     [[maybe_unused]] const Nym_p& senderNym,
-    [[maybe_unused]] const std::shared_ptr<blind::Purse> purse) const
+    [[maybe_unused]] otx::blind::Purse&& purse) const
     -> std::unique_ptr<opentxs::PeerObject>
 {
     LogError()(OT_PRETTY_CLASS())(
@@ -1796,7 +1831,6 @@ auto Factory::PeerObject(
 
     return {};
 }
-#endif
 
 auto Factory::PeerObject(
     [[maybe_unused]] const OTPeerRequest request,
@@ -1938,36 +1972,52 @@ auto Factory::Pipeline(
     return factory::Pipeline(api_, api_.Network().ZeroMQ(), callback);
 }
 
-#if OT_CASH
 auto Factory::Purse(
     const otx::context::Server& context,
     const identifier::UnitDefinition& unit,
-    const blind::Mint& mint,
+    const otx::blind::Mint& mint,
     const Amount& totalValue,
-    const opentxs::PasswordPrompt& reason,
-    const blind::CashType type) const -> std::unique_ptr<blind::Purse>
+    const otx::blind::CashType type,
+    const opentxs::PasswordPrompt& reason) const noexcept -> otx::blind::Purse
 {
-    return std::unique_ptr<blind::Purse>(
-        factory::Purse(api_, context, type, mint, totalValue, reason));
+    return factory::Purse(api_, context, type, mint, totalValue, reason);
 }
 
-auto Factory::Purse(const proto::Purse& serialized) const
-    -> std::unique_ptr<blind::Purse>
+auto Factory::Purse(
+    const otx::context::Server& context,
+    const identifier::UnitDefinition& unit,
+    const otx::blind::Mint& mint,
+    const Amount& totalValue,
+    const opentxs::PasswordPrompt& reason) const noexcept -> otx::blind::Purse
 {
-    return std::unique_ptr<blind::Purse>(factory::Purse(api_, serialized));
+    return Purse(
+        context, unit, mint, totalValue, otx::blind::CashType::Lucre, reason);
+}
+
+auto Factory::Purse(const proto::Purse& serialized) const noexcept
+    -> otx::blind::Purse
+{
+    return factory::Purse(api_, serialized);
 }
 
 auto Factory::Purse(
     const identity::Nym& owner,
     const identifier::Server& server,
     const identifier::UnitDefinition& unit,
-    const opentxs::PasswordPrompt& reason,
-    const blind::CashType type) const -> std::unique_ptr<blind::Purse>
+    const otx::blind::CashType type,
+    const opentxs::PasswordPrompt& reason) const noexcept -> otx::blind::Purse
 {
-    return std::unique_ptr<blind::Purse>(
-        factory::Purse(api_, owner, server, unit, type, reason));
+    return factory::Purse(api_, owner, server, unit, type, reason);
 }
-#endif  // OT_CASH
+
+auto Factory::Purse(
+    const identity::Nym& owner,
+    const identifier::Server& server,
+    const identifier::UnitDefinition& unit,
+    const opentxs::PasswordPrompt& reason) const noexcept -> otx::blind::Purse
+{
+    return Purse(owner, server, unit, otx::blind::CashType::Lucre, reason);
+}
 
 auto Factory::ReplyAcknowledgement(
     const Nym_p& nym,
@@ -2139,6 +2189,38 @@ auto Factory::ServerID(const opentxs::network::zeromq::Frame& bytes) const
     out->Assign(bytes.data(), bytes.size());
 
     return out;
+}
+
+auto Factory::ServerID(const proto::Identifier& in) const noexcept -> OTServerID
+{
+    return factory::IdentifierNotary(in);
+}
+
+auto Factory::ServerID(const opentxs::Identifier& in) const noexcept
+    -> OTServerID
+{
+    auto out = ServerID();
+
+    if ((identifier::Type::notary == in.Type() ||
+         (identifier::Type::generic == in.Type()))) {
+        out->Assign(in);
+    }
+
+    return out;
+}
+
+auto Factory::ServerID(const google::protobuf::MessageLite& proto) const
+    -> OTIdentifier
+{
+    const auto id = [&] {
+        const auto bytes = Data(proto);
+        auto out = ServerID();
+        out->CalculateDigest(bytes->Bytes());
+
+        return out;
+    }();
+
+    return Identifier(id->str());
 }
 
 auto Factory::SignedFile() const -> std::unique_ptr<OTSignedFile>
@@ -2577,4 +2659,35 @@ auto Factory::UnitID(const opentxs::network::zeromq::Frame& bytes) const
 
     return out;
 }
-}  // namespace opentxs::api::session::implementation
+
+auto Factory::UnitID(const proto::Identifier& in) const noexcept -> OTUnitID
+{
+    return factory::IdentifierUnit(in);
+}
+
+auto Factory::UnitID(const opentxs::Identifier& in) const noexcept -> OTUnitID
+{
+    auto out = UnitID();
+
+    if ((identifier::Type::unitdefinition == in.Type() ||
+         (identifier::Type::generic == in.Type()))) {
+        out->Assign(in);
+    }
+
+    return out;
+}
+
+auto Factory::UnitID(const google::protobuf::MessageLite& proto) const
+    -> OTIdentifier
+{
+    const auto id = [&] {
+        const auto bytes = Data(proto);
+        auto out = UnitID();
+        out->CalculateDigest(bytes->Bytes());
+
+        return out;
+    }();
+
+    return Identifier(id->str());
+}
+}  // namespace opentxs::api::session::imp

@@ -26,17 +26,20 @@ class Notary;
 }  // namespace session
 }  // namespace api
 
-namespace blind
-{
-class Mint;
-}  // namespace blind
-
 namespace identifier
 {
 class Nym;
 class Server;
 class UnitDefinition;
 }  // namespace identifier
+
+namespace otx
+{
+namespace blind
+{
+class Mint;
+}  // namespace blind
+}  // namespace otx
 
 namespace server
 {
@@ -46,11 +49,7 @@ class Server;
 class Options;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace session
+namespace opentxs::api::session
 {
 class OPENTXS_EXPORT Notary : virtual public api::Session
 {
@@ -63,13 +62,11 @@ public:
     virtual auto DropOutgoing(const int count) const -> void = 0;
     virtual auto GetAdminNym() const -> std::string = 0;
     virtual auto GetAdminPassword() const -> std::string = 0;
-#if OT_CASH
     virtual auto GetPrivateMint(
         const identifier::UnitDefinition& unitid,
-        std::uint32_t series) const -> std::shared_ptr<blind::Mint> = 0;
-    virtual auto GetPublicMint(const identifier::UnitDefinition& unitID) const
-        -> std::shared_ptr<const blind::Mint> = 0;
-#endif  // OT_CASH
+        std::uint32_t series) const noexcept -> otx::blind::Mint& = 0;
+    virtual auto GetPublicMint(const identifier::UnitDefinition& unitID)
+        const noexcept -> otx::blind::Mint& = 0;
     virtual auto GetUserName() const -> std::string = 0;
     virtual auto GetUserTerms() const -> std::string = 0;
     virtual auto ID() const -> const identifier::Server& = 0;
@@ -96,6 +93,4 @@ private:
     auto operator=(const Notary&) -> Notary& = delete;
     auto operator=(Notary&&) -> Notary& = delete;
 };
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::session

@@ -29,11 +29,7 @@ class ServerConnection;
 class Flag;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace network
+namespace opentxs::api::network
 {
 class OPENTXS_EXPORT ZMQ
 {
@@ -66,6 +62,4 @@ private:
     auto operator=(const ZMQ&) -> ZMQ& = delete;
     auto operator=(const ZMQ&&) -> ZMQ& = delete;
 };
-}  // namespace network
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::network

@@ -19,6 +19,7 @@
 #include "Proto.hpp"
 #include "core/OTStorage.hpp"
 #include "internal/api/Legacy.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/contact/Contact.hpp"
@@ -108,14 +109,7 @@ Unit::Unit(
     const VersionNumber version,
     const display::Definition& displayDefinition,
     const Amount& redemptionIncrement)
-    : Signable(
-          api,
-          nym,
-          version,
-          terms,
-          shortname,
-          api.Factory().Identifier(),
-          {})
+    : Signable(api, nym, version, terms, shortname, api.Factory().UnitID(), {})
     , unit_of_account_(unitOfAccount)
     , display_definition_(displayDefinition)
     , redemption_increment_(redemptionIncrement)
@@ -133,7 +127,7 @@ Unit::Unit(
           serialized.version(),
           serialized.terms(),
           serialized.name(),
-          api.Factory().Identifier(serialized.id()),
+          api.Factory().UnitID(serialized.id()),
           serialized.has_signature()
               ? Signatures{std::make_shared<proto::Signature>(
                     serialized.signature())}
@@ -161,9 +155,8 @@ auto Unit::AddAccountRecord(
     Lock lock(lock_);
 
     if (theAccount.GetInstrumentDefinitionID() != id_) {
-        LogError()(OT_PRETTY_CLASS())(
-            "Error: theAccount doesn't have the same asset "
-            "type ID as *this does.")
+        LogError()(OT_PRETTY_CLASS())("Error: theAccount doesn't have the same "
+                                      "asset type ID as *this does.")
             .Flush();
         return false;
     }
@@ -454,7 +447,7 @@ auto Unit::GetID(const Lock& lock) const -> OTIdentifier
 auto Unit::GetID(const api::Session& api, const SerializedType& contract)
     -> OTIdentifier
 {
-    return api.Factory().Identifier(contract);
+    return api.Factory().InternalSession().UnitID(contract);
 }
 
 auto Unit::get_unitofaccount(const SerializedType& serialized) const
@@ -517,11 +510,11 @@ auto Unit::IDVersion(const Lock& lock) const -> SerializedType
     return contract;
 }
 
-auto Unit::Serialize() const -> OTData
+auto Unit::Serialize() const noexcept -> OTData
 {
     Lock lock(lock_);
 
-    return api_.Factory().Data(contract(lock));
+    return api_.Factory().InternalSession().Data(contract(lock));
 }
 
 auto Unit::Serialize(AllocateOutput destination, bool includeNym) const -> bool
@@ -553,12 +546,14 @@ auto Unit::Serialize(SerializedType& serialized, bool includeNym) const -> bool
     return true;
 }
 
-auto Unit::SetAlias(const std::string& alias) -> void
+auto Unit::SetAlias(const std::string& alias) noexcept -> bool
 {
     InitAlias(alias);
     api_.Wallet().SetUnitDefinitionAlias(
         identifier::UnitDefinition::Factory(id_->str()),
         alias);  // TODO conversion
+
+    return true;
 }
 
 auto Unit::SigVersion(const Lock& lock) const -> SerializedType

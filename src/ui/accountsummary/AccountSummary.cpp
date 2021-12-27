@@ -14,9 +14,11 @@
 #include <utility>
 #include <vector>
 
+#include "internal/api/session/Wallet.hpp"
+#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
+#include "internal/otx/client/Issuer.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -90,7 +92,7 @@ auto AccountSummary::extract_key(
     AccountSummarySortKey output{false, "opentxs notary"};
     auto& [state, name] = output;
 
-    const auto issuer = api_.Wallet().Issuer(nymID, issuerID);
+    const auto issuer = api_.Wallet().Internal().Issuer(nymID, issuerID);
 
     if (false == bool(issuer)) { return output; }
 

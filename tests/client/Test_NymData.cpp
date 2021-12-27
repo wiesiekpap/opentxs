@@ -21,20 +21,19 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -427,7 +426,7 @@ TEST_F(Test_NymData, PrintContactData)
 
 TEST_F(Test_NymData, SetContactData)
 {
-    const ot::ContactData contactData(
+    const ot::contact::ContactData contactData(
         dynamic_cast<const ot::api::session::Client&>(client_),
         std::string("contactData"),
         nymData_.Nym().ContactDataVersion(),

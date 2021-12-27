@@ -8,7 +8,7 @@
 #include "Proto.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/verification/Item.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"

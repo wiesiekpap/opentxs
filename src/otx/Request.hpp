@@ -12,7 +12,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/otx/Request.hpp"
@@ -76,8 +76,8 @@ private:
     auto GetID(const Lock& lock) const -> OTIdentifier final;
     auto full_version(const Lock& lock) const -> proto::ServerRequest;
     auto id_version(const Lock& lock) const -> proto::ServerRequest;
-    auto Name() const -> std::string final { return {}; }
-    auto Serialize() const -> OTData final;
+    auto Name() const noexcept -> std::string final { return {}; }
+    auto Serialize() const noexcept -> OTData final;
     auto serialize(const Lock& lock, proto::ServerRequest& serialized) const
         -> bool;
     auto signature_version(const Lock& lock) const -> proto::ServerRequest;

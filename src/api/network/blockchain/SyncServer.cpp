@@ -23,7 +23,8 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/client/Client.hpp"
+#include "internal/api/network/Blockchain.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/network/blockchain/sync/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
@@ -31,10 +32,23 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/core/contract/ContractType.hpp"
+#include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/core/contract/Types.hpp"
+#include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/Types.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
 #include "opentxs/network/blockchain/sync/Base.hpp"
 #include "opentxs/network/blockchain/sync/MessageType.hpp"
+#include "opentxs/network/blockchain/sync/PublishContract.hpp"
+#include "opentxs/network/blockchain/sync/PublishContractReply.hpp"
+#include "opentxs/network/blockchain/sync/QueryContract.hpp"
+#include "opentxs/network/blockchain/sync/QueryContractReply.hpp"
 #include "opentxs/network/blockchain/sync/Request.hpp"
 #include "opentxs/network/blockchain/sync/State.hpp"
 #include "opentxs/network/blockchain/sync/Types.hpp"
@@ -43,6 +57,8 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace opentxs::api::network::blockchain
@@ -53,7 +69,7 @@ struct SyncServer::Imp {
     using OTSocket = opentxs::network::zeromq::socket::implementation::Socket;
 
     const api::Session& api_;
-    Blockchain& parent_;
+    internal::Blockchain& parent_;
     const int linger_;
     Socket sync_;
     Socket update_;
@@ -119,7 +135,7 @@ struct SyncServer::Imp {
         }
     }
 
-    Imp(const api::Session& api, Blockchain& parent) noexcept
+    Imp(const api::Session& api, internal::Blockchain& parent) noexcept
         : api_(api)
         , parent_(parent)
         , linger_(0)
@@ -171,57 +187,39 @@ struct SyncServer::Imp {
 private:
     auto process_external(const Lock& lock, void* socket) noexcept -> void
     {
-        const auto incoming = [&] {
-            auto output = opentxs::network::zeromq::Message{};
-            OTSocket::receive_message(lock, socket, output);
-
-            return output;
-        }();
-
         try {
+            auto incoming = [&] {
+                auto output = opentxs::network::zeromq::Message{};
+                OTSocket::receive_message(lock, socket, output);
+
+                return output;
+            }();
             namespace bcsync = opentxs::network::blockchain::sync;
             const auto base = api_.Factory().BlockchainSyncMessage(incoming);
+
+            if (!base) {
+                throw std::runtime_error{"failed to instantiate message"};
+            }
+
             const auto type = base->Type();
 
             switch (type) {
                 case bcsync::MessageType::query:
                 case bcsync::MessageType::sync_request: {
+                    process_sync(lock, socket, incoming, *base);
+                } break;
+                case bcsync::MessageType::contract_query: {
+                    process_query_contract(
+                        lock, socket, std::move(incoming), *base);
+                } break;
+                case bcsync::MessageType::publish_contract: {
+                    process_publish_contract(
+                        lock, socket, std::move(incoming), *base);
                 } break;
                 default: {
-                    LogError()(OT_PRETTY_CLASS())("Unsupported message type ")(
-                        opentxs::print(type))
-                        .Flush();
-
-                    return;
-                }
-            }
-
-            {
-                const auto ack = factory::BlockchainSyncAcknowledgement(
-                    parent_.Hello(), update_public_endpoint_);
-                auto msg = opentxs::network::zeromq::reply_to_message(incoming);
-
-                if (ack.Serialize(msg)) {
-                    OTSocket::send_message(lock, socket, std::move(msg));
-                }
-            }
-
-            if (bcsync::MessageType::sync_request == type) {
-                const auto& request = base->asRequest();
-
-                for (const auto& state : request.State()) {
-                    try {
-                        const auto& [endpoint, enabled, internal] =
-                            map_.at(state.Chain());
-
-                        if (enabled) {
-                            OTSocket::send_message(
-                                lock,
-                                internal.get(),
-                                opentxs::network::zeromq::Message{incoming});
-                        }
-                    } catch (...) {
-                    }
+                    throw std::runtime_error{
+                        std::string{"Unsupported message type "} +
+                        opentxs::print(type)};
                 }
             }
         } catch (const std::exception& e) {
@@ -246,9 +244,167 @@ private:
             OTSocket::send_message(lock, update_.get(), std::move(incoming));
         }
     }
+    auto process_query_contract(
+        const Lock& lock,
+        void* socket,
+        opentxs::network::zeromq::Message&& incoming,
+        const opentxs::network::blockchain::sync::Base& base) noexcept -> void
+    {
+        auto payload = [&] {
+            const auto& id = base.asQueryContract().ID();
+
+            try {
+                const auto type = translate(id.Type());
+
+                switch (type) {
+                    case contract::Type::nym: {
+                        const auto nymID =
+                            api_.Factory().InternalSession().NymID(id);
+                        const auto nym = api_.Wallet().Nym(nymID);
+
+                        if (!nym) {
+                            throw std::runtime_error{
+                                std::string{"nym "} + nymID->str() +
+                                " not found"};
+                        }
+
+                        return factory::BlockchainSyncQueryContractReply(*nym);
+                    }
+                    case contract::Type::notary: {
+                        const auto notaryID =
+                            api_.Factory().InternalSession().ServerID(id);
+
+                        return factory::BlockchainSyncQueryContractReply(
+                            api_.Wallet().Server(notaryID));
+                    }
+                    case contract::Type::unit: {
+                        const auto unitID =
+                            api_.Factory().InternalSession().UnitID(id);
+
+                        return factory::BlockchainSyncQueryContractReply(
+                            api_.Wallet().UnitDefinition(unitID));
+                    }
+                    default: {
+                        throw std::runtime_error{
+                            std::string{
+                                "unsupported or unknown contract type: "} +
+                            opentxs::print(type)};
+                    }
+                }
+            } catch (const std::exception& e) {
+                LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+                return factory::BlockchainSyncQueryContractReply(id);
+            }
+        }();
+        OTSocket::send_message(lock, socket, [&] {
+            auto out =
+                opentxs::network::zeromq::reply_to_message(std::move(incoming));
+            payload.Serialize(out);
+
+            return out;
+        }());
+    }
+    auto process_publish_contract(
+        const Lock& lock,
+        void* socket,
+        opentxs::network::zeromq::Message&& incoming,
+        const opentxs::network::blockchain::sync::Base& base) noexcept -> void
+    {
+        const auto& contract = base.asPublishContract();
+        const auto& id = contract.ID();
+        auto payload = [&] {
+            try {
+                const auto type = contract.ContractType();
+
+                switch (type) {
+                    case contract::Type::nym: {
+                        const auto nym = api_.Wallet().Nym(contract.Payload());
+
+                        return (nym && nym->ID() == id);
+                    }
+                    case contract::Type::notary: {
+                        const auto notary =
+                            api_.Wallet().Server(contract.Payload());
+
+                        return (notary->ID() == id);
+                    }
+                    case contract::Type::unit: {
+                        const auto unit =
+                            api_.Wallet().UnitDefinition(contract.Payload());
+
+                        return (unit->ID() == id);
+                    }
+                    default: {
+                        throw std::runtime_error{
+                            std::string{
+                                "unsupported or unknown contract type: "} +
+                            opentxs::print(type)};
+                    }
+                }
+            } catch (const std::exception& e) {
+                LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+
+                return false;
+            }
+        }();
+        OTSocket::send_message(lock, socket, [&] {
+            auto out =
+                opentxs::network::zeromq::reply_to_message(std::move(incoming));
+            const auto msg =
+                factory::BlockchainSyncPublishContractReply(id, payload);
+            msg.Serialize(out);
+
+            return out;
+        }());
+    }
+    auto process_sync(
+        const Lock& lock,
+        void* socket,
+        const opentxs::network::zeromq::Message& incoming,
+        const opentxs::network::blockchain::sync::Base& base) noexcept -> void
+    {
+        try {
+            {
+                const auto ack = factory::BlockchainSyncAcknowledgement(
+                    parent_.Hello(), update_public_endpoint_);
+                auto msg = opentxs::network::zeromq::reply_to_message(incoming);
+
+                if (ack.Serialize(msg)) {
+                    OTSocket::send_message(lock, socket, std::move(msg));
+                }
+            }
+
+            namespace bcsync = opentxs::network::blockchain::sync;
+            const auto type = base.Type();
+
+            if (bcsync::MessageType::sync_request == type) {
+                const auto& request = base.asRequest();
+
+                for (const auto& state : request.State()) {
+                    try {
+                        const auto& [endpoint, enabled, internal] =
+                            map_.at(state.Chain());
+
+                        if (enabled) {
+                            OTSocket::send_message(
+                                lock,
+                                internal.get(),
+                                opentxs::network::zeromq::Message{incoming});
+                        }
+                    } catch (...) {
+                    }
+                }
+            }
+        } catch (const std::exception& e) {
+            LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
+        }
+    }
 };
 
-SyncServer::SyncServer(const api::Session& api, Blockchain& parent) noexcept
+SyncServer::SyncServer(
+    const api::Session& api,
+    internal::Blockchain& parent) noexcept
     : imp_p_(std::make_unique<Imp>(api, parent))
     , imp_(*imp_p_)
 {

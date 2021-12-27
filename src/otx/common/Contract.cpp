@@ -16,6 +16,7 @@
 
 #include "core/OTStorage.hpp"
 #include "internal/api/Legacy.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -204,7 +205,10 @@ auto Contract::Imp::CreateInnerContents(Tag& parent) noexcept -> void
                 pTag->add_attribute("nymID", strNymID->Get());
                 pTag->add_attribute(
                     "publicNym",
-                    api_.Factory().Armored(publicNym, "PUBLIC NYM")->Get());
+                    api_.Factory()
+                        .InternalSession()
+                        .Armored(publicNym, "PUBLIC NYM")
+                        ->Get());
 
                 parent.add_tag(pTag);
             }  // "signer"

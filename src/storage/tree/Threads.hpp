@@ -17,7 +17,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "storage/tree/Node.hpp"
 

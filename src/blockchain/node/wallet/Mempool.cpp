@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/util/LogMacros.hpp"

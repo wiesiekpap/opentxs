@@ -22,6 +22,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -29,7 +30,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -43,7 +44,6 @@ namespace opentxs::factory
 {
 auto BlockchainWallet(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
     const blockchain::node::internal::Network& parent,
     const blockchain::node::internal::WalletDatabase& db,
     const blockchain::node::internal::Mempool& mempool,
@@ -54,7 +54,7 @@ auto BlockchainWallet(
     using ReturnType = blockchain::node::implementation::Wallet;
 
     return std::make_unique<ReturnType>(
-        api, crypto, parent, db, mempool, chain, shutdown);
+        api, parent, db, mempool, chain, shutdown);
 }
 }  // namespace opentxs::factory
 
@@ -62,7 +62,6 @@ namespace opentxs::blockchain::node::implementation
 {
 Wallet::Wallet(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
     const node::internal::Network& parent,
     const node::internal::WalletDatabase& db,
     const node::internal::Mempool& mempool,
@@ -72,7 +71,6 @@ Wallet::Wallet(
     , parent_(parent)
     , db_(db)
     , mempool_(mempool)
-    , crypto_(crypto)
     , chain_(chain)
     , task_finished_([this](const Identifier& id, const char* type) {
         auto work = MakeWork(Work::job_finished);
@@ -81,15 +79,15 @@ Wallet::Wallet(
         pipeline_.Push(std::move(work));
     })
     , enabled_(true)
-    , accounts_(api, crypto_, parent_, db_, chain_, task_finished_)
-    , proposals_(api, crypto_, parent_, db_, chain_)
+    , accounts_(api, parent_, db_, chain_, task_finished_)
+    , proposals_(api, parent_, db_, chain_)
 {
     init_executor({
         shutdown,
         api.Endpoints().BlockchainReorg(),
         api.Endpoints().NymCreated(),
         api.Endpoints().BlockchainNewFilter(),
-        crypto_.Internal().KeyEndpoint(),
+        api_.Crypto().Blockchain().Internal().KeyEndpoint(),
         api.Endpoints().BlockchainMempool(),
         api.Endpoints().BlockchainBlockAvailable(),
     });

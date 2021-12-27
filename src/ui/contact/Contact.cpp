@@ -17,15 +17,15 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -113,7 +113,7 @@ auto Contact::PaymentCode() const noexcept -> std::string
     return payment_code_;
 }
 
-auto Contact::process_contact(const opentxs::Contact& contact) noexcept -> void
+auto Contact::process_contact(const contact::Contact& contact) noexcept -> void
 {
     {
         const auto name = contact.Label();
@@ -157,7 +157,7 @@ auto Contact::process_contact(const opentxs::Contact& contact) noexcept -> void
 
             if (check_type(type)) {
                 auto custom =
-                    CustomData{new opentxs::ContactSection(*section.second)};
+                    CustomData{new contact::ContactSection(*section.second)};
                 add_item(type, sort_key(type), custom);
                 active.emplace(type);
             }

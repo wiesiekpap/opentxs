@@ -57,7 +57,7 @@ class PasswordPrompt;
 
 namespace opentxs::api::session::server
 {
-class Wallet final : public session::implementation::Wallet
+class Wallet final : public session::imp::Wallet
 {
 public:
     auto ClientContext(const identifier::Nym& remoteNymID) const
@@ -80,7 +80,7 @@ public:
     ~Wallet() final = default;
 
 private:
-    using ot_super = session::implementation::Wallet;
+    using ot_super = session::imp::Wallet;
 
     const api::session::Notary& server_;
 

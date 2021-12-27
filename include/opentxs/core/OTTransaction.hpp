@@ -15,9 +15,9 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -27,10 +27,10 @@ namespace api
 {
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Factory;
-}  // namespace implementation
+}  // namespace imp
 }  // namespace session
 
 class Session;
@@ -735,7 +735,7 @@ protected:
                    // transaction saves its contents
 
 private:
-    friend api::session::implementation::Factory;
+    friend api::session::imp::Factory;
 
     OTTransaction(const api::Session& api);
     OTTransaction(const api::Session& api, const Ledger& theOwner);

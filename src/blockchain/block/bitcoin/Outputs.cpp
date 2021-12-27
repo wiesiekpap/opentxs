@@ -22,8 +22,8 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/block/bitcoin/Output.hpp"
 #include "opentxs/blockchain/block/bitcoin/Outputs.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "util/Container.hpp"
@@ -70,23 +70,21 @@ Outputs::Outputs(const Outputs& rhs) noexcept
 {
 }
 
-auto Outputs::AssociatedLocalNyms(
-    const api::crypto::Blockchain& blockchain,
-    std::vector<OTNymID>& output) const noexcept -> void
+auto Outputs::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
+    -> void
 {
     std::for_each(
         std::begin(outputs_), std::end(outputs_), [&](const auto& item) {
-            item->AssociatedLocalNyms(blockchain, output);
+            item->AssociatedLocalNyms(output);
         });
 }
 
 auto Outputs::AssociatedRemoteContacts(
-    const api::crypto::Blockchain& blockchain,
     std::vector<OTIdentifier>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(outputs_), std::end(outputs_), [&](const auto& item) {
-            item->AssociatedRemoteContacts(blockchain, output);
+            item->AssociatedRemoteContacts(output);
         });
 }
 
@@ -225,16 +223,15 @@ auto Outputs::MergeMetadata(const internal::Outputs& rhs) noexcept -> bool
     return true;
 }
 
-auto Outputs::NetBalanceChange(
-    const api::crypto::Blockchain& blockchain,
-    const identifier::Nym& nym) const noexcept -> opentxs::Amount
+auto Outputs::NetBalanceChange(const identifier::Nym& nym) const noexcept
+    -> opentxs::Amount
 {
     return std::accumulate(
         std::begin(outputs_),
         std::end(outputs_),
         opentxs::Amount{0},
         [&](const auto prev, const auto& output) -> auto {
-            return prev + output->NetBalanceChange(blockchain, nym);
+            return prev + output->NetBalanceChange(nym);
         });
 }
 
@@ -283,7 +280,6 @@ auto Outputs::Serialize(const AllocateOutput destination) const noexcept
 }
 
 auto Outputs::Serialize(
-    const api::crypto::Blockchain& blockchain,
     proto::BlockchainTransaction& destination) const noexcept -> bool
 {
     for (const auto& output : outputs_) {
@@ -291,7 +287,7 @@ auto Outputs::Serialize(
 
         auto& out = *destination.add_output();
 
-        if (false == output->Serialize(blockchain, out)) { return false; }
+        if (false == output->Serialize(out)) { return false; }
     }
 
     return true;

@@ -69,13 +69,13 @@ namespace opentxs::factory
 auto EndpointsAPI(const int instance) noexcept
     -> std::unique_ptr<api::session::Endpoints>
 {
-    using ReturnType = api::session::implementation::Endpoints;
+    using ReturnType = api::session::imp::Endpoints;
 
     return std::make_unique<ReturnType>(instance);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 Endpoints::Endpoints(const int instance) noexcept
     : instance_(instance)
@@ -359,4 +359,4 @@ auto Endpoints::WorkflowAccountUpdate() const noexcept -> std::string
     return build_inproc_path(
         WORKFLOW_ACCOUNT_UPDATE_ENDPOINT, ENDPOINT_VERSION_1);
 }
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

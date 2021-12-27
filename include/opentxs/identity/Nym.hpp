@@ -14,14 +14,14 @@
 #include <tuple>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Iterator.hpp"
 
 namespace google
 {
@@ -33,6 +33,11 @@ class MessageLite;
 
 namespace opentxs
 {
+namespace contact
+{
+class ContactData;
+}  // namespace contact
+
 namespace crypto
 {
 namespace key
@@ -62,7 +67,6 @@ class Nym;
 class Signature;
 }  // namespace proto
 
-class ContactData;
 class PasswordPrompt;
 class PaymentCode;
 class Signature;
@@ -100,7 +104,7 @@ public:
         -> std::string = 0;
     virtual auto cbegin() const noexcept -> const_iterator = 0;
     virtual auto cend() const noexcept -> const_iterator = 0;
-    virtual auto Claims() const -> const opentxs::ContactData& = 0;
+    virtual auto Claims() const -> const contact::ContactData& = 0;
     virtual auto CompareID(const Nym& RHS) const -> bool = 0;
     virtual auto CompareID(const identifier::Nym& rhs) const -> bool = 0;
     virtual auto ContactCredentialVersion() const -> VersionNumber = 0;

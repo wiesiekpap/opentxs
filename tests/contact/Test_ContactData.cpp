@@ -24,10 +24,9 @@
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -48,7 +47,7 @@ public:
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
               {})
-        , activeContactItem_(new ot::ContactItem(
+        , activeContactItem_(new ot::contact::ContactItem(
               dynamic_cast<const ot::api::session::Client&>(api_),
               std::string("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
@@ -64,17 +63,17 @@ public:
     }
 
     const ot::api::session::Client& api_;
-    const ot::ContactData contactData_;
-    const std::shared_ptr<ot::ContactItem> activeContactItem_;
+    const ot::contact::ContactData contactData_;
+    const std::shared_ptr<ot::contact::ContactItem> activeContactItem_;
 
-    using CallbackType1 = ot::ContactData (*)(
-        const ot::ContactData&,
+    using CallbackType1 = ot::contact::ContactData (*)(
+        const ot::contact::ContactData&,
         const std::string&,
         const ot::core::UnitType,
         const bool,
         const bool);
-    using CallbackType2 = ot::ContactData (*)(
-        const ot::ContactData&,
+    using CallbackType2 = ot::contact::ContactData (*)(
+        const ot::contact::ContactData&,
         const std::string&,
         const bool,
         const bool);
@@ -93,14 +92,14 @@ public:
         std::uint32_t targetVersion = 0);
 };
 
-ot::ContactData add_contract(
-    const ot::ContactData& data,
+ot::contact::ContactData add_contract(
+    const ot::contact::ContactData& data,
     const std::string& id,
     const ot::core::UnitType type,
     const bool active,
     const bool primary);
-ot::ContactData add_contract(
-    const ot::ContactData& data,
+ot::contact::ContactData add_contract(
+    const ot::contact::ContactData& data,
     const std::string& id,
     const ot::core::UnitType type,
     const bool active,
@@ -109,13 +108,13 @@ ot::ContactData add_contract(
     return data.AddContract(id, type, active, primary);
 }
 
-ot::ContactData add_email(
-    const ot::ContactData& data,
+ot::contact::ContactData add_email(
+    const ot::contact::ContactData& data,
     const std::string& id,
     const bool active,
     const bool primary);
-ot::ContactData add_email(
-    const ot::ContactData& data,
+ot::contact::ContactData add_email(
+    const ot::contact::ContactData& data,
     const std::string& id,
     const bool active,
     const bool primary)
@@ -123,14 +122,14 @@ ot::ContactData add_email(
     return data.AddEmail(id, active, primary);
 }
 
-ot::ContactData add_payment_code(
-    const ot::ContactData& data,
+ot::contact::ContactData add_payment_code(
+    const ot::contact::ContactData& data,
     const std::string& id,
     const ot::core::UnitType type,
     const bool active,
     const bool primary);
-ot::ContactData add_payment_code(
-    const ot::ContactData& data,
+ot::contact::ContactData add_payment_code(
+    const ot::contact::ContactData& data,
     const std::string& id,
     const ot::core::UnitType type,
     const bool active,
@@ -139,13 +138,13 @@ ot::ContactData add_payment_code(
     return data.AddPaymentCode(id, type, active, primary);
 }
 
-ot::ContactData add_phone_number(
-    const ot::ContactData& data,
+ot::contact::ContactData add_phone_number(
+    const ot::contact::ContactData& data,
     const std::string& id,
     const bool active,
     const bool primary);
-ot::ContactData add_phone_number(
-    const ot::ContactData& data,
+ot::contact::ContactData add_phone_number(
+    const ot::contact::ContactData& data,
     const std::string& id,
     const bool active,
     const bool primary)
@@ -160,25 +159,26 @@ void Test_ContactData::testAddItemMethod(
     std::uint32_t targetVersion)
 {
     // Add a contact to a group with no primary.
-    const auto& group1 = std::shared_ptr<ot::ContactGroup>(new ot::ContactGroup(
-        "contactGroup1", sectionName, ot::contact::ClaimType::BCH, {}));
+    const auto& group1 = std::shared_ptr<ot::contact::ContactGroup>(
+        new ot::contact::ContactGroup(
+            "contactGroup1", sectionName, ot::contact::ClaimType::BCH, {}));
 
-    const auto& section1 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section1 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym1",
             version,
             version,
             sectionName,
-            ot::ContactSection::GroupMap{
+            ot::contact::ContactSection::GroupMap{
                 {ot::contact::ClaimType::BCH, group1}}));
 
-    const ot::ContactData data1(
+    const ot::contact::ContactData data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym1"),
         version,
         version,
-        ot::ContactData::SectionMap{{sectionName, section1}});
+        ot::contact::ContactData::SectionMap{{sectionName, section1}});
 
     const auto& data2 = contactDataMethod(
         data1,
@@ -304,24 +304,25 @@ void Test_ContactData::testAddItemMethod2(
     std::uint32_t targetVersion)
 {
     // Add a contact to a group with no primary.
-    const auto& group1 = std::shared_ptr<ot::ContactGroup>(
-        new ot::ContactGroup("contactGroup1", sectionName, itemType, {}));
+    const auto& group1 = std::shared_ptr<ot::contact::ContactGroup>(
+        new ot::contact::ContactGroup(
+            "contactGroup1", sectionName, itemType, {}));
 
-    const auto& section1 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section1 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym1",
             version,
             version,
             sectionName,
-            ot::ContactSection::GroupMap{{itemType, group1}}));
+            ot::contact::ContactSection::GroupMap{{itemType, group1}}));
 
-    const ot::ContactData data1(
+    const ot::contact::ContactData data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym1"),
         version,
         version,
-        ot::ContactData::SectionMap{{sectionName, section1}});
+        ot::contact::ContactData::SectionMap{{sectionName, section1}});
 
     const auto& data2 = contactDataMethod(data1, "contactValue1", false, false);
 
@@ -364,21 +365,21 @@ void Test_ContactData::testAddItemMethod2(
     ASSERT_FALSE(contactItem2->isPrimary());
 
     // Add a contact for a type with no group.
-    const auto& section2 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section2 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym2",
             version,
             version,
             sectionName,
-            ot::ContactSection::GroupMap{}));
+            ot::contact::ContactSection::GroupMap{}));
 
-    const ot::ContactData data4(
+    const ot::contact::ContactData data4(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym4"),
         version,
         version,
-        ot::ContactData::SectionMap{{sectionName, section2}});
+        ot::contact::ContactData::SectionMap{{sectionName, section2}});
 
     const auto& data5 = contactDataMethod(data4, "contactValue3", false, false);
 
@@ -430,17 +431,19 @@ static const std::string expectedStringOutput =
 
 TEST_F(Test_ContactData, first_constructor)
 {
-    const std::shared_ptr<ot::ContactSection> section1(new ot::ContactSection(
-        dynamic_cast<const ot::api::session::Client&>(api_),
-        "testContactSectionNym1",
-        CONTACT_CONTACT_DATA_VERSION,
-        CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
-        activeContactItem_));
+    const std::shared_ptr<ot::contact::ContactSection> section1(
+        new ot::contact::ContactSection(
+            dynamic_cast<const ot::api::session::Client&>(api_),
+            "testContactSectionNym1",
+            CONTACT_CONTACT_DATA_VERSION,
+            CONTACT_CONTACT_DATA_VERSION,
+            ot::contact::SectionType::Identifier,
+            activeContactItem_));
 
-    const ot::ContactData::SectionMap map{{section1->Type(), section1}};
+    const ot::contact::ContactData::SectionMap map{
+        {section1->Type(), section1}};
 
-    const ot::ContactData contactData(
+    const ot::contact::ContactData contactData(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION,
@@ -462,7 +465,7 @@ TEST_F(Test_ContactData, first_constructor)
 
 TEST_F(Test_ContactData, first_constructor_no_sections)
 {
-    const ot::ContactData contactData(
+    const ot::contact::ContactData contactData(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION,
@@ -473,7 +476,7 @@ TEST_F(Test_ContactData, first_constructor_no_sections)
 
 TEST_F(Test_ContactData, first_constructor_different_versions)
 {
-    const ot::ContactData contactData(
+    const ot::contact::ContactData contactData(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
@@ -484,24 +487,26 @@ TEST_F(Test_ContactData, first_constructor_different_versions)
 
 TEST_F(Test_ContactData, copy_constructor)
 {
-    const std::shared_ptr<ot::ContactSection> section1(new ot::ContactSection(
-        dynamic_cast<const ot::api::session::Client&>(api_),
-        "testContactSectionNym1",
-        CONTACT_CONTACT_DATA_VERSION,
-        CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
-        activeContactItem_));
+    const std::shared_ptr<ot::contact::ContactSection> section1(
+        new ot::contact::ContactSection(
+            dynamic_cast<const ot::api::session::Client&>(api_),
+            "testContactSectionNym1",
+            CONTACT_CONTACT_DATA_VERSION,
+            CONTACT_CONTACT_DATA_VERSION,
+            ot::contact::SectionType::Identifier,
+            activeContactItem_));
 
-    const ot::ContactData::SectionMap map{{section1->Type(), section1}};
+    const ot::contact::ContactData::SectionMap map{
+        {section1->Type(), section1}};
 
-    const ot::ContactData contactData(
+    const ot::contact::ContactData contactData(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         map);
 
-    const ot::ContactData copiedContactData(contactData);
+    const ot::contact::ContactData copiedContactData(contactData);
 
     ASSERT_EQ(CONTACT_CONTACT_DATA_VERSION, copiedContactData.Version());
     ASSERT_NE(
@@ -524,7 +529,7 @@ TEST_F(Test_ContactData, operator_plus)
 
     // Add a ContactData object with a section of the same type.
     const auto& contactItem2 =
-        std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
+        std::shared_ptr<ot::contact::ContactItem>(new ot::contact::ContactItem(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
@@ -537,24 +542,28 @@ TEST_F(Test_ContactData, operator_plus)
             NULL_END,
             ""));
 
-    const auto& group2 = std::shared_ptr<ot::ContactGroup>(new ot::ContactGroup(
-        "contactGroup2", ot::contact::SectionType::Identifier, contactItem2));
+    const auto& group2 = std::shared_ptr<ot::contact::ContactGroup>(
+        new ot::contact::ContactGroup(
+            "contactGroup2",
+            ot::contact::SectionType::Identifier,
+            contactItem2));
 
-    const auto& section2 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section2 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym2",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::contact::SectionType::Identifier,
-            ot::ContactSection::GroupMap{{contactItem2->Type(), group2}}));
+            ot::contact::ContactSection::GroupMap{
+                {contactItem2->Type(), group2}}));
 
-    const ot::ContactData data2(
+    const ot::contact::ContactData data2(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::ContactData::SectionMap{
+        ot::contact::ContactData::SectionMap{
             {ot::contact::SectionType::Identifier, section2}});
 
     const auto& data3 = data1 + data2;
@@ -579,7 +588,7 @@ TEST_F(Test_ContactData, operator_plus)
 
     // Add a ContactData object with a section of a different type.
     const auto& contactItem4 =
-        std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
+        std::shared_ptr<ot::contact::ContactItem>(new ot::contact::ContactItem(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("contactItem4"),
             CONTACT_CONTACT_DATA_VERSION,
@@ -592,24 +601,26 @@ TEST_F(Test_ContactData, operator_plus)
             NULL_END,
             ""));
 
-    const auto& group4 = std::shared_ptr<ot::ContactGroup>(new ot::ContactGroup(
-        "contactGroup4", ot::contact::SectionType::Address, contactItem4));
+    const auto& group4 = std::shared_ptr<ot::contact::ContactGroup>(
+        new ot::contact::ContactGroup(
+            "contactGroup4", ot::contact::SectionType::Address, contactItem4));
 
-    const auto& section4 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section4 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym4",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::contact::SectionType::Address,
-            ot::ContactSection::GroupMap{{contactItem4->Type(), group4}}));
+            ot::contact::ContactSection::GroupMap{
+                {contactItem4->Type(), group4}}));
 
-    const ot::ContactData data4(
+    const ot::contact::ContactData data4(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym4"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::ContactData::SectionMap{
+        ot::contact::ContactData::SectionMap{
             {ot::contact::SectionType::Address, section4}});
 
     const auto& data5 = data3 + data4;
@@ -655,7 +666,7 @@ TEST_F(Test_ContactData, operator_plus)
 TEST_F(Test_ContactData, operator_plus_different_version)
 {
     // rhs version less than lhs
-    const ot::ContactData contactData2(
+    const ot::contact::ContactData contactData2(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,
@@ -687,7 +698,7 @@ TEST_F(Test_ContactData, Serialize)
     auto bytes = ot::Space{};
     EXPECT_TRUE(data1.Serialize(ot::writer(bytes), false));
 
-    auto restored1 = ot::ContactData{
+    auto restored1 = ot::contact::ContactData{
         dynamic_cast<const ot::api::session::Client&>(api_),
         "ContactDataNym1",
         data1.Version(),
@@ -715,7 +726,7 @@ TEST_F(Test_ContactData, Serialize)
     // Serialize with ids.
     EXPECT_TRUE(data1.Serialize(ot::writer(bytes), true));
 
-    auto restored2 = ot::ContactData{
+    auto restored2 = ot::contact::ContactData{
         dynamic_cast<const ot::api::session::Client&>(api_),
         "ContactDataNym1",
         data1.Version(),
@@ -771,9 +782,9 @@ TEST_F(Test_ContactData, AddEmail)
 // TEST_F(Test_ContactData, AddEmail_different_versions)
 //{
 //    testAddItemMethod2(
-//        std::mem_fn<ot::ContactData(
+//        std::mem_fn<ot::contact::ContactData(
 //            const std::string&, const bool, const bool) const>(
-//            &ot::ContactData::AddEmail),
+//            &ot::contact::ContactData::AddEmail),
 //        ot::contact::ContactSectionName::Communication,
 //        ot::contact::ClaimType::Email,
 //        5,   // Change this to the old version of the section when a new
@@ -809,30 +820,31 @@ TEST_F(Test_ContactData, AddItem_claim)
 
 TEST_F(Test_ContactData, AddItem_claim_different_versions)
 {
-    const auto& group1 = std::shared_ptr<ot::ContactGroup>(new ot::ContactGroup(
-        "contactGroup1",
-        ot::contact::SectionType::Contract,
-        ot::contact::ClaimType::BCH,
-        {}));
+    const auto& group1 = std::shared_ptr<ot::contact::ContactGroup>(
+        new ot::contact::ContactGroup(
+            "contactGroup1",
+            ot::contact::SectionType::Contract,
+            ot::contact::ClaimType::BCH,
+            {}));
 
-    const auto& section1 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section1 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym1",
             3,  // version of CONTACTSECTION_CONTRACT section before
                 // CITEMTYPE_BCH was added
             3,
             ot::contact::SectionType::Contract,
-            ot::ContactSection::GroupMap{
+            ot::contact::ContactSection::GroupMap{
                 {ot::contact::ClaimType::BCH, group1}}));
 
-    const ot::ContactData data1(
+    const ot::contact::ContactData data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym1"),
         3,  // version of CONTACTSECTION_CONTRACT section before CITEMTYPE_BCH
             // was added
         3,
-        ot::ContactData::SectionMap{
+        ot::contact::ContactData::SectionMap{
             {ot::contact::SectionType::Contract, section1}});
 
     ot::Claim claim = std::make_tuple(
@@ -870,7 +882,7 @@ TEST_F(Test_ContactData, AddItem_item)
 
     // Add an item to a ContactData with a section.
     const auto& contactItem2 =
-        std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
+        std::shared_ptr<ot::contact::ContactItem>(new ot::contact::ContactItem(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
@@ -898,34 +910,35 @@ TEST_F(Test_ContactData, AddItem_item)
 
 TEST_F(Test_ContactData, AddItem_item_different_versions)
 {
-    const auto& group1 = std::shared_ptr<ot::ContactGroup>(new ot::ContactGroup(
-        "contactGroup1",
-        ot::contact::SectionType::Contract,
-        ot::contact::ClaimType::BCH,
-        {}));
+    const auto& group1 = std::shared_ptr<ot::contact::ContactGroup>(
+        new ot::contact::ContactGroup(
+            "contactGroup1",
+            ot::contact::SectionType::Contract,
+            ot::contact::ClaimType::BCH,
+            {}));
 
-    const auto& section1 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section1 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym1",
             3,  // version of CONTACTSECTION_CONTRACT section before
                 // CITEMTYPE_BCH was added
             3,
             ot::contact::SectionType::Contract,
-            ot::ContactSection::GroupMap{
+            ot::contact::ContactSection::GroupMap{
                 {ot::contact::ClaimType::BCH, group1}}));
 
-    const ot::ContactData data1(
+    const ot::contact::ContactData data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym1"),
         3,  // version of CONTACTSECTION_CONTRACT section before CITEMTYPE_BCH
             // was added
         3,
-        ot::ContactData::SectionMap{
+        ot::contact::ContactData::SectionMap{
             {ot::contact::SectionType::Contract, section1}});
 
     const auto& contactItem1 =
-        std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
+        std::shared_ptr<ot::contact::ContactItem>(new ot::contact::ContactItem(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("contactItem1"),
             CONTACT_CONTACT_DATA_VERSION,
@@ -973,9 +986,9 @@ TEST_F(Test_ContactData, AddPhoneNumber)
 // TEST_F(Test_ContactData, AddPhoneNumber_different_versions)
 //{
 //    testAddItemMethod2(
-//        std::mem_fn<ot::ContactData(
+//        std::mem_fn<ot::contact::ContactData(
 //            const std::string&, const bool, const bool) const>(
-//            &ot::ContactData::AddPhoneNumber),
+//            &ot::contact::ContactData::AddPhoneNumber),
 //        ot::contact::ContactSectionName::Communication,
 //        ot::contact::ClaimType::Phone,
 //        5,   // Change this to the old version of the section when a new
@@ -987,28 +1000,29 @@ TEST_F(Test_ContactData, AddPhoneNumber)
 TEST_F(Test_ContactData, AddPreferredOTServer)
 {
     // Add a server to a group with no primary.
-    const auto& group1 = std::shared_ptr<ot::ContactGroup>(new ot::ContactGroup(
-        "contactGroup1",
-        ot::contact::SectionType::Communication,
-        ot::contact::ClaimType::Opentxs,
-        {}));
+    const auto& group1 = std::shared_ptr<ot::contact::ContactGroup>(
+        new ot::contact::ContactGroup(
+            "contactGroup1",
+            ot::contact::SectionType::Communication,
+            ot::contact::ClaimType::Opentxs,
+            {}));
 
-    const auto& section1 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section1 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym1",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::contact::SectionType::Communication,
-            ot::ContactSection::GroupMap{
+            ot::contact::ContactSection::GroupMap{
                 {ot::contact::ClaimType::Opentxs, group1}}));
 
-    const ot::ContactData data1(
+    const ot::contact::ContactData data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym1"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::ContactData::SectionMap{
+        ot::contact::ContactData::SectionMap{
             {ot::contact::SectionType::Communication, section1}});
 
     const ot::OTIdentifier serverIdentifier1(
@@ -1316,12 +1330,13 @@ TEST_F(Test_ContactData, AddSocialMediaProfile)
 //{
 //    // Add a profile to the CONTACTSECTION_PROFILE section.
 //    testAddItemMethod3(
-//        std::mem_fn<ot::ContactData(
+//        std::mem_fn<ot::contact::ContactData(
 //            const std::string&,
 //            const ot::proto::ContactSectionName,
 //            const ot::contact::,
 //            const bool,
-//            const bool) const>(&ot::ContactData::AddSocialMediaProfile),
+//            const bool)
+//            const>(&ot::contact::ContactData::AddSocialMediaProfile),
 //        ot::contact::ContactSectionName::Profile,
 //        ot::contact::ClaimType::Twitter,
 //        5,   // Change this to the old version of the section when a new
@@ -1449,7 +1464,7 @@ TEST_F(Test_ContactData, Delete)
 {
     const auto& data1 = contactData_.AddItem(activeContactItem_);
     const auto& contactItem2 =
-        std::shared_ptr<ot::ContactItem>(new ot::ContactItem(
+        std::shared_ptr<ot::contact::ContactItem>(new ot::contact::ContactItem(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
@@ -1549,28 +1564,29 @@ TEST_F(Test_ContactData, Name)
     ASSERT_STREQ("", contactData_.Name().c_str());
 
     // Test when the scope group is emtpy.
-    const auto& group1 = std::shared_ptr<ot::ContactGroup>(new ot::ContactGroup(
-        "contactGroup1",
-        ot::contact::SectionType::Scope,
-        ot::contact::ClaimType::Individual,
-        {}));
+    const auto& group1 = std::shared_ptr<ot::contact::ContactGroup>(
+        new ot::contact::ContactGroup(
+            "contactGroup1",
+            ot::contact::SectionType::Scope,
+            ot::contact::ClaimType::Individual,
+            {}));
 
-    const auto& section1 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section1 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym1",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::contact::SectionType::Scope,
-            ot::ContactSection::GroupMap{
+            ot::contact::ContactSection::GroupMap{
                 {ot::contact::ClaimType::Individual, group1}}));
 
-    const ot::ContactData data1(
+    const ot::contact::ContactData data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym1"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::ContactData::SectionMap{
+        ot::contact::ContactData::SectionMap{
             {ot::contact::SectionType::Scope, section1}});
     // Verify that Name returns an empty string.
     ASSERT_STREQ("", data1.Name().c_str());
@@ -1608,28 +1624,29 @@ TEST_F(Test_ContactData, PreferredOTServer)
     ASSERT_TRUE(identifier->empty());
 
     // Test getting the preferred server with an empty group.
-    const auto& group1 = std::shared_ptr<ot::ContactGroup>(new ot::ContactGroup(
-        "contactGroup1",
-        ot::contact::SectionType::Communication,
-        ot::contact::ClaimType::Opentxs,
-        {}));
+    const auto& group1 = std::shared_ptr<ot::contact::ContactGroup>(
+        new ot::contact::ContactGroup(
+            "contactGroup1",
+            ot::contact::SectionType::Communication,
+            ot::contact::ClaimType::Opentxs,
+            {}));
 
-    const auto& section1 =
-        std::shared_ptr<ot::ContactSection>(new ot::ContactSection(
+    const auto& section1 = std::shared_ptr<ot::contact::ContactSection>(
+        new ot::contact::ContactSection(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "contactSectionNym1",
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::contact::SectionType::Communication,
-            ot::ContactSection::GroupMap{
+            ot::contact::ContactSection::GroupMap{
                 {ot::contact::ClaimType::Opentxs, group1}}));
 
-    const ot::ContactData data1(
+    const ot::contact::ContactData data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("contactDataNym1"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::ContactData::SectionMap{
+        ot::contact::ContactData::SectionMap{
             {ot::contact::SectionType::Communication, section1}});
 
     const auto& identifier2 = data1.PreferredOTServer();
@@ -1766,7 +1783,7 @@ TEST_F(Test_ContactData, SetScope)
 
 TEST_F(Test_ContactData, SetScope_different_versions)
 {
-    const ot::ContactData data1(
+    const ot::contact::ContactData data1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("dataNym1"),
         3,  // version of CONTACTSECTION_SCOPE section before CITEMTYPE_BOT

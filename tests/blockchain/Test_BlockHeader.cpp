@@ -8,6 +8,7 @@
 #include <string>
 #include <type_traits>
 
+#include "1_Internal.hpp"  // IWYU pragma: keep
 #include "Helpers.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "opentxs/OT.hpp"

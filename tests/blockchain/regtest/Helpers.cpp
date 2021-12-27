@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+#include "1_Internal.hpp"  // IWYU pragma: keep
 #include "integration/Helpers.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/network/blockchain/sync/Factory.hpp"
@@ -33,15 +34,15 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
@@ -62,8 +63,8 @@
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -1076,32 +1077,34 @@ Regtest_fixture_single::Regtest_fixture_single()
 Regtest_fixture_sync::Regtest_fixture_sync()
     : Regtest_fixture_base(
           true,
-          1,
+          2,
           ot::Options{}.SetBlockchainStorageLevel(2).SetBlockchainSyncEnabled(
               true))
-    , sync_sub_(
-          [&]() -> SyncSubscriber& {
-              if (!sync_subscriber_) {
-                  sync_subscriber_ = std::make_unique<SyncSubscriber>(
-                      client_1_, mined_blocks_);
-              }
+    , sync_sub_([&]() -> SyncSubscriber& {
+        if (!sync_subscriber_) {
+            sync_subscriber_ =
+                std::make_unique<SyncSubscriber>(client_2_, mined_blocks_);
+        }
 
-              return *sync_subscriber_;
-          }()
+        return *sync_subscriber_;
+    }())
+    , sync_req_([&]() -> SyncRequestor& {
+        if (!sync_requestor_) {
+            sync_requestor_ =
+                std::make_unique<SyncRequestor>(client_2_, mined_blocks_);
+        }
 
-              )
-    , sync_req_(
-          [&]() -> SyncRequestor& {
-              if (!sync_requestor_) {
-                  sync_requestor_ =
-                      std::make_unique<SyncRequestor>(client_1_, mined_blocks_);
-              }
-
-              return *sync_requestor_;
-          }()
-
-      )
+        return *sync_requestor_;
+    }())
 {
+    if (false == init_) {
+        auto& alex = const_cast<User&>(alex_);
+        alex.init(client_2_);
+
+        OT_ASSERT(alex.payment_code_ == GetVectors3().alice_.payment_code_);
+
+        init_ = true;
+    }
 }
 
 auto Regtest_fixture_sync::Connect() noexcept -> bool
@@ -1616,21 +1619,31 @@ auto SyncRequestor::get(const std::size_t index) const -> const zmq::Message&
 
 auto SyncRequestor::request(const Position& pos) const noexcept -> bool
 {
-    auto msg = opentxs::network::zeromq::Message{};
-    const auto req = opentxs::factory::BlockchainSyncRequest([&] {
+    return request(opentxs::factory::BlockchainSyncRequest([&] {
         auto out = otsync::StateData{};
         out.emplace_back(test_chain_, pos);
 
         return out;
-    }());
+    }()));
+}
 
-    if (false == req.Serialize(msg)) {
+auto SyncRequestor::request(const otsync::Base& command) const noexcept -> bool
+{
+    try {
+        return imp_->socket_->Send([&] {
+            auto out = opentxs::network::zeromq::Message{};
+
+            if (false == command.Serialize(out)) {
+                throw std::runtime_error{"serialization error"};
+            }
+
+            return out;
+        }());
+    } catch (...) {
         EXPECT_TRUE(false);
 
         return false;
     }
-
-    return imp_->socket_->Send(std::move(msg));
 }
 
 auto SyncRequestor::wait(const bool hard) noexcept -> bool
@@ -2287,6 +2300,9 @@ Regtest_fixture_base::WalletListen Regtest_fixture_base::wallet_listener_{};
 const User Regtest_fixture_hd::alice_{GetVectors3().alice_.words_, "Alice"};
 TXOs Regtest_fixture_hd::txos_{alice_};
 std::unique_ptr<ScanListener> Regtest_fixture_hd::listener_p_{};
+const User Regtest_fixture_sync::alex_{GetVectors3().alice_.words_, "Alex"};
+std::optional<ot::OTServerContract> Regtest_fixture_sync::notary_{std::nullopt};
+std::optional<ot::OTUnitDefinition> Regtest_fixture_sync::unit_{std::nullopt};
 std::unique_ptr<SyncSubscriber> Regtest_fixture_sync::sync_subscriber_{};
 std::unique_ptr<SyncRequestor> Regtest_fixture_sync::sync_requestor_{};
 Server Regtest_payment_code::server_1_{};

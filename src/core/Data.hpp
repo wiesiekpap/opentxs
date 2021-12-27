@@ -23,6 +23,8 @@ namespace opentxs::implementation
 class Data : virtual public opentxs::Data
 {
 public:
+    using Vector = std::vector<std::uint8_t>;
+
     auto operator==(const opentxs::Data& rhs) const noexcept -> bool final;
     auto operator!=(const opentxs::Data& rhs) const noexcept -> bool final;
     auto operator<(const opentxs::Data& rhs) const noexcept -> bool final;
@@ -117,8 +119,6 @@ public:
     ~Data() override = default;
 
 protected:
-    using Vector = std::vector<std::uint8_t>;
-
     Vector data_;
 
     void Initialize();

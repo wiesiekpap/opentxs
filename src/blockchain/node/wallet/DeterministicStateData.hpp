@@ -37,11 +37,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
 class Session;
 }  // namespace api
 
@@ -102,7 +97,6 @@ public:
 
     DeterministicStateData(
         const api::Session& api,
-        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         Accounts& parent,
         const WalletDatabase& db,

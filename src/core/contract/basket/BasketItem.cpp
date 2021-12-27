@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "opentxs/core/contract/basket/BasketItem.hpp"  // IWYU pragma: associated
 
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 
 namespace opentxs
 {

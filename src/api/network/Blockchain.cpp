@@ -63,7 +63,7 @@ auto Blockchain::EnabledChains() const noexcept -> std::set<Chain>
 }
 
 auto Blockchain::GetChain(const Chain type) const noexcept(false)
-    -> const blockchain::node::Manager&
+    -> const opentxs::blockchain::node::Manager&
 {
     return imp_->GetChain(type);
 }

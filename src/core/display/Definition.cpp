@@ -199,10 +199,6 @@ auto GetDefinition(core::UnitType in) noexcept -> const Definition&
         {core::UnitType::USD,
          {u8"USD",
           {
-              //             {u8"dollars", {u8"$", u8"", {{10, 3}}, 2, 3}},
-              //             {u8"cents", {u8"", u8"¢", {{10, 1}}, 0, 1}},
-              //             {u8"millions", {u8"$", u8"MM", {{10, 9}}, 0, 9}},
-              //             {u8"mills", {u8"", u8"₥", {{10, 0}}, 0, 0}},
               {u8"dollars", {u8"$", u8"", {{10, 0}}, 2, 3}},
               {u8"cents", {u8"", u8"¢", {{10, -2}}, 0, 1}},
               {u8"millions", {u8"$", u8"MM", {{10, 6}}, 0, 9}},

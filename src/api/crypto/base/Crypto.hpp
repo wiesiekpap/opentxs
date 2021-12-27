@@ -72,7 +72,7 @@ class Sodium;
 }  // namespace crypto
 }  // namespace opentxs
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 class Crypto final : public internal::Crypto
 {
@@ -156,4 +156,4 @@ private:
     auto operator=(const Crypto&) -> Crypto& = delete;
     auto operator=(Crypto&&) -> Crypto& = delete;
 };
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

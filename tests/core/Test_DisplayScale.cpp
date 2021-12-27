@@ -95,22 +95,22 @@ TEST(DisplayScale, usd)
         EXPECT_EQ(usd.Format(amount, 0, 0), expected);
     }
 
-    auto half = opentxs::Amount::signed_amount(0, 5, 10);
+    auto half = opentxs::signed_amount(0, 5, 10);
     EXPECT_EQ(usd.Format(half, 0), std::string{u8"$0.50"});
 
-    half = opentxs::Amount::unsigned_amount(1, 5, 10);
+    half = opentxs::unsigned_amount(1, 5, 10);
     EXPECT_EQ(usd.Format(half, 0), std::string{u8"$1.50"});
 
-    auto threequarter = opentxs::Amount::signed_amount(2, 75, 100);
+    auto threequarter = opentxs::signed_amount(2, 75, 100);
     EXPECT_EQ(usd.Format(threequarter, 0), std::string{u8"$2.75"});
 
-    threequarter = opentxs::Amount::unsigned_amount(3, 75, 100);
+    threequarter = opentxs::unsigned_amount(3, 75, 100);
     EXPECT_EQ(usd.Format(threequarter, 0), std::string{u8"$3.75"});
 
-    auto seveneighths = opentxs::Amount::signed_amount(4, 7, 8);
+    auto seveneighths = opentxs::signed_amount(4, 7, 8);
     EXPECT_EQ(usd.Format(seveneighths, 0, 0, 3), std::string{u8"$4.875"});
 
-    seveneighths = opentxs::Amount::unsigned_amount(5, 7, 8);
+    seveneighths = opentxs::unsigned_amount(5, 7, 8);
     EXPECT_EQ(usd.Format(seveneighths, 0, 0, 3), std::string{u8"$5.875"});
 }
 

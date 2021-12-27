@@ -4,14 +4,50 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 // clang-format off
-#ifndef OPENTXS_VERSION_HPP
-#define OPENTXS_VERSION_HPP
+#pragma once
 
-#include "opentxs/opentxs_export.hpp"  // IWYU pragma: export
+#include "opentxs/Export.hpp"  // IWYU pragma: export
 
-#define OT_CASH @OT_CASH_EXPORT@
-#define OT_CASH_USING_LUCRE @CASH_LUCRE_EXPORT@
 #define OT_SCRIPT_CHAI @SCRIPT_CHAI_EXPORT@
 #define OT_BLOCKCHAIN @OT_BLOCKCHAIN_EXPORT@
-#endif // OPENTXS_VERSION_HPP
+
+namespace opentxs
+{
+inline namespace v1 {
+namespace api
+{
+namespace crypto
+{
+namespace internal
+{
+}  // namespace internal
+}  // namespace crypto
+
+namespace internal
+{
+}  // namespace internal
+
+namespace network
+{
+namespace internal
+{
+}  // namespace internal
+}  // namespace network
+
+namespace session
+{
+namespace internal
+{
+}  // namespace internal
+}  // namespace session
+}  // namespace api
+
+namespace contact
+{
+namespace internal
+{
+}  // namespace internal
+}  // namespace contact
+}  // namespace v1
+}  // namespace opentxs
 // clang-format on

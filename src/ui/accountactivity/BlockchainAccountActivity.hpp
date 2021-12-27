@@ -18,7 +18,6 @@
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/ui/UI.hpp"
@@ -30,9 +29,9 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"

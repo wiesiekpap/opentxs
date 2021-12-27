@@ -21,21 +21,13 @@
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "serialization/protobuf/BlockchainTransactionInput.pb.h"
 
 namespace opentxs
 {
-namespace api
-{
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-}  // namespace api
-
 namespace proto
 {
 class BlockchainTransaction;
@@ -50,11 +42,9 @@ class Inputs final : public internal::Inputs
 public:
     using InputList = std::vector<std::unique_ptr<internal::Input>>;
 
-    auto AssociatedLocalNyms(
-        const api::crypto::Blockchain& blockchain,
-        std::vector<OTNymID>& output) const noexcept -> void final;
+    auto AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
+        -> void final;
     auto AssociatedRemoteContacts(
-        const api::crypto::Blockchain& blockchain,
         std::vector<OTIdentifier>& output) const noexcept -> void final;
     auto at(const std::size_t position) const noexcept(false)
         -> const value_type& final
@@ -90,21 +80,18 @@ public:
         return *this;
     }
     auto Keys() const noexcept -> std::vector<crypto::Key> final;
-    auto NetBalanceChange(
-        const api::crypto::Blockchain& blockchain,
-        const identifier::Nym& nym) const noexcept -> opentxs::Amount final;
+    auto NetBalanceChange(const identifier::Nym& nym) const noexcept
+        -> opentxs::Amount final;
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
-    auto Serialize(
-        const api::crypto::Blockchain& blockchain,
-        proto::BlockchainTransaction& destination) const noexcept -> bool final;
+    auto Serialize(proto::BlockchainTransaction& destination) const noexcept
+        -> bool final;
     auto SerializeNormalized(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
     auto size() const noexcept -> std::size_t final { return inputs_.size(); }
 
     auto AnyoneCanPay(const std::size_t index) noexcept -> bool final;
     auto AssociatePreviousOutput(
-        const api::crypto::Blockchain& blockchain,
         const std::size_t inputIndex,
         const internal::Output& output) noexcept -> bool final;
     auto Internal() noexcept -> internal::Inputs& final { return *this; }
@@ -112,9 +99,7 @@ public:
     {
         return *inputs_.at(position);
     }
-    auto MergeMetadata(
-        const api::crypto::Blockchain& api,
-        const internal::Inputs& rhs) noexcept -> bool final;
+    auto MergeMetadata(const internal::Inputs& rhs) noexcept -> bool final;
     auto ReplaceScript(const std::size_t index) noexcept -> bool final;
     auto SetKeyData(const KeyData& data) noexcept -> void final;
 

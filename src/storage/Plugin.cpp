@@ -7,7 +7,7 @@
 #include "1_Internal.hpp"      // IWYU pragma: associated
 #include "storage/Plugin.hpp"  // IWYU pragma: associated
 
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/network/Asio.hpp"

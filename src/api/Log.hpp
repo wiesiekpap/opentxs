@@ -24,7 +24,7 @@ class Message;
 }  // namespace network
 }  // namespace opentxs
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 class Log final : virtual public api::internal::Log
 {
@@ -58,4 +58,4 @@ private:
     auto operator=(const Log&) -> Log& = delete;
     auto operator=(Log&&) -> Log& = delete;
 };
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "ui/base/List.hpp"
 
 namespace opentxs::factory

@@ -34,7 +34,7 @@
 #include "serialization/protobuf/ContactItem.pb.h"
 #include "serialization/protobuf/ContactSection.pb.h"
 
-namespace opentxs
+namespace opentxs::contact
 {
 static auto check_version(
     const VersionNumber in,
@@ -1117,4 +1117,4 @@ auto ContactData::Type() const -> contact::ClaimType
 auto ContactData::Version() const -> VersionNumber { return imp_->version_; }
 
 ContactData::~ContactData() = default;
-}  // namespace opentxs
+}  // namespace opentxs::contact

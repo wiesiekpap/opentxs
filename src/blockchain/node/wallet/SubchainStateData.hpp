@@ -41,7 +41,7 @@
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -51,11 +51,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
 class Session;
 }  // namespace api
 
@@ -117,7 +112,6 @@ public:
     using SubchainIndex = WalletDatabase::pSubchainIndex;
 
     const api::Session& api_;
-    const api::crypto::Blockchain& crypto_;
     const node::internal::Network& node_;
     Accounts& parent_;
     const WalletDatabase& db_;
@@ -201,7 +195,6 @@ protected:
 
     SubchainStateData(
         const api::Session& api,
-        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         Accounts& parent,
         const WalletDatabase& db,

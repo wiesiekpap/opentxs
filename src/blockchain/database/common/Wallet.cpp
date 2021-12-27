@@ -143,7 +143,7 @@ auto Wallet::LoadTransaction(const ReadView txid) const noexcept
                 bulk_.ReadView(index));
         }();
 
-        return factory::BitcoinTransaction(api_, blockchain_, proto);
+        return factory::BitcoinTransaction(api_, proto);
     } catch (const std::exception& e) {
         LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
 
@@ -181,7 +181,7 @@ auto Wallet::StoreTransaction(
 {
     try {
         const auto proto = [&] {
-            auto out = in.Internal().Serialize(blockchain_);
+            auto out = in.Internal().Serialize();
 
             if (false == out.has_value()) {
                 throw std::runtime_error{"Failed to serialize transaction"};
@@ -302,8 +302,8 @@ auto Wallet::update_contact(
     return output;
 }
 
-auto Wallet::UpdateContact(const Contact& contact) const noexcept
-    -> std::vector<pTxid>
+auto Wallet::UpdateContact(const opentxs::contact::Contact& contact)
+    const noexcept -> std::vector<pTxid>
 {
     auto incoming = std::set<OTData>{};
 
@@ -324,8 +324,9 @@ auto Wallet::UpdateContact(const Contact& contact) const noexcept
     return output;
 }
 
-auto Wallet::UpdateMergedContact(const Contact& parent, const Contact& child)
-    const noexcept -> std::vector<pTxid>
+auto Wallet::UpdateMergedContact(
+    const opentxs::contact::Contact& parent,
+    const opentxs::contact::Contact& child) const noexcept -> std::vector<pTxid>
 {
     auto deleted = std::set<OTData>{};
     auto incoming = std::set<OTData>{};

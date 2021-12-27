@@ -10,6 +10,7 @@
 #include <stdexcept>
 
 #include "2_Factory.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/identity/wot/verification/Verification.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -165,7 +166,7 @@ auto Item::calculate_id(
     const identifier::Nym& nym) noexcept(false) -> OTIdentifier
 {
     const auto serialized = id_form(version, claim, value, start, end, valid);
-    auto preimage = api.Factory().Data(serialized);
+    auto preimage = api.Factory().InternalSession().Data(serialized);
     preimage.get() += nym;
     auto output = api.Factory().Identifier();
 

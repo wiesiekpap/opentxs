@@ -25,22 +25,20 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/PaymentWorkflowState.hpp"
-#include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/contact/Contact.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -51,6 +49,8 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/otx/client/PaymentWorkflowState.hpp"
+#include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -260,10 +260,8 @@ void Test_Rpc_Async::setup()
     auto& server = ot.StartNotarySession(
         ArgList(), static_cast<int>(ot.NotarySessionCount()), true);
     auto reasonServer = server.Factory().PasswordPrompt(__func__);
-#if OT_CASH
     intro_server.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
     server.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
-#endif
     auto server_contract = server.Wallet().Server(server.ID());
     intro_server.Wallet().Server(server_contract->PublicContract());
     server_id_ = identifier::Server::Factory(server_contract->ID()->str());
@@ -608,8 +606,8 @@ TEST_F(Test_Rpc_Async, Get_Pending_Payments)
     do {
         workflows = workflow.List(
             receiver_nym_id_,
-            api::client::PaymentWorkflowType::IncomingCheque,
-            api::client::PaymentWorkflowState::Conveyed);
+            otx::client::PaymentWorkflowType::IncomingCheque,
+            otx::client::PaymentWorkflowState::Conveyed);
     } while (workflows.empty() && std::time(nullptr) < end);
 
     ASSERT_TRUE(!workflows.empty());
@@ -778,8 +776,8 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
     do {
         workflows = workflow.List(
             sender_nym_id_,
-            api::client::PaymentWorkflowType::OutgoingCheque,
-            api::client::PaymentWorkflowState::Conveyed);
+            otx::client::PaymentWorkflowType::OutgoingCheque,
+            otx::client::PaymentWorkflowState::Conveyed);
 
         if (workflows.empty()) { Sleep(std::chrono::milliseconds(100)); }
     } while (workflows.empty() && std::time(nullptr) < end);
@@ -845,8 +843,8 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
     do {
         receiverworkflows = receiverworkflow.List(
             receiver_nym_id_,
-            api::client::PaymentWorkflowType::IncomingCheque,
-            api::client::PaymentWorkflowState::Completed);
+            otx::client::PaymentWorkflowType::IncomingCheque,
+            otx::client::PaymentWorkflowState::Completed);
 
         if (receiverworkflows.empty()) {
             Sleep(std::chrono::milliseconds(100));
@@ -1018,8 +1016,8 @@ TEST_F(Test_Rpc_Async, Accept_2_Pending_Payments)
     do {
         workflows = workflow.List(
             receiver_nym_id_,
-            api::client::PaymentWorkflowType::IncomingCheque,
-            api::client::PaymentWorkflowState::Conveyed);
+            otx::client::PaymentWorkflowType::IncomingCheque,
+            otx::client::PaymentWorkflowState::Conveyed);
     } while (workflows.empty() && std::time(nullptr) < end);
 
     ASSERT_TRUE(!workflows.empty());

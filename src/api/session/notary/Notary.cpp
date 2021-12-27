@@ -27,6 +27,7 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/network/Factory.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/otx/blind/Mint.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
@@ -36,9 +37,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#if OT_CASH
-#include "opentxs/blind/Mint.hpp"
-#endif  // OT_CASH
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
@@ -50,22 +48,21 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
-#include "server/MessageProcessor.hpp"
-#include "server/Server.hpp"
-#include "server/ServerSettings.hpp"
+#include "otx/server/MessageProcessor.hpp"
+#include "otx/server/Server.hpp"
+#include "otx/server/ServerSettings.hpp"
 
-#if OT_CASH
 #define SERIES_DIVIDER "."
 #define PUBLIC_SERIES ".PUBLIC"
 #define MAX_MINT_SERIES 10000
 #define MINT_EXPIRE_MONTHS 6
 #define MINT_VALID_MONTHS 12
 #define MINT_GENERATE_DAYS 7
-#endif  // OT_CASH
 
 namespace opentxs::factory
 {
@@ -79,7 +76,7 @@ auto NotarySession(
     const std::string& dataFolder,
     const int instance) -> std::unique_ptr<api::session::Notary>
 {
-    using ReturnType = api::session::implementation::Notary;
+    using ReturnType = api::session::imp::Notary;
 
     try {
         auto output = std::make_unique<ReturnType>(
@@ -130,7 +127,7 @@ namespace opentxs::api::session
 auto Notary::DefaultMintKeyBytes() noexcept -> std::size_t { return 1536u; }
 }  // namespace opentxs::api::session
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 Notary::Notary(
     const api::Context& parent,
@@ -167,7 +164,6 @@ Notary::Notary(
     , message_processor_p_(
           new opentxs::server::MessageProcessor(server_, reason_))
     , message_processor_(*message_processor_p_)
-#if OT_CASH
     , mint_thread_()
     , mint_lock_()
     , mint_update_lock_()
@@ -175,7 +171,6 @@ Notary::Notary(
     , mints_()
     , mints_to_check_()
     , mint_key_size_(args_.DefaultMintKeyBytes())
-#endif  // OT_CASH
 {
     wallet_ = factory::WalletAPI(*this);
 
@@ -204,7 +199,6 @@ void Notary::DropOutgoing(const int count) const
     return message_processor_.DropOutgoing(count);
 }
 
-#if OT_CASH
 void Notary::generate_mint(
     const std::string& serverID,
     const std::string& unitID,
@@ -213,7 +207,7 @@ void Notary::generate_mint(
     const auto unit = Factory().UnitID(unitID);
     const auto server = Factory().ServerID(serverID);
     const auto& nym = server_.GetServerNym();
-    auto mint = GetPrivateMint(unit, series);
+    auto& mint = GetPrivateMint(unit, series);
 
     if (mint) {
         LogError()(OT_PRETTY_CLASS())("Mint already exists.").Flush();
@@ -223,7 +217,7 @@ void Notary::generate_mint(
 
     const std::string seriesID =
         std::string(SERIES_DIVIDER) + std::to_string(series);
-    mint.reset(factory_.Mint(server, nym.ID(), unit).release());
+    mint = factory_.Mint(server, nym.ID(), unit);
 
     OT_ASSERT(mint)
 
@@ -242,7 +236,8 @@ void Notary::generate_mint(
         return;
     }
 
-    mint->GenerateNewMint(
+    auto& internal = mint.Internal();
+    internal.GenerateNewMint(
         *wallet_,
         series,
         now,
@@ -269,18 +264,17 @@ void Notary::generate_mint(
         mints_.at(unitID).erase(PUBLIC_SERIES);
     }
 
-    mint->SetSavePrivateKeys(true);
-    mint->SignContract(nym, reason_);
-    mint->SaveContract();
-    mint->SaveMint(seriesID.c_str());
-    mint->SetSavePrivateKeys(false);
-    mint->ReleaseSignatures();
-    mint->SignContract(nym, reason_);
-    mint->SaveContract();
-    mint->SaveMint(PUBLIC_SERIES);
-    mint->SaveMint();
+    internal.SetSavePrivateKeys(true);
+    internal.SignContract(nym, reason_);
+    internal.SaveContract();
+    internal.SaveMint(seriesID.c_str());
+    internal.SetSavePrivateKeys(false);
+    internal.ReleaseSignatures();
+    internal.SignContract(nym, reason_);
+    internal.SaveContract();
+    internal.SaveMint(PUBLIC_SERIES);
+    internal.SaveMint();
 }
-#endif  // OT_CASH
 
 auto Notary::GetAdminNym() const -> std::string
 {
@@ -312,42 +306,65 @@ auto Notary::GetAdminPassword() const -> std::string
     return {};
 }
 
-#if OT_CASH
 auto Notary::GetPrivateMint(
     const identifier::UnitDefinition& unitID,
-    std::uint32_t index) const -> std::shared_ptr<blind::Mint>
+    std::uint32_t index) const noexcept -> otx::blind::Mint&
 {
-    opentxs::Lock lock(mint_lock_);
+    auto lock = opentxs::Lock{mint_lock_};
     const std::string id{unitID.str()};
     const std::string seriesID =
         std::string(SERIES_DIVIDER) + std::to_string(index);
     auto& seriesMap = mints_[id];
     // Modifying the private version may invalidate the public version
     seriesMap.erase(PUBLIC_SERIES);
-    auto& output = seriesMap[seriesID];
 
-    if (false == bool(output)) {
-        output = load_private_mint(lock, id, seriesID);
+    auto& output = [&]() -> auto&
+    {
+        if (auto it = seriesMap.find(seriesID); seriesMap.end() != it) {
+
+            return it->second;
+        }
+
+        auto [it, added] = seriesMap.emplace(seriesID, *this);
+
+        OT_ASSERT(added);
+
+        return it->second;
     }
+    ();
+
+    if (!output) { output = load_private_mint(lock, id, seriesID); }
 
     return output;
 }
 
-auto Notary::GetPublicMint(const identifier::UnitDefinition& unitID) const
-    -> std::shared_ptr<const blind::Mint>
+auto Notary::GetPublicMint(const identifier::UnitDefinition& unitID)
+    const noexcept -> otx::blind::Mint&
 {
-    opentxs::Lock lock(mint_lock_);
+    auto lock = opentxs::Lock{mint_lock_};
     const std::string id{unitID.str()};
     const std::string seriesID{PUBLIC_SERIES};
-    auto& output = mints_[id][seriesID];
+    auto& output = [&]() -> auto&
+    {
+        auto& map = mints_[id];
 
-    if (false == bool(output)) {
-        output = load_public_mint(lock, id, seriesID);
+        if (auto it = map.find(seriesID); map.end() != it) {
+
+            return it->second;
+        }
+
+        auto [it, added] = map.emplace(seriesID, *this);
+
+        OT_ASSERT(added);
+
+        return it->second;
     }
+    ();
+
+    if (!output) { output = load_public_mint(lock, id, seriesID); }
 
     return output;
 }
-#endif  // OT_CASH
 
 auto Notary::GetUserName() const -> std::string { return args_.NotaryName(); }
 
@@ -360,10 +377,7 @@ auto Notary::ID() const -> const identifier::Server&
 
 void Notary::Init()
 {
-#if OT_CASH
     mint_thread_ = std::thread(&Notary::mint, this);
-#endif  // OT_CASH
-
     Scheduler::Start(storage_.get(), network_.DHT());
     Storage::init(factory_, crypto_.Seed());
 
@@ -376,7 +390,6 @@ auto Notary::InprocEndpoint() const -> std::string
         "notary", instance_, 1);
 }
 
-#if OT_CASH
 auto Notary::last_generated_series(
     const std::string& serverID,
     const std::string& unitID) const -> std::int32_t
@@ -403,31 +416,22 @@ auto Notary::last_generated_series(
 auto Notary::load_private_mint(
     const opentxs::Lock& lock,
     const std::string& unitID,
-    const std::string seriesID) const -> std::shared_ptr<blind::Mint>
+    const std::string seriesID) const -> otx::blind::Mint
 {
-    OT_ASSERT(verify_lock(lock, mint_lock_));
-
-    std::shared_ptr<blind::Mint> mint{
-        factory_.Mint(ID(), NymID(), Factory().UnitID(unitID))};
-
-    OT_ASSERT(mint);
-
-    return verify_mint(lock, unitID, seriesID, mint);
+    return verify_mint(
+        lock,
+        unitID,
+        seriesID,
+        factory_.Mint(ID(), NymID(), Factory().UnitID(unitID)));
 }
 
 auto Notary::load_public_mint(
     const opentxs::Lock& lock,
     const std::string& unitID,
-    const std::string seriesID) const -> std::shared_ptr<blind::Mint>
+    const std::string seriesID) const -> otx::blind::Mint
 {
-    OT_ASSERT(verify_lock(lock, mint_lock_));
-
-    std::shared_ptr<blind::Mint> mint{
-        factory_.Mint(ID(), Factory().UnitID(unitID))};
-
-    OT_ASSERT(mint);
-
-    return verify_mint(lock, unitID, seriesID, mint);
+    return verify_mint(
+        lock, unitID, seriesID, factory_.Mint(ID(), Factory().UnitID(unitID)));
 }
 
 void Notary::mint() const
@@ -466,9 +470,9 @@ void Notary::mint() const
             continue;
         }
 
-        auto mint = GetPrivateMint(Factory().UnitID(unitID), last);
+        auto& mint = GetPrivateMint(Factory().UnitID(unitID), last);
 
-        if (false == bool(mint)) {
+        if (!mint) {
             LogError()(OT_PRETTY_CLASS())("Failed to load existing series.")
                 .Flush();
 
@@ -476,7 +480,7 @@ void Notary::mint() const
         }
 
         const auto now = Clock::now();
-        const auto expires = mint->GetExpiration();
+        const auto expires = mint.GetExpiration();
         const std::chrono::seconds limit(
             std::chrono::hours(24 * MINT_GENERATE_DAYS));
         const bool generate = ((now + limit) > expires);
@@ -490,7 +494,6 @@ void Notary::mint() const
         }
     }
 }
-#endif  // OT_CASH
 
 auto Notary::NymID() const -> const identifier::Nym&
 {
@@ -499,7 +502,6 @@ auto Notary::NymID() const -> const identifier::Nym&
 
 void Notary::ScanMints() const
 {
-#if OT_CASH
     opentxs::Lock scanLock(mint_scan_lock_);
     opentxs::Lock updateLock(mint_update_lock_, std::defer_lock);
     const auto units = wallet_->UnitDefinitionList();
@@ -510,7 +512,6 @@ void Notary::ScanMints() const
         mints_to_check_.push_front(id);
         updateLock.unlock();
     }
-#endif  // OT_CASH
 }
 
 void Notary::Start()
@@ -529,18 +530,13 @@ void Notary::Start()
     message_processor_.init(
         (core::AddressType::Inproc == type), port, privateKey);
     message_processor_.Start();
-#if OT_CASH
     ScanMints();
-#endif  // OT_CASH
 }
 
-void Notary::UpdateMint(
-    [[maybe_unused]] const identifier::UnitDefinition& unitID) const
+void Notary::UpdateMint(const identifier::UnitDefinition& unitID) const
 {
-#if OT_CASH
     opentxs::Lock updateLock(mint_update_lock_);
     mints_to_check_.push_front(unitID.str());
-#endif  // OT_CASH
 }
 
 auto Notary::verify_lock(const opentxs::Lock& lock, const std::mutex& mutex)
@@ -561,28 +557,33 @@ auto Notary::verify_lock(const opentxs::Lock& lock, const std::mutex& mutex)
     return true;
 }
 
-#if OT_CASH
 auto Notary::verify_mint(
     const opentxs::Lock& lock,
     const std::string& unitID,
     const std::string seriesID,
-    std::shared_ptr<blind::Mint>& mint) const -> std::shared_ptr<blind::Mint>
+    otx::blind::Mint&& mint) const -> otx::blind::Mint
 {
     OT_ASSERT(verify_lock(lock, mint_lock_));
 
-    if (false == mint->LoadMint(seriesID.c_str())) {
-        UpdateMint(Factory().UnitID(unitID));
+    if (mint) {
+        auto& internal = mint.Internal();
 
-        return {};
+        if (false == internal.LoadMint(seriesID.c_str())) {
+            UpdateMint(Factory().UnitID(unitID));
+
+            return otx::blind::Mint{*this};
+        }
+
+        if (false == internal.VerifyMint(server_.GetServerNym())) {
+            LogError()(OT_PRETTY_CLASS())("Invalid mint for ")(unitID).Flush();
+
+            return otx::blind::Mint{*this};
+        }
+    } else {
+        LogError()(OT_PRETTY_CLASS())("Missing mint for ")(unitID).Flush();
     }
 
-    if (false == mint->VerifyMint(server_.GetServerNym())) {
-        LogError()(OT_PRETTY_CLASS())("Invalid mint for ")(unitID).Flush();
-
-        return {};
-    }
-
-    return mint;
+    return std::move(mint);
 }
 
 auto Notary::verify_mint_directory(const std::string& serverID) const -> bool
@@ -601,15 +602,13 @@ auto Notary::verify_mint_directory(const std::string& serverID) const -> bool
 
     return parent_.Internal().Legacy().BuildFolderPath(serverDir);
 }
-#endif  // OT_CASH
 
 Notary::~Notary()
 {
     running_.Off();
-#if OT_CASH
+
     if (mint_thread_.joinable()) { mint_thread_.join(); }
-#endif  // OT_CASH
 
     Cleanup();
 }
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

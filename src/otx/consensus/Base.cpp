@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -18,10 +19,10 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/NymFile.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -434,7 +435,7 @@ auto Base::mutable_Nymfile(const PasswordPrompt& reason)
     return api_.Wallet().Internal().mutable_Nymfile(nym_->ID(), reason);
 }
 
-auto Base::Name() const -> std::string
+auto Base::Name() const noexcept -> std::string
 {
     auto lock = Lock{lock_};
 
@@ -583,9 +584,9 @@ auto Base::serialize(const Lock& lock, const otx::ConsensusType type) const
     return output;
 }
 
-auto Base::Serialize() const -> OTData
+auto Base::Serialize() const noexcept -> OTData
 {
-    return api_.Factory().Data([&] {
+    return api_.Factory().InternalSession().Data([&] {
         auto proto = proto::Context{};
         Serialize(proto);
 

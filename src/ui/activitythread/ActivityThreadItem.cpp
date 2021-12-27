@@ -11,10 +11,10 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/client/Activity.hpp"
+#include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "ui/base/Widget.hpp"
 

@@ -8,19 +8,20 @@
 #include <gtest/gtest.h>
 #include <future>
 
+#include "internal/api/session/Client.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/client/Pair.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/Pair.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/display/Scale.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/PaymentType.hpp"
@@ -59,7 +60,7 @@ TEST_F(RPC_fixture, preconditions)
         const auto& server = ot_.NotarySession(0);
         const auto& session = StartClient(0);
         session.OTX().DisableAutoaccept();
-        session.Pair().Stop().get();
+        session.InternalClient().Pair().Stop().get();
         const auto instance = session.Instance();
         const auto& nyms = local_nym_map_.at(instance);
         const auto& seeds = seed_map_.at(instance);

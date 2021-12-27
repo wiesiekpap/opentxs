@@ -7,8 +7,8 @@
 #include <zmq.h>
 #include <string>
 
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"

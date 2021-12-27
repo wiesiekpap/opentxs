@@ -29,14 +29,15 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/SendResult.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -75,12 +76,10 @@ public:
     }
 
     Imp(const api::Session& api,
-        const api::crypto::Blockchain& crypto,
         const node::internal::Network& node,
         const node::internal::WalletDatabase& db,
         const Type chain) noexcept
         : api_(api)
-        , crypto_(crypto)
         , node_(node)
         , db_(db)
         , chain_(chain)
@@ -194,7 +193,6 @@ private:
     };
 
     const api::Session& api_;
-    const api::crypto::Blockchain& crypto_;
     const node::internal::Network& node_;
     const node::internal::WalletDatabase& db_;
     const Type chain_;
@@ -217,7 +215,7 @@ private:
         auto rc = SendResult::UnspecifiedError;
         auto txid{blank};
         auto builder = BitcoinTransactionBuilder{
-            api_, crypto_, db_, id, proposal, chain_, node_.FeeRate()};
+            api_, db_, id, proposal, chain_, node_.FeeRate()};
         auto post = ScopeGuard{[&] {
             switch (output) {
                 case BuildResult::TemporaryFailure: {
@@ -298,7 +296,7 @@ private:
         const auto& transaction = *pTransaction;
 
         {
-            const auto proto = transaction.Serialize(crypto_);
+            const auto proto = transaction.Serialize();
 
             if (false == proto.has_value()) {
                 LogError()(OT_PRETTY_CLASS())("Failed to serialize transaction")
@@ -362,7 +360,8 @@ private:
                     return out;
                 }();
                 const auto& account =
-                    crypto_.PaymentCodeSubaccount(nymID, accountID);
+                    api_.Crypto().Blockchain().PaymentCodeSubaccount(
+                        nymID, accountID);
                 account.AddNotification(transaction.ID());
             }
         } catch (const std::exception& e) {
@@ -423,8 +422,8 @@ private:
 
             if (false == proposal.has_value()) { continue; }
 
-            auto pTx = factory::BitcoinTransaction(
-                api_, crypto_, proposal.value().finished());
+            auto pTx =
+                factory::BitcoinTransaction(api_, proposal.value().finished());
 
             if (false == bool(pTx)) { continue; }
 
@@ -484,11 +483,10 @@ private:
 
 Proposals::Proposals(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     const node::internal::WalletDatabase& db,
     const Type chain) noexcept
-    : imp_(std::make_unique<Imp>(api, crypto, node, db, chain))
+    : imp_(std::make_unique<Imp>(api, node, db, chain))
 {
     OT_ASSERT(imp_);
 }

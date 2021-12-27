@@ -10,7 +10,7 @@
 #include <mutex>
 #include <string>
 
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 

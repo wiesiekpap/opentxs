@@ -11,21 +11,19 @@
 #include <stdexcept>
 
 #include "Proto.tpp"
-#if OT_CASH
-#include "internal/blind/Factory.hpp"
-#endif  // OT_CASH
+#include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/otx/blind/Factory.hpp"
+#include "internal/otx/blind/Purse.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/PeerObject.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#if OT_CASH
-#include "opentxs/blind/Purse.hpp"
-#endif  // OT_CASH
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
@@ -34,6 +32,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Nym.pb.h"
@@ -83,16 +82,14 @@ auto PeerObject(
     }
 }
 
-#if OT_CASH
 auto PeerObject(
     const api::Session& api,
     const Nym_p& senderNym,
-    const std::shared_ptr<blind::Purse> purse) noexcept
-    -> std::unique_ptr<opentxs::PeerObject>
+    otx::blind::Purse&& purse) noexcept -> std::unique_ptr<opentxs::PeerObject>
 {
     try {
         std::unique_ptr<opentxs::PeerObject> output(
-            new peer::implementation::Object(api, senderNym, purse));
+            new peer::implementation::Object(api, senderNym, std::move(purse)));
 
         if (!output->Validate()) { output.reset(); }
 
@@ -103,7 +100,6 @@ auto PeerObject(
         return nullptr;
     }
 }
-#endif
 
 auto PeerObject(
     const api::Session& api,
@@ -147,8 +143,7 @@ auto PeerObject(
 }
 
 auto PeerObject(
-    const api::client::Contacts& contacts,
-    const api::Session& api,
+    const api::session::Client& api,
     const Nym_p& signerNym,
     const proto::PeerObject& serialized) noexcept
     -> std::unique_ptr<opentxs::PeerObject>
@@ -159,7 +154,7 @@ auto PeerObject(
 
         if (valid) {
             output = std::make_unique<peer::implementation::Object>(
-                contacts, api, signerNym, serialized);
+                api, signerNym, serialized);
         } else {
             throw std::runtime_error{"Invalid peer object"};
         }
@@ -175,8 +170,7 @@ auto PeerObject(
 }
 
 auto PeerObject(
-    const api::client::Contacts& contacts,
-    const api::Session& api,
+    const api::session::Client& api,
     const Nym_p& recipientNym,
     const opentxs::Armored& encrypted,
     const opentxs::PasswordPrompt& reason) noexcept
@@ -199,7 +193,7 @@ auto PeerObject(
 
         auto serialized = proto::StringToProto<proto::PeerObject>(contents);
 
-        return factory::PeerObject(contacts, api, notUsed, serialized);
+        return factory::PeerObject(api, notUsed, serialized);
     } catch (const std::exception& e) {
         LogError()("opentxs::factory::")(__func__)(": ")(e.what()).Flush();
 
@@ -217,30 +211,25 @@ Object::Object(
     const std::string& payment,
     const OTPeerReply reply,
     const OTPeerRequest request,
-#if OT_CASH
-    const std::shared_ptr<blind::Purse> purse,
-#endif
+    otx::blind::Purse&& purse,
     const contract::peer::PeerObjectType type,
-    const VersionNumber version)
+    const VersionNumber version) noexcept
     : api_(api)
     , nym_(nym)
     , message_(message.empty() ? nullptr : new std::string(message))
     , payment_(payment.empty() ? nullptr : new std::string(payment))
     , reply_(reply)
     , request_(request)
-#if OT_CASH
-    , purse_(purse)
-#endif
+    , purse_(std::move(purse))
     , type_(type)
     , version_(version)
 {
 }
 
 Object::Object(
-    const api::client::Contacts& contacts,
-    const api::Session& api,
+    const api::session::Client& api,
     const Nym_p& signerNym,
-    const proto::PeerObject serialized)
+    const proto::PeerObject serialized) noexcept
     : Object(
           api,
           {},
@@ -248,18 +237,16 @@ Object::Object(
           {},
           api.Factory().PeerReply(),
           api.Factory().PeerRequest(),
-#if OT_CASH
           {},
-#endif
           translate(serialized.type()),
           serialized.version())
 {
     Nym_p objectNym{nullptr};
 
     if (serialized.has_nym()) {
-        objectNym = api_.Wallet().Nym(serialized.nym());
+        objectNym = api_.Wallet().Internal().Nym(serialized.nym());
 
-        if (objectNym) { contacts.Update(*objectNym); }
+        if (objectNym) { api.Contacts().Update(*objectNym); }
     }
 
     if (signerNym) {
@@ -291,9 +278,7 @@ Object::Object(
             payment_ = std::make_unique<std::string>(serialized.otpayment());
         } break;
         case (contract::peer::PeerObjectType::Cash): {
-#if OT_CASH
-            purse_.reset(factory::Purse(api_, serialized.purse()));
-#endif
+            purse_ = factory::Purse(api_, serialized.purse());
         } break;
         default: {
             LogError()(OT_PRETTY_CLASS())("Incorrect type.").Flush();
@@ -304,7 +289,7 @@ Object::Object(
 Object::Object(
     const api::Session& api,
     const Nym_p& senderNym,
-    const std::string& message)
+    const std::string& message) noexcept
     : Object(
           api,
           senderNym,
@@ -312,19 +297,16 @@ Object::Object(
           {},
           api.Factory().PeerReply(),
           api.Factory().PeerRequest(),
-#if OT_CASH
           {},
-#endif
           contract::peer::PeerObjectType::Message,
           PEER_MESSAGE_VERSION)
 {
 }
 
-#if OT_CASH
 Object::Object(
     const api::Session& api,
     const Nym_p& senderNym,
-    const std::shared_ptr<blind::Purse> purse)
+    otx::blind::Purse&& purse) noexcept
     : Object(
           api,
           senderNym,
@@ -332,17 +314,16 @@ Object::Object(
           {},
           api.Factory().PeerReply(),
           api.Factory().PeerRequest(),
-          purse,
+          std::move(purse),
           contract::peer::PeerObjectType::Cash,
           PEER_CASH_VERSION)
 {
 }
-#endif
 
 Object::Object(
     const api::Session& api,
     const std::string& payment,
-    const Nym_p& senderNym)
+    const Nym_p& senderNym) noexcept
     : Object(
           api,
           senderNym,
@@ -350,9 +331,7 @@ Object::Object(
           payment,
           api.Factory().PeerReply(),
           api.Factory().PeerRequest(),
-#if OT_CASH
           {},
-#endif
           contract::peer::PeerObjectType::Payment,
           PEER_PAYMENT_VERSION)
 {
@@ -362,7 +341,7 @@ Object::Object(
     const api::Session& api,
     const OTPeerRequest request,
     const OTPeerReply reply,
-    const VersionNumber version)
+    const VersionNumber version) noexcept
     : Object(
           api,
           {},
@@ -370,9 +349,7 @@ Object::Object(
           {},
           reply,
           request,
-#if OT_CASH
           {},
-#endif
           contract::peer::PeerObjectType::Response,
           version)
 {
@@ -381,7 +358,7 @@ Object::Object(
 Object::Object(
     const api::Session& api,
     const OTPeerRequest request,
-    const VersionNumber version)
+    const VersionNumber version) noexcept
     : Object(
           api,
           {},
@@ -389,15 +366,13 @@ Object::Object(
           {},
           api.Factory().PeerReply(),
           request,
-#if OT_CASH
           {},
-#endif
           contract::peer::PeerObjectType::Request,
           version)
 {
 }
 
-auto Object::Serialize(proto::PeerObject& output) const -> bool
+auto Object::Serialize(proto::PeerObject& output) const noexcept -> bool
 {
     output.set_type(translate(type_));
 
@@ -462,7 +437,6 @@ auto Object::Serialize(proto::PeerObject& output) const -> bool
                 }
             }
         } break;
-#if OT_CASH
         case (contract::peer::PeerObjectType::Cash): {
             if (PEER_CASH_VERSION > version_) {
                 output.set_version(PEER_CASH_VERSION);
@@ -473,10 +447,9 @@ auto Object::Serialize(proto::PeerObject& output) const -> bool
             if (purse_) {
                 if (nym_) { *output.mutable_nym() = publicNym(nym_); }
 
-                purse_->Serialize(*output.mutable_purse());
+                purse_.Internal().Serialize(*output.mutable_purse());
             }
         } break;
-#endif
         default: {
             LogError()(OT_PRETTY_CLASS())("Unknown type.").Flush();
             return false;
@@ -486,7 +459,7 @@ auto Object::Serialize(proto::PeerObject& output) const -> bool
     return true;
 }
 
-auto Object::Validate() const -> bool
+auto Object::Validate() const noexcept -> bool
 {
     bool validChildren = false;
 
@@ -509,11 +482,9 @@ auto Object::Validate() const -> bool
         case (contract::peer::PeerObjectType::Payment): {
             validChildren = bool(payment_);
         } break;
-#if OT_CASH
         case (contract::peer::PeerObjectType::Cash): {
-            validChildren = bool(purse_);
+            validChildren = purse_;
         } break;
-#endif
         default: {
             LogError()(OT_PRETTY_CLASS())("Unknown type.").Flush();
         }
@@ -526,4 +497,6 @@ auto Object::Validate() const -> bool
 
     return (validChildren && validProto);
 }
+
+Object::~Object() = default;
 }  // namespace opentxs::peer::implementation

@@ -37,6 +37,11 @@ class Client;
 }  // namespace session
 }  // namespace api
 
+namespace contact
+{
+class ContactSection;
+}  // namespace contact
+
 namespace identifier
 {
 class Nym;
@@ -52,8 +57,6 @@ class Publish;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
-
-class ContactSection;
 }  // namespace opentxs
 
 namespace opentxs::ui::implementation
@@ -122,12 +125,12 @@ private:
     {
         return ProfileSectionList::last(id);
     }
-    auto process_section(const opentxs::ContactSection& section) noexcept
+    auto process_section(const contact::ContactSection& section) noexcept
         -> std::set<ProfileSectionRowID>;
 
     auto reindex(const ProfileSortKey& key, CustomData& custom) noexcept
         -> bool final;
-    auto startup(const opentxs::ContactSection section) noexcept -> void;
+    auto startup(const contact::ContactSection section) noexcept -> void;
 
     ProfileSection() = delete;
     ProfileSection(const ProfileSection&) = delete;

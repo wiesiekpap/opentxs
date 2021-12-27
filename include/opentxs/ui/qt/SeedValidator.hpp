@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 #include <QList>
 #include <QObject>
 #include <QString>
@@ -12,8 +14,6 @@
 #include <QVector>
 #include <cstdint>
 #include <memory>
-
-#include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
 
 class QObject;
 

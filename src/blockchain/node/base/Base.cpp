@@ -25,7 +25,7 @@
 #include "blockchain/node/base/SyncClient.hpp"
 #include "blockchain/node/base/SyncServer.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/database/Database.hpp"
@@ -33,9 +33,11 @@
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "internal/core/PaymentCode.hpp"
-#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Contacts.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -56,8 +58,8 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -170,15 +172,11 @@ struct NullWallet final : public node::internal::Wallet {
 
 Base::Base(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
-    const api::network::internal::Blockchain& network,
     const Type type,
     const node::internal::Config& config,
     const std::string& seednode,
     const std::string& syncEndpoint) noexcept
     : Worker(api, std::chrono::seconds(0))
-    , crypto_(crypto)
-    , network_(network)
     , chain_(type)
     , filter_type_([&] {
         if (config.generate_cfilters_ || config.use_sync_server_) {
@@ -193,17 +191,19 @@ Base::Base(
           network::zeromq::MakeArbitraryInproc())
     , database_p_(factory::BlockchainDatabase(
           api,
-          crypto,
           *this,
-          network.Database(),
+          api_.Network().Blockchain().Internal().Database(),
           chain_,
           filter_type_))
     , config_(config)
-    , mempool_(crypto_, *database_p_, network.Mempool(), chain_)
+    , mempool_(
+          api_.Crypto().Blockchain(),
+          *database_p_,
+          api_.Network().Blockchain().Internal().Mempool(),
+          chain_)
     , header_p_(factory::HeaderOracle(api, *database_p_, chain_))
     , block_p_(factory::BlockOracle(
           api,
-          network,
           *this,
           *header_p_,
           *database_p_,
@@ -211,7 +211,6 @@ Base::Base(
           shutdown_sender_.endpoint_))
     , filter_p_(factory::BlockchainFilterOracle(
           api,
-          network,
           config_,
           *this,
           *header_p_,
@@ -222,7 +221,6 @@ Base::Base(
           shutdown_sender_.endpoint_))
     , peer_p_(factory::BlockchainPeerManager(
           api,
-          network,
           config_,
           mempool_,
           *this,
@@ -241,7 +239,6 @@ Base::Base(
         } else {
             return factory::BlockchainWallet(
                 api,
-                crypto,
                 *this,
                 *database_p_,
                 mempool_,
@@ -276,7 +273,7 @@ Base::Base(
     , sync_client_([&] {
         if (config_.use_sync_server_) {
 
-            return std::make_unique<base::SyncClient>(api_, network, chain_);
+            return std::make_unique<base::SyncClient>(api_, chain_);
         } else {
 
             return std::unique_ptr<base::SyncClient>{};
@@ -713,7 +710,8 @@ auto Base::process_filter_update(network::zeromq::Message&& in) noexcept -> void
         }
     }
 
-    network_.ReportProgress(chain_, height, target);
+    api_.Network().Blockchain().Internal().ReportProgress(
+        chain_, height, target);
 }
 
 auto Base::process_header(network::zeromq::Message&& in) noexcept -> void
@@ -783,7 +781,7 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
         }
 
         const auto [data, style, chains, supported] =
-            crypto_.DecodeAddress(address);
+            api_.Crypto().Blockchain().DecodeAddress(address);
 
         if ((0 == chains.count(chain_)) || (!supported)) {
             const auto error = std::string{"Address "} + address +
@@ -850,7 +848,8 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
     const auto recipient =
         api_.Factory().PaymentCode(std::string{body.at(2).Bytes()});
     const auto contact =
-        crypto_.Internal().Contacts().PaymentCodeToContact(recipient, chain_);
+        api_.Crypto().Blockchain().Internal().Contacts().PaymentCodeToContact(
+            recipient, chain_);
     const auto amount = Amount{body.at(3)};
     const auto memo = std::string{body.at(4).Bytes()};
     const auto promise = body.at(5).as<int>();
@@ -896,8 +895,9 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
         }();
         const auto reason = api_.Factory().PasswordPrompt(
             std::string{"Sending a transaction to "} + recipient.asBase58());
-        const auto& account = crypto_.Internal().PaymentCodeSubaccount(
-            nymID, sender, recipient, path, chain_, reason);
+        const auto& account =
+            api_.Crypto().Blockchain().Internal().PaymentCodeSubaccount(
+                nymID, sender, recipient, path, chain_, reason);
         using Subchain = blockchain::crypto::Subchain;
         constexpr auto subchain{Subchain::Outgoing};
         const auto index = account.Reserve(subchain, reason);
@@ -1024,7 +1024,7 @@ auto Base::process_sync_data(network::zeromq::Message&& in) noexcept -> void
 
 auto Base::Reorg() const noexcept -> const network::zeromq::socket::Publish&
 {
-    return network_.Reorg();
+    return api_.Network().Blockchain().Internal().Reorg();
 }
 
 auto Base::RequestBlock(const block::Hash& block) const noexcept -> bool

@@ -24,7 +24,7 @@ class Settings;
 }  // namespace api
 }  // namespace opentxs
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 class Config final : public internal::Config
 {
@@ -63,4 +63,4 @@ private:
     auto operator=(const Config&) -> Config& = delete;
     auto operator=(Config&&) -> Config& = delete;
 };
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

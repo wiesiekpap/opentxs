@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <string>
 
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -94,7 +94,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
         return {};
     }
     auto Database() const noexcept
-        -> const blockchain::database::common::Database& override
+        -> const opentxs::blockchain::database::common::Database& override
     {
         OT_FAIL;
     }
@@ -124,7 +124,7 @@ struct Blockchain::Imp : virtual public internal::Blockchain {
     }
     /// throws std::out_of_range if chain has not been started
     virtual auto GetChain([[maybe_unused]] const Chain type) const
-        noexcept(false) -> const blockchain::node::Manager&
+        noexcept(false) -> const opentxs::blockchain::node::Manager&
     {
         throw std::out_of_range("no blockchain support");
     }

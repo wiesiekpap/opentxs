@@ -23,7 +23,7 @@
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/OTX.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Lockable.hpp"
@@ -109,8 +109,8 @@ private:
     using Args = const ::google::protobuf::RepeatedPtrField<
         ::opentxs::proto::APIArgument>;
     using TaskID = std::string;
-    using Future = api::client::OTX::Future;
-    using Result = api::client::OTX::Result;
+    using Future = api::session::OTX::Future;
+    using Result = api::session::OTX::Result;
     using Finish =
         std::function<void(const Result& result, proto::TaskComplete& output)>;
     using TaskData = std::tuple<Future, Finish, OTNymID>;
@@ -170,26 +170,26 @@ private:
         -> proto::RPCResponse;
     void evaluate_deposit_payment(
         const api::session::Client& client,
-        const api::client::OTX::Result& result,
+        const api::session::OTX::Result& result,
         proto::TaskComplete& output) const;
     void evaluate_move_funds(
         const api::session::Client& client,
-        const api::client::OTX::Result& result,
+        const api::session::OTX::Result& result,
         proto::RPCResponse& output) const;
     template <typename T>
     void evaluate_register_account(
-        const api::client::OTX::Result& result,
+        const api::session::OTX::Result& result,
         T& output) const;
     template <typename T>
     void evaluate_register_nym(
-        const api::client::OTX::Result& result,
+        const api::session::OTX::Result& result,
         T& output) const;
     auto evaluate_send_payment_cheque(
-        const api::client::OTX::Result& result,
+        const api::session::OTX::Result& result,
         proto::TaskComplete& output) const noexcept -> void;
     auto evaluate_send_payment_transfer(
         const api::session::Client& api,
-        const api::client::OTX::Result& result,
+        const api::session::OTX::Result& result,
         proto::TaskComplete& output) const noexcept -> void;
     auto evaluate_transaction_reply(
         const api::session::Client& api,

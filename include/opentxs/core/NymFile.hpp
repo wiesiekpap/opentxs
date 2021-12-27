@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 namespace opentxs
 {
 namespace identifier
@@ -12,8 +14,11 @@ namespace identifier
 class Nym;
 }  // namespace identifier
 
+class Identifier;
+class Message;
 class OTPayment;
 class PasswordPrompt;
+class String;
 }  // namespace opentxs
 
 namespace opentxs

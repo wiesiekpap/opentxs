@@ -10,6 +10,7 @@ target_sources(
   opentxs-common
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/core/contract/Contract.hpp"
+    "Common.cpp"
     "Contract.cpp"
     "CurrencyContract.cpp"
     "CurrencyContract.hpp"

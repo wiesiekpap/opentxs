@@ -76,7 +76,7 @@ class Seed;
 class PasswordPrompt;
 }  // namespace opentxs
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 class Seed final : public internal::Seed
 {
@@ -234,4 +234,4 @@ private:
     auto operator=(const Seed&) -> Seed& = delete;
     auto operator=(Seed&&) -> Seed& = delete;
 };
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

@@ -38,8 +38,8 @@ ContactItem::ContactItem(
     const ContactSubsectionSortKey& sortKey,
     CustomData& custom) noexcept
     : ContactItemRow(parent, api, rowID, true)
-    , item_{new opentxs::ContactItem(
-          extract_custom<opentxs::ContactItem>(custom))}
+    , item_{new contact::ContactItem(
+          extract_custom<contact::ContactItem>(custom))}
 {
     OT_ASSERT(item_);
 }
@@ -49,8 +49,8 @@ auto ContactItem::reindex(
     CustomData& custom) noexcept -> bool
 {
     eLock lock(shared_lock_);
-    item_ = std::make_unique<opentxs::ContactItem>(
-        extract_custom<opentxs::ContactItem>(custom));
+    item_ = std::make_unique<contact::ContactItem>(
+        extract_custom<contact::ContactItem>(custom));
 
     OT_ASSERT(item_);
 

@@ -39,13 +39,13 @@ namespace opentxs::factory
 auto Encode(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<api::crypto::Encode>
 {
-    using ReturnType = api::crypto::implementation::Encode;
+    using ReturnType = api::crypto::imp::Encode;
 
     return std::make_unique<ReturnType>(crypto);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 Encode::Encode(const api::Crypto& crypto) noexcept
     : crypto_(crypto)
@@ -296,4 +296,4 @@ auto Encode::Z85Decode(const std::string& input) const -> std::string
         return {};
     }
 }
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

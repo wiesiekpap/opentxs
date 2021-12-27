@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <QIdentityProxyModel>
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
+#include <QIdentityProxyModel>
 
 namespace opentxs
 {

@@ -3,9 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_include "opentxs/core/contract/ContractType.hpp"
+
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 #include <cstdint>
+
+#include "opentxs/core/contract/Types.hpp"
 
 namespace opentxs::identifier
 {
@@ -15,6 +21,7 @@ enum class Type : std::uint16_t;
 
 namespace opentxs
 {
-auto print(identifier::Algorithm) noexcept -> const char*;
-auto print(identifier::Type) noexcept -> const char*;
+OPENTXS_EXPORT auto print(identifier::Algorithm) noexcept -> const char*;
+OPENTXS_EXPORT auto print(identifier::Type) noexcept -> const char*;
+OPENTXS_EXPORT auto translate(identifier::Type) noexcept -> contract::Type;
 }  // namespace opentxs

@@ -50,8 +50,7 @@ extern "C" auto internal_password_cb(
 
     const bool askTwice = (1 == rwflag);
     const auto& reason = *static_cast<opentxs::PasswordPrompt*>(userdata);
-    const auto& api =
-        opentxs::api::session::implementation::Session::get_api(reason);
+    const auto& api = opentxs::api::session::imp::Session::get_api(reason);
     opentxs::Lock lock(api.Internal().Lock());
     auto secret = api.Factory().Secret(0);
 
@@ -82,7 +81,7 @@ extern "C" auto internal_password_cb(
 }
 }  // namespace
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 Session::Session(
     const api::Context& parent,
@@ -351,4 +350,4 @@ auto Session::Wallet() const noexcept -> const api::session::Wallet&
 }
 
 Session::~Session() { cleanup(); }
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

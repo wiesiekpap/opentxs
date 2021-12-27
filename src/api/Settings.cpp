@@ -19,6 +19,19 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Log.hpp"
 
+namespace opentxs::factory
+{
+auto Settings(const api::Legacy& legacy, const String& path) noexcept
+    -> std::unique_ptr<api::Settings>
+{
+    using ReturnType = api::imp::Settings;
+
+    return std::make_unique<ReturnType>(legacy, path);
+}
+}  // namespace opentxs::factory
+
+namespace opentxs::api::imp
+{
 auto StringFill(
     opentxs::String& out_strString,
     const char* szString,
@@ -42,20 +55,12 @@ auto StringFill(
 
     return true;
 }
+}  // namespace opentxs::api::imp
 
-namespace opentxs::factory
+namespace opentxs::api::imp
 {
-auto Settings(const api::Legacy& legacy, const String& path) noexcept
-    -> std::unique_ptr<api::Settings>
-{
-    using ReturnType = api::implementation::Settings;
+const OTString Settings::blank_{String::Factory()};
 
-    return std::make_unique<ReturnType>(legacy, path);
-}
-}  // namespace opentxs::factory
-
-namespace opentxs::api::implementation
-{
 class Settings::SettingsPvt
 {
 private:
@@ -93,7 +98,7 @@ auto Settings::Init() -> bool
     // First Load, Create new fresh config file if failed loading.
     if (!Load()) {
         LogConsole()(OT_PRETTY_CLASS())(
-            "Note: Unable to Load Config. Creating a new file.")
+            "No existing configuration. Creating a new file.")
             .Flush();
         if (!Reset()) return false;
         if (!Save()) return false;
@@ -103,8 +108,8 @@ auto Settings::Init() -> bool
 
     // Second Load, Throw Assert if Failed loading.
     if (!Load()) {
-        LogError()(OT_PRETTY_CLASS())("Error: Unable to load config file."
-                                      " It should exist, as we just saved it!")
+        LogError()(OT_PRETTY_CLASS())(
+            "Unable to load config file. It should exist, as we just saved it!")
             .Flush();
         OT_FAIL;
     }
@@ -115,8 +120,7 @@ auto Settings::Init() -> bool
 auto Settings::Load(const String& strConfigurationFileExactPath) const -> bool
 {
     if (!strConfigurationFileExactPath.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: "
-                                      "strConfigurationFileExactPath is empty!")
+        LogError()(OT_PRETTY_CLASS())("strConfigurationFileExactPath is empty!")
             .Flush();
         return false;
     }
@@ -130,9 +134,7 @@ auto Settings::Load(const String& strConfigurationFileExactPath) const -> bool
     };
 
     if (!IsEmpty()) {
-        LogError()(OT_PRETTY_CLASS())("Bad: p_Settings "
-                                      "is not empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("p_Settings is not empty!").Flush();
         OT_FAIL;
     }
 
@@ -181,13 +183,11 @@ auto Settings::LogChange_str(
     const String& strValue) const -> bool
 {
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      " is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection  is empty!").Flush();
         OT_FAIL;
     }
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
 
@@ -266,24 +266,20 @@ auto Settings::Check_str(
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is empty!").Flush();
         OT_FAIL;
     }
     if (strSection.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is blank!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is blank!").Flush();
         OT_FAIL;
     }
 
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
     if (strKey.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is blank!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is blank!").Flush();
         OT_FAIL;
     }
 
@@ -311,24 +307,20 @@ auto Settings::Check_long(
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is empty!").Flush();
         OT_FAIL;
     }
     if (strSection.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is blank!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is blank!").Flush();
         OT_FAIL;
     }
 
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
     if (strKey.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is Blank!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is Blank!").Flush();
         OT_FAIL;
     }
 
@@ -357,24 +349,20 @@ auto Settings::Check_bool(
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is empty!").Flush();
         OT_FAIL;
     }
     if (strSection.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is blank!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is blank!").Flush();
         OT_FAIL;
     }
 
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
     if (strKey.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is blank!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is blank!").Flush();
         OT_FAIL;
     }
 
@@ -401,30 +389,35 @@ auto Settings::Set_str(
     const String& strSection,
     const String& strKey,
     const String& strValue,
+    bool& out_bNewOrUpdate) const -> bool
+{
+    return Set_str(strSection, strKey, strValue, out_bNewOrUpdate, blank_);
+}
+
+auto Settings::Set_str(
+    const String& strSection,
+    const String& strKey,
+    const String& strValue,
     bool& out_bNewOrUpdate,
     const String& strComment) const -> bool
 {
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      " is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection  is empty!").Flush();
         OT_FAIL;
     }
     if (strSection.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is blank!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is blank!").Flush();
         OT_FAIL;
     }
 
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
     if (strKey.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is blank!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is blank!").Flush();
         OT_FAIL;
     }
 
@@ -485,30 +478,35 @@ auto Settings::Set_long(
     const String& strSection,
     const String& strKey,
     const std::int64_t& lValue,
+    bool& out_bNewOrUpdate) const -> bool
+{
+    return Set_long(strSection, strKey, lValue, out_bNewOrUpdate, blank_);
+}
+
+auto Settings::Set_long(
+    const String& strSection,
+    const String& strKey,
+    const std::int64_t& lValue,
     bool& out_bNewOrUpdate,
     const String& strComment) const -> bool
 {
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is empty!").Flush();
         OT_FAIL;
     }
     if (strSection.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is blank!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is blank!").Flush();
         OT_FAIL;
     }
 
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
     if (strKey.Compare("")) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is blank!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is blank!").Flush();
         OT_FAIL;
     }
 
@@ -559,19 +557,26 @@ auto Settings::Set_bool(
     const String& strSection,
     const String& strKey,
     const bool& bValue,
+    bool& out_bNewOrUpdate) const -> bool
+{
+    return Set_bool(strSection, strKey, bValue, out_bNewOrUpdate, blank_);
+}
+
+auto Settings::Set_bool(
+    const String& strSection,
+    const String& strKey,
+    const bool& bValue,
     bool& out_bNewOrUpdate,
     const String& strComment) const -> bool
 {
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      " is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is empty!").Flush();
         OT_FAIL;
     }
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
     const auto strValue = String::Factory(bValue ? "true" : "false");
@@ -587,15 +592,11 @@ auto Settings::CheckSetSection(
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is empty!").Flush();
         OT_FAIL;
     }
     if (!strComment.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strComment "
-                                      "is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strComment is empty!").Flush();
         OT_FAIL;
     }
 
@@ -622,6 +623,17 @@ auto Settings::CheckSet_str(
     const String& strKey,
     const String& strDefault,
     String& out_strResult,
+    bool& out_bIsNew) const -> bool
+{
+    return CheckSet_str(
+        strSection, strKey, strDefault, out_strResult, out_bIsNew, blank_);
+}
+
+auto Settings::CheckSet_str(
+    const String& strSection,
+    const String& strKey,
+    const String& strDefault,
+    String& out_strResult,
     bool& out_bIsNew,
     const String& strComment) const -> bool
 {
@@ -639,19 +651,28 @@ auto Settings::CheckSet_str(
     const String& strKey,
     const String& strDefault,
     std::string& out_strResult,
+    bool& out_bIsNew) const -> bool
+{
+    return CheckSet_str(
+        strSection, strKey, strDefault, out_strResult, out_bIsNew, blank_);
+}
+
+auto Settings::CheckSet_str(
+    const String& strSection,
+    const String& strKey,
+    const String& strDefault,
+    std::string& out_strResult,
     bool& out_bIsNew,
     const String& strComment) const -> bool
 {
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      " is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection  is empty!").Flush();
         OT_FAIL;
     }
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
 
@@ -698,19 +719,28 @@ auto Settings::CheckSet_long(
     const String& strKey,
     const std::int64_t& lDefault,
     std::int64_t& out_lResult,
+    bool& out_bIsNew) const -> bool
+{
+    return CheckSet_long(
+        strSection, strKey, lDefault, out_lResult, out_bIsNew, blank_);
+}
+
+auto Settings::CheckSet_long(
+    const String& strSection,
+    const String& strKey,
+    const std::int64_t& lDefault,
+    std::int64_t& out_lResult,
     bool& out_bIsNew,
     const String& strComment) const -> bool
 {
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      " is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection  is empty!").Flush();
         OT_FAIL;
     }
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
 
@@ -744,19 +774,28 @@ auto Settings::CheckSet_bool(
     const String& strKey,
     const bool& bDefault,
     bool& out_bResult,
+    bool& out_bIsNew) const -> bool
+{
+    return CheckSet_bool(
+        strSection, strKey, bDefault, out_bResult, out_bIsNew, blank_);
+}
+
+auto Settings::CheckSet_bool(
+    const String& strSection,
+    const String& strKey,
+    const bool& bDefault,
+    bool& out_bResult,
     bool& out_bIsNew,
     const String& strComment) const -> bool
 {
     rLock lock(lock_);
 
     if (!strSection.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strSection "
-                                      "is empty!")
-            .Flush();
+        LogError()(OT_PRETTY_CLASS())("strSection is empty!").Flush();
         OT_FAIL;
     }
     if (!strKey.Exists()) {
-        LogError()(OT_PRETTY_CLASS())("Error: strKey is empty!").Flush();
+        LogError()(OT_PRETTY_CLASS())("strKey is empty!").Flush();
         OT_FAIL;
     }
 
@@ -802,4 +841,4 @@ Settings::~Settings()
     Save();
     Reset();
 }
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

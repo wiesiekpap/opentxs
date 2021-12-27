@@ -19,7 +19,7 @@
 #include "opentxs/blockchain/Types.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -63,17 +63,17 @@ class Manager;
 }  // namespace node
 }  // namespace blockchain
 
+namespace contact
+{
 class Contact;
+}  // namespace contact
+
 class Identifier;
 class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace crypto
+namespace opentxs::api::crypto
 {
 class OPENTXS_EXPORT Blockchain
 {
@@ -221,6 +221,4 @@ private:
     auto operator=(const Blockchain&) -> Blockchain& = delete;
     auto operator=(Blockchain&&) -> Blockchain& = delete;
 };
-}  // namespace crypto
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::crypto

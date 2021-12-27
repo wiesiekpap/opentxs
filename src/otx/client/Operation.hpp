@@ -14,6 +14,7 @@
 #include <iosfwd>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 
 #include "Proto.hpp"
@@ -26,7 +27,6 @@
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
@@ -34,10 +34,12 @@
 #include "opentxs/core/contract/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/OperationType.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -53,13 +55,13 @@ class Client;
 }  // namespace session
 }  // namespace api
 
+namespace otx
+{
 namespace blind
 {
 class Purse;
 }  // namespace blind
 
-namespace otx
-{
 namespace context
 {
 class Base;
@@ -100,11 +102,8 @@ public:
     auto ConveyPayment(
         const identifier::Nym& recipient,
         const std::shared_ptr<const OTPayment> payment) -> bool override;
-#if OT_CASH
-    auto DepositCash(
-        const Identifier& depositAccountID,
-        const std::shared_ptr<blind::Purse> purse) -> bool override;
-#endif
+    auto DepositCash(const Identifier& depositAccountID, blind::Purse&& purse)
+        -> bool override;
     auto DepositCheque(
         const Identifier& depositAccountID,
         const std::shared_ptr<Cheque> cheque) -> bool override;
@@ -122,11 +121,9 @@ public:
     auto PublishContract(const identifier::Server& id) -> bool override;
     auto PublishContract(const identifier::UnitDefinition& id) -> bool override;
     auto RequestAdmin(const String& password) -> bool override;
-#if OT_CASH
     auto SendCash(
         const identifier::Nym& recipient,
         const Identifier& workflowID) -> bool override;
-#endif
     auto SendMessage(
         const identifier::Nym& recipient,
         const String& message,
@@ -157,10 +154,8 @@ public:
         const identifier::Nym& targetNymID,
         const otx::context::Server::ExtraArgs& args) -> bool override;
     auto UpdateAccount(const Identifier& accountID) -> bool override;
-#if OT_CASH
     auto WithdrawCash(const Identifier& accountID, const Amount& amount)
         -> bool override;
-#endif
 
     ~Operation() override;
 
@@ -225,9 +220,7 @@ private:
     std::shared_ptr<const OTPayment> payment_;
     std::shared_ptr<Ledger> inbox_;
     std::shared_ptr<Ledger> outbox_;
-#if OT_CASH
-    std::shared_ptr<blind::Purse> purse_;
-#endif
+    std::optional<blind::Purse> purse_;
     std::set<OTIdentifier> affected_accounts_;
     std::set<OTIdentifier> redownload_accounts_;
     std::set<OTManagedNumber> numbers_;
@@ -264,14 +257,10 @@ private:
     auto construct_add_claim() -> std::shared_ptr<Message>;
     auto construct_check_nym() -> std::shared_ptr<Message>;
     auto construct_convey_payment() -> std::shared_ptr<Message>;
-#if OT_CASH
     auto construct_deposit_cash() -> std::shared_ptr<Message>;
-#endif
     auto construct_deposit_cheque() -> std::shared_ptr<Message>;
     auto construct_download_contract() -> std::shared_ptr<Message>;
-#if OT_CASH
     auto construct_download_mint() -> std::shared_ptr<Message>;
-#endif
     auto construct_get_account_data(const Identifier& accountID)
         -> std::shared_ptr<Message>;
     auto construct_get_transaction_numbers() -> std::shared_ptr<Message>;
@@ -299,14 +288,10 @@ private:
         const RequestNumber number = -1) -> std::shared_ptr<Message>;
     auto construct_send_peer_reply() -> std::shared_ptr<Message>;
     auto construct_send_peer_request() -> std::shared_ptr<Message>;
-#if OT_CASH
     auto construct_send_cash() -> std::shared_ptr<Message>;
-#endif
     auto construct_send_message() -> std::shared_ptr<Message>;
     auto construct_send_transfer() -> std::shared_ptr<Message>;
-#if OT_CASH
     auto construct_withdraw_cash() -> std::shared_ptr<Message>;
-#endif
     auto download_account(
         const Identifier& accountID,
         otx::context::Server::DeliveryResult& lastResult) -> std::size_t;

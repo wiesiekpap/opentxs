@@ -11,6 +11,7 @@
 #include <limits>
 #include <ratio>
 
+#include "internal/api/network/Dht.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Dht.hpp"
 #include "opentxs/api/session/Storage.hpp"
@@ -50,7 +51,7 @@ void Scheduler::Start(
         [=, &dht]() -> void {
             NymLambda nymLambda(
                 [=, &dht](const identity::Nym::Serialized& nym) -> void {
-                    dht.Insert(nym);
+                    dht.Internal().Insert(nym);
                 });
             storage->MapPublicNyms(nymLambda);
         },
@@ -72,7 +73,7 @@ void Scheduler::Start(
         [=, &dht]() -> void {
             ServerLambda serverLambda(
                 [=, &dht](const proto::ServerContract& server) -> void {
-                    dht.Insert(server);
+                    dht.Internal().Insert(server);
                 });
             storage->MapServers(serverLambda);
         },
@@ -94,7 +95,7 @@ void Scheduler::Start(
         [=, &dht]() -> void {
             UnitLambda unitLambda(
                 [=, &dht](const proto::UnitDefinition& unit) -> void {
-                    dht.Insert(unit);
+                    dht.Internal().Insert(unit);
                 });
             storage->MapUnitDefinitions(unitLambda);
         },

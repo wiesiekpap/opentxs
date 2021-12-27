@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/api/session/Wallet.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/ContactItem.hpp"
@@ -43,9 +44,9 @@
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
@@ -57,7 +58,9 @@
 
 #define ID_BYTES 32
 
-using AddressStyle = opentxs::Contact::AddressStyle;
+namespace opentxs::contact
+{
+using AddressStyle = contact::Contact::AddressStyle;
 
 const robin_hood::unordered_flat_map<AddressStyle, std::string>
     address_style_map_{
@@ -95,8 +98,6 @@ auto translate_style(const AddressStyle& in) noexcept -> std::string
     }
 }
 
-namespace opentxs
-{
 struct Contact::Imp {
     const api::session::Client& api_;
     VersionNumber version_{0};
@@ -1060,7 +1061,7 @@ auto Contact::Type() const -> contact::ClaimType
 
 void Contact::Update(const proto::Nym& serialized)
 {
-    auto nym = imp_->api_.Wallet().Nym(serialized);
+    auto nym = imp_->api_.Wallet().Internal().Nym(serialized);
 
     if (false == bool(nym)) {
         LogError()(OT_PRETTY_CLASS())("Invalid serialized nym.").Flush();
@@ -1098,4 +1099,4 @@ void Contact::Update(const proto::Nym& serialized)
 
 Contact::~Contact() = default;
 
-}  // namespace opentxs
+}  // namespace opentxs::contact

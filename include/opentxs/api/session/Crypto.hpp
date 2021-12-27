@@ -31,11 +31,7 @@ class Crypto;
 }  // namespace api
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace session
+namespace opentxs::api::session
 {
 class OPENTXS_EXPORT Crypto : virtual public api::Crypto
 {
@@ -61,6 +57,4 @@ private:
     auto operator=(const Crypto&) -> Crypto& = delete;
     auto operator=(Crypto&&) -> Crypto& = delete;
 };
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::session

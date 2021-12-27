@@ -21,9 +21,9 @@
 
 #include "Basic.hpp"
 #include "integration/Helpers.hpp"
-#include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/api/session/UI.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/ui/qt/AccountActivity.hpp"
 #include "opentxs/ui/qt/AccountList.hpp"

@@ -20,7 +20,7 @@
 
 #include "api/network/Blockchain.hpp"
 #include "blockchain/database/common/Database.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"

@@ -13,13 +13,14 @@
 #include <type_traits>
 
 #include "internal/contact/Contact.hpp"
+#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
 
@@ -53,7 +54,7 @@ ProfileSubsection::ProfileSubsection(
     startup_ = std::make_unique<std::thread>(
         &ProfileSubsection::startup,
         this,
-        extract_custom<opentxs::ContactGroup>(custom));
+        extract_custom<contact::ContactGroup>(custom));
 
     OT_ASSERT(startup_)
 }
@@ -92,7 +93,7 @@ auto ProfileSubsection::Name(const std::string& lang) const noexcept
 }
 
 auto ProfileSubsection::process_group(
-    const opentxs::ContactGroup& group) noexcept
+    const contact::ContactGroup& group) noexcept
     -> std::set<ProfileSubsectionRowID>
 {
     OT_ASSERT(row_id_.second == group.Type())
@@ -102,7 +103,7 @@ auto ProfileSubsection::process_group(
     for (const auto& [id, claim] : group) {
         OT_ASSERT(claim)
 
-        CustomData custom{new opentxs::ContactItem(*claim)};
+        CustomData custom{new contact::ContactItem(*claim)};
         add_item(id, ++sequence_, custom);
         active.emplace(id);
     }
@@ -115,7 +116,7 @@ auto ProfileSubsection::reindex(
     CustomData& custom) noexcept -> bool
 {
     delete_inactive(
-        process_group(extract_custom<opentxs::ContactGroup>(custom)));
+        process_group(extract_custom<contact::ContactGroup>(custom)));
 
     return true;
 }
@@ -155,7 +156,7 @@ auto ProfileSubsection::SetValue(
     return claim.SetValue(value);
 }
 
-void ProfileSubsection::startup(const opentxs::ContactGroup group) noexcept
+void ProfileSubsection::startup(const contact::ContactGroup group) noexcept
 {
     process_group(group);
     finish_startup();

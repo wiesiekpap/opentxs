@@ -6,8 +6,14 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "opentxs/core/Identifier.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
+#include "opentxs/OT.hpp"
+#include "opentxs/Version.hpp"
+#include "opentxs/api/Context.hpp"
+#include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Factory.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "serialization/protobuf/Identifier.pb.h"
 
 namespace ot = opentxs;
 
@@ -22,6 +28,17 @@ struct Default_Identifier : public ::testing::Test {
     }
 };
 
+struct Random_Identifier : public Default_Identifier {
+    const ot::api::session::Client& api_;
+
+    Random_Identifier()
+        : Default_Identifier()
+        , api_(ot::Context().StartClientSession(0))
+    {
+        identifier_->Randomize();
+    }
+};
+
 TEST_F(Default_Identifier, default_accessors)
 {
     ASSERT_EQ(identifier_->data(), nullptr);
@@ -32,6 +49,25 @@ TEST_F(Default_Identifier, serialize_empty)
 {
     const auto str = identifier_->str();
     const auto recovered = ot::Identifier::Factory(str);
+
+    EXPECT_EQ(identifier_, recovered);
+}
+
+TEST_F(Random_Identifier, serialize_non_empty)
+{
+    const auto str = identifier_->str();
+    const auto recovered = ot::Identifier::Factory(str);
+
+    EXPECT_EQ(identifier_, recovered);
+}
+
+TEST_F(Random_Identifier, serialize_protobuf)
+{
+    auto proto = ot::proto::Identifier{};
+
+    EXPECT_TRUE(identifier_->Serialize(proto));
+
+    const auto recovered = api_.Factory().InternalSession().Identifier(proto);
 
     EXPECT_EQ(identifier_, recovered);
 }

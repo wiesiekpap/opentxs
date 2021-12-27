@@ -27,18 +27,22 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace contact
+{
+class ContactGroup;
+class ContactItem;
+}  // namespace contact
+
 namespace proto
 {
 class ContactData;
 class ContactSection;
 }  // namespace proto
 
-class ContactGroup;
-class ContactItem;
 class Identifier;
 }  // namespace opentxs
 
-namespace opentxs
+namespace opentxs::contact
 {
 class OPENTXS_EXPORT ContactSection
 {
@@ -104,4 +108,4 @@ private:
     auto operator=(const ContactSection&) -> ContactSection& = delete;
     auto operator=(ContactSection&&) -> ContactSection& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::contact

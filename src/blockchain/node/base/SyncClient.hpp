@@ -16,14 +16,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace network
-{
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace network
-
 class Session;
 }  // namespace api
 }  // namespace opentxs
@@ -35,10 +27,7 @@ class SyncClient
 public:
     auto Endpoint() const noexcept -> const std::string&;
 
-    SyncClient(
-        const api::Session& api,
-        const api::network::internal::Blockchain& network,
-        const Type chain) noexcept;
+    SyncClient(const api::Session& api, const Type chain) noexcept;
 
     ~SyncClient();
 

@@ -15,17 +15,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Activity;
-class Contacts;
-class OTX;
-class Pair;
-class ServerAction;
-class UI;
-class Workflow;
-}  // namespace client
-
 namespace network
 {
 class ZMQ;
@@ -37,28 +26,28 @@ namespace internal
 {
 class Client;
 }  // namespace internal
+
+class Activity;
+class Contacts;
+class OTX;
+class UI;
+class Workflow;
 }  // namespace session
 }  // namespace api
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace session
+namespace opentxs::api::session
 {
 class OPENTXS_EXPORT Client : virtual public api::Session
 {
 public:
-    virtual auto Activity() const -> const api::client::Activity& = 0;
-    virtual auto Contacts() const -> const api::client::Contacts& = 0;
+    virtual auto Activity() const -> const session::Activity& = 0;
+    virtual auto Contacts() const -> const api::session::Contacts& = 0;
     OPENTXS_NO_EXPORT virtual auto InternalClient() const noexcept
         -> const internal::Client& = 0;
-    virtual auto OTX() const -> const api::client::OTX& = 0;
-    virtual auto Pair() const -> const api::client::Pair& = 0;
-    virtual auto ServerAction() const -> const api::client::ServerAction& = 0;
-    virtual auto UI() const -> const api::client::UI& = 0;
-    virtual auto Workflow() const -> const api::client::Workflow& = 0;
+    virtual auto OTX() const -> const session::OTX& = 0;
+    virtual auto UI() const -> const session::UI& = 0;
+    virtual auto Workflow() const -> const session::Workflow& = 0;
     virtual auto ZMQ() const -> const network::ZMQ& = 0;
 
     OPENTXS_NO_EXPORT virtual auto InternalClient() noexcept
@@ -75,6 +64,4 @@ private:
     auto operator=(const Client&) -> Client& = delete;
     auto operator=(Client&&) -> Client& = delete;
 };
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::session

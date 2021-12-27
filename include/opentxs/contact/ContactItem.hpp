@@ -21,7 +21,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/contact/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 
@@ -40,7 +40,7 @@ class ContactItem;
 }  // namespace proto
 }  // namespace opentxs
 
-namespace opentxs
+namespace opentxs::contact
 {
 class OPENTXS_EXPORT ContactItem
 {
@@ -114,4 +114,4 @@ private:
     auto operator=(const ContactItem&) -> ContactItem& = delete;
     auto operator=(ContactItem&&) -> ContactItem& = delete;
 };
-}  // namespace opentxs
+}  // namespace opentxs::contact

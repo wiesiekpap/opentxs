@@ -11,6 +11,7 @@
 #include <list>
 #include <memory>
 
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
@@ -166,7 +167,7 @@ auto Reply::GetID(const Lock& lock) const -> OTIdentifier
 auto Reply::GetID(const api::Session& api, const SerializedType& contract)
     -> OTIdentifier
 {
-    return api.Factory().Identifier(contract);
+    return api.Factory().InternalSession().Identifier(contract);
 }
 
 auto Reply::IDVersion(const Lock& lock) const -> SerializedType
@@ -224,11 +225,11 @@ auto Reply::LoadRequest(
     return true;
 }
 
-auto Reply::Serialize() const -> OTData
+auto Reply::Serialize() const noexcept -> OTData
 {
     Lock lock(lock_);
 
-    return api_.Factory().Data(contract(lock));
+    return api_.Factory().InternalSession().Data(contract(lock));
 }
 
 auto Reply::Serialize(SerializedType& output) const -> bool

@@ -31,17 +31,15 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/blind/CashType.hpp"
-#include "opentxs/client/NymData.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/basket/BasketContract.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -49,26 +47,19 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"
+#include "opentxs/otx/blind/CashType.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 
 namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Issuer;
-}  // namespace client
-
 class Session;
 }  // namespace api
-
-namespace blind
-{
-class Purse;
-}  // namespace blind
 
 namespace crypto
 {
@@ -90,20 +81,18 @@ struct Nym;
 class Nym;
 }  // namespace identity
 
-namespace proto
-{
-class Context;
-class Credential;
-class Issuer;
-class Nym;
-class PeerReply;
-class PeerRequest;
-class ServerContract;
-class UnitDefinition;
-}  // namespace proto
-
 namespace otx
 {
+namespace blind
+{
+class Purse;
+}  // namespace blind
+
+namespace client
+{
+class Issuer;
+}  // namespace client
+
 namespace context
 {
 namespace internal
@@ -117,6 +106,18 @@ class Server;
 }  // namespace context
 }  // namespace otx
 
+namespace proto
+{
+class Context;
+class Credential;
+class Issuer;
+class Nym;
+class PeerReply;
+class PeerRequest;
+class ServerContract;
+class UnitDefinition;
+}  // namespace proto
+
 class Context;
 class NymFile;
 class PasswordPrompt;
@@ -124,7 +125,7 @@ class PeerObject;
 class String;
 }  // namespace opentxs
 
-namespace opentxs::api::session::implementation
+namespace opentxs::api::session::imp
 {
 class Wallet : virtual public internal::Wallet, public Lockable
 {
@@ -178,11 +179,11 @@ public:
     auto IssuerList(const identifier::Nym& nymID) const
         -> std::set<OTNymID> final;
     auto Issuer(const identifier::Nym& nymID, const identifier::Nym& issuerID)
-        const -> std::shared_ptr<const api::client::Issuer> final;
+        const -> std::shared_ptr<const otx::client::Issuer> final;
     auto mutable_Issuer(
         const identifier::Nym& nymID,
         const identifier::Nym& issuerID) const
-        -> Editor<api::client::Issuer> final;
+        -> Editor<otx::client::Issuer> final;
     auto IsLocalNym(const std::string& id) const -> bool final;
     auto LocalNymCount() const -> std::size_t final;
     auto LocalNyms() const -> std::set<OTNymID> final;
@@ -287,19 +288,18 @@ public:
         const identifier::Nym& nym,
         const Identifier& request,
         const StorageBox& box) const -> bool final;
-#if OT_CASH
     auto Purse(
         const identifier::Nym& nym,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
-        const bool checking) const -> std::unique_ptr<const blind::Purse> final;
+        const bool checking) const -> const otx::blind::Purse& final;
     auto mutable_Purse(
         const identifier::Nym& nym,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
         const PasswordPrompt& reason,
-        const blind::CashType type) const -> Editor<blind::Purse> final;
-#endif
+        const otx::blind::CashType type) const
+        -> Editor<otx::blind::Purse, std::shared_mutex> final;
     auto RemoveServer(const identifier::Server& id) const -> bool final;
     auto RemoveUnitDefinition(const identifier::UnitDefinition& id) const
         -> bool final;
@@ -336,16 +336,40 @@ public:
             0)) const noexcept(false) -> OTBasketContract final;
     auto UnitDefinition(const proto::UnitDefinition& contract) const
         -> OTUnitDefinition final;
+    auto UnitDefinition(const ReadView contract) const
+        -> OTUnitDefinition final;
     auto CurrencyContract(
         const std::string& nymid,
         const std::string& shortname,
         const std::string& terms,
         const core::UnitType unitOfAccount,
-        const PasswordPrompt& reason,
-        const display::Definition& displayDefinition,
         const Amount& redemptionIncrement,
-        const VersionNumber version = contract::Unit::DefaultVersion) const
-        -> OTUnitDefinition final;
+        const PasswordPrompt& reason) const -> OTUnitDefinition final;
+    auto CurrencyContract(
+        const std::string& nymid,
+        const std::string& shortname,
+        const std::string& terms,
+        const core::UnitType unitOfAccount,
+        const Amount& redemptionIncrement,
+        const display::Definition& displayDefinition,
+        const PasswordPrompt& reason) const -> OTUnitDefinition final;
+    auto CurrencyContract(
+        const std::string& nymid,
+        const std::string& shortname,
+        const std::string& terms,
+        const core::UnitType unitOfAccount,
+        const Amount& redemptionIncrement,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const -> OTUnitDefinition final;
+    auto CurrencyContract(
+        const std::string& nymid,
+        const std::string& shortname,
+        const std::string& terms,
+        const core::UnitType unitOfAccount,
+        const Amount& redemptionIncrement,
+        const display::Definition& displayDefinition,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const -> OTUnitDefinition final;
     auto SecurityContract(
         const std::string& nymid,
         const std::string& shortname,
@@ -402,9 +426,11 @@ private:
     using UnitMap = std::map<OTUnitID, std::shared_ptr<contract::Unit>>;
     using IssuerID = std::pair<OTIdentifier, OTIdentifier>;
     using IssuerLock =
-        std::pair<std::mutex, std::shared_ptr<api::client::Issuer>>;
+        std::pair<std::mutex, std::shared_ptr<otx::client::Issuer>>;
     using IssuerMap = std::map<IssuerID, IssuerLock>;
     using PurseID = std::tuple<OTNymID, OTServerID, OTUnitID>;
+    using PurseMap =
+        std::map<PurseID, std::pair<std::shared_mutex, otx::blind::Purse>>;
     using UnitNameMap = std::map<std::string, proto::ContactItemType>;
     using UnitNameReverse = std::map<proto::ContactItemType, std::string>;
 
@@ -422,10 +448,8 @@ private:
     mutable std::map<std::string, std::mutex> peer_lock_;
     mutable std::mutex nymfile_map_lock_;
     mutable std::map<OTIdentifier, std::mutex> nymfile_lock_;
-#if OT_CASH
     mutable std::mutex purse_lock_;
-    mutable std::map<PurseID, std::mutex> purse_id_lock_;
-#endif
+    mutable PurseMap purse_map_;
     OTZMQPublishSocket account_publisher_;
     OTZMQPublishSocket issuer_publisher_;
     OTZMQPublishSocket nym_publisher_;
@@ -447,12 +471,6 @@ private:
         const Identifier& accountID,
         const std::string& alias,
         const std::string& serialized) const -> opentxs::Account*;
-#if OT_CASH
-    auto get_purse_lock(
-        const identifier::Nym& nym,
-        const identifier::Server& server,
-        const identifier::UnitDefinition& unit) const -> std::mutex&;
-#endif
     virtual void instantiate_client_context(
         const proto::Context& serialized,
         const Nym_p& localNym,
@@ -490,23 +508,20 @@ private:
     auto publish_server(const identifier::Server& id) const noexcept -> void;
     auto publish_unit(const identifier::UnitDefinition& id) const noexcept
         -> void;
-#if OT_CASH
     auto purse(
         const identifier::Nym& nym,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
-        const bool checking) const -> std::unique_ptr<blind::Purse>;
-#endif
+        const bool checking) const -> PurseMap::mapped_type&;
     void save(
         const PasswordPrompt& reason,
         const std::string id,
         std::unique_ptr<opentxs::Account>& in,
         eLock& lock,
         bool success) const;
-    void save(const Lock& lock, api::client::Issuer* in) const;
-#if OT_CASH
-    void save(const Lock& lock, const OTNymID nym, blind::Purse* in) const;
-#endif
+    void save(const Lock& lock, otx::client::Issuer* in) const;
+    void save(const eLock& lock, const OTNymID nym, otx::blind::Purse* in)
+        const;
     void save(NymData* nymData, const Lock& lock) const;
     void save(
         const PasswordPrompt& reason,
@@ -536,4 +551,4 @@ private:
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
 };
-}  // namespace opentxs::api::session::implementation
+}  // namespace opentxs::api::session::imp

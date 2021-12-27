@@ -21,10 +21,10 @@ namespace opentxs
 {
 namespace api
 {
-namespace implementation
+namespace imp
 {
 class Storage;
-}  // namespace implementation
+}  // namespace imp
 }  // namespace api
 
 namespace proto
@@ -80,7 +80,7 @@ public:
     ~Tree() final;
 
 private:
-    friend api::implementation::Storage;
+    friend api::imp::Storage;
     friend storage::Root;
 
     std::string account_root_{Node::BLANK_HASH};

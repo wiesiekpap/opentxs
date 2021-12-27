@@ -24,7 +24,7 @@ class Context;
 class Factory;
 }  // namespace opentxs
 
-namespace opentxs::api::network::implementation
+namespace opentxs::api::network::imp
 {
 class ZAP final : virtual public api::network::ZAP
 {
@@ -49,4 +49,4 @@ private:
     auto operator=(const ZAP&) -> ZAP& = delete;
     auto operator=(ZAP&&) -> ZAP& = delete;
 };
-}  // namespace opentxs::api::network::implementation
+}  // namespace opentxs::api::network::imp

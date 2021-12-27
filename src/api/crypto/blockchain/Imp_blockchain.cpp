@@ -21,15 +21,15 @@
 #include "Proto.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "core/Worker.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Activity.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -40,7 +40,7 @@
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -56,18 +56,17 @@
 #include "util/Container.hpp"
 #include "util/Work.hpp"
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 BlockchainImp::BlockchainImp(
     const api::Session& api,
-    const api::client::Activity& activity,
-    const api::client::Contacts& contacts,
+    const api::session::Activity& activity,
+    const api::session::Contacts& contacts,
     const api::Legacy& legacy,
     const std::string& dataFolder,
     const Options& args,
     api::crypto::Blockchain& parent) noexcept
     : Imp(api, contacts, parent)
-    , parent_(parent)
     , activity_(activity)
     , key_generated_endpoint_(opentxs::network::zeromq::MakeArbitraryInproc())
     , transaction_updates_([&] {
@@ -156,12 +155,11 @@ auto BlockchainImp::ActivityDescription(
     -> std::string
 {
     auto output = std::stringstream{};
-    const auto amount = tx.NetBalanceChange(parent_, nym);
-    const auto memo = tx.Memo(parent_);
+    const auto amount = tx.NetBalanceChange(nym);
+    const auto memo = tx.Memo();
     const auto names = [&] {
         auto out = std::set<std::string>{};
-        const auto contacts =
-            tx.AssociatedRemoteContacts(parent_, contacts_, nym);
+        const auto contacts = tx.AssociatedRemoteContacts(contacts_, nym);
 
         for (const auto& id : contacts) {
             out.emplace(contacts_.ContactName(id, BlockchainToUnit(chain)));
@@ -357,8 +355,8 @@ auto BlockchainImp::notify_new_account(
     balances_.RefreshBalance(owner, chain);
 }
 
-auto BlockchainImp::ProcessContact(const Contact& contact) const noexcept
-    -> bool
+auto BlockchainImp::ProcessContact(
+    const contact::Contact& contact) const noexcept -> bool
 {
     broadcast_update_signal(
         api_.Network().Blockchain().Internal().Database().UpdateContact(
@@ -368,8 +366,8 @@ auto BlockchainImp::ProcessContact(const Contact& contact) const noexcept
 }
 
 auto BlockchainImp::ProcessMergedContact(
-    const Contact& parent,
-    const Contact& child) const noexcept -> bool
+    const contact::Contact& parent,
+    const contact::Contact& child) const noexcept -> bool
 {
     broadcast_update_signal(
         api_.Network().Blockchain().Internal().Database().UpdateMergedContact(
@@ -393,7 +391,7 @@ auto BlockchainImp::ProcessTransaction(
     const auto txid = id.Bytes();
 
     if (auto tx = db.LoadTransaction(txid); tx) {
-        tx->Internal().MergeMetadata(parent_, chain, in.Internal());
+        tx->Internal().MergeMetadata(chain, in.Internal());
 
         if (false == db.StoreTransaction(*tx)) {
             LogError()(OT_PRETTY_CLASS())(
@@ -441,7 +439,7 @@ auto BlockchainImp::reconcile_activity_threads(
     const opentxs::blockchain::block::bitcoin::Transaction& tx) const noexcept
     -> bool
 {
-    if (!activity_.AddBlockchainTransaction(parent_, tx)) { return false; }
+    if (!activity_.AddBlockchainTransaction(tx)) { return false; }
 
     broadcast_update_signal(tx);
 
@@ -549,4 +547,4 @@ auto BlockchainImp::UpdateElement(std::vector<ReadView>& hashes) const noexcept
         std::end(transactions),
         [&](const auto& txid) { reconcile_activity_threads(lock, txid); });
 }
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

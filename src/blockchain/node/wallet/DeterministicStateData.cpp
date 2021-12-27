@@ -22,6 +22,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -35,12 +36,12 @@
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
@@ -49,7 +50,6 @@ namespace opentxs::blockchain::node::wallet
 {
 DeterministicStateData::DeterministicStateData(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
     const node::internal::Network& node,
     Accounts& parent,
     const WalletDatabase& db,
@@ -60,7 +60,6 @@ DeterministicStateData::DeterministicStateData(
     const Subchain subchain) noexcept
     : SubchainStateData(
           api,
-          crypto,
           node,
           parent,
           db,
@@ -182,7 +181,7 @@ auto DeterministicStateData::process(
                         api_.Factory().Data(key.PublicKey())->asHex())
                         .Flush();
                     outputs.emplace_back(i);
-                    crypto_.Confirm(element.KeyID(), txid);
+                    api_.Crypto().Blockchain().Confirm(element.KeyID(), txid);
 
                     if (nullptr == pTX) { pTX = &transaction; }
                 }
@@ -199,7 +198,7 @@ auto DeterministicStateData::process(
                         txid->asHex())(" output ")(i)(" via ")(hash->asHex())
                         .Flush();
                     outputs.emplace_back(i);
-                    crypto_.Confirm(element.KeyID(), txid);
+                    api_.Crypto().Blockchain().Confirm(element.KeyID(), txid);
 
                     if (nullptr == pTX) { pTX = &transaction; }
                 }
@@ -216,7 +215,7 @@ auto DeterministicStateData::process(
                         txid->asHex())(" output ")(i)(" via ")(hash->asHex())
                         .Flush();
                     outputs.emplace_back(i);
-                    crypto_.Confirm(element.KeyID(), txid);
+                    api_.Crypto().Blockchain().Confirm(element.KeyID(), txid);
 
                     if (nullptr == pTX) { pTX = &transaction; }
                 }
@@ -248,7 +247,7 @@ auto DeterministicStateData::process(
                         api_.Factory().Data(key.PublicKey())->asHex())
                         .Flush();
                     outputs.emplace_back(i);
-                    crypto_.Confirm(element.KeyID(), txid);
+                    api_.Crypto().Blockchain().Confirm(element.KeyID(), txid);
 
                     if (nullptr == pTX) { pTX = &transaction; }
                 }

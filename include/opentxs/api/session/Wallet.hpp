@@ -28,11 +28,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace client
-{
-class Issuer;
-}  // namespace client
-
 namespace crypto
 {
 class Parameters;
@@ -47,11 +42,6 @@ class Wallet;
 }  // namespace session
 }  // namespace api
 
-namespace blind
-{
-class Purse;
-}  // namespace blind
-
 namespace display
 {
 class Definition;
@@ -59,6 +49,11 @@ class Definition;
 
 namespace otx
 {
+namespace blind
+{
+class Purse;
+}  // namespace blind
+
 namespace context
 {
 class Base;
@@ -76,10 +71,9 @@ namespace opentxs
 {
 /** AccountInfo: accountID, nymID, serverID, unitID*/
 using AccountInfo = std::tuple<OTIdentifier, OTNymID, OTServerID, OTUnitID>;
+}  // namespace opentxs
 
-namespace api
-{
-namespace session
+namespace opentxs::api::session
 {
 /** \brief This class manages instantiated contracts and provides easy access
  *  to them.
@@ -156,18 +150,6 @@ public:
     virtual auto IssuerList(const identifier::Nym& nymID) const
         -> std::set<OTNymID> = 0;
 
-    /**   Load a read-only copy of an Issuer object
-     *
-     *    \param[in] nymID the identifier of the local nym
-     *    \param[in] issuerID the identifier of the issuer nym
-     *    \returns A smart pointer to the object. The smart pointer will not be
-     *             instantiated if the object does not exist or is invalid.
-     */
-    virtual auto Issuer(
-        const identifier::Nym& nymID,
-        const identifier::Nym& issuerID) const
-        -> std::shared_ptr<const client::Issuer> = 0;
-
     virtual auto IsLocalNym(const std::string& id) const -> bool = 0;
 
     virtual auto LocalNymCount() const -> std::size_t = 0;
@@ -205,11 +187,10 @@ public:
      *
      *    \param[in] nym the serialized version of the contract
      */
-    virtual auto Nym(const identity::Nym::Serialized& nym) const -> Nym_p = 0;
     virtual auto Nym(const ReadView& bytes) const -> Nym_p = 0;
 
     virtual auto Nym(
-        const contact::ClaimType type,
+        const opentxs::contact::ClaimType type,
         const PasswordPrompt& reason,
         const std::string& name = {}) const -> Nym_p = 0;
     virtual auto Nym(
@@ -220,7 +201,7 @@ public:
         const -> Nym_p = 0;
     virtual auto Nym(
         const opentxs::crypto::Parameters& parameters,
-        const contact::ClaimType type,
+        const opentxs::contact::ClaimType type,
         const PasswordPrompt& reason,
         const std::string& name = {}) const -> Nym_p = 0;
 
@@ -433,14 +414,11 @@ public:
         const Identifier& request,
         const StorageBox& box) const -> bool = 0;
 
-#if OT_CASH
     virtual auto Purse(
         const identifier::Nym& nym,
         const identifier::Server& server,
         const identifier::UnitDefinition& unit,
-        const bool checking = false) const
-        -> std::unique_ptr<const blind::Purse> = 0;
-#endif
+        const bool checking = false) const -> const otx::blind::Purse& = 0;
 
     /**   Unload and delete a server contract
      *
@@ -582,6 +560,13 @@ public:
         const identifier::UnitDefinition& id,
         const std::chrono::milliseconds& timeout = std::chrono::milliseconds(
             0)) const noexcept(false) -> OTUnitDefinition = 0;
+    /**   Instantiate a unit definition contract from serialized form
+     *
+     *    \param[in] contract the protobuf serialized version of the contract
+     *    \throw std::runtime_error the provided contract is invalid
+     */
+    virtual auto UnitDefinition(const ReadView contract) const noexcept(false)
+        -> OTUnitDefinition = 0;
     virtual auto BasketContract(
         const identifier::UnitDefinition& id,
         const std::chrono::milliseconds& timeout = std::chrono::milliseconds(
@@ -600,11 +585,37 @@ public:
         const std::string& shortname,
         const std::string& terms,
         const core::UnitType unitOfAccount,
-        const PasswordPrompt& reason,
-        const display::Definition& displayDefinition,
         const Amount& redemptionIncrement,
-        const VersionNumber version = contract::Unit::DefaultVersion) const
-        noexcept(false) -> OTUnitDefinition = 0;
+        const PasswordPrompt& reason) const noexcept(false)
+        -> OTUnitDefinition = 0;
+    virtual auto CurrencyContract(
+        const std::string& nymid,
+        const std::string& shortname,
+        const std::string& terms,
+        const core::UnitType unitOfAccount,
+        const Amount& redemptionIncrement,
+        const display::Definition& displayDefinition,
+        const PasswordPrompt& reason) const noexcept(false)
+        -> OTUnitDefinition = 0;
+    virtual auto CurrencyContract(
+        const std::string& nymid,
+        const std::string& shortname,
+        const std::string& terms,
+        const core::UnitType unitOfAccount,
+        const Amount& redemptionIncrement,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const noexcept(false)
+        -> OTUnitDefinition = 0;
+    virtual auto CurrencyContract(
+        const std::string& nymid,
+        const std::string& shortname,
+        const std::string& terms,
+        const core::UnitType unitOfAccount,
+        const Amount& redemptionIncrement,
+        const display::Definition& displayDefinition,
+        const VersionNumber version,
+        const PasswordPrompt& reason) const noexcept(false)
+        -> OTUnitDefinition = 0;
 
     /**   Create a new security contract
      *
@@ -645,6 +656,4 @@ private:
     auto operator=(const Wallet&) -> Wallet& = delete;
     auto operator=(Wallet&&) -> Wallet& = delete;
 };
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::session

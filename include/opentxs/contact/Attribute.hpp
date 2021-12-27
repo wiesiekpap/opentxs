@@ -5,13 +5,12 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"        // IWYU pragma: associated
 #include "opentxs/contact/Types.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 
-namespace opentxs
-{
-namespace contact
+namespace opentxs::contact
 {
 enum class Attribute : std::uint8_t {
     Error = 0,
@@ -19,5 +18,4 @@ enum class Attribute : std::uint8_t {
     Primary = 2,
     Local = 3,
 };
-}  // namespace contact
-}  // namespace opentxs
+}  // namespace opentxs::contact

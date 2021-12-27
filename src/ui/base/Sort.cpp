@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "internal/ui/UI.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "ui/activitythread/ActivityThread.hpp"  // IWYU pragma: keep
 #include "ui/base/Items.hpp"
 #include "ui/blockchainselection/BlockchainSelection.hpp"  // IWYU pragma: keep

@@ -22,8 +22,8 @@
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Identifier.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "util/Gatekeeper.hpp"
 #include "util/JobCounter.hpp"
 
@@ -123,7 +123,6 @@ struct Account::Imp {
     }
 
     Imp(const api::Session& api,
-        const api::crypto::Blockchain& crypto,
         const BalanceTree& ref,
         const node::internal::Network& node,
         Accounts& parent,
@@ -133,7 +132,6 @@ struct Account::Imp {
         const std::function<void(const Identifier&, const char*)>&
             taskFinished) noexcept
         : api_(api)
-        , crypto_(crypto)
         , ref_(ref)
         , node_(node)
         , parent_(parent)
@@ -164,7 +162,6 @@ private:
     using Map = std::map<OTIdentifier, DeterministicStateData>;
 
     const api::Session& api_;
-    const api::crypto::Blockchain& crypto_;
     const BalanceTree& ref_;
     const node::internal::Network& node_;
     Accounts& parent_;
@@ -228,7 +225,6 @@ private:
         auto [it, added] = map.try_emplace(
             account.ID(),
             api_,
-            crypto_,
             node_,
             parent_,
             db_,
@@ -246,7 +242,6 @@ private:
 
 Account::Account(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
     const BalanceTree& ref,
     const node::internal::Network& node,
     Accounts& parent,
@@ -257,7 +252,6 @@ Account::Account(
         taskFinished) noexcept
     : imp_(std::make_unique<Imp>(
           api,
-          crypto,
           ref,
           node,
           parent,

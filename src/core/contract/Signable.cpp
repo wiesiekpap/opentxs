@@ -13,7 +13,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -35,6 +35,25 @@ Signable::Signable(
     , id_(id)
     , signatures_(std::move(signatures))
     , alias_(alias)
+{
+}
+
+Signable::Signable(
+    const api::Session& api,
+    const Nym_p& nym,
+    const VersionNumber version,
+    const std::string& conditions,
+    const std::string& alias,
+    const Identifier& id,
+    Signatures&& signatures) noexcept
+    : Signable(
+          api,
+          nym,
+          version,
+          conditions,
+          alias,
+          OTIdentifier{id},
+          std::move(signatures))
 {
 }
 
@@ -67,7 +86,7 @@ Signable::Signable(const Signable& rhs) noexcept
 {
 }
 
-auto Signable::Alias() const -> std::string
+auto Signable::Alias() const noexcept -> std::string
 {
     auto lock = Lock{lock_};
 
@@ -100,7 +119,7 @@ auto Signable::id(const Lock& lock) const -> OTIdentifier
     return id_;
 }
 
-auto Signable::ID() const -> OTIdentifier
+auto Signable::ID() const noexcept -> OTIdentifier
 {
     auto lock = Lock{lock_};
 
@@ -120,16 +139,17 @@ auto Signable::init_serialized(const Lock& lock) noexcept(false) -> void
     }
 }
 
-auto Signable::Nym() const -> Nym_p { return nym_; }
+auto Signable::Nym() const noexcept -> Nym_p { return nym_; }
 
-auto Signable::SetAlias(const std::string& alias) -> void
+auto Signable::SetAlias(const std::string& alias) noexcept -> bool
 {
     auto lock = Lock{lock_};
-
     alias_ = alias;
+
+    return true;
 }
 
-auto Signable::Terms() const -> const std::string&
+auto Signable::Terms() const noexcept -> const std::string&
 {
     auto lock = Lock{lock_};
 
@@ -158,7 +178,7 @@ auto Signable::update_version(
     const_cast<VersionNumber&>(version_) = version;
 }
 
-auto Signable::Validate() const -> bool
+auto Signable::Validate() const noexcept -> bool
 {
     auto lock = Lock{lock_};
 
@@ -196,5 +216,5 @@ auto Signable::verify_signature(const Lock& lock, const proto::Signature&) const
     return true;
 }
 
-auto Signable::Version() const -> VersionNumber { return version_; }
+auto Signable::Version() const noexcept -> VersionNumber { return version_; }
 }  // namespace opentxs::contract::implementation

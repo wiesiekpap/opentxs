@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs

@@ -19,10 +19,10 @@ namespace api
 {
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Session;
-}  // namespace implementation
+}  // namespace imp
 }  // namespace session
 
 class Session;
@@ -70,7 +70,7 @@ public:
 private:
     friend OTPasswordPrompt;
     friend opentxs::Factory;
-    friend api::session::implementation::Session;
+    friend api::session::imp::Session;
 
     auto clone() const noexcept -> PasswordPrompt*
     {

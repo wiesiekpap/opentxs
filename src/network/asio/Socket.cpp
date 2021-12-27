@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "network/asio/Socket.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 

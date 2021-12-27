@@ -30,11 +30,7 @@ class Nym;
 }  // namespace identifier
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace session
+namespace opentxs::api::session
 {
 class OPENTXS_EXPORT Endpoints
 {
@@ -573,6 +569,4 @@ private:
     auto operator=(const Endpoints&) -> Endpoints& = delete;
     auto operator=(Endpoints&&) -> Endpoints& = delete;
 };
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::session

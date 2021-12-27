@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 #include "opentxs/network/blockchain/sync/Types.hpp"
 
 namespace opentxs
@@ -22,6 +24,10 @@ enum class MessageType : TypeEnum {
     sync_reply = 3,
     new_block_header = 4,
     query = 5,
+    publish_contract = 6,
+    publish_ack = 7,
+    contract_query = 8,
+    contract = 9,
 };
 }  // namespace sync
 }  // namespace blockchain

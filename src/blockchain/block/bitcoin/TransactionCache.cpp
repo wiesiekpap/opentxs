@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "internal/blockchain/block/Block.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "util/Container.hpp"
 
 namespace opentxs::blockchain::block::bitcoin::implementation
@@ -80,13 +80,12 @@ auto Transaction::Cache::memo() const noexcept -> std::string
     return memo_;
 }
 
-auto Transaction::Cache::merge(
-    const api::crypto::Blockchain& api,
-    const internal::Transaction& rhs) noexcept -> void
+auto Transaction::Cache::merge(const internal::Transaction& rhs) noexcept
+    -> void
 {
     auto lock = rLock{lock_};
 
-    if (auto memo = rhs.Memo(api); memo_.empty() || (false == memo.empty())) {
+    if (auto memo = rhs.Memo(); memo_.empty() || (false == memo.empty())) {
         memo_.swap(memo);
     }
 

@@ -21,7 +21,6 @@
 #include "api/Periodic.hpp"
 #include "internal/api/Context.hpp"
 #include "internal/api/Legacy.hpp"
-#include "internal/api/client/Client.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
@@ -91,7 +90,7 @@ extern "C" {
 struct rlimit;
 }
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 class Context final : public internal::Context, Lockable, Periodic
 {
@@ -207,4 +206,4 @@ private:
     auto operator=(const Context&) -> Context& = delete;
     auto operator=(Context&&) -> Context& = delete;
 };
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

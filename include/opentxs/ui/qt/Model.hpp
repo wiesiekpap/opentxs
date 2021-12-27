@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 #include <QAbstractItemModel>
 #include <QHash>
 #include <QMetaType>

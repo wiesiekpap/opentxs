@@ -48,11 +48,7 @@ class PasswordPrompt;
 class Secret;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace crypto
+namespace opentxs::api::crypto
 {
 class OPENTXS_EXPORT Seed
 {
@@ -175,6 +171,4 @@ private:
     auto operator=(const Seed&) -> Seed& = delete;
     auto operator=(Seed&&) -> Seed& = delete;
 };
-}  // namespace crypto
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::crypto

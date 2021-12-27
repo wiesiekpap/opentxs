@@ -30,7 +30,7 @@
 
 namespace opentxs::factory
 {
-using ReturnType = api::crypto::implementation::Hash;
+using ReturnType = api::crypto::imp::Hash;
 
 auto Hash(
     const api::crypto::Encode& encode,
@@ -45,7 +45,7 @@ auto Hash(
 }
 }  // namespace opentxs::factory
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 using Provider = opentxs::crypto::HashingProvider;
 
@@ -398,4 +398,4 @@ auto Hash::sha_256_double_checksum(
 
     return true;
 }
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

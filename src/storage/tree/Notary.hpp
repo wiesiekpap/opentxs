@@ -40,7 +40,6 @@ class Notary final : public Node
 public:
     using MintSeries = std::uint64_t;
 
-#if OT_CASH
     auto CheckSpent(
         const identifier::UnitDefinition& unit,
         const MintSeries series,
@@ -50,7 +49,6 @@ public:
         const identifier::UnitDefinition& unit,
         const MintSeries series,
         const std::string& key) -> bool;
-#endif
 
     ~Notary() final = default;
 
@@ -61,7 +59,6 @@ private:
 
     std::string id_;
 
-#if OT_CASH
     mutable UnitMap mint_map_;
 
     auto create_list(
@@ -72,7 +69,6 @@ private:
         const Lock& lock,
         const std::string& unitID,
         const MintSeries series) const -> proto::SpentTokenList;
-#endif
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageNotary;
 

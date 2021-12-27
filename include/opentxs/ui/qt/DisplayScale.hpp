@@ -5,14 +5,14 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 #include <QAbstractItemModel>
 #include <QAbstractListModel>
 #include <QModelIndex>
 #include <QObject>
 #include <QString>
 #include <QVariant>
-
-#include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
 
 class QObject;
 

@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "ui/activitythread/ActivityThreadItem.hpp"
 

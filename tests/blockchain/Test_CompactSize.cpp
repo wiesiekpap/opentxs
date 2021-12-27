@@ -9,9 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;

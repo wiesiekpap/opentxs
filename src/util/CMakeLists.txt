@@ -3,54 +3,61 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-add_library(
-  opentxs-util OBJECT
-  "${opentxs_SOURCE_DIR}/src/internal/util/Exclusive.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/util/Log.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/util/LogMacros.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/util/Shared.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/util/Timer.hpp"
-  "${opentxs_SOURCE_DIR}/src/internal/util/Types.hpp"
-  "Allocator.hpp"
-  "AsyncValue.hpp"
-  "Backoff.hpp"
-  "Blank.hpp"
-  "Bytes.cpp"
-  "Container.hpp"
-  "Exclusive.tpp"
-  "Gatekeeper.cpp"
-  "Gatekeeper.hpp"
-  "HDIndex.hpp"
-  "JobCounter.cpp"
-  "JobCounter.hpp"
-  "Latest.hpp"
-  "Log.cpp"
-  "Log.hpp"
-  "Options.cpp"
-  "Options.hpp"
-  "Polarity.hpp"
-  "Random.cpp"
-  "Random.hpp"
-  "ScopeGuard.cpp"
-  "ScopeGuard.hpp"
-  "Signals.cpp"
-  "Sodium.cpp"
-  "Sodium.hpp"
-  "Thread.cpp"
-  "Thread.hpp"
-  "Time.cpp"
-  "Timer.cpp"
-  "Timer.hpp"
-  "Work.hpp"
+add_subdirectory(license)
+add_subdirectory(platform)
+
+target_sources(
+  opentxs-common
+  PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/util/Exclusive.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/Log.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/LogMacros.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/Shared.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/Timer.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/Types.hpp"
+    "Allocator.hpp"
+    "AsyncValue.hpp"
+    "Backoff.hpp"
+    "Blank.hpp"
+    "Bytes.cpp"
+    "Container.hpp"
+    "Exclusive.tpp"
+    "Gatekeeper.cpp"
+    "Gatekeeper.hpp"
+    "HDIndex.hpp"
+    "JobCounter.cpp"
+    "JobCounter.hpp"
+    "Latest.hpp"
+    "Log.cpp"
+    "Log.hpp"
+    "NymEditor.cpp"
+    "Options.cpp"
+    "Options.hpp"
+    "Polarity.hpp"
+    "Random.cpp"
+    "Random.hpp"
+    "ScopeGuard.cpp"
+    "ScopeGuard.hpp"
+    "Signals.cpp"
+    "Sodium.cpp"
+    "Sodium.hpp"
+    "Thread.cpp"
+    "Thread.hpp"
+    "Time.cpp"
+    "Timer.cpp"
+    "Timer.hpp"
+    "Work.hpp"
 )
 target_include_directories(
-  opentxs-util SYSTEM
+  opentxs-common SYSTEM
   PRIVATE "${opentxs_SOURCE_DIR}/deps/robin-hood/src/include"
 )
 set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Bytes.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/Iterator.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Log.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Numbers.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/NymEditor.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Options.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Pimpl.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/SharedPimpl.hpp"
@@ -60,7 +67,7 @@ set(cxx-install-headers
 )
 
 target_link_libraries(
-  opentxs-util
+  opentxs-common
   PRIVATE
     opentxs::messages
     Boost::iostreams
@@ -79,57 +86,18 @@ target_link_libraries(
 
 if(LMDB_EXPORT)
   target_sources(
-    opentxs-util
+    opentxs-common
     PRIVATE
       "LMDB.cpp"
       "LMDB.hpp"
       "MappedFileStorage.cpp"
       "MappedFileStorage.hpp"
   )
-  target_link_libraries(opentxs-util PRIVATE lmdb)
+  target_link_libraries(opentxs-common PRIVATE lmdb)
   target_link_libraries(opentxs PUBLIC lmdb)
 endif()
 
-if(UNIX
-   AND (NOT APPLE)
-   AND (NOT ANDROID)
-   AND (NOT OT_VALGRIND)
-   AND ("${CMAKE_SIZEOF_VOID_P}"
-        EQUAL
-        "8")
-)
-  target_compile_definitions(
-    opentxs-util PRIVATE OS_SUPPORTS_LARGE_SPARSE_FILES=1
-                         OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT=1
-  )
-else()
-  target_compile_definitions(
-    opentxs-util PRIVATE OS_SUPPORTS_LARGE_SPARSE_FILES=0
-  )
-
-  if("${CMAKE_SIZEOF_VOID_P}"
-     EQUAL
-     "8"
-  )
-    target_compile_definitions(
-      opentxs-util PRIVATE OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT=1
-    )
-  else()
-    target_compile_definitions(
-      opentxs-util PRIVATE OS_HAS_MEDIOCRE_SPARSE_FILE_SUPPORT=0
-    )
-  endif()
-endif()
-
-if(WIN32 AND OT_STATIC_DEPENDENCIES)
-  target_compile_definitions(
-    opentxs-util PRIVATE SODIUM_STATIC=1 SODIUM_EXPORT=
-  )
-endif()
-
-target_sources(opentxs-util PRIVATE ${cxx-install-headers})
-target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-util>)
-add_dependencies(opentxs-util generated_code)
+target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 
 if(OPENTXS_STANDALONE)
   install(

@@ -16,14 +16,14 @@
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
+#include "internal/otx/client/Issuer.hpp"
 #include "internal/ui/UI.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/List.hpp"
@@ -117,7 +117,7 @@ private:
     const ListenerDefinitions listeners_;
     const std::string& name_;
     std::atomic<bool> connection_;
-    const std::shared_ptr<const api::client::Issuer> issuer_;
+    const std::shared_ptr<const otx::client::Issuer> issuer_;
     const core::UnitType currency_;
 
     auto construct_row(

@@ -140,6 +140,7 @@ if(NOT OT_IWYU)
     [["serialization/protobuf/HDAccount.pb.h"]]
     [["serialization/protobuf/HDPath.pb.h"]]
     [["serialization/protobuf/HDSeed.pb.h"]]
+    [["serialization/protobuf/Identifier.pb.h"]]
     [["serialization/protobuf/InstrumentRevision.pb.h"]]
     [["serialization/protobuf/Issuer.pb.h"]]
     [["serialization/protobuf/KeyCredential.pb.h"]]
@@ -245,37 +246,57 @@ if(APPLE)
   )
 endif()
 
+set(OPENTXS_QT_PUBLIC_HEADERS "")
+set(OPENTXS_QT_PRIVATE_HEADERS "")
+
 add_subdirectory(api)
-add_subdirectory(blind)
 add_subdirectory(blockchain)
-add_subdirectory(client)
 add_subdirectory(contact)
 add_subdirectory(core)
 add_subdirectory(crypto)
 add_subdirectory(identity)
-add_subdirectory(iterator)
-add_subdirectory(license)
 add_subdirectory(network)
 add_subdirectory(otx)
-add_subdirectory(platform)
 add_subdirectory(rpc)
 add_subdirectory(serialization)
-add_subdirectory(server)
 add_subdirectory(storage)
 add_subdirectory(ui)
 add_subdirectory(util)
+
+if(OT_QT_EXPORT)
+  qt_wrap_cpp(
+    OPENTXS_MOC_SOURCES
+    ${OPENTXS_QT_PUBLIC_HEADERS}
+    ${OPENTXS_QT_PRIVATE_HEADERS}
+  )
+  target_sources(
+    opentxs-common
+    PRIVATE
+      ${OPENTXS_QT_PUBLIC_HEADERS}
+      ${OPENTXS_QT_PRIVATE_HEADERS}
+      ${OPENTXS_MOC_SOURCES}
+  )
+
+  if(OPENTXS_STANDALONE)
+    install(
+      FILES ${OPENTXS_QT_PUBLIC_HEADERS}
+      DESTINATION include/opentxs/ui/qt
+      COMPONENT dev
+    )
+  endif()
+endif()
 
 include(GenerateExportHeader)
 generate_export_header(
   opentxs
   EXPORT_FILE_NAME
-  "${opentxs_BINARY_DIR}/src/opentxs/opentxs_export.hpp"
+  "${opentxs_BINARY_DIR}/src/opentxs/Export.hpp"
   EXPORT_MACRO_NAME
   OPENTXS_EXPORT
 )
 
 set(cxx-install-headers
-    "${opentxs_BINARY_DIR}/src/opentxs/opentxs_export.hpp"
+    "${opentxs_BINARY_DIR}/src/opentxs/Export.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/OT.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/Types.hpp"
 )

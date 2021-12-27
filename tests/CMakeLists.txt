@@ -138,11 +138,7 @@ set_target_properties(
 )
 
 add_subdirectory(blockchain)
-
-if(OT_CASH_EXPORT)
-  add_subdirectory(blind)
-endif()
-
+add_subdirectory(blind)
 add_subdirectory(client)
 add_subdirectory(contact)
 add_subdirectory(context)

@@ -10,7 +10,7 @@
 #include <cstdint>
 
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
+#include "opentxs/util/Iterator.hpp"
 
 namespace opentxs
 {

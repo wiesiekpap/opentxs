@@ -11,16 +11,14 @@
 #include <type_traits>
 #include <utility>
 
-#include "internal/api/client/Client.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/ui/UI.hpp"
+#include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Flag.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "ui/base/Items.hpp"
 #include "ui/base/Widget.hpp"
-
-#define LIST_METHOD "opentxs::ui::implementation::List::"
 
 namespace opentxs
 {

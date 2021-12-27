@@ -13,11 +13,12 @@
 #include <type_traits>
 
 #include "internal/contact/Contact.hpp"
+#include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
 #include "internal/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "ui/base/Combined.hpp"
 #include "ui/base/Widget.hpp"
@@ -58,7 +59,7 @@ ContactSubsection::ContactSubsection(
     startup_ = std::make_unique<std::thread>(
         &ContactSubsection::startup,
         this,
-        extract_custom<opentxs::ContactGroup>(custom));
+        extract_custom<contact::ContactGroup>(custom));
 
     OT_ASSERT(startup_)
 }
@@ -78,7 +79,7 @@ auto ContactSubsection::Name(const std::string& lang) const noexcept
 }
 
 auto ContactSubsection::process_group(
-    const opentxs::ContactGroup& group) noexcept
+    const contact::ContactGroup& group) noexcept
     -> std::set<ContactSubsectionRowID>
 {
     OT_ASSERT(row_id_.second == group.Type())
@@ -88,7 +89,7 @@ auto ContactSubsection::process_group(
     for (const auto& [id, claim] : group) {
         OT_ASSERT(claim)
 
-        CustomData custom{new opentxs::ContactItem(*claim)};
+        CustomData custom{new contact::ContactItem(*claim)};
         add_item(id, ++sequence_, custom);
         active.emplace(id);
     }
@@ -101,12 +102,12 @@ auto ContactSubsection::reindex(
     CustomData& custom) noexcept -> bool
 {
     delete_inactive(
-        process_group(extract_custom<opentxs::ContactGroup>(custom)));
+        process_group(extract_custom<contact::ContactGroup>(custom)));
 
     return true;
 }
 
-void ContactSubsection::startup(const opentxs::ContactGroup group) noexcept
+void ContactSubsection::startup(const contact::ContactGroup group) noexcept
 {
     process_group(group);
     finish_startup();

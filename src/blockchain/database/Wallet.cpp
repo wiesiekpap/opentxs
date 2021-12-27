@@ -14,7 +14,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainTransactionProposal.pb.h"
@@ -24,7 +24,6 @@ namespace opentxs::blockchain::database
 {
 Wallet::Wallet(
     const api::Session& api,
-    const api::crypto::Blockchain& blockchain,
     const common::Database& common,
     const storage::lmdb::LMDB& lmdb,
     const blockchain::Type chain,
@@ -34,7 +33,7 @@ Wallet::Wallet(
     , lmdb_(lmdb)
     , subchains_(api_, lmdb_, filter)
     , proposals_(lmdb_)
-    , outputs_(api_, blockchain, lmdb_, chain, subchains_, proposals_)
+    , outputs_(api_, lmdb_, chain, subchains_, proposals_)
 {
 }
 

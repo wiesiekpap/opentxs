@@ -23,7 +23,7 @@
 #include "blockchain/node/wallet/Process.hpp"
 #include "blockchain/node/wallet/Rescan.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
-#include "internal/api/network/Network.hpp"
+#include "internal/api/network/Asio.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"

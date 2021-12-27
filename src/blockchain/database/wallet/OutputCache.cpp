@@ -32,7 +32,6 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
@@ -911,8 +910,7 @@ auto OutputCache::load_output(const block::Outpoint& id) noexcept(false)
     lmdb_.Load(wallet::outputs_, id.Bytes(), [&](const auto bytes) {
         const auto proto =
             proto::Factory<proto::BlockchainTransactionOutput>(bytes);
-        auto pOutput = factory::BitcoinTransactionOutput(
-            api_, api_.Crypto().Blockchain(), chain_, proto);
+        auto pOutput = factory::BitcoinTransactionOutput(api_, chain_, proto);
 
         if (pOutput) {
             auto [row, added] = outputs_.try_emplace(id, std::move(pOutput));
@@ -1215,8 +1213,7 @@ auto OutputCache::write_output(
             auto out = Space{};
             const auto data = [&] {
                 auto proto = block::bitcoin::internal::Output::SerializeType{};
-                const auto rc = output.Internal().Serialize(
-                    api_.Crypto().Blockchain(), proto);
+                const auto rc = output.Internal().Serialize(proto);
 
                 if (false == rc) {
                     throw std::runtime_error{"failed to serialize as protobuf"};

@@ -19,8 +19,7 @@
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Identifier.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 
 namespace ot = opentxs;
 
@@ -36,7 +35,7 @@ public:
               ot::contact::SectionType::Identifier,
               ot::contact::ClaimType::Employee,
               {})
-        , primary_(new ot::ContactItem(
+        , primary_(new ot::contact::ContactItem(
               dynamic_cast<const ot::api::session::Client&>(api_),
               std::string("primaryContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
@@ -48,7 +47,7 @@ public:
               NULL_START,
               NULL_END,
               ""))
-        , active_(new ot::ContactItem(
+        , active_(new ot::contact::ContactItem(
               dynamic_cast<const ot::api::session::Client&>(api_),
               std::string("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
@@ -64,32 +63,33 @@ public:
     }
 
     const ot::api::session::Client& api_;
-    const ot::ContactGroup contactGroup_;
-    const std::shared_ptr<ot::ContactItem> primary_;
-    const std::shared_ptr<ot::ContactItem> active_;
+    const ot::contact::ContactGroup contactGroup_;
+    const std::shared_ptr<ot::contact::ContactItem> primary_;
+    const std::shared_ptr<ot::contact::ContactItem> active_;
 };
 
 TEST_F(Test_ContactGroup, first_constructor)
 {
     // Test constructing a group with a map containing two primary items.
-    const std::shared_ptr<ot::ContactItem> primary2(new ot::ContactItem(
-        dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("primaryContactItemNym2"),
-        CONTACT_CONTACT_DATA_VERSION,
-        CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
-        ot::contact::ClaimType::Employee,
-        std::string("primaryContactItemValue2"),
-        {ot::contact::Attribute::Primary},
-        NULL_START,
-        NULL_END,
-        ""));
+    const std::shared_ptr<ot::contact::ContactItem> primary2(
+        new ot::contact::ContactItem(
+            dynamic_cast<const ot::api::session::Client&>(api_),
+            std::string("primaryContactItemNym2"),
+            CONTACT_CONTACT_DATA_VERSION,
+            CONTACT_CONTACT_DATA_VERSION,
+            ot::contact::SectionType::Identifier,
+            ot::contact::ClaimType::Employee,
+            std::string("primaryContactItemValue2"),
+            {ot::contact::Attribute::Primary},
+            NULL_START,
+            NULL_END,
+            ""));
 
-    ot::ContactGroup::ItemMap map;
+    ot::contact::ContactGroup::ItemMap map;
     map[primary_->ID()] = primary_;
     map[primary2->ID()] = primary2;
 
-    const ot::ContactGroup group1(
+    const ot::contact::ContactGroup group1(
         std::string("testContactGroupNym1"),
         ot::contact::SectionType::Identifier,
         ot::contact::ClaimType::Employee,
@@ -110,7 +110,7 @@ TEST_F(Test_ContactGroup, first_constructor)
 TEST_F(Test_ContactGroup, first_constructor_no_items)
 {
     // Test constructing a group with a map containing no items.
-    const ot::ContactGroup group1(
+    const ot::contact::ContactGroup group1(
         std::string("testContactGroupNym1"),
         ot::contact::SectionType::Identifier,
         ot::contact::ClaimType::Employee,
@@ -122,7 +122,7 @@ TEST_F(Test_ContactGroup, first_constructor_no_items)
 
 TEST_F(Test_ContactGroup, second_constructor)
 {
-    const ot::ContactGroup group1(
+    const ot::contact::ContactGroup group1(
         std::string("testContactGroupNym1"),
         ot::contact::SectionType::Identifier,
         active_);
@@ -135,12 +135,12 @@ TEST_F(Test_ContactGroup, second_constructor)
 
 TEST_F(Test_ContactGroup, copy_constructor)
 {
-    const ot::ContactGroup group1(
+    const ot::contact::ContactGroup group1(
         std::string("testContactGroupNym1"),
         ot::contact::SectionType::Identifier,
         active_);
 
-    ot::ContactGroup copiedContactGroup(group1);
+    ot::contact::ContactGroup copiedContactGroup(group1);
 
     ASSERT_EQ(1, copiedContactGroup.Size());
     // Verify the group type matches the type of the item.
@@ -150,7 +150,7 @@ TEST_F(Test_ContactGroup, copy_constructor)
 
 TEST_F(Test_ContactGroup, move_constructor)
 {
-    ot::ContactGroup movedContactGroup(contactGroup_.AddItem(active_));
+    ot::contact::ContactGroup movedContactGroup(contactGroup_.AddItem(active_));
 
     ASSERT_EQ(1, movedContactGroup.Size());
     // Verify the group type matches the type of the item.
@@ -169,18 +169,19 @@ TEST_F(Test_ContactGroup, operator_plus)
     ASSERT_EQ(group2.Primary(), group3.Primary());
 
     // Test adding a group with 2 items to a group with 1 item.
-    const std::shared_ptr<ot::ContactItem> primary2(new ot::ContactItem(
-        dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("primaryContactItemNym2"),
-        CONTACT_CONTACT_DATA_VERSION,
-        CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
-        ot::contact::ClaimType::Employee,
-        std::string("primaryContactItemValue2"),
-        {ot::contact::Attribute::Primary},
-        NULL_START,
-        NULL_END,
-        ""));
+    const std::shared_ptr<ot::contact::ContactItem> primary2(
+        new ot::contact::ContactItem(
+            dynamic_cast<const ot::api::session::Client&>(api_),
+            std::string("primaryContactItemNym2"),
+            CONTACT_CONTACT_DATA_VERSION,
+            CONTACT_CONTACT_DATA_VERSION,
+            ot::contact::SectionType::Identifier,
+            ot::contact::ClaimType::Employee,
+            std::string("primaryContactItemValue2"),
+            {ot::contact::Attribute::Primary},
+            NULL_START,
+            NULL_END,
+            ""));
     const auto& group4 = contactGroup_.AddItem(primary2);
     const auto& group5 = contactGroup_.AddItem(primary_);
     const auto& group6 = group5.AddItem(active_);
@@ -251,7 +252,8 @@ TEST_F(Test_ContactGroup, AddPrimary)
 
 TEST_F(Test_ContactGroup, begin)
 {
-    ot::ContactGroup::ItemMap::const_iterator it = contactGroup_.begin();
+    ot::contact::ContactGroup::ItemMap::const_iterator it =
+        contactGroup_.begin();
     ASSERT_EQ(contactGroup_.end(), it);
     ASSERT_EQ(std::distance(it, contactGroup_.end()), 0);
 
@@ -271,36 +273,37 @@ TEST_F(Test_ContactGroup, Best_primary)
 {
     const auto& group1 = contactGroup_.AddItem(primary_);
 
-    const std::shared_ptr<ot::ContactItem>& best = group1.Best();
+    const std::shared_ptr<ot::contact::ContactItem>& best = group1.Best();
     ASSERT_NE(nullptr, best);
     ASSERT_EQ(primary_->ID(), best->ID());
 }
 
 TEST_F(Test_ContactGroup, Best_active_and_local)
 {
-    const std::shared_ptr<ot::ContactItem> local(new ot::ContactItem(
-        dynamic_cast<const ot::api::session::Client&>(api_),
-        std::string("localContactItemNym"),
-        CONTACT_CONTACT_DATA_VERSION,
-        CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
-        ot::contact::ClaimType::Employee,
-        std::string("localContactItemValue"),
-        {ot::contact::Attribute::Local},
-        NULL_START,
-        NULL_END,
-        ""));
+    const std::shared_ptr<ot::contact::ContactItem> local(
+        new ot::contact::ContactItem(
+            dynamic_cast<const ot::api::session::Client&>(api_),
+            std::string("localContactItemNym"),
+            CONTACT_CONTACT_DATA_VERSION,
+            CONTACT_CONTACT_DATA_VERSION,
+            ot::contact::SectionType::Identifier,
+            ot::contact::ClaimType::Employee,
+            std::string("localContactItemValue"),
+            {ot::contact::Attribute::Local},
+            NULL_START,
+            NULL_END,
+            ""));
     const auto& group1 = contactGroup_.AddItem(active_);
     const auto& group2 = group1.AddItem(local);
 
-    const std::shared_ptr<ot::ContactItem>& best = group2.Best();
+    const std::shared_ptr<ot::contact::ContactItem>& best = group2.Best();
     // Verify the best item is the active one.
     ASSERT_NE(nullptr, best);
     ASSERT_EQ(active_->ID(), best->ID());
     ASSERT_TRUE(best->isActive());
 
     const auto& group3 = group2.Delete(active_->ID());
-    const std::shared_ptr<ot::ContactItem>& best2 = group3.Best();
+    const std::shared_ptr<ot::contact::ContactItem>& best2 = group3.Best();
     // Verify the best item is the local one.
     ASSERT_NE(nullptr, best2);
     ASSERT_EQ(local->ID(), best2->ID());
@@ -311,21 +314,22 @@ TEST_F(Test_ContactGroup, Claim_found)
 {
     const auto& group1 = contactGroup_.AddItem(active_);
 
-    const std::shared_ptr<ot::ContactItem>& claim = group1.Claim(active_->ID());
+    const std::shared_ptr<ot::contact::ContactItem>& claim =
+        group1.Claim(active_->ID());
     ASSERT_NE(nullptr, claim);
     ASSERT_EQ(active_->ID(), claim->ID());
 }
 
 TEST_F(Test_ContactGroup, Claim_notfound)
 {
-    const std::shared_ptr<ot::ContactItem>& claim =
+    const std::shared_ptr<ot::contact::ContactItem>& claim =
         contactGroup_.Claim(active_->ID());
     ASSERT_FALSE(claim);
 }
 
 TEST_F(Test_ContactGroup, end)
 {
-    ot::ContactGroup::ItemMap::const_iterator it = contactGroup_.end();
+    ot::contact::ContactGroup::ItemMap::const_iterator it = contactGroup_.end();
     ASSERT_EQ(contactGroup_.begin(), it);
     ASSERT_EQ(std::distance(contactGroup_.begin(), it), 0);
 
@@ -386,7 +390,7 @@ TEST_F(Test_ContactGroup, PrimaryClaim_found)
 {
     const auto& group1 = contactGroup_.AddItem(primary_);
 
-    const std::shared_ptr<ot::ContactItem>& primaryClaim =
+    const std::shared_ptr<ot::contact::ContactItem>& primaryClaim =
         group1.PrimaryClaim();
     ASSERT_NE(nullptr, primaryClaim);
     ASSERT_EQ(primary_->ID(), primaryClaim->ID());
@@ -394,7 +398,7 @@ TEST_F(Test_ContactGroup, PrimaryClaim_found)
 
 TEST_F(Test_ContactGroup, PrimaryClaim_notfound)
 {
-    const std::shared_ptr<ot::ContactItem>& primaryClaim =
+    const std::shared_ptr<ot::contact::ContactItem>& primaryClaim =
         contactGroup_.PrimaryClaim();
     ASSERT_FALSE(primaryClaim);
 }

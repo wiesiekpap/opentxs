@@ -13,6 +13,8 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "core/contract/Signable.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
+#include "internal/api/session/Wallet.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/ServerRequest.hpp"
@@ -135,7 +137,7 @@ auto Request::extract_nym(
 {
     if (serialized.has_credentials()) {
 
-        return api.Wallet().Nym(serialized.credentials());
+        return api.Wallet().Internal().Nym(serialized.credentials());
     } else if (false == serialized.nym().empty()) {
 
         return api.Wallet().Nym(api.Factory().NymID(serialized.nym()));
@@ -163,7 +165,7 @@ auto Request::full_version(const Lock& lock) const -> proto::ServerRequest
 
 auto Request::GetID(const Lock& lock) const -> OTIdentifier
 {
-    return api_.Factory().Identifier(id_version(lock));
+    return api_.Factory().InternalSession().Identifier(id_version(lock));
 }
 
 auto Request::id_version(const Lock& lock) const -> proto::ServerRequest
@@ -187,11 +189,11 @@ auto Request::Number() const -> RequestNumber
     return number_;
 }
 
-auto Request::Serialize() const -> OTData
+auto Request::Serialize() const noexcept -> OTData
 {
     Lock lock(lock_);
 
-    return api_.Factory().Data(full_version(lock));
+    return api_.Factory().InternalSession().Data(full_version(lock));
 }
 
 auto Request::Serialize(AllocateOutput destination) const -> bool

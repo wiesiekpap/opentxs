@@ -17,10 +17,10 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/NumList.hpp"
 #include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -29,10 +29,10 @@ namespace api
 {
 namespace session
 {
-namespace implementation
+namespace imp
 {
 class Factory;
-}  // namespace implementation
+}  // namespace imp
 }  // namespace session
 
 class Session;
@@ -248,7 +248,7 @@ protected:
     void UpdateContents(const PasswordPrompt& reason) override;
 
 private:  // Private prevents erroneous use by other classes.
-    friend api::session::implementation::Factory;
+    friend api::session::imp::Factory;
 
     using ot_super = OTTransactionType;
 

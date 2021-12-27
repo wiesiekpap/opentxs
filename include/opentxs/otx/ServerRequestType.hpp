@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"    // IWYU pragma: associated
 #include "opentxs/otx/Types.hpp"  // IWYU pragma: associated
 
 #include <cstdint>

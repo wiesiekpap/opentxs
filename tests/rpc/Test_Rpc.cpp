@@ -22,29 +22,29 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/PaymentWorkflowState.hpp"
-#include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Account.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/otx/client/PaymentWorkflowState.hpp"
+#include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/rpc/AccountData.hpp"
 #include "opentxs/rpc/AccountEvent.hpp"
 #include "opentxs/rpc/AccountEventType.hpp"
@@ -170,9 +170,7 @@ protected:
                 auto& manager = Test_Rpc::get_session(response.session());
                 auto& servermanager =
                     dynamic_cast<const api::session::Notary&>(manager);
-#if OT_CASH
                 servermanager.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
-#endif
                 server2_id_ = servermanager.ID().str();
                 auto servercontract =
                     servermanager.Wallet().Server(servermanager.ID());
@@ -187,9 +185,7 @@ protected:
                 auto& manager = Test_Rpc::get_session(response.session());
                 auto& servermanager =
                     dynamic_cast<const api::session::Notary&>(manager);
-#if OT_CASH
                 servermanager.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
-#endif
                 server3_id_ = servermanager.ID().str();
                 auto servercontract =
                     servermanager.Wallet().Server(servermanager.ID());
@@ -372,9 +368,7 @@ TEST_F(Test_Rpc, Add_Server_Session)
 
     // Register the server on the client.
     auto& servermanager = dynamic_cast<const api::session::Notary&>(manager);
-#if OT_CASH
     servermanager.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
-#endif
     server_id_ = servermanager.ID().str();
     auto servercontract = servermanager.Wallet().Server(servermanager.ID());
 
@@ -1317,8 +1311,8 @@ TEST_F(Test_Rpc, Get_Workflow)
     const auto& workflow = client.Workflow();
     auto workflows = workflow.List(
         nym3id,
-        api::client::PaymentWorkflowType::InternalTransfer,
-        api::client::PaymentWorkflowState::Completed);
+        otx::client::PaymentWorkflowType::InternalTransfer,
+        otx::client::PaymentWorkflowState::Completed);
 
     EXPECT_TRUE(!workflows.empty());
 
@@ -1349,10 +1343,10 @@ TEST_F(Test_Rpc, Get_Workflow)
     const auto& paymentworkflow = response.workflow(0);
     EXPECT_STREQ(workflowid->str().c_str(), paymentworkflow.id().c_str());
     EXPECT_EQ(
-        api::client::PaymentWorkflowType::InternalTransfer,
+        otx::client::PaymentWorkflowType::InternalTransfer,
         translate(paymentworkflow.type()));
     EXPECT_EQ(
-        api::client::PaymentWorkflowState::Completed,
+        otx::client::PaymentWorkflowState::Completed,
         translate(paymentworkflow.state()));
 
     workflow_id_ = workflowid->str();

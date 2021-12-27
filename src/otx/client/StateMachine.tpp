@@ -26,13 +26,11 @@ auto StateMachine::get_param() -> DownloadContractTask&
 {
     return param_.download_contract_;
 }
-#if OT_CASH
 template <>
 auto StateMachine::get_param() -> DownloadMintTask&
 {
     return param_.download_mint_;
 }
-#endif
 template <>
 auto StateMachine::get_param() -> DownloadNymboxTask&
 {
@@ -58,13 +56,11 @@ auto StateMachine::get_param() -> MessageTask&
 {
     return param_.send_message_;
 }
-#if OT_CASH
 template <>
 auto StateMachine::get_param() -> PayCashTask&
 {
     return param_.send_cash_;
 }
-#endif
 template <>
 auto StateMachine::get_param() -> PaymentTask&
 {
@@ -110,13 +106,11 @@ auto StateMachine::get_param() -> SendTransferTask&
 {
     return param_.send_transfer_;
 }
-#if OT_CASH
 template <>
 auto StateMachine::get_param() -> WithdrawCashTask&
 {
     return param_.withdraw_cash_;
 }
-#endif
 
 template <>
 auto StateMachine::get_task() const -> const UniqueQueue<CheckNymTask>&
@@ -133,13 +127,11 @@ auto StateMachine::get_task() const -> const UniqueQueue<DownloadContractTask>&
 {
     return download_contract_;
 }
-#if OT_CASH
 template <>
 auto StateMachine::get_task() const -> const UniqueQueue<DownloadMintTask>&
 {
     return download_mint_;
 }
-#endif
 template <>
 auto StateMachine::get_task() const -> const UniqueQueue<DownloadNymboxTask>&
 {
@@ -168,13 +160,11 @@ auto StateMachine::get_task() const -> const UniqueQueue<MessageTask>&
 {
     return send_message_;
 }
-#if OT_CASH
 template <>
 auto StateMachine::get_task() const -> const UniqueQueue<PayCashTask>&
 {
     return send_cash_;
 }
-#endif
 template <>
 auto StateMachine::get_task() const -> const UniqueQueue<PaymentTask>&
 {
@@ -221,13 +211,11 @@ auto StateMachine::get_task() const -> const UniqueQueue<SendTransferTask>&
 {
     return send_transfer_;
 }
-#if OT_CASH
 template <>
 auto StateMachine::get_task() const -> const UniqueQueue<WithdrawCashTask>&
 {
     return withdraw_cash_;
 }
-#endif
 
 template <>
 auto StateMachine::load_contract<CheckNymTask>(const identifier::Nym& id) const
@@ -269,10 +257,8 @@ template StateMachine::BackgroundTask StateMachine::StartTask(
     const DepositPaymentTask& params) const;
 template StateMachine::BackgroundTask StateMachine::StartTask(
     const DownloadContractTask& params) const;
-#if OT_CASH
 template StateMachine::BackgroundTask StateMachine::StartTask(
     const DownloadMintTask& params) const;
-#endif  // OT_CASH
 template StateMachine::BackgroundTask StateMachine::StartTask(
     const DownloadNymboxTask& params) const;
 template StateMachine::BackgroundTask StateMachine::StartTask(
@@ -283,10 +269,8 @@ template StateMachine::BackgroundTask StateMachine::StartTask(
     const IssueUnitDefinitionTask& params) const;
 template StateMachine::BackgroundTask StateMachine::StartTask(
     const MessageTask& params) const;
-#if OT_CASH
 template StateMachine::BackgroundTask StateMachine::StartTask(
     const PayCashTask& params) const;
-#endif  // OT_CASH
 template StateMachine::BackgroundTask StateMachine::StartTask(
     const PaymentTask& params) const;
 template StateMachine::BackgroundTask StateMachine::StartTask(
@@ -305,8 +289,6 @@ template StateMachine::BackgroundTask StateMachine::StartTask(
     const SendChequeTask& params) const;
 template StateMachine::BackgroundTask StateMachine::StartTask(
     const SendTransferTask& params) const;
-#if OT_CASH
 template StateMachine::BackgroundTask StateMachine::StartTask(
     const WithdrawCashTask& params) const;
-#endif  // OT_CASH
 }  // namespace opentxs::otx::client::implementation

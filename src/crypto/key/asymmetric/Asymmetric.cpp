@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "internal/api/crypto/Symmetric.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -25,9 +26,9 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/crypto/OTSignatureMetadata.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
@@ -671,7 +672,7 @@ auto Asymmetric::serialize(const Lock&, Serialized& output) const noexcept
 auto Asymmetric::SerializeKeyToData(
     const proto::AsymmetricKey& serializedKey) const -> OTData
 {
-    return api_.Factory().Data(serializedKey);
+    return api_.Factory().InternalSession().Data(serializedKey);
 }
 
 auto Asymmetric::Sign(

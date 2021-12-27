@@ -13,26 +13,6 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 
-namespace opentxs
-{
-namespace api
-{
-namespace client
-{
-namespace blockchain
-{
-namespace database
-{
-namespace implementation
-{
-class Database;
-}  // namespace implementation
-}  // namespace database
-}  // namespace blockchain
-}  // namespace client
-}  // namespace api
-}  // namespace opentxs
-
 namespace opentxs::blockchain::database
 {
 using BlockReader = ProtectedView<ReadView, std::shared_mutex, sLock>;

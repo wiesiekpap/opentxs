@@ -22,14 +22,15 @@
 #include <vector>
 
 #include "2_Factory.hpp"
-#include "internal/api/client/Client.hpp"
 #include "internal/api/session/Client.hpp"
+#include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/contact/Contact.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/otx/client/OTPayment.hpp"  // IWYU pragma: keep
+#include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/RPCCommand.hpp"
 #include "internal/util/Exclusive.hpp"
@@ -37,32 +38,27 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/PaymentWorkflowState.hpp"
-#include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/client/NymData.hpp"
-#include "opentxs/client/OT_API.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/Contact.hpp"
 #include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/OTTransaction.hpp"
@@ -70,6 +66,7 @@
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -88,11 +85,14 @@
 #include "opentxs/network/zeromq/socket/Sender.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/otx/client/PaymentWorkflowState.hpp"
+#include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/rpc/CommandType.hpp"
 #include "opentxs/rpc/ResponseCode.hpp"
 #include "opentxs/rpc/request/Base.hpp"
 #include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -192,7 +192,7 @@
     [[maybe_unused]] const auto& server = *pServer;
 
 #define INIT_OTX(a, ...)                                                       \
-    api::client::OTX::Result result{otx::LastReplyStatus::NotSent, nullptr};   \
+    api::session::OTX::Result result{otx::LastReplyStatus::NotSent, nullptr};  \
     [[maybe_unused]] const auto& [status, pReply] = result;                    \
     [[maybe_unused]] auto [taskID, future] = client.OTX().a(__VA_ARGS__);      \
     [[maybe_unused]] const auto ready = (0 != taskID);
@@ -272,10 +272,10 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
             auto payment = std::shared_ptr<const OTPayment>{};
 
             switch (translate(paymentWorkflow.type())) {
-                case api::client::PaymentWorkflowType::IncomingCheque:
-                case api::client::PaymentWorkflowType::IncomingInvoice: {
+                case otx::client::PaymentWorkflowType::IncomingCheque:
+                case otx::client::PaymentWorkflowType::IncomingInvoice: {
                     auto chequeState =
-                        opentxs::api::client::Workflow::InstantiateCheque(
+                        opentxs::api::session::Workflow::InstantiateCheque(
                             client, paymentWorkflow);
                     const auto& [state, cheque] = chequeState;
 
@@ -293,9 +293,9 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
                     payment.reset(
                         client.Factory().Payment(*cheque, reason).release());
                 } break;
-                case api::client::PaymentWorkflowType::OutgoingCheque:
-                case api::client::PaymentWorkflowType::OutgoingInvoice:
-                case api::client::PaymentWorkflowType::Error:
+                case otx::client::PaymentWorkflowType::OutgoingCheque:
+                case otx::client::PaymentWorkflowType::OutgoingInvoice:
+                case otx::client::PaymentWorkflowType::Error:
                 default: {
                     LogError()(OT_PRETTY_CLASS())("Unsupported workflow type")
                         .Flush();
@@ -518,9 +518,9 @@ auto RPC::create_compatible_account(const proto::RPCCommand& command) const
         }();
 
         switch (translate(workflow.type())) {
-            case api::client::PaymentWorkflowType::IncomingCheque: {
+            case otx::client::PaymentWorkflowType::IncomingCheque: {
                 auto chequeState =
-                    opentxs::api::client::Workflow::InstantiateCheque(
+                    opentxs::api::session::Workflow::InstantiateCheque(
                         client, workflow);
                 const auto& [state, cheque] = chequeState;
 
@@ -689,17 +689,13 @@ auto RPC::create_unit_definition(const proto::RPCCommand& command) const
     const auto& createunit = command.createunit();
 
     try {
-        const auto& definition = display::GetDefinition(
-            ClaimToUnit(translate(createunit.unitofaccount())));
-
         const auto unitdefinition = session.Wallet().CurrencyContract(
             command.owner(),
             createunit.name(),
             createunit.terms(),
             ClaimToUnit(translate(createunit.unitofaccount())),
-            reason,
-            definition,
-            Amount{createunit.redemptionincrement()});
+            Amount{createunit.redemptionincrement()},
+            reason);
 
         output.add_identifier(unitdefinition->ID()->str());
         add_output_status(output, proto::RPCRESPONSE_SUCCESS);
@@ -737,7 +733,7 @@ auto RPC::delete_claim(const proto::RPCCommand& command) const
 
 void RPC::evaluate_deposit_payment(
     const api::session::Client& client,
-    const api::client::OTX::Result& result,
+    const api::session::OTX::Result& result,
     proto::TaskComplete& output) const
 {
     // TODO use structured binding
@@ -761,7 +757,7 @@ void RPC::evaluate_deposit_payment(
 
 void RPC::evaluate_move_funds(
     const api::session::Client& client,
-    const api::client::OTX::Result& result,
+    const api::session::OTX::Result& result,
     proto::RPCResponse& output) const
 {
     // TODO use structured binding
@@ -784,7 +780,7 @@ void RPC::evaluate_move_funds(
 }
 
 auto RPC::evaluate_send_payment_cheque(
-    const api::client::OTX::Result& result,
+    const api::session::OTX::Result& result,
     proto::TaskComplete& output) const noexcept -> void
 {
     const auto& [status, pReply] = result;
@@ -802,7 +798,7 @@ auto RPC::evaluate_send_payment_cheque(
 
 auto RPC::evaluate_send_payment_transfer(
     const api::session::Client& api,
-    const api::client::OTX::Result& result,
+    const api::session::OTX::Result& result,
     proto::TaskComplete& output) const noexcept -> void
 {
     const auto& [status, pReply] = result;
@@ -925,10 +921,10 @@ auto RPC::get_compatible_accounts(const proto::RPCCommand& command) const
         }();
 
         switch (translate(workflow.type())) {
-            case api::client::PaymentWorkflowType::IncomingCheque:
-            case api::client::PaymentWorkflowType::IncomingInvoice: {
+            case otx::client::PaymentWorkflowType::IncomingCheque:
+            case otx::client::PaymentWorkflowType::IncomingInvoice: {
                 auto chequeState =
-                    opentxs::api::client::Workflow::InstantiateCheque(
+                    opentxs::api::session::Workflow::InstantiateCheque(
                         client, workflow);
                 const auto& [state, cheque] = chequeState;
 
@@ -1014,12 +1010,12 @@ auto RPC::get_pending_payments(const proto::RPCCommand& command) const
     const auto& workflow = client.Workflow();
     auto checkWorkflows = workflow.List(
         ownerID,
-        api::client::PaymentWorkflowType::IncomingCheque,
-        api::client::PaymentWorkflowState::Conveyed);
+        otx::client::PaymentWorkflowType::IncomingCheque,
+        otx::client::PaymentWorkflowState::Conveyed);
     auto invoiceWorkflows = workflow.List(
         ownerID,
-        api::client::PaymentWorkflowType::IncomingInvoice,
-        api::client::PaymentWorkflowState::Conveyed);
+        otx::client::PaymentWorkflowType::IncomingInvoice,
+        otx::client::PaymentWorkflowState::Conveyed);
     std::set<OTIdentifier> workflows;
     std::set_union(
         checkWorkflows.begin(),
@@ -1041,7 +1037,7 @@ auto RPC::get_pending_payments(const proto::RPCCommand& command) const
             }();
 
             auto chequeState =
-                opentxs::api::client::Workflow::InstantiateCheque(
+                opentxs::api::session::Workflow::InstantiateCheque(
                     client, paymentWorkflow);
 
             const auto& [state, cheque] = chequeState;
@@ -1052,7 +1048,7 @@ auto RPC::get_pending_payments(const proto::RPCCommand& command) const
             accountEvent.set_version(ACCOUNTEVENT_VERSION);
             auto accountEventType = proto::ACCOUNTEVENT_INCOMINGCHEQUE;
 
-            if (api::client::PaymentWorkflowType::IncomingInvoice ==
+            if (otx::client::PaymentWorkflowType::IncomingInvoice ==
                 translate(paymentWorkflow.type())) {
                 accountEventType = proto::ACCOUNTEVENT_INCOMINGINVOICE;
             }
@@ -2016,7 +2012,7 @@ void RPC::task_handler(const zmq::Message& in)
 
     OT_ASSERT(2 < body.size());
 
-    using ID = api::client::OTX::TaskID;
+    using ID = api::session::OTX::TaskID;
 
     const auto taskID = std::to_string(body.at(1).as<ID>());
     const auto success = body.at(2).as<bool>();

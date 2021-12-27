@@ -18,8 +18,7 @@
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Identifier.hpp"
-#include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/util/Bytes.hpp"
 
@@ -48,12 +47,12 @@ public:
     }
 
     const ot::api::session::Client& api_;
-    const ot::ContactItem contactItem_;
+    const ot::contact::ContactItem contactItem_;
 };
 
 TEST_F(Test_ContactItem, first_constructor)
 {
-    const ot::ContactItem contactItem1(
+    const ot::contact::ContactItem contactItem1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
@@ -91,7 +90,7 @@ TEST_F(Test_ContactItem, first_constructor)
 
 TEST_F(Test_ContactItem, first_constructor_different_versions)
 {
-    const ot::ContactItem contactItem1(
+    const ot::contact::ContactItem contactItem1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
@@ -108,7 +107,7 @@ TEST_F(Test_ContactItem, first_constructor_different_versions)
 
 TEST_F(Test_ContactItem, second_constructor)
 {
-    const ot::ContactItem contactItem1(
+    const ot::contact::ContactItem contactItem1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
@@ -147,7 +146,7 @@ TEST_F(Test_ContactItem, second_constructor)
 
 TEST_F(Test_ContactItem, copy_constructor)
 {
-    ot::ContactItem copiedContactItem(contactItem_);
+    ot::contact::ContactItem copiedContactItem(contactItem_);
 
     ASSERT_EQ(contactItem_.ID(), copiedContactItem.ID());
     ASSERT_EQ(contactItem_.Version(), copiedContactItem.Version());
@@ -169,7 +168,7 @@ TEST_F(Test_ContactItem, operator_equal_true)
 
 TEST_F(Test_ContactItem, operator_equal_false)
 {
-    ot::ContactItem contactItem2(
+    ot::contact::ContactItem contactItem2(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testNym2"),
         CONTACT_CONTACT_DATA_VERSION,
@@ -264,7 +263,7 @@ TEST_F(Test_ContactItem, Serialize)
     auto bytes = ot::Space{};
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), false));
 
-    auto restored1 = ot::ContactItem{
+    auto restored1 = ot::contact::ContactItem{
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testNym",
         contactItem_.Version(),
@@ -280,7 +279,7 @@ TEST_F(Test_ContactItem, Serialize)
     // Test with id.
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), true));
 
-    auto restored2 = ot::ContactItem{
+    auto restored2 = ot::contact::ContactItem{
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testNym",
         contactItem_.Version(),

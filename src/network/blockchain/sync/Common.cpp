@@ -23,6 +23,10 @@ auto print(Type value) noexcept -> std::string
         {Type::sync_reply, "sync reply"},
         {Type::new_block_header, "sync push"},
         {Type::query, "sync query"},
+        {Type::publish_contract, "publish contract"},
+        {Type::publish_ack, "publish acknowledgment"},
+        {Type::contract_query, "contract query"},
+        {Type::contract, "contract reply"},
     };
 
     try {

@@ -16,8 +16,8 @@
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/ui/BlockchainSelection.hpp"

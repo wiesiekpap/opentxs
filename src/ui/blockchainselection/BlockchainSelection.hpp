@@ -25,7 +25,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Identifier.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/ui/BlockchainSelection.hpp"
@@ -40,14 +40,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace network
-{
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace network
-
 namespace session
 {
 class Client;
@@ -120,7 +112,6 @@ public:
 
     BlockchainSelection(
         const api::session::Client& api,
-        const api::network::internal::Blockchain& blockchain,
         const ui::Blockchains type,
         const SimpleCallback& cb) noexcept;
 
@@ -157,7 +148,6 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    const api::network::internal::Blockchain& blockchain_;
     const std::set<blockchain::Type> filter_;
     mutable std::map<blockchain::Type, bool> chain_state_;
     mutable std::atomic<std::size_t> enabled_count_;

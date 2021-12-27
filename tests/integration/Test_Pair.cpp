@@ -13,28 +13,28 @@
 #include <vector>
 
 #include "integration/Helpers.hpp"
+#include "internal/api/session/Client.hpp"
+#include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/otx/client/Issuer.hpp"
+#include "internal/otx/client/Pair.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
-#include "opentxs/api/client/Issuer.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/Pair.hpp"
-#include "opentxs/api/client/UI.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/OTX.hpp"
+#include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/contact/ContactData.hpp"
 #include "opentxs/contact/ContactGroup.hpp"
 #include "opentxs/contact/ContactItem.hpp"
 #include "opentxs/contact/ContactSection.hpp"
 #include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
@@ -46,6 +46,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/display/Scale.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -60,6 +61,7 @@
 #include "opentxs/ui/AccountSummary.hpp"
 #include "opentxs/ui/AccountSummaryItem.hpp"
 #include "opentxs/ui/IssuerItem.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "ui/Helpers.hpp"
 
@@ -79,15 +81,6 @@ class Notary;
 #define UNIT_DEFINITION_TERMS "YOLO"
 #define UNIT_DEFINITION_TLA "USD"
 #define UNIT_DEFINITION_UNIT_OF_ACCOUNT ot::core::UnitType::USD
-#define UNIT_DEFINITION_DISPLAY_DEFINITION                                     \
-    {                                                                          \
-        u8"USD",                                                               \
-        {                                                                      \
-            {                                                                  \
-                u8"dollars", { u8"$", u8"", {{10, 0}}, 2, 3 }                  \
-            }                                                                  \
-        }                                                                      \
-    }
 
 namespace ottest
 {
@@ -246,9 +239,8 @@ TEST_F(Test_Pair, issue_dollars)
         UNIT_DEFINITION_CONTRACT_NAME,
         UNIT_DEFINITION_TERMS,
         UNIT_DEFINITION_UNIT_OF_ACCOUNT,
-        issuer_.Reason(),
-        UNIT_DEFINITION_DISPLAY_DEFINITION,
-        1);
+        1,
+        issuer_.Reason());
 
     EXPECT_EQ(UNIT_DEFINITION_CONTRACT_VERSION, contract->Version());
     EXPECT_EQ(ot::contract::UnitType::Currency, contract->Type());
@@ -314,15 +306,15 @@ TEST_F(Test_Pair, pair_untrusted)
 {
     account_summary_.expected_ += 5;
 
-    ASSERT_TRUE(
-        api_chris_.Pair().AddIssuer(chris_.nym_id_, issuer_.nym_id_, ""));
+    ASSERT_TRUE(api_chris_.InternalClient().Pair().AddIssuer(
+        chris_.nym_id_, issuer_.nym_id_, ""));
     EXPECT_TRUE(issuer_data_.bailment_.get());
 
-    api_chris_.Pair().Wait().get();
+    api_chris_.InternalClient().Pair().Wait().get();
 
     {
-        const auto pIssuer =
-            api_chris_.Wallet().Issuer(chris_.nym_id_, issuer_.nym_id_);
+        const auto pIssuer = api_chris_.Wallet().Internal().Issuer(
+            chris_.nym_id_, issuer_.nym_id_);
 
         ASSERT_TRUE(pIssuer);
 
@@ -427,14 +419,14 @@ TEST_F(Test_Pair, pair_trusted)
 {
     account_summary_.expected_ += 2;
 
-    ASSERT_TRUE(api_chris_.Pair().AddIssuer(
+    ASSERT_TRUE(api_chris_.InternalClient().Pair().AddIssuer(
         chris_.nym_id_, issuer_.nym_id_, server_1_.password_));
 
-    api_chris_.Pair().Wait().get();
+    api_chris_.InternalClient().Pair().Wait().get();
 
     {
-        const auto pIssuer =
-            api_chris_.Wallet().Issuer(chris_.nym_id_, issuer_.nym_id_);
+        const auto pIssuer = api_chris_.Wallet().Internal().Issuer(
+            chris_.nym_id_, issuer_.nym_id_);
 
         ASSERT_TRUE(pIssuer);
 

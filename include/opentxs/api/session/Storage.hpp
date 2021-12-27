@@ -16,14 +16,14 @@
 #include <string>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -71,11 +71,7 @@ using ServerLambda = std::function<void(const proto::ServerContract&)>;
 using UnitLambda = std::function<void(const proto::UnitDefinition&)>;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace session
+namespace opentxs::api::session
 {
 class Storage
 {
@@ -291,8 +287,8 @@ public:
         const std::string& accountID) const -> std::set<std::string> = 0;
     virtual auto PaymentWorkflowsByState(
         const std::string& nymID,
-        const api::client::PaymentWorkflowType type,
-        const api::client::PaymentWorkflowState state) const
+        const otx::client::PaymentWorkflowType type,
+        const otx::client::PaymentWorkflowState state) const
         -> std::set<std::string> = 0;
     virtual auto PaymentWorkflowsByUnit(
         const std::string& nymID,
@@ -301,8 +297,8 @@ public:
         const std::string& nymID,
         const std::string& workflowID) const
         -> std::pair<
-            api::client::PaymentWorkflowType,
-            api::client::PaymentWorkflowState> = 0;
+            otx::client::PaymentWorkflowType,
+            otx::client::PaymentWorkflowState> = 0;
     virtual auto RelabelThread(
         const std::string& threadID,
         const std::string& label) const -> bool = 0;
@@ -372,7 +368,7 @@ public:
         const core::UnitType unit) const -> bool = 0;
     virtual auto Store(
         const std::string& nymID,
-        const contact::ClaimType type,
+        const opentxs::contact::ClaimType type,
         const proto::HDAccount& data) const -> bool = 0;
     virtual auto Store(
         const identifier::Nym& nymID,
@@ -457,6 +453,4 @@ private:
     auto operator=(const Storage&) -> Storage& = delete;
     auto operator=(Storage&&) -> Storage& = delete;
 };
-}  // namespace session
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::session

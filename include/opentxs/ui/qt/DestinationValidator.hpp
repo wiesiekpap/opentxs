@@ -5,13 +5,13 @@
 
 #pragma once
 
+#include "opentxs/Version.hpp"  // IWYU pragma: associated
+
 #include <QObject>
 #include <QString>
 #include <QValidator>
 #include <cstdint>
 #include <memory>
-
-#include "opentxs/opentxs_export.hpp"  // IWYU pragma: keep
 
 class QObject;
 

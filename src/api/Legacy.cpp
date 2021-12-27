@@ -26,7 +26,7 @@
 #define CONFIG_FILE_EXT ".cfg"
 #define PID_FILE "opentxs.lock"
 
-using ReturnType = opentxs::api::implementation::Legacy;
+using ReturnType = opentxs::api::imp::Legacy;
 
 namespace opentxs::factory
 {
@@ -52,7 +52,7 @@ auto Legacy::SuggestFolder(const std::string& app) noexcept -> std::string
 }  // namespace api
 }  // namespace opentxs
 
-namespace opentxs::api::implementation
+namespace opentxs::api::imp
 {
 const char* Legacy::account_{"account"};
 const char* Legacy::common_{"storage"};
@@ -268,4 +268,4 @@ auto Legacy::ServerDataFolder(const int instance) const noexcept -> std::string
 {
     return get_path(server_data_folder_, instance);
 }
-}  // namespace opentxs::api::implementation
+}  // namespace opentxs::api::imp

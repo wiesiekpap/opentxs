@@ -18,6 +18,7 @@
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
+#include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -30,9 +31,7 @@ auto Input::Cache::add(crypto::Key&& key) noexcept -> void
     keys_.emplace(std::move(key));
 }
 
-auto Input::Cache::associate(
-    const api::crypto::Blockchain& blockchain,
-    const internal::Output& in) noexcept -> bool
+auto Input::Cache::associate(const internal::Output& in) noexcept -> bool
 {
     auto lock = rLock{lock_};
 
@@ -61,9 +60,7 @@ auto Input::Cache::keys() const noexcept -> std::vector<crypto::Key>
     return output;
 }
 
-auto Input::Cache::merge(
-    const api::crypto::Blockchain& blockchain,
-    const internal::Input& rhs) noexcept -> bool
+auto Input::Cache::merge(const internal::Input& rhs) noexcept -> bool
 {
     const auto keys = rhs.Keys();
     auto lock = rLock{lock_};
@@ -80,16 +77,15 @@ auto Input::Cache::merge(
     return true;
 }
 
-auto Input::Cache::net_balance_change(
-    const api::crypto::Blockchain& blockchain,
-    const identifier::Nym& nym) const noexcept -> opentxs::Amount
+auto Input::Cache::net_balance_change(const identifier::Nym& nym) const noexcept
+    -> opentxs::Amount
 {
     auto lock = rLock{lock_};
 
     if (false == bool(previous_output_)) { return 0; }
 
     for (const auto& key : keys_) {
-        if (blockchain.Owner(key) == nym) {
+        if (api_.Crypto().Blockchain().Owner(key) == nym) {
             return -1 * previous_output_->Value();
         }
     }

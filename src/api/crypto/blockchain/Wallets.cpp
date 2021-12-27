@@ -20,7 +20,7 @@ namespace opentxs::api::crypto::blockchain
 {
 Wallets::Wallets(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     api::crypto::Blockchain& parent) noexcept
     : api_(api)
     , contacts_(contacts)

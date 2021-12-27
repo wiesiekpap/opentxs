@@ -30,10 +30,10 @@
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Message.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/ServerConnection.hpp"
@@ -281,11 +281,11 @@ auto ServerConnection::process_incoming(const zeromq::Message& in) -> void
             }();
 
             switch (type) {
-                case WorkType::OTXP2PPush: {
+                case WorkType::OTXPush: {
 
                     return body.at(1);
                 }
-                case WorkType::OTXP2PResponse:
+                case WorkType::OTXResponse:
                 default: {
                     throw std::runtime_error{"unsupported message type"};
                 }
@@ -488,7 +488,7 @@ auto ServerConnection::Send(
                 }();
 
                 switch (type) {
-                    case WorkType::OTXP2PLegacyXML: {
+                    case WorkType::OTXLegacyXML: {
 
                         return body.at(1);
                     }

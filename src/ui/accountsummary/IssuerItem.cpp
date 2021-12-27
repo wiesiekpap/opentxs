@@ -18,10 +18,10 @@
 #include <vector>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/client/Issuer.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Issuer.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -29,8 +29,8 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -79,7 +79,7 @@ IssuerItem::IssuerItem(
       })
     , name_{std::get<1>(key_)}
     , connection_{std::get<0>(key_)}
-    , issuer_{api_.Wallet().Issuer(parent.NymID(), rowID)}
+    , issuer_{api_.Wallet().Internal().Issuer(parent.NymID(), rowID)}
     , currency_{currency}
 {
     OT_ASSERT(issuer_)

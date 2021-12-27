@@ -1,0 +1,166 @@
+# Copyright (c) 2010-2021 The Open-Transactions developers
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/src/api/crypto/base58/COPYING"
+  BASE58_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/deps/base64/COPYING"
+  BASE64_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/deps/LICENSE.bech32"
+  BECH32_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/deps/ChaiScript/LICENSE"
+  CHAISCRIPT_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/deps/irrxml/COPYING"
+  IRRXML_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/deps/lucre/LICENCE"
+  LUCRE_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/LICENSE"
+  OPENTXS_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/CREDITS"
+  OPENTXS_CREDITS_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/src/serialization/protobuf/LICENSE.txt"
+  PROTOBUF_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/deps/secp256k1/COPYING"
+  LIBSECP256K1_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/deps/simpleini/LICENCE.txt"
+  SIMPLEINI_LICENSE_TEXT
+)
+file(
+  READ
+  "${opentxs_SOURCE_DIR}/src/crypto/library/trezor/COPYING"
+  TREZOR_LICENSE_TEXT
+)
+
+configure_file(
+  "base58.cpp.in"
+  "${opentxs_BINARY_DIR}/src/util/license/base58.cpp"
+  @ONLY
+)
+configure_file(
+  "base64.cpp.in"
+  "${opentxs_BINARY_DIR}/src/util/license/base64.cpp"
+  @ONLY
+)
+configure_file(
+  "bech32.cpp.in"
+  "${opentxs_BINARY_DIR}/src/util/license/bech32.cpp"
+  @ONLY
+)
+
+if(SCRIPT_CHAI_EXPORT)
+  configure_file(
+    "chai.cpp.in"
+    "${opentxs_BINARY_DIR}/src/util/license/chai.cpp"
+    @ONLY
+  )
+else()
+  configure_file(
+    "no-chai.cpp.in"
+    "${opentxs_BINARY_DIR}/src/util/license/chai.cpp"
+    @ONLY
+  )
+endif()
+
+configure_file(
+  "irrxml.cpp.in"
+  "${opentxs_BINARY_DIR}/src/util/license/irrxml.cpp"
+  @ONLY
+)
+
+if(CASH_LUCRE_EXPORT)
+  configure_file(
+    "lucre.cpp.in"
+    "${opentxs_BINARY_DIR}/src/util/license/lucre.cpp"
+    @ONLY
+  )
+else()
+  configure_file(
+    "no-lucre.cpp.in"
+    "${opentxs_BINARY_DIR}/src/util/license/lucre.cpp"
+    @ONLY
+  )
+endif()
+
+configure_file(
+  "opentxs.cpp.in"
+  "${opentxs_BINARY_DIR}/src/util/license/opentxs.cpp"
+  @ONLY
+)
+
+if(PACKETCRYPT_EXPORT)
+  configure_file(
+    "packetcrypt.cpp.in"
+    "${opentxs_BINARY_DIR}/src/util/license/packetcrypt.cpp"
+    @ONLY
+  )
+else()
+  configure_file(
+    "no-packetcrypt.cpp.in"
+    "${opentxs_BINARY_DIR}/src/util/license/packetcrypt.cpp"
+    @ONLY
+  )
+endif()
+
+configure_file(
+  "protobuf.cpp.in"
+  "${opentxs_BINARY_DIR}/src/util/license/protobuf.cpp"
+  @ONLY
+)
+
+if(LIBSECP256K1_EXPORT)
+  configure_file(
+    "secp256k1.cpp.in"
+    "${opentxs_BINARY_DIR}/src/util/license/secp256k1.cpp"
+    @ONLY
+  )
+else()
+  configure_file(
+    "no-secp256k1.cpp.in"
+    "${opentxs_BINARY_DIR}/src/util/license/secp256k1.cpp"
+    @ONLY
+  )
+endif()
+
+configure_file(
+  "simpleini.cpp.in"
+  "${opentxs_BINARY_DIR}/src/util/license/simpleini.cpp"
+  @ONLY
+)
+configure_file(
+  "trezor.cpp.in"
+  "${opentxs_BINARY_DIR}/src/util/license/trezor.cpp"
+  @ONLY
+)

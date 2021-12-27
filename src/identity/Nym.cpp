@@ -20,6 +20,7 @@
 
 #include "2_Factory.hpp"
 #include "Proto.tpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/identity/Identity.hpp"
 #include "internal/protobuf/Check.hpp"
@@ -102,12 +103,12 @@ auto Factory::Nym(
                 ReturnType::contact_credential_to_contact_data_version_.at(
                     identity::internal::Authority::NymToContactCredential(
                         identity::Nym::DefaultVersion));
-            const auto blank = ContactData{
+            const auto blank = contact::ContactData{
                 api,
                 pSource->NymID()->str(),
                 version,
                 version,
-                ContactData::SectionMap{}};
+                contact::ContactData::SectionMap{}};
             const auto scope = blank.SetScope(type, name);
             revised.Internal().SetContactData([&] {
                 auto out = proto::ContactData{};
@@ -305,7 +306,8 @@ auto Nym::AddClaim(const Claim& claim, const opentxs::PasswordPrompt& reason)
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new ContactData(contact_data_->AddItem(claim)));
+    contact_data_.reset(
+        new contact::ContactData(contact_data_->AddItem(claim)));
 
     OT_ASSERT(contact_data_);
 
@@ -335,7 +337,7 @@ auto Nym::AddContract(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new ContactData(
+    contact_data_.reset(new contact::ContactData(
         contact_data_->AddContract(id, currency, primary, active)));
 
     OT_ASSERT(contact_data_);
@@ -363,8 +365,8 @@ auto Nym::AddEmail(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(
-        new ContactData(contact_data_->AddEmail(value, primary, active)));
+    contact_data_.reset(new contact::ContactData(
+        contact_data_->AddEmail(value, primary, active)));
 
     OT_ASSERT(contact_data_);
 
@@ -394,7 +396,7 @@ auto Nym::AddPaymentCode(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new ContactData(
+    contact_data_.reset(new contact::ContactData(
         contact_data_->AddPaymentCode(paymentCode, currency, primary, active)));
 
     OT_ASSERT(contact_data_);
@@ -422,8 +424,8 @@ auto Nym::AddPhoneNumber(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(
-        new ContactData(contact_data_->AddPhoneNumber(value, primary, active)));
+    contact_data_.reset(new contact::ContactData(
+        contact_data_->AddPhoneNumber(value, primary, active)));
 
     OT_ASSERT(contact_data_);
 
@@ -449,8 +451,8 @@ auto Nym::AddPreferredOTServer(
     OT_ASSERT(contact_data_)
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(
-        new ContactData(contact_data_->AddPreferredOTServer(id, primary)));
+    contact_data_.reset(new contact::ContactData(
+        contact_data_->AddPreferredOTServer(id, primary)));
 
     OT_ASSERT(contact_data_);
 
@@ -478,7 +480,7 @@ auto Nym::AddSocialMediaProfile(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new ContactData(
+    contact_data_.reset(new contact::ContactData(
         contact_data_->AddSocialMediaProfile(value, type, primary, active)));
 
     OT_ASSERT(contact_data_);
@@ -561,7 +563,7 @@ auto Nym::BestSocialMediaProfile(const contact::ClaimType type) const
     return contact_data_->BestSocialMediaProfile(type);
 }
 
-auto Nym::Claims() const -> const opentxs::ContactData&
+auto Nym::Claims() const -> const contact::ContactData&
 {
     eLock lock(shared_lock_);
 
@@ -639,7 +641,7 @@ auto Nym::DeleteClaim(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new ContactData(contact_data_->Delete(id)));
+    contact_data_.reset(new contact::ContactData(contact_data_->Delete(id)));
 
     OT_ASSERT(contact_data_);
 
@@ -967,8 +969,12 @@ void Nym::init_claims(const eLock& lock) const
 
     const auto nymID{id_->str()};
     const auto dataVersion = ContactDataVersion();
-    contact_data_ = std::make_unique<opentxs::ContactData>(
-        api_, nymID, dataVersion, dataVersion, ContactData::SectionMap());
+    contact_data_ = std::make_unique<contact::ContactData>(
+        api_,
+        nymID,
+        dataVersion,
+        dataVersion,
+        contact::ContactData::SectionMap());
 
     OT_ASSERT(contact_data_);
 
@@ -981,11 +987,11 @@ void Nym::init_claims(const eLock& lock) const
             OT_ASSERT(
                 proto::Validate(serialized, VERBOSE, proto::ClaimType::Normal));
 
-            opentxs::ContactData claimCred(
+            contact::ContactData claimCred(
                 api_, nymID, dataVersion, serialized);
             // NOLINTNEXTLINE(modernize-make-unique)
             contact_data_.reset(
-                new opentxs::ContactData(*contact_data_ + claimCred));
+                new contact::ContactData(*contact_data_ + claimCred));
         }
     }
 
@@ -1402,7 +1408,8 @@ auto Nym::SetCommonName(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new ContactData(contact_data_->SetCommonName(name)));
+    contact_data_.reset(
+        new contact::ContactData(contact_data_->SetCommonName(name)));
 
     OT_ASSERT(contact_data_);
 
@@ -1428,7 +1435,7 @@ auto Nym::SetContactData(
     const opentxs::PasswordPrompt& reason) -> bool
 {
     eLock lock(shared_lock_);
-    contact_data_ = std::make_unique<ContactData>(
+    contact_data_ = std::make_unique<contact::ContactData>(
         api_, id_->str(), ContactDataVersion(), data);
 
     return set_contact_data(lock, data, reason);
@@ -1447,11 +1454,11 @@ auto Nym::SetScope(
     if (contact::ClaimType::Unknown != contact_data_->Type()) {
         // NOLINTNEXTLINE(modernize-make-unique)
         contact_data_.reset(
-            new ContactData(contact_data_->SetName(name, primary)));
+            new contact::ContactData(contact_data_->SetName(name, primary)));
     } else {
         // NOLINTNEXTLINE(modernize-make-unique)
         contact_data_.reset(
-            new ContactData(contact_data_->SetScope(type, name)));
+            new contact::ContactData(contact_data_->SetScope(type, name)));
     }
 
     OT_ASSERT(contact_data_);
@@ -1597,7 +1604,7 @@ auto Nym::Verify(const ProtobufType& input, proto::Signature& signature) const
 {
     const auto copy{signature};
     signature.clear_signature();
-    const auto plaintext = api_.Factory().Data(input);
+    const auto plaintext = api_.Factory().InternalSession().Data(input);
 
     for (auto& it : active_) {
         if (nullptr != it.second) {

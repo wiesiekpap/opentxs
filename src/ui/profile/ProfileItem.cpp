@@ -18,9 +18,9 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/client/NymData.hpp"
 #include "opentxs/contact/Attribute.hpp"
 #include "opentxs/contact/ContactItem.hpp"
+#include "opentxs/util/NymEditor.hpp"
 #include "ui/base/Widget.hpp"
 
 namespace opentxs::factory
@@ -48,8 +48,8 @@ ProfileItem::ProfileItem(
     const ProfileSubsectionSortKey& sortKey,
     CustomData& custom) noexcept
     : ProfileItemRow(parent, api, rowID, true)
-    , item_{new opentxs::ContactItem(
-          extract_custom<opentxs::ContactItem>(custom))}
+    , item_{new contact::ContactItem(
+          extract_custom<contact::ContactItem>(custom))}
 {
 }
 
@@ -99,8 +99,8 @@ auto ProfileItem::reindex(
     CustomData& custom) noexcept -> bool
 {
     eLock lock(shared_lock_);
-    item_ = std::make_unique<opentxs::ContactItem>(
-        extract_custom<opentxs::ContactItem>(custom));
+    item_ = std::make_unique<contact::ContactItem>(
+        extract_custom<contact::ContactItem>(custom));
 
     OT_ASSERT(item_);
 

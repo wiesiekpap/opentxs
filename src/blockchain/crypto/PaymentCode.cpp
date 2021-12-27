@@ -24,7 +24,7 @@
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/client/Contacts.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
@@ -50,7 +50,7 @@ using ReturnType = blockchain::crypto::implementation::PaymentCode;
 
 auto BlockchainPCSubaccount(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
@@ -72,7 +72,7 @@ auto BlockchainPCSubaccount(
 
 auto BlockchainPCSubaccount(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const blockchain::crypto::Account& parent,
     const proto::Bip47Channel& serialized,
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::PaymentCode>
@@ -120,7 +120,7 @@ constexpr auto externalType{Subchain::Incoming};
 
 PaymentCode::PaymentCode(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
@@ -168,7 +168,7 @@ PaymentCode::PaymentCode(
 
 PaymentCode::PaymentCode(
     const api::Session& api,
-    const api::client::Contacts& contacts,
+    const api::session::Contacts& contacts,
     const Account& parent,
     const SerializedType& serialized,
     Identifier& id,

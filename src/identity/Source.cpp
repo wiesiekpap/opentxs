@@ -13,6 +13,7 @@
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
@@ -195,7 +196,7 @@ auto Source::asData() const -> OTData
     auto serialized = proto::NymIDSource{};
     if (false == Serialize(serialized)) { return OTData{nullptr}; }
 
-    return factory_.Data(serialized);
+    return factory_.InternalSession().Data(serialized);
 }
 
 auto Source::deserialize_paymentcode(

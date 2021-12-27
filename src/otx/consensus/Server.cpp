@@ -21,10 +21,13 @@
 #include "core/OTStorage.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/Legacy.hpp"
-#include "internal/api/client/Client.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
+#include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/OTX.hpp"
+#include "internal/otx/blind/Mint.hpp"
+#include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/Context.hpp"
@@ -32,31 +35,23 @@
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
-#include "opentxs/api/client/Activity.hpp"
-#include "opentxs/api/client/Contacts.hpp"
-#include "opentxs/api/client/OTX.hpp"
-#include "opentxs/api/client/PaymentWorkflowState.hpp"
-#include "opentxs/api/client/PaymentWorkflowType.hpp"
-#include "opentxs/api/client/Workflow.hpp"
 #include "opentxs/api/network/Network.hpp"
+#include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#if OT_CASH
-#include "opentxs/blind/Mint.hpp"
-#include "opentxs/blind/Purse.hpp"
-#include "opentxs/blind/Token.hpp"
-#endif  // OT_CASH
+#include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Item.hpp"
 #include "opentxs/core/Ledger.hpp"
 #include "opentxs/core/Message.hpp"
@@ -73,6 +68,7 @@
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/cron/OTCronItem.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -82,7 +78,6 @@
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/iterator/Bidirectional.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -93,10 +88,16 @@
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/Reply.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/otx/blind/Token.hpp"
+#include "opentxs/otx/client/PaymentWorkflowState.hpp"
+#include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -1720,7 +1721,7 @@ auto Server::harvest_unused(
     const auto& nymID = nym_->ID();
     auto available = issued_transaction_numbers_;
     const auto workflows = client.Storage().PaymentWorkflowList(nymID.str());
-    std::set<api::client::PaymentWorkflowState> keepStates{};
+    std::set<otx::client::PaymentWorkflowState> keepStates{};
 
     // Loop through workflows to determine which issued numbers should not be
     // harvested
@@ -1737,28 +1738,28 @@ auto Server::harvest_unused(
         }
 
         switch (translate(proto.type())) {
-            case api::client::PaymentWorkflowType::OutgoingCheque:
-            case api::client::PaymentWorkflowType::OutgoingInvoice: {
-                keepStates.insert(api::client::PaymentWorkflowState::Unsent);
-                keepStates.insert(api::client::PaymentWorkflowState::Conveyed);
+            case otx::client::PaymentWorkflowType::OutgoingCheque:
+            case otx::client::PaymentWorkflowType::OutgoingInvoice: {
+                keepStates.insert(otx::client::PaymentWorkflowState::Unsent);
+                keepStates.insert(otx::client::PaymentWorkflowState::Conveyed);
             } break;
-            case api::client::PaymentWorkflowType::OutgoingTransfer: {
-                keepStates.insert(api::client::PaymentWorkflowState::Initiated);
+            case otx::client::PaymentWorkflowType::OutgoingTransfer: {
+                keepStates.insert(otx::client::PaymentWorkflowState::Initiated);
                 keepStates.insert(
-                    api::client::PaymentWorkflowState::Acknowledged);
+                    otx::client::PaymentWorkflowState::Acknowledged);
             } break;
-            case api::client::PaymentWorkflowType::InternalTransfer: {
-                keepStates.insert(api::client::PaymentWorkflowState::Initiated);
+            case otx::client::PaymentWorkflowType::InternalTransfer: {
+                keepStates.insert(otx::client::PaymentWorkflowState::Initiated);
                 keepStates.insert(
-                    api::client::PaymentWorkflowState::Acknowledged);
-                keepStates.insert(api::client::PaymentWorkflowState::Conveyed);
+                    otx::client::PaymentWorkflowState::Acknowledged);
+                keepStates.insert(otx::client::PaymentWorkflowState::Conveyed);
             } break;
-            case api::client::PaymentWorkflowType::IncomingTransfer:
-            case api::client::PaymentWorkflowType::IncomingCheque:
-            case api::client::PaymentWorkflowType::IncomingInvoice: {
+            case otx::client::PaymentWorkflowType::IncomingTransfer:
+            case otx::client::PaymentWorkflowType::IncomingCheque:
+            case otx::client::PaymentWorkflowType::IncomingInvoice: {
                 continue;
             }
-            case api::client::PaymentWorkflowType::Error:
+            case otx::client::PaymentWorkflowType::Error:
             default: {
                 LogError()(OT_PRETTY_CLASS())(
                     "Warning: Unhandled workflow type.")
@@ -1774,10 +1775,10 @@ auto Server::harvest_unused(
         // number(s) must not be added to the available list (recovered).
 
         switch (translate(proto.type())) {
-            case api::client::PaymentWorkflowType::OutgoingCheque:
-            case api::client::PaymentWorkflowType::OutgoingInvoice: {
+            case otx::client::PaymentWorkflowType::OutgoingCheque:
+            case otx::client::PaymentWorkflowType::OutgoingInvoice: {
                 [[maybe_unused]] auto [state, cheque] =
-                    api::client::Workflow::InstantiateCheque(api_, proto);
+                    api::session::Workflow::InstantiateCheque(api_, proto);
 
                 if (false == bool(cheque)) {
                     LogError()(OT_PRETTY_CLASS())("Failed to load cheque.")
@@ -1789,10 +1790,10 @@ auto Server::harvest_unused(
                 const auto number = cheque->GetTransactionNum();
                 available.erase(number);
             } break;
-            case api::client::PaymentWorkflowType::OutgoingTransfer:
-            case api::client::PaymentWorkflowType::InternalTransfer: {
+            case otx::client::PaymentWorkflowType::OutgoingTransfer:
+            case otx::client::PaymentWorkflowType::InternalTransfer: {
                 [[maybe_unused]] auto [state, pTransfer] =
-                    api::client::Workflow::InstantiateTransfer(api_, proto);
+                    api::session::Workflow::InstantiateTransfer(api_, proto);
 
                 if (false == bool(pTransfer)) {
                     LogError()(OT_PRETTY_CLASS())("Failed to load transfer.")
@@ -1805,10 +1806,10 @@ auto Server::harvest_unused(
                 const auto number = transfer.GetTransactionNum();
                 available.erase(number);
             } break;
-            case api::client::PaymentWorkflowType::Error:
-            case api::client::PaymentWorkflowType::IncomingTransfer:
-            case api::client::PaymentWorkflowType::IncomingCheque:
-            case api::client::PaymentWorkflowType::IncomingInvoice:
+            case otx::client::PaymentWorkflowType::Error:
+            case otx::client::PaymentWorkflowType::IncomingTransfer:
+            case otx::client::PaymentWorkflowType::IncomingCheque:
+            case otx::client::PaymentWorkflowType::IncomingInvoice:
             default: {
                 LogError()(OT_PRETTY_CLASS())(
                     "Warning: unhandled workflow type.")
@@ -2269,15 +2270,14 @@ auto Server::load_or_create_payment_inbox(const PasswordPrompt& reason) const
     return {};
 }
 
-#if OT_CASH
 auto Server::mutable_Purse(
     const identifier::UnitDefinition& id,
-    const PasswordPrompt& reason) -> Editor<blind::Purse>
+    const PasswordPrompt& reason)
+    -> Editor<opentxs::otx::blind::Purse, std::shared_mutex>
 {
     return api_.Wallet().Internal().mutable_Purse(
         nym_->ID(), server_id_, id, reason);
 }
-#endif
 
 void Server::need_box_items(
     const api::session::Client& client,
@@ -2741,10 +2741,10 @@ auto Server::PingNotary(const PasswordPrompt& reason) -> NetworkReplyMessage
 
     request->m_strRequestNum =
         String::Factory(std::to_string(FIRST_REQUEST_NUMBER).c_str());
-    request->m_strNymPublicKey =
-        api_.Factory().Armored(serializedAuthKey, "ASYMMETRIC KEY");
-    request->m_strNymID2 =
-        api_.Factory().Armored(serializedEncryptKey, "ASYMMETRIC KEY");
+    request->m_strNymPublicKey = api_.Factory().InternalSession().Armored(
+        serializedAuthKey, "ASYMMETRIC KEY");
+    request->m_strNymID2 = api_.Factory().InternalSession().Armored(
+        serializedEncryptKey, "ASYMMETRIC KEY");
 
     if (false == finalize_server_command(*request, reason)) {
         LogError()(OT_PRETTY_CLASS())("Failed to finalize server message.")
@@ -3558,7 +3558,7 @@ auto Server::process_check_nym_response(
     auto serialized =
         proto::Factory<proto::Nym>(Data::Factory(reply.m_ascPayload));
 
-    auto nym = client.Wallet().Nym(serialized);
+    auto nym = client.Wallet().Internal().Nym(serialized);
 
     if (nym) {
         client.Contacts().Update(*nym);
@@ -4040,7 +4040,6 @@ auto Server::process_get_market_recent_trades_response(
     return true;
 }
 
-#if OT_CASH
 auto Server::process_get_mint_response(const Lock& lock, const Message& reply)
     -> bool
 {
@@ -4048,12 +4047,14 @@ auto Server::process_get_mint_response(const Lock& lock, const Message& reply)
     const auto server = api_.Factory().ServerID(reply.m_strNotaryID);
     const auto unit = api_.Factory().UnitID(reply.m_strInstrumentDefinitionID);
 
-    auto mint = api_.Factory().Mint(server, unit);
+    auto pMmint = api_.Factory().Mint(server, unit);
 
-    OT_ASSERT(mint);
+    OT_ASSERT(pMmint);
+
+    auto& mint = pMmint.Internal();
 
     // TODO check the server signature on the mint here...
-    if (false == mint->LoadContractFromString(serialized)) {
+    if (false == mint.LoadContractFromString(serialized)) {
         LogError()(OT_PRETTY_CLASS())(
             "Error loading mint from message payload.")
             .Flush();
@@ -4061,9 +4062,8 @@ auto Server::process_get_mint_response(const Lock& lock, const Message& reply)
         return false;
     }
 
-    return mint->SaveMint();
+    return mint.SaveMint();
 }
-#endif
 
 auto Server::process_get_nym_market_offers_response(
     const Lock& lock,
@@ -4221,7 +4221,6 @@ void Server::process_incoming_message(
                     StorageBox::MAILINBOX,
                     peerObject);
             } break;
-#if OT_CASH
             case (contract::peer::PeerObjectType::Cash): {
                 process_incoming_cash(
                     lock,
@@ -4230,7 +4229,6 @@ void Server::process_incoming_message(
                     peerObject,
                     *message);
             } break;
-#endif
             case (contract::peer::PeerObjectType::Payment): {
                 const bool created = create_instrument_notice_from_peer_object(
                     lock,
@@ -4283,7 +4281,7 @@ auto Server::process_get_unit_definition_response(
     switch (static_cast<contract::Type>(reply.enum_)) {
         case contract::Type::nym: {
             const auto serialized = proto::Factory<proto::Nym>(raw);
-            const auto contract = api_.Wallet().Nym(serialized);
+            const auto contract = api_.Wallet().Internal().Nym(serialized);
 
             if (contract) {
                 return (id == contract->ID());
@@ -4291,7 +4289,7 @@ auto Server::process_get_unit_definition_response(
                 LogError()(OT_PRETTY_CLASS())("Invalid nym").Flush();
             }
         } break;
-        case contract::Type::server: {
+        case contract::Type::notary: {
             const auto serialized = proto::Factory<proto::ServerContract>(raw);
 
             try {
@@ -4974,11 +4972,9 @@ auto Server::process_reply(
         case MessageType::getMarketRecentTradesResponse: {
             return process_get_market_recent_trades_response(lock, reply);
         }
-#if OT_CASH
         case MessageType::getMintResponse: {
             return process_get_mint_response(lock, reply);
         }
-#endif
         case MessageType::getNymboxResponse: {
             return process_get_nymbox_response(lock, reply, reason);
         }
@@ -5071,10 +5067,8 @@ void Server::process_response_transaction(
             process_response_transaction_cancel(lock, reply, type, response);
         } break;
         case transactionType::atWithdrawal: {
-#if OT_CASH
             process_response_transaction_withdrawal(
                 lock, client, reply, type, response, reason);
-#endif  // OT_CASH
         } break;
         case transactionType::atTransfer: {
             process_response_transaction_transfer(
@@ -5181,7 +5175,6 @@ void Server::process_response_transaction_cancel(
     }
 }
 
-#if OT_CASH
 void Server::process_response_transaction_cash_deposit(
     Item& replyItem,
     const PasswordPrompt& reason)
@@ -5219,16 +5212,14 @@ void Server::process_response_transaction_cash_deposit(
         return;
     }
 
-    auto pPurse{api_.Factory().Purse(serializedPurse)};
+    auto purse = api_.Factory().Purse(serializedPurse);
 
-    if (false == bool(pPurse)) {
+    if (false == bool(purse)) {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate request purse")
             .Flush();
 
         return;
     }
-
-    auto& purse = *pPurse;
 
     if (false == purse.Unlock(nym, reason)) {
         LogError()(OT_PRETTY_CLASS())("Failed to unlock request purse").Flush();
@@ -5237,7 +5228,7 @@ void Server::process_response_transaction_cash_deposit(
     }
 
     std::set<std::string> spentTokens{};
-    std::vector<std::shared_ptr<blind::Token>> keepTokens{};
+    std::vector<blind::Token> keepTokens{};
 
     for (const auto& token : purse) { spentTokens.insert(token.ID(reason)); }
 
@@ -5253,7 +5244,7 @@ void Server::process_response_transaction_cash_deposit(
     auto token = walletPurse.Pop();
 
     while (token) {
-        const auto id = token->ID(reason);
+        const auto id = token.ID(reason);
 
         if (1 == spentTokens.count(id)) {
             LogTrace()(OT_PRETTY_CLASS())("Removing spent token ")(
@@ -5269,9 +5260,10 @@ void Server::process_response_transaction_cash_deposit(
         token = walletPurse.Pop();
     }
 
-    for (auto& keepToken : keepTokens) { walletPurse.Push(keepToken, reason); }
+    for (auto& keepToken : keepTokens) {
+        walletPurse.Push(std::move(keepToken), reason);
+    }
 }
-#endif
 
 void Server::process_response_transaction_cheque_deposit(
     const api::session::Client& client,
@@ -5958,9 +5950,7 @@ void Server::process_response_transaction_deposit(
                         item,
                         reason);
                 } else if (itemType::atDeposit == item.GetType()) {
-#if OT_CASH
                     process_response_transaction_cash_deposit(item, reason);
-#endif
                 }
             } else {
                 LogError()(OT_PRETTY_CLASS())(
@@ -6133,7 +6123,6 @@ void Server::process_response_transaction_transfer(
     }
 }
 
-#if OT_CASH
 void Server::process_response_transaction_withdrawal(
     const Lock& lock,
     const api::session::Client& client,
@@ -6208,15 +6197,14 @@ auto Server::process_incoming_cash(
     const auto& serverID = server_id_.get();
     const auto strNotaryID = String::Factory(serverID);
     const auto strNymID = String::Factory(nymID);
-    const auto pPurse = incoming.Purse();
+    const auto& purse = incoming.Purse();
 
-    if (false == bool(pPurse)) {
+    if (false == bool(purse)) {
         LogError()(OT_PRETTY_CLASS())("No purse found").Flush();
 
         return false;
     }
 
-    auto& purse = *pPurse;
     const auto workflowID =
         client.Workflow().ReceiveCash(nymID, purse, message);
 
@@ -6244,26 +6232,23 @@ void Server::process_incoming_cash_withdrawal(
     auto rawPurse = Data::Factory();
     item.GetAttachment(rawPurse);
     const auto serializedPurse = proto::Factory<proto::Purse>(rawPurse);
-    std::shared_ptr<blind::Purse> pPurse{};
 
-    if (proto::Validate(serializedPurse, VERBOSE)) {
-        LogInsane()(OT_PRETTY_CLASS())("Serialized purse is valid").Flush();
-        pPurse.reset(api_.Factory().Purse(serializedPurse).release());
-    } else {
+    if (false == proto::Validate(serializedPurse, VERBOSE)) {
         LogError()(OT_PRETTY_CLASS())("Invalid serialized purse").Flush();
 
         return;
     }
 
-    if (pPurse) {
+    LogInsane()(OT_PRETTY_CLASS())("Serialized purse is valid").Flush();
+    auto requestPurse = api_.Factory().Purse(serializedPurse);
+
+    if (requestPurse) {
         LogInsane()(OT_PRETTY_CLASS())("Purse instantiated").Flush();
     } else {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate purse").Flush();
 
         return;
     }
-
-    auto& requestPurse = *pPurse;
 
     if (requestPurse.Unlock(nym, reason)) {
         LogInsane()(OT_PRETTY_CLASS())("Purse unlocked").Flush();
@@ -6283,7 +6268,7 @@ void Server::process_incoming_cash_withdrawal(
         return;
     }
 
-    auto& mint = *pMint;
+    auto& mint = pMint.Internal();
     const bool validMint = mint.LoadMint() && mint.VerifyMint(serverNym);
 
     if (validMint) {
@@ -6294,7 +6279,7 @@ void Server::process_incoming_cash_withdrawal(
         return;
     }
 
-    const auto processed = requestPurse.Process(nym, mint, reason);
+    const auto processed = requestPurse.Internal().Process(nym, pMint, reason);
 
     if (processed) {
         LogInsane()(OT_PRETTY_CLASS())("Token processed").Flush();
@@ -6307,14 +6292,13 @@ void Server::process_incoming_cash_withdrawal(
         auto token = requestPurse.Pop();
 
         while (token) {
-            walletPurse.Push(token, reason);
+            walletPurse.Push(std::move(token), reason);
             token = requestPurse.Pop();
         }
     } else {
         LogError()(OT_PRETTY_CLASS())("Failed to process token").Flush();
     }
 }
-#endif
 
 auto Server::process_unregister_account_response(
     const Lock& lock,
@@ -6450,13 +6434,11 @@ void Server::process_unseen_reply(
     process_reply(lock, client, {}, *reply, reason);
 }
 
-#if OT_CASH
 auto Server::Purse(const identifier::UnitDefinition& id) const
-    -> std::shared_ptr<const blind::Purse>
+    -> const opentxs::otx::blind::Purse&
 {
     return api_.Wallet().Purse(nym_->ID(), server_id_, id);
 }
-#endif
 
 auto Server::Queue(
     const api::session::Client& client,

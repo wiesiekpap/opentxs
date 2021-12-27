@@ -27,11 +27,7 @@ class Encode;
 }  // namespace api
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace api
-{
-namespace crypto
+namespace opentxs::api::crypto
 {
 class Encode
 {
@@ -72,6 +68,4 @@ private:
     auto operator=(const Encode&) -> Encode& = delete;
     auto operator=(Encode&&) -> Encode& = delete;
 };
-}  // namespace crypto
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api::crypto

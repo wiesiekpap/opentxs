@@ -36,9 +36,9 @@
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/api/client/Contacts.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Hash.hpp"  // IWYU pragma: keep
+#include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -54,9 +54,9 @@
 #include "opentxs/blockchain/node/TxoTag.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
@@ -91,7 +91,8 @@ struct BitcoinTransactionBuilder::Imp {
     {
         try {
             const auto reason = api_.Factory().PasswordPrompt(__func__);
-            const auto& account = crypto_.Account(sender_->ID(), chain_);
+            const auto& account =
+                api_.Crypto().Blockchain().Account(sender_->ID(), chain_);
             const auto& element = account.GetNextChangeKey(reason);
             const auto keyID = element.KeyID();
             change_keys_.emplace(keyID);
@@ -180,7 +181,6 @@ struct BitcoinTransactionBuilder::Imp {
 
                 return factory::BitcoinTransactionOutput(
                     api_,
-                    crypto_,
                     chain_,
                     static_cast<std::uint32_t>(outputs_.size()),
                     Amount{0},
@@ -220,8 +220,7 @@ struct BitcoinTransactionBuilder::Imp {
     }
     auto AddInput(const UTXO& utxo) noexcept -> bool
     {
-        auto pInput =
-            factory::BitcoinTransactionInput(api_, crypto_, chain_, utxo);
+        auto pInput = factory::BitcoinTransactionInput(api_, chain_, utxo);
 
         if (false == bool(pInput)) {
             LogError()(OT_PRETTY_CLASS())("Failed to construct input").Flush();
@@ -324,7 +323,6 @@ struct BitcoinTransactionBuilder::Imp {
 
             auto pOutput = factory::BitcoinTransactionOutput(
                 api_,
-                crypto_,
                 chain_,
                 static_cast<std::uint32_t>(++index),
                 Amount{output.amount()},
@@ -366,9 +364,10 @@ struct BitcoinTransactionBuilder::Imp {
 
         const auto excessValue =
             input_value_ - (output_value_ + required_fee());
+        const auto& api = api_.Crypto().Blockchain();
 
         if (excessValue <= dust()) {
-            for (const auto& key : change_keys_) { crypto_.Release(key); }
+            for (const auto& key : change_keys_) { api.Release(key); }
         } else {
             OT_ASSERT(1 == change_.size());  // TODO
 
@@ -411,7 +410,6 @@ struct BitcoinTransactionBuilder::Imp {
 
         return factory::BitcoinTransaction(
             api_,
-            crypto_,
             chain_,
             Clock::now(),
             version_,
@@ -422,9 +420,11 @@ struct BitcoinTransactionBuilder::Imp {
     }
     auto ReleaseKeys() noexcept -> void
     {
-        for (const auto& key : outgoing_keys_) { crypto_.Release(key); }
+        const auto& api = api_.Crypto().Blockchain();
 
-        for (const auto& key : change_keys_) { crypto_.Release(key); }
+        for (const auto& key : outgoing_keys_) { api.Release(key); }
+
+        for (const auto& key : change_keys_) { api.Release(key); }
     }
     auto SignInputs() noexcept -> bool
     {
@@ -445,14 +445,12 @@ struct BitcoinTransactionBuilder::Imp {
     }
 
     Imp(const api::Session& api,
-        const api::crypto::Blockchain& crypto,
         const node::internal::WalletDatabase& db,
         const Identifier& id,
         const Proposal& proposal,
         const Type chain,
         const Amount feeRate) noexcept
         : api_(api)
-        , crypto_(crypto)
         , sender_([&] {
             const auto id = [&] {
                 auto out = api_.Factory().NymID();
@@ -466,7 +464,9 @@ struct BitcoinTransactionBuilder::Imp {
 
             return api_.Wallet().Nym(id);
         }())
-        , self_contact_(crypto_.Internal().Contacts().ContactID(sender_->ID()))
+        , self_contact_(
+              api_.Crypto().Blockchain().Internal().Contacts().ContactID(
+                  sender_->ID()))
         , chain_(chain)
         , fee_rate_(feeRate)
         , version_(1)
@@ -512,7 +512,6 @@ private:
     static constexpr auto p2pkh_output_bytes_ = std::size_t{34};
 
     const api::Session& api_;
-    const api::crypto::Blockchain& crypto_;
     const Nym_p sender_;
     const OTIdentifier self_contact_;
     const Type chain_;
@@ -601,12 +600,13 @@ private:
         auto keys = std::vector<OTData>{};
         auto signatures = std::vector<Space>{};
         auto views = block::bitcoin::internal::Input::Signatures{};
+        const auto& api = api_.Crypto().Blockchain();
 
         for (const auto& id : input.Keys()) {
             LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(opentxs::print(
                 id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
-            const auto& node = crypto_.GetKey(id);
+            const auto& node = api.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
                 LogError()(OT_PRETTY_CLASS())(
@@ -678,12 +678,13 @@ private:
         auto keys = std::vector<OTData>{};
         auto signatures = std::vector<Space>{};
         auto views = block::bitcoin::internal::Input::Signatures{};
+        const auto& api = api_.Crypto().Blockchain();
 
         for (const auto& id : input.Keys()) {
             LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(opentxs::print(
                 id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
-            const auto& node = crypto_.GetKey(id);
+            const auto& node = api.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
                 LogError()(OT_PRETTY_CLASS())(
@@ -754,12 +755,13 @@ private:
         auto keys = std::vector<OTData>{};
         auto signatures = std::vector<Space>{};
         auto views = block::bitcoin::internal::Input::Signatures{};
+        const auto& api = api_.Crypto().Blockchain();
 
         for (const auto& id : input.Keys()) {
             LogVerbose()(OT_PRETTY_CLASS())("Loading element ")(opentxs::print(
                 id))(" to sign previous output ")(input.PreviousOutput().str())
                 .Flush();
-            const auto& node = crypto_.GetKey(id);
+            const auto& node = api.GetKey(id);
 
             if (const auto got = node.KeyID(); got != id) {
                 LogError()(OT_PRETTY_CLASS())(
@@ -1009,7 +1011,6 @@ private:
 
         txcopy = factory::BitcoinTransaction(
             api_,
-            crypto_,
             chain_,
             Clock::now(),
             version_,
@@ -1250,13 +1251,12 @@ private:
 
 BitcoinTransactionBuilder::BitcoinTransactionBuilder(
     const api::Session& api,
-    const api::crypto::Blockchain& crypto,
     const node::internal::WalletDatabase& db,
     const Identifier& id,
     const Proposal& proposal,
     const Type chain,
     const Amount feeRate) noexcept
-    : imp_(std::make_unique<Imp>(api, crypto, db, id, proposal, chain, feeRate))
+    : imp_(std::make_unique<Imp>(api, db, id, proposal, chain, feeRate))
 {
     OT_ASSERT(imp_);
 }

@@ -9,12 +9,12 @@
 
 #include "api/crypto/blockchain/Imp_blockchain.hpp"
 
-namespace opentxs::api::crypto::implementation
+namespace opentxs::api::crypto::imp
 {
 Blockchain::Blockchain(
     const api::Session& api,
-    const api::client::Activity& activity,
-    const api::client::Contacts& contacts,
+    const api::session::Activity& activity,
+    const api::session::Contacts& contacts,
     const api::Legacy& legacy,
     const std::string& dataFolder,
     const Options& args) noexcept
@@ -29,4 +29,4 @@ Blockchain::Blockchain(
 {
     // WARNING: do not access api_.Wallet() during construction
 }
-}  // namespace opentxs::api::crypto::implementation
+}  // namespace opentxs::api::crypto::imp

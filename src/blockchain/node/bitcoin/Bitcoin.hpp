@@ -18,19 +18,6 @@ namespace opentxs
 {
 namespace api
 {
-namespace crypto
-{
-class Blockchain;
-}  // namespace crypto
-
-namespace network
-{
-namespace internal
-{
-struct Blockchain;
-}  // namespace internal
-}  // namespace network
-
 class Session;
 }  // namespace api
 
@@ -70,8 +57,6 @@ public:
 
     Bitcoin(
         const api::Session& api,
-        const api::crypto::Blockchain& crypto,
-        const api::network::internal::Blockchain& network,
         const Type type,
         const internal::Config& config,
         const std::string& seednode,

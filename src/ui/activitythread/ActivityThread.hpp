@@ -27,13 +27,13 @@
 #include "internal/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/api/client/OTX.hpp"
 #include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Identifier.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/ui/ActivityThread.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -122,7 +122,7 @@ struct make_blank<ui::implementation::ActivityThreadRowID> {
 
 using DraftTask = std::pair<
     ui::implementation::ActivityThreadRowID,
-    api::client::OTX::BackgroundTask>;
+    api::session::OTX::BackgroundTask>;
 
 template <>
 struct make_blank<DraftTask> {
@@ -130,7 +130,7 @@ struct make_blank<DraftTask> {
     {
         return {
             make_blank<ui::implementation::ActivityThreadRowID>::value(api),
-            make_blank<api::client::OTX::BackgroundTask>::value(api)};
+            make_blank<api::session::OTX::BackgroundTask>::value(api)};
     }
 };
 }  // namespace opentxs
@@ -204,7 +204,7 @@ private:
     std::map<core::UnitType, std::string> payment_codes_;
     std::optional<Messagability> can_message_;
     mutable std::string draft_;
-    mutable std::map<api::client::OTX::TaskID, DraftTask> draft_tasks_;
+    mutable std::map<api::session::OTX::TaskID, DraftTask> draft_tasks_;
     mutable std::optional<Callbacks> callbacks_;
 
     auto calculate_display_name() const noexcept -> std::string;
