@@ -8,10 +8,13 @@
 #include "internal/otx/blind/Types.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
+#include <set>
+#include <string>
 
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/PurseType.hpp"
 #include "opentxs/otx/blind/TokenState.hpp"
+#include "opentxs/otx/blind/Types.hpp"
 #include "serialization/protobuf/CashEnums.pb.h"
 #include "util/Container.hpp"
 

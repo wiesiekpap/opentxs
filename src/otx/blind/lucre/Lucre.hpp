@@ -8,18 +8,27 @@
 // IWYU pragma: begin_exports
 #include <lucre/bank.h>
 // IWYU pragma: end_exports
+#include <memory>
 #include <string>
-
-#include "opentxs/Version.hpp"
 
 namespace opentxs::otx::blind
 {
 class LucreDumper
 {
-    std::string m_str_dumpfile;
-
 public:
+    static auto IsEnabled() noexcept -> bool;
+
     LucreDumper();
-    ~LucreDumper() = default;
+
+    ~LucreDumper();
+
+private:
+    class Imp;
+
+    auto init() noexcept -> void;
+    auto log_to_file() noexcept -> void;
+    auto log_to_screen() noexcept -> void;
+
+    std::unique_ptr<Imp> imp_;
 };
 }  // namespace opentxs::otx::blind

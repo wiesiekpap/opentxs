@@ -38,7 +38,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Time.hpp"
@@ -104,18 +104,10 @@ class Nym;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Data;
-}  // namespace sync
-}  // namespace blockchain
-
-namespace contact
-{
-class Contact;
-}  // namespace contact
+}  // namespace p2p
 
 namespace zeromq
 {
@@ -201,7 +193,7 @@ struct Blockchain::Imp {
         -> const opentxs::blockchain::crypto::Element&;
     auto HDSubaccount(const identifier::Nym& nymID, const Identifier& accountID)
         const noexcept(false) -> const opentxs::blockchain::crypto::HD&;
-    using SyncState = std::vector<opentxs::network::blockchain::sync::State>;
+    using SyncState = std::vector<opentxs::network::p2p::State>;
     virtual auto IndexItem(const ReadView bytes) const noexcept -> PatternID;
     virtual auto KeyEndpoint() const noexcept -> const std::string&;
     virtual auto KeyGenerated(

@@ -14,7 +14,6 @@
 #include <set>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -22,6 +21,7 @@
 #include "Proto.tpp"
 #include "internal/api/crypto/Symmetric.hpp"
 #include "internal/otx/blind/Factory.hpp"
+#include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Token.hpp"
 #include "internal/otx/blind/Types.hpp"
 #include "internal/util/LogMacros.hpp"

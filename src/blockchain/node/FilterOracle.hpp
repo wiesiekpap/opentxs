@@ -72,13 +72,10 @@ class GCS;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Data;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 
 namespace zeromq
 {
@@ -151,8 +148,7 @@ public:
     auto ProcessSyncData(
         const block::Hash& prior,
         const std::vector<block::pHash>& hashes,
-        const network::blockchain::sync::Data& data) const noexcept
-        -> void final;
+        const network::p2p::Data& data) const noexcept -> void final;
     auto ProcessSyncData(SyncClientFilterData& data) const noexcept -> void;
     auto ProcessSyncData(
         std::vector<SyncClientFilterData>& cache) const noexcept -> bool;

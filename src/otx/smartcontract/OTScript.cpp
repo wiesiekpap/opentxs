@@ -13,14 +13,46 @@
 #include <string>
 #include <utility>
 
+#include "internal/otx/smartcontract/Factory.hpp"
 #include "internal/otx/smartcontract/OTParty.hpp"
+#include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
-#if OT_SCRIPT_CHAI
-#include "internal/otx/smartcontract/OTScriptChai.hpp"
-#endif  // OT_SCRIPT_CHAI
-#include "internal/otx/smartcontract/OTVariable.hpp"
 #include "opentxs/util/Log.hpp"
+
+namespace opentxs::factory
+{
+auto OTScript(const std::string& script_type)
+    -> std::shared_ptr<opentxs::OTScript>
+{
+    if (script_type == "" || script_type == "chai") {
+
+        return OTScriptChai();
+    } else {
+        LogError()("opentxs::factory::")(__func__)(": Script language (")(
+            script_type)(") invalid not found")
+            .Flush();
+
+        return std::make_shared<opentxs::OTScript>();
+    }
+}
+
+auto OTScript(
+    const std::string& script_type,
+    const std::string& script_contents) -> std::shared_ptr<opentxs::OTScript>
+{
+    if (script_type == "" || script_type == "chai") {
+
+        return OTScriptChai(script_contents);
+    } else {
+        LogError()("opentxs::factory::")(__func__)(": Script language (")(
+            script_type)(") invalid not found")
+            .Flush();
+
+        return std::make_shared<opentxs::OTScript>();
+    }
+}
+}  // namespace opentxs::factory
 
 namespace opentxs
 {
@@ -78,83 +110,6 @@ namespace opentxs
  That way you can basically treat a Nym like a party to an agreement.
 
  */
-
-auto OTScriptFactory(const std::string& script_type)
-    -> std::shared_ptr<OTScript>
-{
-
-#if OT_SCRIPT_CHAI
-    // default or explicit chai script interpreter
-    if (script_type == "" || script_type == "chai")  // todo no hardcoding.
-    {
-        std::shared_ptr<OTScript> pChaiScript(new OTScriptChai);
-        return pChaiScript;
-    }
-
-    //#elif OT_USE_SCRIPT_LUA
-    //  if (script_type =="lua") // todo no hardcoding.
-    //  {
-    //      std::shared_ptr<OTScript> pLuaScript(new OTScriptLua);
-    //      return pLuaScript;
-    //  }
-
-#else
-    // default no script interpreter
-    if (script_type == "") {
-        LogError()("opentxs::")(__func__)(
-            ": WARNING 1: script_type == noscript.")
-            .Flush();
-
-        std::shared_ptr<OTScript> pNoScript(new OTScript);
-        return pNoScript;
-    }
-#endif
-
-    LogError()(__func__)(": Script language (")(script_type)(") not found.")
-        .Flush();
-
-    std::shared_ptr<OTScript> retVal;
-    return retVal;
-}
-
-auto OTScriptFactory(
-    const std::string& script_type,
-    [[maybe_unused]] const std::string& script_contents)
-    -> std::shared_ptr<OTScript>
-{
-
-#if OT_SCRIPT_CHAI
-    // default or explicit chai script interpreter
-    if (script_type == "" || script_type == "chai")  // todo no hardcoding.
-    {
-        std::shared_ptr<OTScript> pChaiScript(
-            new OTScriptChai(script_contents));
-        return pChaiScript;
-    }
-
-    //#elif OT_USE_SCRIPT_LUA
-    //  if (script_type =="lua") // todo no hardcoding.
-    //  {
-    //      std::shared_ptr<OTScript> pLuaScript(new
-    //      OTScriptLua(script_contents)); return pLuaScript;
-    //  }
-
-#else
-    // default no script interpreter
-    if (script_type == "") {
-        LogError()(__func__)(": WARNING 2: script_type == noscript.").Flush();
-
-        std::shared_ptr<OTScript> pNoScript(new OTScript);
-        return pNoScript;
-    }
-#endif
-
-    LogError()(__func__)(": Script language (")(script_type)(") not found.")
-        .Flush();
-
-    std::shared_ptr<OTScript> retVal;
-    return retVal;
-}
 
 OTScript::OTScript(const std::string& new_string)
     : m_str_script(new_string)
@@ -308,4 +263,10 @@ auto OTScript::ExecuteScript(OTVariable*) -> bool
     return true;
 }
 
+auto OTScript::RegisterNativeScriptableCalls(OTScriptable&) noexcept -> void {}
+
+auto OTScript::RegisterNativeSmartContractCalls(OTSmartContract&) noexcept
+    -> void
+{
+}
 }  // namespace opentxs

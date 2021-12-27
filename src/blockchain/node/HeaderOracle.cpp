@@ -28,8 +28,8 @@
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/blockchain/sync/Block.hpp"
-#include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/p2p/Block.hpp"
+#include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory
@@ -952,7 +952,7 @@ auto HeaderOracle::LoadHeader(const block::Hash& hash) const noexcept
 auto HeaderOracle::ProcessSyncData(
     block::Hash& prior,
     std::vector<block::pHash>& hashes,
-    const network::blockchain::sync::Data& data) noexcept -> std::size_t
+    const network::p2p::Data& data) noexcept -> std::size_t
 {
     auto output = std::size_t{0};
     auto update = UpdateTransaction{api_, database_};

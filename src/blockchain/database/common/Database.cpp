@@ -550,7 +550,7 @@ auto Database::LookupContact(const Data& pubkeyHash) const noexcept
 auto Database::LoadSync(
     const Chain chain,
     const Height height,
-    opentxs::network::blockchain::sync::Data& output) const noexcept -> bool
+    opentxs::network::p2p::Data& output) const noexcept -> bool
 {
     return imp_.sync_.Load(chain, height, output);
 }

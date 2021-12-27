@@ -44,8 +44,8 @@
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/blockchain/sync/Block.hpp"
-#include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/p2p/Block.hpp"
+#include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -81,7 +81,7 @@ struct FilterOracle::SyncClientFilterData {
     using Promise = std::promise<filter::pHeader>;
 
     const block::Hash& block_hash_;
-    const network::blockchain::sync::Block& incoming_data_;
+    const network::p2p::Block& incoming_data_;
     filter::pHash filter_hash_;
     internal::FilterDatabase::Filter& filter_data_;
     internal::FilterDatabase::Header& header_data_;
@@ -92,7 +92,7 @@ struct FilterOracle::SyncClientFilterData {
     SyncClientFilterData(
         OTData blank,
         const block::Hash& block,
-        const network::blockchain::sync::Block& data,
+        const network::p2p::Block& data,
         internal::FilterDatabase::Filter& filter,
         internal::FilterDatabase::Header& header,
         Outstanding& jobCounter,
@@ -512,7 +512,7 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
 auto FilterOracle::ProcessSyncData(
     const block::Hash& prior,
     const std::vector<block::pHash>& hashes,
-    const network::blockchain::sync::Data& data) const noexcept -> void
+    const network::p2p::Data& data) const noexcept -> void
 {
     auto filters = std::vector<internal::FilterDatabase::Filter>{};
     auto headers = std::vector<internal::FilterDatabase::Header>{};

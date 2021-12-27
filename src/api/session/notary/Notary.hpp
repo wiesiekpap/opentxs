@@ -25,6 +25,7 @@
 #include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
 #include "otx/server/Server.hpp"
 
 namespace opentxs

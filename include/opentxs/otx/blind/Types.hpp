@@ -11,8 +11,8 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
 #include <set>
+#include <string>
 
 namespace opentxs
 {

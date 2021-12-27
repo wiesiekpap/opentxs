@@ -31,7 +31,7 @@
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/network/blockchain/sync/Block.hpp"
+#include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
@@ -56,14 +56,11 @@ class Database;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Block;
 class Data;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 }  // namespace network
 
 namespace storage
@@ -80,8 +77,8 @@ namespace opentxs::blockchain::database
 class Sync
 {
 public:
-    using Items = std::vector<network::blockchain::sync::Block>;
-    using Message = network::blockchain::sync::Data;
+    using Items = std::vector<network::p2p::Block>;
+    using Message = network::p2p::Data;
 
     auto Load(const block::Height height, Message& output) const noexcept
         -> bool;

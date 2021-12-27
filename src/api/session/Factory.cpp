@@ -28,7 +28,7 @@
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Key.hpp"
 #include "internal/crypto/key/Null.hpp"
-#include "internal/network/blockchain/sync/Factory.hpp"
+#include "internal/network/p2p/Factory.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Mint.hpp"
@@ -101,12 +101,13 @@
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
-#include "opentxs/network/blockchain/sync/Base.hpp"  // IWYU pragma: keep
+#include "opentxs/network/p2p/Base.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/otx/blind/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
@@ -606,7 +607,7 @@ auto Factory::BlockchainAddress(
 }
 
 auto Factory::BlockchainSyncMessage(const opentxs::network::zeromq::Message& in)
-    const noexcept -> std::unique_ptr<opentxs::network::blockchain::sync::Base>
+    const noexcept -> std::unique_ptr<opentxs::network::p2p::Base>
 {
     return factory::BlockchainSyncMessage(api_, in);
 }

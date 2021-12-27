@@ -26,8 +26,8 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/blockchain/sync/Block.hpp"
-#include "opentxs/network/blockchain/sync/Data.hpp"
+#include "opentxs/network/p2p/Block.hpp"
+#include "opentxs/network/p2p/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "util/LMDB.hpp"
 
@@ -40,14 +40,11 @@ class Session;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Block;
 class Data;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 }  // namespace network
 
 namespace storage
@@ -66,8 +63,8 @@ class Sync
 public:
     using Chain = opentxs::blockchain::Type;
     using Height = opentxs::blockchain::block::Height;
-    using Block = opentxs::network::blockchain::sync::Block;
-    using Message = opentxs::network::blockchain::sync::Data;
+    using Block = opentxs::network::p2p::Block;
+    using Message = opentxs::network::p2p::Data;
     using Items = std::vector<Block>;
 
     auto Load(const Chain chain, const Height height, Message& output)

@@ -25,7 +25,7 @@
 #include <vector>
 
 #include "Proto.tpp"
-#include "internal/network/blockchain/sync/Factory.hpp"
+#include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
@@ -37,14 +37,14 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
-#include "opentxs/network/blockchain/sync/Base.hpp"
-#include "opentxs/network/blockchain/sync/Data.hpp"
-#include "opentxs/network/blockchain/sync/MessageType.hpp"
-#include "opentxs/network/blockchain/sync/Query.hpp"
-#include "opentxs/network/blockchain/sync/Request.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
-#include "opentxs/network/blockchain/sync/Types.hpp"
+#include "opentxs/network/p2p/Acknowledgement.hpp"
+#include "opentxs/network/p2p/Base.hpp"
+#include "opentxs/network/p2p/Data.hpp"
+#include "opentxs/network/p2p/MessageType.hpp"
+#include "opentxs/network/p2p/Query.hpp"
+#include "opentxs/network/p2p/Request.hpp"
+#include "opentxs/network/p2p/State.hpp"
+#include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -387,7 +387,7 @@ private:
             ();
             const auto sync = api_.Factory().BlockchainSyncMessage(msg);
             const auto type = sync->Type();
-            using Type = opentxs::network::blockchain::sync::MessageType;
+            using Type = opentxs::network::p2p::MessageType;
             auto dummy = std::mutex{};
             auto lock = Lock{dummy};
 
@@ -423,7 +423,7 @@ private:
 
                         if (client.empty()) { continue; }
 
-                        namespace bcsync = opentxs::network::blockchain::sync;
+                        namespace bcsync = opentxs::network::p2p;
                         auto data = [&] {
                             auto out = bcsync::StateData{};
                             const auto proto = [&] {
@@ -551,7 +551,7 @@ private:
 
                 auto& server = servers_.at(provider);
                 const auto request = [&] {
-                    namespace otsync = opentxs::network::blockchain::sync;
+                    namespace otsync = opentxs::network::p2p;
                     const auto proto =
                         proto::Factory<proto::BlockchainP2PChainState>(
                             body.at(2));

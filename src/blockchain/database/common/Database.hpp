@@ -30,7 +30,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/network/blockchain/sync/Block.hpp"
+#include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
@@ -72,14 +72,11 @@ class Contact;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Block;
 class Data;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 }  // namespace network
 
 class Data;
@@ -109,7 +106,7 @@ public:
     using Chain = opentxs::blockchain::Type;
     using EnabledChain = std::pair<Chain, std::string>;
     using Height = opentxs::blockchain::block::Height;
-    using SyncItems = std::vector<opentxs::network::blockchain::sync::Block>;
+    using SyncItems = std::vector<opentxs::network::p2p::Block>;
     using Endpoints = std::vector<std::string>;
 
     auto AddOrUpdate(Address_p address) const noexcept -> bool;
@@ -157,8 +154,7 @@ public:
     auto LoadSync(
         const Chain chain,
         const Height height,
-        opentxs::network::blockchain::sync::Data& output) const noexcept
-        -> bool;
+        opentxs::network::p2p::Data& output) const noexcept -> bool;
     auto LoadTransaction(const ReadView txid) const noexcept
         -> std::unique_ptr<block::bitcoin::Transaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept

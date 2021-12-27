@@ -23,6 +23,7 @@ extern "C" {
 #include "crypto/library/openssl/OpenSSL_BIO.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Purse.hpp"
+#include "internal/otx/blind/Token.hpp"
 #include "internal/otx/blind/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -35,7 +36,7 @@ extern "C" {
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
-#include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/otx/blind/Token.hpp"
 #include "opentxs/otx/blind/TokenState.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -300,10 +301,7 @@ auto Lucre::GenerateTokenRequest(
     const Mint& mint,
     const PasswordPrompt& reason) -> bool
 {
-#if OT_LUCRE_DEBUG
-    LucreDumper setDumper;
-#endif
-
+    auto setDumper = LucreDumper{};
     crypto::implementation::OpenSSL_BIO bioBank = BIO_new(BIO_s_mem());
     auto armoredMint = Armored::Factory();
     mint.GetPublic(armoredMint, denomination_);
@@ -561,9 +559,7 @@ auto Lucre::Process(
         LogInsane()(OT_PRETTY_CLASS())("Loaded encrypted prototoken").Flush();
     }
 
-#if OT_LUCRE_DEBUG
-    LucreDumper setDumper;
-#endif
+    auto setDumper = LucreDumper{};
     using BIO = crypto::OpenSSL_BIO;
     auto bioBank = BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
     auto bioSignature = BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};

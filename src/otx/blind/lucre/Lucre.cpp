@@ -7,13 +7,61 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "otx/blind/lucre/Lucre.hpp"  // IWYU pragma: associated
 
+extern "C" {
+#include <openssl/bio.h>
+#include <openssl/ossl_typ.h>
+}
+
 #include <cstdio>
+
+#include "internal/util/LogMacros.hpp"
 
 namespace opentxs::otx::blind
 {
-LucreDumper::LucreDumper()
-    : m_str_dumpfile()
+class LucreDumper::Imp
 {
-    SetDumper(stderr);
+public:
+    auto LogToFile() noexcept -> void
+    {
+        bio_ = ::BIO_new_file("openssl.dump", "w");
+
+        OT_ASSERT(nullptr != bio_);
+
+        SetDumper(bio_);
+    }
+    auto LogToScreen() noexcept -> void { SetMonitor(stderr); }
+
+    Imp() noexcept
+        : bio_(nullptr)
+    {
+    }
+
+    ~Imp()
+    {
+        if (nullptr != bio_) {
+            ::BIO_free(bio_);
+            bio_ = nullptr;
+        }
+    }
+
+private:
+    ::BIO* bio_;
+
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
+};
+
+LucreDumper::LucreDumper()
+    : imp_(std::make_unique<Imp>())
+{
+    if (IsEnabled()) { init(); }
 }
+
+auto LucreDumper::log_to_file() noexcept -> void { imp_->LogToFile(); }
+
+auto LucreDumper::log_to_screen() noexcept -> void { imp_->LogToScreen(); }
+
+LucreDumper::~LucreDumper() = default;
 }  // namespace opentxs::otx::blind

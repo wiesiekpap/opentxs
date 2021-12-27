@@ -6,9 +6,51 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
+#include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Token.hpp"
+#include "opentxs/core/Amount.hpp"
+#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Token.hpp"
+#include "opentxs/otx/blind/Types.hpp"
+#include "opentxs/util/Time.hpp"
+
+namespace opentxs
+{
+namespace api
+{
+class Session;
+}  // namespace api
+
+namespace identifier
+{
+class Server;
+class UnitDefinition;
+}  // namespace identifier
+
+namespace identity
+{
+class Nym;
+}  // namespace identity
+
+namespace otx
+{
+namespace blind
+{
+class Mint;
+}  // namespace blind
+}  // namespace otx
+
+namespace proto
+{
+class Token;
+}  // namespace proto
+
+class PasswordPrompt;
+}  // namespace opentxs
 
 namespace opentxs::otx::blind
 {

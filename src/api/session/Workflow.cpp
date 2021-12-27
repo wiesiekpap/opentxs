@@ -24,7 +24,6 @@
 #include "internal/protobuf/verify/PaymentWorkflow.hpp"
 #include "internal/protobuf/verify/RPCPush.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Contacts.hpp"

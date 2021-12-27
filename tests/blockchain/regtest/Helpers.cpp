@@ -29,7 +29,7 @@
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "integration/Helpers.hpp"
 #include "internal/blockchain/Params.hpp"
-#include "internal/network/blockchain/sync/Factory.hpp"
+#include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -68,12 +68,12 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
-#include "opentxs/network/blockchain/sync/Base.hpp"
-#include "opentxs/network/blockchain/sync/Block.hpp"
-#include "opentxs/network/blockchain/sync/Data.hpp"
-#include "opentxs/network/blockchain/sync/MessageType.hpp"
-#include "opentxs/network/blockchain/sync/Request.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/network/p2p/Base.hpp"
+#include "opentxs/network/p2p/Block.hpp"
+#include "opentxs/network/p2p/Data.hpp"
+#include "opentxs/network/p2p/MessageType.hpp"
+#include "opentxs/network/p2p/Request.hpp"
+#include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -1675,7 +1675,7 @@ struct SyncSubscriber::Imp {
 
     auto check_update(ot::network::zeromq::Message&& in) noexcept -> void
     {
-        namespace bcsync = ot::network::blockchain::sync;
+        namespace bcsync = ot::network::p2p;
         const auto base = api_.Factory().BlockchainSyncMessage(in);
 
         try {

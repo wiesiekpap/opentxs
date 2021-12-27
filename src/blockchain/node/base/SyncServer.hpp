@@ -20,7 +20,7 @@
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/node/FilterOracle.hpp"
 #include "internal/blockchain/Blockchain.hpp"
-#include "internal/network/blockchain/sync/Factory.hpp"
+#include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -28,11 +28,11 @@
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
-#include "opentxs/network/blockchain/sync/Block.hpp"
-#include "opentxs/network/blockchain/sync/Data.hpp"
-#include "opentxs/network/blockchain/sync/MessageType.hpp"
-#include "opentxs/network/blockchain/sync/Request.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/network/p2p/Block.hpp"
+#include "opentxs/network/p2p/Data.hpp"
+#include "opentxs/network/p2p/MessageType.hpp"
+#include "opentxs/network/p2p/Request.hpp"
+#include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -160,7 +160,7 @@ private:
             parent = {height, header_.BestHash(height)};
         }
         const auto needSync = incoming != best;
-        auto state = network::blockchain::sync::State{chain_, std::move(best)};
+        auto state = network::p2p::State{chain_, std::move(best)};
 
         return std::make_tuple(needSync, parent, std::move(state));
     }
@@ -300,7 +300,7 @@ private:
 
             return output;
         }();
-        namespace bcsync = network::blockchain::sync;
+        namespace bcsync = network::p2p;
         const auto base = api_.Factory().BlockchainSyncMessage(incoming);
 
         if (auto type = base->Type();
@@ -344,7 +344,7 @@ private:
         if (0 == data.size()) { return; }
 
         const auto& tip = data.back();
-        auto items = std::vector<network::blockchain::sync::Block>{};
+        auto items = std::vector<network::p2p::Block>{};
         auto previousFilterHeader = api_.Factory().Data();
 
         for (const auto& task : data) {

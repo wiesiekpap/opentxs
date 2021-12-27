@@ -7,18 +7,6 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "internal/otx/smartcontract/OTSmartContract.hpp"  // IWYU pragma: associated
 
-#if OT_SCRIPT_CHAI
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnoexcept"
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wdefaulted-function-deleted"
-#endif
-#include <chaiscript/chaiscript.hpp>
-#ifdef OT_USE_CHAI_STDLIB
-#include <chaiscript/chaiscript_stdlib.hpp>  // IWYU pragma: keep
-#endif
-#pragma GCC diagnostic pop
-#endif
 #include <chrono>
 #include <cinttypes>
 #include <memory>
@@ -26,12 +14,16 @@
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/AccountList.hpp"
+#include "internal/otx/smartcontract/Factory.hpp"
 #include "internal/otx/smartcontract/OTAgent.hpp"
 #include "internal/otx/smartcontract/OTBylaw.hpp"
 #include "internal/otx/smartcontract/OTClause.hpp"
 #include "internal/otx/smartcontract/OTParty.hpp"
 #include "internal/otx/smartcontract/OTPartyAccount.hpp"
 #include "internal/otx/smartcontract/OTScript.hpp"
+#include "internal/otx/smartcontract/OTStash.hpp"
+#include "internal/otx/smartcontract/OTStashItem.hpp"
+#include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
@@ -53,14 +45,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#if OT_SCRIPT_CHAI
-#include "internal/otx/smartcontract/OTScriptChai.hpp"
-#else
-#include "internal/otx/smartcontract/OTScript.hpp"
-#endif  // OT_SCRIPT_CHAI
-#include "internal/otx/smartcontract/OTStash.hpp"
-#include "internal/otx/smartcontract/OTStashItem.hpp"
-#include "internal/otx/smartcontract/OTVariable.hpp"
 #include "opentxs/core/script/OTScriptable.hpp"
 #include "opentxs/core/util/Common.hpp"
 #include "opentxs/core/util/Tag.hpp"
@@ -708,9 +692,6 @@ DONE cron_activate        (Triggers when the smart contract is first activated.)
 // OTSmartContract::ExecuteClauses: Error while running script: process_clause
 
 // Class member, with string parameter.
-using OT_SM_RetBool_ThrStr =
-    bool (OTSmartContract::*)(std::string, std::string, std::string);
-
 // TEST RESULT: WORKS calling Chaiscript
 // Cron: Processing smart contract clauses for hook: cron_process
 // OTSmartContract::MoveAcctFunds: error: from_acct
@@ -761,118 +742,7 @@ void OTSmartContract::RegisterOTNativeCallsWithScript(OTScript& theScript)
 {
     // CALL THE PARENT
     OTScriptable::RegisterOTNativeCallsWithScript(theScript);
-
-#if OT_SCRIPT_CHAI
-    using namespace chaiscript;
-
-    auto* pScript = dynamic_cast<OTScriptChai*>(&theScript);
-
-    if (nullptr != pScript) {
-        OT_ASSERT(nullptr != pScript->chai_)
-
-        // OT NATIVE FUNCTIONS
-        // (These functions can be called from INSIDE the scripted clauses.)
-        //                                                                                        //
-        // Parameters must match as described below. Return value will be as
-        // described below.
-        //
-        //      pScript->chai_->add(base_class<OTScriptable,
-        //      OTSmartContract>());
-
-        pScript->chai_->add(
-            fun<OT_SM_RetBool_ThrStr>(&OTSmartContract::MoveAcctFundsStr, this),
-            "move_funds");
-
-        pScript->chai_->add(
-            fun(&OTSmartContract::StashAcctFunds, this), "stash_funds");
-        pScript->chai_->add(
-            fun(&OTSmartContract::UnstashAcctFunds, this), "unstash_funds");
-        pScript->chai_->add(
-            fun(&OTSmartContract::GetAcctBalance, this), "get_acct_balance");
-        pScript->chai_->add(
-            fun(&OTSmartContract::GetUnitTypeIDofAcct, this),
-            "get_acct_instrument_definition_id");
-        pScript->chai_->add(
-            fun(&OTSmartContract::GetStashBalance, this), "get_stash_balance");
-        pScript->chai_->add(
-            fun(&OTSmartContract::SendNoticeToParty, this), "send_notice");
-        pScript->chai_->add(
-            fun(&OTSmartContract::SendANoticeToAllParties, this),
-            "send_notice_to_parties");
-        pScript->chai_->add(
-            fun(&OTSmartContract::SetRemainingTimer, this),
-            "set_seconds_until_timer");
-        pScript->chai_->add(
-            fun(&OTSmartContract::GetRemainingTimer, this),
-            "get_remaining_timer");
-
-        pScript->chai_->add(
-            fun(&OTSmartContract::DeactivateSmartContract, this),
-            "deactivate_contract");
-
-        // CALLBACKS
-        // (Called by OT at key moments) todo security: What if these are
-        // recursive? Need to lock down, put the smack down, on these smart
-        // contracts.
-        //
-        // FYI:    pScript->chai_->add(fun(&(OTScriptable::CanExecuteClause),
-        // (*this)), "party_may_execute_clause");    // From OTScriptable (FYI)
-        // param_party_name and param_clause_name will be available inside
-        // script. Script must return bool.
-        // FYI:    #define SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE
-        // "callback_party_may_execute_clause"   <=== THE CALLBACK WITH THIS
-        // NAME must be connected to a script clause, and then the clause will
-        // trigger when the callback is needed.
-
-        pScript->chai_->add(
-            fun(&OTSmartContract::CanCancelContract, this),
-            "party_may_cancel_contract");  // param_party_name
-                                           // will be available
-                                           // inside script.
-                                           // Script must return
-                                           // bool.
-        // FYI:    #define SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL
-        // "callback_party_may_cancel_contract"  <=== THE CALLBACK WITH THIS
-        // NAME must be connected to a script clause, and then the clause will
-        // trigger when the callback is needed.
-
-        // Callback USAGE:    Your clause, in your smart contract, may have
-        // whatever name you want. (Within limits.)
-        //                    There must be a callback entry in the smart
-        // contract, linking your clause the the appropriate callback.
-        //                    The CALLBACK ENTRY uses the names
-        // "callback_party_may_execute_clause" and
-        // "callback_party_may_cancel_contract".
-        //                    If you want to call these from INSIDE YOUR SCRIPT,
-        // then use the names "party_may_execute_clause" and
-        // "party_may_cancel_contract".
-
-        // HOOKS:
-        //
-        // Hooks are not native calls needing to be registered with the script.
-        // (Like the above functions are.)
-        // Rather, hooks are SCRIPT CLAUSES, that you have a CHOICE to provide
-        // inside your SMART CONTRACT.
-        // *IF* you have provided those clauses, then OT *WILL* call them, at
-        // the appropriate times. (When
-        // specific events occur.) Specifically, Hook entries must be in your
-        // smartcontract, linking the below
-        // standard hooks to your clauses.
-        //
-        // FYI:    #define SMARTCONTRACT_HOOK_ON_PROCESS        "cron_process"
-        // // Called regularly in OTSmartContract::ProcessCron() based on
-        // SMART_CONTRACT_PROCESS_INTERVAL.
-        // FYI:    #define SMARTCONTRACT_HOOK_ON_ACTIVATE        "cron_activate"
-        // // Done. This is called when the contract is first activated.
-    } else
-#endif  // OT_SCRIPT_CHAI
-    {
-        LogError()(OT_PRETTY_CLASS())(
-            "Failed "
-            "dynamic casting OTScript to OTScriptChai.")
-            .Flush();
-    }
-
+    theScript.RegisterNativeSmartContractCalls(*this);
 }  // void function
 
 void OTSmartContract::DeactivateSmartContract()  // Called from within script.
@@ -3622,8 +3492,7 @@ void OTSmartContract::ExecuteClauses(
         const std::string str_language =
             pBylaw->GetLanguage();  // language it's in. (Default is "chai")
 
-        std::shared_ptr<OTScript> pScript =
-            OTScriptFactory(str_language, str_code);
+        auto pScript = factory::OTScript(str_language, str_code);
 
         std::unique_ptr<OTVariable> theVarAngel;
 

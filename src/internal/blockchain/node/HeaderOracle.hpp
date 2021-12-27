@@ -26,13 +26,10 @@ class Header;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Data;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 }  // namespace network
 }  // namespace opentxs
 
@@ -65,8 +62,7 @@ public:
     virtual auto ProcessSyncData(
         block::Hash& prior,
         std::vector<block::pHash>& hashes,
-        const network::blockchain::sync::Data& data) noexcept
-        -> std::size_t = 0;
+        const network::p2p::Data& data) noexcept -> std::size_t = 0;
 
     ~HeaderOracle() override = default;
 };

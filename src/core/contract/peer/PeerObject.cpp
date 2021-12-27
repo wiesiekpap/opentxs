@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 #include "Proto.tpp"
 #include "internal/api/session/Wallet.hpp"

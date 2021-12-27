@@ -34,10 +34,10 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
-#include "opentxs/network/blockchain/sync/Base.hpp"
-#include "opentxs/network/blockchain/sync/Data.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
+#include "opentxs/network/p2p/Acknowledgement.hpp"
+#include "opentxs/network/p2p/Base.hpp"
+#include "opentxs/network/p2p/Data.hpp"
+#include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -50,7 +50,7 @@
 #include "util/Backoff.hpp"
 #include "util/ByteLiterals.hpp"
 
-namespace bcsync = opentxs::network::blockchain::sync;
+namespace bcsync = opentxs::network::p2p;
 
 namespace opentxs::blockchain::node::base
 {

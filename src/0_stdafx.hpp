@@ -20,20 +20,6 @@
 #endif
 #endif
 
-#ifndef OT_USE_CHAI_STDLIB
-#define OT_USE_CHAI_STDLIB
-#endif
-
-#ifndef CHAISCRIPT_NO_THREADS
-#ifndef CHAISCRIPT_NO_THREADS
-#define CHAISCRIPT_NO_THREADS
-#endif
-
-#ifndef CHAISCRIPT_NO_THREADS_WARNING
-#define CHAISCRIPT_NO_THREADS_WARNING
-#endif
-#endif
-
 #if defined(BOOST_ALL_NO_LIB)
 // NOTE some versions of clang in some build configurations will emit a "macro
 // is not used" warning regarding BOOST_ALL_NO_LIB if a target is linked against
