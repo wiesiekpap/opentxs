@@ -21,7 +21,7 @@ target_sources(opentxs-common PRIVATE ${cxx-install-headers})
 if(OPENTXS_STANDALONE)
   install(
     FILES ${cxx-install-headers}
-    DESTINATION include/opentxs/blind
+    DESTINATION include/opentxs/otx/blind
     COMPONENT dev
   )
 endif()
