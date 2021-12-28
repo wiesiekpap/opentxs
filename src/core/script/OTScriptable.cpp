@@ -7,21 +7,9 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "opentxs/core/script/OTScriptable.hpp"  // IWYU pragma: associated
 
+#include <irrxml/irrXML.hpp>
 #include <algorithm>
 #include <cctype>
-#if OT_SCRIPT_CHAI
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnoexcept"
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wdefaulted-function-deleted"
-#endif
-#include <chaiscript/chaiscript.hpp>
-#ifdef OT_USE_CHAI_STDLIB
-#include <chaiscript/chaiscript_stdlib.hpp>  // IWYU pragma: keep
-#endif
-#pragma GCC diagnostic pop
-#endif
-#include <irrxml/irrXML.hpp>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -31,12 +19,14 @@
 #include <utility>
 
 #include "internal/otx/common/XML.hpp"
+#include "internal/otx/smartcontract/Factory.hpp"
 #include "internal/otx/smartcontract/OTAgent.hpp"
 #include "internal/otx/smartcontract/OTBylaw.hpp"
 #include "internal/otx/smartcontract/OTClause.hpp"
 #include "internal/otx/smartcontract/OTParty.hpp"
 #include "internal/otx/smartcontract/OTPartyAccount.hpp"
 #include "internal/otx/smartcontract/OTScript.hpp"
+#include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -46,12 +36,6 @@
 #include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#if OT_SCRIPT_CHAI
-#include "internal/otx/smartcontract/OTScriptChai.hpp"
-#else
-#include "internal/otx/smartcontract/OTScript.hpp"
-#endif  // OT_SCRIPT_CHAI
-#include "internal/otx/smartcontract/OTVariable.hpp"
 #include "opentxs/core/util/Common.hpp"
 #include "opentxs/core/util/Tag.hpp"
 #include "opentxs/util/Log.hpp"
@@ -251,33 +235,9 @@ auto OTScriptable::ValidateCallbackName(const std::string& str_name) -> bool
 // OTSmartContract::RegisterOTNativeCallsWithScript OVERRIDES this, but
 // also calls it.
 //
-void OTScriptable::RegisterOTNativeCallsWithScript(
-    [[maybe_unused]] OTScript& theScript)
+void OTScriptable::RegisterOTNativeCallsWithScript(OTScript& theScript)
 {
-#if OT_SCRIPT_CHAI
-    using namespace chaiscript;
-
-    // In the future, this will be polymorphic.
-    // But for now, I'm forcing things...
-
-    auto* pScript = dynamic_cast<OTScriptChai*>(&theScript);
-
-    if (nullptr != pScript) {
-        OT_ASSERT(nullptr != pScript->chai_)
-
-        pScript->chai_->add(fun(&OTScriptable::GetTime), "get_time");
-
-        pScript->chai_->add(
-            fun(&OTScriptable::CanExecuteClause, this),
-            "party_may_execute_clause");
-    } else
-#endif  // OT_SCRIPT_CHAI
-    {
-        LogError()(OT_PRETTY_CLASS())(
-            "Failed "
-            "dynamic casting OTScript to OTScriptChai.")
-            .Flush();
-    }
+    theScript.RegisterNativeScriptableCalls(*this);
 }
 
 // static
@@ -535,7 +495,7 @@ auto OTScriptable::ExecuteCallback(
     const std::string str_language =
         pBylaw->GetLanguage();  // language it's in. (Default is "chai")
 
-    std::shared_ptr<OTScript> pScript = OTScriptFactory(str_language, str_code);
+    auto pScript = factory::OTScript(str_language, str_code);
 
     //
     // SET UP THE NATIVE CALLS, REGISTER THE PARTIES, REGISTER THE VARIABLES,

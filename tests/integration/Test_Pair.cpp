@@ -45,7 +45,6 @@
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
-#include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Server.hpp"

@@ -8,22 +8,17 @@
 #include "opentxs/otx/blind/Token.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <stdexcept>
 #include <string>
+#include <utility>
 
 #include "internal/core/identifier/Factory.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Data.hpp"
-#include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
-#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "otx/blind/purse/Purse.hpp"
 #include "otx/blind/token/Token.hpp"
 #include "serialization/protobuf/Token.pb.h"

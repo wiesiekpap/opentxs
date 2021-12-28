@@ -105,13 +105,10 @@ class UnitDefinition;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Base;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 
 namespace zeromq
 {
@@ -335,7 +332,7 @@ public:
         const -> OTBlockchainAddress = 0;
     virtual auto BlockchainSyncMessage(
         const opentxs::network::zeromq::Message& in) const noexcept
-        -> std::unique_ptr<opentxs::network::blockchain::sync::Base> = 0;
+        -> std::unique_ptr<opentxs::network::p2p::Base> = 0;
     using BlockHeaderP = std::unique_ptr<opentxs::blockchain::block::Header>;
     OPENTXS_NO_EXPORT virtual auto BlockHeader(
         const proto::BlockchainBlockHeader& serialized) const

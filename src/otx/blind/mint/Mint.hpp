@@ -47,6 +47,15 @@ namespace identity
 class Nym;
 }  // namespace identity
 
+namespace otx
+{
+namespace blind
+{
+class Token;
+}  // namespace blind
+}  // namespace otx
+
+class Armored;
 class PasswordPrompt;
 class String;
 }  // namespace opentxs

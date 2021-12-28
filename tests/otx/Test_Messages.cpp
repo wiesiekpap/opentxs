@@ -12,6 +12,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -31,7 +32,6 @@
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 

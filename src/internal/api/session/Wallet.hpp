@@ -7,10 +7,9 @@
 
 #include <mutex>
 
-#include "opentxs/api/session/Wallet.hpp"
-
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/Shared.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Account.hpp"
 #include "opentxs/core/Editor.hpp"
 #include "opentxs/otx/blind/CashType.hpp"

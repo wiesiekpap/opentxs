@@ -17,7 +17,9 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/otx/blind/Token.hpp"
 #include "opentxs/otx/blind/TokenState.hpp"
+#include "opentxs/otx/blind/Types.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 #include "otx/blind/token/Imp.hpp"
 #include "serialization/protobuf/Token.pb.h"
 

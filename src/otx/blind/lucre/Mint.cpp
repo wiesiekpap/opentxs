@@ -14,21 +14,22 @@ extern "C" {
 }
 
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "crypto/library/openssl/OpenSSL_BIO.hpp"
 #include "internal/otx/blind/Factory.hpp"
+#include "internal/otx/blind/Token.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Contract.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/otx/blind/Token.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -136,16 +137,7 @@ auto Lucre::AddDenomination(
         return false;
     }
 
-#if OT_LUCRE_DEBUG
-#ifdef _WIN32
-    BIO* out = BIO_new_file("openssl.dump", "w");
-    assert(out);
-    SetDumper(out);
-#else
-    SetMonitor(stderr);
-#endif
-#endif
-
+    auto setDumper = LucreDumper{};
     crypto::implementation::OpenSSL_BIO bio = BIO_new(BIO_s_mem());
     crypto::implementation::OpenSSL_BIO bioPublic = BIO_new(BIO_s_mem());
 
@@ -207,9 +199,7 @@ auto Lucre::SignToken(
     opentxs::otx::blind::Token& token,
     const PasswordPrompt& reason) -> bool
 {
-#if OT_LUCRE_DEBUG
-    LucreDumper setDumper;
-#endif
+    auto setDumper = LucreDumper{};
 
     if (opentxs::otx::blind::CashType::Lucre != token.Type()) {
         LogError()(OT_PRETTY_CLASS())("Incorrect token type").Flush();
@@ -338,11 +328,7 @@ auto Lucre::VerifyToken(
     }
 
     const auto& lucreToken = *lucre;
-
-#if OT_LUCRE_DEBUG
-    LucreDumper setDumper;
-#endif
-
+    auto setDumper = LucreDumper{};
     crypto::implementation::OpenSSL_BIO bioBank = BIO_new(BIO_s_mem());
     crypto::implementation::OpenSSL_BIO bioCoin = BIO_new(BIO_s_mem());
     auto spendable = String::Factory();

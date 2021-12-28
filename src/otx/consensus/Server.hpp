@@ -14,6 +14,7 @@
 #include <memory>
 #include <mutex>
 #include <set>
+#include <shared_mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -37,6 +38,7 @@
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/Types.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"

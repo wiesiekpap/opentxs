@@ -25,7 +25,7 @@
 
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
-#include "internal/network/blockchain/sync/Factory.hpp"
+#include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
@@ -42,16 +42,16 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/network/blockchain/sync/Acknowledgement.hpp"
-#include "opentxs/network/blockchain/sync/Base.hpp"
-#include "opentxs/network/blockchain/sync/MessageType.hpp"
-#include "opentxs/network/blockchain/sync/PublishContract.hpp"
-#include "opentxs/network/blockchain/sync/PublishContractReply.hpp"
-#include "opentxs/network/blockchain/sync/QueryContract.hpp"
-#include "opentxs/network/blockchain/sync/QueryContractReply.hpp"
-#include "opentxs/network/blockchain/sync/Request.hpp"
-#include "opentxs/network/blockchain/sync/State.hpp"
-#include "opentxs/network/blockchain/sync/Types.hpp"
+#include "opentxs/network/p2p/Acknowledgement.hpp"
+#include "opentxs/network/p2p/Base.hpp"
+#include "opentxs/network/p2p/MessageType.hpp"
+#include "opentxs/network/p2p/PublishContract.hpp"
+#include "opentxs/network/p2p/PublishContractReply.hpp"
+#include "opentxs/network/p2p/QueryContract.hpp"
+#include "opentxs/network/p2p/QueryContractReply.hpp"
+#include "opentxs/network/p2p/Request.hpp"
+#include "opentxs/network/p2p/State.hpp"
+#include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
@@ -194,7 +194,7 @@ private:
 
                 return output;
             }();
-            namespace bcsync = opentxs::network::blockchain::sync;
+            namespace bcsync = opentxs::network::p2p;
             const auto base = api_.Factory().BlockchainSyncMessage(incoming);
 
             if (!base) {
@@ -248,7 +248,7 @@ private:
         const Lock& lock,
         void* socket,
         opentxs::network::zeromq::Message&& incoming,
-        const opentxs::network::blockchain::sync::Base& base) noexcept -> void
+        const opentxs::network::p2p::Base& base) noexcept -> void
     {
         auto payload = [&] {
             const auto& id = base.asQueryContract().ID();
@@ -309,7 +309,7 @@ private:
         const Lock& lock,
         void* socket,
         opentxs::network::zeromq::Message&& incoming,
-        const opentxs::network::blockchain::sync::Base& base) noexcept -> void
+        const opentxs::network::p2p::Base& base) noexcept -> void
     {
         const auto& contract = base.asPublishContract();
         const auto& id = contract.ID();
@@ -362,7 +362,7 @@ private:
         const Lock& lock,
         void* socket,
         const opentxs::network::zeromq::Message& incoming,
-        const opentxs::network::blockchain::sync::Base& base) noexcept -> void
+        const opentxs::network::p2p::Base& base) noexcept -> void
     {
         try {
             {
@@ -375,7 +375,7 @@ private:
                 }
             }
 
-            namespace bcsync = opentxs::network::blockchain::sync;
+            namespace bcsync = opentxs::network::p2p;
             const auto type = base.Type();
 
             if (bcsync::MessageType::sync_request == type) {

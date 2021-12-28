@@ -39,7 +39,6 @@
 #include "internal/protobuf/verify/UnitDefinition.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"

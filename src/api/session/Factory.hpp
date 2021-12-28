@@ -85,6 +85,8 @@
 #include "opentxs/identity/Types.hpp"
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
+#include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
@@ -151,13 +153,10 @@ class Nym;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Base;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 
 namespace zeromq
 {
@@ -381,9 +380,8 @@ public:
     auto BlockchainAddress(
         const opentxs::blockchain::p2p::Address::SerializedType& serialized)
         const -> OTBlockchainAddress final;
-    auto BlockchainSyncMessage(
-        const opentxs::network::zeromq::Message& in) const noexcept
-        -> std::unique_ptr<opentxs::network::blockchain::sync::Base> final;
+    auto BlockchainSyncMessage(const opentxs::network::zeromq::Message& in)
+        const noexcept -> std::unique_ptr<opentxs::network::p2p::Base> final;
     auto BlockHeader(const proto::BlockchainBlockHeader& serialized) const
         -> BlockHeaderP override
     {

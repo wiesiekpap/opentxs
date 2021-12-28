@@ -55,13 +55,10 @@ class UpdateTransaction;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Data;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 
 namespace zeromq
 {
@@ -145,8 +142,7 @@ public:
     auto ProcessSyncData(
         block::Hash& prior,
         std::vector<block::pHash>& hashes,
-        const network::blockchain::sync::Data& data) noexcept
-        -> std::size_t final;
+        const network::p2p::Data& data) noexcept -> std::size_t final;
 
     HeaderOracle(
         const api::Session& api,

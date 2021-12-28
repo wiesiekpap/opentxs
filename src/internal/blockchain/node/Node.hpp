@@ -134,14 +134,11 @@ namespace asio
 class Socket;
 }  // namespace asio
 
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Block;
 class Data;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 
 namespace zeromq
 {
@@ -325,7 +322,7 @@ struct FilterOracle : virtual public node::FilterOracle {
     virtual auto ProcessSyncData(
         const block::Hash& prior,
         const std::vector<block::pHash>& hashes,
-        const network::blockchain::sync::Data& data) const noexcept -> void = 0;
+        const network::p2p::Data& data) const noexcept -> void = 0;
     virtual auto Tip(const filter::Type type) const noexcept
         -> block::Position = 0;
 
@@ -513,8 +510,8 @@ struct Network : virtual public node::Manager {
 
 struct SyncDatabase {
     using Height = block::Height;
-    using Items = std::vector<network::blockchain::sync::Block>;
-    using Message = network::blockchain::sync::Data;
+    using Items = std::vector<network::p2p::Block>;
+    using Message = network::p2p::Data;
 
     virtual auto LoadSync(const Height height, Message& output) const noexcept
         -> bool = 0;

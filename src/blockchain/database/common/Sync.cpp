@@ -37,7 +37,7 @@ extern "C" {
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/network/blockchain/sync/Block.hpp"
+#include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"

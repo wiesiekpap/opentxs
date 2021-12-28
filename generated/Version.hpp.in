@@ -8,7 +8,6 @@
 
 #include "opentxs/Export.hpp"  // IWYU pragma: export
 
-#define OT_SCRIPT_CHAI @SCRIPT_CHAI_EXPORT@
 #define OT_BLOCKCHAIN @OT_BLOCKCHAIN_EXPORT@
 
 namespace opentxs

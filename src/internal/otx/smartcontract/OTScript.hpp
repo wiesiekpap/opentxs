@@ -14,9 +14,14 @@ namespace opentxs
 {
 class OTParty;
 class OTPartyAccount;
-class String;
+class OTScriptable;
+class OTSmartContract;
 class OTVariable;
+class String;
+}  // namespace opentxs
 
+namespace opentxs
+{
 using mapOfParties = std::map<std::string, OTParty*>;
 using mapOfPartyAccounts = std::map<std::string, OTPartyAccount*>;
 using mapOfVariables = std::map<std::string, OTVariable*>;
@@ -59,6 +64,10 @@ public:
 
     virtual ~OTScript();
 
+    virtual auto RegisterNativeScriptableCalls(OTScriptable& parent) noexcept
+        -> void;
+    virtual auto RegisterNativeSmartContractCalls(
+        OTSmartContract& parent) noexcept -> void;
     void SetScript(const String& strValue);
     void SetScript(const char* new_string);
     void SetScript(const char* new_string, size_t sizeLength);
@@ -97,11 +106,4 @@ public:
 
     virtual auto ExecuteScript(OTVariable* pReturnVar = nullptr) -> bool;
 };
-
-auto OTScriptFactory(const std::string& script_type = "")
-    -> std::shared_ptr<OTScript>;
-auto OTScriptFactory(
-    const std::string& script_type,
-    const std::string& script_contents) -> std::shared_ptr<OTScript>;
-
 }  // namespace opentxs

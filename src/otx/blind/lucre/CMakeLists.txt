@@ -5,6 +5,7 @@
 
 add_library(
   opentxs-lucre OBJECT
+  "${CMAKE_CURRENT_BINARY_DIR}/LucreConfig.cpp"
   "Lucre.cpp"
   "Lucre.hpp"
   "Mint.cpp"
@@ -24,12 +25,6 @@ target_include_directories(
 
 if(OT_OPENSSL_FLAVOR_LIBRESSL)
   target_compile_definitions(opentxs-lucre PRIVATE OT_BUNDLED_LIBRESSL)
-endif()
-
-if(OT_LUCRE_DEBUG)
-  target_compile_definitions(opentxs-lucre PRIVATE OT_LUCRE_DEBUG=1)
-else()
-  target_compile_definitions(opentxs-lucre PRIVATE OT_LUCRE_DEBUG=0)
 endif()
 
 target_sources(opentxs PRIVATE $<TARGET_OBJECTS:opentxs-lucre>)

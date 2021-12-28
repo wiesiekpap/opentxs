@@ -100,13 +100,10 @@ class Nym;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Block;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 }  // namespace network
 
 namespace proto

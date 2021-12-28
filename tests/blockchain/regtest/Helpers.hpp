@@ -11,7 +11,7 @@
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/node/TxoState.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
-// IWYU pragma: no_include "opentxs/network/blockchain/sync/State.hpp"
+// IWYU pragma: no_include "opentxs/network/p2p/State.hpp"
 // IWYU pragma: no_include "opentxs/network/zeromq/Context.hpp"
 // IWYU pragma: no_include "opentxs/network/zeromq/ListenCallback.hpp"
 
@@ -61,7 +61,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/network/blockchain/sync/Base.hpp"
+#include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Options.hpp"
 #include "ui/Helpers.hpp"
@@ -118,15 +118,12 @@ class Nym;
 
 namespace network
 {
-namespace blockchain
-{
-namespace sync
+namespace p2p
 {
 class Base;
 class Block;
 class State;
-}  // namespace sync
-}  // namespace blockchain
+}  // namespace p2p
 
 namespace zeromq
 {
@@ -140,7 +137,7 @@ class Identifier;
 
 namespace b = ot::blockchain;
 namespace zmq = ot::network::zeromq;
-namespace otsync = ot::network::blockchain::sync;
+namespace otsync = ot::network::p2p;
 namespace bca = ot::blockchain::crypto;
 
 namespace ottest

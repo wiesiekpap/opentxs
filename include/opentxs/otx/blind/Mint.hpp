@@ -39,6 +39,7 @@ class Mint;
 }  // namespace otx
 
 class Amount;
+class Armored;
 }  // namespace opentxs
 
 namespace opentxs::otx::blind

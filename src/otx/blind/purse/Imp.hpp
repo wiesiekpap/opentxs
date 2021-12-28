@@ -5,7 +5,27 @@
 
 #pragma once
 
+#include <cstddef>
+#include <memory>
+#include <optional>
+#include <vector>
+
+#include "opentxs/core/Amount.hpp"
+#include "opentxs/core/Secret.hpp"
+#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/crypto/Envelope.hpp"
+#include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
+#include "opentxs/otx/blind/CashType.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/otx/blind/PurseType.hpp"
+#include "opentxs/otx/blind/Token.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 #include "otx/blind/purse/Purse.hpp"
+#include "serialization/protobuf/Envelope.pb.h"
 
 namespace opentxs
 {

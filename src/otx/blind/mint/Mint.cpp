@@ -7,10 +7,15 @@
 #include "1_Internal.hpp"              // IWYU pragma: associated
 #include "opentxs/otx/blind/Mint.hpp"  // IWYU pragma: associated
 
-#include "internal/core/identifier/Factory.hpp"
+#include <memory>
+#include <utility>
+
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/Contract.hpp"
+#include "opentxs/core/String.hpp"
+#include "opentxs/util/Pimpl.hpp"
 #include "otx/blind/mint/Mint.hpp"
 
 namespace opentxs::otx::blind::internal

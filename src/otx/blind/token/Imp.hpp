@@ -8,7 +8,9 @@
 #include <cstdint>
 
 #include "Proto.hpp"
+#include "internal/otx/blind/Purse.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -17,7 +19,9 @@
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/blind/Token.hpp"
 #include "opentxs/otx/blind/TokenState.hpp"
+#include "opentxs/otx/blind/Types.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Time.hpp"
 #include "otx/blind/token/Token.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/Token.pb.h"

@@ -38,6 +38,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 
