@@ -132,7 +132,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_initial)
         0,
         {height_, height_},
         {},
-        {},
+        {{u8"0", u8"0 units"}},
         {},
     };
 
@@ -196,7 +196,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_initial)
         0,
         {height_, height_},
         {},
-        {},
+        {{u8"0", u8"0 units"}},
         {},
     };
 
@@ -317,7 +317,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_initial_receive)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"100", u8"100 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -530,7 +530,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_unconfirmed)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"89.99999684", u8"89.999\u202F996\u202F84 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -666,7 +666,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_unconfirmed_incoming)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"10", u8"10 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -923,7 +923,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_first_spend_confirmed)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"89.99999684", u8"89.999\u202F996\u202F84 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1053,7 +1053,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_first_spend_confirmed)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"10", u8"10 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1285,7 +1285,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_second_spend_unconfirmed)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"74.99999448", u8"74.999\u202F994\u202F48 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1542,7 +1542,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_second_unconfirmed_incoming)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"25", u8"25 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1758,7 +1758,7 @@ TEST_F(Regtest_payment_code, alice_account_activity_after_otx)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"74.99999448", u8"74.999\u202F994\u202F48 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -1909,7 +1909,7 @@ TEST_F(Regtest_payment_code, bob_account_activity_after_otx)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"25", u8"25 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,

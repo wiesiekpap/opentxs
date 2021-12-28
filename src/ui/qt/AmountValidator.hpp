@@ -41,7 +41,7 @@ class AccountActivity;
 namespace opentxs::ui
 {
 struct AmountValidator::Imp {
-    using Parent = implementation::AccountActivity;
+    using Parent = ui::AccountActivity;
     using Index = display::Definition::Index;
 
     std::atomic<Index> scale_;
@@ -85,7 +85,8 @@ struct AmountValidator::Imp {
     auto validate(QString& input, int&) const -> State
     {
         try {
-            fix(input, static_cast<Index>(scale_.load()));
+            const auto fixed = fix(input, static_cast<Index>(scale_.load()));
+            input = fixed.c_str();
 
             return State::Acceptable;
         } catch (const std::exception& e) {
@@ -97,7 +98,8 @@ struct AmountValidator::Imp {
 
     Imp(Parent& parent) noexcept
         : scale_(0)
-        , unittype_(parent.Contract().UnitOfAccount())
+        , parent_(parent)
+        , unittype_(std::nullopt)
         , min_(-1)
         , max_(-1)
     {
@@ -106,7 +108,8 @@ struct AmountValidator::Imp {
     ~Imp() = default;
 
 private:
-    const core::UnitType unittype_;
+    const Parent& parent_;
+    mutable std::optional<core::UnitType> unittype_;
     std::atomic_int min_;
     std::atomic_int max_;
 
@@ -125,7 +128,7 @@ private:
             }
         };
 
-        const auto& definition = display::GetDefinition(unittype_);
+        const auto& definition = display::GetDefinition(unittype());
         const auto newScale = scale_.load();
         const auto min = get(min_);
         const auto max = get(max_);
@@ -134,5 +137,7 @@ private:
 
         return definition.Format(amount, newScale, min, max);
     }
+
+    auto unittype() const noexcept -> core::UnitType;
 };
 }  // namespace opentxs::ui
