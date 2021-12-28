@@ -10,6 +10,7 @@
 #include <atomic>
 #include <iterator>
 
+#include "integration/Helpers.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
@@ -62,19 +63,18 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_FALSE(seed.empty());
         EXPECT_TRUE(SetIntroductionServer(session, server));
 
-        const auto issuer = CreateNym(session, "issuer", seed, 0);
-        const auto brian = CreateNym(session, "brian", seed, 1);
-        const auto chris = CreateNym(session, "chris", seed, 2);
+        const auto& issuer = CreateNym(session, "issuer", seed, 0);
+        const auto& brian = CreateNym(session, "brian", seed, 1);
+        const auto& chris = CreateNym(session, "chris", seed, 2);
 
-        EXPECT_EQ(issuer, issuer_);
-        EXPECT_EQ(brian, brian_);
-        EXPECT_EQ(chris, chris_);
-        EXPECT_TRUE(RegisterNym(session, server, issuer));
-        EXPECT_TRUE(RegisterNym(session, server, brian));
-        EXPECT_TRUE(RegisterNym(session, server, chris));
+        EXPECT_EQ(issuer.nym_id_->str(), issuer_);
+        EXPECT_EQ(brian.nym_id_->str(), brian_);
+        EXPECT_EQ(chris.nym_id_->str(), chris_);
+        EXPECT_TRUE(RegisterNym(server, issuer));
+        EXPECT_TRUE(RegisterNym(server, brian));
+        EXPECT_TRUE(RegisterNym(server, chris));
 
         const auto unit = IssueUnit(
-            session,
             server,
             issuer,
             "Mt Gox USD",
@@ -85,31 +85,30 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_FALSE(unit.empty());
 
         const auto account1 =
-            RegisterAccount(session, server, brian, unit, "brian's dollars");
+            RegisterAccount(server, brian, unit, "brian's dollars");
         const auto account2 =
-            RegisterAccount(session, server, chris, unit, "chris's dollars1");
+            RegisterAccount(server, chris, unit, "chris's dollars1");
         const auto account3 =
-            RegisterAccount(session, server, chris, unit, "chris's dollars2");
+            RegisterAccount(server, chris, unit, "chris's dollars2");
 
         EXPECT_FALSE(account1.empty());
         EXPECT_FALSE(account2.empty());
         EXPECT_FALSE(account3.empty());
         EXPECT_TRUE(SendCheque(
-            session,
             server,
             issuer,
-            registered_accounts_[issuer].front(),
-            session.Contacts().ContactID(session.Factory().NymID(brian))->str(),
+            registered_accounts_[issuer.nym_id_->str()].front(),
+            session.Contacts().ContactID(brian.nym_id_)->str(),
             "memo1",
             100));
-        EXPECT_GT(DepositCheques(session, server, brian), 0);
-        EXPECT_TRUE(SendTransfer(
-            session, server, brian, account1, account2, "memo2", 42));
+        EXPECT_GT(DepositCheques(server, brian), 0);
+        EXPECT_TRUE(
+            SendTransfer(server, brian, account1, account2, "memo2", 42));
         EXPECT_EQ(seeds.size(), 1);
         EXPECT_EQ(nyms.size(), 3);
         EXPECT_EQ(created_units_.size(), 1);
 
-        RefreshAccount(session, {issuer, brian, chris}, server.ID());
+        RefreshAccount(session, {&issuer, &brian, &chris}, server.ID());
         auto issuerModel = Counter{};
         auto brianModel = Counter{};
         auto chrisModel1 = Counter{};
@@ -119,13 +118,12 @@ TEST_F(RPC_fixture, preconditions)
         chrisModel1.expected_ += 3;
         chrisModel2.expected_ += 1;
         InitAccountActivityCounter(
-            session,
             issuer,
-            registered_accounts_.at(issuer).front(),
-            &issuerModel);
-        InitAccountActivityCounter(session, brian, account1, &brianModel);
-        InitAccountActivityCounter(session, chris, account2, &chrisModel1);
-        InitAccountActivityCounter(session, chris, account3, &chrisModel2);
+            registered_accounts_.at(issuer.nym_id_->str()).front(),
+            issuerModel);
+        InitAccountActivityCounter(brian, account1, brianModel);
+        InitAccountActivityCounter(chris, account2, chrisModel1);
+        InitAccountActivityCounter(chris, account3, chrisModel2);
 
         EXPECT_TRUE(wait_for_counter(issuerModel));
         EXPECT_TRUE(wait_for_counter(brianModel));
