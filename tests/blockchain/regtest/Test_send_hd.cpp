@@ -100,7 +100,19 @@ TEST_F(Regtest_fixture_hd, account_activity_initial)
             {"QVk4MvUu7Wb7tZ1wvAeiUvdF7wxhvpyLLK", false},
             {"pS8EA1pKEVBvv3kGsSGH37R8YViBmuRCPn", false},
         },
-        {},
+        {{u8"0", u8"0 units"},
+         {u8"10", u8"10 units"},
+         {u8"25", u8"25 units"},
+         {u8"300", u8"300 units"},
+         {u8"4000", u8"4,000 units"},
+         {u8"50000", u8"50,000 units"},
+         {u8"600000", u8"600,000 units"},
+         {u8"7000000", u8"7,000,000 units"},
+         {u8"1000000000000000001", u8"1,000,000,000,000,000,001 units"},
+         {u8"74.99999448", u8"74.999\u202F994\u202F48 units"},
+         {u8"86.00002652", u8"86.000\u202F026\u202F52 units"},
+         {u8"89.99999684", u8"89.999\u202F996\u202F84 units"},
+         {u8"100.0000495", u8"100.000\u202F049\u202F5 units"}},
         {},
     };
 
@@ -202,7 +214,7 @@ TEST_F(Regtest_fixture_hd, account_activity_immature)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"0", u8"0 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -290,7 +302,7 @@ TEST_F(Regtest_fixture_hd, account_activity_one_block_before_maturation)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"0", u8"0 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -415,7 +427,7 @@ TEST_F(Regtest_fixture_hd, account_activity_mature)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"100.0000495", u8"100.000\u202F049\u202F5 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -501,7 +513,7 @@ TEST_F(Regtest_fixture_hd, account_activity_failed_spend)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"100.0000495", u8"100.000\u202F049\u202F5 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -611,7 +623,7 @@ TEST_F(Regtest_fixture_hd, account_activity_unconfirmed_spend)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"86.00002652", u8"86.000\u202F026\u202F52 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,
@@ -756,7 +768,7 @@ TEST_F(Regtest_fixture_hd, account_activity_confirmed_spend)
         100,
         {height_, height_},
         {},
-        {},
+        {{u8"86.00002652", u8"86.000\u202F026\u202F52 units"}},
         {
             {
                 ot::StorageBox::BLOCKCHAIN,

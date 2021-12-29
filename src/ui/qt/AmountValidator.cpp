@@ -8,10 +8,18 @@
 #include "opentxs/ui/qt/AmountValidator.hpp"  // IWYU pragma: associated
 
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/core/UnitType.hpp"
 #include "ui/qt/AmountValidator.hpp"
 
 namespace opentxs::ui
 {
+auto AmountValidator::Imp::unittype() const noexcept -> core::UnitType
+{
+    if (false == unittype_.has_value()) { unittype_ = parent_.Unit(); }
+
+    return unittype_.has_value() ? unittype_.value() : core::UnitType::Error;
+}
+
 AmountValidator::AmountValidator(
     implementation::AccountActivity& parent) noexcept
     : imp_(std::make_unique<Imp>(parent))
