@@ -74,9 +74,8 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_TRUE(SetIntroductionServer(session, server1));
         EXPECT_TRUE(ImportServerContract(server2, session));
 
-        const auto issuer = CreateNym(session, "issuer", seed, 0);
+        const auto& issuer = CreateNym(session, "issuer", seed, 0);
         const auto unit1 = IssueUnit(
-            session,
             server1,
             issuer,
             "Mt Gox USD",
@@ -84,7 +83,6 @@ TEST_F(RPC_fixture, preconditions)
             ot::core::UnitType::USD,
             {u8"USD", {{u8"dollars", {u8"$", u8"", {{10, 0}}, 2, 3}}}});
         const auto unit2 = IssueUnit(
-            session,
             server2,
             issuer,
             "Mt Gox BTC",
@@ -113,14 +111,14 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_TRUE(SetIntroductionServer(session, server1));
         EXPECT_TRUE(ImportServerContract(server2, session));
 
-        const auto brian = CreateNym(session, "brian", seed, 0);
-        const auto chris = CreateNym(session, "chris", seed, 1);
+        const auto& brian = CreateNym(session, "brian", seed, 0);
+        const auto& chris = CreateNym(session, "chris", seed, 1);
         const auto account1 =
-            RegisterAccount(session, server1, brian, unit1, "brian's dollars");
+            RegisterAccount(server1, brian, unit1, "brian's dollars");
         const auto account2 =
-            RegisterAccount(session, server2, brian, unit2, "brian's bitcoins");
+            RegisterAccount(server2, brian, unit2, "brian's bitcoins");
         const auto account3 =
-            RegisterAccount(session, server1, chris, unit1, "chris's dollars");
+            RegisterAccount(server1, chris, unit1, "chris's dollars");
 
         EXPECT_FALSE(account1.empty());
         EXPECT_FALSE(account2.empty());

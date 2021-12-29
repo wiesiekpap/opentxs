@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include <future>
 
+#include "integration/Helpers.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/Pair.hpp"
@@ -69,19 +70,18 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_FALSE(seed.empty());
         EXPECT_TRUE(SetIntroductionServer(session, server));
 
-        const auto issuer = CreateNym(session, "issuer", seed, 0);
-        const auto brian = CreateNym(session, "brian", seed, 1);
-        const auto chris = CreateNym(session, "chris", seed, 2);
+        const auto& issuer = CreateNym(session, "issuer", seed, 0);
+        const auto& brian = CreateNym(session, "brian", seed, 1);
+        const auto& chris = CreateNym(session, "chris", seed, 2);
 
-        EXPECT_EQ(issuer, issuer_);
-        EXPECT_EQ(brian, brian_);
-        EXPECT_EQ(chris, chris_);
-        EXPECT_TRUE(RegisterNym(session, server, issuer));
-        EXPECT_TRUE(RegisterNym(session, server, brian));
-        EXPECT_TRUE(RegisterNym(session, server, chris));
+        EXPECT_EQ(issuer.nym_id_->str(), issuer_);
+        EXPECT_EQ(brian.nym_id_->str(), brian_);
+        EXPECT_EQ(chris.nym_id_->str(), chris_);
+        EXPECT_TRUE(RegisterNym(server, issuer));
+        EXPECT_TRUE(RegisterNym(server, brian));
+        EXPECT_TRUE(RegisterNym(server, chris));
 
         const auto unit = IssueUnit(
-            session,
             server,
             issuer,
             "Mt Gox USD",
@@ -92,9 +92,9 @@ TEST_F(RPC_fixture, preconditions)
         EXPECT_FALSE(unit.empty());
 
         const auto account1 =
-            RegisterAccount(session, server, brian, unit, "brian's dollars");
+            RegisterAccount(server, brian, unit, "brian's dollars");
         const auto account2 =
-            RegisterAccount(session, server, chris, unit, "chris's dollars");
+            RegisterAccount(server, chris, unit, "chris's dollars");
 
         EXPECT_FALSE(account1.empty());
         EXPECT_FALSE(account2.empty());

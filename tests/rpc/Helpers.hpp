@@ -61,15 +61,19 @@ class Amount;
 class Identifier;
 }  // namespace opentxs
 
-namespace ot = opentxs;
-namespace zmq = ot::network::zeromq;
-
 namespace ottest
 {
 struct AccountActivityData;
 struct AccountListData;
 struct User;
+struct Counter;
+}  // namespace ottest
 
+namespace ot = opentxs;
+namespace zmq = ot::network::zeromq;
+
+namespace ottest
+{
 auto check_account_activity_rpc(
     const User& user,
     const ot::Identifier& account,
@@ -110,41 +114,72 @@ protected:
     using IssuedUnits = std::vector<std::string>;
     using LocalNymMap = std::map<int, std::set<std::string>>;
     using SeedMap = std::map<int, std::set<std::string>>;
+    using UserIndex = std::map<int, User>;
 
     static SeedMap seed_map_;
     static LocalNymMap local_nym_map_;
     static IssuedUnits created_units_;
     static AccountMap registered_accounts_;
+    static UserIndex users_;
 
     const ot::api::Context& ot_;
     RPCPushCounter& push_;
 
     auto CreateNym(
-        const ot::api::Session& api,
+        const ot::api::session::Client& api,
         const std::string& name,
         const std::string& seed,
-        int index) const noexcept -> std::string;
+        int index) const noexcept -> const User&;
     auto DepositCheques(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const std::string& nym) const noexcept -> std::size_t;
+    auto DepositCheques(const ot::api::session::Notary& server, const User& nym)
+        const noexcept -> std::size_t;
+    auto DepositCheques(
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
+        const ot::identifier::Nym& nym) const noexcept -> std::size_t;
     auto ImportBip39(const ot::api::Session& api, const std::string& words)
         const noexcept -> std::string;
     auto ImportServerContract(
         const ot::api::session::Notary& from,
         const ot::api::session::Client& to) const noexcept -> bool;
-    // TODO modify UIHelpers and put the Counter struct in a non-anonymous
-    // namespace so that we can forward declare the type without "declared but
-    // not defined" errors
     auto InitAccountActivityCounter(
         const ot::api::session::Client& api,
         const std::string& nym,
         const std::string& account,
-        void* counter) const noexcept -> void;
+        Counter& counter) const noexcept -> void;
+    auto InitAccountActivityCounter(
+        const User& nym,
+        const std::string& account,
+        Counter& counter) const noexcept -> void;
+    auto InitAccountActivityCounter(
+        const ot::api::session::Client& api,
+        const ot::identifier::Nym& nym,
+        const std::string& account,
+        Counter& counter) const noexcept -> void;
     auto IssueUnit(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const std::string& issuer,
+        const std::string& shortname,
+        const std::string& terms,
+        ot::core::UnitType unitOfAccount,
+        const ot::display::Definition& displayDefinition) const noexcept
+        -> std::string;
+    auto IssueUnit(
+        const ot::api::session::Notary& server,
+        const User& issuer,
+        const std::string& shortname,
+        const std::string& terms,
+        ot::core::UnitType unitOfAccount,
+        const ot::display::Definition& displayDefinition) const noexcept
+        -> std::string;
+    auto IssueUnit(
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
+        const ot::identifier::Nym& issuer,
         const std::string& shortname,
         const std::string& terms,
         ot::core::UnitType unitOfAccount,
@@ -158,16 +193,37 @@ protected:
         const ot::api::session::Client& api,
         const std::vector<std::string> nyms,
         const ot::identifier::Server& server) const noexcept -> void;
+    auto RefreshAccount(
+        const ot::api::session::Client& api,
+        const std::vector<const User*> nyms,
+        const ot::identifier::Server& server) const noexcept -> void;
     auto RegisterAccount(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const std::string& nym,
         const std::string& unit,
         const std::string& label) const noexcept -> std::string;
+    auto RegisterAccount(
+        const ot::api::session::Notary& server,
+        const User& nym,
+        const std::string& unit,
+        const std::string& label) const noexcept -> std::string;
+    auto RegisterAccount(
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
+        const ot::identifier::Nym& nym,
+        const std::string& unit,
+        const std::string& label) const noexcept -> std::string;
     auto RegisterNym(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
-        const std::string& nym) const noexcept -> bool;
+        const std::string& nymID) const noexcept -> bool;
+    auto RegisterNym(const ot::api::session::Notary& server, const User& nym)
+        const noexcept -> bool;
+    auto RegisterNym(
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
+        const ot::identifier::Nym& nym) const noexcept -> bool;
     auto SendCheque(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
@@ -176,10 +232,40 @@ protected:
         const std::string& contact,
         const std::string& memo,
         Amount amount) const noexcept -> bool;
+    auto SendCheque(
+        const ot::api::session::Notary& server,
+        const User& nym,
+        const std::string& account,
+        const std::string& contact,
+        const std::string& memo,
+        Amount amount) const noexcept -> bool;
+    auto SendCheque(
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
+        const ot::identifier::Nym& nym,
+        const std::string& account,
+        const std::string& contact,
+        const std::string& memo,
+        Amount amount) const noexcept -> bool;
     auto SendTransfer(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const std::string& sender,
+        const std::string& fromAccount,
+        const std::string& toAccount,
+        const std::string& memo,
+        Amount amount) const noexcept -> bool;
+    auto SendTransfer(
+        const ot::api::session::Notary& server,
+        const User& sender,
+        const std::string& fromAccount,
+        const std::string& toAccount,
+        const std::string& memo,
+        Amount amount) const noexcept -> bool;
+    auto SendTransfer(
+        const ot::api::session::Client& api,
+        const ot::api::session::Notary& server,
+        const ot::identifier::Nym& sender,
         const std::string& fromAccount,
         const std::string& toAccount,
         const std::string& memo,
