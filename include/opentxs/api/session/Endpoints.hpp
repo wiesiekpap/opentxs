@@ -315,38 +315,6 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const session::internal::Endpoints& = 0;
-    /** Communication between blockchain peers and boost::asio context
-     *
-     */
-    virtual auto InternalBlockchainAsioContext() const noexcept
-        -> std::string = 0;
-
-    /** Notification of blockchain block filter updates
-     *
-     */
-    virtual auto InternalBlockchainBlockUpdated(
-        const opentxs::blockchain::Type chain) const noexcept
-        -> std::string = 0;
-
-    /** Notification of blockchain block filter updates
-     *
-     */
-    virtual auto InternalBlockchainFilterUpdated(
-        const opentxs::blockchain::Type chain) const noexcept
-        -> std::string = 0;
-
-    /** Push notification processing
-     *
-     *  This socket is for use by the Sync and ServerConnection classes only
-     */
-    virtual auto InternalProcessPushNotification() const noexcept
-        -> std::string = 0;
-
-    /** Push notification initiation
-     *
-     *  This socket is for use by the Server and MessageProcessor classes only
-     */
-    virtual auto InternalPushNotification() const noexcept -> std::string = 0;
 
     /** Issuer update notifications
      *

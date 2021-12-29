@@ -12,7 +12,13 @@ namespace opentxs::api::session::internal
 class Endpoints : virtual public api::session::Endpoints
 {
 public:
+    virtual auto BlockchainBlockUpdated(const opentxs::blockchain::Type chain)
+        const noexcept -> std::string = 0;
+    virtual auto BlockchainFilterUpdated(const opentxs::blockchain::Type chain)
+        const noexcept -> std::string = 0;
     auto Internal() const noexcept -> const Endpoints& final { return *this; }
+    virtual auto ProcessPushNotification() const noexcept -> std::string = 0;
+    virtual auto PushNotification() const noexcept -> std::string = 0;
 
     auto Internal() noexcept -> Endpoints& final { return *this; }
 

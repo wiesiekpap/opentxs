@@ -14,7 +14,6 @@
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
-#include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Scale.hpp"

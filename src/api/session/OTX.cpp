@@ -22,6 +22,7 @@
 #include "Proto.tpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/session/Client.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/api/session/Factory.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/OTPayment.hpp"
@@ -205,7 +206,7 @@ OTX::OTX(
             notification_listener_callback_,
             zmq::socket::Socket::Direction::Bind);
         const auto start =
-            out->Start(api_.Endpoints().InternalProcessPushNotification());
+            out->Start(api_.Endpoints().Internal().ProcessPushNotification());
 
         OT_ASSERT(start);
 

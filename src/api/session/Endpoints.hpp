@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <robin_hood.h>
 #include <string>
 
 #include "internal/api/session/Endpoints.hpp"
@@ -46,6 +47,10 @@ public:
     auto BlockchainBalance() const noexcept -> std::string final;
     auto BlockchainBlockAvailable() const noexcept -> std::string final;
     auto BlockchainBlockDownloadQueue() const noexcept -> std::string final;
+    auto BlockchainBlockUpdated(const opentxs::blockchain::Type chain)
+        const noexcept -> std::string final;
+    auto BlockchainFilterUpdated(const opentxs::blockchain::Type chain)
+        const noexcept -> std::string final;
     auto BlockchainMempool() const noexcept -> std::string final;
     auto BlockchainNewFilter() const noexcept -> std::string final;
     auto BlockchainPeer() const noexcept -> std::string final;
@@ -67,13 +72,6 @@ public:
     auto FindNym() const noexcept -> std::string final;
     auto FindServer() const noexcept -> std::string final;
     auto FindUnitDefinition() const noexcept -> std::string final;
-    auto InternalBlockchainAsioContext() const noexcept -> std::string final;
-    auto InternalBlockchainBlockUpdated(const opentxs::blockchain::Type chain)
-        const noexcept -> std::string final;
-    auto InternalBlockchainFilterUpdated(const opentxs::blockchain::Type chain)
-        const noexcept -> std::string final;
-    auto InternalProcessPushNotification() const noexcept -> std::string final;
-    auto InternalPushNotification() const noexcept -> std::string final;
     auto IssuerUpdate() const noexcept -> std::string final;
     auto Messagability() const noexcept -> std::string final;
     auto MessageLoaded() const noexcept -> std::string final;
@@ -83,6 +81,8 @@ public:
     auto PeerReplyUpdate() const noexcept -> std::string final;
     auto PeerRequestUpdate() const noexcept -> std::string final;
     auto PendingBailment() const noexcept -> std::string final;
+    auto ProcessPushNotification() const noexcept -> std::string final;
+    auto PushNotification() const noexcept -> std::string final;
     auto ServerReplyReceived() const noexcept -> std::string final;
     auto ServerRequestSent() const noexcept -> std::string final;
     auto ServerUpdate() const noexcept -> std::string final;
@@ -99,7 +99,15 @@ public:
     ~Endpoints() final = default;
 
 private:
+    static constexpr auto version_1_{1};
+
+    using BlockchainMap =
+        robin_hood::unordered_flat_map<opentxs::blockchain::Type, std::string>;
     const int instance_;
+    const BlockchainMap blockchain_block_updated_;
+    const BlockchainMap blockchain_filter_updated_;
+    const std::string process_push_notification_;
+    const std::string push_notification_;
 
     auto build_inproc_path(const std::string& path, const int version)
         const noexcept -> std::string;

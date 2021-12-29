@@ -22,6 +22,7 @@
 #include "blockchain/database/common/Database.hpp"
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "network/p2p/server/Server.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
@@ -46,7 +47,6 @@ namespace network
 namespace blockchain
 {
 struct SyncClient;
-struct SyncServer;
 }  // namespace blockchain
 
 class Blockchain;
@@ -83,6 +83,11 @@ struct Network;
 
 namespace network
 {
+namespace p2p
+{
+class Server;
+}  // namespace p2p
+
 namespace zeromq
 {
 class Context;
@@ -195,7 +200,7 @@ private:
     mutable std::map<Chain, Config> config_;
     mutable std::map<Chain, pNode> networks_;
     std::unique_ptr<blockchain::SyncClient> sync_client_;
-    std::unique_ptr<blockchain::SyncServer> sync_server_;
+    mutable opentxs::network::p2p::Server sync_server_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_;
     std::atomic_bool running_;

@@ -18,6 +18,7 @@
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/DownloadTask.hpp"
 #include "internal/api/network/Asio.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
@@ -75,7 +76,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
     , job_counter_()
 {
     init_executor(
-        {shutdown, api_.Endpoints().InternalBlockchainBlockUpdated(chain_)});
+        {shutdown, api_.Endpoints().Internal().BlockchainBlockUpdated(chain_)});
 }
 
 auto FilterOracle::BlockIndexer::batch_size(const std::size_t in) const noexcept

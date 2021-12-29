@@ -26,6 +26,7 @@
 #include "blockchain/node/base/SyncServer.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/network/Blockchain.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"  // IWYU pragma: keep
 #include "internal/blockchain/database/Database.hpp"
@@ -317,7 +318,8 @@ Base::Base(
     OT_ASSERT(wallet_p_);
 
     header_.Internal().Init();
-    init_executor({api_.Endpoints().InternalBlockchainFilterUpdated(chain_)});
+    init_executor(
+        {api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)});
     LogVerbose()(config_.print()).Flush();
 
     for (const auto& addr : api_.GetOptions().BlockchainBindIpv4()) {

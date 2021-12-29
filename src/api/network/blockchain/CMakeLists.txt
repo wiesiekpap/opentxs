@@ -12,8 +12,6 @@ if(OT_BLOCKCHAIN_EXPORT)
       "Imp.hpp"
       "SyncClient.cpp"
       "SyncClient.hpp"
-      "SyncServer.cpp"
-      "SyncServer.hpp"
   )
 else()
   target_sources(opentxs-common PRIVATE "Null.cpp")

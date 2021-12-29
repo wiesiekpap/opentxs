@@ -12,6 +12,7 @@
 #include <functional>
 
 #include "blockchain/DownloadManager.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
@@ -70,7 +71,7 @@ public:
     {
         init_executor({shutdown, api_.Endpoints().BlockchainReorg()});
         auto zmq = socket_->Start(
-            api_.Endpoints().InternalBlockchainBlockUpdated(chain_));
+            api_.Endpoints().Internal().BlockchainBlockUpdated(chain_));
 
         OT_ASSERT(zmq);
     }

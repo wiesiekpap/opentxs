@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "Proto.tpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Notary.hpp"
 #include "internal/network/zeromq/Batch.hpp"
@@ -87,8 +88,8 @@ MessageProcessor::MessageProcessor(
 {
     zmq_batch_.listen_callbacks_.emplace_back(zmq::ListenCallback::Factory(
         [this](auto&& m) { pipeline(std::move(m)); }));
-    auto rc =
-        notification_.Bind(api_.Endpoints().InternalPushNotification().c_str());
+    auto rc = notification_.Bind(
+        api_.Endpoints().Internal().PushNotification().c_str());
 
     OT_ASSERT(rc);
 
