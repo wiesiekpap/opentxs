@@ -89,16 +89,15 @@ auto Inventory::decode_type(
     if (EncodedSize != size) { throw std::runtime_error("Invalid payload"); }
 
     std::memcpy(&type, payload, sizeof(type));
-
     auto inventorytype = Inventory::Type{};
+
     try {
         inventorytype = reverse_map_.at(type.value());
-    } catch (std::out_of_range&) {
-        LogError()("Inventory::decode_type: unknown payload type")(
-            " InventoryTypeField: ")(std::to_string(type.value()))
-            .Flush();
+    } catch (...) {
 
-        std::rethrow_exception(std::current_exception());
+        throw std::runtime_error{
+            UnallocatedCString{"unknown payload type: "} +
+            std::to_string(type.value())};
     }
 
     return inventorytype;

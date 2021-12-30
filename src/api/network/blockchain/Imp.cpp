@@ -319,11 +319,9 @@ auto BlockchainImp::Init(
                 output.provide_sync_server_ = true;
                 output.disable_wallet_ = true;
             }
-        } else if (sync) {
-            output.use_sync_server_ = true;
-
         } else {
-            output.download_cfilters_ = true;
+            output.use_sync_server_ = true;
+            output.download_cfilters_ = false;
         }
 
         output.disable_wallet_ = !options.BlockchainWalletEnabled();
@@ -339,8 +337,8 @@ auto BlockchainImp::Init(
     }();
     init_promise_.set_value();
     static const auto defaultServers = UnallocatedVector<UnallocatedCString>{
-        "tcp://54.39.129.45:8814",
-        "tcp://54.38.193.222:8814",
+        "tcp://metier1.opentransactions.org:8814",
+        "tcp://metier2.opentransactions.org:8814",
     };
     const auto existing = [&] {
         auto out = UnallocatedSet<UnallocatedCString>{};

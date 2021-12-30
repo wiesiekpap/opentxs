@@ -612,8 +612,8 @@ private:
         switch (event) {
             case handshake_: {
                 const auto endpoint = UnallocatedCString{msg.at(1).Bytes()};
-                LogDetail()("Connected to sync server at ")(endpoint).Flush();
-                servers_.at(endpoint).connected_ = true;
+                LogConsole()("Connected to p2p server at ")(endpoint).Flush();
+                servers_[endpoint].connected_ = true;
             } break;
             default: {
                 LogError()(OT_PRETTY_CLASS())("Unexpected event type: ")(event)
@@ -632,7 +632,8 @@ private:
             return;
         } else {
             servers_.try_emplace(ep);
-            LogDetail()("Connecting to sync server at ")(ep).Flush();
+            LogDetail()(OT_PRETTY_CLASS())("Connecting to p2p server at ")(ep)
+                .Flush();
         }
     }
     auto state_machine() noexcept -> void
