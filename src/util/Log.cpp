@@ -19,7 +19,7 @@
 #include <memory>
 #include <thread>
 
-#include "core/Amount.hpp"
+#include "internal/core/Amount.hpp"
 #include "internal/otx/common/StringXML.hpp"
 #include "internal/otx/common/util/Common.hpp"
 #include "internal/util/Log.hpp"
@@ -314,13 +314,15 @@ auto Log::operator()(const Amount& in) const noexcept -> const Log&
 {
     if (false == imp_->active()) { return *this; }
 
-    auto amount = UnallocatedCString{};
-    in.Serialize(opentxs::writer(amount));
+    const auto intValue = [&] {
+        auto out = UnallocatedCString{};
+        in.Serialize(opentxs::writer(out));
 
-    auto raw_amount = in.Internal().extract_float<bmp::cpp_dec_float_100>();
-    amount = raw_amount.str(8, std::ios_base::fixed) + " (" + amount + ")";
+        return out;
+    }();
+    const auto floatValue = in.Internal().ToFloat();
 
-    return operator()(amount);
+    return operator()(floatValue.str() + " (" + intValue + ")");
 }
 
 auto Log::operator()(const Amount& in, core::UnitType currency) const noexcept
@@ -328,18 +330,17 @@ auto Log::operator()(const Amount& in, core::UnitType currency) const noexcept
 {
     if (false == imp_->active()) { return *this; }
 
-    auto amount = UnallocatedCString{};
-    in.Serialize(opentxs::writer(amount));
+    if (core::UnitType::Unknown == currency) { return operator()(in); }
 
-    if (core::UnitType::Unknown != currency) {
-        amount =
-            display::GetDefinition(currency).Format(in) + " (" + amount + ")";
-    } else {
-        auto raw_amount = in.Internal().extract_float<bmp::cpp_dec_float_100>();
-        amount = raw_amount.str(8, std::ios_base::fixed) + " (" + amount + ")";
-    }
+    const auto intValue = [&] {
+        auto out = UnallocatedCString{};
+        in.Serialize(opentxs::writer(out));
 
-    return operator()(amount);
+        return out;
+    }();
+
+    return operator()(
+        display::GetDefinition(currency).Format(in) + " (" + intValue + ")");
 }
 
 auto Log::operator()(const String& in) const noexcept -> const Log&

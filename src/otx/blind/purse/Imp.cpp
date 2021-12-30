@@ -17,6 +17,7 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/crypto/Symmetric.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Token.hpp"
@@ -56,7 +57,7 @@ auto Purse(
     const otx::context::Server& context,
     const otx::blind::CashType type,
     const otx::blind::Mint& mint,
-    const Amount& totalValue,
+    const opentxs::Amount& totalValue,
     const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Purse
 {
     return Purse(
@@ -77,7 +78,7 @@ auto Purse(
     const identity::Nym& serverNym,
     const otx::blind::CashType type,
     const otx::blind::Mint& mint,
-    const Amount& totalValue,
+    const opentxs::Amount& totalValue,
     const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Purse
 {
     using ReturnType = otx::blind::Purse;
@@ -340,7 +341,7 @@ Purse::Purse(const api::Session& api, const proto::Purse& in) noexcept
           identifier::Notary::Factory(in.notary()),
           identifier::UnitDefinition::Factory(in.mint()),
           translate(in.state()),
-          Amount{in.totalvalue()},
+          factory::Amount(in.totalvalue()),
           Clock::from_time_t(in.latestvalidfrom()),
           Clock::from_time_t(in.earliestvalidto()),
           {},

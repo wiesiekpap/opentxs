@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Cheque.hpp"
@@ -1462,7 +1463,7 @@ auto Item::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         strTemp = String::Factory(xml->getAttributeValue("inReferenceTo"));
         if (strTemp->Exists()) SetReferenceToNum(strTemp->ToLong());
 
-        m_lAmount = Amount(xml->getAttributeValue("amount"));
+        m_lAmount = factory::Amount(xml->getAttributeValue("amount"));
 
         LogDebug()(OT_PRETTY_CLASS())(
             "Loaded transaction Item, transaction num ")(GetTransactionNum())(

@@ -8,6 +8,7 @@
 #include <optional>
 #include <utility>
 
+#include "internal/core/Amount.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
@@ -92,6 +93,42 @@ TEST(DisplayScale, usd)
     EXPECT_EQ(
         usd.Format(amount4, 2, 1, 2),
         ot::UnallocatedCString{u8"$14,000.02 MM"});
+
+    const auto largest_whole_number =
+        usd.Import(u8"115792089237316195423570985008687907853"
+                   u8"269984665640564039457584007913129639935");
+    EXPECT_EQ(
+        usd.Format(largest_whole_number, 0),
+        ot::UnallocatedCString{
+            u8"$115,792,089,237,316,195,423,570,985,008,687,907,853,"
+            u8"269,984,665,640,564,039,457,584,007,913,129,639,935.00"});
+    EXPECT_EQ(
+        usd.Import(usd.Format(largest_whole_number, 0), 0),
+        largest_whole_number);
+
+    try {
+        const auto largest_whole_number_plus_one =
+            usd.Import(u8"115792089237316195423570985008687907853"
+                       u8"269984665640564039457584007913129639936");
+    } catch (std::out_of_range&) {
+        EXPECT_TRUE(true);
+    } catch (...) {
+        EXPECT_TRUE(false);
+    }
+
+    const auto smallest_fraction = opentxs::unsigned_amount(
+        0, 1, std::numeric_limits<unsigned long long int>::max());
+
+    EXPECT_EQ(
+        usd.Import(u8"0."
+                   u8"00000000000000000005421010862427"
+                   u8"52217003726400434970855712890625"),
+        smallest_fraction);
+
+    EXPECT_EQ(
+        usd.Format(smallest_fraction, 0, 0, 64),
+        ot::UnallocatedCString{
+            u8"$0.000\u202F000\u202F000\u202F000\u202F000\u202F000\u202F05"});
 
     const auto commaTest = ot::UnallocatedVector<
         std::pair<opentxs::Amount, ot::UnallocatedCString>>{

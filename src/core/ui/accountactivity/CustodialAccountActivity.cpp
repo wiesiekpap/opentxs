@@ -17,6 +17,7 @@
 #include "core/ui/base/Widget.hpp"
 #include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
@@ -440,7 +441,7 @@ auto CustodialAccountActivity::process_balance(const Message& message) noexcept
 
     if (account_id_ != accountID) { return; }
 
-    const auto balance = Amount{body.at(2)};
+    const auto balance = factory::Amount(body.at(2));
     const auto oldBalance = [&] {
         eLock lock(shared_lock_);
 

@@ -15,8 +15,8 @@
 #include <numeric>
 #include <stdexcept>
 
-#include "core/Amount.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
+#include "internal/core/Amount.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
@@ -137,8 +137,8 @@ auto Bip143Hashes::Preimage(
     const auto scriptBytes = script.CalculateSize();
     const auto cs = blockchain::bitcoin::CompactSize{scriptBytes};
     const auto& output = input.Spends();
-    const auto value = be::little_int64_buf_t{
-        output.Value().Internal().extract_int<std::int64_t>()};
+    const auto value =
+        be::little_int64_buf_t{output.Value().Internal().ExtractInt64()};
     const auto sequence = be::little_uint32_buf_t{input.Sequence()};
     const auto single = get_single(index, total, sigHash);
     const auto& outputs = Outputs(sigHash, single.get());

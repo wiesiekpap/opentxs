@@ -23,6 +23,7 @@
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/OTX.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Mint.hpp"
@@ -2993,9 +2994,10 @@ void Server::process_accept_cron_receipt_reply(
                 if (!pTradeData->amount_sold.empty() &&
                     !pTradeData->currency_paid.empty()) {
 
-                    const Amount lAmountSold = Amount{pTradeData->amount_sold};
+                    const Amount lAmountSold =
+                        factory::Amount(pTradeData->amount_sold);
                     const Amount lCurrencyPaid =
-                        Amount{pTradeData->currency_paid};
+                        factory::Amount(pTradeData->currency_paid);
 
                     // just in case (divide by 0.)
                     if ((lAmountSold != 0) && (lScale != 0)) {

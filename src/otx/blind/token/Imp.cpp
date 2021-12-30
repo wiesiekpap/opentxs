@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"           // IWYU pragma: associated
 #include "otx/blind/token/Imp.hpp"  // IWYU pragma: associated
 
+#include "internal/core/Factory.hpp"
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Types.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -80,7 +81,7 @@ Token::Token(
           identifier::Notary::Factory(in.notary()),
           identifier::UnitDefinition::Factory(in.mint()),
           in.series(),
-          Amount{in.denomination()},
+          factory::Amount(in.denomination()),
           Clock::from_time_t(in.validfrom()),
           Clock::from_time_t(in.validto()),
           in.version())

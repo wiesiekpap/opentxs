@@ -31,6 +31,7 @@
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
@@ -769,7 +770,7 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
 
     const auto sender = api_.Factory().NymID(body.at(1));
     const auto address = UnallocatedCString{body.at(2).Bytes()};
-    const auto amount = Amount{body.at(3)};
+    const auto amount = factory::Amount(body.at(3));
     const auto memo = UnallocatedCString{body.at(4).Bytes()};
     const auto promise = body.at(5).as<int>();
     auto rc = SendResult::UnspecifiedError;
@@ -855,7 +856,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
     const auto contact =
         api_.Crypto().Blockchain().Internal().Contacts().PaymentCodeToContact(
             recipient, chain_);
-    const auto amount = Amount{body.at(3)};
+    const auto amount = factory::Amount(body.at(3));
     const auto memo = UnallocatedCString{body.at(4).Bytes()};
     const auto promise = body.at(5).as<int>();
     auto rc = SendResult::UnspecifiedError;

@@ -13,6 +13,7 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -139,7 +140,7 @@ BailmentNotice::BailmentNotice(
     , server_(api_.Factory().ServerID(serialized.pendingbailment().serverid()))
     , requestID_(Identifier::Factory(serialized.pendingbailment().requestid()))
     , txid_(serialized.pendingbailment().txid())
-    , amount_(serialized.pendingbailment().amount())
+    , amount_(factory::Amount(serialized.pendingbailment().amount()))
 {
     Lock lock(lock_);
     init_serialized(lock);

@@ -13,6 +13,7 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -137,7 +138,7 @@ Outbailment::Outbailment(
     : Request(api, nym, serialized, serialized.outbailment().instructions())
     , unit_(api_.Factory().UnitID(serialized.outbailment().unitid()))
     , server_(api_.Factory().ServerID(serialized.outbailment().serverid()))
-    , amount_(serialized.outbailment().amount())
+    , amount_(factory::Amount(serialized.outbailment().amount()))
 {
     Lock lock(lock_);
     init_serialized(lock);

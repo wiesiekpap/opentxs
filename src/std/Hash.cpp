@@ -11,6 +11,7 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "blockchain/database/wallet/Pattern.hpp"
 #include "internal/crypto/Parameters.hpp"
@@ -19,6 +20,7 @@
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Outpoint.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
+#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -134,6 +136,21 @@ auto hash<opentxs::proto::EnumLang>::operator()(
         opentxs::crypto::sodium::MakeSiphashKey(
             {reinterpret_cast<const char*>(&key), sizeof(key)}),
         text);
+}
+
+auto hash<opentxs::Amount>::operator()(
+    const opentxs::Amount& data) const noexcept -> std::size_t
+{
+    static const auto key = opentxs::crypto::sodium::SiphashKey{};
+    const auto buffer = [&] {
+        auto out = opentxs::Space{};
+        out.reserve(100);
+        data.Serialize(opentxs::writer(out));
+
+        return out;
+    }();
+
+    return opentxs::crypto::sodium::Siphash(key, opentxs::reader(buffer));
 }
 
 auto hash<opentxs::OTIdentifier>::operator()(

@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "internal/core/Factory.hpp"
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/LucreTokenData.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCash.hpp"
@@ -52,8 +53,8 @@ auto CheckProto_1(
         case TOKENSTATE_BLINDED:
         case TOKENSTATE_SIGNED:
         case TOKENSTATE_READY: {
-            const auto total =
-                Amount(totalValue) + Amount(input.denomination());
+            const auto total = opentxs::factory::Amount(totalValue) +
+                               opentxs::factory::Amount(input.denomination());
             if (false == total.Serialize(writer(totalValue))) {
                 FAIL_2("Invalid value", totalValue);
             }

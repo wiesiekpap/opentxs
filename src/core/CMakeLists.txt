@@ -12,6 +12,7 @@ add_subdirectory(ui)
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/core/Amount.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/core/Core.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/core/Factory.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/core/Null.hpp"

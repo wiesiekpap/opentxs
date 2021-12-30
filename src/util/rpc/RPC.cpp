@@ -22,6 +22,7 @@
 #include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/identity/credential/Credential.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
@@ -696,7 +697,7 @@ auto RPC::create_unit_definition(const proto::RPCCommand& command) const
             createunit.name(),
             createunit.terms(),
             ClaimToUnit(translate(createunit.unitofaccount())),
-            Amount{createunit.redemptionincrement()},
+            factory::Amount(createunit.redemptionincrement()),
             reason);
 
         output.add_identifier(unitdefinition->ID()->str());
@@ -1587,7 +1588,7 @@ auto RPC::move_funds(const proto::RPCCommand& command) const
                 notary,
                 sourceaccount,
                 targetaccount,
-                Amount{movefunds.amount()},
+                factory::Amount(movefunds.amount()),
                 movefunds.memo());
 
             if (false == ready) {

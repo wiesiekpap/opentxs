@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string_view>
 
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -18,17 +19,29 @@ namespace api
 class Session;
 }  // namespace api
 
+namespace network
+{
+namespace zeromq
+{
+class Frame;
+}  // namespace zeromq
+}  // namespace network
+
 namespace proto
 {
 class PaymentCode;
 }  // namespace proto
 
+class Amount;
 class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs
 
 namespace opentxs::factory
 {
+auto Amount(std::string_view str, bool normalize = false) noexcept(false)
+    -> opentxs::Amount;
+auto Amount(const network::zeromq::Frame&) noexcept(false) -> opentxs::Amount;
 auto PaymentCode(
     const api::Session& api,
     const UnallocatedCString& base58) noexcept -> opentxs::PaymentCode;

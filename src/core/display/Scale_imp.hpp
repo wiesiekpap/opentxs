@@ -10,22 +10,23 @@
 #include "opentxs/core/display/Scale.hpp"  // IWYU pragma: associated
 
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <algorithm>
 #include <cctype>
 #include <iomanip>
 #include <locale>
 #include <sstream>
 #include <utility>
 
-#include "core/Amount.hpp"
+#include "internal/core/Amount.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Log.hpp"
 
-namespace bmp = boost::multiprecision;
-
 namespace opentxs::display
 {
-struct Scale::Imp {
+class Scale::Imp
+{
+public:
     const UnallocatedCString prefix_;
     const UnallocatedCString suffix_;
     const OptionalInt default_min_;
@@ -44,9 +45,7 @@ struct Scale::Imp {
 
         const auto decimalSymbol = locale_.decimal_point();
         const auto seperator = locale_.thousands_sep();
-        auto raw_amount =
-            amount.Internal().extract_float<Scale::Imp::Backend>();
-        const auto scaled = outgoing_ * Scale::Imp::Backend{raw_amount};
+        const auto scaled = amount.Internal().ToFloat() * outgoing_;
         const auto [min, max] = effective_limits(minDecimals, maxDecimals);
         auto fractionalDigits = std::max<unsigned>(max, 1u);
         auto string = scaled.str(fractionalDigits, std::ios_base::fixed);
@@ -113,18 +112,19 @@ struct Scale::Imp {
         -> Amount
     {
         try {
-            const auto output = incoming_ * Imp::Backend{Imp::strip(formatted)};
+            const auto scaled =
+                incoming_ * amount::Float{Imp::strip(formatted)};
 
-            auto amount = Amount{};
-            amount.Internal().amount_ = Amount::Imp::shift_left(
-                output.convert_to<Amount::Imp::Backend>());
-
-            return amount;
+            return internal::FloatToAmount(scaled);
         } catch (const std::exception& e) {
             LogTrace()(OT_PRETTY_CLASS())(e.what()).Flush();
 
             throw std::current_exception();
         }
+    }
+    auto MaximumDecimals() const noexcept -> std::uint8_t
+    {
+        return static_cast<std::uint8_t>(absolute_max_);
     }
 
     Imp() noexcept
@@ -136,6 +136,7 @@ struct Scale::Imp {
         , incoming_{}
         , outgoing_{}
         , locale_{}
+        , absolute_max_{}
     {
     }
     Imp(const UnallocatedCString& prefix,
@@ -151,8 +152,11 @@ struct Scale::Imp {
         , incoming_(calculate_incoming_ratio(ratios))
         , outgoing_(calculate_outgoing_ratio(ratios))
         , locale_()
+        , absolute_max_(20 + bmp::log10(incoming_))
     {
         OT_ASSERT(default_max_.value_or(0) >= default_min_.value_or(0));
+        OT_ASSERT(0 <= absolute_max_);
+        OT_ASSERT(absolute_max_ <= std::numeric_limits<std::uint8_t>::max());
     }
     Imp(const Imp& rhs) noexcept
         : prefix_(rhs.prefix_)
@@ -163,39 +167,39 @@ struct Scale::Imp {
         , incoming_(rhs.incoming_)
         , outgoing_(rhs.outgoing_)
         , locale_()
+        , absolute_max_(rhs.absolute_max_)
     {
     }
 
 private:
-    using Backend = bmp::cpp_dec_float_100;
-
     struct Locale : std::numpunct<char> {
     };
 
-    const Backend incoming_;
-    const Backend outgoing_;
+    const amount::Float incoming_;
+    const amount::Float outgoing_;
     const Locale locale_;
+    const int absolute_max_;
 
     // ratio for converting display string to Amount
     static auto calculate_incoming_ratio(
-        const UnallocatedVector<Ratio>& ratios) noexcept -> Backend
+        const UnallocatedVector<Ratio>& ratios) noexcept -> amount::Float
     {
-        auto output = Backend{1};
+        auto output = amount::Float{1};
 
         for (const auto& [base, exponent] : ratios) {
-            output *= bmp::pow(Backend{base}, exponent);
+            output *= bmp::pow(amount::Float{base}, exponent);
         }
 
         return output;
     }
     // ratio for converting Amount to display string
     static auto calculate_outgoing_ratio(
-        const UnallocatedVector<Ratio>& ratios) noexcept -> Backend
+        const UnallocatedVector<Ratio>& ratios) noexcept -> amount::Float
     {
-        auto output = Backend{1};
+        auto output = amount::Float{1};
 
         for (const auto& [base, exponent] : ratios) {
-            output *= bmp::pow(Backend{base}, -1 * exponent);
+            output *= bmp::pow(amount::Float{base}, -1 * exponent);
         }
 
         return output;
@@ -218,6 +222,8 @@ private:
         } else {
             effMax = default_max_.value_or(0u);
         }
+
+        effMax = std::min(effMax, static_cast<uint8_t>(absolute_max_));
 
         return output;
     }

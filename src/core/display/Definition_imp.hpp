@@ -34,7 +34,7 @@ struct Definition::Imp {
 
             return scale.second.Import(in);
         } catch (...) {
-            throw std::out_of_range("Invalid scale index");
+            throw std::out_of_range("Invalid input or scale index");
         }
     }
 

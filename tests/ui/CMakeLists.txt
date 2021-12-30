@@ -12,6 +12,10 @@ else()
   target_sources(opentxs-test-helpers PRIVATE "Helpers-noqt.cpp")
 endif()
 
+if(OT_QT_EXPORT)
+  add_opentx_test(unittests-opentxs-ui-amountvalidator Test_AmountValidator.cpp)
+endif()
+
 add_opentx_test(
   unittests-opentxs-ui-blockchain-account-status
   Test_BlockchainAccountStatus.cpp

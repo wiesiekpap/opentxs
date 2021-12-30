@@ -11,12 +11,12 @@
 #include <chrono>
 #include <cstdlib>
 #include <memory>
-#include <string_view>
 #include <utility>
 
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/StringXML.hpp"
@@ -591,7 +591,8 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         nReturnVal = 1;
     } else if (strNodeName->Compare("mintPrivateInfo")) {
-        auto lDenomination = Amount(xml->getAttributeValue("denomination"));
+        auto lDenomination =
+            factory::Amount(xml->getAttributeValue("denomination"));
         auto pArmor = Armored::Factory();
 
         if (!LoadEncodedTextField(xml, pArmor) || !pArmor->Exists()) {
@@ -609,7 +610,8 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         return 1;
     } else if (strNodeName->Compare("mintPublicInfo")) {
-        auto lDenomination = Amount(xml->getAttributeValue("denomination"));
+        auto lDenomination =
+            factory::Amount(xml->getAttributeValue("denomination"));
 
         auto pArmor = Armored::Factory();
 

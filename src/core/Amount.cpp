@@ -3,9 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"             // IWYU pragma: associated
-#include "1_Internal.hpp"           // IWYU pragma: associated
-#include "opentxs/core/Amount.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"               // IWYU pragma: associated
+#include "1_Internal.hpp"             // IWYU pragma: associated
+#include "internal/core/Factory.hpp"  // IWYU pragma: associated
+#include "opentxs/core/Amount.hpp"    // IWYU pragma: associated
 
 #include <boost/endian/buffers.hpp>
 #include <memory>
@@ -15,12 +16,24 @@
 
 namespace be = boost::endian;
 
+namespace opentxs::factory
+{
+auto Amount(std::string_view str, bool normalize) noexcept(false)
+    -> opentxs::Amount
+{
+    return std::make_unique<opentxs::Amount::Imp>(str, normalize).release();
+}
+
+auto Amount(const network::zeromq::Frame& in) noexcept(false) -> opentxs::Amount
+{
+    return std::make_unique<opentxs::Amount::Imp>(in.Bytes()).release();
+}
+}  // namespace opentxs::factory
+
 namespace opentxs
 {
-auto signed_amount(
-    long long int ip,
-    unsigned long long int fp,
-    unsigned long long int div) -> Amount
+auto signed_amount(long long ip, unsigned long long fp, unsigned long long div)
+    -> Amount
 {
     using Imp = Amount::Imp;
 
@@ -28,401 +41,315 @@ auto signed_amount(
 }
 
 auto unsigned_amount(
-    unsigned long long int ip,
-    unsigned long long int fp,
-    unsigned long long int div) -> Amount
+    unsigned long long ip,
+    unsigned long long fp,
+    unsigned long long div) -> Amount
 {
     using Imp = Amount::Imp;
 
     return Amount(Imp::shift_left(ip) + (Imp::shift_left(fp) / div));
 }
 
-auto Amount::operator<(const Amount& rhs) const noexcept -> bool
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
+auto swap(Amount& lhs, Amount& rhs) noexcept -> void { lhs.swap(rhs); }
+}  // namespace opentxs
 
-    return *imp_ < *rhs.imp_;
+namespace opentxs
+{
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto operator==(T lhs, const Amount& rhs) noexcept -> bool
+{
+    return Amount{lhs}.operator==(rhs);
 }
 
-template <typename T>
-auto Amount::operator<(const T rhs) const noexcept -> bool
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto operator!=(T lhs, const Amount& rhs) noexcept -> bool
 {
-    OT_ASSERT(imp_);
-
-    return *imp_ < rhs;
-}
-// clang-format off
-template auto opentxs::Amount::operator< <int>(const int rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator< <long>(const long rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator< <long long>(
-    const long long rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator< <unsigned long long>(
-    const unsigned long long rhs) const noexcept -> bool;
-// clang-format on
-
-auto Amount::operator>(const Amount& rhs) const noexcept -> bool
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
-
-    return *imp_ > *rhs.imp_;
+    return Amount{lhs}.operator!=(rhs);
 }
 
-template <typename T>
-auto Amount::operator>(const T rhs) const noexcept -> bool
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto operator<(T lhs, const Amount& rhs) noexcept -> bool
 {
-    OT_ASSERT(imp_);
-
-    return *imp_ > rhs;
+    return Amount{lhs}.operator<(rhs);
 }
 
-template auto opentxs::Amount::operator><int>(const int rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator><long>(const long rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator>
-    <long long>(const long long rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator>
-    <unsigned long long>(const unsigned long long rhs) const noexcept -> bool;
-
-auto Amount::operator==(const Amount& rhs) const noexcept -> bool
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto operator<=(T lhs, const Amount& rhs) noexcept -> bool
 {
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
-
-    return *imp_ == *rhs.imp_;
+    return Amount{lhs}.operator<=(rhs);
 }
 
-template <typename T>
-auto Amount::operator==(const T rhs) const noexcept -> bool
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto operator>(T lhs, const Amount& rhs) noexcept -> bool
 {
-    OT_ASSERT(imp_);
-
-    return *imp_ == rhs;
+    return Amount{lhs}.operator>(rhs);
 }
 
-template auto opentxs::Amount::operator==<int>(const int rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator==<long>(const long rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator==
-    <long long>(const long long rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator==
-    <unsigned int>(const unsigned int rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator==
-    <unsigned long int>(const unsigned long int rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator==
-    <unsigned long long>(const unsigned long long rhs) const noexcept -> bool;
-
-auto Amount::operator!=(const Amount& rhs) const noexcept -> bool
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto operator>=(T lhs, const Amount& rhs) noexcept -> bool
 {
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
-
-    return *imp_ != *rhs.imp_;
+    return Amount{lhs}.operator>=(rhs);
 }
 
-template <typename T>
-auto Amount::operator!=(const T rhs) const noexcept -> bool
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto operator*(T lhs, const Amount& rhs) noexcept(false) -> Amount
 {
-    OT_ASSERT(imp_);
+    return rhs.operator*(lhs);
+}
+}  // namespace opentxs
 
-    return *imp_ != rhs;
+namespace opentxs::amount
+{
+auto FloatToInteger(const Float& rhs) noexcept(false) -> Integer
+{
+    return (rhs * GetScale()).convert_to<Integer>();
 }
 
-template auto opentxs::Amount::operator!=<int>(const int rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator!=<long>(const long rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator!=
-    <long long>(const long long rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator!=
-    <unsigned long long>(const unsigned long long rhs) const noexcept -> bool;
-
-auto Amount::operator<=(const Amount& rhs) const noexcept -> bool
+auto GetScale() noexcept -> Float
 {
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
+    static const auto output = Float{Integer{1u} << fractional_bits_};
 
-    return *imp_ <= *rhs.imp_;
+    return output;
 }
 
-template <typename T>
-auto Amount::operator<=(const T rhs) const noexcept -> bool
+auto IntegerToFloat(const Integer& rhs) noexcept -> Float
 {
-    OT_ASSERT(imp_);
-
-    return *imp_ <= rhs;
+    return rhs.convert_to<amount::Float>() / amount::GetScale();
 }
+}  // namespace opentxs::amount
 
-template auto opentxs::Amount::operator<=<int>(const int rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator<=
-    <long long>(const long long rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator<=
-    <unsigned int>(const unsigned int rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator<=
-    <unsigned long int>(const unsigned long int rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator<=
-    <unsigned long long>(const unsigned long long rhs) const noexcept -> bool;
-
-auto Amount::operator>=(const Amount& rhs) const noexcept -> bool
+namespace opentxs::internal
 {
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
-
-    return *imp_ >= *rhs.imp_;
-}
-
-template <typename T>
-auto Amount::operator>=(const T rhs) const noexcept -> bool
+auto FloatToAmount(const amount::Float& rhs) noexcept(false)
+    -> opentxs::Amount::Imp*
 {
-    OT_ASSERT(imp_);
-
-    return *imp_ >= rhs;
-}
-
-template auto opentxs::Amount::operator>=<long>(const long rhs) const noexcept
-    -> bool;
-template auto opentxs::Amount::operator>=
-    <long long>(const long long rhs) const noexcept -> bool;
-template auto opentxs::Amount::operator>=
-    <unsigned long long>(const unsigned long long rhs) const noexcept -> bool;
-
-auto Amount::operator+(const Amount& rhs) const noexcept(false) -> Amount
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
-
-    return *imp_ + *rhs.imp_;
-}
-
-auto Amount::operator-(const Amount& rhs) const noexcept(false) -> Amount
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
-
-    return *imp_ - *rhs.imp_;
-}
-
-auto Amount::operator*(const Amount& rhs) const noexcept(false) -> Amount
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
-
-    return *imp_ * *rhs.imp_;
-}
-
-template <typename T>
-auto Amount::operator*(const T rhs) const noexcept(false) -> Amount
-{
-    OT_ASSERT(imp_);
-
-    return *imp_ * rhs;
-}
-
-template auto Amount::operator*<int>(const int rhs) const noexcept(false)
-    -> Amount;
-template auto Amount::operator*<long>(const long rhs) const noexcept(false)
-    -> Amount;
-template auto Amount::operator*<long long>(const long long rhs) const
-    noexcept(false) -> Amount;
-template auto Amount::operator*
-    <unsigned long long>(const unsigned long long rhs) const noexcept(false)
-        -> Amount;
-
-auto Amount::operator/(const Amount& rhs) const noexcept(false) -> Amount
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
-
-    return *imp_ / *rhs.imp_;
-}
-
-template <typename T>
-auto Amount::operator/(const T rhs) const noexcept(false) -> Amount
-{
-    OT_ASSERT(imp_);
-
-    return *imp_ / rhs;
-}
-
-template auto Amount::operator/<int>(const int rhs) const noexcept(false)
-    -> Amount;
-template auto Amount::operator/<long long>(const long long rhs) const
-    noexcept(false) -> Amount;
-template auto Amount::operator/
-    <unsigned long long>(const unsigned long long rhs) const noexcept(false)
-        -> Amount;
-
-auto Amount::operator%(const Amount& rhs) const noexcept(false) -> Amount
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(rhs.imp_);
-
-    return *imp_ % *rhs.imp_;
-}
-
-template <typename T>
-auto Amount::operator%(const T rhs) const noexcept(false) -> Amount
-{
-    OT_ASSERT(imp_);
-
-    return *imp_ % rhs;
-}
-
-template auto Amount::operator%<int>(const int rhs) const noexcept(false)
-    -> Amount;
-template auto Amount::operator%<long long>(const long long rhs) const
-    noexcept(false) -> Amount;
-template auto Amount::operator%
-    <unsigned long long>(const unsigned long long rhs) const noexcept(false)
-        -> Amount;
-
-auto Amount::operator*=(const Amount& amount) noexcept(false) -> Amount&
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(amount.imp_);
-
-    *imp_ *= *amount.imp_;
-
-    return *this;
-}
-
-auto Amount::operator+=(const Amount& amount) noexcept(false) -> Amount&
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(amount.imp_);
-
-    *imp_ += *amount.imp_;
-
-    return *this;
-}
-
-auto Amount::operator-=(const Amount& amount) noexcept(false) -> Amount&
-{
-    OT_ASSERT(imp_);
-    OT_ASSERT(amount.imp_);
-
-    *imp_ -= *amount.imp_;
-
-    return *this;
-}
-
-auto Amount::operator-() -> Amount { return -*imp_; }
-
-auto Amount::Serialize(const AllocateOutput dest) const noexcept -> bool
-{
-    OT_ASSERT(imp_);
-
-    return imp_->Serialize(dest);
-}
-
-auto Amount::SerializeBitcoin(const AllocateOutput dest) const noexcept -> bool
-{
-    OT_ASSERT(imp_);
-
-    return imp_->SerializeBitcoin(dest);
+    return std::make_unique<opentxs::Amount::Imp>(amount::FloatToInteger(rhs))
+        .release();
 }
 
 auto Amount::SerializeBitcoinSize() noexcept -> std::size_t
 {
     return sizeof(be::little_int64_buf_t);
 }
+}  // namespace opentxs::internal
 
-auto Amount::Internal() const noexcept -> Imp&
+namespace opentxs
 {
-    OT_ASSERT(imp_);
-
-    return *const_cast<Amount&>(*this).imp_;
+Amount::Amount(Imp* rhs) noexcept
+    : imp_(rhs)
+{
+    OT_ASSERT(nullptr != imp_);
 }
 
-Amount::Amount(const Imp& amount)
-    : imp_(std::make_unique<Imp>(amount).release())
+Amount::Amount(const Imp& rhs) noexcept
+    : Amount(std::make_unique<Imp>(rhs).release())
 {
-    OT_ASSERT(imp_);
 }
-Amount::Amount(int amount)
-    : imp_(std::make_unique<Imp>(amount).release())
+
+Amount::Amount(int rhs)
+    : Amount(Imp::factory_signed(rhs))
 {
-    OT_ASSERT(imp_);
 }
-Amount::Amount(long int amount)
-    : imp_(std::make_unique<Imp>(amount).release())
+
+Amount::Amount(long rhs)
+    : Amount(Imp::factory_signed(rhs))
 {
-    OT_ASSERT(imp_);
 }
-Amount::Amount(long long int amount)
-    : imp_(std::make_unique<Imp>(amount).release())
+
+Amount::Amount(long long rhs)
+    : Amount(Imp::factory_signed(rhs))
 {
-    OT_ASSERT(imp_);
 }
-Amount::Amount(unsigned int amount)
-    : imp_(std::make_unique<Imp>(amount).release())
+
+Amount::Amount(unsigned rhs)
+    : Amount(Imp::factory_unsigned(rhs))
 {
-    OT_ASSERT(imp_);
 }
-Amount::Amount(unsigned long int amount)
-    : imp_(std::make_unique<Imp>(amount).release())
+
+Amount::Amount(unsigned long rhs)
+    : Amount(Imp::factory_unsigned(rhs))
 {
-    OT_ASSERT(imp_);
 }
-Amount::Amount(unsigned long long int amount)
-    : imp_(std::make_unique<Imp>(amount).release())
+
+Amount::Amount(unsigned long long rhs)
+    : Amount(Imp::factory_unsigned(rhs))
 {
-    OT_ASSERT(imp_);
 }
-Amount::Amount(std::string_view str, bool normalize) noexcept(false)
-    : imp_(std::make_unique<Imp>(str, normalize).release())
-{
-    OT_ASSERT(imp_);
-}
-Amount::Amount(const network::zeromq::Frame& frame)
-    : imp_(std::make_unique<Imp>(frame.Bytes()).release())
-{
-    OT_ASSERT(imp_);
-}
+
 Amount::Amount() noexcept
-    : imp_(std::make_unique<Imp>().release())
+    : Amount(std::make_unique<Imp>().release())
 {
-    OT_ASSERT(imp_);
 }
+
 Amount::Amount(const Amount& rhs) noexcept
-    : imp_(std::make_unique<Imp>(*rhs.imp_).release())
+    : Amount(std::make_unique<Imp>(*rhs.imp_).release())
 {
-    OT_ASSERT(imp_);
 }
+
 Amount::Amount(Amount&& rhs) noexcept
-    : imp_(rhs.imp_)
+    : Amount()
 {
-    rhs.imp_ = nullptr;
-
-    OT_ASSERT(imp_);
+    operator=(std::move(rhs));
 }
 
-auto Amount::operator=(const Amount& amount) -> Amount&
+auto Amount::operator=(const Amount& rhs) noexcept -> Amount&
 {
-    OT_ASSERT(imp_);
-    OT_ASSERT(amount.imp_);
+    auto old = std::unique_ptr<Imp>{imp_};
+    imp_ = std::make_unique<Imp>(*rhs.imp_).release();
 
-    *imp_ = *amount.imp_;
     return *this;
 }
 
-auto Amount::operator=(Amount&& amount) -> Amount&
+auto Amount::operator=(Amount&& rhs) noexcept -> Amount&
 {
-    if (nullptr != imp_) { delete imp_; }
-    if (nullptr != amount.imp_) {
-        imp_ = amount.imp_;
-        amount.imp_ = nullptr;
-    } else {
-        imp_ = std::make_unique<Imp>().release();
-    }
+    swap(rhs);
+
     return *this;
 }
+
+auto Amount::operator<(const Amount& rhs) const noexcept -> bool
+{
+    return *imp_ < *rhs.imp_;
+}
+
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto Amount::operator<(const T rhs) const noexcept -> bool
+{
+    return *imp_ < rhs;
+}
+
+auto Amount::operator>(const Amount& rhs) const noexcept -> bool
+{
+    return *imp_ > *rhs.imp_;
+}
+
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto Amount::operator>(const T rhs) const noexcept -> bool
+{
+    return *imp_ > rhs;
+}
+
+auto Amount::operator==(const Amount& rhs) const noexcept -> bool
+{
+    return *imp_ == *rhs.imp_;
+}
+
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto Amount::operator==(const T rhs) const noexcept -> bool
+{
+    return *imp_ == rhs;
+}
+
+auto Amount::operator!=(const Amount& rhs) const noexcept -> bool
+{
+    return *imp_ != *rhs.imp_;
+}
+
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto Amount::operator!=(const T rhs) const noexcept -> bool
+{
+    return *imp_ != rhs;
+}
+
+auto Amount::operator<=(const Amount& rhs) const noexcept -> bool
+{
+    return *imp_ <= *rhs.imp_;
+}
+
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto Amount::operator<=(const T rhs) const noexcept -> bool
+{
+    return *imp_ <= rhs;
+}
+
+auto Amount::operator>=(const Amount& rhs) const noexcept -> bool
+{
+    return *imp_ >= *rhs.imp_;
+}
+
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto Amount::operator>=(const T rhs) const noexcept -> bool
+{
+    return *imp_ >= rhs;
+}
+
+auto Amount::operator+(const Amount& rhs) const noexcept(false) -> Amount
+{
+    return *imp_ + *rhs.imp_;
+}
+
+auto Amount::operator-(const Amount& rhs) const noexcept(false) -> Amount
+{
+    return *imp_ - *rhs.imp_;
+}
+
+auto Amount::operator*(const Amount& rhs) const noexcept(false) -> Amount
+{
+    return *imp_ * *rhs.imp_;
+}
+
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto Amount::operator*(const T rhs) const noexcept(false) -> Amount
+{
+    return *imp_ * rhs;
+}
+
+auto Amount::operator/(const Amount& rhs) const noexcept(false) -> Amount
+{
+    return *imp_ / *rhs.imp_;
+}
+
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto Amount::operator/(const T rhs) const noexcept(false) -> Amount
+{
+    return *imp_ / rhs;
+}
+
+auto Amount::operator%(const Amount& rhs) const noexcept(false) -> Amount
+{
+    return *imp_ % *rhs.imp_;
+}
+
+template <typename T, std::enable_if_t<std::is_integral<T>::value, int>>
+auto Amount::operator%(const T rhs) const noexcept(false) -> Amount
+{
+    return *imp_ % rhs;
+}
+
+auto Amount::operator*=(const Amount& rhs) noexcept(false) -> Amount&
+{
+    *imp_ *= *rhs.imp_;
+
+    return *this;
+}
+
+auto Amount::operator+=(const Amount& rhs) noexcept(false) -> Amount&
+{
+    *imp_ += *rhs.imp_;
+
+    return *this;
+}
+
+auto Amount::operator-=(const Amount& rhs) noexcept(false) -> Amount&
+{
+    *imp_ -= *rhs.imp_;
+
+    return *this;
+}
+
+auto Amount::operator-() -> Amount { return -*imp_; }
+
+auto Amount::Internal() const noexcept -> const internal::Amount&
+{
+    return *imp_;
+}
+
+auto Amount::Serialize(const AllocateOutput dest) const noexcept -> bool
+{
+    return imp_->Serialize(dest);
+}
+
+auto Amount::swap(Amount& rhs) noexcept -> void { std::swap(imp_, rhs.imp_); }
 
 Amount::~Amount()
 {
@@ -431,167 +358,217 @@ Amount::~Amount()
         imp_ = nullptr;
     }
 }
+}  // namespace opentxs
 
-auto operator<(const int lhs, const Amount& rhs) noexcept -> bool
+namespace opentxs
 {
-    OT_ASSERT(rhs.imp_);
+// clang-format off
+template auto operator==
+    <int>(int, const Amount&) -> bool;
+template auto operator==
+    <long>(long, const Amount&) -> bool;
+template auto operator==
+    <long long>(long long, const Amount&) -> bool;
+template auto operator==
+    <unsigned>(unsigned, const Amount&) -> bool;
+template auto operator==
+    <unsigned long>(unsigned long, const Amount&) -> bool;
+template auto operator==
+    <unsigned long long>(unsigned long long, const Amount&) -> bool;
 
-    return Amount::Imp::shift_left(lhs) < rhs.imp_->amount_;
-}
-auto operator<(const long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
+template auto operator!=
+    <int>(int, const Amount&) -> bool;
+template auto operator!=
+    <long>(long, const Amount&) -> bool;
+template auto operator!=
+    <long long>(long long, const Amount&) -> bool;
+template auto operator!=
+    <unsigned>(unsigned, const Amount&) -> bool;
+template auto operator!=
+    <unsigned long>(unsigned long, const Amount&) -> bool;
+template auto operator!=
+    <unsigned long long>(unsigned long long, const Amount&) -> bool;
 
-    return Amount::Imp::shift_left(lhs) < rhs.imp_->amount_;
-}
-auto operator<(const long long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
+template auto operator<
+    <int>(int, const Amount&) -> bool;
+template auto operator<
+    <long>(long, const Amount&) -> bool;
+template auto operator<
+    <long long>(long long, const Amount&) -> bool;
+template auto operator<
+    <unsigned>(unsigned, const Amount&) -> bool;
+template auto operator<
+    <unsigned long>(unsigned long, const Amount&) -> bool;
+template auto operator<
+    <unsigned long long>(unsigned long long, const Amount&) -> bool;
 
-    return Amount::Imp::shift_left(lhs) < rhs.imp_->amount_;
-}
-auto operator<(const unsigned long long int lhs, const Amount& rhs) noexcept
-    -> bool
-{
-    OT_ASSERT(rhs.imp_);
+template auto operator<=
+    <int>(int, const Amount&) -> bool;
+template auto operator<=
+    <long>(long, const Amount&) -> bool;
+template auto operator<=
+    <long long>(long long, const Amount&) -> bool;
+template auto operator<=
+    <unsigned>(unsigned, const Amount&) -> bool;
+template auto operator<=
+    <unsigned long>(unsigned long, const Amount&) -> bool;
+template auto operator<=
+    <unsigned long long>(unsigned long long, const Amount&) -> bool;
 
-    return Amount::Imp::shift_left(lhs) < rhs.imp_->amount_;
-}
+template auto operator>
+    <int>(int, const Amount&) -> bool;
+template auto operator>
+    <long>(long, const Amount&) -> bool;
+template auto operator>
+    <long long>(long long, const Amount&) -> bool;
+template auto operator>
+    <unsigned>(unsigned, const Amount&) -> bool;
+template auto operator>
+    <unsigned long>(unsigned long, const Amount&) -> bool;
+template auto operator>
+    <unsigned long long>(unsigned long long, const Amount&) -> bool;
 
-auto operator>(const int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
+template auto operator>=
+    <int>(int, const Amount&) -> bool;
+template auto operator>=
+    <long>(long, const Amount&) -> bool;
+template auto operator>=
+    <long long>(long long, const Amount&) -> bool;
+template auto operator>=
+    <unsigned>(unsigned, const Amount&) -> bool;
+template auto operator>=
+    <unsigned long>(unsigned long, const Amount&) -> bool;
+template auto operator>=
+    <unsigned long long>(unsigned long long, const Amount&) -> bool;
 
-    return Amount::Imp::shift_left(lhs) > rhs.imp_->amount_;
-}
-auto operator>(const long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) > rhs.imp_->amount_;
-}
-auto operator>(const long long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) > rhs.imp_->amount_;
-}
-auto operator>(const unsigned long long int lhs, const Amount& rhs) noexcept
-    -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) > rhs.imp_->amount_;
-}
-
-auto operator==(const int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) == rhs.imp_->amount_;
-}
-auto operator==(const long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) == rhs.imp_->amount_;
-}
-auto operator==(const long long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) == rhs.imp_->amount_;
-}
-auto operator==(const unsigned long long int lhs, const Amount& rhs) noexcept
-    -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) == rhs.imp_->amount_;
-}
-
-auto operator!=(const int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) != rhs.imp_->amount_;
-}
-auto operator!=(const long long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) != rhs.imp_->amount_;
-}
-auto operator!=(const unsigned long long int lhs, const Amount& rhs) noexcept
-    -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) != rhs.imp_->amount_;
-}
-
-auto operator<=(const long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) <= rhs.imp_->amount_;
-}
-auto operator<=(const long long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) <= rhs.imp_->amount_;
-}
-auto operator<=(const unsigned long long int lhs, const Amount& rhs) noexcept
-    -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) <= rhs.imp_->amount_;
-}
-
-auto operator>=(const int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) >= rhs.imp_->amount_;
-}
-auto operator>=(const long long int lhs, const Amount& rhs) noexcept -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) >= rhs.imp_->amount_;
-}
-auto operator>=(const unsigned long long int lhs, const Amount& rhs) noexcept
-    -> bool
-{
-    OT_ASSERT(rhs.imp_);
-
-    return Amount::Imp::shift_left(lhs) >= rhs.imp_->amount_;
-}
-
-template <typename T>
-auto operator*(const T lhs, const Amount& rhs) noexcept(false) -> Amount
-{
-    OT_ASSERT(rhs.imp_);
-
-    const auto total = lhs * rhs.imp_->amount_;
-    return Amount(Amount::Imp(total));
-}
-
-template auto operator*<int>(const int lhs, const Amount& rhs) noexcept(false)
-    -> Amount;
 template auto operator*
-    <long long>(const long long lhs, const Amount& rhs) noexcept(false)
-        -> Amount;
+    <int>(int, const Amount&) -> Amount;
 template auto operator*
-    <unsigned int>(const unsigned int lhs, const Amount& rhs) noexcept(false)
-        -> Amount;
+    <long>(long, const Amount&) -> Amount;
 template auto operator*
-    <unsigned long>(const unsigned long lhs, const Amount& rhs) noexcept(false)
-        -> Amount;
-template auto operator*<unsigned long long>(
-    const unsigned long long lhs,
-    const Amount& rhs) noexcept(false) -> Amount;
+    <long long>(long long, const Amount&) -> Amount;
+template auto operator*
+    <unsigned>(unsigned, const Amount&) -> Amount;
+template auto operator*
+    <unsigned long>(unsigned long, const Amount&) -> Amount;
+template auto operator*
+    <unsigned long long>(unsigned long long, const Amount&) -> Amount;
 
+template auto opentxs::Amount::operator<
+    <int>(int) const noexcept -> bool;
+template auto opentxs::Amount::operator<
+    <long>(long) const noexcept -> bool;
+template auto opentxs::Amount::operator<
+    <long long>(long long) const noexcept -> bool;
+template auto opentxs::Amount::operator<
+    <unsigned>( unsigned) const noexcept -> bool;
+template auto opentxs::Amount::operator<
+    <unsigned long>( unsigned long) const noexcept -> bool;
+template auto opentxs::Amount::operator<
+    <unsigned long long>( unsigned long long) const noexcept -> bool;
+
+template auto opentxs::Amount::operator>
+    <int>(int) const noexcept -> bool;
+template auto opentxs::Amount::operator>
+    <long>(long) const noexcept -> bool;
+template auto opentxs::Amount::operator>
+    <long long>(long long) const noexcept -> bool;
+template auto opentxs::Amount::operator>
+    <unsigned>(unsigned) const noexcept -> bool;
+template auto opentxs::Amount::operator>
+    <unsigned long>(unsigned long) const noexcept -> bool;
+template auto opentxs::Amount::operator>
+    <unsigned long long>(unsigned long long) const noexcept -> bool;
+
+template auto opentxs::Amount::operator==
+    <int>(int) const noexcept -> bool;
+template auto opentxs::Amount::operator==
+    <long>(long) const noexcept -> bool;
+template auto opentxs::Amount::operator==
+    <long long>(long long) const noexcept -> bool;
+template auto opentxs::Amount::operator==
+    <unsigned>(unsigned) const noexcept -> bool;
+template auto opentxs::Amount::operator==
+    <unsigned long>(unsigned long) const noexcept -> bool;
+template auto opentxs::Amount::operator==
+    <unsigned long long>(unsigned long long) const noexcept -> bool;
+
+template auto opentxs::Amount::operator!=
+    <int>(int) const noexcept -> bool;
+template auto opentxs::Amount::operator!=
+    <long>(long) const noexcept -> bool;
+template auto opentxs::Amount::operator!=
+    <long long>(long long) const noexcept -> bool;
+template auto opentxs::Amount::operator!=
+    <unsigned>(unsigned) const noexcept -> bool;
+template auto opentxs::Amount::operator!=
+    <unsigned long>(unsigned long) const noexcept -> bool;
+template auto opentxs::Amount::operator!=
+    <unsigned long long>(unsigned long long) const noexcept -> bool;
+
+template auto opentxs::Amount::operator<=
+    <int>(int) const noexcept -> bool;
+template auto opentxs::Amount::operator<=
+    <long> (long) const noexcept -> bool;
+template auto opentxs::Amount::operator<=
+    <long long>(long long) const noexcept -> bool;
+template auto opentxs::Amount::operator<=
+    <unsigned>(unsigned) const noexcept -> bool;
+template auto opentxs::Amount::operator<=
+    <unsigned long>(unsigned long) const noexcept -> bool;
+template auto opentxs::Amount::operator<=
+    <unsigned long long>(unsigned long long) const noexcept -> bool;
+
+template auto opentxs::Amount::operator>=
+    <int>(int) const noexcept -> bool;
+template auto opentxs::Amount::operator>=
+    <long>(long) const noexcept -> bool;
+template auto opentxs::Amount::operator>=
+    <long long>(long long) const noexcept -> bool;
+template auto opentxs::Amount::operator>=
+    <unsigned>(unsigned) const noexcept -> bool;
+template auto opentxs::Amount::operator>=
+    <unsigned long>(unsigned long) const noexcept -> bool;
+template auto opentxs::Amount::operator>=
+    <unsigned long long>(unsigned long long) const noexcept -> bool;
+
+template auto Amount::operator*
+    <int>(int) const -> Amount;
+template auto Amount::operator*
+    <long>(long) const -> Amount;
+template auto Amount::operator*
+    <long long>(long long) const -> Amount;
+template auto Amount::operator*
+    <unsigned>(unsigned) const -> Amount;
+template auto Amount::operator*
+    <unsigned long>(unsigned long) const -> Amount;
+template auto Amount::operator*
+    <unsigned long long>(unsigned long long) const -> Amount;
+
+template auto Amount::operator/
+    <int>(int) const -> Amount;
+template auto Amount::operator/
+    <long>(long) const -> Amount;
+template auto Amount::operator/
+    <long long>(long long) const -> Amount;
+template auto Amount::operator/
+    <unsigned>(unsigned) const -> Amount;
+template auto Amount::operator/
+    <unsigned long>(unsigned long) const -> Amount;
+template auto Amount::operator/
+    <unsigned long long>(unsigned long long) const -> Amount;
+
+template auto Amount::operator%
+    <int>(int) const -> Amount;
+template auto Amount::operator%
+    <long>(long) const -> Amount;
+template auto Amount::operator%
+    <long long>(long long) const -> Amount;
+template auto Amount::operator%
+    <unsigned>(unsigned) const -> Amount;
+template auto Amount::operator%
+    <unsigned long>(unsigned long) const -> Amount;
+template auto Amount::operator%
+    <unsigned long long>(unsigned long long) const -> Amount;
+// clang-format on
 }  // namespace opentxs

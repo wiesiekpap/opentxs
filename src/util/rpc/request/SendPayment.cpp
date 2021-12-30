@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "internal/core/Factory.hpp"
 #include "internal/rpc/RPC.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/rpc/CommandType.hpp"
@@ -82,7 +83,7 @@ struct SendPayment final : public Base::Imp {
         , source_(in.sendpayment().sourceaccount())
         , destination_(in.sendpayment().destinationaccount())
         , memo_(in.sendpayment().memo())
-        , amount_(in.sendpayment().amount())
+        , amount_(opentxs::factory::Amount(in.sendpayment().amount()))
     {
         check_session();
     }

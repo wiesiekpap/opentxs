@@ -19,6 +19,7 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/otx/common/Account.hpp"
@@ -133,7 +134,7 @@ Unit::Unit(
               : Signatures{})
     , unit_of_account_(get_unitofaccount(serialized))
     , display_definition_(get_displayscales(serialized))
-    , redemption_increment_(serialized.redemption_increment())
+    , redemption_increment_(factory::Amount(serialized.redemption_increment()))
     , short_name_(serialized.name())
 {
 }

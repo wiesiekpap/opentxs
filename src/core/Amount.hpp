@@ -13,6 +13,7 @@
 #include <limits>
 #include <string_view>
 
+#include "internal/core/Amount.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -20,112 +21,72 @@
 #include "opentxs/util/Log.hpp"
 
 namespace be = boost::endian;
-namespace bmp = boost::multiprecision;
 
 namespace opentxs
 {
-struct Amount::Imp {
-    using Backend = bmp::number<bmp::cpp_int_backend<
-        128,
-        320,
-        bmp::signed_magnitude,
-        bmp::checked,
-        void>>;
-
-    Imp() noexcept
-        : amount_{}
+class Amount::Imp final : virtual public internal::Amount
+{
+public:
+    static auto factory_signed(long long rhs) noexcept -> Imp*
     {
+        return std::make_unique<Imp>(rhs).release();
     }
-    Imp(const Backend& left_shifted_amount) noexcept
-        : amount_{left_shifted_amount}
+    static auto factory_unsigned(unsigned long long rhs) noexcept -> Imp*
     {
-    }
-    Imp(int amount) noexcept
-        : amount_{shift_left(amount)}
-    {
-    }
-    Imp(long int amount) noexcept
-        : amount_{shift_left(amount)}
-    {
-    }
-    Imp(long long int amount) noexcept
-        : amount_{shift_left(amount)}
-    {
-    }
-    Imp(unsigned int amount) noexcept
-        : amount_{shift_left(amount)}
-    {
-    }
-    Imp(unsigned long int amount) noexcept
-        : amount_{shift_left(amount)}
-    {
-    }
-    Imp(unsigned long long int amount) noexcept
-        : amount_{shift_left(amount)}
-    {
-    }
-    Imp(std::string_view str, bool normalize = false) noexcept(false)
-        : amount_{Backend{str}}
-    {
-        if (true == normalize) {
-            if (amount_ < 0) {
-                amount_ = -(-amount_ << 64);
-            } else {
-                amount_ <<= 64;
-            }
-        }
+        return std::make_unique<Imp>(rhs).release();
     }
 
-    auto operator=(const Imp& imp) -> Imp&
+    auto ExtractInt64() const noexcept(false) -> std::int64_t final
     {
-        amount_ = imp.amount_;
-        return *this;
+        return extract_int<std::int64_t>();
     }
-
-    auto operator<(const Imp& rhs) { return amount_ < rhs.amount_; }
+    auto ExtractUInt64() const noexcept(false) -> std::uint64_t final
+    {
+        return extract_int<std::uint64_t>();
+    }
+    auto operator<(const Imp& rhs) const { return amount_ < rhs.amount_; }
 
     template <typename T>
-    auto operator<(const T rhs)
+    auto operator<(const T rhs) const
     {
         return amount_ < shift_left(rhs);
     }
-
-    auto operator>(const Imp& rhs) { return amount_ > rhs.amount_; }
+    auto operator>(const Imp& rhs) const { return amount_ > rhs.amount_; }
 
     template <typename T>
-    auto operator>(const T rhs)
+    auto operator>(const T rhs) const
     {
         return amount_ > shift_left(rhs);
     }
 
-    auto operator==(const Imp& rhs) { return amount_ == rhs.amount_; }
+    auto operator==(const Imp& rhs) const { return amount_ == rhs.amount_; }
 
     template <typename T>
-    auto operator==(const T rhs)
+    auto operator==(const T rhs) const
     {
         return amount_ == shift_left(rhs);
     }
 
-    auto operator!=(const Imp& rhs) { return amount_ != rhs.amount_; }
+    auto operator!=(const Imp& rhs) const { return amount_ != rhs.amount_; }
 
     template <typename T>
-    auto operator!=(const T rhs)
+    auto operator!=(const T rhs) const
     {
         return amount_ != shift_left(rhs);
     }
 
-    auto operator<=(const Imp& rhs) { return amount_ <= rhs.amount_; }
+    auto operator<=(const Imp& rhs) const { return amount_ <= rhs.amount_; }
 
     template <typename T>
-    auto operator<=(const T rhs)
+    auto operator<=(const T rhs) const
     {
         return amount_ <= shift_left(rhs);
     }
 
-    auto operator>=(const Imp& rhs) { return amount_ >= rhs.amount_; }
+    auto operator>=(const Imp& rhs) const { return amount_ >= rhs.amount_; }
 
     template <typename T>
-    auto operator>=(const T rhs)
+    auto operator>=(const T rhs) const
     {
         return amount_ >= shift_left(rhs);
     }
@@ -213,7 +174,8 @@ struct Amount::Imp {
         return copy(amount, dest);
     }
 
-    auto SerializeBitcoin(const AllocateOutput dest) const noexcept -> bool
+    auto SerializeBitcoin(const AllocateOutput dest) const noexcept
+        -> bool final
     {
         const auto backend = shift_right();
         if (backend < 0 || backend > std::numeric_limits<std::int64_t>::max())
@@ -236,6 +198,11 @@ struct Amount::Imp {
         copy(view, dest);
 
         return true;
+    }
+
+    auto ToFloat() const noexcept -> amount::Float final
+    {
+        return amount::IntegerToFloat(amount_);
     }
 
     template <typename T>
@@ -265,32 +232,72 @@ struct Amount::Imp {
     }
 
     template <typename T>
-    static auto shift_left(const T& amount) -> Backend
+    static auto shift_left(const T& amount) -> amount::Integer
     {
         if (amount < 0) {
-            auto tmp = -Backend{amount};
-            tmp <<= 64;
+            auto tmp = -amount::Integer{amount};
+            tmp <<= amount::fractional_bits_;
             return -tmp;
         } else {
-            return Backend{amount} << 64;
+            return amount::Integer{amount} << amount::fractional_bits_;
         }
     }
 
-    auto shift_right() const -> Backend
+    auto shift_right() const -> amount::Integer
     {
         if (amount_ < 0) {
             auto tmp = -amount_;
-            tmp >>= 64;
+            tmp >>= amount::fractional_bits_;
             return -tmp;
         } else {
-            return amount_ >> 64;
+            return amount_ >> amount::fractional_bits_;
         }
     }
 
-    Imp(const Imp& rhs) noexcept = default;
+    Imp() noexcept
+        : amount_{}
+    {
+    }
+    Imp(const amount::Integer& rhs) noexcept
+        : amount_{rhs}
+    {
+    }
+    Imp(amount::Integer&& rhs) noexcept
+        : amount_{std::move(rhs)}
+    {
+    }
+    Imp(long long amount) noexcept
+        : amount_{shift_left(amount)}
+    {
+    }
+
+    Imp(unsigned long long amount) noexcept
+        : amount_{shift_left(amount)}
+    {
+    }
+    Imp(std::string_view str, bool normalize = false) noexcept(false)
+        : amount_{amount::Integer{str}}
+    {
+        if (normalize) {
+            if (amount_ < 0) {
+                amount_ = -(-amount_ << amount::fractional_bits_);
+            } else {
+                amount_ <<= amount::fractional_bits_;
+            }
+        }
+    }
+    Imp(const Imp&) noexcept = default;
     Imp(Imp&& rhs) noexcept = delete;
+    auto operator=(const Imp& imp) -> Imp&
+    {
+        amount_ = imp.amount_;
+        return *this;
+    }
     auto operator=(Imp&& rhs) -> Imp& = delete;
 
-    Backend amount_;
+    ~Imp() final = default;
+
+private:
+    amount::Integer amount_;
 };
 }  // namespace opentxs

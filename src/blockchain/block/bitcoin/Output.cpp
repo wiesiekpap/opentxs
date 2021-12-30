@@ -23,6 +23,8 @@
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/core/Amount.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -106,7 +108,7 @@ auto BitcoinTransactionOutput(
     using Position = opentxs::blockchain::block::bitcoin::Script::Position;
 
     try {
-        auto value = Amount{in.value()};
+        auto value = factory::Amount(in.value());
         auto cs = blockchain::bitcoin::CompactSize(in.script().size());
         auto keys = boost::container::flat_set<blockchain::crypto::Key>{};
         auto pkh = boost::container::flat_set<blockchain::PatternID>{};
@@ -356,7 +358,8 @@ auto Output::CalculateSize() const noexcept -> std::size_t
         const auto scriptCS =
             blockchain::bitcoin::CompactSize(script_->CalculateSize());
 
-        return Amount::SerializeBitcoinSize() + scriptCS.Total();
+        return opentxs::internal::Amount::SerializeBitcoinSize() +
+               scriptCS.Total();
     });
 }
 
@@ -508,8 +511,8 @@ auto Output::Serialize(const AllocateOutput destination) const noexcept
         blockchain::bitcoin::CompactSize(script_->CalculateSize());
     const auto csData = scriptCS.Encode();
     auto it = static_cast<std::byte*>(output.data());
-    value_.SerializeBitcoin(destination);
-    std::advance(it, Amount::SerializeBitcoinSize());
+    value_.Internal().SerializeBitcoin(destination);
+    std::advance(it, opentxs::internal::Amount::SerializeBitcoinSize());
     std::memcpy(static_cast<void*>(it), csData.data(), csData.size());
     std::advance(it, csData.size());
 

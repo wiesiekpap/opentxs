@@ -13,6 +13,7 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Ledger.hpp"
 #include "internal/otx/common/NumList.hpp"
@@ -225,12 +226,12 @@ auto LoadAbbreviatedRecord(
     const auto strAbbrevAdjustment =
         String::Factory(xml->getAttributeValue("adjustment"));
     if (strAbbrevAdjustment->Exists())
-        lAdjustment = Amount{strAbbrevAdjustment->Get()};
+        lAdjustment = factory::Amount(strAbbrevAdjustment->Get());
     // -------------------------------------
     const auto strAbbrevDisplayValue =
         String::Factory(xml->getAttributeValue("displayValue"));
     if (strAbbrevDisplayValue->Exists())
-        lDisplayValue = Amount{strAbbrevDisplayValue->Get()};
+        lDisplayValue = factory::Amount(strAbbrevDisplayValue->Get());
 
     if (transactionType::replyNotice == theType) {
         const auto strRequestNum =

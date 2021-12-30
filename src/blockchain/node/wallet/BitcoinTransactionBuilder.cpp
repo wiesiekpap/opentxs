@@ -23,13 +23,14 @@
 #include <tuple>
 
 #include "Proto.hpp"
-#include "core/Amount.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/node/Node.hpp"
+#include "internal/core/Amount.hpp"
+#include "internal/core/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
@@ -325,7 +326,7 @@ struct BitcoinTransactionBuilder::Imp {
                 api_,
                 chain_,
                 static_cast<std::uint32_t>(++index),
-                Amount{output.amount()},
+                factory::Amount(output.amount()),
                 std::move(pScript),
                 {});
 
@@ -840,7 +841,7 @@ private:
         const auto amount = 148 * fee_rate_ / 1000;
         auto dust = std::size_t{};
         try {
-            dust = amount.Internal().extract_int<std::size_t>();
+            dust = amount.Internal().ExtractUInt64();
         } catch (const std::exception& e) {
             LogError()(OT_PRETTY_CLASS())("error calculating dust: ")(e.what())
                 .Flush();
