@@ -230,6 +230,21 @@ auto Raw::SetPrivateKey(ReadView key) noexcept -> bool
     return true;
 }
 
+auto Raw::SetRoutingID(ReadView id) noexcept -> bool
+{
+    const auto set =
+        zmq_setsockopt(Native(), ZMQ_ROUTING_ID, id.data(), id.size());
+
+    if (0 != set) {
+        std::cerr << (OT_PRETTY_CLASS()) << zmq_strerror(zmq_errno())
+                  << std::endl;
+
+        return false;
+    }
+
+    return true;
+}
+
 auto Raw::SetZAPDomain(ReadView domain) noexcept -> bool
 {
     const auto set =
@@ -346,6 +361,11 @@ auto Raw::Send(Message&& msg) noexcept -> bool
 auto Raw::SetPrivateKey(ReadView key) noexcept -> bool
 {
     return imp_->SetPrivateKey(key);
+}
+
+auto Raw::SetRoutingID(ReadView id) noexcept -> bool
+{
+    return imp_->SetRoutingID(id);
 }
 
 auto Raw::SetZAPDomain(ReadView domain) noexcept -> bool

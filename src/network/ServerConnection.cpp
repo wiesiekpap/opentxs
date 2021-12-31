@@ -19,6 +19,7 @@
 #include <utility>
 
 #include "Proto.tpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/protobuf/Check.hpp"
 #include "internal/protobuf/verify/ServerReply.hpp"
@@ -105,7 +106,7 @@ ServerConnection::ServerConnection(
 {
     thread_ = std::thread(&ServerConnection::activity_timer, this);
     const auto started = notification_socket_->Start(
-        api_.Endpoints().InternalProcessPushNotification());
+        api_.Endpoints().Internal().ProcessPushNotification());
 
     OT_ASSERT(started);
 }

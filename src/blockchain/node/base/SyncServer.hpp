@@ -19,6 +19,7 @@
 #include "Proto.tpp"
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/node/FilterOracle.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -105,7 +106,7 @@ public:
     {
         init_executor(
             {shutdown,
-             api_.Endpoints().InternalBlockchainFilterUpdated(chain_)});
+             api_.Endpoints().Internal().BlockchainFilterUpdated(chain_)});
         ::zmq_setsockopt(socket_.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
         ::zmq_connect(socket_.get(), endpoint_.c_str());
     }

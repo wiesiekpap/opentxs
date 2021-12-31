@@ -55,6 +55,7 @@ public:
     virtual auto Native() noexcept -> void* { return nullptr; }
     virtual auto Send(Message&& msg) noexcept -> bool { return {}; }
     virtual auto SetPrivateKey(ReadView) noexcept -> bool { return {}; }
+    virtual auto SetRoutingID(ReadView) noexcept -> bool { return {}; }
     virtual auto SetZAPDomain(ReadView) noexcept -> bool { return {}; }
     virtual auto Stop() noexcept -> void {}
     virtual auto Unbind(const char* endpoint) noexcept -> bool { return {}; }
@@ -88,6 +89,7 @@ public:
     auto Native() noexcept -> void* final { return socket_.get(); }
     auto Send(Message&& msg) noexcept -> bool final;
     auto SetPrivateKey(ReadView key) noexcept -> bool final;
+    auto SetRoutingID(ReadView key) noexcept -> bool final;
     auto SetZAPDomain(ReadView domain) noexcept -> bool final;
     auto Stop() noexcept -> void final;
     auto Unbind(const char* endpoint) noexcept -> bool final;

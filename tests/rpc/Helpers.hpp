@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "integration/Helpers.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
@@ -65,8 +66,8 @@ namespace ottest
 {
 struct AccountActivityData;
 struct AccountListData;
-struct User;
 struct Counter;
+struct User;
 }  // namespace ottest
 
 namespace ot = opentxs;

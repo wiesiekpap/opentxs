@@ -18,6 +18,7 @@
 
 #include "Proto.tpp"
 #include "core/OTStorage.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Notary.hpp"
 #include "internal/api/session/Wallet.hpp"
@@ -103,7 +104,7 @@ Server::Server(
           zmq::socket::Socket::Direction::Connect))
 {
     const auto bound = notification_socket_->Start(
-        manager_.Endpoints().InternalPushNotification());
+        manager_.Endpoints().Internal().PushNotification());
 
     OT_ASSERT(bound);
 }

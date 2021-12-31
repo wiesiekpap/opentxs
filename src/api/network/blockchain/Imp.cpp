@@ -14,7 +14,6 @@
 #include <utility>
 
 #include "api/network/blockchain/SyncClient.hpp"
-#include "api/network/blockchain/SyncServer.hpp"
 #include "blockchain/database/common/Database.hpp"
 #include "core/Worker.hpp"
 #include "internal/blockchain/Params.hpp"
@@ -124,7 +123,7 @@ BlockchainImp::BlockchainImp(
     , config_()
     , networks_()
     , sync_client_()
-    , sync_server_()
+    , sync_server_(api_, zmq)
     , init_promise_()
     , init_(init_promise_.get_future())
     , running_(true)
@@ -338,13 +337,6 @@ auto BlockchainImp::Init(
 
         return {};
     }();
-    sync_server_ = [&]() -> std::unique_ptr<blockchain::SyncServer> {
-        if (base_config_->provide_sync_server_) {
-            return std::make_unique<blockchain::SyncServer>(api_, *this);
-        }
-
-        return {};
-    }();
     init_promise_.set_value();
     static const auto defaultServers = std::vector<std::string>{
         "tcp://54.39.129.45:8814",
@@ -477,9 +469,9 @@ auto BlockchainImp::start(
         case p2p::Protocol::bitcoin: {
             auto endpoint = std::string{};
 
-            if (sync_server_) {
-                sync_server_->Enable(type);
-                endpoint = sync_server_->Endpoint(type);
+            if (base_config_->provide_sync_server_) {
+                sync_server_.Enable(type);
+                endpoint = sync_server_.Endpoint(type);
             }
 
             auto& config = [&]() -> const Config& {
@@ -524,8 +516,8 @@ auto BlockchainImp::StartSyncServer(
 {
     auto lock = Lock{lock_};
 
-    if (sync_server_) {
-        return sync_server_->Start(sync, publicSync, update, publicUpdate);
+    if (base_config_->provide_sync_server_) {
+        return sync_server_.Start(sync, publicSync, update, publicUpdate);
     }
 
     LogConsole()(
@@ -552,8 +544,7 @@ auto BlockchainImp::stop(const Lock& lock, const Chain type) const noexcept
 
     OT_ASSERT(it->second);
 
-    if (sync_server_) { sync_server_->Disable(type); }
-
+    sync_server_.Disable(type);
     it->second->Shutdown().get();
     networks_.erase(it);
     LogVerbose()(OT_PRETTY_CLASS())("stopped chain ")(opentxs::print(type))

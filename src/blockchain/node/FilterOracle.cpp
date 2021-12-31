@@ -26,6 +26,7 @@
 #include "blockchain/node/filteroracle/HeaderDownloader.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/network/Blockchain.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/node/Factory.hpp"
@@ -131,7 +132,7 @@ FilterOracle::FilterOracle(
     , new_filters_([&] {
         auto socket = api_.Network().ZeroMQ().PublishSocket();
         auto started = socket->Start(
-            api_.Endpoints().InternalBlockchainFilterUpdated(chain_));
+            api_.Endpoints().Internal().BlockchainFilterUpdated(chain_));
 
         OT_ASSERT(started);
 

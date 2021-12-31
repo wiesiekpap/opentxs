@@ -16,21 +16,23 @@ namespace opentxs
 {
 namespace api
 {
-namespace network
-{
-namespace internal
-{
-class Blockchain;
-}  // namespace internal
-}  // namespace network
-
 class Session;
 }  // namespace api
+
+namespace network
+{
+namespace zeromq
+{
+class Context;
+}  // namespace zeromq
+}  // namespace network
 }  // namespace opentxs
 
-namespace opentxs::api::network::blockchain
+namespace opentxs::network::p2p
 {
-struct SyncServer {
+class Server
+{
+public:
     using Chain = opentxs::blockchain::Type;
 
     auto Endpoint(const Chain chain) const noexcept -> std::string;
@@ -43,14 +45,13 @@ struct SyncServer {
         const std::string& update,
         const std::string& publicUpdate) noexcept -> bool;
 
-    SyncServer(const api::Session& api, internal::Blockchain& parent) noexcept;
+    Server(const api::Session& api, const zeromq::Context& zmq) noexcept;
 
-    ~SyncServer();
+    ~Server();
 
 private:
-    struct Imp;
+    class Imp;
 
-    std::unique_ptr<Imp> imp_p_;
-    Imp& imp_;
+    std::unique_ptr<Imp> imp_;
 };
-}  // namespace opentxs::api::network::blockchain
+}  // namespace opentxs::network::p2p

@@ -3,21 +3,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                           // IWYU pragma: associated
-#include "1_Internal.hpp"                         // IWYU pragma: associated
-#include "api/network/blockchain/SyncServer.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                   // IWYU pragma: associated
+#include "1_Internal.hpp"                 // IWYU pragma: associated
+#include "network/p2p/server/Server.hpp"  // IWYU pragma: associated
 
-#include <zmq.h>
 #include <atomic>
-#include <chrono>
-#include <limits>
+#include <functional>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <set>
 #include <stdexcept>
 #include <string>
-#include <thread>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -26,9 +24,14 @@
 #include "internal/api/network/Blockchain.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/network/p2p/Factory.hpp"
+#include "internal/network/zeromq/Batch.hpp"
+#include "internal/network/zeromq/Context.hpp"
+#include "internal/network/zeromq/Thread.hpp"
+#include "internal/network/zeromq/Types.hpp"
+#include "internal/network/zeromq/socket/Raw.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -53,96 +56,75 @@
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/p2p/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
-#include "util/ScopeGuard.hpp"
+#include "util/Gatekeeper.hpp"
 
-namespace opentxs::api::network::blockchain
+namespace opentxs::network::p2p
 {
-struct SyncServer::Imp {
-    using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
-    using Map = std::map<Chain, std::tuple<std::string, bool, Socket>>;
-    using OTSocket = opentxs::network::zeromq::socket::implementation::Socket;
+class Server::Imp
+{
+public:
+    using Map = std::map<
+        Chain,
+        std::tuple<
+            std::string,
+            bool,
+            std::reference_wrapper<zeromq::socket::Raw>>>;
 
     const api::Session& api_;
-    internal::Blockchain& parent_;
-    const int linger_;
-    Socket sync_;
-    Socket update_;
+    const zeromq::Context& zmq_;
+    zeromq::internal::Batch& batch_;
+    const zeromq::ListenCallback& external_callback_;
+    const zeromq::ListenCallback& internal_callback_;
+    zeromq::socket::Raw& sync_;
+    zeromq::socket::Raw& update_;
+    mutable std::mutex map_lock_;
     Map map_;
+    zeromq::internal::Thread* thread_;
     std::string sync_endpoint_;
     std::string sync_public_endpoint_;
     std::string update_endpoint_;
     std::string update_public_endpoint_;
-    mutable std::mutex lock_;
+    std::atomic_bool started_;
     std::atomic_bool running_;
-    std::thread thread_;
+    mutable Gatekeeper gate_;
 
-    auto thread() noexcept -> void
-    {
-        auto poll = [&] {
-            auto output = std::vector<::zmq_pollitem_t>{};
-
-            {
-                auto& item = output.emplace_back();
-                item.socket = sync_.get();
-                item.events = ZMQ_POLLIN;
-            }
-
-            for (const auto& [key, value] : map_) {
-                auto& item = output.emplace_back();
-                item.socket = std::get<2>(value).get();
-                item.events = ZMQ_POLLIN;
-            }
-
-            return output;
-        }();
-
-        OT_ASSERT(std::numeric_limits<int>::max() >= poll.size());
-
-        while (running_) {
-            constexpr auto timeout = std::chrono::milliseconds{10};
-            const auto events = ::zmq_poll(
-                poll.data(), static_cast<int>(poll.size()), timeout.count());
-
-            if (0 > events) {
-                const auto error = ::zmq_errno();
-                LogError()(OT_PRETTY_CLASS())(::zmq_strerror(error)).Flush();
-
-                continue;
-            } else if (0 == events) {
-                continue;
-            }
-
-            auto lock = Lock{lock_};
-            auto counter{-1};
-
-            for (const auto& item : poll) {
-                ++counter;
-
-                if (ZMQ_POLLIN != item.revents) { continue; }
-
-                if (0 == counter) {
-                    process_external(lock, item.socket);
-                } else {
-                    process_internal(lock, item.socket);
-                }
-            }
-        }
-    }
-
-    Imp(const api::Session& api, internal::Blockchain& parent) noexcept
+    Imp(const api::Session& api, const zeromq::Context& zmq) noexcept
         : api_(api)
-        , parent_(parent)
-        , linger_(0)
-        , sync_(::zmq_socket(api_.Network().ZeroMQ(), ZMQ_ROUTER), ::zmq_close)
-        , update_(::zmq_socket(api_.Network().ZeroMQ(), ZMQ_PUB), ::zmq_close)
+        , zmq_(zmq)
+        , batch_(zmq_.Internal().MakeBatch([&] {
+            auto out = std::vector<zeromq::socket::Type>{};
+            out.emplace_back(zeromq::socket::Type::Router);
+            out.emplace_back(zeromq::socket::Type::Publish);
+            const auto chains = opentxs::blockchain::DefinedChains().size();
+            out.insert(out.end(), chains, zeromq::socket::Type::Pair);
+
+            return out;
+        }()))
+        , external_callback_(batch_.listen_callbacks_.emplace_back(
+              zeromq::ListenCallback::Factory(
+                  [this](auto&& msg) { process_external(std::move(msg)); })))
+        , internal_callback_(batch_.listen_callbacks_.emplace_back(
+              zeromq::ListenCallback::Factory(
+                  [this](auto&& msg) { process_internal(std::move(msg)); })))
+        , sync_(batch_.sockets_.at(0))
+        , update_(batch_.sockets_.at(1))
+        , map_lock_()
         , map_([&] {
             auto output = Map{};
+
+            OT_ASSERT(
+                batch_.sockets_.size() ==
+                opentxs::blockchain::DefinedChains().size() + 2u);
+
+            auto it = std::next(batch_.sockets_.begin(), 1);
 
             for (const auto chain : opentxs::blockchain::DefinedChains()) {
                 auto& [endpoint, enabled, socket] =
@@ -153,47 +135,66 @@ struct SyncServer::Imp {
                             std::forward_as_tuple(
                                 opentxs::network::zeromq::MakeArbitraryInproc(),
                                 false,
-                                Socket{
-                                    ::zmq_socket(
-                                        api_.Network().ZeroMQ(), ZMQ_PAIR),
-                                    ::zmq_close}))
+                                *(++it)))
                         .first->second;
-                ::zmq_setsockopt(
-                    socket.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
-                ::zmq_bind(socket.get(), endpoint.c_str());
+                socket.get().Bind(endpoint.c_str());
+                LogTrace()(OT_PRETTY_CLASS())("socket ")(socket.get().ID())(
+                    " for ")(DisplayString(chain))(" bound to ")(endpoint)
+                    .Flush();
             }
 
             return output;
         }())
+        , thread_(zmq_.Internal().Start(
+              batch_.id_,
+              [&] {
+                  auto out = zeromq::StartArgs{};
+                  out.reserve(map_.size() + 1u);
+                  out.emplace_back(
+                      sync_.ID(), &sync_, [&cb = external_callback_](auto&& m) {
+                          cb.Process(std::move(m));
+                      });
+
+                  for (auto& [chain, data] : map_) {
+                      auto& [endpoint, enabled, wrapper] = data;
+                      auto& socket = wrapper.get();
+
+                      out.emplace_back(
+                          socket.ID(),
+                          &socket,
+                          [&cb = internal_callback_](auto&& m) {
+                              cb.Process(std::move(m));
+                          });
+                  }
+
+                  return out;
+              }()))
         , sync_endpoint_()
         , sync_public_endpoint_()
         , update_endpoint_()
         , update_public_endpoint_()
-        , lock_()
-        , running_(false)
-        , thread_()
+        , started_(false)
+        , running_(true)
+        , gate_()
     {
-        ::zmq_setsockopt(sync_.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
-        ::zmq_setsockopt(update_.get(), ZMQ_LINGER, &linger_, sizeof(linger_));
     }
 
     ~Imp()
     {
-        running_ = false;
+        gate_.shutdown();
 
-        if (thread_.joinable()) { thread_.join(); }
+        if (auto running = running_.exchange(false); running) {
+            batch_.ClearCallbacks();
+        }
+
+        zmq_.Internal().Stop(batch_.id_);
     }
 
 private:
-    auto process_external(const Lock& lock, void* socket) noexcept -> void
+    auto process_external(zeromq::Message&& incoming) noexcept -> void
     {
+#if OT_BLOCKCHAIN
         try {
-            auto incoming = [&] {
-                auto output = opentxs::network::zeromq::Message{};
-                OTSocket::receive_message(lock, socket, output);
-
-                return output;
-            }();
             namespace bcsync = opentxs::network::p2p;
             const auto base = api_.Factory().BlockchainSyncMessage(incoming);
 
@@ -206,15 +207,13 @@ private:
             switch (type) {
                 case bcsync::MessageType::query:
                 case bcsync::MessageType::sync_request: {
-                    process_sync(lock, socket, incoming, *base);
+                    process_sync(std::move(incoming), *base);
                 } break;
                 case bcsync::MessageType::contract_query: {
-                    process_query_contract(
-                        lock, socket, std::move(incoming), *base);
+                    process_query_contract(std::move(incoming), *base);
                 } break;
                 case bcsync::MessageType::publish_contract: {
-                    process_publish_contract(
-                        lock, socket, std::move(incoming), *base);
+                    process_publish_contract(std::move(incoming), *base);
                 } break;
                 default: {
                     throw std::runtime_error{
@@ -225,11 +224,10 @@ private:
         } catch (const std::exception& e) {
             LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
         }
+#endif  // OT_BLOCKCHAIN
     }
-    auto process_internal(const Lock& lock, void* socket) noexcept -> void
+    auto process_internal(zeromq::Message&& incoming) noexcept -> void
     {
-        auto incoming = opentxs::network::zeromq::Message{};
-        OTSocket::receive_message(lock, socket, incoming);
         const auto hSize = incoming.Header().size();
         const auto bSize = incoming.Body().size();
 
@@ -237,16 +235,14 @@ private:
 
         if (0u < hSize) {
             LogTrace()(OT_PRETTY_CLASS())("transmitting sync reply").Flush();
-            OTSocket::send_message(lock, sync_.get(), std::move(incoming));
+            sync_.Send(std::move(incoming));
         } else {
             LogTrace()(OT_PRETTY_CLASS())("broadcasting push notification")
                 .Flush();
-            OTSocket::send_message(lock, update_.get(), std::move(incoming));
+            update_.Send(std::move(incoming));
         }
     }
     auto process_query_contract(
-        const Lock& lock,
-        void* socket,
         opentxs::network::zeromq::Message&& incoming,
         const opentxs::network::p2p::Base& base) noexcept -> void
     {
@@ -297,7 +293,7 @@ private:
                 return factory::BlockchainSyncQueryContractReply(id);
             }
         }();
-        OTSocket::send_message(lock, socket, [&] {
+        sync_.Send([&] {
             auto out =
                 opentxs::network::zeromq::reply_to_message(std::move(incoming));
             payload.Serialize(out);
@@ -306,8 +302,6 @@ private:
         }());
     }
     auto process_publish_contract(
-        const Lock& lock,
-        void* socket,
         opentxs::network::zeromq::Message&& incoming,
         const opentxs::network::p2p::Base& base) noexcept -> void
     {
@@ -348,7 +342,7 @@ private:
                 return false;
             }
         }();
-        OTSocket::send_message(lock, socket, [&] {
+        sync_.Send([&] {
             auto out =
                 opentxs::network::zeromq::reply_to_message(std::move(incoming));
             const auto msg =
@@ -359,20 +353,21 @@ private:
         }());
     }
     auto process_sync(
-        const Lock& lock,
-        void* socket,
-        const opentxs::network::zeromq::Message& incoming,
+        opentxs::network::zeromq::Message&& incoming,
         const opentxs::network::p2p::Base& base) noexcept -> void
     {
         try {
             {
-                const auto ack = factory::BlockchainSyncAcknowledgement(
-                    parent_.Hello(), update_public_endpoint_);
+                const auto ack = [&] {
+                    auto lock = Lock{map_lock_};
+
+                    return factory::BlockchainSyncAcknowledgement(
+                        api_.Network().Blockchain().Internal().Hello(),
+                        update_public_endpoint_);
+                }();
                 auto msg = opentxs::network::zeromq::reply_to_message(incoming);
 
-                if (ack.Serialize(msg)) {
-                    OTSocket::send_message(lock, socket, std::move(msg));
-                }
+                if (ack.Serialize(msg)) { sync_.Send(std::move(msg)); }
             }
 
             namespace bcsync = opentxs::network::p2p;
@@ -383,15 +378,11 @@ private:
 
                 for (const auto& state : request.State()) {
                     try {
-                        const auto& [endpoint, enabled, internal] =
+                        auto lock = Lock{map_lock_};
+                        const auto& [endpoint, enabled, socket] =
                             map_.at(state.Chain());
 
-                        if (enabled) {
-                            OTSocket::send_message(
-                                lock,
-                                internal.get(),
-                                opentxs::network::zeromq::Message{incoming});
-                        }
+                        if (enabled) { socket.get().Send(std::move(incoming)); }
                     } catch (...) {
                     }
                 }
@@ -400,46 +391,49 @@ private:
             LogError()(OT_PRETTY_CLASS())(e.what()).Flush();
         }
     }
+
+    Imp() = delete;
+    Imp(const Imp&) = delete;
+    Imp(Imp&&) = delete;
+    auto operator=(const Imp&) -> Imp& = delete;
+    auto operator=(Imp&&) -> Imp& = delete;
 };
 
-SyncServer::SyncServer(
-    const api::Session& api,
-    internal::Blockchain& parent) noexcept
-    : imp_p_(std::make_unique<Imp>(api, parent))
-    , imp_(*imp_p_)
+Server::Server(const api::Session& api, const zeromq::Context& zmq) noexcept
+    : imp_(std::make_unique<Imp>(api, zmq))
 {
 }
 
-auto SyncServer::Disable(const Chain chain) noexcept -> void
+auto Server::Disable(const Chain chain) noexcept -> void
 {
     try {
-        auto lock = Lock{imp_.lock_};
-        std::get<1>(imp_.map_.at(chain)) = false;
+        auto lock = Lock{imp_->map_lock_};
+        std::get<1>(imp_->map_.at(chain)) = false;
     } catch (...) {
     }
 }
 
-auto SyncServer::Enable(const Chain chain) noexcept -> void
+auto Server::Enable(const Chain chain) noexcept -> void
 {
     try {
-        auto lock = Lock{imp_.lock_};
-        std::get<1>(imp_.map_.at(chain)) = true;
+        auto lock = Lock{imp_->map_lock_};
+        std::get<1>(imp_->map_.at(chain)) = true;
     } catch (...) {
     }
 }
 
-auto SyncServer::Endpoint(const Chain chain) const noexcept -> std::string
+auto Server::Endpoint(const Chain chain) const noexcept -> std::string
 {
     try {
 
-        return std::get<0>(imp_.map_.at(chain));
+        return std::get<0>(imp_->map_.at(chain));
     } catch (...) {
 
         return {};
     }
 }
 
-auto SyncServer::Start(
+auto Server::Start(
     const std::string& sync,
     const std::string& publicSync,
     const std::string& update,
@@ -451,65 +445,59 @@ auto SyncServer::Start(
         return false;
     }
 
-    auto lock = Lock{imp_.lock_};
-    auto output{false};
-    auto postcondition = ScopeGuard{[&] {
-        if (output) {
-            imp_.sync_endpoint_ = sync;
-            imp_.sync_public_endpoint_ = publicSync;
-            imp_.update_endpoint_ = update;
-            imp_.update_public_endpoint_ = publicUpdate;
-        } else {
-            ::zmq_unbind(imp_.sync_.get(), sync.c_str());
-            ::zmq_unbind(imp_.update_.get(), update.c_str());
-        }
-    }};
+    const auto shutdown = imp_->gate_.get();
 
-    if (false == imp_.running_) {
-        if (0 == ::zmq_setsockopt(
-                     imp_.sync_.get(),
-                     ZMQ_ROUTING_ID,
-                     publicSync.data(),
-                     publicSync.size())) {
-            LogDebug()("Sync socket identity set to public endpoint: ")(
-                publicSync)
+    if (shutdown) { return false; }
+
+    if (auto started = imp_->started_.exchange(true); started) {
+        LogError()(OT_PRETTY_CLASS())("Already running").Flush();
+
+        return false;
+    } else {
+        auto lock = Lock{imp_->map_lock_};
+        imp_->sync_endpoint_ = sync;
+        imp_->sync_public_endpoint_ = publicSync;
+        imp_->update_endpoint_ = update;
+        imp_->update_public_endpoint_ = publicUpdate;
+    }
+
+    imp_->thread_->Modify(imp_->sync_.ID(), [this](auto& socket) {
+        const auto& endpointPublic = imp_->sync_public_endpoint_;
+        const auto& endpointLocal = imp_->sync_endpoint_;
+        const auto& endpointPublish = imp_->update_endpoint_;
+
+        if (socket.SetRoutingID(endpointPublic)) {
+            LogTrace()("Sync socket identity set to public endpoint: ")(
+                endpointPublic)
                 .Flush();
         } else {
             LogError()(OT_PRETTY_CLASS())("failed to set sync socket identity")
                 .Flush();
-
-            return false;
         }
 
-        if (0 == ::zmq_bind(imp_.sync_.get(), sync.c_str())) {
-            LogConsole()("Blockchain sync server listener bound to ")(sync)
+        if (socket.Bind(endpointLocal.c_str())) {
+            LogConsole()("Blockchain sync server listener bound to ")(
+                endpointLocal)
                 .Flush();
         } else {
             LogError()(OT_PRETTY_CLASS())("failed to bind sync endpoint to ")(
-                sync)
+                endpointLocal)
                 .Flush();
-
-            return false;
         }
 
-        if (0 == ::zmq_bind(imp_.update_.get(), update.c_str())) {
-            LogConsole()("Blockchain sync server publisher bound to ")(update)
+        if (imp_->update_.Bind(endpointPublish.c_str())) {
+            LogConsole()("Blockchain sync publisher listener bound to ")(
+                endpointPublish)
                 .Flush();
         } else {
-            LogError()(OT_PRETTY_CLASS())("failed to bind update endpoint to ")(
-                update)
+            LogError()(OT_PRETTY_CLASS())("failed to bind sync publisher to ")(
+                endpointPublish)
                 .Flush();
-
-            return false;
         }
+    });
 
-        output = true;
-        imp_.running_ = output;
-        imp_.thread_ = std::thread{&Imp::thread, imp_p_.get()};
-    }
-
-    return output;
+    return true;
 }
 
-SyncServer::~SyncServer() = default;
-}  // namespace opentxs::api::network::blockchain
+Server::~Server() = default;
+}  // namespace opentxs::network::p2p

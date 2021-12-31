@@ -20,6 +20,7 @@
 
 #include "Proto.tpp"
 #include "internal/api/Legacy.hpp"
+#include "internal/api/session/Endpoints.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
@@ -106,7 +107,7 @@ Notary::Notary(
           zmq::socket::Socket::Direction::Connect))
 {
     const auto bound = notification_socket_->Start(
-        manager_.Endpoints().InternalPushNotification());
+        manager_.Endpoints().Internal().PushNotification());
 
     OT_ASSERT(bound);
 }
