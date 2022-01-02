@@ -19,9 +19,9 @@
 #include <vector>
 
 #include "internal/network/zeromq/socket/Socket.hpp"
+#include "internal/util/Flag.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"

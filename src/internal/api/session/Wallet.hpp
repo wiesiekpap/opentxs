@@ -7,11 +7,11 @@
 
 #include <mutex>
 
+#include "internal/otx/common/Account.hpp"
+#include "internal/util/Editor.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/Editor.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 
 namespace opentxs
@@ -48,7 +48,7 @@ public:
         -> SharedAccount = 0;
     virtual auto CreateAccount(
         const identifier::Nym& ownerNymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const identity::Nym& signer,
         Account::AccountType type,
@@ -78,7 +78,7 @@ public:
      *                           nym id)
      */
     virtual auto mutable_Context(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& clientNymID,
         const PasswordPrompt& reason) const -> Editor<otx::context::Base> = 0;
     /**   Load or create a ClientContext object
@@ -111,7 +111,7 @@ public:
         const PasswordPrompt& reason) const -> Editor<opentxs::NymFile> = 0;
     virtual auto mutable_Purse(
         const identifier::Nym& nym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const identifier::UnitDefinition& unit,
         const PasswordPrompt& reason,
         const otx::blind::CashType = otx::blind::CashType::Lucre) const

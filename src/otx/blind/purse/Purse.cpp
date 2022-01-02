@@ -33,9 +33,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
@@ -47,6 +46,7 @@
 #include "opentxs/otx/blind/TokenState.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Envelope.pb.h"
 #include "serialization/protobuf/Purse.pb.h"
@@ -67,7 +67,7 @@ auto Purse::Imp::at(const std::size_t) -> Token&
     return blank;
 }
 
-auto Purse::Imp::Notary() const -> const identifier::Server&
+auto Purse::Imp::Notary() const -> const identifier::Notary&
 {
     static const auto id = factory::IdentifierNotary();
 
@@ -178,7 +178,7 @@ auto Purse::IsUnlocked() const -> bool { return imp_->IsUnlocked(); }
 
 auto Purse::LatestValidFrom() const -> Time { return imp_->LatestValidFrom(); }
 
-auto Purse::Notary() const -> const identifier::Server&
+auto Purse::Notary() const -> const identifier::Notary&
 {
     return imp_->Notary();
 }

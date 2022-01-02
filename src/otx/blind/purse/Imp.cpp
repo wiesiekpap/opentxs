@@ -14,7 +14,6 @@
 #include <set>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -32,9 +31,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
@@ -46,6 +44,7 @@
 #include "opentxs/otx/blind/TokenState.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Envelope.pb.h"
 #include "serialization/protobuf/Purse.pb.h"
@@ -79,7 +78,7 @@ auto Purse(
 auto Purse(
     const api::Session& api,
     const identity::Nym& nym,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identity::Nym& serverNym,
     const otx::blind::CashType type,
     const otx::blind::Mint& mint,
@@ -181,7 +180,7 @@ auto Purse(
 auto Purse(
     const api::Session& api,
     const identity::Nym& owner,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& unit,
     const otx::blind::CashType type,
     const opentxs::PasswordPrompt& reason) noexcept -> ReturnType
@@ -212,7 +211,7 @@ Purse::Purse(
     const api::Session& api,
     const VersionNumber version,
     const blind::CashType type,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit,
     const blind::PurseType state,
     const Amount& totalValue,
@@ -270,7 +269,7 @@ Purse::Purse(const Purse& rhs) noexcept
 Purse::Purse(
     const api::Session& api,
     const identifier::Nym& owner,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const blind::CashType type,
     const Mint& mint,
     OTSecret&& secondaryKeyPassword,
@@ -304,7 +303,7 @@ Purse::Purse(
 
 Purse::Purse(
     const api::Session& api,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& unit,
     const blind::CashType type) noexcept
     : Purse(
@@ -336,7 +335,7 @@ Purse::Purse(const api::Session& api, const proto::Purse& in) noexcept
           api,
           in.version(),
           translate(in.type()),
-          identifier::Server::Factory(in.notary()),
+          identifier::Notary::Factory(in.notary()),
           identifier::UnitDefinition::Factory(in.mint()),
           translate(in.state()),
           Amount{in.totalvalue()},

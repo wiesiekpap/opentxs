@@ -12,14 +12,14 @@
 #include "Proto.tpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/contact/Contact.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactItem.hpp"
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/ContactData.pb.h"
@@ -146,7 +146,7 @@ auto NymData::AddPreferredOTServer(
 
 auto NymData::AddSocialMediaProfile(
     const std::string& value,
-    const contact::ClaimType type,
+    const identity::wot::claim::ClaimType type,
     const bool primary,
     const bool active,
     const PasswordPrompt& reason) -> bool
@@ -168,18 +168,18 @@ auto NymData::BestPhoneNumber() const -> std::string
     return nym().BestPhoneNumber();
 }
 
-auto NymData::BestSocialMediaProfile(const contact::ClaimType type) const
-    -> std::string
+auto NymData::BestSocialMediaProfile(
+    const identity::wot::claim::ClaimType type) const -> std::string
 {
     return nym().BestSocialMediaProfile(type);
 }
 
-auto NymData::Claims() const -> const contact::ContactData&
+auto NymData::Claims() const -> const identity::wot::claim::Data&
 {
     return nym().Claims();
 }
 
-auto NymData::data() const -> const contact::ContactData&
+auto NymData::data() const -> const identity::wot::claim::Data&
 {
     return nym().Claims();
 }
@@ -238,7 +238,7 @@ auto NymData::nym() const -> const identity::Nym&
 
 auto NymData::PaymentCode(const core::UnitType currency) const -> std::string
 {
-    return contact::Contact::PaymentCode(data(), currency);
+    return Contact::PaymentCode(data(), currency);
 }
 
 auto NymData::PhoneNumbers(bool active) const -> std::string
@@ -253,7 +253,7 @@ auto NymData::PreferredOTServer() const -> std::string
 
 auto NymData::PrintContactData() const -> std::string
 {
-    return contact::ContactData::PrintContactData([&] {
+    return identity::wot::claim::Data::PrintContactData([&] {
         auto proto = proto::ContactData{};
         data().Serialize(proto, true);
 
@@ -303,7 +303,7 @@ auto NymData::SetContactData(
 }
 
 auto NymData::SetScope(
-    const contact::ClaimType type,
+    const identity::wot::claim::ClaimType type,
     const std::string& name,
     const bool primary,
     const PasswordPrompt& reason) -> bool
@@ -311,18 +311,23 @@ auto NymData::SetScope(
     return nym().SetScope(type, name, reason, primary);
 }
 
-auto NymData::SocialMediaProfiles(const contact::ClaimType type, bool active)
-    const -> std::string
+auto NymData::SocialMediaProfiles(
+    const identity::wot::claim::ClaimType type,
+    bool active) const -> std::string
 {
     return nym().SocialMediaProfiles(type, active);
 }
 
-auto NymData::SocialMediaProfileTypes() const -> std::set<contact::ClaimType>
+auto NymData::SocialMediaProfileTypes() const
+    -> std::set<identity::wot::claim::ClaimType>
 {
     return nym().SocialMediaProfileTypes();
 }
 
-auto NymData::Type() const -> contact::ClaimType { return data().Type(); }
+auto NymData::Type() const -> identity::wot::claim::ClaimType
+{
+    return data().Type();
+}
 
 auto NymData::Valid() const -> bool { return bool(nym_); }
 

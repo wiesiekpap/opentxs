@@ -3,12 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/DisplayScale.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/DisplayScale.hpp"  // IWYU pragma: associated
 
 #include <string>
 
-#include "internal/protobuf/verify/ScaleRatio.hpp"
-#include "internal/protobuf/verify/VerifyContracts.hpp"
+#include "internal/serialization/protobuf/verify/ScaleRatio.hpp"
+#include "internal/serialization/protobuf/verify/VerifyContracts.hpp"
 #include "serialization/protobuf/DisplayScale.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

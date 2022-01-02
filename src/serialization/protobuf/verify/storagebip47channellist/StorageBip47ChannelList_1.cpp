@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/StorageBip47ChannelList.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/StorageBip47ChannelList.hpp"  // IWYU pragma: associated
 
-#include "internal/protobuf/verify/VerifyContacts.hpp"
+#include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 #include "serialization/protobuf/StorageBip47ChannelList.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

@@ -21,8 +21,8 @@ namespace api
 class Context;
 }  // namespace api
 
-class OTCaller;
 class Options;
+class PasswordCaller;
 }  // namespace opentxs
 
 namespace opentxs
@@ -54,11 +54,13 @@ OPENTXS_EXPORT auto Cleanup() noexcept -> void;
 OPENTXS_EXPORT auto InitContext() noexcept(false) -> const api::Context&;
 OPENTXS_EXPORT auto InitContext(const Options& args) noexcept(false)
     -> const api::Context&;
-OPENTXS_EXPORT auto InitContext(OTCaller* externalPasswordCallback) noexcept(
-    false) -> const api::Context&;
+OPENTXS_EXPORT auto InitContext(
+    PasswordCaller* externalPasswordCallback) noexcept(false)
+    -> const api::Context&;
 OPENTXS_EXPORT auto InitContext(
     const Options& args,
-    OTCaller* externalPasswordCallback) noexcept(false) -> const api::Context&;
+    PasswordCaller* externalPasswordCallback) noexcept(false)
+    -> const api::Context&;
 
 /** Wait on context shutdown
  *

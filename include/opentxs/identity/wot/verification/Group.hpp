@@ -37,13 +37,7 @@ class VerificationGroup;
 class PasswordPrompt;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace identity
-{
-namespace wot
-{
-namespace verification
+namespace opentxs::identity::wot::verification
 {
 class OPENTXS_EXPORT Group
 {
@@ -99,7 +93,4 @@ private:
     auto operator=(const Group&) -> Group& = delete;
     auto operator=(Group&&) -> Group& = delete;
 };
-}  // namespace verification
-}  // namespace wot
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity::wot::verification

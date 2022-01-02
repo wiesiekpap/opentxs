@@ -18,17 +18,16 @@
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Token.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
+#include "internal/util/Editor.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
@@ -40,6 +39,8 @@
 #include "opentxs/otx/blind/TokenState.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Iterator.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -58,7 +59,7 @@ class Test_Basic : public ::testing::Test
 public:
     static ot::OTNymID alice_nym_id_;
     static ot::OTNymID bob_nym_id_;
-    static const ot::OTServerID server_id_;
+    static const ot::OTNotaryID server_id_;
     static const ot::OTUnitID unit_id_;
     static std::optional<ot::otx::blind::Mint> mint_;
     static std::optional<ot::otx::blind::Purse> request_purse_;
@@ -100,7 +101,7 @@ public:
         bob_nym_id_ = api_.Wallet().Nym({seedB, 0}, reason_, "Bob")->ID();
         const_cast<ot::identifier::UnitDefinition&>(unit_id_.get())
             .SetString(ot::Identifier::Random()->str());
-        const_cast<ot::identifier::Server&>(server_id_.get())
+        const_cast<ot::identifier::Notary&>(server_id_.get())
             .SetString(ot::Identifier::Random()->str());
         init_ = true;
     }
@@ -108,7 +109,7 @@ public:
 
 ot::OTNymID Test_Basic::alice_nym_id_{ot::identifier::Nym::Factory()};
 ot::OTNymID Test_Basic::bob_nym_id_{ot::identifier::Nym::Factory()};
-const ot::OTServerID Test_Basic::server_id_{ot::identifier::Server::Factory()};
+const ot::OTNotaryID Test_Basic::server_id_{ot::identifier::Notary::Factory()};
 const ot::OTUnitID Test_Basic::unit_id_{
     ot::identifier::UnitDefinition::Factory()};
 std::optional<ot::otx::blind::Mint> Test_Basic::mint_{std::nullopt};

@@ -7,12 +7,13 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <functional>
 #include <string>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Types.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -30,7 +31,28 @@ class Identifier;
 class Item;
 
 using OTIdentifier = Pimpl<Identifier>;
+}  // namespace opentxs
 
+namespace std
+{
+template <>
+struct OPENTXS_EXPORT hash<opentxs::OTIdentifier> {
+    auto operator()(const opentxs::Identifier& data) const noexcept
+        -> std::size_t;
+};
+
+template <>
+struct OPENTXS_EXPORT less<opentxs::OTIdentifier> {
+    auto operator()(
+        const opentxs::OTIdentifier& lhs,
+        const opentxs::OTIdentifier& rhs) const -> bool;
+};
+}  // namespace std
+
+namespace opentxs
+{
+OPENTXS_EXPORT auto default_identifier_algorithm() noexcept
+    -> identifier::Algorithm;
 OPENTXS_EXPORT auto operator==(
     const opentxs::Pimpl<opentxs::Identifier>& lhs,
     const opentxs::Identifier& rhs) noexcept -> bool;
@@ -53,9 +75,6 @@ OPENTXS_EXPORT auto operator>=(
 
 namespace opentxs
 {
-OPENTXS_EXPORT auto default_identifier_algorithm() noexcept
-    -> identifier::Algorithm;
-
 /** An Identifier is basically a 256 bit hash value. This class makes it easy to
  * convert IDs back and forth to strings. */
 class OPENTXS_EXPORT Identifier : virtual public Data
@@ -80,7 +99,7 @@ public:
     static auto Factory(const Contract& contract)
         -> opentxs::Pimpl<opentxs::Identifier>;
     OPENTXS_NO_EXPORT static auto Factory(
-        const contact::ClaimType type,
+        const identity::wot::claim::ClaimType type,
         const proto::HDPath& path) -> opentxs::Pimpl<opentxs::Identifier>;
     static auto Validate(const std::string& id) -> bool;
 
@@ -131,13 +150,3 @@ private:
     auto operator=(Identifier&&) -> Identifier& = delete;
 };
 }  // namespace opentxs
-
-namespace std
-{
-template <>
-struct OPENTXS_EXPORT less<opentxs::OTIdentifier> {
-    auto operator()(
-        const opentxs::OTIdentifier& lhs,
-        const opentxs::OTIdentifier& rhs) const -> bool;
-};
-}  // namespace std

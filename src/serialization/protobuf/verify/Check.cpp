@@ -12,7 +12,7 @@
 #endif
 #include <string>
 
-#include "internal/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
 
 namespace opentxs::proto
 {

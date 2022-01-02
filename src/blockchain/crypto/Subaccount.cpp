@@ -17,16 +17,16 @@
 
 #include "Proto.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
-#include "internal/contact/Contact.hpp"
+#include "internal/identity/wot/claim/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"
 #include "opentxs/blockchain/crypto/Wallet.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "serialization/protobuf/BlockchainAccountData.pb.h"
 #include "serialization/protobuf/BlockchainActivity.pb.h"
 

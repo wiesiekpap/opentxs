@@ -16,8 +16,8 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ReplyCallback.hpp"

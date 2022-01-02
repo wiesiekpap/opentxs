@@ -15,7 +15,6 @@
 
 #include "api/session/base/Scheduler.hpp"
 #include "api/session/base/ZMQ.hpp"
-#include "core/crypto/NullCallback.hpp"
 #include "internal/api/Context.hpp"
 #include "internal/api/crypto/Symmetric.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -24,20 +23,21 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/crypto/OTCaller.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
+#include "opentxs/util/PasswordCaller.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
+#include "util/NullCallback.hpp"
 #include "util/ScopeGuard.hpp"
 
 namespace
 {
-opentxs::OTCaller* external_password_callback_{nullptr};
+opentxs::PasswordCaller* external_password_callback_{nullptr};
 
 extern "C" auto internal_password_cb(
     char* output,

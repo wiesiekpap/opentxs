@@ -63,11 +63,7 @@ class Manager;
 }  // namespace node
 }  // namespace blockchain
 
-namespace contact
-{
 class Contact;
-}  // namespace contact
-
 class Identifier;
 class PasswordPrompt;
 class PaymentCode;

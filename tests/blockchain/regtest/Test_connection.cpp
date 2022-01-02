@@ -8,12 +8,11 @@
 #include <gtest/gtest.h>
 #include <chrono>
 
-#include "opentxs/Types.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
-#include "opentxs/util/Log.hpp"
+#include "opentxs/util/Time.hpp"
 
 namespace ottest
 {

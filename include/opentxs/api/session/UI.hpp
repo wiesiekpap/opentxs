@@ -6,9 +6,9 @@
 #pragma once
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
-// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
-// IWYU pragma: no_include "opentxs/ui/Blockchains.hpp"
+// IWYU pragma: no_include "opentxs/core/ui/Blockchains.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
@@ -18,8 +18,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/ui/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/ui/Types.hpp"
 
 class QAbstractItemModel;
 
@@ -39,7 +39,7 @@ class UI;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -152,7 +152,7 @@ public:
     virtual auto BlockchainIssuerID(const opentxs::blockchain::Type chain)
         const noexcept -> const identifier::Nym& = 0;
     virtual auto BlockchainNotaryID(const opentxs::blockchain::Type chain)
-        const noexcept -> const identifier::Server& = 0;
+        const noexcept -> const identifier::Notary& = 0;
     virtual auto BlockchainSelection(
         const opentxs::ui::Blockchains type,
         const SimpleCallback updateCB = {}) const noexcept

@@ -3,15 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/BlockchainP2PHello.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/BlockchainP2PHello.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
 #include <cstdint>
 #include <map>
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/BlockchainP2PChainState.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyBlockchain.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/BlockchainP2PChainState.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
 #include "serialization/protobuf/BlockchainP2PChainState.pb.h"
 #include "serialization/protobuf/BlockchainP2PHello.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"

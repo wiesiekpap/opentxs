@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
 
 #pragma once
 
@@ -18,11 +18,11 @@
 #include <string>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/Types.hpp"
+#include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/contract/basket/BasketContract.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 
 namespace opentxs
 {
@@ -70,7 +70,7 @@ class PeerObject;
 namespace opentxs
 {
 /** AccountInfo: accountID, nymID, serverID, unitID*/
-using AccountInfo = std::tuple<OTIdentifier, OTNymID, OTServerID, OTUnitID>;
+using AccountInfo = std::tuple<OTIdentifier, OTNymID, OTNotaryID, OTUnitID>;
 }  // namespace opentxs
 
 namespace opentxs::api::session
@@ -119,7 +119,7 @@ public:
      *             instantiated if the object does not exist or is invalid.
      */
     virtual auto Context(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& clientNymID) const
         -> std::shared_ptr<const otx::context::Base> = 0;
 
@@ -190,7 +190,7 @@ public:
     virtual auto Nym(const ReadView& bytes) const -> Nym_p = 0;
 
     virtual auto Nym(
-        const opentxs::contact::ClaimType type,
+        const opentxs::identity::wot::claim::ClaimType type,
         const PasswordPrompt& reason,
         const std::string& name = {}) const -> Nym_p = 0;
     virtual auto Nym(
@@ -201,7 +201,7 @@ public:
         const -> Nym_p = 0;
     virtual auto Nym(
         const opentxs::crypto::Parameters& parameters,
-        const opentxs::contact::ClaimType type,
+        const opentxs::identity::wot::claim::ClaimType type,
         const PasswordPrompt& reason,
         const std::string& name = {}) const -> Nym_p = 0;
 
@@ -416,7 +416,7 @@ public:
 
     virtual auto Purse(
         const identifier::Nym& nym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const identifier::UnitDefinition& unit,
         const bool checking = false) const -> const otx::blind::Purse& = 0;
 
@@ -428,7 +428,7 @@ public:
      *    \returns true if successful, false if the contract did not exist
      *
      */
-    virtual auto RemoveServer(const identifier::Server& id) const -> bool = 0;
+    virtual auto RemoveServer(const identifier::Notary& id) const -> bool = 0;
 
     /**   Unload and delete a unit definition contract
      *
@@ -460,7 +460,7 @@ public:
      *                              wallet
      */
     virtual auto Server(
-        const identifier::Server& id,
+        const identifier::Notary& id,
         const std::chrono::milliseconds& timeout = std::chrono::milliseconds(
             0)) const noexcept(false) -> OTServerContract = 0;
 
@@ -517,7 +517,7 @@ public:
      *    \returns true if successful, false if the contract can not be located
      */
     virtual auto SetServerAlias(
-        const identifier::Server& id,
+        const identifier::Notary& id,
         const std::string& alias) const -> bool = 0;
 
     /**   Updates the alias for the specified unit definition contract.

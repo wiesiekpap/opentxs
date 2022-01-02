@@ -11,11 +11,11 @@
 #include <cstdint>
 #include <string>
 
+#include "internal/otx/common/cron/OTCron.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/cron/OTCron.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/server/ServerSettings.hpp"

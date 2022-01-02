@@ -29,6 +29,7 @@
 #include "Proto.hpp"
 #include "core/Amount.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -110,7 +111,8 @@ struct BitcoinTransactionBuilder::Imp {
                     } else if (1 == size) {
                         const auto& notif = data.notification(0);
                         const auto recipient =
-                            api_.Factory().PaymentCode(notif.recipient());
+                            api_.Factory().InternalSession().PaymentCode(
+                                notif.recipient());
                         const auto message =
                             std::string{
                                 "Constructing notification transaction to "} +
@@ -119,7 +121,8 @@ struct BitcoinTransactionBuilder::Imp {
                             api_.Factory().PasswordPrompt(message);
                         const auto pc = [&] {
                             auto out =
-                                api_.Factory().PaymentCode(notif.sender());
+                                api_.Factory().InternalSession().PaymentCode(
+                                    notif.sender());
                             const auto& path = notif.path();
                             auto seed{path.root()};
                             const auto rc = out.Internal().AddPrivateKeys(

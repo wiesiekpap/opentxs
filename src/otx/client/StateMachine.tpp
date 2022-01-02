@@ -225,7 +225,7 @@ auto StateMachine::load_contract<CheckNymTask>(const identifier::Nym& id) const
 }
 template <>
 auto StateMachine::load_contract<DownloadContractTask>(
-    const identifier::Server& id) const -> bool
+    const identifier::Notary& id) const -> bool
 {
     try {
         client_.Wallet().Server(id);

@@ -214,7 +214,7 @@ class Server;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -287,7 +287,7 @@ class DhtConfig;
 class Flag;
 class Libsecp256k1;
 class Libsodium;
-class OTCallback;
+class PasswordCallback;
 class OpenSSL;
 class Options;
 class PasswordPrompt;
@@ -324,7 +324,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const opentxs::Identifier& requestID,
         const std::string& txid,
         const Amount& amount,
@@ -340,7 +340,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const std::string& terms,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Bailment>;
@@ -354,7 +354,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& recipient,
         const identifier::UnitDefinition& unit,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::Bailment>;
     static auto BailmentRequest(
@@ -386,7 +386,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const bool ack,
         const std::string& url,
         const std::string& login,
@@ -404,7 +404,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& recipient,
         const contract::peer::ConnectionInfoType type,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::Connection>;
     static auto ConnectionRequest(
@@ -478,7 +478,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const contract::peer::PeerRequestType type,
         const bool& ack,
         const opentxs::PasswordPrompt& reason) noexcept
@@ -488,11 +488,11 @@ public:
         const Nym_p& nym,
         const proto::PeerReply& serialized) noexcept
         -> std::shared_ptr<contract::peer::reply::Acknowledgement>;
-    static auto NullCallback() -> OTCallback*;
+    static auto NullCallback() -> PasswordCallback*;
     static auto Nym(
         const api::Session& api,
         const crypto::Parameters& nymParameters,
-        const contact::ClaimType type,
+        const identity::wot::claim::ClaimType type,
         const std::string name,
         const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*;
     static auto Nym(
@@ -517,7 +517,7 @@ public:
     static auto Operation(
         const api::session::Client& api,
         const identifier::Nym& nym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const opentxs::PasswordPrompt& reason)
         -> otx::client::internal::Operation*;
     static auto OutBailmentReply(
@@ -525,7 +525,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const std::string& terms,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::reply::Outbailment>;
@@ -539,7 +539,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Amount& amount,
         const std::string& terms,
         const opentxs::PasswordPrompt& reason) noexcept
@@ -621,7 +621,7 @@ public:
         const contract::peer::SecretType type,
         const std::string& primary,
         const std::string& secondary,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const opentxs::PasswordPrompt& reason) noexcept
         -> std::shared_ptr<contract::peer::request::StoreSecret>;
     static auto StoreSecret(

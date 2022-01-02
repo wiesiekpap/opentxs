@@ -23,7 +23,7 @@ class Session;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -68,11 +68,11 @@ namespace opentxs::factory
 auto MintLucre(const api::Session& api) noexcept -> otx::blind::Mint;
 auto MintLucre(
     const api::Session& api,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit) noexcept -> otx::blind::Mint;
 auto MintLucre(
     const api::Session& api,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::Nym& serverNym,
     const identifier::UnitDefinition& unit) noexcept -> otx::blind::Mint;
 auto Purse(const api::Session& api, const proto::Purse& serialized) noexcept
@@ -89,7 +89,7 @@ auto Purse(
 auto Purse(
     const api::Session& api,
     const identity::Nym& owner,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identity::Nym& serverNym,
     const otx::blind::CashType type,
     const otx::blind::Mint& mint,
@@ -103,7 +103,7 @@ auto Purse(
 auto Purse(
     const api::Session& api,
     const identity::Nym& owner,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& unit,
     const otx::blind::CashType type,
     const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Purse;

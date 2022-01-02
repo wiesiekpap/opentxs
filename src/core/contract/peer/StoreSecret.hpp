@@ -24,8 +24,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 namespace proto
@@ -50,7 +50,7 @@ public:
         const SecretType type,
         const std::string& primary,
         const std::string& secondary,
-        const identifier::Server& serverID);
+        const identifier::Notary& serverID);
     StoreSecret(
         const api::Session& api,
         const Nym_p& nym,

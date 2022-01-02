@@ -21,7 +21,7 @@ auto MintLucre(const api::Session& api) noexcept -> ReturnType
 
 auto MintLucre(
     const api::Session& api,
-    const identifier::Server&,
+    const identifier::Notary&,
     const identifier::UnitDefinition&) noexcept -> ReturnType
 {
     return std::make_unique<Imp>(api).release();
@@ -29,7 +29,7 @@ auto MintLucre(
 
 auto MintLucre(
     const api::Session& api,
-    const identifier::Server&,
+    const identifier::Notary&,
     const identifier::Nym&,
     const identifier::UnitDefinition&) noexcept -> ReturnType
 {

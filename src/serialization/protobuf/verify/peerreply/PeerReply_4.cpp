@@ -3,20 +3,20 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/PeerReply.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/PeerReply.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/BailmentReply.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/ConnectionInfoReply.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/NoticeAcknowledgement.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/OutBailmentReply.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/Signature.hpp"         // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyPeer.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/BailmentReply.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/ConnectionInfoReply.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/NoticeAcknowledgement.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/OutBailmentReply.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyPeer.hpp"
 #include "serialization/protobuf/BailmentReply.pb.h"        // IWYU pragma: keep
 #include "serialization/protobuf/ConnectionInfoReply.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/Enums.pb.h"

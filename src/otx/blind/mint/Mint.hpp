@@ -12,13 +12,13 @@
 #include <map>
 
 #include "internal/otx/blind/Mint.hpp"
+#include "internal/otx/common/Contract.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Contract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/util/Time.hpp"
@@ -37,8 +37,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -105,7 +105,7 @@ public:
         const Time,
         const Time,
         const identifier::UnitDefinition&,
-        const identifier::Server&,
+        const identifier::Notary&,
         const identity::Nym&,
         const Amount&,
         const Amount&,

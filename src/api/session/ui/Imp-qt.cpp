@@ -13,15 +13,15 @@
 #include <tuple>
 #include <utility>
 
-#include "internal/ui/UI.hpp"
+#include "internal/core/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/ui/Blockchains.hpp"
-#include "opentxs/ui/qt/BlockchainSelection.hpp"
-#include "opentxs/ui/qt/BlockchainStatistics.hpp"
-#include "opentxs/ui/qt/SeedValidator.hpp"
+#include "opentxs/core/ui/Blockchains.hpp"
+#include "opentxs/core/ui/qt/BlockchainSelection.hpp"
+#include "opentxs/core/ui/qt/BlockchainStatistics.hpp"
+#include "opentxs/core/ui/qt/SeedValidator.hpp"
 
 namespace opentxs::api::session::ui
 {

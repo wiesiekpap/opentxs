@@ -29,7 +29,7 @@ class Notary;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -69,7 +69,7 @@ public:
         const noexcept -> otx::blind::Mint& = 0;
     virtual auto GetUserName() const -> std::string = 0;
     virtual auto GetUserTerms() const -> std::string = 0;
-    virtual auto ID() const -> const identifier::Server& = 0;
+    virtual auto ID() const -> const identifier::Notary& = 0;
     OPENTXS_NO_EXPORT virtual auto InternalNotary() const noexcept
         -> const session::internal::Notary& = 0;
     virtual auto NymID() const -> const identifier::Nym& = 0;

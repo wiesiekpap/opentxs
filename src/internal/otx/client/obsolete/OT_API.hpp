@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
-
 #include <chrono>
 #include <cstdint>
 #include <memory>
@@ -16,14 +14,15 @@
 #include <tuple>
 #include <utility>
 
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Item.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Lockable.hpp"
-#include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -58,8 +57,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -96,7 +95,7 @@ class PasswordPrompt;
 namespace opentxs
 {
 // The C++ high-level interface to the Open Transactions client-side.
-class OPENTXS_EXPORT OT_API : Lockable
+class OT_API : Lockable
 {
 public:
     using ProcessInboxOnly =
@@ -113,7 +112,7 @@ public:
     // that it's registered there.
     auto IsNym_RegisteredAtServer(
         const identifier::Nym& NYM_ID,
-        const identifier::Server& NOTARY_ID) const -> bool;
+        const identifier::Notary& NOTARY_ID) const -> bool;
 
     /// === Verify Account Receipt ===
     /// Returns bool. Verifies any asset account (intermediary files) against
@@ -121,14 +120,14 @@ public:
     /// Obviously this will fail for any new account that hasn't done any
     /// transactions yet, and thus has no receipts.
     auto VerifyAccountReceipt(
-        const identifier::Server& NOTARY_ID,
+        const identifier::Notary& NOTARY_ID,
         const identifier::Nym& NYM_ID,
         const Identifier& ACCOUNT_ID) const -> bool;
 
     // Returns an OTCheque pointer, or nullptr.
     // (Caller responsible to delete.)
     auto WriteCheque(
-        const identifier::Server& NOTARY_ID,
+        const identifier::Notary& NOTARY_ID,
         const Amount& CHEQUE_AMOUNT,
         const Time& VALID_FROM,
         const Time& VALID_TO,
@@ -148,7 +147,7 @@ public:
     // Payment Plan Length, and Payment Plan Max Payments, both default to 0,
     // which means no maximum length and no maximum number of payments.
     auto ProposePaymentPlan(
-        const identifier::Server& NOTARY_ID,
+        const identifier::Notary& NOTARY_ID,
         const Time& VALID_FROM,  // 0 defaults to the current time in
                                  // seconds
                                  // since Jan 1970.
@@ -171,7 +170,7 @@ public:
 
     // CONFIRM PAYMENT PLAN (called by Customer)
     auto ConfirmPaymentPlan(
-        const identifier::Server& NOTARY_ID,
+        const identifier::Notary& NOTARY_ID,
         const identifier::Nym& SENDER_NYM_ID,
         const Identifier& SENDER_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID,
@@ -197,7 +196,7 @@ public:
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
         std::int32_t nIndex) const -> std::int64_t;
     auto LoadNymbox(
-        const identifier::Server& NOTARY_ID,
+        const identifier::Notary& NOTARY_ID,
         const identifier::Nym& NYM_ID) const -> std::unique_ptr<Ledger>;
 
     auto CreateProcessInbox(
@@ -248,7 +247,7 @@ public:
         const std::string& label) const -> CommandResult;
 
     auto GenerateBasketExchange(
-        const identifier::Server& NOTARY_ID,
+        const identifier::Notary& NOTARY_ID,
         const identifier::Nym& NYM_ID,
         const identifier::UnitDefinition& BASKET_INSTRUMENT_DEFINITION_ID,
         const Identifier& BASKET_ASSET_ACCT_ID,
@@ -256,7 +255,7 @@ public:
     // 5=2,3,4  OR  10=4,6,8  OR 15=6,9,12
 
     auto AddBasketExchangeItem(
-        const identifier::Server& NOTARY_ID,
+        const identifier::Notary& NOTARY_ID,
         const identifier::Nym& NYM_ID,
         Basket& theBasket,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
@@ -557,7 +556,7 @@ public:
                                      // way we can find it.
         const identifier::Nym& NYM_ID,  // Nym ID for the party, the actual
                                         // owner,
-        const identifier::Server& NOTARY_ID,
+        const identifier::Notary& NOTARY_ID,
         String& strOutput) const
         -> bool;  // ===> AS WELL AS for the default AGENT of
                   // that
@@ -608,7 +607,7 @@ public:
         const Identifier& ASSET_ACCT_ID,
         const TransactionNumber& lTransactionNum) const -> CommandResult;
 
-    OPENTXS_NO_EXPORT ~OT_API() override;  // calls Cleanup();
+    ~OT_API() override;  // calls Cleanup();
 
 private:
     friend api::session::imp::Client;
@@ -666,7 +665,7 @@ private:
         otx::context::Server& context,
         Ledger& response) const -> OTTransaction*;
     auto get_origin(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& source,
         String& note) const -> TransactionNumber;
     auto GetTime() const -> Time;

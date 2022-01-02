@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/BlockchainTransaction.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/BlockchainTransaction.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <limits>
@@ -11,13 +11,13 @@
 #include <string>
 #include <utility>
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/Contact.hpp"
-#include "internal/protobuf/verify/BlockchainTransactionInput.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/BlockchainTransactionOutput.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyBlockchain.hpp"
-#include "internal/protobuf/verify/VerifyContacts.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/Contact.hpp"
+#include "internal/serialization/protobuf/verify/BlockchainTransactionInput.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/BlockchainTransactionOutput.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
+#include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "serialization/protobuf/BlockchainTransactionInput.pb.h"
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"

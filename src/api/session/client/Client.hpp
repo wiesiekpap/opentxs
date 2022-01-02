@@ -50,8 +50,8 @@ class Settings;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 namespace network
@@ -87,7 +87,7 @@ public:
     auto Contacts() const -> const session::Contacts& final;
     auto Exec(const std::string& wallet = "") const -> const OTAPI_Exec& final;
     using Session::Lock;
-    auto Lock(const identifier::Nym& nymID, const identifier::Server& serverID)
+    auto Lock(const identifier::Nym& nymID, const identifier::Notary& serverID)
         const -> std::recursive_mutex& final;
     auto NewNym(const identifier::Nym& id) const noexcept -> void final;
     auto OTAPI(const std::string& wallet = "") const -> const OT_API& final;

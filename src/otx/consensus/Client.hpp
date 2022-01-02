@@ -33,8 +33,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 class PasswordPrompt;
@@ -86,13 +86,13 @@ public:
         const api::Session& api,
         const Nym_p& local,
         const Nym_p& remote,
-        const identifier::Server& server);
+        const identifier::Notary& server);
     ClientContext(
         const api::Session& api,
         const proto::Context& serialized,
         const Nym_p& local,
         const Nym_p& remote,
-        const identifier::Server& server);
+        const identifier::Notary& server);
     ~ClientContext() final = default;
 
 private:

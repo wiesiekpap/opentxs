@@ -22,18 +22,18 @@
 #include "Proto.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/otx/client/Pair.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -49,16 +49,22 @@ class Client;
 }  // namespace session
 }  // namespace api
 
-namespace contact
-{
-class ContactData;
-class ContactSection;
-}  // namespace contact
-
 namespace identifier
 {
 class Nym;
 }  // namespace identifier
+
+namespace identity
+{
+namespace wot
+{
+namespace claim
+{
+class Data;
+class Section;
+}  // namespace claim
+}  // namespace wot
+}  // namespace identity
 
 namespace network
 {
@@ -145,7 +151,7 @@ private:
         using Trusted = bool;
         using Details = std::tuple<
             std::unique_ptr<std::mutex>,
-            OTServerID,
+            OTNotaryID,
             OTNymID,
             Status,
             Trusted,
@@ -158,8 +164,8 @@ private:
 
         static auto count_currencies(
             const std::vector<AccountDetails>& in) noexcept -> std::size_t;
-        static auto count_currencies(const contact::ContactSection& in) noexcept
-            -> std::size_t;
+        static auto count_currencies(
+            const identity::wot::claim::Section& in) noexcept -> std::size_t;
         static auto get_account(
             const identifier::UnitDefinition& unit,
             const Identifier& account,
@@ -213,33 +219,33 @@ private:
     OTZMQSubscribeSocket peer_request_subscriber_;
 
     void check_accounts(
-        const contact::ContactData& issuerClaims,
+        const identity::wot::claim::Data& issuerClaims,
         otx::client::Issuer& issuer,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         std::size_t& offered,
         std::size_t& registeredAccounts,
         std::vector<State::AccountDetails>& accountDetails) const noexcept;
     void check_connection_info(
         otx::client::Issuer& issuer,
-        const identifier::Server& serverID) const noexcept;
+        const identifier::Notary& serverID) const noexcept;
     void check_rename(
         const otx::client::Issuer& issuer,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const PasswordPrompt& reason,
         bool& needRename) const noexcept;
     void check_store_secret(
         otx::client::Issuer& issuer,
-        const identifier::Server& serverID) const noexcept;
+        const identifier::Notary& serverID) const noexcept;
     auto cleanup() const noexcept -> std::shared_future<void>;
     auto get_connection(
         const identifier::Nym& localNymID,
         const identifier::Nym& issuerNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const contract::peer::ConnectionInfoType type) const
         -> std::pair<bool, OTIdentifier>;
     auto initiate_bailment(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& issuerID,
         const identifier::UnitDefinition& unitID) const
         -> std::pair<bool, OTIdentifier>;
@@ -273,29 +279,29 @@ private:
         -> api::session::OTX::BackgroundTask;
     auto queue_nym_registration(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const bool setData) const -> api::session::OTX::BackgroundTask;
     auto queue_server_contract(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID) const
+        const identifier::Notary& serverID) const
         -> api::session::OTX::BackgroundTask;
     void queue_unit_definition(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID) const;
     auto register_account(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID) const
         -> std::pair<bool, OTIdentifier>;
     auto need_registration(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const -> bool;
+        const identifier::Notary& serverID) const -> bool;
     void state_machine(const IssuerID& id) const;
     auto store_secret(
         const identifier::Nym& localNymID,
         const identifier::Nym& issuerNymID,
-        const identifier::Server& serverID) const
+        const identifier::Notary& serverID) const
         -> std::pair<bool, OTIdentifier>;
 
     void callback_nym(const zmq::Message& in) noexcept;

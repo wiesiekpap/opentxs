@@ -12,22 +12,22 @@
 #include <string>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Contract.hpp"
+#include "internal/otx/common/recurring/OTAgreement.hpp"
+#include "internal/otx/common/util/Common.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/otx/smartcontract/OTParty.hpp"
 #include "internal/otx/smartcontract/OTPartyAccount.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
+#include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
-#include "opentxs/core/recurring/OTAgreement.hpp"
-#include "opentxs/core/util/Common.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
@@ -644,7 +644,7 @@ auto OTAgent::DropServerNoticeToNymbox(
                        // when
                        // it FAILS to activate.
     const identity::Nym& theServerNym,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     const std::int64_t& lNewTransactionNumber,
     const std::int64_t& lInReferenceTo,
     const String& strReference,
@@ -717,7 +717,7 @@ auto OTAgent::VerifyIssuedNumber(
 
     if (nullptr != m_pNym) {
         auto context = wallet_.Context(
-            identifier::Server::Factory(strNotaryID), m_pNym->ID());
+            identifier::Notary::Factory(strNotaryID), m_pNym->ID());
 
         OT_ASSERT(context);
 
@@ -746,7 +746,7 @@ auto OTAgent::VerifyTransactionNumber(
 
     if (nullptr != m_pNym) {
         auto context = wallet_.Context(
-            identifier::Server::Factory(strNotaryID), m_pNym->ID());
+            identifier::Notary::Factory(strNotaryID), m_pNym->ID());
 
         OT_ASSERT(context);
 
@@ -811,7 +811,7 @@ auto OTAgent::RecoverTransactionNumber(
 {
     if (nullptr != m_pNym) {
         auto context = wallet_.Internal().mutable_Context(
-            identifier::Server::Factory(strNotaryID), m_pNym->ID(), reason);
+            identifier::Notary::Factory(strNotaryID), m_pNym->ID(), reason);
 
         return RecoverTransactionNumber(lNumber, context.get());
     } else {
@@ -849,7 +849,7 @@ auto OTAgent::RemoveTransactionNumber(
     }
 
     auto context = wallet_.Internal().mutable_Context(
-        identifier::Server::Factory(strNotaryID), m_pNym->ID(), reason);
+        identifier::Notary::Factory(strNotaryID), m_pNym->ID(), reason);
 
     if (context.get().ConsumeAvailable(lNumber)) {
         context.get().OpenCronItem(lNumber);
@@ -892,7 +892,7 @@ auto OTAgent::RemoveIssuedNumber(
     }
 
     auto context = wallet_.Internal().mutable_Context(
-        identifier::Server::Factory(strNotaryID), m_pNym->ID(), reason);
+        identifier::Notary::Factory(strNotaryID), m_pNym->ID(), reason);
 
     if (context.get().ConsumeIssued(lNumber)) {
         context.get().CloseCronItem(lNumber);

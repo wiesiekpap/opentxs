@@ -13,27 +13,28 @@
 #include <string>
 #include <vector>
 
+#include "internal/api/session/FactoryAPI.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Contract.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/otx/common/NumList.hpp"
+#include "internal/otx/common/OTTrackable.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/otx/common/OTTransactionType.hpp"
+#include "internal/otx/common/StringXML.hpp"
 #include "internal/otx/common/XML.hpp"
+#include "internal/otx/common/recurring/OTPaymentPlan.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Item.hpp"
-#include "opentxs/core/NumList.hpp"
-#include "opentxs/core/OTTrackable.hpp"
-#include "opentxs/core/OTTransaction.hpp"
-#include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/StringXML.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/recurring/OTPaymentPlan.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -1589,7 +1590,7 @@ auto OTPayment::Instantiate() const -> OTTrackable*
         case CHEQUE:
         case VOUCHER:
         case INVOICE:
-            pContract = api_.Factory().Contract(m_strPayment);
+            pContract = api_.Factory().InternalSession().Contract(m_strPayment);
 
             if (false != bool(pContract)) {
                 pCheque = dynamic_cast<Cheque*>(pContract.release());
@@ -1609,7 +1610,7 @@ auto OTPayment::Instantiate() const -> OTTrackable*
             break;
 
         case PAYMENT_PLAN:
-            pContract = api_.Factory().Contract(m_strPayment);
+            pContract = api_.Factory().InternalSession().Contract(m_strPayment);
 
             if (false != bool(pContract)) {
                 pPaymentPlan =
@@ -1631,7 +1632,7 @@ auto OTPayment::Instantiate() const -> OTTrackable*
             break;
 
         case SMART_CONTRACT:
-            pContract = api_.Factory().Contract(m_strPayment);
+            pContract = api_.Factory().InternalSession().Contract(m_strPayment);
 
             if (false != bool(pContract)) {
                 pSmartContract =
@@ -1697,7 +1698,7 @@ auto OTPayment::InstantiateNotice(const String& strNotice) -> OTTransaction*
 auto OTPayment::InstantiateNotice() const -> OTTransaction*
 {
     if (m_strPayment->Exists() && (OTPayment::NOTICE == GetType())) {
-        auto pType = api_.Factory().Transaction(m_strPayment);
+        auto pType = api_.Factory().InternalSession().Transaction(m_strPayment);
 
         if (false == bool(pType)) {
             LogError()(OT_PRETTY_CLASS())("Failure 1: This payment object does "

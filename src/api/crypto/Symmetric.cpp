@@ -12,6 +12,7 @@
 #include "Proto.tpp"
 #include "internal/api/Crypto.hpp"
 #include "internal/api/crypto/Factory.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -62,7 +63,7 @@ auto Symmetric::Key(
 {
     const auto& provider = api_.Crypto().Internal().SymmetricProvider(mode);
 
-    return api_.Factory().SymmetricKey(provider, serialized);
+    return api_.Factory().InternalSession().SymmetricKey(provider, serialized);
 }
 
 auto Symmetric::Key(
@@ -73,7 +74,8 @@ auto Symmetric::Key(
     const auto& provider = api_.Crypto().Internal().SymmetricProvider(mode);
     auto ciphertext = proto::Factory<proto::Ciphertext>(serializedCiphertext);
 
-    return api_.Factory().SymmetricKey(provider, ciphertext.key());
+    return api_.Factory().InternalSession().SymmetricKey(
+        provider, ciphertext.key());
 }
 
 auto Symmetric::Key(

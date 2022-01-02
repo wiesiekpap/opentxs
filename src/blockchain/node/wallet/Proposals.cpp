@@ -23,6 +23,7 @@
 
 #include "Proto.hpp"
 #include "blockchain/node/wallet/BitcoinTransactionBuilder.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -348,8 +349,10 @@ private:
                 const auto accountID = PC::GetID(
                     api_,
                     chain_,
-                    api_.Factory().PaymentCode(notif.sender()),
-                    api_.Factory().PaymentCode(notif.recipient()));
+                    api_.Factory().InternalSession().PaymentCode(
+                        notif.sender()),
+                    api_.Factory().InternalSession().PaymentCode(
+                        notif.recipient()));
                 const auto nymID = [&] {
                     auto out = api_.Factory().NymID();
                     const auto& bytes = proposal.initiator();

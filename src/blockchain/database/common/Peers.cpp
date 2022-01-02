@@ -17,8 +17,8 @@
 
 #include "Proto.tpp"
 #include "internal/blockchain/p2p/P2P.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/BlockchainPeerAddress.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/BlockchainPeerAddress.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/core/identifier/Generic.hpp"

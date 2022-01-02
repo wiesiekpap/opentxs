@@ -251,16 +251,13 @@ set(OPENTXS_QT_PRIVATE_HEADERS "")
 
 add_subdirectory(api)
 add_subdirectory(blockchain)
-add_subdirectory(contact)
 add_subdirectory(core)
 add_subdirectory(crypto)
 add_subdirectory(identity)
 add_subdirectory(network)
 add_subdirectory(otx)
-add_subdirectory(rpc)
 add_subdirectory(serialization)
-add_subdirectory(storage)
-add_subdirectory(ui)
+add_subdirectory(std)
 add_subdirectory(util)
 
 if(OT_QT_EXPORT)
@@ -280,7 +277,7 @@ if(OT_QT_EXPORT)
   if(OPENTXS_STANDALONE)
     install(
       FILES ${OPENTXS_QT_PUBLIC_HEADERS}
-      DESTINATION include/opentxs/ui/qt
+      DESTINATION include/opentxs/core/ui/qt
       COMPONENT dev
     )
   endif()

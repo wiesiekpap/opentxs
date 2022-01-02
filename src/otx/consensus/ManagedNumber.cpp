@@ -8,7 +8,7 @@
 #include "otx/consensus/ManagedNumber.hpp"  // IWYU pragma: associated
 
 #include "internal/otx/consensus/Consensus.hpp"
-#include "opentxs/core/Flag.hpp"
+#include "internal/util/Flag.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 

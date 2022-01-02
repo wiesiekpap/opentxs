@@ -3,19 +3,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/rpc/AccountEventType.hpp"
-// IWYU pragma: no_include "opentxs/rpc/AccountType.hpp"
-// IWYU pragma: no_include "opentxs/rpc/CommandType.hpp"
-// IWYU pragma: no_include "opentxs/rpc/ContactEventType.hpp"
-// IWYU pragma: no_include "opentxs/rpc/PaymentType.hpp"
-// IWYU pragma: no_include "opentxs/rpc/PushType.hpp"
-// IWYU pragma: no_include "opentxs/rpc/ResponseCode.hpp"
+// IWYU pragma: no_include "opentxs/util/rpc/AccountEventType.hpp"
+// IWYU pragma: no_include "opentxs/util/rpc/AccountType.hpp"
+// IWYU pragma: no_include "opentxs/util/rpc/CommandType.hpp"
+// IWYU pragma: no_include "opentxs/util/rpc/ContactEventType.hpp"
+// IWYU pragma: no_include "opentxs/util/rpc/PaymentType.hpp"
+// IWYU pragma: no_include "opentxs/util/rpc/PushType.hpp"
+// IWYU pragma: no_include "opentxs/util/rpc/ResponseCode.hpp"
 
 #pragma once
 
 #include <memory>
 
-#include "opentxs/rpc/Types.hpp"
+#include "opentxs/util/rpc/Types.hpp"
 #include "serialization/protobuf/RPCEnums.pb.h"
 
 namespace opentxs

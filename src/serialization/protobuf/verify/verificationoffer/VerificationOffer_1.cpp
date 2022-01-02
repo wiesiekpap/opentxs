@@ -3,17 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/VerificationOffer.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/VerificationOffer.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/Claim.hpp"         // IWYU pragma: keep
-#include "internal/protobuf/verify/Verification.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyContacts.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/Claim.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/Verification.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "serialization/protobuf/Claim.pb.h"
 #include "serialization/protobuf/Verification.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/VerificationOffer.pb.h"

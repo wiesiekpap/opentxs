@@ -14,9 +14,9 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/contact/Contact.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "ui/Helpers.hpp"
 
 namespace ottest

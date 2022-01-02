@@ -24,9 +24,15 @@
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/client/obsolete/OT_API.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/util/Editor.hpp"
+#include "internal/util/Flag.hpp"
+#include "internal/util/Lockable.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/Settings.hpp"
@@ -38,19 +44,8 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/Contact.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactGroup.hpp"  // IWYU pragma: keep
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/Cheque.hpp"
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Lockable.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/peer/BailmentNotice.hpp"
@@ -65,10 +60,15 @@
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Group.hpp"  // IWYU pragma: keep
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -88,6 +88,7 @@
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -278,7 +279,7 @@ OTX::OTX(
 
 auto OTX::AcknowledgeBailment(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& targetNymID,
     const Identifier& requestID,
     const std::string& instructions,
@@ -306,7 +307,8 @@ auto OTX::AcknowledgeBailment(
 
     try {
         auto instantiatedRequest =
-            api_.Factory().BailmentRequest(recipientNym, serializedRequest);
+            api_.Factory().InternalSession().BailmentRequest(
+                recipientNym, serializedRequest);
         auto peerreply = api_.Factory().BailmentReply(
             nym,
             instantiatedRequest->Initiator(),
@@ -332,7 +334,7 @@ auto OTX::AcknowledgeBailment(
 
 auto OTX::AcknowledgeConnection(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& recipientID,
     const Identifier& requestID,
     const bool ack,
@@ -384,7 +386,8 @@ auto OTX::AcknowledgeConnection(
 
     try {
         auto instantiatedRequest =
-            api_.Factory().BailmentRequest(recipientNym, serializedRequest);
+            api_.Factory().InternalSession().BailmentRequest(
+                recipientNym, serializedRequest);
         auto peerreply = api_.Factory().ConnectionReply(
             nym,
             instantiatedRequest->Initiator(),
@@ -414,7 +417,7 @@ auto OTX::AcknowledgeConnection(
 
 auto OTX::AcknowledgeNotice(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& recipientID,
     const Identifier& requestID,
     const bool ack,
@@ -442,7 +445,8 @@ auto OTX::AcknowledgeNotice(
 
     try {
         auto instantiatedRequest =
-            api_.Factory().BailmentRequest(recipientNym, serializedRequest);
+            api_.Factory().InternalSession().BailmentRequest(
+                recipientNym, serializedRequest);
         auto peerreply = api_.Factory().ReplyAcknowledgement(
             nym,
             instantiatedRequest->Initiator(),
@@ -469,7 +473,7 @@ auto OTX::AcknowledgeNotice(
 
 auto OTX::AcknowledgeOutbailment(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& recipientID,
     const Identifier& requestID,
     const std::string& details,
@@ -497,7 +501,8 @@ auto OTX::AcknowledgeOutbailment(
 
     try {
         auto instantiatedRequest =
-            api_.Factory().BailmentRequest(recipientNym, serializedRequest);
+            api_.Factory().InternalSession().BailmentRequest(
+                recipientNym, serializedRequest);
         auto peerreply = api_.Factory().OutbailmentReply(
             nym,
             instantiatedRequest->Initiator(),
@@ -550,7 +555,7 @@ auto OTX::can_deposit(
     const OTPayment& payment,
     const identifier::Nym& recipient,
     const Identifier& accountIDHint,
-    identifier::Server& depositServer,
+    identifier::Notary& depositServer,
     identifier::UnitDefinition& unitID,
     Identifier& depositAccount) const -> Depositability
 {
@@ -624,7 +629,7 @@ auto OTX::can_message(
     const identifier::Nym& senderNymID,
     const Identifier& recipientContactID,
     identifier::Nym& recipientNymID,
-    identifier::Server& serverID) const -> Messagability
+    identifier::Notary& serverID) const -> Messagability
 {
     const auto publish = [&](auto value) {
         return publish_messagability(senderNymID, recipientContactID, value);
@@ -742,7 +747,7 @@ auto OTX::CanDeposit(
     const Identifier& accountIDHint,
     const OTPayment& payment) const -> Depositability
 {
-    auto serverID = identifier::Server::Factory();
+    auto serverID = identifier::Notary::Factory();
     auto unitID = identifier::UnitDefinition::Factory();
     auto accountID = Identifier::Factory();
 
@@ -774,14 +779,14 @@ auto OTX::CanMessage(
     }
 
     auto nymID = identifier::Nym::Factory();
-    auto serverID = identifier::Server::Factory();
+    auto serverID = identifier::Notary::Factory();
 
     return can_message(sender, contact, nymID, serverID);
 }
 
 auto OTX::CheckTransactionNumbers(
     const identifier::Nym& nym,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const std::size_t quantity) const -> bool
 {
     auto context = api_.Wallet().ServerContext(nym, serverID);
@@ -824,7 +829,7 @@ auto OTX::CheckTransactionNumbers(
 
 auto OTX::ContextIdle(
     const identifier::Nym& nym,
-    const identifier::Server& server) const -> OTX::Finished
+    const identifier::Notary& server) const -> OTX::Finished
 {
     try {
         auto& queue = get_operations({nym, server});
@@ -908,7 +913,7 @@ auto OTX::DepositPayment(
         return error_task();
     }
 
-    auto serverID = identifier::Server::Factory();
+    auto serverID = identifier::Notary::Factory();
     auto unitID = identifier::UnitDefinition::Factory();
     auto accountID = Identifier::Factory();
     const auto status = can_deposit(
@@ -942,7 +947,7 @@ void OTX::DisableAutoaccept() const { auto_process_inbox_->Off(); }
 
 auto OTX::DownloadMint(
     const identifier::Nym& nym,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& unit) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(nym, server, unit);
@@ -960,7 +965,7 @@ auto OTX::DownloadMint(
 
 auto OTX::DownloadNym(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& targetNymID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, targetNymID)
@@ -978,15 +983,15 @@ auto OTX::DownloadNym(
 
 auto OTX::DownloadNymbox(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID) const -> OTX::BackgroundTask
+    const identifier::Notary& serverID) const -> OTX::BackgroundTask
 {
     return schedule_download_nymbox(localNymID, serverID);
 }
 
 auto OTX::DownloadServerContract(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
-    const identifier::Server& contractID) const -> OTX::BackgroundTask
+    const identifier::Notary& serverID,
+    const identifier::Notary& contractID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, contractID)
 
@@ -1003,7 +1008,7 @@ auto OTX::DownloadServerContract(
 
 auto OTX::DownloadUnitDefinition(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::UnitDefinition& contractID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, contractID)
@@ -1023,7 +1028,7 @@ auto OTX::DownloadUnitDefinition(
 auto OTX::extract_payment_data(
     const OTPayment& payment,
     identifier::Nym& nymID,
-    identifier::Server& serverID,
+    identifier::Notary& serverID,
     identifier::UnitDefinition& unitID) const -> bool
 {
     if (false == payment.GetRecipientNymID(nymID)) {
@@ -1156,7 +1161,7 @@ auto OTX::FindNym(const identifier::Nym& nymID) const -> OTX::BackgroundTask
 
 auto OTX::FindNym(
     const identifier::Nym& nymID,
-    const identifier::Server& serverIDHint) const -> OTX::BackgroundTask
+    const identifier::Notary& serverIDHint) const -> OTX::BackgroundTask
 {
     CHECK_NYM(nymID)
 
@@ -1167,7 +1172,7 @@ auto OTX::FindNym(
     return output;
 }
 
-auto OTX::FindServer(const identifier::Server& serverID) const
+auto OTX::FindServer(const identifier::Notary& serverID) const
     -> OTX::BackgroundTask
 {
     CHECK_NYM(serverID)
@@ -1202,7 +1207,7 @@ auto OTX::finish_task(const TaskID taskID, const bool success, Result&& result)
     return success;
 }
 
-auto OTX::get_introduction_server(const Lock& lock) const -> OTServerID
+auto OTX::get_introduction_server(const Lock& lock) const -> OTNotaryID
 {
     OT_ASSERT(CheckLock(lock, introduction_server_lock_))
 
@@ -1221,7 +1226,7 @@ auto OTX::get_introduction_server(const Lock& lock) const -> OTServerID
     return blank;
 }
 
-auto OTX::get_nym_fetch(const identifier::Server& serverID) const
+auto OTX::get_nym_fetch(const identifier::Notary& serverID) const
     -> UniqueQueue<OTNymID>&
 {
     Lock lock(nym_fetch_lock_);
@@ -1269,7 +1274,7 @@ auto OTX::get_task(const ContextID& id) const
 
 auto OTX::InitiateBailment(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& targetNymID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const SetID setID) const -> OTX::BackgroundTask
@@ -1299,7 +1304,7 @@ auto OTX::InitiateBailment(
 
 auto OTX::InitiateOutbailment(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& targetNymID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const Amount amount,
@@ -1337,7 +1342,7 @@ auto OTX::InitiateOutbailment(
 
 auto OTX::InitiateRequestConnection(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& targetNymID,
     const contract::peer::ConnectionInfoType& type,
     const SetID setID) const -> OTX::BackgroundTask
@@ -1367,7 +1372,7 @@ auto OTX::InitiateRequestConnection(
 
 auto OTX::InitiateStoreSecret(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& targetNymID,
     const contract::peer::SecretType& type,
     const std::string& primary,
@@ -1404,7 +1409,7 @@ auto OTX::InitiateStoreSecret(
     }
 }
 
-auto OTX::IntroductionServer() const -> const identifier::Server&
+auto OTX::IntroductionServer() const -> const identifier::Notary&
 {
     Lock lock(introduction_server_lock_);
 
@@ -1417,7 +1422,7 @@ auto OTX::IntroductionServer() const -> const identifier::Server&
 
 auto OTX::IssueUnitDefinition(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::UnitDefinition& unitID,
     const core::UnitType advertise,
     const std::string& label) const -> OTX::BackgroundTask
@@ -1441,7 +1446,7 @@ void OTX::load_introduction_server(const Lock& lock) const
     OT_ASSERT(CheckLock(lock, introduction_server_lock_))
 
     introduction_server_id_ =
-        std::make_unique<OTServerID>(get_introduction_server(lock));
+        std::make_unique<OTNotaryID>(get_introduction_server(lock));
 }
 
 auto OTX::MessageContact(
@@ -1453,7 +1458,7 @@ auto OTX::MessageContact(
     CHECK_SERVER(senderNymID, contactID)
 
     start_introduction_server(senderNymID);
-    auto serverID = identifier::Server::Factory();
+    auto serverID = identifier::Notary::Factory();
     auto recipientNymID = identifier::Nym::Factory();
     const auto canMessage =
         can_message(senderNymID, contactID, recipientNymID, serverID);
@@ -1496,7 +1501,7 @@ auto OTX::MessageStatus(const TaskID taskID) const
 
 auto OTX::NotifyBailment(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& targetNymID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const Identifier& requestID,
@@ -1543,7 +1548,7 @@ auto OTX::PayContact(
     CHECK_SERVER(senderNymID, contactID)
 
     start_introduction_server(senderNymID);
-    auto serverID = identifier::Server::Factory();
+    auto serverID = identifier::Notary::Factory();
     auto recipientNymID = identifier::Nym::Factory();
     const auto canMessage =
         can_message(senderNymID, contactID, recipientNymID, serverID);
@@ -1572,7 +1577,7 @@ auto OTX::PayContactCash(
     CHECK_SERVER(senderNymID, contactID)
 
     start_introduction_server(senderNymID);
-    auto serverID = identifier::Server::Factory();
+    auto serverID = identifier::Notary::Factory();
     auto recipientNymID = identifier::Nym::Factory();
     const auto canMessage =
         can_message(senderNymID, contactID, recipientNymID, serverID);
@@ -1595,7 +1600,7 @@ auto OTX::PayContactCash(
 
 auto OTX::ProcessInbox(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const Identifier& accountID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, accountID)
@@ -1676,7 +1681,7 @@ auto OTX::publish_messagability(
 
 auto OTX::publish_server_registration(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const bool forcePrimary) const -> bool
 {
     OT_ASSERT(false == nymID.empty())
@@ -1689,7 +1694,7 @@ auto OTX::publish_server_registration(
 
 auto OTX::PublishServerContract(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const Identifier& contractID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, contractID)
@@ -1711,7 +1716,8 @@ auto OTX::queue_cheque_deposit(
     const identifier::Nym& nymID,
     const Cheque& cheque) const -> bool
 {
-    auto payment{api_.Factory().Payment(String::Factory(cheque))};
+    auto payment{
+        api_.Factory().InternalSession().Payment(String::Factory(cheque))};
 
     OT_ASSERT(false != bool(payment));
 
@@ -1750,7 +1756,7 @@ auto OTX::refresh_accounts() const -> bool
     for (const auto& server : serverList) {
         SHUTDOWN()
 
-        const auto serverID = identifier::Server::Factory(server.first);
+        const auto serverID = identifier::Notary::Factory(server.first);
         LogDetail()(OT_PRETTY_CLASS())("Considering server ")(serverID).Flush();
 
         for (const auto& nymID : api_.Wallet().LocalNyms()) {
@@ -1871,8 +1877,8 @@ auto OTX::refresh_contacts() const -> bool
                 if (false == bool(data)) { continue; }
 
                 const auto serverGroup = data->Group(
-                    contact::SectionType::Communication,
-                    contact::ClaimType::Opentxs);
+                    identity::wot::claim::SectionType::Communication,
+                    identity::wot::claim::ClaimType::Opentxs);
 
                 if (false == bool(serverGroup)) {
 
@@ -1887,7 +1893,7 @@ auto OTX::refresh_contacts() const -> bool
 
                     const auto& notUsed [[maybe_unused]] = claimID;
                     const auto serverID =
-                        identifier::Server::Factory(item->Value());
+                        identifier::Notary::Factory(item->Value());
 
                     if (serverID->empty()) { continue; }
 
@@ -1911,7 +1917,7 @@ auto OTX::refresh_contacts() const -> bool
 
 auto OTX::RegisterAccount(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::UnitDefinition& unitID,
     const std::string& label) const -> OTX::BackgroundTask
 {
@@ -1920,7 +1926,7 @@ auto OTX::RegisterAccount(
 
 auto OTX::RegisterNym(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const bool resync) const -> OTX::BackgroundTask
 {
     CHECK_SERVER(localNymID, serverID)
@@ -1938,7 +1944,7 @@ auto OTX::RegisterNym(
 
 auto OTX::RegisterNymPublic(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const bool setContactData,
     const bool forcePrimary,
     const bool resync) const -> OTX::BackgroundTask
@@ -1955,7 +1961,7 @@ auto OTX::RegisterNymPublic(
 }
 
 auto OTX::SetIntroductionServer(const contract::Server& contract) const
-    -> OTServerID
+    -> OTNotaryID
 {
     Lock lock(introduction_server_lock_);
 
@@ -1964,7 +1970,7 @@ auto OTX::SetIntroductionServer(const contract::Server& contract) const
 
 auto OTX::schedule_download_nymbox(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID) const -> OTX::BackgroundTask
+    const identifier::Notary& serverID) const -> OTX::BackgroundTask
 {
     CHECK_SERVER(localNymID, serverID)
 
@@ -1981,7 +1987,7 @@ auto OTX::schedule_download_nymbox(
 
 auto OTX::schedule_register_account(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::UnitDefinition& unitID,
     const std::string& label) const -> OTX::BackgroundTask
 {
@@ -2011,7 +2017,7 @@ auto OTX::SendCheque(
     CHECK_ARGS(localNymID, sourceAccountID, recipientContactID)
 
     start_introduction_server(localNymID);
-    auto serverID = identifier::Server::Factory();
+    auto serverID = identifier::Notary::Factory();
     auto recipientNymID = identifier::Nym::Factory();
     const auto canMessage =
         can_message(localNymID, recipientContactID, recipientNymID, serverID);
@@ -2051,7 +2057,7 @@ auto OTX::SendCheque(
 
 auto OTX::SendExternalTransfer(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const Identifier& sourceAccountID,
     const Identifier& targetAccountID,
     const Amount& value,
@@ -2094,7 +2100,7 @@ auto OTX::SendExternalTransfer(
 
 auto OTX::SendTransfer(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const Identifier& sourceAccountID,
     const Identifier& targetAccountID,
     const Amount& value,
@@ -2137,7 +2143,7 @@ auto OTX::SendTransfer(
 
 void OTX::set_contact(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID) const
+    const identifier::Notary& serverID) const
 {
     auto nym = api_.Wallet().mutable_Nym(nymID, reason_);
     const auto server = nym.PreferredOTServer();
@@ -2149,7 +2155,7 @@ void OTX::set_contact(
 
 auto OTX::set_introduction_server(
     const Lock& lock,
-    const contract::Server& contract) const -> OTServerID
+    const contract::Server& contract) const -> OTNotaryID
 {
     OT_ASSERT(CheckLock(lock, introduction_server_lock_));
 
@@ -2161,9 +2167,9 @@ auto OTX::set_introduction_server(
                 .Flush();
         }
         const auto instantiated = api_.Wallet().Internal().Server(serialized);
-        const auto id = identifier::Server::Factory(
+        const auto id = identifier::Notary::Factory(
             instantiated->ID()->str());  // TODO conversion
-        introduction_server_id_ = std::make_unique<OTServerID>(id);
+        introduction_server_id_ = std::make_unique<OTNotaryID>(id);
 
         OT_ASSERT(introduction_server_id_)
 
@@ -2317,7 +2323,7 @@ void OTX::update_task(
 auto OTX::valid_account(
     const OTPayment& payment,
     const identifier::Nym& recipient,
-    const identifier::Server& paymentServerID,
+    const identifier::Notary& paymentServerID,
     const identifier::UnitDefinition& paymentUnitID,
     const Identifier& accountIDHint,
     Identifier& depositAccount) const -> Depositability
@@ -2368,7 +2374,7 @@ auto OTX::valid_account(
 
 auto OTX::valid_context(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID) const -> bool
+    const identifier::Notary& serverID) const -> bool
 {
     const auto nyms = api_.Wallet().LocalNyms();
 
@@ -2423,7 +2429,7 @@ auto OTX::valid_recipient(
 
 auto OTX::WithdrawCash(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const Identifier& account,
     const Amount amount) const -> OTX::BackgroundTask
 {

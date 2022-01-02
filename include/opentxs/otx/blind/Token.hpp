@@ -21,7 +21,7 @@ namespace opentxs
 {
 namespace identifier
 {
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -56,7 +56,7 @@ public:
     auto ID(const PasswordPrompt& reason) const -> std::string;
     auto Internal() const noexcept -> const internal::Token&;
     auto IsSpent(const PasswordPrompt& reason) const -> bool;
-    auto Notary() const -> const identifier::Server&;
+    auto Notary() const -> const identifier::Notary&;
     auto Series() const -> MintSeries;
     auto State() const -> blind::TokenState;
     auto Type() const -> blind::CashType;

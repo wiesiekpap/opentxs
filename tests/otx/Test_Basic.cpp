@@ -20,17 +20,23 @@
 
 #include "2_Factory.hpp"
 #include "internal/api/session/Client.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/client/Pair.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/otx/client/obsolete/OT_API.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/consensus/Consensus.hpp"
+#include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/api/session/Activity.hpp"
@@ -42,16 +48,8 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
@@ -73,11 +71,13 @@
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
@@ -91,6 +91,7 @@
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -174,8 +175,8 @@ public:
     ot::OTPasswordPrompt reason_s2_;
     const OTUnitDefinition asset_contract_1_;
     const OTUnitDefinition asset_contract_2_;
-    const ot::identifier::Server& server_1_id_;
-    const ot::identifier::Server& server_2_id_;
+    const ot::identifier::Notary& server_1_id_;
+    const ot::identifier::Notary& server_2_id_;
     const OTServerContract server_contract_;
     const ot::otx::context::Server::ExtraArgs extra_args_;
 
@@ -195,9 +196,9 @@ public:
         , asset_contract_1_(load_unit(client_1_, unit_id_1_))
         , asset_contract_2_(load_unit(client_2_, unit_id_2_))
         , server_1_id_(
-              dynamic_cast<const ot::identifier::Server&>(server_1_.ID()))
+              dynamic_cast<const ot::identifier::Notary&>(server_1_.ID()))
         , server_2_id_(
-              dynamic_cast<const ot::identifier::Server&>(server_2_.ID()))
+              dynamic_cast<const ot::identifier::Notary&>(server_2_.ID()))
         , server_contract_(server_1_.Wallet().Server(server_1_id_))
         , extra_args_()
     {
@@ -1989,7 +1990,8 @@ TEST_F(Test_Basic, send_cheque)
     EXPECT_NE(0, cheque_transaction_number_);
 
     std::shared_ptr<OTPayment> payment{
-        client_1_.Factory().Payment(String::Factory(*cheque))};
+        client_1_.Factory().InternalSession().Payment(
+            String::Factory(*cheque))};
 
     ASSERT_TRUE(payment);
 
@@ -3218,8 +3220,8 @@ TEST_F(Test_Basic, addClaim)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.AddClaim(
-        contact::SectionType::Scope,
-        contact::ClaimType::Server,
+        identity::wot::claim::SectionType::Scope,
+        identity::wot::claim::ClaimType::Server,
         String::Factory(NEW_SERVER_NAME),
         true);
 
@@ -3322,8 +3324,8 @@ TEST_F(Test_Basic, addClaim_not_admin)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.AddClaim(
-        contact::SectionType::Scope,
-        contact::ClaimType::Server,
+        identity::wot::claim::SectionType::Scope,
+        identity::wot::claim::ClaimType::Server,
         String::Factory(NEW_SERVER_NAME),
         true);
 
@@ -3717,7 +3719,7 @@ TEST_F(Test_Basic, withdrawCash)
         serverAccount.get().GetBalance(), clientAccount.get().GetBalance());
 
     // TODO conversion
-    auto purseEditor = context.mutable_Purse(
+    auto purseEditor = context.InternalServer().mutable_Purse(
         identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str()),
         reason_c2_);
     auto& purse = purseEditor.get();
@@ -3742,7 +3744,8 @@ TEST_F(Test_Basic, send_cash)
     // TODO conversion
     const auto unitID =
         identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str());
-    auto localPurseEditor = context.mutable_Purse(unitID, reason_c2_);
+    auto localPurseEditor =
+        context.InternalServer().mutable_Purse(unitID, reason_c2_);
     auto& localPurse = localPurseEditor.get();
 
     ASSERT_TRUE(localPurse.Unlock(bob, reason_c2_));
@@ -3869,7 +3872,8 @@ TEST_F(Test_Basic, receive_cash)
 
     ASSERT_TRUE(incomingPurse);
 
-    auto purseEditor = context.mutable_Purse(unitID, reason_c1_);
+    auto purseEditor =
+        context.InternalServer().mutable_Purse(unitID, reason_c1_);
     auto& walletPurse = purseEditor.get();
     const auto& alice = *context.Nym();
 

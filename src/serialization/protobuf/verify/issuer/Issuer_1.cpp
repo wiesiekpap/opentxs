@@ -3,12 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/Issuer.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/Issuer.hpp"  // IWYU pragma: associated
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/PeerRequestHistory.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/UnitAccountMap.hpp"      // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyContracts.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/PeerRequestHistory.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/UnitAccountMap.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyContracts.hpp"
 #include "serialization/protobuf/Issuer.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

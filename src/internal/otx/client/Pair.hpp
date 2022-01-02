@@ -5,12 +5,11 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
-
 #include <future>
 #include <set>
 #include <string>
 
+#include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 
 namespace opentxs

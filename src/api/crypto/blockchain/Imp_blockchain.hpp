@@ -82,11 +82,6 @@ class Transaction;
 }  // namespace block
 }  // namespace blockchain
 
-namespace contact
-{
-class Contact;
-}  // namespace contact
-
 namespace identifier
 {
 class Nym;
@@ -106,6 +101,7 @@ class Message;
 }  // namespace zeromq
 }  // namespace network
 
+class Contact;
 class Data;
 class Identifier;
 class Options;
@@ -146,11 +142,9 @@ struct BlockchainImp final : public Blockchain::Imp {
             const opentxs::blockchain::block::bitcoin::Transaction> final;
     auto LookupContacts(const Data& pubkeyHash) const noexcept
         -> ContactList final;
-    auto ProcessContact(const contact::Contact& contact) const noexcept
-        -> bool final;
-    auto ProcessMergedContact(
-        const contact::Contact& parent,
-        const contact::Contact& child) const noexcept -> bool final;
+    auto ProcessContact(const Contact& contact) const noexcept -> bool final;
+    auto ProcessMergedContact(const Contact& parent, const Contact& child)
+        const noexcept -> bool final;
     auto ProcessTransaction(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::bitcoin::Transaction& in,

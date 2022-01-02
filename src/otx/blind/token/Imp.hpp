@@ -11,7 +11,7 @@
 #include "internal/otx/blind/Purse.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
@@ -77,7 +77,7 @@ class Token : virtual public blind::Token::Imp
 {
 public:
     auto IsValid() const noexcept -> bool final { return true; }
-    auto Notary() const -> const identifier::Server& override
+    auto Notary() const -> const identifier::Notary& override
     {
         return notary_;
     }
@@ -109,7 +109,7 @@ protected:
     const api::Session& api_;
     blind::internal::Purse& purse_;
     blind::TokenState state_;
-    const OTServerID notary_;
+    const OTNotaryID notary_;
     const OTUnitID unit_;
     const std::uint64_t series_;
     const Denomination denomination_;
@@ -149,7 +149,7 @@ private:
         blind::internal::Purse& purse,
         const blind::TokenState state,
         const blind::CashType type,
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,
         const std::uint64_t series,
         const Denomination denomination,

@@ -3,13 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"              // IWYU pragma: associated
-#include "1_Internal.hpp"            // IWYU pragma: associated
-#include "api/Legacy.hpp"            // IWYU pragma: associated
-#include "api/context/Context.hpp"   // IWYU pragma: associated
-#include "core/String.hpp"           // IWYU pragma: associated
-#include "internal/util/String.hpp"  // IWYU pragma: associated
-#include "opentxs/util/Signals.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"               // IWYU pragma: associated
+#include "1_Internal.hpp"             // IWYU pragma: associated
+#include "api/Legacy.hpp"             // IWYU pragma: associated
+#include "api/context/Context.hpp"    // IWYU pragma: associated
+#include "core/String.hpp"            // IWYU pragma: associated
+#include "internal/util/Signals.hpp"  // IWYU pragma: associated
+#include "internal/util/String.hpp"   // IWYU pragma: associated
 
 extern "C" {
 #include <pwd.h>
@@ -24,8 +24,8 @@ extern "C" {
 #endif
 }
 
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/util/Log.hpp"
 
 #if defined(debug) || defined(_DEBUG) || defined(DEBUG)

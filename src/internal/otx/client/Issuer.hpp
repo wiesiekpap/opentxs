@@ -5,19 +5,18 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
-
 #include <set>
 #include <string>
 #include <tuple>
 #include <vector>
 
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 
 namespace opentxs
 {
@@ -80,10 +79,10 @@ public:
     virtual auto LocalNymID() const -> const identifier::Nym& = 0;
     virtual auto Paired() const -> bool = 0;
     virtual auto PairingCode() const -> const std::string& = 0;
-    virtual auto PrimaryServer() const -> OTServerID = 0;
+    virtual auto PrimaryServer() const -> OTNotaryID = 0;
     virtual auto RequestTypes() const
         -> std::set<contract::peer::PeerRequestType> = 0;
-    OPENTXS_NO_EXPORT virtual auto Serialize(proto::Issuer&) const -> bool = 0;
+    virtual auto Serialize(proto::Issuer&) const -> bool = 0;
     virtual auto StoreSecretComplete() const -> bool = 0;
     virtual auto StoreSecretInitiated() const -> bool = 0;
 

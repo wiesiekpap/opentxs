@@ -34,7 +34,7 @@ namespace blockchain
 namespace block
 {
 class Header;
-struct Outpoint;
+class Outpoint;
 }  // namespace block
 }  // namespace blockchain
 }  // namespace opentxs

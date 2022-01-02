@@ -7,12 +7,7 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "core/paymentcode/PaymentCode.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
-#include <cstddef>
-#include <cstring>
 #include <string>
-#include <string_view>
-#include <typeindex>
 #include <utility>
 #include <vector>
 
@@ -22,23 +17,6 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/key/HD.hpp"             // IWYU pragma: keep
-
-namespace std
-{
-template <>
-struct hash<opentxs::PaymentCode> {
-    // TODO create a specialization for opentxs::Identifier and use that
-    auto operator()(const opentxs::PaymentCode& rhs) const noexcept
-        -> std::size_t
-    {
-        auto out = std::size_t{};
-        const auto& hash = rhs.ID();
-        std::memcpy(&out, hash.data(), std::min(sizeof(out), hash.size()));
-
-        return out;
-    }
-};
-}  // namespace std
 
 namespace opentxs
 {

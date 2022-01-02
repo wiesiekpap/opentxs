@@ -20,8 +20,8 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/client/Types.hpp"
 #include "opentxs/util/Time.hpp"
@@ -42,7 +42,7 @@ class Storage;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -87,7 +87,7 @@ public:
         -> OTNymID = 0;
     virtual auto AccountOwner(const Identifier& accountID) const -> OTNymID = 0;
     virtual auto AccountServer(const Identifier& accountID) const
-        -> OTServerID = 0;
+        -> OTNotaryID = 0;
     virtual auto AccountSigner(const Identifier& accountID) const
         -> OTNymID = 0;
     virtual auto AccountUnit(const Identifier& accountID) const
@@ -98,7 +98,7 @@ public:
         -> std::set<OTIdentifier> = 0;
     virtual auto AccountsByOwner(const identifier::Nym& ownerNym) const
         -> std::set<OTIdentifier> = 0;
-    virtual auto AccountsByServer(const identifier::Server& server) const
+    virtual auto AccountsByServer(const identifier::Notary& server) const
         -> std::set<OTIdentifier> = 0;
     virtual auto AccountsByUnit(const core::UnitType unit) const
         -> std::set<OTIdentifier> = 0;
@@ -120,7 +120,7 @@ public:
     virtual auto BlockchainTransactionList(
         const identifier::Nym& nym) const noexcept -> std::vector<OTData> = 0;
     virtual auto CheckTokenSpent(
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,
         const std::uint64_t series,
         const std::string& key) const -> bool = 0;
@@ -223,7 +223,7 @@ public:
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
         const identifier::Nym& nym,
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,
         proto::Purse& output,
         const bool checking) const -> bool = 0;
@@ -237,11 +237,11 @@ public:
         std::string& alias,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
-        const identifier::Server& id,
+        const identifier::Notary& id,
         proto::ServerContract& contract,
         const bool checking = false) const -> bool = 0;
     virtual auto Load(
-        const identifier::Server& id,
+        const identifier::Notary& id,
         proto::ServerContract& contract,
         std::string& alias,
         const bool checking = false) const -> bool = 0;
@@ -265,7 +265,7 @@ public:
     virtual void MapServers(ServerLambda& lambda) const = 0;
     virtual void MapUnitDefinitions(UnitLambda& lambda) const = 0;
     virtual auto MarkTokenSpent(
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,
         const std::uint64_t series,
         const std::string& key) const -> bool = 0;
@@ -347,7 +347,7 @@ public:
     virtual auto SetSeedAlias(const std::string& id, const std::string& alias)
         const -> bool = 0;
     virtual auto SetServerAlias(
-        const identifier::Server& id,
+        const identifier::Notary& id,
         const std::string& alias) const -> bool = 0;
     virtual auto SetThreadAlias(
         const std::string& nymId,
@@ -363,12 +363,12 @@ public:
         const identifier::Nym& ownerNym,
         const identifier::Nym& signerNym,
         const identifier::Nym& issuerNym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const identifier::UnitDefinition& contract,
         const core::UnitType unit) const -> bool = 0;
     virtual auto Store(
         const std::string& nymID,
-        const opentxs::contact::ClaimType type,
+        const opentxs::identity::wot::claim::ClaimType type,
         const proto::HDAccount& data) const -> bool = 0;
     virtual auto Store(
         const identifier::Nym& nymID,

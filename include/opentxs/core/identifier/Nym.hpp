@@ -7,6 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <functional>
+
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -18,7 +20,25 @@ class Nym;
 }  // namespace identifier
 
 using OTNymID = Pimpl<identifier::Nym>;
+}  // namespace opentxs
 
+namespace std
+{
+template <>
+struct OPENTXS_EXPORT hash<opentxs::OTNymID> {
+    auto operator()(const opentxs::identifier::Nym& data) const noexcept
+        -> std::size_t;
+};
+
+template <>
+struct OPENTXS_EXPORT less<opentxs::OTNymID> {
+    auto operator()(const opentxs::OTNymID& lhs, const opentxs::OTNymID& rhs)
+        const -> bool;
+};
+}  // namespace std
+
+namespace opentxs
+{
 OPENTXS_EXPORT auto operator==(
     const OTNymID& lhs,
     const opentxs::Identifier& rhs) noexcept -> bool;
@@ -39,9 +59,7 @@ OPENTXS_EXPORT auto operator>=(
     const opentxs::Identifier& rhs) noexcept -> bool;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace identifier
+namespace opentxs::identifier
 {
 class OPENTXS_EXPORT Nym : virtual public opentxs::Identifier
 {
@@ -67,5 +85,4 @@ private:
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
 };
-}  // namespace identifier
-}  // namespace opentxs
+}  // namespace opentxs::identifier

@@ -18,9 +18,9 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "core/OTStorage.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/Legacy.hpp"
+#include "internal/api/session/Activity.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Types.hpp"
@@ -29,10 +29,26 @@
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/client/OTPayment.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/Context.hpp"
-#include "internal/protobuf/verify/Purse.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/NumList.hpp"
+#include "internal/otx/common/NymFile.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/otx/common/OTTransactionType.hpp"
+#include "internal/otx/common/basket/Basket.hpp"
+#include "internal/otx/common/basket/BasketItem.hpp"
+#include "internal/otx/common/cron/OTCronItem.hpp"
+#include "internal/otx/common/trade/OTOffer.hpp"
+#include "internal/otx/common/trade/OTTrade.hpp"
+#include "internal/otx/common/transaction/Helpers.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/Context.hpp"
+#include "internal/serialization/protobuf/verify/Purse.hpp"
 #include "internal/util/Exclusive.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -46,35 +62,19 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Item.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/NumList.hpp"
-#include "opentxs/core/NymFile.hpp"
-#include "opentxs/core/OTTransaction.hpp"
-#include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/contract/basket/Basket.hpp"
-#include "opentxs/core/contract/basket/BasketItem.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
-#include "opentxs/core/cron/OTCronItem.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/trade/OTOffer.hpp"
-#include "opentxs/core/trade/OTTrade.hpp"
-#include "opentxs/core/transaction/Helpers.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -103,6 +103,7 @@
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
+#include "otx/common/OTStorage.hpp"
 #include "otx/consensus/Base.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/ConsensusEnums.pb.h"
@@ -143,7 +144,7 @@ auto ServerContext(
     const network::zeromq::socket::Publish& replyReceived,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     network::ServerConnection& connection) -> otx::context::internal::Server*
 {
     return new ReturnType(
@@ -179,7 +180,7 @@ Server::Server(
     const network::zeromq::socket::Publish& replyReceived,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     network::ServerConnection& connection)
     : Base(api, CURRENT_VERSION, local, remote, server)
     , StateMachine(std::bind(&Server::state_machine, this))
@@ -321,18 +322,20 @@ auto Server::accept_entire_nymbox(
     }
 
     TransactionNumber lStoredTransactionNumber{0};
-    auto processLedger = api_.Factory().Ledger(nymID, nymID, server_id_);
+    auto processLedger =
+        api_.Factory().InternalSession().Ledger(nymID, nymID, server_id_);
 
     OT_ASSERT(processLedger);
 
     processLedger->GenerateLedger(nymID, server_id_, ledgerType::message);
-    std::shared_ptr<OTTransaction> acceptTransaction{api_.Factory().Transaction(
-        nymID,
-        nymID,
-        server_id_,
-        transactionType::processNymbox,
-        originType::not_applicable,
-        lStoredTransactionNumber)};
+    std::shared_ptr<OTTransaction> acceptTransaction{
+        api_.Factory().InternalSession().Transaction(
+            nymID,
+            nymID,
+            server_id_,
+            transactionType::processNymbox,
+            originType::not_applicable,
+            lStoredTransactionNumber)};
 
     OT_ASSERT(acceptTransaction);
 
@@ -661,11 +664,12 @@ auto Server::add_item_to_payment_inbox(
     // instrumentNotice for my Payments Inbox using Txn # X as well.
     // After all, if the notary had created it (as normally happens) then
     // that's the Txn# that would have been on it anyway.
-    std::shared_ptr<OTTransaction> transaction{api_.Factory().Transaction(
-        *paymentInbox,
-        transactionType::instrumentNotice,
-        originType::not_applicable,
-        number)};
+    std::shared_ptr<OTTransaction> transaction{
+        api_.Factory().InternalSession().Transaction(
+            *paymentInbox,
+            transactionType::instrumentNotice,
+            originType::not_applicable,
+            number)};
 
     OT_ASSERT(transaction);
 
@@ -688,7 +692,7 @@ auto Server::add_item_to_workflow(
     OT_ASSERT(nym_);
 
     const auto& nym = *nym_;
-    auto message = api_.Factory().Message();
+    auto message = api_.Factory().InternalSession().Message();
 
     OT_ASSERT(message);
 
@@ -719,7 +723,7 @@ auto Server::add_item_to_workflow(
         return false;
     }
 
-    auto payment = api_.Factory().Payment(plaintext);
+    auto payment = api_.Factory().InternalSession().Payment(plaintext);
 
     if (false == bool(payment)) {
         LogError()(OT_PRETTY_CLASS())("Invalid payment").Flush();
@@ -731,7 +735,7 @@ auto Server::add_item_to_workflow(
 
     if (payment->IsCancelledCheque(reason)) { return false; }
 
-    auto pCheque = api_.Factory().Cheque();
+    auto pCheque = api_.Factory().InternalSession().Cheque();
 
     OT_ASSERT(pCheque);
 
@@ -1065,7 +1069,7 @@ auto Server::extract_box_receipt(
     }
 
     std::shared_ptr<OTTransactionType> transaction{
-        api_.Factory().Transaction(serialized)};
+        api_.Factory().InternalSession().Transaction(serialized)};
 
     if (false == bool(transaction)) {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate transaction")
@@ -1118,7 +1122,8 @@ auto Server::extract_ledger(
 
     const auto& nym = *nym_;
     const auto& nymID = nym.ID();
-    auto output = api_.Factory().Ledger(nymID, accountID, server_id_);
+    auto output =
+        api_.Factory().InternalSession().Ledger(nymID, accountID, server_id_);
 
     OT_ASSERT(output);
 
@@ -1145,7 +1150,7 @@ auto Server::extract_message(
     const Armored& armored,
     const identity::Nym& signer) const -> std::unique_ptr<Message>
 {
-    auto output = api_.Factory().Message();
+    auto output = api_.Factory().InternalSession().Message();
 
     OT_ASSERT(output);
 
@@ -1198,7 +1203,7 @@ auto Server::extract_original_item(const Item& response) const
         return {};
     }
 
-    auto transaction = api_.Factory().Transaction(serialized);
+    auto transaction = api_.Factory().InternalSession().Transaction(serialized);
 
     if (false == bool(transaction)) {
         LogError()(OT_PRETTY_CLASS())("Unable to instantiate serialized item")
@@ -1248,7 +1253,7 @@ auto Server::extract_payment_instrument_from_notice(
             return nullptr;
         }
         // --------------------
-        auto pMsg{api.Factory().Message()};
+        auto pMsg{api.Factory().InternalSession().Message()};
         if (false == bool(pMsg)) {
             LogError()(OT_PRETTY_CLASS())(
                 "Null: Assert while allocating memory "
@@ -1294,7 +1299,8 @@ auto Server::extract_payment_instrument_from_notice(
                 // strEnvelopeContents contains a PURSE or CHEQUE
                 // (etc) and not specifically a generic "PAYMENT".
                 //
-                auto pPayment{api.Factory().Payment(strEnvelopeContents)};
+                auto pPayment{api.Factory().InternalSession().Payment(
+                    strEnvelopeContents)};
                 if (false == bool(pPayment) || !pPayment->IsValid())
                     LogConsole()(OT_PRETTY_CLASS())(
                         "Failed: after decryption, payment is invalid. "
@@ -1314,7 +1320,7 @@ auto Server::extract_payment_instrument_from_notice(
         }
     } else if (transactionType::notice == pTransaction->GetType()) {
         auto strNotice = String::Factory(*pTransaction);
-        auto pPayment{api.Factory().Payment(strNotice)};
+        auto pPayment{api.Factory().InternalSession().Payment(strNotice)};
 
         if (false == bool(pPayment) || !pPayment->IsValid())
             LogConsole()(OT_PRETTY_CLASS())(
@@ -1369,7 +1375,7 @@ auto Server::extract_transfer_pending(const OTTransaction& receipt) const
         return nullptr;
     }
 
-    auto transfer = api_.Factory().Item(serializedTransfer);
+    auto transfer = api_.Factory().InternalSession().Item(serializedTransfer);
 
     if (false == bool(transfer)) {
         LogError()(OT_PRETTY_CLASS())("Unable to instantiate transfer item")
@@ -1400,7 +1406,8 @@ auto Server::extract_transfer_receipt(const OTTransaction& receipt) const
         return nullptr;
     }
 
-    const auto acceptPending = api_.Factory().Item(serializedAcceptPending);
+    const auto acceptPending =
+        api_.Factory().InternalSession().Item(serializedAcceptPending);
 
     if (false == bool(acceptPending)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1427,7 +1434,7 @@ auto Server::extract_transfer_receipt(const OTTransaction& receipt) const
         return nullptr;
     }
 
-    auto pending = api_.Factory().Transaction(
+    auto pending = api_.Factory().InternalSession().Transaction(
         receipt.GetNymID(),
         receipt.GetRealAccountID(),
         receipt.GetRealNotaryID());
@@ -1467,7 +1474,7 @@ auto Server::extract_transfer_receipt(const OTTransaction& receipt) const
         return nullptr;
     }
 
-    auto transfer = api_.Factory().Item(serializedTransfer);
+    auto transfer = api_.Factory().InternalSession().Item(serializedTransfer);
 
     if (false == bool(transfer)) {
         LogError()(OT_PRETTY_CLASS())("Unable to instantiate transfer item")
@@ -1946,7 +1953,7 @@ void Server::init_sockets()
 auto Server::initialize_server_command(const MessageType type) const
     -> std::unique_ptr<Message>
 {
-    auto output = api_.Factory().Message();
+    auto output = api_.Factory().InternalSession().Message();
 
     OT_ASSERT(output);
 
@@ -2009,7 +2016,7 @@ auto Server::initialize_server_command(
     OT_ASSERT(verify_write_lock(lock));
 
     std::pair<RequestNumber, std::unique_ptr<Message>> output{
-        0, api_.Factory().Message()};
+        0, api_.Factory().InternalSession().Message()};
     auto& [requestNumber, message] = output;
 
     OT_ASSERT(message);
@@ -2077,7 +2084,7 @@ auto Server::instantiate_message(
 {
     if (serialized.empty()) { return {}; }
 
-    auto output = api.Factory().Message();
+    auto output = api.Factory().InternalSession().Message();
 
     OT_ASSERT(output);
 
@@ -2123,7 +2130,7 @@ auto Server::make_accept_item(
     OTTransaction& acceptTransaction,
     const TransactionNumbers& accept) -> const Item&
 {
-    std::shared_ptr<Item> acceptItem{api_.Factory().Item(
+    std::shared_ptr<Item> acceptItem{api_.Factory().InternalSession().Item(
         acceptTransaction, type, api_.Factory().Identifier())};
 
     OT_ASSERT(acceptItem);
@@ -2148,7 +2155,8 @@ auto Server::load_account_inbox(const Identifier& accountID) const
 
     const auto& nym = *nym_;
     const auto& nymID = nym.ID();
-    auto inbox = api_.Factory().Ledger(nymID, accountID, server_id_);
+    auto inbox =
+        api_.Factory().InternalSession().Ledger(nymID, accountID, server_id_);
 
     OT_ASSERT(inbox);
 
@@ -2181,7 +2189,8 @@ auto Server::load_or_create_account_recordbox(
 
     const auto& nym = *nym_;
     const auto& nymID = nym.ID();
-    auto recordBox = api_.Factory().Ledger(nymID, accountID, server_id_);
+    auto recordBox =
+        api_.Factory().InternalSession().Ledger(nymID, accountID, server_id_);
 
     OT_ASSERT(recordBox);
 
@@ -2229,7 +2238,8 @@ auto Server::load_or_create_payment_inbox(const PasswordPrompt& reason) const
 
     const auto& nym = *nym_;
     const auto& nymID = nym.ID();
-    auto paymentInbox = api_.Factory().Ledger(nymID, nymID, server_id_);
+    auto paymentInbox =
+        api_.Factory().InternalSession().Ledger(nymID, nymID, server_id_);
 
     OT_ASSERT(paymentInbox);
 
@@ -2286,7 +2296,7 @@ void Server::need_box_items(
     Lock messageLock(message_lock_, std::defer_lock);
     Lock contextLock(lock_, std::defer_lock);
     std::lock(messageLock, contextLock);
-    auto nymbox{api_.Factory().Ledger(
+    auto nymbox{api_.Factory().InternalSession().Ledger(
         nym_->ID(), nym_->ID(), server_id_, ledgerType::nymbox)};
 
     OT_ASSERT(nymbox);
@@ -2447,7 +2457,7 @@ void Server::need_process_nymbox(
     Lock messageLock(message_lock_, std::defer_lock);
     Lock contextLock(lock_, std::defer_lock);
     std::lock(messageLock, contextLock);
-    auto nymbox{api_.Factory().Ledger(
+    auto nymbox{api_.Factory().InternalSession().Ledger(
         nym_->ID(), nym_->ID(), server_id_, ledgerType::nymbox)};
 
     OT_ASSERT(nymbox);
@@ -2492,7 +2502,7 @@ void Server::need_process_nymbox(
         return;
     }
 
-    auto message{api_.Factory().Message()};
+    auto message{api_.Factory().InternalSession().Message()};
 
     OT_ASSERT(message);
 
@@ -2825,15 +2835,15 @@ void Server::process_accept_cron_receipt_reply(
     pServerItem->GetAttachment(strOffer);
     // contains updated trade.
     pServerItem->GetNote(strTrade);
-    auto theOffer = api_.Factory().Offer();
+    auto theOffer = api_.Factory().InternalSession().Offer();
 
     OT_ASSERT((theOffer));
 
-    auto theTrade = api_.Factory().Trade();
+    auto theTrade = api_.Factory().InternalSession().Trade();
 
     OT_ASSERT((theTrade));
 
-    api_.Factory().Trade();
+    api_.Factory().InternalSession().Trade();
     bool bLoadOfferFromString = theOffer->LoadContractFromString(strOffer);
     bool bLoadTradeFromString = theTrade->LoadContractFromString(strTrade);
 
@@ -3073,7 +3083,7 @@ void Server::process_accept_item_receipt_reply(
     const auto& nymID = nym_->ID();
     auto serializedOriginal = String::Factory();
     inboxTransaction.GetReferenceString(serializedOriginal);
-    auto pOriginalItem = api_.Factory().Item(
+    auto pOriginalItem = api_.Factory().InternalSession().Item(
         serializedOriginal, server_id_, inboxTransaction.GetReferenceToNum());
 
     if (false == bool(pOriginalItem)) {
@@ -3093,7 +3103,7 @@ void Server::process_accept_item_receipt_reply(
         case itemType::depositCheque: {
             auto serialized = String::Factory();
             originalItem.GetAttachment(serialized);
-            auto cheque = api_.Factory().Cheque();
+            auto cheque = api_.Factory().InternalSession().Cheque();
 
             OT_ASSERT(cheque);
 
@@ -3119,8 +3129,9 @@ void Server::process_accept_item_receipt_reply(
                 break;
             }
 
-            const auto transferReceipt = api_.Factory().Transaction(
-                remote_nym_->ID(), accountID, server_id_);
+            const auto transferReceipt =
+                api_.Factory().InternalSession().Transaction(
+                    remote_nym_->ID(), accountID, server_id_);
 
             OT_ASSERT(transferReceipt);
 
@@ -3193,8 +3204,8 @@ void Server::process_accept_pending_reply(
 
     OT_ASSERT(false == attachment->empty());
 
-    const auto pending =
-        api_.Factory().Transaction(remote_nym_->ID(), accountID, server_id_);
+    const auto pending = api_.Factory().InternalSession().Transaction(
+        remote_nym_->ID(), accountID, server_id_);
 
     OT_ASSERT(pending);
 
@@ -3256,6 +3267,7 @@ auto Server::process_account_data(
     if (false == bool(inbox_)) {
         inbox_.reset(
             api_.Factory()
+                .InternalSession()
                 .Ledger(nymID, accountID, server_id_, ledgerType::inbox)
                 .release());
     }
@@ -3358,6 +3370,7 @@ auto Server::process_account_data(
     if (false == bool(outbox_)) {
         outbox_.reset(
             api_.Factory()
+                .InternalSession()
                 .Ledger(nymID, accountID, server_id_, ledgerType::outbox)
                 .release());
     }
@@ -3468,7 +3481,7 @@ auto Server::process_box_item(
     }
 
     std::shared_ptr<OTTransactionType> base{
-        api_.Factory().Transaction(String::Factory(payload))};
+        api_.Factory().InternalSession().Transaction(String::Factory(payload))};
 
     if (false == bool(base)) {
         LogError()(OT_PRETTY_CLASS())("Invalid payload").Flush();
@@ -3519,7 +3532,8 @@ auto Server::process_get_nymbox_response(
 
     const auto& nymID = nym_->ID();
     auto serialized = String::Factory(reply.m_ascPayload);
-    auto nymbox = api_.Factory().Ledger(nymID, nymID, server_id_);
+    auto nymbox =
+        api_.Factory().InternalSession().Ledger(nymID, nymID, server_id_);
 
     OT_ASSERT(nymbox);
 
@@ -4179,7 +4193,7 @@ void Server::process_incoming_message(
     const auto& nymID = nym_->ID();
     auto serialized = String::Factory();
     receipt.GetReferenceString(serialized);
-    auto message = api_.Factory().Message();
+    auto message = api_.Factory().InternalSession().Message();
 
     OT_ASSERT(message);
 
@@ -4215,7 +4229,7 @@ void Server::process_incoming_message(
 
         switch (peerObject.Type()) {
             case (contract::peer::PeerObjectType::Message): {
-                client.Activity().Mail(
+                client.Activity().Internal().Mail(
                     recipientNymId,
                     *message,
                     StorageBox::MAILINBOX,
@@ -4369,7 +4383,8 @@ auto Server::process_notarize_transaction_response(
     const auto& nym = *nym_;
     const auto& nymID = nym.ID();
     const auto& serverNym = *remote_nym_;
-    auto responseLedger = api_.Factory().Ledger(nymID, accountID, server_id_);
+    auto responseLedger =
+        api_.Factory().InternalSession().Ledger(nymID, accountID, server_id_);
 
     OT_ASSERT(responseLedger);
 
@@ -4680,7 +4695,7 @@ auto Server::process_process_inbox_response(
 
         auto serializedOriginalItem = String::Factory();
         replyItem.GetReferenceString(serializedOriginalItem);
-        auto pReferenceItem = api_.Factory().Item(
+        auto pReferenceItem = api_.Factory().InternalSession().Item(
             serializedOriginalItem, server_id_, replyItem.GetReferenceToNum());
         auto pItem = (pReferenceItem) ? transaction->GetItemInRefTo(
                                             pReferenceItem->GetReferenceToNum())
@@ -4806,7 +4821,8 @@ auto Server::process_process_nymbox_response(
     if (false == (transaction && replyTransaction)) { return false; }
 
     accept_numbers(lock, *transaction, *replyTransaction);
-    auto nymbox = api_.Factory().Ledger(nymID, nymID, server_id_);
+    auto nymbox =
+        api_.Factory().InternalSession().Ledger(nymID, nymID, server_id_);
 
     OT_ASSERT((nymbox));
 
@@ -5193,7 +5209,7 @@ void Server::process_response_transaction_cash_deposit(
         return;
     }
 
-    auto pItem = api_.Factory().Item(serializedRequest);
+    auto pItem = api_.Factory().InternalSession().Item(serializedRequest);
 
     if (false == bool(pItem)) {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate request").Flush();
@@ -5212,7 +5228,7 @@ void Server::process_response_transaction_cash_deposit(
         return;
     }
 
-    auto purse = api_.Factory().Purse(serializedPurse);
+    auto purse = api_.Factory().InternalSession().Purse(serializedPurse);
 
     if (false == bool(purse)) {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate request purse")
@@ -5272,7 +5288,7 @@ void Server::process_response_transaction_cheque_deposit(
     const Item& replyItem,
     const PasswordPrompt& reason)
 {
-    auto empty = client.Factory().Message();
+    auto empty = client.Factory().InternalSession().Message();
 
     OT_ASSERT(nym_);
     OT_ASSERT(empty);
@@ -5287,7 +5303,8 @@ void Server::process_response_transaction_cheque_deposit(
     auto serializedOriginal = String::Factory();
     Item* pOriginal{nullptr};
     replyItem.GetReferenceString(serializedOriginal);
-    auto instantiatedOriginal = api_.Factory().Transaction(serializedOriginal);
+    auto instantiatedOriginal =
+        api_.Factory().InternalSession().Transaction(serializedOriginal);
 
     if (false == bool(instantiatedOriginal)) {
         LogError()(OT_PRETTY_CLASS())("Failed to deserialized original item")
@@ -5307,7 +5324,7 @@ void Server::process_response_transaction_cheque_deposit(
     }
 
     auto& originalItem = *pOriginal;
-    auto pCheque = api_.Factory().Cheque();
+    auto pCheque = api_.Factory().InternalSession().Cheque();
 
     if (false == bool(pCheque)) { return; }
 
@@ -5437,7 +5454,7 @@ void Server::process_response_transaction_cron(
         return;
     }
 
-    auto pCronItem = api_.Factory().CronItem(serialized);
+    auto pCronItem = api_.Factory().InternalSession().CronItem(serialized);
 
     if (false == bool(pCronItem)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -5541,14 +5558,14 @@ void Server::process_response_transaction_cron(
             nymID.str(),
             "");
 
-        auto thePmntInbox = api_.Factory().Ledger(
+        auto thePmntInbox = api_.Factory().InternalSession().Ledger(
             nymID,
             nymID,
             server_id_);  // payment inbox
 
         OT_ASSERT((thePmntInbox));
 
-        auto theRecordBox = api_.Factory().Ledger(
+        auto theRecordBox = api_.Factory().InternalSession().Ledger(
             nymID,
             nymID,
             server_id_);  // record box
@@ -5644,7 +5661,7 @@ void Server::process_response_transaction_cron(
             // is equivalent to saying: if ("X,Y".VerifyAny("X")) which
             // RETURNS TRUE -- and we have found the instrument!
 
-            auto theOutpayment = api_.Factory().Payment();
+            auto theOutpayment = api_.Factory().InternalSession().Payment();
 
             OT_ASSERT((theOutpayment));
 
@@ -5800,11 +5817,12 @@ void Server::process_response_transaction_cron(
                         theOriginType = originType::origin_smart_contract;
                 }
 
-                auto pNewTransaction = api_.Factory().Transaction(
-                    *theRecordBox,  // recordbox.
-                    transactionType::notice,
-                    theOriginType,
-                    openingNumber);
+                auto pNewTransaction =
+                    api_.Factory().InternalSession().Transaction(
+                        *theRecordBox,  // recordbox.
+                        transactionType::notice,
+                        theOriginType,
+                        openingNumber);
 
                 // The above has an OT_ASSERT within, but I just like to
                 // check my pointers.
@@ -5817,7 +5835,7 @@ void Server::process_response_transaction_cron(
                     // (The one I just activated -- since I was the final
                     // signer...)
                     //
-                    auto pNewItem = api_.Factory().Item(
+                    auto pNewItem = api_.Factory().InternalSession().Item(
                         *pNewTransaction,
                         itemType::notice,
                         api_.Factory().Identifier());
@@ -5987,7 +6005,7 @@ void Server::process_response_transaction_exchange_basket(
                 return;
             }
 
-            auto pBasket = api_.Factory().Basket();
+            auto pBasket = api_.Factory().InternalSession().Basket();
 
             OT_ASSERT(pBasket);
 
@@ -6092,7 +6110,7 @@ void Server::process_response_transaction_transfer(
         return;
     }
 
-    auto pTransfer = api_.Factory().Item(
+    auto pTransfer = api_.Factory().InternalSession().Item(
         serialized,
         responseItem.GetRealNotaryID(),
         responseItem.GetReferenceToNum());
@@ -6148,7 +6166,7 @@ void Server::process_response_transaction_withdrawal(
         if ((itemType::atWithdrawVoucher == pItem->GetType()) &&
             (Item::acknowledgement == pItem->GetStatus())) {
             auto strVoucher = String::Factory();
-            auto theVoucher = api_.Factory().Cheque();
+            auto theVoucher = api_.Factory().InternalSession().Cheque();
 
             OT_ASSERT((theVoucher));
 
@@ -6240,7 +6258,7 @@ void Server::process_incoming_cash_withdrawal(
     }
 
     LogInsane()(OT_PRETTY_CLASS())("Serialized purse is valid").Flush();
-    auto requestPurse = api_.Factory().Purse(serializedPurse);
+    auto requestPurse = api_.Factory().InternalSession().Purse(serializedPurse);
 
     if (requestPurse) {
         LogInsane()(OT_PRETTY_CLASS())("Purse instantiated").Flush();
@@ -6311,7 +6329,7 @@ auto Server::process_unregister_account_response(
         reply.m_ascInReferenceTo->GetString(serialized);
     }
 
-    auto originalMessage = api_.Factory().Message();
+    auto originalMessage = api_.Factory().InternalSession().Message();
 
     OT_ASSERT((originalMessage));
 
@@ -6354,7 +6372,7 @@ auto Server::process_unregister_nym_response(
     const PasswordPrompt& reason) -> bool
 {
     auto serialized = String::Factory();
-    auto originalMessage = api_.Factory().Message();
+    auto originalMessage = api_.Factory().InternalSession().Message();
 
     OT_ASSERT((originalMessage));
 
@@ -6410,7 +6428,8 @@ void Server::process_unseen_reply(
         return;
     }
 
-    std::shared_ptr<Message> message{api_.Factory().Message()};
+    std::shared_ptr<Message> message{
+        api_.Factory().InternalSession().Message()};
 
     OT_ASSERT(message);
 
@@ -6573,7 +6592,8 @@ auto Server::remove_nymbox_item(
         .Flush();
     auto serialized = String::Factory();
     replyItem.GetReferenceString(serialized);
-    auto processNymboxItem = api_.Factory().Item(serialized, server_id_, 0);
+    auto processNymboxItem =
+        api_.Factory().InternalSession().Item(serialized, server_id_, 0);
 
     if (false == bool(processNymboxItem)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -6668,11 +6688,13 @@ auto Server::remove_nymbox_item(
 
             auto pOriginalCronItem =
                 (strOriginalCronItem->Exists()
-                     ? api_.Factory().CronItem(strOriginalCronItem)
+                     ? api_.Factory().InternalSession().CronItem(
+                           strOriginalCronItem)
                      : nullptr);
             auto pUpdatedCronItem =
                 (strUpdatedCronItem->Exists()
-                     ? api_.Factory().CronItem(strUpdatedCronItem)
+                     ? api_.Factory().InternalSession().CronItem(
+                           strUpdatedCronItem)
                      : nullptr);
             std::unique_ptr<OTCronItem>& pCronItem =
                 ((pUpdatedCronItem) ? pUpdatedCronItem : pOriginalCronItem);
@@ -6760,13 +6782,13 @@ auto Server::remove_nymbox_item(
                     notaryID->Get(),
                     nymID.str(),
                     "");
-                auto paymentInbox =
-                    api_.Factory().Ledger(nymID, nymID, server_id_);
+                auto paymentInbox = api_.Factory().InternalSession().Ledger(
+                    nymID, nymID, server_id_);
 
                 OT_ASSERT((paymentInbox));
 
-                auto recordBox =
-                    api_.Factory().Ledger(nymID, nymID, server_id_);
+                auto recordBox = api_.Factory().InternalSession().Ledger(
+                    nymID, nymID, server_id_);
 
                 OT_ASSERT((recordBox));
 
@@ -6805,7 +6827,8 @@ auto Server::remove_nymbox_item(
                         "IDs: ")(nymID)(" / ")(nymID)(".")
                         .Flush();
                 } else {
-                    auto theOutpayment = api_.Factory().Payment();
+                    auto theOutpayment =
+                        api_.Factory().InternalSession().Payment();
 
                     OT_ASSERT((theOutpayment));
 
@@ -6816,7 +6839,8 @@ auto Server::remove_nymbox_item(
                             numlistOutpayment, reason);
                     }
 
-                    auto tempPayment = api_.Factory().Payment();
+                    auto tempPayment =
+                        api_.Factory().InternalSession().Payment();
 
                     OT_ASSERT((tempPayment));
 
@@ -6907,7 +6931,7 @@ auto Server::remove_nymbox_item(
                     }
 
                     std::shared_ptr<OTTransaction> newTransaction{
-                        api_.Factory().Transaction(
+                        api_.Factory().InternalSession().Transaction(
                             *recordBox,
                             transactionType::notice,
                             theOriginType,
@@ -6915,10 +6939,11 @@ auto Server::remove_nymbox_item(
 
                     if (newTransaction) {
                         if (false != bool(pNoticeItem)) {
-                            std::shared_ptr<Item> newItem{api_.Factory().Item(
-                                *newTransaction,
-                                itemType::notice,
-                                api_.Factory().Identifier())};
+                            std::shared_ptr<Item> newItem{
+                                api_.Factory().InternalSession().Item(
+                                    *newTransaction,
+                                    itemType::notice,
+                                    api_.Factory().Identifier())};
 
                             OT_ASSERT(newItem);
 
@@ -6934,7 +6959,8 @@ auto Server::remove_nymbox_item(
                         if (!theOutpayment->IsValid() ||
                             !theOutpayment->GetTransNumDisplay(
                                 lTransNumForDisplay)) {
-                            auto temp = api_.Factory().Payment();
+                            auto temp =
+                                api_.Factory().InternalSession().Payment();
 
                             OT_ASSERT(false != bool(temp));
 
@@ -7336,7 +7362,7 @@ auto Server::statement(
     // marketOffer that triggered the need for this transaction statement.
     // Since it uses up a transaction number, I will be sure to remove that one
     // from my list before signing the list.
-    output = api_.Factory().Item(
+    output = api_.Factory().InternalSession().Item(
         transaction,
         itemType::transactionStatement,
         api_.Factory().Identifier());

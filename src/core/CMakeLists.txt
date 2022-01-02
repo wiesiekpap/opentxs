@@ -4,49 +4,24 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 add_subdirectory(contract)
-add_subdirectory(cron)
-add_subdirectory(crypto)
 add_subdirectory(display)
 add_subdirectory(identifier)
-add_subdirectory(otprotob)
-add_subdirectory(recurring)
-add_subdirectory(script)
-add_subdirectory(trade)
-add_subdirectory(transaction)
-add_subdirectory(util)
 add_subdirectory(paymentcode)
+add_subdirectory(ui)
 
 target_sources(
   opentxs-common
   PRIVATE
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/UniqueQueue.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/core/Core.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/core/Factory.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/core/Null.hpp"
-    "Account.cpp"
-    "AccountVisitor.cpp"
     "Amount.cpp"
     "Armored.cpp"
     "Armored.hpp"
-    "Cheque.cpp"
-    "Contract.cpp"
+    "Contact.cpp"
     "Core.cpp"
     "Data.cpp"
     "Data.hpp"
-    "Flag.cpp"
-    "Flag.hpp"
-    "Instrument.cpp"
-    "Item.cpp"
-    "Ledger.cpp"
-    "Message.cpp"
-    "NumList.cpp"
-    "NymFile.cpp"
-    "NymFile.hpp"
-    "OTStorage.cpp"
-    "OTTrackable.cpp"
-    "OTTransaction.cpp"
-    "OTTransactionType.cpp"
-    "PasswordPrompt.cpp"
     "Secret.cpp"
     "Secret.hpp"
     "Shutdown.cpp"
@@ -55,8 +30,6 @@ target_sources(
     "StateMachine.hpp"
     "String.cpp"
     "String.hpp"
-    "StringXML.cpp"
-    "StringXML.hpp"
     "Worker.hpp"
 )
 target_include_directories(
@@ -65,31 +38,13 @@ target_include_directories(
 )
 
 set(cxx-install-headers
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Account.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/AccountVisitor.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/AddressType.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Amount.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Armored.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Cheque.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Contract.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/Contact.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Data.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Editor.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Flag.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Helpers.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Instrument.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Item.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Ledger.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Lockable.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/Message.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/NumList.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/NymFile.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/OTTrackable.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/OTTransaction.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/OTTransactionType.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/PasswordPrompt.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Secret.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/String.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/StringXML.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/Types.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/UnitType.hpp"
 )
@@ -110,3 +65,12 @@ if(OPENTXS_STANDALONE)
     COMPONENT dev
   )
 endif()
+
+set(OPENTXS_QT_PUBLIC_HEADERS
+    ${OPENTXS_QT_PUBLIC_HEADERS}
+    PARENT_SCOPE
+)
+set(OPENTXS_QT_PRIVATE_HEADERS
+    ${OPENTXS_QT_PRIVATE_HEADERS}
+    PARENT_SCOPE
+)

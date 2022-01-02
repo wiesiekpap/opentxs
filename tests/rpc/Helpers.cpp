@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "integration/Helpers.hpp"
+#include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -28,38 +29,37 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/core/Message.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/rpc/AccountData.hpp"
-#include "opentxs/rpc/AccountEvent.hpp"
-#include "opentxs/rpc/ResponseCode.hpp"
-#include "opentxs/rpc/request/GetAccountActivity.hpp"
-#include "opentxs/rpc/request/GetAccountBalance.hpp"
-#include "opentxs/rpc/request/ListAccounts.hpp"
-#include "opentxs/rpc/response/Base.hpp"
-#include "opentxs/rpc/response/GetAccountActivity.hpp"
-#include "opentxs/rpc/response/GetAccountBalance.hpp"
-#include "opentxs/rpc/response/ListAccounts.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "opentxs/util/rpc/AccountData.hpp"
+#include "opentxs/util/rpc/AccountEvent.hpp"
+#include "opentxs/util/rpc/ResponseCode.hpp"
+#include "opentxs/util/rpc/request/GetAccountActivity.hpp"
+#include "opentxs/util/rpc/request/GetAccountBalance.hpp"
+#include "opentxs/util/rpc/request/ListAccounts.hpp"
+#include "opentxs/util/rpc/response/Base.hpp"
+#include "opentxs/util/rpc/response/GetAccountActivity.hpp"
+#include "opentxs/util/rpc/response/GetAccountBalance.hpp"
+#include "opentxs/util/rpc/response/ListAccounts.hpp"
 #include "ui/Helpers.hpp"
 
 namespace ottest
@@ -355,7 +355,7 @@ auto RPC_fixture::CreateNym(
     OT_ASSERT(added);
 
     auto& user = it->second;
-    user.init(api, ot::contact::ClaimType::Individual, index);
+    user.init(api, ot::identity::wot::claim::ClaimType::Individual, index);
     auto& nym = user.nym_;
 
     OT_ASSERT(nym);
@@ -554,7 +554,7 @@ auto RPC_fixture::IssueUnit(
 auto RPC_fixture::RefreshAccount(
     const ot::api::session::Client& api,
     const ot::identifier::Nym& nym,
-    const ot::identifier::Server& server) const noexcept -> void
+    const ot::identifier::Notary& server) const noexcept -> void
 {
     api.OTX().Refresh();
     api.OTX().ContextIdle(nym, server).get();
@@ -563,7 +563,7 @@ auto RPC_fixture::RefreshAccount(
 auto RPC_fixture::RefreshAccount(
     const ot::api::session::Client& api,
     const std::vector<std::string> nyms,
-    const ot::identifier::Server& server) const noexcept -> void
+    const ot::identifier::Notary& server) const noexcept -> void
 {
     api.OTX().Refresh();
 
@@ -575,7 +575,7 @@ auto RPC_fixture::RefreshAccount(
 auto RPC_fixture::RefreshAccount(
     const ot::api::session::Client& api,
     const std::vector<const User*> nyms,
-    const ot::identifier::Server& server) const noexcept -> void
+    const ot::identifier::Notary& server) const noexcept -> void
 {
     api.OTX().Refresh();
 

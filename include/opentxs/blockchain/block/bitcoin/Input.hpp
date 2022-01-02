@@ -31,7 +31,7 @@ struct Input;
 class Script;
 }  // namespace bitcoin
 
-struct Outpoint;
+class Outpoint;
 }  // namespace block
 }  // namespace blockchain
 

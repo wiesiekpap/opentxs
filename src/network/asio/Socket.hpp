@@ -43,6 +43,7 @@ namespace ip = asio::ip;
 namespace opentxs::network::asio
 {
 struct Socket::Imp {
+    using Asio = api::network::internal::Asio;
     using tcp = ip::tcp;
 
     const Endpoint& endpoint_;

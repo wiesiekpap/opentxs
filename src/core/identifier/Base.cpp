@@ -26,8 +26,11 @@
 #include "Proto.hpp"
 #include "core/Data.hpp"
 #include "internal/core/identifier/Factory.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/Identifier.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Contract.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/Identifier.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -35,16 +38,13 @@
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Contract.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Item.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/identifier/Algorithm.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/Type.hpp"
 #include "opentxs/core/identifier/Types.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
@@ -57,16 +57,6 @@
 template class opentxs::Pimpl<opentxs::Identifier>;
 template class std::set<opentxs::OTIdentifier>;
 template class std::map<opentxs::OTIdentifier, std::set<opentxs::OTIdentifier>>;
-
-namespace std
-{
-auto less<opentxs::Pimpl<opentxs::Identifier>>::operator()(
-    const opentxs::OTIdentifier& lhs,
-    const opentxs::OTIdentifier& rhs) const -> bool
-{
-    return lhs.get() < rhs.get();
-}
-}  // namespace std
 
 namespace opentxs::factory
 {
@@ -96,13 +86,13 @@ auto IdentifierNym(const proto::Identifier& in) noexcept
     return decode_proto(in);
 }
 
-auto IdentifierNotary() noexcept -> std::unique_ptr<opentxs::identifier::Server>
+auto IdentifierNotary() noexcept -> std::unique_ptr<opentxs::identifier::Notary>
 {
     return std::make_unique<ReturnType>();
 }
 
 auto IdentifierNotary(const proto::Identifier& in) noexcept
-    -> std::unique_ptr<opentxs::identifier::Server>
+    -> std::unique_ptr<opentxs::identifier::Notary>
 {
     return decode_proto(in);
 }
@@ -191,7 +181,7 @@ auto operator==(const OTNymID& lhs, const opentxs::Identifier& rhs) noexcept
     return lhs.get().operator==(rhs);
 }
 
-auto operator==(const OTServerID& lhs, const opentxs::Identifier& rhs) noexcept
+auto operator==(const OTNotaryID& lhs, const opentxs::Identifier& rhs) noexcept
     -> bool
 {
     return lhs.get().operator==(rhs);
@@ -214,7 +204,7 @@ auto operator!=(const OTNymID& lhs, const opentxs::Identifier& rhs) noexcept
     return lhs.get().operator!=(rhs);
 }
 
-auto operator!=(const OTServerID& lhs, const opentxs::Identifier& rhs) noexcept
+auto operator!=(const OTNotaryID& lhs, const opentxs::Identifier& rhs) noexcept
     -> bool
 {
     return lhs.get().operator!=(rhs);
@@ -238,7 +228,7 @@ auto operator<(const OTNymID& lhs, const opentxs::Identifier& rhs) noexcept
     return lhs.get().operator<(rhs);
 }
 
-auto operator<(const OTServerID& lhs, const opentxs::Identifier& rhs) noexcept
+auto operator<(const OTNotaryID& lhs, const opentxs::Identifier& rhs) noexcept
     -> bool
 {
     return lhs.get().operator<(rhs);
@@ -262,7 +252,7 @@ auto operator>(const OTNymID& lhs, const opentxs::Identifier& rhs) noexcept
     return lhs.get().operator>(rhs);
 }
 
-auto operator>(const OTServerID& lhs, const opentxs::Identifier& rhs) noexcept
+auto operator>(const OTNotaryID& lhs, const opentxs::Identifier& rhs) noexcept
     -> bool
 {
     return lhs.get().operator>(rhs);
@@ -287,7 +277,7 @@ auto operator<=(const OTNymID& lhs, const opentxs::Identifier& rhs) noexcept
     return lhs.get().operator<=(rhs);
 }
 
-auto operator<=(const OTServerID& lhs, const opentxs::Identifier& rhs) noexcept
+auto operator<=(const OTNotaryID& lhs, const opentxs::Identifier& rhs) noexcept
     -> bool
 {
     return lhs.get().operator<=(rhs);
@@ -312,7 +302,7 @@ auto operator>=(const OTNymID& lhs, const opentxs::Identifier& rhs) noexcept
     return lhs.get().operator>=(rhs);
 }
 
-auto operator>=(const OTServerID& lhs, const opentxs::Identifier& rhs) noexcept
+auto operator>=(const OTNotaryID& lhs, const opentxs::Identifier& rhs) noexcept
     -> bool
 {
     return lhs.get().operator>=(rhs);
@@ -397,11 +387,11 @@ auto identifier::Nym::Factory() -> OTNymID
     return OTNymID(out.release());
 }
 
-auto identifier::Server::Factory() -> OTServerID
+auto identifier::Notary::Factory() -> OTNotaryID
 {
     auto out = std::make_unique<Imp>(identifier::Type::notary);
 
-    return OTServerID(out.release());
+    return OTNotaryID(out.release());
 }
 
 auto identifier::UnitDefinition::Factory() -> OTUnitID
@@ -437,12 +427,12 @@ auto identifier::Nym::Factory(const std::string& rhs) -> OTNymID
     return OTNymID(out.release());
 }
 
-auto identifier::Server::Factory(const std::string& rhs) -> OTServerID
+auto identifier::Notary::Factory(const std::string& rhs) -> OTNotaryID
 {
     auto out = std::make_unique<Imp>(identifier::Type::notary);
     out->SetString(rhs);
 
-    return OTServerID(out.release());
+    return OTNotaryID(out.release());
 }
 
 auto identifier::UnitDefinition::Factory(const std::string& rhs) -> OTUnitID
@@ -468,12 +458,12 @@ auto identifier::Nym::Factory(const String& rhs) -> OTNymID
     return OTNymID(out.release());
 }
 
-auto identifier::Server::Factory(const String& rhs) -> OTServerID
+auto identifier::Notary::Factory(const String& rhs) -> OTNotaryID
 {
     auto out = std::make_unique<Imp>(identifier::Type::notary);
     out->SetString(rhs);
 
-    return OTServerID(out.release());
+    return OTNotaryID(out.release());
 }
 
 auto identifier::UnitDefinition::Factory(const String& rhs) -> OTUnitID
@@ -518,7 +508,7 @@ auto Identifier::Factory(const Item& item) -> OTIdentifier
 }
 
 auto Identifier::Factory(
-    const contact::ClaimType type,
+    const identity::wot::claim::ClaimType type,
     const proto::HDPath& path) -> OTIdentifier
 {
     auto out = std::make_unique<Imp>(type, path);
@@ -600,7 +590,7 @@ Identifier::Identifier(const Identifier& rhs) noexcept
 }
 
 Identifier::Identifier(
-    const contact::ClaimType type,
+    const identity::wot::claim::ClaimType type,
     const proto::HDPath& path) noexcept
     : Identifier()
 {
@@ -817,7 +807,7 @@ auto Identifier::is_supported(const identifier::Type type) noexcept -> bool
 }
 
 auto Identifier::path_to_data(
-    const contact::ClaimType type,
+    const identity::wot::claim::ClaimType type,
     const proto::HDPath& path) -> OTData
 {
     auto output = Data::Factory(static_cast<const void*>(&type), sizeof(type));

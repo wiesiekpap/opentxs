@@ -14,8 +14,8 @@
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/PeerRequest.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -23,7 +23,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
@@ -47,7 +47,7 @@ Request::Request(
     const Nym_p& nym,
     const VersionNumber version,
     const identifier::Nym& recipient,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const PeerRequestType& type,
     const std::string& conditions)
     : Signable(api, nym, version, conditions, "")

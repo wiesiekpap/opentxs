@@ -3,10 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/core/Cheque.hpp"
-// IWYU pragma: no_include "opentxs/core/Item.hpp"
-// IWYU pragma: no_include "opentxs/core/Message.hpp"
-
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -61,10 +57,7 @@ namespace proto
 class StorageThread;
 }  // namespace proto
 
-class Cheque;
 class Identifier;
-class Item;
-class Message;
 class PasswordPrompt;
 class PeerObject;
 }  // namespace opentxs
@@ -74,11 +67,6 @@ namespace opentxs::api::session
 class OPENTXS_EXPORT Activity
 {
 public:
-    using ChequeData =
-        std::pair<std::unique_ptr<const opentxs::Cheque>, OTUnitDefinition>;
-    using TransferData =
-        std::pair<std::unique_ptr<const opentxs::Item>, OTUnitDefinition>;
-
     virtual auto AddBlockchainTransaction(
         const blockchain::block::bitcoin::Transaction& transaction)
         const noexcept -> bool = 0;
@@ -91,36 +79,6 @@ public:
         Time time) const noexcept -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Activity& = 0;
-    /**   Load a mail object
-     *
-     *    \param[in] nym the identifier of the nym who owns the mail box
-     *    \param[in] id the identifier of the mail object
-     *    \param[in] box the box from which to retrieve the mail object
-     *    \returns A smart pointer to the object. The smart pointer will not be
-     *             instantiated if the object does not exist or is invalid.
-     */
-    virtual auto Mail(
-        const identifier::Nym& nym,
-        const Identifier& id,
-        const StorageBox& box) const noexcept -> std::unique_ptr<Message> = 0;
-    /**   Store a mail object
-     *
-     *    \param[in] nym the identifier of the nym who owns the mail box
-     *    \param[in] mail the mail object to be stored
-     *    \param[in] box the box from which to retrieve the mail object
-     *    \returns The id of the stored message. The string will be empty if
-     *             the mail object can not be stored.
-     */
-    virtual auto Mail(
-        const identifier::Nym& nym,
-        const Message& mail,
-        const StorageBox box,
-        const PeerObject& text) const noexcept -> std::string = 0;
-    virtual auto Mail(
-        const identifier::Nym& nym,
-        const Message& mail,
-        const StorageBox box,
-        const std::string& text) const noexcept -> std::string = 0;
     /**   Obtain a list of mail objects in a specified box
      *
      *    \param[in] nym the identifier of the nym who owns the mail box
@@ -176,14 +134,6 @@ public:
         const identifier::Nym& nymId,
         const Identifier& threadId,
         const Identifier& itemId) const noexcept -> bool = 0;
-    virtual auto Cheque(
-        const identifier::Nym& nym,
-        const std::string& id,
-        const std::string& workflow) const noexcept -> ChequeData = 0;
-    virtual auto Transfer(
-        const identifier::Nym& nym,
-        const std::string& id,
-        const std::string& workflow) const noexcept -> TransferData = 0;
     /**   Summarize a payment workflow event in human-friendly test form
      *
      *    \param[in] nym the identifier of the nym who owns the thread

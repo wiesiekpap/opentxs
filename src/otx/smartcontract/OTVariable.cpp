@@ -11,12 +11,12 @@
 #include <memory>
 #include <string>
 
+#include "internal/otx/common/util/Common.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/otx/smartcontract/OTScript.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/util/Common.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

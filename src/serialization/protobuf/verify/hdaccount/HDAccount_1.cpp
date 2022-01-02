@@ -3,13 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/HDAccount.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/HDAccount.hpp"  // IWYU pragma: associated
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/BlockchainAddress.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/BlockchainDeterministicAccountData.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/BlockchainHDAccountData.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyBlockchain.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/BlockchainAddress.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/BlockchainDeterministicAccountData.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/BlockchainHDAccountData.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
 #include "serialization/protobuf/HDAccount.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

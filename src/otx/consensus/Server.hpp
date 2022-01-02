@@ -21,16 +21,16 @@
 
 #include "Proto.hpp"
 #include "core/StateMachine.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
+#include "internal/util/Editor.hpp"
+#include "internal/util/Flag.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Item.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/ServerConnection.hpp"
@@ -62,8 +62,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -248,7 +248,7 @@ public:
         const network::zeromq::socket::Publish& replyReceived,
         const Nym_p& local,
         const Nym_p& remote,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         network::ServerConnection& connection);
     Server(
         const api::session::Client& api,

@@ -9,10 +9,10 @@
 #include <memory>
 #include <set>
 
+#include "internal/otx/common/Message.hpp"
+#include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Numbers.hpp"
 
@@ -60,7 +60,7 @@ public:
     ReplyMessage(
         const UserCommandProcessor& parent,
         const opentxs::api::session::Wallet& wallet,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identity::Nym& signer,
         const Message& input,
         Server& server,
@@ -106,7 +106,7 @@ private:
     const identity::Nym& signer_;
     const Message& original_;
     const PasswordPrompt& reason_;
-    const OTServerID notary_id_;
+    const OTNotaryID notary_id_;
     Message& message_;
     Server& server_;
     bool init_{false};

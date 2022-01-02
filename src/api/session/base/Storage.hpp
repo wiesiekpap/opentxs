@@ -14,7 +14,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/util/Options.hpp"
-#include "storage/Config.hpp"
+#include "util/storage/Config.hpp"
 
 namespace opentxs
 {

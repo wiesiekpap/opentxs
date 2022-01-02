@@ -3,16 +3,16 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/BasketParams.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/BasketParams.hpp"  // IWYU pragma: associated
 
 #include <map>
 #include <stdexcept>
 #include <utility>
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/BasketItem.hpp"
-#include "internal/protobuf/verify/VerifyContracts.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/BasketItem.hpp"
+#include "internal/serialization/protobuf/verify/VerifyContracts.hpp"
 #include "serialization/protobuf/BasketItem.pb.h"
 #include "serialization/protobuf/BasketParams.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

@@ -12,13 +12,14 @@
 #include <utility>
 
 #include "Proto.tpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Purse.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/PeerObject.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PeerObject.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Contacts.hpp"
@@ -261,7 +262,8 @@ Object::Object(
             message_ = std::make_unique<std::string>(serialized.otmessage());
         } break;
         case (contract::peer::PeerObjectType::Request): {
-            request_ = api_.Factory().PeerRequest(nym_, serialized.otrequest());
+            request_ = api_.Factory().InternalSession().PeerRequest(
+                nym_, serialized.otrequest());
         } break;
         case (contract::peer::PeerObjectType::Response): {
             if (false == bool(nym_)) {
@@ -271,9 +273,10 @@ Object::Object(
 
             auto senderNym = api_.Wallet().Nym(
                 api_.Factory().NymID(serialized.otrequest().initiator()));
-            request_ =
-                api_.Factory().PeerRequest(senderNym, serialized.otrequest());
-            reply_ = api_.Factory().PeerReply(nym_, serialized.otreply());
+            request_ = api_.Factory().InternalSession().PeerRequest(
+                senderNym, serialized.otrequest());
+            reply_ = api_.Factory().InternalSession().PeerReply(
+                nym_, serialized.otreply());
         } break;
         case (contract::peer::PeerObjectType::Payment): {
             payment_ = std::make_unique<std::string>(serialized.otpayment());

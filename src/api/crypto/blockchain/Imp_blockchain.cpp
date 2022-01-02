@@ -355,8 +355,8 @@ auto BlockchainImp::notify_new_account(
     balances_.RefreshBalance(owner, chain);
 }
 
-auto BlockchainImp::ProcessContact(
-    const contact::Contact& contact) const noexcept -> bool
+auto BlockchainImp::ProcessContact(const Contact& contact) const noexcept
+    -> bool
 {
     broadcast_update_signal(
         api_.Network().Blockchain().Internal().Database().UpdateContact(
@@ -366,8 +366,8 @@ auto BlockchainImp::ProcessContact(
 }
 
 auto BlockchainImp::ProcessMergedContact(
-    const contact::Contact& parent,
-    const contact::Contact& child) const noexcept -> bool
+    const Contact& parent,
+    const Contact& child) const noexcept -> bool
 {
     broadcast_update_signal(
         api_.Network().Blockchain().Internal().Database().UpdateMergedContact(

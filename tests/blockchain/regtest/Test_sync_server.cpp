@@ -9,11 +9,13 @@
 #include <utility>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
+#include "integration/Helpers.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "opentxs/api/network/Blockchain.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
+#include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
@@ -21,6 +23,7 @@
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/identifier/Type.hpp"
+#include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/p2p/Acknowledgement.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Data.hpp"
@@ -33,6 +36,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/SharedPimpl.hpp"
 
 namespace ottest
 {

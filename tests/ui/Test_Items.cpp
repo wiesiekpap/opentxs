@@ -14,10 +14,10 @@
 #include <utility>
 #include <vector>
 
-#include "internal/ui/UI.hpp"
+#include "core/ui/base/Items.hpp"
+#include "internal/core/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "ui/base/Items.hpp"
 
 namespace ottest
 {

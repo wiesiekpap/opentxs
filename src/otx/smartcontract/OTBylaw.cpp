@@ -14,12 +14,12 @@
 #include <string>
 #include <utility>
 
+#include "internal/otx/common/script/OTScriptable.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/otx/smartcontract/OTClause.hpp"
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/script/OTScriptable.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs

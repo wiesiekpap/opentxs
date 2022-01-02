@@ -17,15 +17,15 @@
 
 #include "Proto.hpp"
 #include "internal/api/session/Workflow.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Item.hpp"
-#include "opentxs/core/Lockable.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -51,8 +51,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 namespace otx
@@ -80,7 +80,7 @@ public:
         const Message& reply) const -> bool final;
     auto AcceptTransfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& pending,
         const Message& reply) const -> bool final;
     auto AcknowledgeTransfer(
@@ -98,16 +98,16 @@ public:
         const OTTransaction& receipt) const -> bool final;
     auto ClearTransfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& receipt) const -> bool final;
     auto CompleteTransfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& receipt,
         const Message& reply) const -> bool final;
     auto ConveyTransfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& pending) const -> OTIdentifier final;
     auto CreateTransfer(const Item& transfer, const Message& request) const
         -> OTIdentifier final;
@@ -301,14 +301,14 @@ private:
         const bool success) const -> bool;
     auto convey_incoming_transfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& pending,
         const std::string& senderNymID,
         const std::string& recipientNymID,
         const Item& transfer) const -> OTIdentifier;
     auto convey_internal_transfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& pending,
         const std::string& senderNymID,
         const Item& transfer) const -> OTIdentifier;

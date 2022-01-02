@@ -19,8 +19,8 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -77,7 +77,7 @@ public:
     auto Name() const noexcept -> std::string final { return id_->str(); }
     auto Serialize() const noexcept -> OTData final;
     auto Serialize(SerializedType&) const -> bool override;
-    auto Server() const -> const identifier::Server& final { return server_; }
+    auto Server() const -> const identifier::Notary& final { return server_; }
     auto SetAlias(const std::string&) noexcept -> bool final { return false; }
     auto Type() const -> PeerRequestType final { return type_; }
 
@@ -94,7 +94,7 @@ protected:
         const Nym_p& nym,
         const VersionNumber version,
         const identifier::Nym& initiator,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const PeerRequestType& type,
         const Identifier& request,
         const std::string& conditions = {});
@@ -108,7 +108,7 @@ protected:
 private:
     const OTNymID initiator_;
     const OTNymID recipient_;
-    const OTServerID server_;
+    const OTNotaryID server_;
     const OTIdentifier cookie_;
     const PeerRequestType type_;
 

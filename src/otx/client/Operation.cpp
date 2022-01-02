@@ -23,9 +23,9 @@
 
 #include "2_Factory.hpp"
 #include "Proto.tpp"
-#include "core/OTStorage.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/Legacy.hpp"
+#include "internal/api/session/Activity.hpp"
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
@@ -35,8 +35,16 @@
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/client/obsolete/OT_API.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/UnitDefinition.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/NymFile.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/otx/common/transaction/Helpers.hpp"
+#include "internal/otx/consensus/Consensus.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/UnitDefinition.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/session/Activity.hpp"
@@ -44,16 +52,8 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Item.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/NymFile.hpp"
-#include "opentxs/core/OTTransaction.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
@@ -62,13 +62,13 @@
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/Type.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/transaction/Helpers.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/Types.hpp"
@@ -80,9 +80,11 @@
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "otx/common/OTStorage.hpp"
 #include "serialization/protobuf/Nym.pb.h"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "serialization/protobuf/PeerObject.pb.h"
@@ -173,7 +175,8 @@
         managedNumber->Value())                                                \
         .Flush();                                                              \
     const auto transactionNum = managedNumber->Value();                        \
-    auto pLedger{api_.Factory().Ledger(nymID, account_id_, serverID)};         \
+    auto pLedger{api_.Factory().InternalSession().Ledger(                      \
+        nymID, account_id_, serverID)};                                        \
                                                                                \
     if (false == bool(pLedger)) {                                              \
         LogError()(OT_PRETTY_CLASS())(                                         \
@@ -195,6 +198,7 @@
     }                                                                          \
                                                                                \
     std::shared_ptr<OTTransaction> pTransaction{api_.Factory()                 \
+                                                    .InternalSession()         \
                                                     .Transaction(              \
                                                         nymID,                 \
                                                         account_id_,           \
@@ -213,8 +217,8 @@
                                                                                \
     ledger.AddTransaction(pTransaction);                                       \
     auto& transaction = *pTransaction;                                         \
-    std::shared_ptr<Item> pItem{                                               \
-        api_.Factory().Item(transaction, ITEM_TYPE, DESTINATION_ACCOUNT)};     \
+    std::shared_ptr<Item> pItem{api_.Factory().InternalSession().Item(         \
+        transaction, ITEM_TYPE, DESTINATION_ACCOUNT)};                         \
                                                                                \
     if (false == bool(pItem)) {                                                \
         LogError()(OT_PRETTY_CLASS())("Failed to construct item.").Flush();    \
@@ -293,7 +297,7 @@ namespace opentxs
 auto Factory::Operation(
     const api::session::Client& api,
     const identifier::Nym& nym,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason) -> otx::client::internal::Operation*
 {
     return new otx::client::implementation::Operation(api, nym, server, reason);
@@ -355,7 +359,7 @@ const std::map<otx::OperationType, std::size_t> Operation::transaction_numbers_{
 Operation::Operation(
     const api::session::Client& api,
     const identifier::Nym& nym,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason)
     : StateMachine(std::bind(&Operation::state_machine, this))
     , api_(api)
@@ -372,7 +376,7 @@ Operation::Operation(
     , enable_otx_push_(true)
     , result_()
     , target_nym_id_(identifier::Nym::Factory())
-    , target_server_id_(identifier::Server::Factory())
+    , target_server_id_(identifier::Notary::Factory())
     , target_unit_id_(identifier::UnitDefinition::Factory())
     , contract_type_(contract::Type::invalid)
     , unit_definition_()
@@ -381,8 +385,8 @@ Operation::Operation(
     , amount_(0)
     , memo_(String::Factory())
     , bool_(false)
-    , claim_section_(contact::SectionType::Error)
-    , claim_type_(contact::ClaimType::Error)
+    , claim_section_(identity::wot::claim::SectionType::Error)
+    , claim_type_(identity::wot::claim::ClaimType::Error)
     , cheque_()
     , payment_()
     , inbox_()
@@ -427,8 +431,8 @@ void Operation::account_post()
 }
 
 auto Operation::AddClaim(
-    const contact::SectionType section,
-    const contact::ClaimType type,
+    const identity::wot::claim::SectionType section,
+    const identity::wot::claim::ClaimType type,
     const String& value,
     const bool primary) -> bool
 {
@@ -701,7 +705,7 @@ auto Operation::construct_deposit_cheque() -> std::shared_ptr<Message>
     // If cancellingCheque==true, we're actually cancelling the cheque by
     // "depositing" it back into the same account it's drawn on.
     bool cancellingCheque{false};
-    auto copy{api_.Factory().Cheque(
+    auto copy{api_.Factory().InternalSession().Cheque(
         serverID, account.get().GetInstrumentDefinitionID())};
 
     if (cheque.HasRemitter()) {
@@ -1317,6 +1321,7 @@ auto Operation::construct_send_transfer() -> std::shared_ptr<Message>
     // throw a dummy on there before generating balance statement.
     std::shared_ptr<OTTransaction> outboxTransaction{
         api_.Factory()
+            .InternalSession()
             .Transaction(
                 *outbox_,
                 transactionType::pending,
@@ -1535,9 +1540,9 @@ auto Operation::download_account(
     const Identifier& accountID,
     otx::context::Server::DeliveryResult& lastResult) -> std::size_t
 {
-    std::shared_ptr<Ledger> inbox{api_.Factory().Ledger(
+    std::shared_ptr<Ledger> inbox{api_.Factory().InternalSession().Ledger(
         nym_id_, accountID, server_id_, ledgerType::inbox)};
-    std::shared_ptr<Ledger> outbox{api_.Factory().Ledger(
+    std::shared_ptr<Ledger> outbox{api_.Factory().InternalSession().Ledger(
         nym_id_, accountID, server_id_, ledgerType::outbox)};
 
     OT_ASSERT(inbox);
@@ -1700,7 +1705,8 @@ auto Operation::evaluate_transaction_reply(
         return false;
     }
 
-    auto response{api_.Factory().Ledger(nym_id_, accountID, server_id_)};
+    auto response{api_.Factory().InternalSession().Ledger(
+        nym_id_, accountID, server_id_)};
 
     OT_ASSERT(response);
 
@@ -1822,7 +1828,7 @@ void Operation::execute()
                 if (otx::OperationType::SendMessage == type_.load()) {
                     OT_ASSERT(outmail_message_);
 
-                    const auto messageID = api_.Activity().Mail(
+                    const auto messageID = api_.Activity().Internal().Mail(
                         nym_id_,
                         *outmail_message_,
                         StorageBox::MAILOUTBOX,
@@ -2294,7 +2300,7 @@ auto Operation::PublishContract(const identifier::Nym& id) -> bool
     return start(lock, otx::OperationType::PublishNym, {});
 }
 
-auto Operation::PublishContract(const identifier::Server& id) -> bool
+auto Operation::PublishContract(const identifier::Notary& id) -> bool
 {
     START()
 
@@ -2337,7 +2343,7 @@ void Operation::reset()
     result_set_.store(false);
     result_ = Promise{};
     target_nym_id_ = identifier::Nym::Factory();
-    target_server_id_ = identifier::Server::Factory();
+    target_server_id_ = identifier::Notary::Factory();
     target_unit_id_ = identifier::UnitDefinition::Factory();
     contract_type_ = contract::Type::invalid;
     unit_definition_.reset();
@@ -2346,8 +2352,8 @@ void Operation::reset()
     amount_ = 0;
     memo_ = String::Factory();
     bool_ = false;
-    claim_section_ = contact::SectionType::Error;
-    claim_type_ = contact::ClaimType::Error;
+    claim_section_ = identity::wot::claim::SectionType::Error;
+    claim_type_ = identity::wot::claim::ClaimType::Error;
     cheque_.reset();
     payment_.reset();
     inbox_.reset();
@@ -2507,7 +2513,7 @@ void Operation::set_consensus_hash(
     auto outboxHash{Identifier::Factory()};
     account.GetIdentifier(accountid);
     account.ConsensusHash(context, accountHash, reason);
-    auto nymfile = context.Nymfile(reason);
+    auto nymfile = context.Internal().Nymfile(reason);
     nymfile->GetInboxHash(accountid->str(), inboxHash);
     nymfile->GetOutboxHash(accountid->str(), outboxHash);
     transaction.SetAccountHash(accountHash);
@@ -2746,7 +2752,7 @@ void Operation::update_workflow_convey_payment(
     }
 
     bool workflowUpdated{false};
-    auto pCheque{api_.Factory().Cheque()};
+    auto pCheque{api_.Factory().InternalSession().Cheque()};
 
     OT_ASSERT(pCheque);
 

@@ -9,9 +9,9 @@
 #include <memory>
 #include <vector>
 
+#include "internal/otx/common/Message.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/Message.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -29,8 +29,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 namespace identity
@@ -69,7 +69,7 @@ public:
         const identifier::Nym& nymID,
         const identity::Nym& serverNym) -> bool;
     static auto check_message_notary(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const Identifier& realNotaryID) -> bool;
     static auto check_server_lock(const identifier::Nym& nymID) -> bool;
     static auto isAdmin(const identifier::Nym& nymID) -> bool;
@@ -166,7 +166,7 @@ private:
     auto cmd_usage_credits(ReplyMessage& reply) const -> bool;
     auto create_nymbox(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identity::Nym& serverNym) const -> std::unique_ptr<Ledger>;
     auto hash_check(const otx::context::Client& context, Identifier& nymboxHash)
         const -> bool;
@@ -175,18 +175,18 @@ private:
     auto load_inbox(
         const identifier::Nym& nymID,
         const Identifier& accountID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identity::Nym& serverNym,
         const bool verifyAccount) const -> std::unique_ptr<Ledger>;
     auto load_nymbox(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identity::Nym& serverNym,
         const bool verifyAccount) const -> std::unique_ptr<Ledger>;
     auto load_outbox(
         const identifier::Nym& nymID,
         const Identifier& accountID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identity::Nym& serverNym,
         const bool verifyAccount) const -> std::unique_ptr<Ledger>;
     auto reregister_nym(ReplyMessage& reply) const -> bool;
@@ -198,7 +198,7 @@ private:
     auto save_outbox(const identity::Nym& nym, Identifier& hash, Ledger& outbox)
         const -> bool;
     auto send_message_to_nym(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& senderNymID,
         const identifier::Nym& recipientNymID,
         const Message& msg) const -> bool;

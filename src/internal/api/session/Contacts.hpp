@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "internal/util/Editor.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 
 namespace opentxs
@@ -18,6 +19,8 @@ namespace crypto
 class Blockchain;
 }  // namespace crypto
 }  // namespace api
+
+class Contact;
 }  // namespace opentxs
 
 namespace opentxs::api::session::internal
@@ -29,6 +32,8 @@ public:
     {
         return *this;
     }
+    virtual auto mutable_Contact(const Identifier& id) const
+        -> std::unique_ptr<Editor<opentxs::Contact>> = 0;
 
     auto Internal() noexcept -> internal::Contacts& final { return *this; }
     virtual auto init(

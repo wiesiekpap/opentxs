@@ -11,7 +11,6 @@
 #include <set>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/otx/Types.hpp"
 
@@ -19,15 +18,25 @@ namespace opentxs
 {
 namespace identifier
 {
-class Server;
+class Notary;
 }  // namespace identifier
+
+namespace otx
+{
+namespace context
+{
+namespace internal
+{
+class Base;
+}  // namespace internal
+}  // namespace context
+}  // namespace otx
 
 namespace proto
 {
 class Context;
 }  // namespace proto
 
-class NymFile;
 class PasswordPrompt;
 }  // namespace opentxs
 
@@ -48,12 +57,12 @@ public:
     virtual auto HaveLocalNymboxHash() const -> bool = 0;
     virtual auto HaveRemoteNymboxHash() const -> bool = 0;
     virtual auto IssuedNumbers() const -> TransactionNumbers = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
+        -> const internal::Base& = 0;
     virtual auto LegacyDataFolder() const -> std::string = 0;
     virtual auto LocalNymboxHash() const -> OTIdentifier = 0;
-    virtual auto Notary() const -> const identifier::Server& = 0;
+    virtual auto Notary() const -> const identifier::Notary& = 0;
     virtual auto NymboxHashMatch() const -> bool = 0;
-    virtual auto Nymfile(const PasswordPrompt& reason) const
-        -> std::unique_ptr<const opentxs::NymFile> = 0;
     virtual auto RemoteNym() const -> const identity::Nym& = 0;
     virtual auto RemoteNymboxHash() const -> OTIdentifier = 0;
     virtual auto Request() const -> RequestNumber = 0;
@@ -74,8 +83,7 @@ public:
     virtual auto ConsumeIssued(const TransactionNumber& number) -> bool = 0;
     virtual auto IncrementRequest() -> RequestNumber = 0;
     virtual auto InitializeNymbox(const PasswordPrompt& reason) -> bool = 0;
-    virtual auto mutable_Nymfile(const PasswordPrompt& reason)
-        -> Editor<opentxs::NymFile> = 0;
+    OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Base& = 0;
     virtual auto OpenCronItem(const TransactionNumber) -> bool = 0;
     virtual auto RecoverAvailableNumber(const TransactionNumber& number)
         -> bool = 0;

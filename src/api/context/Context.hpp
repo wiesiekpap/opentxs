@@ -21,6 +21,7 @@
 #include "api/Periodic.hpp"
 #include "internal/api/Context.hpp"
 #include "internal/api/Legacy.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
@@ -31,13 +32,12 @@
 #include "opentxs/api/network/ZAP.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Notary.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
-#include "opentxs/rpc/request/Base.hpp"
-#include "opentxs/rpc/response/Base.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Options.hpp"
+#include "opentxs/util/rpc/request/Base.hpp"
+#include "opentxs/util/rpc/response/Base.hpp"
 #include "serialization/protobuf/RPCResponse.pb.h"
 
 class QObject;
@@ -81,8 +81,8 @@ class Base;
 }  // namespace rpc
 
 class Flag;
-class OTCallback;
-class OTCaller;
+class PasswordCallback;
+class PasswordCaller;
 class Signals;
 }  // namespace opentxs
 
@@ -143,12 +143,12 @@ public:
         return *zmq_context_;
     }
 
-    auto GetPasswordCaller() const noexcept -> OTCaller& final;
+    auto GetPasswordCaller() const noexcept -> PasswordCaller& final;
 
     Context(
         Flag& running,
         const Options& args,
-        OTCaller* externalPasswordCallback = nullptr);
+        PasswordCaller* externalPasswordCallback = nullptr);
 
     ~Context() final;
 
@@ -171,9 +171,9 @@ private:
     std::unique_ptr<api::network::ZAP> zap_;
     std::string profile_id_;
     mutable ShutdownCallback* shutdown_callback_;
-    std::unique_ptr<OTCallback> null_callback_;
-    std::unique_ptr<OTCaller> default_external_password_callback_;
-    OTCaller* external_password_callback_;
+    std::unique_ptr<PasswordCallback> null_callback_;
+    std::unique_ptr<PasswordCaller> default_external_password_callback_;
+    PasswordCaller* external_password_callback_;
     mutable boost::interprocess::file_lock file_lock_;
     mutable std::vector<std::unique_ptr<api::session::Notary>> server_;
     mutable std::vector<std::unique_ptr<api::session::Client>> client_;

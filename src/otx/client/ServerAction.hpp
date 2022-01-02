@@ -28,7 +28,7 @@ class Client;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -51,20 +51,20 @@ public:
     auto ActivateSmartContract(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID,
         const std::string& agentName,
         std::unique_ptr<OTSmartContract>& contract) const -> Action final;
     auto AdjustUsageCredits(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const Amount& adjustment) const -> Action final;
     auto CancelPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         std::unique_ptr<OTPaymentPlan>& plan) const -> Action final;
     auto CreateMarketOffer(
         const PasswordPrompt& reason,
@@ -81,31 +81,31 @@ public:
     auto DepositPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         std::unique_ptr<OTPaymentPlan>& plan) const -> Action final;
     auto DownloadMarketList(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const -> Action final;
+        const identifier::Notary& serverID) const -> Action final;
     auto DownloadMarketOffers(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& marketID,
         const Amount depth) const -> Action final;
     auto DownloadMarketRecentTrades(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& marketID) const -> Action final;
     auto DownloadNymMarketOffers(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const -> Action final;
+        const identifier::Notary& serverID) const -> Action final;
     auto ExchangeBasketCurrency(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& accountID,
         const Identifier& basketID,
@@ -113,25 +113,25 @@ public:
     auto IssueBasketCurrency(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const proto::UnitDefinition& basket,
         const std::string& label) const -> Action final;
     auto KillMarketOffer(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID,
         const TransactionNumber number) const -> Action final;
     auto KillPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID,
         const TransactionNumber number) const -> Action final;
     auto PayDividend(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& accountID,
         const std::string& memo,
@@ -139,23 +139,23 @@ public:
     auto TriggerClause(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const TransactionNumber transactionNumber,
         const std::string& clause,
         const std::string& parameter) const -> Action final;
     auto UnregisterAccount(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID) const -> Action final;
     auto UnregisterNym(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const -> Action final;
+        const identifier::Notary& serverID) const -> Action final;
     auto WithdrawVoucher(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID,
         const identifier::Nym& recipientNymID,
         const Amount amount,

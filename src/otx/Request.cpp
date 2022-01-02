@@ -16,15 +16,15 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/OTX.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/ServerRequest.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/ServerRequest.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Flag.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/Request.hpp"
@@ -44,7 +44,7 @@ const VersionNumber Request::MaxVersion{2};
 auto Request::Factory(
     const api::Session& api,
     const Nym_p signer,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const otx::ServerRequestType type,
     const RequestNumber number,
     const PasswordPrompt& reason) -> OTXRequest
@@ -85,7 +85,7 @@ Request::Request(
     const api::Session& api,
     const Nym_p signer,
     const identifier::Nym& initiator,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const otx::ServerRequestType type,
     const RequestNumber number)
     : Signable(api, signer, DefaultVersion, "", "")

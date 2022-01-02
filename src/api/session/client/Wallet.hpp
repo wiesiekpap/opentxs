@@ -9,8 +9,8 @@
 #include <string>
 
 #include "api/session/Wallet.hpp"
+#include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Editor.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 
 namespace opentxs
@@ -26,8 +26,8 @@ class Wallet;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 namespace identity
@@ -41,7 +41,7 @@ namespace context
 {
 namespace internal
 {
-struct Base;
+class Base;
 }  // namespace internal
 
 class Base;
@@ -68,11 +68,11 @@ class Wallet final : public session::imp::Wallet
 {
 public:
     auto Context(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& clientNymID) const
         -> std::shared_ptr<const otx::context::Base> final;
     auto mutable_Context(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& clientNymID,
         const PasswordPrompt& reason) const -> Editor<otx::context::Base> final;
     auto mutable_ServerContext(

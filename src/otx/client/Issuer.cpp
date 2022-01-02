@@ -15,30 +15,31 @@
 #include <type_traits>
 
 #include "Proto.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
-#include "internal/contact/Contact.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
+#include "internal/identity/wot/claim/Types.hpp"
 #include "internal/otx/client/Factory.hpp"
 #include "internal/otx/client/Issuer.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/Issuer.hpp"
-#include "internal/protobuf/verify/VerifyContacts.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/Issuer.hpp"
+#include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactGroup.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSection.hpp"  // IWYU pragma: keep
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/contact/Types.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Group.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/Section.hpp"  // IWYU pragma: keep
+#include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Bailment.pb.h"
@@ -150,7 +151,7 @@ auto Issuer::toString() const -> std::string
     const auto& issuerClaims = nym->Claims();
     const auto serverID = issuerClaims.PreferredOTServer();
     const auto contractSection =
-        issuerClaims.Section(contact::SectionType::Contract);
+        issuerClaims.Section(identity::wot::claim::SectionType::Contract);
     const auto haveAccounts = bool(contractSection);
 
     if (serverID->empty()) {
@@ -438,7 +439,9 @@ auto Issuer::BailmentInstructions(
                     .Flush();
             } else {
                 auto nym = wallet_.Nym(issuer_id_);
-                auto bailmentreply = client.Factory().BailmentReply(nym, reply);
+                auto bailmentreply =
+                    client.Factory().InternalSession().BailmentReply(
+                        nym, reply);
                 output.emplace_back(requestID, bailmentreply);
             }
         } else {
@@ -512,7 +515,8 @@ auto Issuer::ConnectionInfo(
             if (loadedreply) {
                 auto nym = wallet_.Nym(issuer_id_);
                 auto connectionreply =
-                    client.Factory().ConnectionReply(nym, reply);
+                    client.Factory().InternalSession().ConnectionReply(
+                        nym, reply);
                 output.emplace_back(requestID, connectionreply);
             } else {
                 LogVerbose()(OT_PRETTY_CLASS())(
@@ -658,13 +662,13 @@ auto Issuer::Paired() const -> bool { return paired_.get(); }
 
 auto Issuer::PairingCode() const -> const std::string& { return pairing_code_; }
 
-auto Issuer::PrimaryServer() const -> OTServerID
+auto Issuer::PrimaryServer() const -> OTNotaryID
 {
     Lock lock(lock_);
 
     auto nym = wallet_.Nym(issuer_id_);
 
-    if (false == bool(nym)) { return identifier::Server::Factory(); }
+    if (false == bool(nym)) { return identifier::Notary::Factory(); }
 
     return nym->Claims().PreferredOTServer();
 }

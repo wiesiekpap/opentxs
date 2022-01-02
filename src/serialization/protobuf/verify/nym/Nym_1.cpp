@@ -3,17 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/Nym.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/Nym.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
 #include <string>
 #include <utility>
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/Authority.hpp"    // IWYU pragma: keep
-#include "internal/protobuf/verify/NymIDSource.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyCredentials.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/Authority.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/NymIDSource.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
 #include "serialization/protobuf/Authority.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/Nym.pb.h"

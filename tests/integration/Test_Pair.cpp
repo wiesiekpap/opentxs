@@ -18,6 +18,7 @@
 #include "internal/core/contract/peer/Peer.hpp"
 #include "internal/otx/client/Issuer.hpp"
 #include "internal/otx/client/Pair.hpp"
+#include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -29,14 +30,6 @@
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactGroup.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
@@ -46,10 +39,19 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/core/ui/AccountSummary.hpp"
+#include "opentxs/core/ui/AccountSummaryItem.hpp"
+#include "opentxs/core/ui/IssuerItem.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Group.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/Section.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -57,10 +59,8 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/ui/AccountSummary.hpp"
-#include "opentxs/ui/AccountSummaryItem.hpp"
-#include "opentxs/ui/IssuerItem.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "ui/Helpers.hpp"
 
@@ -280,12 +280,13 @@ TEST_F(Test_Pair, issue_dollars)
         const auto& nym = *pNym;
         const auto& claims = nym.Claims();
         const auto pSection =
-            claims.Section(ot::contact::SectionType::Contract);
+            claims.Section(ot::identity::wot::claim::SectionType::Contract);
 
         ASSERT_TRUE(pSection);
 
         const auto& section = *pSection;
-        const auto pGroup = section.Group(ot::contact::ClaimType::USD);
+        const auto pGroup =
+            section.Group(ot::identity::wot::claim::ClaimType::USD);
 
         ASSERT_TRUE(pGroup);
 

@@ -13,13 +13,13 @@
 #include <string>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Contract.hpp"
+#include "internal/otx/common/OTTransactionType.hpp"
+#include "internal/otx/common/cron/OTCronItem.hpp"
+#include "internal/otx/common/script/OTScriptable.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/Contract.hpp"
-#include "opentxs/core/OTTransactionType.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/cron/OTCronItem.hpp"
-#include "opentxs/core/script/OTScriptable.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -39,8 +39,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 namespace identity
@@ -183,7 +183,7 @@ public:
         otx::context::Server& context,
         const PasswordPrompt& reason) -> bool override;  // Takes ownership.
     // Returns true if it was empty (and thus successfully set).
-    auto SetNotaryIDIfEmpty(const identifier::Server& theID) -> bool;
+    auto SetNotaryIDIfEmpty(const identifier::Notary& theID) -> bool;
 
     auto VerifySmartContract(
         const identity::Nym& theNym,
@@ -449,7 +449,7 @@ private:
     OTSmartContract(const api::Session& api);
     OTSmartContract(
         const api::Session& api,
-        const identifier::Server& NOTARY_ID);
+        const identifier::Notary& NOTARY_ID);
 
     OTSmartContract() = delete;
 };

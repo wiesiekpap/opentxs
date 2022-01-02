@@ -18,9 +18,9 @@
 #include <vector>
 
 #include "Basic.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/RPCPush.hpp"
-#include "internal/protobuf/verify/RPCResponse.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/RPCPush.hpp"
+#include "internal/serialization/protobuf/verify/RPCResponse.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -34,13 +34,13 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/contact/Contact.hpp"
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -117,8 +117,8 @@ protected:
     static int server_;
     static OTUnitID unit_definition_id_;
     static OTIdentifier workflow_id_;
-    static ot::OTServerID intro_server_id_;
-    static ot::OTServerID server_id_;
+    static ot::OTNotaryID intro_server_id_;
+    static ot::OTNotaryID server_id_;
 
     static bool check_push_results(const std::vector<bool>& results)
     {
@@ -177,8 +177,8 @@ int Test_Rpc_Async::server_{0};
 OTUnitID Test_Rpc_Async::unit_definition_id_{
     identifier::UnitDefinition::Factory()};
 OTIdentifier Test_Rpc_Async::workflow_id_{Identifier::Factory()};
-OTServerID Test_Rpc_Async::intro_server_id_{identifier::Server::Factory()};
-OTServerID Test_Rpc_Async::server_id_{identifier::Server::Factory()};
+OTNotaryID Test_Rpc_Async::intro_server_id_{identifier::Notary::Factory()};
+OTNotaryID Test_Rpc_Async::server_id_{identifier::Notary::Factory()};
 Test_Rpc_Async::PushChecker Test_Rpc_Async::push_checker_{};
 std::promise<std::vector<bool>> Test_Rpc_Async::push_received_{};
 std::vector<bool> Test_Rpc_Async::push_results_{};
@@ -264,11 +264,11 @@ void Test_Rpc_Async::setup()
     server.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
     auto server_contract = server.Wallet().Server(server.ID());
     intro_server.Wallet().Server(server_contract->PublicContract());
-    server_id_ = identifier::Server::Factory(server_contract->ID()->str());
+    server_id_ = identifier::Notary::Factory(server_contract->ID()->str());
     auto intro_server_contract =
         intro_server.Wallet().Server(intro_server.ID());
     intro_server_id_ =
-        identifier::Server::Factory(intro_server_contract->ID()->str());
+        identifier::Notary::Factory(intro_server_contract->ID()->str());
     auto cookie = ot::Identifier::Random()->str();
     proto::RPCCommand command;
     command.set_version(COMMAND_VERSION);

@@ -15,12 +15,13 @@
 #include <utility>
 #include <vector>
 
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/client/OTPayment.hpp"
+#include "internal/otx/common/Cheque.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Cheque.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/client/DepositPayment.hpp"
@@ -92,7 +93,7 @@ auto PaymentTasks::get_payment_id(const OTPayment& payment) const
 
     switch (payment.GetType()) {
         case OTPayment::CHEQUE: {
-            auto pCheque = parent_.api().Factory().Cheque();
+            auto pCheque = parent_.api().Factory().InternalSession().Cheque();
 
             OT_ASSERT(pCheque);
 

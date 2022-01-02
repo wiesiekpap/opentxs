@@ -16,8 +16,8 @@
 #include "internal/core/contract/Contract.hpp"
 #include "internal/core/contract/peer/Factory.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/PeerReply.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PeerReply.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -25,8 +25,8 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
@@ -50,7 +50,7 @@ Reply::Reply(
     const Nym_p& nym,
     const VersionNumber version,
     const identifier::Nym& initiator,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const PeerRequestType& type,
     const Identifier& request,
     const std::string& conditions)
@@ -81,7 +81,7 @@ Reply::Reply(
               : Signatures{})
     , initiator_(identifier::Nym::Factory(serialized.initiator()))
     , recipient_(identifier::Nym::Factory(serialized.recipient()))
-    , server_(identifier::Server::Factory(serialized.server()))
+    , server_(identifier::Notary::Factory(serialized.server()))
     , cookie_(Identifier::Factory(serialized.cookie()))
     , type_(translate(serialized.type()))
 {

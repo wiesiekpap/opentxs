@@ -6,22 +6,22 @@
 #include <gtest/gtest.h>
 #include <memory>
 
+#include "internal/api/session/FactoryAPI.hpp"
+#include "internal/otx/common/Ledger.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace ot = opentxs;
@@ -29,7 +29,7 @@ namespace ot = opentxs;
 namespace ottest
 {
 ot::OTNymID nym_id_{ot::identifier::Nym::Factory()};
-ot::OTServerID server_id_{ot::identifier::Server::Factory()};
+ot::OTNotaryID server_id_{ot::identifier::Notary::Factory()};
 
 struct Ledger : public ::testing::Test {
     const ot::api::session::Client& client_;
@@ -67,7 +67,7 @@ TEST_F(Ledger, create_nymbox)
 
     ASSERT_TRUE(nym);
 
-    auto nymbox = client_.Factory().Ledger(
+    auto nymbox = client_.Factory().InternalSession().Ledger(
         nym_id_, nym_id_, server_id_, ot::ledgerType::nymbox, true);
 
     ASSERT_TRUE(nymbox);
@@ -81,7 +81,7 @@ TEST_F(Ledger, create_nymbox)
 
 TEST_F(Ledger, load_nymbox)
 {
-    auto nymbox = client_.Factory().Ledger(
+    auto nymbox = client_.Factory().InternalSession().Ledger(
         nym_id_, nym_id_, server_id_, ot::ledgerType::nymbox, false);
 
     ASSERT_TRUE(nymbox);

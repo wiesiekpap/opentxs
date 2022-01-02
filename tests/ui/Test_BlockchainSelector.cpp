@@ -20,10 +20,10 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/ui/BlockchainSelection.hpp"
-#include "opentxs/ui/Blockchains.hpp"
+#include "opentxs/core/ui/BlockchainSelection.hpp"
+#include "opentxs/core/ui/Blockchains.hpp"
 #if OT_QT
-#include "opentxs/ui/qt/BlockchainSelection.hpp"
+#include "opentxs/core/ui/qt/BlockchainSelection.hpp"
 #endif  // OT_QT
 #include "ui/Helpers.hpp"
 

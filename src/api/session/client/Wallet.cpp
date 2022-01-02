@@ -23,8 +23,8 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -69,7 +69,7 @@ Wallet::Wallet(const api::session::Client& parent)
 }
 
 auto Wallet::Context(
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const identifier::Nym& clientNymID) const
     -> std::shared_ptr<const otx::context::Base>
 {
@@ -98,7 +98,7 @@ void Wallet::instantiate_server_context(
 }
 
 auto Wallet::mutable_Context(
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const identifier::Nym& clientNymID,
     const PasswordPrompt& reason) const -> Editor<otx::context::Base>
 {
@@ -154,7 +154,7 @@ auto Wallet::mutable_ServerContext(
             reply_received_,
             localNym,
             remoteNym,
-            identifier::Server::Factory(serverID->str()),  // TODO conversion
+            identifier::Notary::Factory(serverID->str()),  // TODO conversion
             connection));
         base = entry;
     }

@@ -19,13 +19,7 @@ class VerificationSet;
 class PasswordPrompt;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace identity
-{
-namespace wot
-{
-namespace verification
+namespace opentxs::identity::wot::verification
 {
 class OPENTXS_EXPORT Set
 {
@@ -68,7 +62,4 @@ private:
     auto operator=(const Set&) -> Set& = delete;
     auto operator=(Set&&) -> Set& = delete;
 };
-}  // namespace verification
-}  // namespace wot
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity::wot::verification

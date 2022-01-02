@@ -18,16 +18,16 @@
 
 #include "api/session/activity/MailCache.hpp"
 #include "internal/api/session/Activity.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Activity.hpp"
-#include "opentxs/core/Lockable.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -41,6 +41,7 @@ class Blockchain;
 
 namespace session
 {
+class Activity;
 class Contacts;
 }  // namespace session
 
@@ -58,11 +59,6 @@ class Transaction;
 }  // namespace block
 }  // namespace blockchain
 
-namespace contact
-{
-class Contact;
-}  // namespace contact
-
 namespace identifier
 {
 class Nym;
@@ -73,6 +69,7 @@ namespace proto
 class StorageThread;
 }  // namespace proto
 
+class Contact;
 class PeerObject;
 }  // namespace opentxs
 
@@ -202,7 +199,7 @@ private:
         const noexcept -> bool;
 #endif  // OT_BLOCKCHAIN
     auto nym_to_contact(const std::string& nymID) const noexcept
-        -> std::shared_ptr<const contact::Contact>;
+        -> std::shared_ptr<const Contact>;
 #if OT_BLOCKCHAIN
     auto get_blockchain(const eLock&, const identifier::Nym& nymID)
         const noexcept -> const opentxs::network::zeromq::socket::Publish&;

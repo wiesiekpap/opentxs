@@ -333,15 +333,14 @@ auto Blockchain::PaymentCodeSubaccount(
         nymID, local, remote, path, chain, reason);
 }
 
-auto Blockchain::ProcessContact(const contact::Contact& contact) const noexcept
-    -> bool
+auto Blockchain::ProcessContact(const Contact& contact) const noexcept -> bool
 {
     return imp_->ProcessContact(contact);
 }
 
 auto Blockchain::ProcessMergedContact(
-    const contact::Contact& parent,
-    const contact::Contact& child) const noexcept -> bool
+    const Contact& parent,
+    const Contact& child) const noexcept -> bool
 {
     return imp_->ProcessMergedContact(parent, child);
 }

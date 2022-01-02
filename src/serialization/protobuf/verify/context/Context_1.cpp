@@ -3,13 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/Context.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/Context.hpp"  // IWYU pragma: associated
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/ClientContext.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/ServerContext.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/Signature.hpp"      // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyConsensus.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/ClientContext.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/ServerContext.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyConsensus.hpp"
 #include "serialization/protobuf/ConsensusEnums.pb.h"
 #include "serialization/protobuf/Context.pb.h"
 #include "serialization/protobuf/Enums.pb.h"

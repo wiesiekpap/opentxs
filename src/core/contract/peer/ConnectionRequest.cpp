@@ -14,8 +14,8 @@
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/PeerRequest.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
@@ -35,7 +35,7 @@ auto Factory::ConnectionRequest(
     const Nym_p& nym,
     const identifier::Nym& recipient,
     const contract::peer::ConnectionInfoType type,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::Connection>
 {
@@ -102,7 +102,7 @@ Connection::Connection(
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const contract::peer::ConnectionInfoType type,
-    const identifier::Server& serverID)
+    const identifier::Notary& serverID)
     : Request(
           api,
           nym,

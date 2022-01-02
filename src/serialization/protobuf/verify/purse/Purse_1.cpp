@@ -3,17 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/Purse.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/Purse.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <set>
 #include <string>
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/Envelope.hpp"      // IWYU pragma: keep
-#include "internal/protobuf/verify/SymmetricKey.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/Token.hpp"         // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyCash.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/Envelope.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/SymmetricKey.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/Token.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyCash.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/CashEnums.pb.h"
 #include "serialization/protobuf/Purse.pb.h"

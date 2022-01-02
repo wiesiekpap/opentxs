@@ -1,0 +1,121 @@
+// Copyright (c) 2010-2021 The Open-Transactions developers
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#include "0_stdafx.hpp"                        // IWYU pragma: associated
+#include "1_Internal.hpp"                      // IWYU pragma: associated
+#include "util/storage/tree/PeerRequests.hpp"  // IWYU pragma: associated
+
+#include <cstdlib>
+#include <iostream>
+#include <map>
+#include <tuple>
+#include <utility>
+
+#include "Proto.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PeerRequest.hpp"
+#include "internal/serialization/protobuf/verify/StorageNymList.hpp"
+#include "opentxs/Types.hpp"
+#include "opentxs/util/storage/Driver.hpp"
+#include "serialization/protobuf/PeerRequest.pb.h"
+#include "serialization/protobuf/StorageItemHash.pb.h"
+#include "serialization/protobuf/StorageNymList.pb.h"
+#include "util/storage/Plugin.hpp"
+#include "util/storage/tree/Node.hpp"
+
+namespace opentxs
+{
+namespace storage
+{
+PeerRequests::PeerRequests(const Driver& storage, const std::string& hash)
+    : Node(storage, hash)
+{
+    if (check_hash(hash)) {
+        init(hash);
+    } else {
+        blank(2);
+    }
+}
+
+auto PeerRequests::Delete(const std::string& id) -> bool
+{
+    return delete_item(id);
+}
+
+void PeerRequests::init(const std::string& hash)
+{
+    std::shared_ptr<proto::StorageNymList> serialized;
+    driver_.LoadProto(hash, serialized);
+
+    if (!serialized) {
+        std::cerr << __func__ << ": Failed to load peer request index file."
+                  << std::endl;
+        abort();
+    }
+
+    init_version(2, *serialized);
+
+    for (const auto& it : serialized->nym()) {
+        item_map_.emplace(
+            it.itemid(), Metadata{it.hash(), it.alias(), 0, false});
+    }
+}
+
+auto PeerRequests::Load(
+    const std::string& id,
+    std::shared_ptr<proto::PeerRequest>& output,
+    std::string& alias,
+    const bool checking) const -> bool
+{
+    return load_proto<proto::PeerRequest>(id, output, alias, checking);
+}
+
+auto PeerRequests::save(const std::unique_lock<std::mutex>& lock) const -> bool
+{
+    if (!verify_write_lock(lock)) {
+        std::cerr << __func__ << ": Lock failure." << std::endl;
+        abort();
+    }
+
+    auto serialized = serialize();
+
+    if (!proto::Validate(serialized, VERBOSE)) { return false; }
+
+    return driver_.StoreProto(serialized, root_);
+}
+
+auto PeerRequests::serialize() const -> proto::StorageNymList
+{
+    proto::StorageNymList serialized;
+    serialized.set_version(version_);
+
+    for (const auto& item : item_map_) {
+        const bool goodID = !item.first.empty();
+        const bool goodHash = check_hash(std::get<0>(item.second));
+        const bool good = goodID && goodHash;
+
+        if (good) {
+            serialize_index(
+                version_, item.first, item.second, *serialized.add_nym());
+        }
+    }
+
+    return serialized;
+}
+
+auto PeerRequests::SetAlias(const std::string& id, const std::string& alias)
+    -> bool
+{
+    return set_alias(id, alias);
+}
+
+auto PeerRequests::Store(
+    const proto::PeerRequest& data,
+    const std::string& alias) -> bool
+{
+    return store_proto(data, data.id(), alias);
+}
+}  // namespace storage
+}  // namespace opentxs

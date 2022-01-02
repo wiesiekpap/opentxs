@@ -18,20 +18,20 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/recurring/OTPaymentPlan.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Message.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/recurring/OTPaymentPlan.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/UnitDefinition.pb.h"
@@ -89,7 +89,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apiLock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const OTAPI_Func_Type type)
     : type_(type)
     , api_lock_(apiLock)
@@ -155,7 +155,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID)
+    const identifier::Notary& serverID)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
     if (theType == DELETE_NYM) {
@@ -173,7 +173,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const proto::UnitDefinition& unitDefinition,
     const std::string& label)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
@@ -198,7 +198,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& nymID2)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
@@ -224,7 +224,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const Identifier& recipientID,
     std::unique_ptr<OTPaymentPlan>& paymentPlan)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
@@ -253,7 +253,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& nymID2,
     const Amount& int64val)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
@@ -296,7 +296,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const TransactionNumber& transactionNumber,
     const std::string& clause,
     const std::string& parameter)
@@ -334,7 +334,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const Identifier& accountID,
     const std::string& agentName,
     std::unique_ptr<OTSmartContract>& contract)
@@ -377,7 +377,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& nymID2,
     const Identifier& targetID,
     const Amount& amount,
@@ -413,7 +413,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const Identifier& basketID,
     const Identifier& accountID,
@@ -439,7 +439,7 @@ OTAPI_Func::OTAPI_Func(
     std::recursive_mutex& apilock,
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const Identifier& assetAccountID,
     const Identifier& currencyAccountID,
     const Amount& scale,

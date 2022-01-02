@@ -1109,15 +1109,13 @@ auto Blockchain::Imp::PaymentCodeSubaccount(
     return tree.GetPaymentCode().at(accountID);
 }
 
-auto Blockchain::Imp::ProcessContact(const contact::Contact&) const noexcept
-    -> bool
+auto Blockchain::Imp::ProcessContact(const Contact&) const noexcept -> bool
 {
     return false;
 }
 
-auto Blockchain::Imp::ProcessMergedContact(
-    const contact::Contact&,
-    const contact::Contact&) const noexcept -> bool
+auto Blockchain::Imp::ProcessMergedContact(const Contact&, const Contact&)
+    const noexcept -> bool
 {
     return false;
 }

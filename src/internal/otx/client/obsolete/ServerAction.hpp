@@ -5,18 +5,17 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
-
 #include <memory>
 #include <string>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 
 namespace opentxs
 {
 namespace client
 {
-class OPENTXS_EXPORT ServerAction
+class ServerAction
 {
 public:
     virtual auto LastSendResult() const -> SendResult = 0;

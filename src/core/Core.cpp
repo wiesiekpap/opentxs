@@ -14,7 +14,7 @@
 #include <utility>
 
 #include "internal/blockchain/Params.hpp"
-#include "internal/protobuf/verify/VerifyContacts.hpp"
+#include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -23,8 +23,8 @@
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/ContractEnums.pb.h"
@@ -60,11 +60,11 @@ auto Chain(const api::Session& api, const identifier::Nym& id) noexcept
     }
 }
 
-auto Chain(const api::Session& api, const identifier::Server& id) noexcept
+auto Chain(const api::Session& api, const identifier::Notary& id) noexcept
     -> blockchain::Type
 {
     static const auto data = [&] {
-        auto out = std::map<OTServerID, blockchain::Type>{};
+        auto out = std::map<OTNotaryID, blockchain::Type>{};
 
         for (const auto& chain : blockchain::DefinedChains()) {
             out.emplace(NotaryID(api, chain), chain);
@@ -134,10 +134,10 @@ auto IssuerID(const api::Session& api, const blockchain::Type chain) noexcept
 }
 
 auto NotaryID(const api::Session& api, const blockchain::Type chain) noexcept
-    -> const identifier::Server&
+    -> const identifier::Notary&
 {
     static auto mutex = std::mutex{};
-    static auto map = std::map<blockchain::Type, OTServerID>{};
+    static auto map = std::map<blockchain::Type, OTNotaryID>{};
 
     auto lock = Lock{mutex};
 

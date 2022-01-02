@@ -17,16 +17,16 @@
 #include <utility>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Helpers.hpp"
 #include "internal/otx/common/XML.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/Helpers.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -160,7 +160,7 @@ auto AccountList::GetOrRegisterAccount(
     const identity::Nym& serverNym,
     const identifier::Nym& accountOwnerId,
     const identifier::UnitDefinition& instrumentDefinitionID,
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     bool& wasAcctCreated,
     const PasswordPrompt& reason,
     std::int64_t stashTransNum) -> ExclusiveAccount

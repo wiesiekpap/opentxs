@@ -13,18 +13,18 @@
 
 #include "api/session/Wallet.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/otx/common/Account.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
+#include "internal/util/Lockable.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
@@ -71,7 +71,7 @@ auto Wallet::ClientContext(const identifier::Nym& remoteNymID) const
 }
 
 auto Wallet::Context(
-    [[maybe_unused]] const identifier::Server& notaryID,
+    [[maybe_unused]] const identifier::Notary& notaryID,
     const identifier::Nym& clientNymID) const
     -> std::shared_ptr<const otx::context::Base>
 {
@@ -198,7 +198,7 @@ auto Wallet::mutable_ClientContext(
 }
 
 auto Wallet::mutable_Context(
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const identifier::Nym& clientNymID,
     const PasswordPrompt& reason) const -> Editor<otx::context::Base>
 {

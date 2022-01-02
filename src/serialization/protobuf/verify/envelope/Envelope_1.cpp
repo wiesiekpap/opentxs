@@ -3,17 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/Envelope.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/Envelope.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <map>
 #include <set>
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/AsymmetricKey.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/Ciphertext.hpp"     // IWYU pragma: keep
-#include "internal/protobuf/verify/TaggedKey.hpp"      // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyCredentials.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/AsymmetricKey.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/Ciphertext.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/TaggedKey.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/Envelope.pb.h"

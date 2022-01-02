@@ -20,6 +20,8 @@
 #include <thread>
 
 #include "core/Amount.hpp"
+#include "internal/otx/common/StringXML.hpp"
+#include "internal/otx/common/util/Common.hpp"
 #include "internal/util/Log.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -28,14 +30,12 @@
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/util/Common.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -305,11 +305,6 @@ auto Log::operator()(const OTString& in) const noexcept -> const Log&
     return operator()(in.get());
 }
 
-auto Log::operator()(const OTStringXML& in) const noexcept -> const Log&
-{
-    return operator()(in.get());
-}
-
 auto Log::operator()(const OTArmored& in) const noexcept -> const Log&
 {
     return operator()(in.get());
@@ -386,12 +381,12 @@ auto Log::operator()(const identifier::Nym& in) const noexcept -> const Log&
     return operator()(in.str().c_str());
 }
 
-auto Log::operator()(const OTServerID& in) const noexcept -> const Log&
+auto Log::operator()(const OTNotaryID& in) const noexcept -> const Log&
 {
     return operator()(in.get());
 }
 
-auto Log::operator()(const identifier::Server& in) const noexcept -> const Log&
+auto Log::operator()(const identifier::Notary& in) const noexcept -> const Log&
 {
     if (false == imp_->active()) { return *this; }
 

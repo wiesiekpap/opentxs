@@ -12,7 +12,7 @@
 #include <sstream>
 
 #include "Proto.hpp"
-#include "internal/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs::proto

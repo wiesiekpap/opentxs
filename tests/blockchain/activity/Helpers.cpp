@@ -28,7 +28,7 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/Element.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
-#include "opentxs/contact/Contact.hpp"
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Pimpl.hpp"

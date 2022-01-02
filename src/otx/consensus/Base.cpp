@@ -14,13 +14,13 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/OTX.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/NymFile.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/NymFile.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -42,7 +42,7 @@ Base::Base(
     const VersionNumber targetVersion,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server)
+    const identifier::Notary& server)
     : Signable(
           api,
           local,
@@ -69,7 +69,7 @@ Base::Base(
     const proto::Context& serialized,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server)
+    const identifier::Notary& server)
     : Signable(
           api,
           local,
@@ -315,8 +315,8 @@ auto Base::InitializeNymbox(const PasswordPrompt& reason) -> bool
 {
     auto lock = Lock{lock_};
     const auto& ownerNymID = client_nym_id(lock);
-    auto nymbox{
-        api_.Factory().Ledger(ownerNymID, server_nym_id(lock), server_id_)};
+    auto nymbox{api_.Factory().InternalSession().Ledger(
+        ownerNymID, server_nym_id(lock), server_id_)};
 
     if (false == bool(nymbox)) {
         LogError()(OT_PRETTY_CLASS())("Unable to instantiate nymbox for ")(

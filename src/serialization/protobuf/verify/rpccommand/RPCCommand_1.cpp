@@ -3,25 +3,25 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/RPCCommand.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/RPCCommand.hpp"  // IWYU pragma: associated
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/APIArgument.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/AcceptPendingPayment.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/AddClaim.hpp"    // IWYU pragma: keep
-#include "internal/protobuf/verify/AddContact.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/CreateInstrumentDefinition.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/CreateNym.hpp"       // IWYU pragma: keep
-#include "internal/protobuf/verify/GetWorkflow.hpp"     // IWYU pragma: keep
-#include "internal/protobuf/verify/HDSeed.hpp"          // IWYU pragma: keep
-#include "internal/protobuf/verify/MoveFunds.hpp"       // IWYU pragma: keep
-#include "internal/protobuf/verify/SendMessage.hpp"     // IWYU pragma: keep
-#include "internal/protobuf/verify/SendPayment.hpp"     // IWYU pragma: keep
-#include "internal/protobuf/verify/ServerContract.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/Verification.hpp"    // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyClaim.hpp"     // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyContacts.hpp"
-#include "internal/protobuf/verify/VerifyRPC.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/APIArgument.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/AcceptPendingPayment.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/AddClaim.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/AddContact.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/CreateInstrumentDefinition.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/CreateNym.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/GetWorkflow.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/HDSeed.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/MoveFunds.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/SendMessage.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/SendPayment.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/ServerContract.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/Verification.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyClaim.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
+#include "internal/serialization/protobuf/verify/VerifyRPC.hpp"
 #include "serialization/protobuf/RPCCommand.pb.h"
 #include "serialization/protobuf/RPCEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

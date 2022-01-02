@@ -13,7 +13,7 @@ namespace opentxs
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 }  // namespace identifier
 
 namespace otx
@@ -43,7 +43,7 @@ public:
     using Session::Lock;
     virtual auto Lock(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID) const -> std::recursive_mutex& = 0;
+        const identifier::Notary& serverID) const -> std::recursive_mutex& = 0;
     virtual auto OTAPI(const std::string& wallet = "") const
         -> const OT_API& = 0;
     virtual auto Pair() const -> const otx::client::Pair& = 0;

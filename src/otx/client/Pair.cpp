@@ -26,9 +26,13 @@
 #include "internal/otx/client/Factory.hpp"
 #include "internal/otx/client/Issuer.hpp"
 #include "internal/otx/client/Pair.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/PeerReply.hpp"
-#include "internal/protobuf/verify/PeerRequest.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PeerReply.hpp"
+#include "internal/serialization/protobuf/verify/PeerRequest.hpp"
+#include "internal/util/Editor.hpp"
+#include "internal/util/Flag.hpp"
+#include "internal/util/Lockable.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -39,16 +43,6 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactGroup.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/contact/Types.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Lockable.hpp"
-#include "opentxs/core/Message.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
@@ -56,6 +50,12 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Group.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/Section.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
@@ -264,8 +264,8 @@ auto Pair::State::count_currencies(
     return unique.size();
 }
 
-auto Pair::State::count_currencies(const contact::ContactSection& in) noexcept
-    -> std::size_t
+auto Pair::State::count_currencies(
+    const identity::wot::claim::Section& in) noexcept -> std::size_t
 {
     auto unique = std::set<OTUnitID>{};
 
@@ -505,9 +505,9 @@ void Pair::callback_peer_request(const zmq::Message& in) noexcept
 }
 
 void Pair::check_accounts(
-    const contact::ContactData& issuerClaims,
+    const identity::wot::claim::Data& issuerClaims,
     otx::client::Issuer& issuer,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     std::size_t& offered,
     std::size_t& registeredAccounts,
     std::vector<Pair::State::AccountDetails>& accountDetails) const noexcept
@@ -515,7 +515,7 @@ void Pair::check_accounts(
     const auto& localNymID = issuer.LocalNymID();
     const auto& issuerNymID = issuer.IssuerID();
     const auto contractSection =
-        issuerClaims.Section(contact::SectionType::Contract);
+        issuerClaims.Section(identity::wot::claim::SectionType::Contract);
     const auto haveAccounts = bool(contractSection);
 
     if (false == haveAccounts) {
@@ -619,7 +619,7 @@ void Pair::check_accounts(
 
 void Pair::check_connection_info(
     otx::client::Issuer& issuer,
-    const identifier::Server& serverID) const noexcept
+    const identifier::Notary& serverID) const noexcept
 {
     const auto trusted = issuer.Paired();
 
@@ -651,7 +651,7 @@ void Pair::check_connection_info(
 
 void Pair::check_rename(
     const otx::client::Issuer& issuer,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const PasswordPrompt& reason,
     bool& needRename) const noexcept
 {
@@ -702,7 +702,7 @@ void Pair::check_rename(
 
 void Pair::check_store_secret(
     otx::client::Issuer& issuer,
-    const identifier::Server& serverID) const noexcept
+    const identifier::Notary& serverID) const noexcept
 {
     if (false == issuer.Paired()) { return; }
 
@@ -752,7 +752,7 @@ auto Pair::cleanup() const noexcept -> std::shared_future<void>
 auto Pair::get_connection(
     const identifier::Nym& localNymID,
     const identifier::Nym& issuerNymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const contract::peer::ConnectionInfoType type) const
     -> std::pair<bool, OTIdentifier>
 {
@@ -797,7 +797,7 @@ void Pair::init() noexcept
 
 auto Pair::initiate_bailment(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::Nym& issuerID,
     const identifier::UnitDefinition& unitID) const
     -> std::pair<bool, OTIdentifier>
@@ -838,7 +838,7 @@ auto Pair::IssuerDetails(
 
 auto Pair::need_registration(
     const identifier::Nym& localNymID,
-    const identifier::Server& serverID) const -> bool
+    const identifier::Notary& serverID) const -> bool
 {
     auto context = client_.Wallet().ServerContext(localNymID, serverID);
 
@@ -996,7 +996,7 @@ auto Pair::process_pending_bailment(
 
     const auto requestID = Identifier::Factory(request.id());
     const auto issuerNymID = identifier::Nym::Factory(request.initiator());
-    const auto serverID = identifier::Server::Factory(request.server());
+    const auto serverID = identifier::Notary::Factory(request.server());
     auto editor =
         client_.Wallet().Internal().mutable_Issuer(nymID, issuerNymID);
     auto& issuer = editor.get();
@@ -1180,7 +1180,7 @@ auto Pair::queue_nym_download(
 
 auto Pair::queue_nym_registration(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const bool setData) const -> api::session::OTX::BackgroundTask
 {
     return client_.OTX().RegisterNym(nymID, serverID, setData);
@@ -1188,7 +1188,7 @@ auto Pair::queue_nym_registration(
 
 auto Pair::queue_server_contract(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID) const
+    const identifier::Notary& serverID) const
     -> api::session::OTX::BackgroundTask
 {
     client_.OTX().StartIntroductionServer(nymID);
@@ -1198,7 +1198,7 @@ auto Pair::queue_server_contract(
 
 void Pair::queue_unit_definition(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::UnitDefinition& unitID) const
 {
     const auto [taskID, future] =
@@ -1227,7 +1227,7 @@ void Pair::queue_unit_definition(
 
 auto Pair::register_account(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const identifier::UnitDefinition& unitID) const
     -> std::pair<bool, OTIdentifier>
 {
@@ -1426,7 +1426,7 @@ void Pair::state_machine(const IssuerID& id) const
 auto Pair::store_secret(
     const identifier::Nym& localNymID,
     const identifier::Nym& issuerNymID,
-    const identifier::Server& serverID) const -> std::pair<bool, OTIdentifier>
+    const identifier::Notary& serverID) const -> std::pair<bool, OTIdentifier>
 {
     auto output =
         std::pair<bool, OTIdentifier>{false, client_.Factory().Identifier()};

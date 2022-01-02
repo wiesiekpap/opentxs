@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include "Proto.hpp"            // IWYU pragma: associated
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
+#include "Proto.hpp"  // IWYU pragma: associated
 
 #include <cassert>
 #include <cstddef>
@@ -15,6 +14,7 @@
 #include <memory>
 #include <string>
 
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"

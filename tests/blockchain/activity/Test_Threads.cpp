@@ -23,12 +23,12 @@
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/blockchain/crypto/HD.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/contact/Contact.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 
 using Subchain = ot::blockchain::crypto::Subchain;
 

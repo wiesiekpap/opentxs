@@ -85,7 +85,7 @@ class Transaction;
 }  // namespace bitcoin
 
 class Header;
-struct Outpoint;
+class Outpoint;
 }  // namespace block
 }  // namespace blockchain
 

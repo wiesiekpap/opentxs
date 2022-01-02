@@ -90,7 +90,7 @@ class Transaction;
 
 class Block;
 class Header;
-struct Outpoint;
+class Outpoint;
 }  // namespace block
 
 namespace internal

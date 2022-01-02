@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "api/session/Wallet.hpp"
+#include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Editor.hpp"
 
 namespace opentxs
 {
@@ -24,8 +24,8 @@ class Wallet;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 namespace otx
@@ -34,7 +34,7 @@ namespace context
 {
 namespace internal
 {
-struct Base;
+class Base;
 }  // namespace internal
 
 class Base;
@@ -63,7 +63,7 @@ public:
     auto ClientContext(const identifier::Nym& remoteNymID) const
         -> std::shared_ptr<const otx::context::Client> final;
     auto Context(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& clientNymID) const
         -> std::shared_ptr<const otx::context::Base> final;
     auto mutable_ClientContext(
@@ -71,7 +71,7 @@ public:
         const PasswordPrompt& reason) const
         -> Editor<otx::context::Client> final;
     auto mutable_Context(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& clientNymID,
         const PasswordPrompt& reason) const -> Editor<otx::context::Base> final;
 

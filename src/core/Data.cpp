@@ -28,16 +28,6 @@ extern "C" {
 
 template class opentxs::Pimpl<opentxs::Data>;
 
-namespace std
-{
-auto less<opentxs::Pimpl<opentxs::Data>>::operator()(
-    const opentxs::OTData& lhs,
-    const opentxs::OTData& rhs) const -> bool
-{
-    return lhs.get() < rhs.get();
-}
-}  // namespace std
-
 namespace opentxs
 {
 auto operator==(const OTData& lhs, const Data& rhs) noexcept -> bool

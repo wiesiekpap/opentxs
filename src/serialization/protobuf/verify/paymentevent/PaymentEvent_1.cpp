@@ -3,14 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/PaymentEvent.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/PaymentEvent.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
 #include <map>
 #include <set>
 #include <stdexcept>
 
-#include "internal/protobuf/verify/VerifyWorkflows.hpp"
+#include "internal/serialization/protobuf/verify/VerifyWorkflows.hpp"
 #include "serialization/protobuf/PaymentEvent.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

@@ -13,8 +13,8 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerReply.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/PeerReply.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PeerReply.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -36,7 +36,7 @@ auto Factory::OutBailmentReply(
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const Identifier& request,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const std::string& terms,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::reply::Outbailment>
@@ -114,7 +114,7 @@ Outbailment::Outbailment(
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const Identifier& request,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const std::string& terms)
     : Reply(
           api,

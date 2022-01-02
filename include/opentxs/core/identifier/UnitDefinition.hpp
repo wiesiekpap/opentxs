@@ -7,6 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <functional>
+
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -18,7 +20,25 @@ class UnitDefinition;
 }  // namespace identifier
 
 using OTUnitID = Pimpl<identifier::UnitDefinition>;
+}  // namespace opentxs
 
+namespace std
+{
+template <>
+struct OPENTXS_EXPORT hash<opentxs::OTUnitID> {
+    auto operator()(const opentxs::identifier::UnitDefinition& data)
+        const noexcept -> std::size_t;
+};
+
+template <>
+struct OPENTXS_EXPORT less<opentxs::OTUnitID> {
+    auto operator()(const opentxs::OTUnitID& lhs, const opentxs::OTUnitID& rhs)
+        const -> bool;
+};
+}  // namespace std
+
+namespace opentxs
+{
 OPENTXS_EXPORT auto operator==(
     const OTUnitID& lhs,
     const opentxs::Identifier& rhs) noexcept -> bool;
@@ -39,9 +59,7 @@ OPENTXS_EXPORT auto operator>=(
     const opentxs::Identifier& rhs) noexcept -> bool;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace identifier
+namespace opentxs::identifier
 {
 class OPENTXS_EXPORT UnitDefinition : virtual public opentxs::Identifier
 {
@@ -67,5 +85,4 @@ private:
     auto operator=(const UnitDefinition&) -> UnitDefinition& = delete;
     auto operator=(UnitDefinition&&) -> UnitDefinition& = delete;
 };
-}  // namespace identifier
-}  // namespace opentxs
+}  // namespace opentxs::identifier

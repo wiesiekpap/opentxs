@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "opentxs/Version.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 using namespace opentxs;

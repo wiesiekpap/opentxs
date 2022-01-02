@@ -17,15 +17,15 @@
 #include <vector>
 
 #include "internal/otx/client/Issuer.hpp"
+#include "internal/util/Flag.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Issuer.pb.h"
@@ -82,7 +82,7 @@ public:
     auto LocalNymID() const -> const identifier::Nym& final { return nym_id_; }
     auto Paired() const -> bool final;
     auto PairingCode() const -> const std::string& final;
-    auto PrimaryServer() const -> OTServerID final;
+    auto PrimaryServer() const -> OTNotaryID final;
     auto RequestTypes() const
         -> std::set<contract::peer::PeerRequestType> final;
     auto Serialize(proto::Issuer&) const -> bool final;

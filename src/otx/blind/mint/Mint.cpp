@@ -10,10 +10,10 @@
 #include <memory>
 #include <utility>
 
+#include "internal/otx/common/Contract.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Contract.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/blind/mint/Mint.hpp"

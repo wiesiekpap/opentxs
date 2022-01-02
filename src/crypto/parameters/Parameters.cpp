@@ -7,25 +7,16 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: associated
 
-#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <map>
 #include <memory>
-#include <string_view>
-#include <typeindex>
 #include <utility>
 
 #include "crypto/parameters/Imp.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
-#include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/ParameterType.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"
@@ -34,30 +25,7 @@
 #include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
-#include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
-
-namespace std
-{
-template <>
-struct hash<opentxs::crypto::Parameters> {
-    auto operator()(const opentxs::crypto::Parameters& rhs) const noexcept
-        -> std::size_t
-    {
-        static const auto& api = opentxs::Context().Crypto().Hash();
-        static const auto key = std::array<char, 16>{};
-        const auto preimage = rhs.Internal().Hash();
-        auto out = std::size_t{};
-        api.HMAC(
-            opentxs::crypto::HashType::SipHash24,
-            {key.data(), key.size()},
-            preimage->Bytes(),
-            opentxs::preallocated(sizeof(out), &out));
-
-        return out;
-    }
-};
-}  // namespace std
 
 namespace opentxs::crypto
 {

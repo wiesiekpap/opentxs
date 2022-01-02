@@ -11,8 +11,8 @@
 #include <string>
 #include <tuple>
 
+#include "internal/util/Flag.hpp"
 #include "opentxs/api/Settings.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

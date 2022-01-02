@@ -14,19 +14,19 @@
 #include <string>
 #include <utility>
 
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/NumList.hpp"
+#include "internal/otx/common/script/OTScriptable.hpp"
+#include "internal/otx/common/util/Common.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/otx/smartcontract/OTAgent.hpp"
 #include "internal/otx/smartcontract/OTPartyAccount.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/NumList.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/script/OTScriptable.hpp"
-#include "opentxs/core/util/Common.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Log.hpp"
@@ -1008,7 +1008,7 @@ auto OTParty::SendNoticeToParty(
     const api::Session& api,
     bool bSuccessMsg,
     const identity::Nym& theServerNym,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     const std::int64_t& lNewTransactionNumber,
     const String& strReference,
     const PasswordPrompt& reason,

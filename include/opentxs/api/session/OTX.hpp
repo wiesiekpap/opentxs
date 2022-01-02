@@ -17,7 +17,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -46,7 +46,7 @@ class Server;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -68,28 +68,28 @@ public:
 
     virtual auto AcknowledgeBailment(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const Identifier& requestID,
         const std::string& instructions,
         const SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AcknowledgeNotice(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& recipientID,
         const Identifier& requestID,
         const bool ack,
         const SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AcknowledgeOutbailment(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& recipientID,
         const Identifier& requestID,
         const std::string& details,
         const SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto AcknowledgeConnection(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& recipientID,
         const Identifier& requestID,
         const bool ack,
@@ -112,11 +112,11 @@ public:
         const bool startIntroductionServer = true) const -> Messagability = 0;
     virtual auto CheckTransactionNumbers(
         const identifier::Nym& nym,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const std::size_t quantity) const -> bool = 0;
     virtual auto ContextIdle(
         const identifier::Nym& nym,
-        const identifier::Server& server) const -> Finished = 0;
+        const identifier::Notary& server) const -> Finished = 0;
     /** Deposit all available cheques for specified nym
      *
      *  \returns the number of cheques queued for deposit
@@ -145,42 +145,42 @@ public:
     virtual void DisableAutoaccept() const = 0;
     virtual auto DownloadMint(
         const identifier::Nym& nym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const identifier::UnitDefinition& unit) const -> BackgroundTask = 0;
     virtual auto DownloadNym(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& targetNymID) const -> BackgroundTask = 0;
     virtual auto DownloadNymbox(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const -> BackgroundTask = 0;
+        const identifier::Notary& serverID) const -> BackgroundTask = 0;
     virtual auto DownloadServerContract(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
-        const identifier::Server& contractID) const -> BackgroundTask = 0;
+        const identifier::Notary& serverID,
+        const identifier::Notary& contractID) const -> BackgroundTask = 0;
     virtual auto DownloadUnitDefinition(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& contractID) const
         -> BackgroundTask = 0;
     virtual auto FindNym(const identifier::Nym& nymID) const
         -> BackgroundTask = 0;
     virtual auto FindNym(
         const identifier::Nym& nymID,
-        const identifier::Server& serverIDHint) const -> BackgroundTask = 0;
-    virtual auto FindServer(const identifier::Server& serverID) const
+        const identifier::Notary& serverIDHint) const -> BackgroundTask = 0;
+    virtual auto FindServer(const identifier::Notary& serverID) const
         -> BackgroundTask = 0;
     virtual auto FindUnitDefinition(
         const identifier::UnitDefinition& unit) const -> BackgroundTask = 0;
     virtual auto InitiateBailment(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto InitiateOutbailment(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Amount amount,
@@ -188,13 +188,13 @@ public:
         const SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto InitiateRequestConnection(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const contract::peer::ConnectionInfoType& type,
         const SetID setID = {}) const -> BackgroundTask = 0;
     virtual auto InitiateStoreSecret(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const contract::peer::SecretType& type,
         const std::string& primary,
@@ -202,10 +202,10 @@ public:
         const SetID setID = {}) const -> BackgroundTask = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::OTX& = 0;
-    virtual auto IntroductionServer() const -> const identifier::Server& = 0;
+    virtual auto IntroductionServer() const -> const identifier::Notary& = 0;
     virtual auto IssueUnitDefinition(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID,
         const core::UnitType advertise = core::UnitType::Error,
         const std::string& label = "") const -> BackgroundTask = 0;
@@ -218,7 +218,7 @@ public:
         -> std::pair<ThreadStatus, MessageID> = 0;
     virtual auto NotifyBailment(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& requestID,
@@ -235,31 +235,31 @@ public:
         const Identifier& workflowID) const -> BackgroundTask = 0;
     virtual auto ProcessInbox(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID) const -> BackgroundTask = 0;
     virtual auto PublishServerContract(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& contractID) const -> BackgroundTask = 0;
     virtual void Refresh() const = 0;
     virtual auto RefreshCount() const -> std::uint64_t = 0;
     virtual auto RegisterAccount(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID,
         const std::string& label = "") const -> BackgroundTask = 0;
     virtual auto RegisterNym(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const bool resync = false) const -> BackgroundTask = 0;
     virtual auto RegisterNymPublic(
         const identifier::Nym& nymID,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const bool setContactData,
         const bool forcePrimary = false,
         const bool resync = false) const -> BackgroundTask = 0;
     virtual auto SetIntroductionServer(const contract::Server& contract) const
-        -> OTServerID = 0;
+        -> OTNotaryID = 0;
     virtual auto SendCheque(
         const identifier::Nym& localNymID,
         const Identifier& sourceAccountID,
@@ -272,14 +272,14 @@ public:
         -> BackgroundTask = 0;
     virtual auto SendExternalTransfer(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
         const Amount& value,
         const std::string& memo) const -> BackgroundTask = 0;
     virtual auto SendTransfer(
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& sourceAccountID,
         const Identifier& targetAccountID,
         const Amount& value,
@@ -289,7 +289,7 @@ public:
     virtual auto Status(const TaskID taskID) const -> ThreadStatus = 0;
     virtual auto WithdrawCash(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& account,
         const Amount value) const -> BackgroundTask = 0;
 

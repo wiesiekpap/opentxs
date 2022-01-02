@@ -15,33 +15,33 @@
 #include <string_view>
 #include <utility>
 
-#include "core/OTStorage.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Contract.hpp"
+#include "internal/otx/common/StringXML.hpp"
 #include "internal/otx/common/XML.hpp"
+#include "internal/otx/common/util/Common.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Contract.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/StringXML.hpp"
-#include "opentxs/core/util/Common.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "otx/common/OTStorage.hpp"
 
 namespace opentxs::otx::blind::mint
 {
 Mint::Mint(
     const api::Session& api,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::Nym& serverNym,
     const identifier::UnitDefinition& unit)
     : Imp(api)
@@ -70,7 +70,7 @@ Mint::Mint(
 
 Mint::Mint(
     const api::Session& api,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit)
     : Imp(api, unit)
     , m_mapPrivate()
@@ -645,7 +645,7 @@ auto Mint::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
  // static method (call it without an instance, using notation:
  OTAccount::GenerateNewAccount)
  OTAccount * OTAccount::GenerateNewAccount(    const Identifier& theNymID,
- const identifier::Server& theNotaryID,
+ const identifier::Notary& theNotaryID,
                                             const Nym & theServerNym,
  const OTMessage & theMessage,
                                             const OTAccount::AccountType
@@ -675,7 +675,7 @@ void Mint::GenerateNewMint(
     const Time VALID_TO,
     const Time MINT_EXPIRATION,
     const identifier::UnitDefinition& theInstrumentDefinitionID,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     const identity::Nym& theNotary,
     const Amount& nDenom1,
     const Amount& nDenom2,

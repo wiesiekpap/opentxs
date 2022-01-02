@@ -14,10 +14,12 @@
 #include <string>
 #include <utility>
 
-#include "core/OTStorage.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/otx/AccountList.hpp"
+#include "internal/otx/common/StringXML.hpp"
+#include "internal/otx/common/cron/OTCron.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -25,15 +27,13 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/StringXML.hpp"
-#include "opentxs/core/cron/OTCron.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "otx/common/OTStorage.hpp"
 #include "otx/server/Server.hpp"
 #include "otx/server/Transactor.hpp"
 

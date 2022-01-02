@@ -12,9 +12,9 @@
 
 #include "internal/crypto/key/Factory.hpp"
 #include "internal/crypto/key/Null.hpp"
+#include "internal/otx/common/crypto/OTSignatureMetadata.hpp"
+#include "internal/otx/common/crypto/Signature.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/crypto/OTSignatureMetadata.hpp"
-#include "opentxs/core/crypto/Signature.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"

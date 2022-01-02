@@ -35,7 +35,7 @@ class Request;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 }  // namespace identifier
 
 namespace proto
@@ -71,7 +71,7 @@ public:
     OPENTXS_NO_EXPORT virtual auto Serialize(SerializedType&) const -> bool = 0;
     virtual auto Initiator() const -> const identifier::Nym& = 0;
     virtual auto Recipient() const -> const identifier::Nym& = 0;
-    virtual auto Server() const -> const identifier::Server& = 0;
+    virtual auto Server() const -> const identifier::Notary& = 0;
     virtual auto Type() const -> PeerRequestType = 0;
 
     ~Request() override = default;

@@ -18,7 +18,6 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
@@ -40,9 +39,10 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/ContractEnums.pb.h"
@@ -229,7 +229,7 @@ struct Reply : virtual public opentxs::contract::peer::Reply,
 
     using Signable::Serialize;
     auto Serialize(SerializedType& output) const -> bool final;
-    auto Server() const -> const identifier::Server& final { return server_; }
+    auto Server() const -> const identifier::Notary& final { return server_; }
     auto Type() const -> PeerRequestType final
     {
         return PeerRequestType::Error;
@@ -244,7 +244,7 @@ struct Reply : virtual public opentxs::contract::peer::Reply,
     ~Reply() override = default;
 
 protected:
-    const identifier::Server& server_;
+    const identifier::Notary& server_;
 
     auto clone() const noexcept -> Reply* override { return new Reply(*this); }
 
@@ -271,7 +271,7 @@ struct Request : virtual public opentxs::contract::peer::Request,
     auto Recipient() const -> const identifier::Nym& final { return nym_; }
     using Signable::Serialize;
     auto Serialize(SerializedType& output) const -> bool final;
-    auto Server() const -> const identifier::Server& final { return server_; }
+    auto Server() const -> const identifier::Notary& final { return server_; }
     auto Type() const -> PeerRequestType final
     {
         return PeerRequestType::Error;
@@ -288,7 +288,7 @@ struct Request : virtual public opentxs::contract::peer::Request,
 
 protected:
     const identifier::Nym& nym_;
-    const identifier::Server& server_;
+    const identifier::Notary& server_;
 
     auto clone() const noexcept -> Request* override
     {
@@ -408,7 +408,7 @@ struct Bailment final
     {
         return unit_;
     }
-    auto ServerID() const -> const identifier::Server& final { return server_; }
+    auto ServerID() const -> const identifier::Notary& final { return server_; }
 
     Bailment(const api::Session& api)
         : Request(api)

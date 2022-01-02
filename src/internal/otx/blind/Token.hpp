@@ -12,7 +12,7 @@ namespace opentxs
 {
 namespace identifier
 {
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -49,7 +49,7 @@ class Token
 public:
     virtual auto ID(const PasswordPrompt& reason) const -> std::string = 0;
     virtual auto IsSpent(const PasswordPrompt& reason) const -> bool = 0;
-    virtual auto Notary() const -> const identifier::Server& = 0;
+    virtual auto Notary() const -> const identifier::Notary& = 0;
     virtual auto Owner() const noexcept -> blind::internal::Purse& = 0;
     virtual auto Series() const -> MintSeries = 0;
     virtual auto State() const -> blind::TokenState = 0;

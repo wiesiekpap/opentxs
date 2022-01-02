@@ -10,7 +10,9 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <string>
+#include <string_view>
 
 #include "opentxs/util/Bytes.hpp"
 
@@ -20,9 +22,27 @@ namespace blockchain
 {
 namespace block
 {
-struct OPENTXS_EXPORT Outpoint {
-    std::array<std::byte, 32> txid_{};
-    std::array<std::byte, 4> index_{};
+class Outpoint;
+}  // namespace block
+}  // namespace blockchain
+}  // namespace opentxs
+
+namespace std
+{
+template <>
+struct hash<opentxs::blockchain::block::Outpoint> {
+    auto operator()(const opentxs::blockchain::block::Outpoint& data)
+        const noexcept -> std::size_t;
+};
+}  // namespace std
+
+namespace opentxs::blockchain::block
+{
+class OPENTXS_EXPORT Outpoint
+{
+public:
+    std::array<std::byte, 32> txid_;
+    std::array<std::byte, 4> index_;
 
     auto operator<(const Outpoint& rhs) const noexcept -> bool;
     auto operator<=(const Outpoint& rhs) const noexcept -> bool;
@@ -44,6 +64,4 @@ struct OPENTXS_EXPORT Outpoint {
     auto operator=(const Outpoint&) noexcept -> Outpoint&;
     auto operator=(Outpoint&&) noexcept -> Outpoint&;
 };
-}  // namespace block
-}  // namespace blockchain
-}  // namespace opentxs
+}  // namespace opentxs::blockchain::block

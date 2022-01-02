@@ -23,13 +23,13 @@
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "paymentcode/VectorsV3.hpp"
 #include "ui/Helpers.hpp"
@@ -114,7 +114,7 @@ public:
                 chris_s_.emplace(pkt_words_, "Chris", pkt_passphrase_);
                 chris_s_->init(
                     ot::Context().StartClientSession(1),
-                    ot::contact::ClaimType::Individual,
+                    ot::identity::wot::claim::ClaimType::Individual,
                     0,
                     ot::crypto::SeedStyle::PKT);
             }

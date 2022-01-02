@@ -19,13 +19,7 @@ class Verification;
 }  // namespace proto
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace identity
-{
-namespace wot
-{
-namespace verification
+namespace opentxs::identity::wot::verification
 {
 class OPENTXS_EXPORT Item
 {
@@ -59,7 +53,4 @@ private:
     auto operator=(const Item&) -> Item& = delete;
     auto operator=(Item&&) -> Item& = delete;
 };
-}  // namespace verification
-}  // namespace wot
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity::wot::verification

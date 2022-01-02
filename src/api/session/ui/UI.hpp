@@ -14,6 +14,24 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
+#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/core/ui/AccountActivity.hpp"
+#include "opentxs/core/ui/AccountList.hpp"
+#include "opentxs/core/ui/AccountSummary.hpp"
+#include "opentxs/core/ui/ActivitySummary.hpp"
+#include "opentxs/core/ui/ActivityThread.hpp"
+#include "opentxs/core/ui/BlockchainAccountStatus.hpp"
+#include "opentxs/core/ui/BlockchainSelection.hpp"
+#include "opentxs/core/ui/BlockchainStatistics.hpp"
+#include "opentxs/core/ui/Blockchains.hpp"
+#include "opentxs/core/ui/Contact.hpp"
+#include "opentxs/core/ui/ContactList.hpp"
+#include "opentxs/core/ui/MessagableList.hpp"
+#include "opentxs/core/ui/PayableList.hpp"
+#include "opentxs/core/ui/Profile.hpp"
+#include "opentxs/core/ui/UnitList.hpp"
 #include "opentxs/crypto/Types.hpp"
 
 class QAbstractItemModel;
@@ -22,8 +40,8 @@ namespace opentxs
 {
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -131,7 +149,7 @@ public:
     auto BlockchainIssuerID(const opentxs::blockchain::Type chain)
         const noexcept -> const identifier::Nym& final;
     auto BlockchainNotaryID(const opentxs::blockchain::Type chain)
-        const noexcept -> const identifier::Server& final;
+        const noexcept -> const identifier::Notary& final;
     auto BlockchainSelection(
         const opentxs::ui::Blockchains type,
         const SimpleCallback updateCB) const noexcept

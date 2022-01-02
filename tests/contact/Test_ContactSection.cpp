@@ -14,13 +14,14 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/contact/Attribute.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/ContactGroup.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/SectionType.hpp"
+#include "opentxs/identity/wot/claim/Attribute.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/Group.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/Section.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace ot = opentxs;
 
@@ -36,22 +37,22 @@ public:
               std::string("testContactSectionNym1"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
-              ot::contact::SectionType::Identifier,
-              ot::contact::ContactSection::GroupMap{})
-        , contactGroup_(new ot::contact::ContactGroup(
+              ot::identity::wot::claim::SectionType::Identifier,
+              ot::identity::wot::claim::Section::GroupMap{})
+        , contactGroup_(new ot::identity::wot::claim::Group(
               std::string("testContactGroupNym1"),
-              ot::contact::SectionType::Identifier,
-              ot::contact::ClaimType::Employee,
+              ot::identity::wot::claim::SectionType::Identifier,
+              ot::identity::wot::claim::ClaimType::Employee,
               {}))
-        , activeContactItem_(new ot::contact::ContactItem(
+        , activeContactItem_(new ot::identity::wot::claim::Item(
               dynamic_cast<const ot::api::session::Client&>(api_),
               std::string("activeContactItem"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
-              ot::contact::SectionType::Identifier,
-              ot::contact::ClaimType::Employee,
+              ot::identity::wot::claim::SectionType::Identifier,
+              ot::identity::wot::claim::ClaimType::Employee,
               std::string("activeContactItemValue"),
-              {ot::contact::Attribute::Active},
+              {ot::identity::wot::claim::Attribute::Active},
               NULL_START,
               NULL_END,
               ""))
@@ -59,62 +60,67 @@ public:
     }
 
     const ot::api::session::Client& api_;
-    const ot::contact::ContactSection contactSection_;
-    const std::shared_ptr<ot::contact::ContactGroup> contactGroup_;
-    const std::shared_ptr<ot::contact::ContactItem> activeContactItem_;
+    const ot::identity::wot::claim::Section contactSection_;
+    const std::shared_ptr<ot::identity::wot::claim::Group> contactGroup_;
+    const std::shared_ptr<ot::identity::wot::claim::Item> activeContactItem_;
 };
 
 TEST_F(Test_ContactSection, first_constructor)
 {
-    const auto& group1 = std::shared_ptr<ot::contact::ContactGroup>(
-        new ot::contact::ContactGroup(
+    const auto& group1 = std::shared_ptr<ot::identity::wot::claim::Group>(
+        new ot::identity::wot::claim::Group(
             contactGroup_->AddItem(activeContactItem_)));
-    ot::contact::ContactSection::GroupMap groupMap{
-        {ot::contact::ClaimType::Employee, group1}};
+    ot::identity::wot::claim::Section::GroupMap groupMap{
+        {ot::identity::wot::claim::ClaimType::Employee, group1}};
 
-    const ot::contact::ContactSection section1(
+    const ot::identity::wot::claim::Section section1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym1",
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
+        ot::identity::wot::claim::SectionType::Identifier,
         groupMap);
-    ASSERT_EQ(ot::contact::SectionType::Identifier, section1.Type());
+    ASSERT_EQ(
+        ot::identity::wot::claim::SectionType::Identifier, section1.Type());
     ASSERT_EQ(CONTACT_CONTACT_DATA_VERSION, section1.Version());
     ASSERT_EQ(section1.Size(), 1);
     ASSERT_EQ(
         group1->Size(),
-        section1.Group(ot::contact::ClaimType::Employee)->Size());
+        section1.Group(ot::identity::wot::claim::ClaimType::Employee)->Size());
     ASSERT_NE(section1.end(), section1.begin());
 }
 
 TEST_F(Test_ContactSection, first_constructor_different_versions)
 {
     // Test private static method check_version.
-    const ot::contact::ContactSection section2(
+    const ot::identity::wot::claim::Section section2(
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym2",
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
-        ot::contact::ContactSection::GroupMap{});
+        ot::identity::wot::claim::SectionType::Identifier,
+        ot::identity::wot::claim::Section::GroupMap{});
     ASSERT_EQ(CONTACT_CONTACT_DATA_VERSION, section2.Version());
 }
 
 TEST_F(Test_ContactSection, second_constructor)
 {
-    const ot::contact::ContactSection section1(
+    const ot::identity::wot::claim::Section section1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym1",
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
+        ot::identity::wot::claim::SectionType::Identifier,
         activeContactItem_);
-    ASSERT_EQ(ot::contact::SectionType::Identifier, section1.Type());
+    ASSERT_EQ(
+        ot::identity::wot::claim::SectionType::Identifier, section1.Type());
     ASSERT_EQ(CONTACT_CONTACT_DATA_VERSION, section1.Version());
     ASSERT_EQ(section1.Size(), 1);
-    ASSERT_NE(nullptr, section1.Group(ot::contact::ClaimType::Employee));
-    ASSERT_EQ(section1.Group(ot::contact::ClaimType::Employee)->Size(), 1);
+    ASSERT_NE(
+        nullptr, section1.Group(ot::identity::wot::claim::ClaimType::Employee));
+    ASSERT_EQ(
+        section1.Group(ot::identity::wot::claim::ClaimType::Employee)->Size(),
+        1);
     ASSERT_NE(section1.end(), section1.begin());
 }
 
@@ -122,14 +128,18 @@ TEST_F(Test_ContactSection, copy_constructor)
 {
     const auto& section1(contactSection_.AddItem(activeContactItem_));
 
-    ot::contact::ContactSection copiedContactSection(section1);
+    ot::identity::wot::claim::Section copiedContactSection(section1);
     ASSERT_EQ(section1.Type(), copiedContactSection.Type());
     ASSERT_EQ(section1.Version(), copiedContactSection.Version());
     ASSERT_EQ(copiedContactSection.Size(), 1);
     ASSERT_NE(
-        nullptr, copiedContactSection.Group(ot::contact::ClaimType::Employee));
+        nullptr,
+        copiedContactSection.Group(
+            ot::identity::wot::claim::ClaimType::Employee));
     ASSERT_EQ(
-        copiedContactSection.Group(ot::contact::ClaimType::Employee)->Size(),
+        copiedContactSection
+            .Group(ot::identity::wot::claim::ClaimType::Employee)
+            ->Size(),
         1);
     ASSERT_NE(copiedContactSection.end(), copiedContactSection.begin());
 }
@@ -139,67 +149,69 @@ TEST_F(Test_ContactSection, operator_plus)
     // Combine two sections with one item each of the same type.
     const auto& section1 = contactSection_.AddItem(activeContactItem_);
 
-    const std::shared_ptr<ot::contact::ContactItem> contactItem2(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::Employee,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::Employee,
             std::string("activeContactItemValue2"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
-    const ot::contact::ContactSection section2(
+    const ot::identity::wot::claim::Section section2(
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym2",
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
+        ot::identity::wot::claim::SectionType::Identifier,
         contactItem2);
 
     const auto& section3 = section1 + section2;
     // Verify the section has one group.
     ASSERT_EQ(section3.Size(), 1);
     // Verify the group has two items.
-    ASSERT_EQ(section3.Group(ot::contact::ClaimType::Employee)->Size(), 2);
+    ASSERT_EQ(
+        section3.Group(ot::identity::wot::claim::ClaimType::Employee)->Size(),
+        2);
 
     // Add a section that has one group with one item of the same type, and
     // another group with one item of a different type.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem3(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem3(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem3"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::Employee,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::Employee,
             std::string("activeContactItemValue3"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
-    const std::shared_ptr<ot::contact::ContactItem> contactItem4(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem4(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem4"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::SSL,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::SSL,
             std::string("activeContactItemValue4"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
-    const ot::contact::ContactSection section4(
+    const ot::identity::wot::claim::Section section4(
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym4",
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
+        ot::identity::wot::claim::SectionType::Identifier,
         contactItem3);
     const auto& section5 = section4.AddItem(contactItem4);
 
@@ -207,21 +219,24 @@ TEST_F(Test_ContactSection, operator_plus)
     // Verify the section has two groups.
     ASSERT_EQ(section6.Size(), 2);
     // Verify the first group has three items.
-    ASSERT_EQ(section6.Group(ot::contact::ClaimType::Employee)->Size(), 3);
+    ASSERT_EQ(
+        section6.Group(ot::identity::wot::claim::ClaimType::Employee)->Size(),
+        3);
     // Verify the second group has one item.
-    ASSERT_EQ(section6.Group(ot::contact::ClaimType::SSL)->Size(), 1);
+    ASSERT_EQ(
+        section6.Group(ot::identity::wot::claim::ClaimType::SSL)->Size(), 1);
 }
 
 TEST_F(Test_ContactSection, operator_plus_different_versions)
 {
     // rhs version less than lhs
-    const ot::contact::ContactSection section2(
+    const ot::identity::wot::claim::Section section2(
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym2",
         CONTACT_CONTACT_DATA_VERSION - 1,
         CONTACT_CONTACT_DATA_VERSION - 1,
-        ot::contact::SectionType::Identifier,
-        ot::contact::ContactSection::GroupMap{});
+        ot::identity::wot::claim::SectionType::Identifier,
+        ot::identity::wot::claim::Section::GroupMap{});
 
     const auto& section3 = contactSection_ + section2;
     // Verify the new section has the latest version.
@@ -236,66 +251,72 @@ TEST_F(Test_ContactSection, operator_plus_different_versions)
 TEST_F(Test_ContactSection, AddItem)
 {
     // Add an item to a SCOPE section.
-    const std::shared_ptr<ot::contact::ContactItem> scopeContactItem(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> scopeContactItem(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("scopeContactItem"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Scope,
-            ot::contact::ClaimType::Individual,
+            ot::identity::wot::claim::SectionType::Scope,
+            ot::identity::wot::claim::ClaimType::Individual,
             std::string("scopeContactItemValue"),
-            {ot::contact::Attribute::Local},
+            {ot::identity::wot::claim::Attribute::Local},
             NULL_START,
             NULL_END,
             ""));
-    const ot::contact::ContactSection section1(
+    const ot::identity::wot::claim::Section section1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym2",
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Scope,
-        ot::contact::ContactSection::GroupMap{});
+        ot::identity::wot::claim::SectionType::Scope,
+        ot::identity::wot::claim::Section::GroupMap{});
     const auto& section2 = section1.AddItem(scopeContactItem);
     ASSERT_EQ(section2.Size(), 1);
-    ASSERT_EQ(section2.Group(ot::contact::ClaimType::Individual)->Size(), 1);
+    ASSERT_EQ(
+        section2.Group(ot::identity::wot::claim::ClaimType::Individual)->Size(),
+        1);
     ASSERT_TRUE(section2.Claim(scopeContactItem->ID())->isPrimary());
     ASSERT_TRUE(section2.Claim(scopeContactItem->ID())->isActive());
 
     // Add an item to a non-scope section.
     const auto& section4 = contactSection_.AddItem(activeContactItem_);
     ASSERT_EQ(section4.Size(), 1);
-    ASSERT_EQ(section4.Group(ot::contact::ClaimType::Employee)->Size(), 1);
+    ASSERT_EQ(
+        section4.Group(ot::identity::wot::claim::ClaimType::Employee)->Size(),
+        1);
     // Add a second item of the same type.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem2(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::Employee,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::Employee,
             std::string("activeContactItemValue2"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
     const auto& section5 = section4.AddItem(contactItem2);
     // Verify there are two items.
     ASSERT_EQ(section5.Size(), 1);
-    ASSERT_EQ(section5.Group(ot::contact::ClaimType::Employee)->Size(), 2);
+    ASSERT_EQ(
+        section5.Group(ot::identity::wot::claim::ClaimType::Employee)->Size(),
+        2);
 
     // Add an item of a different type.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem3(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem3(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem3"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::SSL,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::SSL,
             std::string("activeContactItemValue3"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
@@ -303,36 +324,38 @@ TEST_F(Test_ContactSection, AddItem)
     // Verify there are two groups.
     ASSERT_EQ(section6.Size(), 2);
     // Verify there is one in the second group.
-    ASSERT_EQ(section6.Group(ot::contact::ClaimType::SSL)->Size(), 1);
+    ASSERT_EQ(
+        section6.Group(ot::identity::wot::claim::ClaimType::SSL)->Size(), 1);
 }
 
 TEST_F(Test_ContactSection, AddItem_different_versions)
 {
     // Add an item with a newer version to a SCOPE section.
-    const std::shared_ptr<ot::contact::ContactItem> scopeContactItem(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> scopeContactItem(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("scopeContactItem"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Scope,
-            ot::contact::ClaimType::BOT,
+            ot::identity::wot::claim::SectionType::Scope,
+            ot::identity::wot::claim::ClaimType::BOT,
             std::string("scopeContactItemValue"),
-            {ot::contact::Attribute::Local},
+            {ot::identity::wot::claim::Attribute::Local},
             NULL_START,
             NULL_END,
             ""));
-    const ot::contact::ContactSection section1(
+    const ot::identity::wot::claim::Section section1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym2",
         3,  // version of CONTACTSECTION_SCOPE section before CITEMTYPE_BOT was
             // added
         3,
-        ot::contact::SectionType::Scope,
-        ot::contact::ContactSection::GroupMap{});
+        ot::identity::wot::claim::SectionType::Scope,
+        ot::identity::wot::claim::Section::GroupMap{});
     const auto& section2 = section1.AddItem(scopeContactItem);
     ASSERT_EQ(section2.Size(), 1);
-    ASSERT_EQ(section2.Group(ot::contact::ClaimType::BOT)->Size(), 1);
+    ASSERT_EQ(
+        section2.Group(ot::identity::wot::claim::ClaimType::BOT)->Size(), 1);
     ASSERT_TRUE(section2.Claim(scopeContactItem->ID())->isPrimary());
     ASSERT_TRUE(section2.Claim(scopeContactItem->ID())->isActive());
     // Verify the section version has been updated to the minimum version to
@@ -340,30 +363,31 @@ TEST_F(Test_ContactSection, AddItem_different_versions)
     ASSERT_EQ(section2.Version(), 4);
 
     // Add an item with a newer version to a non-scope section.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem2(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("contactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Relationship,
-            ot::contact::ClaimType::Owner,
+            ot::identity::wot::claim::SectionType::Relationship,
+            ot::identity::wot::claim::ClaimType::Owner,
             std::string("contactItem2Value"),
-            {ot::contact::Attribute::Local},
+            {ot::identity::wot::claim::Attribute::Local},
             NULL_START,
             NULL_END,
             ""));
-    const ot::contact::ContactSection section3(
+    const ot::identity::wot::claim::Section section3(
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testContactSectionNym3",
         3,  // version of CONTACTSECTION_RELATIONSHIP section before
             // CITEMTYPE_OWNER was added
         3,
-        ot::contact::SectionType::Relationship,
-        ot::contact::ContactSection::GroupMap{});
+        ot::identity::wot::claim::SectionType::Relationship,
+        ot::identity::wot::claim::Section::GroupMap{});
     const auto& section4 = section3.AddItem(contactItem2);
     ASSERT_EQ(section4.Size(), 1);
-    ASSERT_EQ(section4.Group(ot::contact::ClaimType::Owner)->Size(), 1);
+    ASSERT_EQ(
+        section4.Group(ot::identity::wot::claim::ClaimType::Owner)->Size(), 1);
     // Verify the section version has been updated to the minimum version to
     // support CITEMTYPE_OWNER.
     ASSERT_EQ(4, section4.Version());
@@ -371,7 +395,7 @@ TEST_F(Test_ContactSection, AddItem_different_versions)
 
 TEST_F(Test_ContactSection, begin)
 {
-    ot::contact::ContactSection::GroupMap::const_iterator it =
+    ot::identity::wot::claim::Section::GroupMap::const_iterator it =
         contactSection_.begin();
     ASSERT_EQ(contactSection_.end(), it);
     ASSERT_EQ(std::distance(it, contactSection_.end()), 0);
@@ -390,27 +414,27 @@ TEST_F(Test_ContactSection, Claim_found)
 {
     const auto& section1 = contactSection_.AddItem(activeContactItem_);
 
-    const std::shared_ptr<ot::contact::ContactItem>& claim =
+    const std::shared_ptr<ot::identity::wot::claim::Item>& claim =
         section1.Claim(activeContactItem_->ID());
     ASSERT_NE(nullptr, claim);
     ASSERT_EQ(activeContactItem_->ID(), claim->ID());
 
     // Find a claim in a different group.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem2(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::SSL,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::SSL,
             std::string("activeContactItemValue2"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
     const auto& section2 = section1.AddItem(contactItem2);
-    const std::shared_ptr<ot::contact::ContactItem>& claim2 =
+    const std::shared_ptr<ot::identity::wot::claim::Item>& claim2 =
         section2.Claim(contactItem2->ID());
     ASSERT_NE(nullptr, claim2);
     ASSERT_EQ(contactItem2->ID(), claim2->ID());
@@ -418,14 +442,14 @@ TEST_F(Test_ContactSection, Claim_found)
 
 TEST_F(Test_ContactSection, Claim_notfound)
 {
-    const std::shared_ptr<ot::contact::ContactItem>& claim =
+    const std::shared_ptr<ot::identity::wot::claim::Item>& claim =
         contactSection_.Claim(activeContactItem_->ID());
     ASSERT_FALSE(claim);
 }
 
 TEST_F(Test_ContactSection, end)
 {
-    ot::contact::ContactSection::GroupMap::const_iterator it =
+    ot::identity::wot::claim::Section::GroupMap::const_iterator it =
         contactSection_.end();
     ASSERT_EQ(contactSection_.begin(), it);
     ASSERT_EQ(std::distance(contactSection_.begin(), it), 0);
@@ -443,12 +467,14 @@ TEST_F(Test_ContactSection, end)
 TEST_F(Test_ContactSection, Group_found)
 {
     const auto& section1 = contactSection_.AddItem(activeContactItem_);
-    ASSERT_NE(nullptr, section1.Group(ot::contact::ClaimType::Employee));
+    ASSERT_NE(
+        nullptr, section1.Group(ot::identity::wot::claim::ClaimType::Employee));
 }
 
 TEST_F(Test_ContactSection, Group_notfound)
 {
-    ASSERT_FALSE(contactSection_.Group(ot::contact::ClaimType::Employee));
+    ASSERT_FALSE(
+        contactSection_.Group(ot::identity::wot::claim::ClaimType::Employee));
 }
 
 TEST_F(Test_ContactSection, HaveClaim_true)
@@ -458,16 +484,16 @@ TEST_F(Test_ContactSection, HaveClaim_true)
     ASSERT_TRUE(section1.HaveClaim(activeContactItem_->ID()));
 
     // Find a claim in a different group.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem2(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::SSL,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::SSL,
             std::string("activeContactItemValue2"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
@@ -486,56 +512,63 @@ TEST_F(Test_ContactSection, Delete)
     ASSERT_TRUE(section1.HaveClaim(activeContactItem_->ID()));
 
     // Add a second item to help testing the size after trying to delete twice.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem2(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::Employee,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::Employee,
             std::string("activeContactItemValue2"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
     const auto& section2 = section1.AddItem(contactItem2);
-    ASSERT_EQ(section2.Group(ot::contact::ClaimType::Employee)->Size(), 2);
+    ASSERT_EQ(
+        section2.Group(ot::identity::wot::claim::ClaimType::Employee)->Size(),
+        2);
 
     const auto& section3 = section2.Delete(activeContactItem_->ID());
     // Verify the item was deleted.
     ASSERT_FALSE(section3.HaveClaim(activeContactItem_->ID()));
-    ASSERT_EQ(section3.Group(ot::contact::ClaimType::Employee)->Size(), 1);
+    ASSERT_EQ(
+        section3.Group(ot::identity::wot::claim::ClaimType::Employee)->Size(),
+        1);
 
     const auto& section4 = section3.Delete(activeContactItem_->ID());
     // Verify trying to delete the item again didn't change anything.
-    ASSERT_EQ(section4.Group(ot::contact::ClaimType::Employee)->Size(), 1);
+    ASSERT_EQ(
+        section4.Group(ot::identity::wot::claim::ClaimType::Employee)->Size(),
+        1);
 
     // Add an item of a different type.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem3(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem3(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem3"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::SSL,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::SSL,
             std::string("activeContactItemValue3"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
     const auto& section5 = section4.AddItem(contactItem3);
     // Verify the section has two groups.
     ASSERT_EQ(section5.Size(), 2);
-    ASSERT_EQ(section5.Group(ot::contact::ClaimType::SSL)->Size(), 1);
+    ASSERT_EQ(
+        section5.Group(ot::identity::wot::claim::ClaimType::SSL)->Size(), 1);
     ASSERT_TRUE(section5.HaveClaim(contactItem3->ID()));
 
     const auto& section6 = section5.Delete(contactItem3->ID());
     // Verify the item was deleted and the group was removed.
     ASSERT_EQ(section6.Size(), 1);
     ASSERT_FALSE(section6.HaveClaim(contactItem3->ID()));
-    ASSERT_FALSE(section6.Group(ot::contact::ClaimType::SSL));
+    ASSERT_FALSE(section6.Group(ot::identity::wot::claim::ClaimType::SSL));
 }
 
 TEST_F(Test_ContactSection, SerializeTo)
@@ -545,7 +578,7 @@ TEST_F(Test_ContactSection, SerializeTo)
     auto bytes = ot::Space{};
     ASSERT_TRUE(section1.Serialize(ot::writer(bytes), false));
 
-    auto restored1 = ot::contact::ContactSection{
+    auto restored1 = ot::identity::wot::claim::Section{
         dynamic_cast<const ot::api::session::Client&>(api_),
         "ContactDataNym1",
         section1.Version(),
@@ -554,7 +587,8 @@ TEST_F(Test_ContactSection, SerializeTo)
     ASSERT_EQ(restored1.Size(), section1.Size());
     ASSERT_EQ(restored1.Type(), section1.Type());
     auto group_iterator = restored1.begin();
-    ASSERT_EQ(group_iterator->first, ot::contact::ClaimType::Employee);
+    ASSERT_EQ(
+        group_iterator->first, ot::identity::wot::claim::ClaimType::Employee);
     auto group1 = group_iterator->second;
     ASSERT_TRUE(group1);
     auto item_iterator = group1->begin();
@@ -567,7 +601,7 @@ TEST_F(Test_ContactSection, SerializeTo)
     ASSERT_EQ(activeContactItem_->End(), contact_item->End());
 
     //    // Serialize with ids.
-    auto restored2 = ot::contact::ContactSection{
+    auto restored2 = ot::identity::wot::claim::Section{
         dynamic_cast<const ot::api::session::Client&>(api_),
         "ContactDataNym1",
         section1.Version(),
@@ -576,7 +610,8 @@ TEST_F(Test_ContactSection, SerializeTo)
     ASSERT_EQ(restored2.Size(), section1.Size());
     ASSERT_EQ(restored2.Type(), section1.Type());
     group_iterator = restored2.begin();
-    ASSERT_EQ(group_iterator->first, ot::contact::ClaimType::Employee);
+    ASSERT_EQ(
+        group_iterator->first, ot::identity::wot::claim::ClaimType::Employee);
     group1 = group_iterator->second;
     ASSERT_TRUE(group1);
     item_iterator = group1->begin();
@@ -596,16 +631,16 @@ TEST_F(Test_ContactSection, Size)
     ASSERT_EQ(section1.Size(), 1);
 
     // Add a second item of the same type.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem2(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem2(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem2"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::Employee,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::Employee,
             std::string("activeContactItemValue2"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
@@ -614,16 +649,16 @@ TEST_F(Test_ContactSection, Size)
     ASSERT_EQ(section2.Size(), 1);
 
     // Add an item of a different type.
-    const std::shared_ptr<ot::contact::ContactItem> contactItem3(
-        new ot::contact::ContactItem(
+    const std::shared_ptr<ot::identity::wot::claim::Item> contactItem3(
+        new ot::identity::wot::claim::Item(
             dynamic_cast<const ot::api::session::Client&>(api_),
             std::string("activeContactItem3"),
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::SSL,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::SSL,
             std::string("activeContactItemValue3"),
-            {ot::contact::Attribute::Active},
+            {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
             NULL_END,
             ""));
@@ -644,7 +679,9 @@ TEST_F(Test_ContactSection, Size)
 
 TEST_F(Test_ContactSection, Type)
 {
-    ASSERT_EQ(ot::contact::SectionType::Identifier, contactSection_.Type());
+    ASSERT_EQ(
+        ot::identity::wot::claim::SectionType::Identifier,
+        contactSection_.Type());
 }
 
 TEST_F(Test_ContactSection, Version)

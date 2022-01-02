@@ -18,15 +18,15 @@
 
 #include "Proto.hpp"
 #include "internal/otx/client/OTPayment.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/otx/common/cron/OTCron.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/AddressType.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/core/cron/OTCron.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -71,7 +71,7 @@ public:
         core::AddressType& type,
         std::string& hostname,
         std::uint32_t& port) const -> bool;
-    auto GetServerID() const noexcept -> const identifier::Server&;
+    auto GetServerID() const noexcept -> const identifier::Notary&;
     auto GetServerNym() const -> const identity::Nym&;
     auto TransportKey(Data& pubkey) const -> OTSecret;
     auto IsFlaggedForShutdown() const -> bool;
@@ -87,7 +87,7 @@ public:
     }
     auto Cron() -> OTCron& { return *m_Cron; }
     auto DropMessageToNymbox(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& senderNymID,
         const identifier::Nym& recipientNymID,
         transactionType transactionType,
@@ -99,7 +99,7 @@ public:
     auto LoadServerNym(const identifier::Nym& nymID) -> bool;
     void ProcessCron();
     auto SendInstrumentToNym(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& senderNymID,
         const identifier::Nym& recipientNymID,
         const OTPayment& payment,
@@ -138,7 +138,7 @@ private:
     // this flag so the caller knows to do so.
     bool m_bShutdownFlag{false};
     // A hash of the server contract
-    OTServerID m_notaryID;
+    OTNotaryID m_notaryID;
     // A hash of the public key that signed the server contract
     std::string m_strServerNymID;
     // This is the server's own contract, containing its public key and
@@ -155,7 +155,7 @@ private:
     // Note: SendInstrumentToNym and SendMessageToNym CALL THIS.
     // They are higher-level, this is lower-level.
     auto DropMessageToNymbox(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& senderNymID,
         const identifier::Nym& recipientNymID,
         transactionType transactionType,
@@ -165,11 +165,11 @@ private:
     auto parse_seed_backup(const std::string& input) const
         -> std::pair<std::string, std::string>;
     auto ServerNymID() const -> const std::string& { return m_strServerNymID; }
-    auto SetNotaryID(const identifier::Server& notaryID) noexcept -> void;
+    auto SetNotaryID(const identifier::Notary& notaryID) noexcept -> void;
     void SetServerNymID(const char* strNymID) { m_strServerNymID = strNymID; }
 
     auto SendInstrumentToNym(
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::Nym& senderNymID,
         const identifier::Nym& recipientNymID,
         const Message& msg) -> bool;

@@ -13,20 +13,12 @@
 #include "internal/identity/Identity.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactGroup.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/ParameterType.hpp"
 #include "opentxs/crypto/Parameters.hpp"
@@ -35,8 +27,16 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/SourceType.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Group.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/Section.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Options.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -91,7 +91,7 @@ public:
         {
             const auto& claims = nym.Claims();
             const auto pSection =
-                claims.Section(ot::contact::SectionType::Scope);
+                claims.Section(ot::identity::wot::claim::SectionType::Scope);
 
             EXPECT_TRUE(pSection);
 
@@ -102,7 +102,7 @@ public:
             EXPECT_EQ(1, section.Size());
 
             const auto pGroup =
-                section.Group(ot::contact::ClaimType::Individual);
+                section.Group(ot::identity::wot::claim::ClaimType::Individual);
 
             EXPECT_TRUE(pGroup);
 
@@ -128,7 +128,11 @@ public:
         const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto alias = std::string{"alias"};
         std::unique_ptr<ot::identity::internal::Nym> pNym(ot::Factory::Nym(
-            api, {}, ot::contact::ClaimType::Individual, alias, reason));
+            api,
+            {},
+            ot::identity::wot::claim::ClaimType::Individual,
+            alias,
+            reason));
 
         EXPECT_TRUE(pNym);
 
@@ -248,7 +252,8 @@ TEST_F(Test_Nym, default_params)
     EXPECT_EQ(1, nym.Revision());
     EXPECT_TRUE(nym.Name().empty());
 
-    const auto pSection = claims.Section(ot::contact::SectionType::Scope);
+    const auto pSection =
+        claims.Section(ot::identity::wot::claim::SectionType::Scope);
 
     EXPECT_FALSE(pSection);
 }

@@ -28,8 +28,9 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"  // IWYU pragma: keep
 #include "internal/network/zeromq/socket/Raw.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/ServerRequest.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/ServerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -38,7 +39,6 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Message.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -429,7 +429,7 @@ auto MessageProcessor::process_message(
         messageString.data(), static_cast<std::uint32_t>(messageString.size()));
     auto serialized = String::Factory();
     armored->GetString(serialized);
-    auto request{api_.Factory().Message()};
+    auto request{api_.Factory().InternalSession().Message()};
 
     if (false == serialized->Exists()) {
         LogError()(OT_PRETTY_CLASS())("Empty serialized request.").Flush();
@@ -444,7 +444,7 @@ auto MessageProcessor::process_message(
         return true;
     }
 
-    auto replymsg{api_.Factory().Message()};
+    auto replymsg{api_.Factory().InternalSession().Message()};
 
     OT_ASSERT(false != bool(replymsg));
 

@@ -15,9 +15,8 @@
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
+#include "internal/otx/common/Account.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 

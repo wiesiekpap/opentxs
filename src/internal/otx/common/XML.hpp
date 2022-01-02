@@ -8,10 +8,10 @@
 #pragma once
 
 #include <irrxml/irrXML.hpp>
+#include <list>
 
-#include "internal/otx/common/Contract.hpp"
+#include "internal/otx/common/crypto/Signature.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/crypto/Signature.hpp"
 #include "opentxs/crypto/Types.hpp"
 
 namespace irr
@@ -29,6 +29,7 @@ using IrrXMLReader = IIrrXMLReader<char, IXMLBase>;
 
 namespace opentxs
 {
+class Armored;
 class String;
 }  // namespace opentxs
 

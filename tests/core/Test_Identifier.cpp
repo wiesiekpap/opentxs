@@ -8,11 +8,11 @@
 
 #include "internal/api/session/FactoryAPI.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Bytes.hpp"
 #include "serialization/protobuf/Identifier.pb.h"
 
 namespace ot = opentxs;

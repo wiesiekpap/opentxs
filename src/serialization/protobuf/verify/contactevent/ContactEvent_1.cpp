@@ -3,11 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/ContactEvent.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/ContactEvent.hpp"  // IWYU pragma: associated
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/AccountEvent.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyRPC.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/AccountEvent.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyRPC.hpp"
 #include "serialization/protobuf/ContactEvent.pb.h"
 #include "serialization/protobuf/RPCEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

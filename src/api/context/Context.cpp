@@ -31,8 +31,10 @@
 #include "internal/api/session/Factory.hpp"
 #include "internal/network/zeromq/Factory.hpp"
 #include "internal/rpc/RPC.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/Log.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/Signals.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -41,23 +43,21 @@
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/crypto/OTCallback.hpp"
-#include "opentxs/core/crypto/OTCaller.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
+#include "opentxs/util/PasswordCallback.hpp"
+#include "opentxs/util/PasswordCaller.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/Signals.hpp"
 
 namespace opentxs::factory
 {
 auto Context(
     Flag& running,
     const Options& args,
-    OTCaller* externalPasswordCallback) noexcept
+    PasswordCaller* externalPasswordCallback) noexcept
     -> std::unique_ptr<api::internal::Context>
 {
     using ReturnType = api::imp::Context;
@@ -80,7 +80,7 @@ namespace opentxs::api::imp
 Context::Context(
     Flag& running,
     const Options& args,
-    OTCaller* externalPasswordCallback)
+    PasswordCaller* externalPasswordCallback)
     : api::internal::Context()
     , Lockable()
     , Periodic(running)
@@ -169,7 +169,7 @@ auto Context::Factory() const noexcept -> const api::Factory&
     return *factory_;
 }
 
-auto Context::GetPasswordCaller() const noexcept -> OTCaller&
+auto Context::GetPasswordCaller() const noexcept -> PasswordCaller&
 {
     OT_ASSERT(nullptr != external_password_callback_)
 
@@ -328,7 +328,7 @@ auto Context::setup_default_external_password_callback() -> void
 
     assert(null_callback_);
 
-    default_external_password_callback_ = std::make_unique<OTCaller>();
+    default_external_password_callback_ = std::make_unique<PasswordCaller>();
 
     assert(default_external_password_callback_);
 

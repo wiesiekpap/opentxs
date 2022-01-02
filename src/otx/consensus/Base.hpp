@@ -16,11 +16,11 @@
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
+#include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/ConsensusType.hpp"
 #include "opentxs/otx/Types.hpp"
@@ -64,7 +64,7 @@ public:
     auto NymboxHashMatch() const -> bool final;
     auto LegacyDataFolder() const -> std::string final;
     auto LocalNymboxHash() const -> OTIdentifier final;
-    auto Notary() const -> const identifier::Server& final
+    auto Notary() const -> const identifier::Notary& final
     {
         return server_id_;
     }
@@ -109,7 +109,7 @@ public:
     ~Base() override = default;
 
 protected:
-    const OTServerID server_id_;
+    const OTNotaryID server_id_;
     Nym_p remote_nym_;
     std::set<TransactionNumber> available_transaction_numbers_;
     std::set<TransactionNumber> issued_transaction_numbers_;
@@ -162,14 +162,14 @@ protected:
         const VersionNumber targetVersion,
         const Nym_p& local,
         const Nym_p& remote,
-        const identifier::Server& server);
+        const identifier::Notary& server);
     Base(
         const api::Session& api,
         const VersionNumber targetVersion,
         const proto::Context& serialized,
         const Nym_p& local,
         const Nym_p& remote,
-        const identifier::Server& server);
+        const identifier::Notary& server);
 
 private:
     friend opentxs::Factory;

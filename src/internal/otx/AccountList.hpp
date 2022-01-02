@@ -12,8 +12,8 @@
 #include <string>
 
 #include "internal/api/session/Wallet.hpp"
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/Contract.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Contract.hpp"
 #include "opentxs/core/String.hpp"
 
 namespace opentxs
@@ -25,8 +25,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -65,7 +65,7 @@ public:
         const identity::Nym& serverNym,
         const identifier::Nym& ACCOUNT_OWNER_ID,
         const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
-        const identifier::Server& NOTARY_ID,
+        const identifier::Notary& NOTARY_ID,
         bool& wasAcctCreated,  // this will be set to true if the acct is
                                // created here. Otherwise set to false;
         const PasswordPrompt& reason,

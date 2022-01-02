@@ -22,10 +22,10 @@
 #include "internal/api/session/Notary.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "otx/server/Server.hpp"
 
 namespace opentxs
@@ -39,8 +39,8 @@ class Settings;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -86,7 +86,7 @@ public:
         -> otx::blind::Mint& final;
     auto GetUserName() const -> std::string final;
     auto GetUserTerms() const -> std::string final;
-    auto ID() const -> const identifier::Server& final;
+    auto ID() const -> const identifier::Notary& final;
     auto InprocEndpoint() const -> std::string final;
     auto NymID() const -> const identifier::Nym& final;
     auto ScanMints() const -> void final;

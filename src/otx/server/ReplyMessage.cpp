@@ -11,15 +11,15 @@
 #include <string>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/NumList.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/NumList.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/util/Log.hpp"
@@ -31,7 +31,7 @@ namespace opentxs::server
 ReplyMessage::ReplyMessage(
     const UserCommandProcessor& parent,
     const opentxs::api::session::Wallet& wallet,
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const identity::Nym& signer,
     const Message& input,
     Server& server,
@@ -185,7 +185,7 @@ auto ReplyMessage::init() -> bool
 {
     const auto senderNymID = identifier::Nym::Factory(original_.m_strNymID);
     const auto purportedServerID =
-        identifier::Server::Factory(original_.m_strNotaryID);
+        identifier::Notary::Factory(original_.m_strNotaryID);
 
     bool out = UserCommandProcessor::check_server_lock(senderNymID);
 

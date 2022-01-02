@@ -30,7 +30,7 @@ auto ClientContext(
     const api::Session& api,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server) -> otx::context::internal::Client*
+    const identifier::Notary& server) -> otx::context::internal::Client*
 {
     return new ReturnType(api, local, remote, server);
 }
@@ -40,7 +40,7 @@ auto ClientContext(
     const proto::Context& serialized,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server) -> otx::context::internal::Client*
+    const identifier::Notary& server) -> otx::context::internal::Client*
 {
     return new ReturnType(api, serialized, local, remote, server);
 }
@@ -52,7 +52,7 @@ ClientContext::ClientContext(
     const api::Session& api,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server)
+    const identifier::Notary& server)
     : Base(api, CURRENT_VERSION, local, remote, server)
 {
     {
@@ -66,7 +66,7 @@ ClientContext::ClientContext(
     const proto::Context& serialized,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server)
+    const identifier::Notary& server)
     : Base(api, CURRENT_VERSION, serialized, local, remote, server)
 {
     if (serialized.has_clientcontext()) {

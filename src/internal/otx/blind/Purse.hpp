@@ -19,7 +19,7 @@ class Symmetric;
 
 namespace identifier
 {
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -51,7 +51,7 @@ class Purse
 public:
     virtual auto Type() const -> blind::CashType = 0;
     virtual auto Unit() const -> const identifier::UnitDefinition& = 0;
-    virtual auto Notary() const -> const identifier::Server& = 0;
+    virtual auto Notary() const -> const identifier::Notary& = 0;
     virtual auto Serialize(proto::Purse&) const noexcept -> bool = 0;
 
     virtual auto PrimaryKey(PasswordPrompt& password) noexcept(false)

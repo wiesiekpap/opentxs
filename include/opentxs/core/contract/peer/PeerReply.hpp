@@ -33,7 +33,7 @@ class Reply;
 
 namespace identifier
 {
-class Server;
+class Notary;
 }  // namespace identifier
 
 namespace proto
@@ -65,7 +65,7 @@ public:
     using Signable::Serialize;
     OPENTXS_NO_EXPORT virtual auto Serialize(SerializedType&) const -> bool = 0;
     virtual auto Type() const -> PeerRequestType = 0;
-    virtual auto Server() const -> const identifier::Server& = 0;
+    virtual auto Server() const -> const identifier::Notary& = 0;
 
     ~Reply() override = default;
 

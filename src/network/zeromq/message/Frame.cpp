@@ -8,43 +8,14 @@
 #include "network/zeromq/message/Frame.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <array>
 #include <cstring>
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <string_view>
-#include <typeindex>
 #include <utility>
 
 #include "internal/network/zeromq/message/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/OT.hpp"
-#include "opentxs/api/Context.hpp"
-#include "opentxs/api/crypto/Crypto.hpp"
-#include "opentxs/api/crypto/Hash.hpp"
-#include "opentxs/crypto/HashType.hpp"
-
-namespace std
-{
-template <>
-struct hash<opentxs::network::zeromq::Frame> {
-    auto operator()(const opentxs::network::zeromq::Frame& data) const noexcept
-        -> std::size_t
-    {
-        static const auto& api = opentxs::Context().Crypto().Hash();
-        static const auto key = std::array<char, 16>{};
-        auto out = std::size_t{};
-        api.HMAC(
-            opentxs::crypto::HashType::SipHash24,
-            {key.data(), key.size()},
-            data.Bytes(),
-            opentxs::preallocated(sizeof(out), &out));
-
-        return out;
-    }
-};
-}  // namespace std
 
 namespace opentxs::factory
 {

@@ -5,14 +5,22 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
+
 #include "opentxs/util/Bytes.hpp"
 
 namespace opentxs::crypto::sodium
 {
+using SiphashKey = std::array<unsigned char, 16>;
+
 auto ExpandSeed(
     const ReadView seed,
     const AllocateOutput privateKey,
     const AllocateOutput publicKey) noexcept -> bool;
+auto MakeSiphashKey(const ReadView data) noexcept -> SiphashKey;
+auto Siphash(const SiphashKey& key, const ReadView data) noexcept
+    -> std::size_t;
 auto ToCurveKeypair(
     const ReadView edPrivate,
     const ReadView edPublic,

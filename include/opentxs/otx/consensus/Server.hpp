@@ -56,6 +56,17 @@ class TransactionStatement;
 class Reply;
 }  // namespace otx
 
+namespace otx
+{
+namespace context
+{
+namespace internal
+{
+class Server;
+}  // namespace internal
+}  // namespace context
+}  // namespace otx
+
 namespace server
 {
 class Server;
@@ -92,6 +103,8 @@ public:
     virtual auto HaveSufficientNumbers(const MessageType reason) const
         -> bool = 0;
     virtual auto Highest() const -> TransactionNumber = 0;
+    OPENTXS_NO_EXPORT virtual auto InternalServer() const noexcept
+        -> const internal::Server& = 0;
     virtual auto isAdmin() const -> bool = 0;
     virtual void Join() const = 0;
     virtual auto Purse(const identifier::UnitDefinition& id) const
@@ -145,10 +158,8 @@ public:
         const bool withAcknowledgments = true,
         const bool withNymboxHash = false)
         -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
-    virtual auto mutable_Purse(
-        const identifier::UnitDefinition& id,
-        const PasswordPrompt& reason)
-        -> Editor<otx::blind::Purse, std::shared_mutex> = 0;
+    OPENTXS_NO_EXPORT virtual auto InternalServer() noexcept
+        -> internal::Server& = 0;
     virtual auto NextTransactionNumber(const MessageType reason)
         -> OTManagedNumber = 0;
     virtual auto PingNotary(const PasswordPrompt& reason)

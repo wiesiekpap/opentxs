@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "internal/util/Editor.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -31,15 +32,29 @@ class Publish;
 }  // namespace socket
 }  // namespace zeromq
 }  // namespace network
+
+class NymFile;
+class PasswordPrompt;
 }  // namespace opentxs
 
 namespace opentxs::otx::context::internal
 {
-struct Base : virtual public opentxs::otx::context::Base {
+class Base : virtual public opentxs::otx::context::Base
+{
+public:
     virtual auto GetContract(const Lock& lock) const -> proto::Context = 0;
+    auto Internal() const noexcept -> const internal::Base& final
+    {
+        return *this;
+    }
+    virtual auto Nymfile(const PasswordPrompt& reason) const
+        -> std::unique_ptr<const opentxs::NymFile> = 0;
     virtual auto ValidateContext(const Lock& lock) const -> bool = 0;
 
     virtual auto GetLock() -> std::mutex& = 0;
+    auto Internal() noexcept -> internal::Base& final { return *this; }
+    virtual auto mutable_Nymfile(const PasswordPrompt& reason)
+        -> Editor<opentxs::NymFile> = 0;
     virtual auto UpdateSignature(const Lock& lock, const PasswordPrompt& reason)
         -> bool = 0;
 
@@ -48,16 +63,36 @@ struct Base : virtual public opentxs::otx::context::Base {
 #endif  // _MSC_VER
     ~Base() override = default;
 };
-struct Client : virtual public opentxs::otx::context::Client,
-                virtual public otx::context::internal::Base {
+class Client : virtual public opentxs::otx::context::Client,
+               virtual public otx::context::internal::Base
+{
+public:
+    auto InternalClient() const noexcept -> const internal::Client& final
+    {
+        return *this;
+    }
+
+    auto InternalClient() noexcept -> internal::Client& final { return *this; }
 
 #ifdef _MSC_VER
     Client() {}
 #endif  // _MSC_VER
     ~Client() override = default;
 };
-struct Server : virtual public opentxs::otx::context::Server,
-                virtual public otx::context::internal::Base {
+class Server : virtual public opentxs::otx::context::Server,
+               virtual public otx::context::internal::Base
+{
+public:
+    auto InternalServer() const noexcept -> const internal::Server& final
+    {
+        return *this;
+    }
+
+    auto InternalServer() noexcept -> internal::Server& final { return *this; }
+    virtual auto mutable_Purse(
+        const identifier::UnitDefinition& id,
+        const PasswordPrompt& reason)
+        -> Editor<otx::blind::Purse, std::shared_mutex> = 0;
 
 #ifdef _MSC_VER
     Server() {}
@@ -72,13 +107,13 @@ auto ClientContext(
     const api::Session& api,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server) -> otx::context::internal::Client*;
+    const identifier::Notary& server) -> otx::context::internal::Client*;
 auto ClientContext(
     const api::Session& api,
     const proto::Context& serialized,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server) -> otx::context::internal::Client*;
+    const identifier::Notary& server) -> otx::context::internal::Client*;
 auto ManagedNumber(const TransactionNumber number, otx::context::Server&)
     -> otx::context::ManagedNumber*;
 auto ServerContext(
@@ -87,7 +122,7 @@ auto ServerContext(
     const network::zeromq::socket::Publish& replyReceived,
     const Nym_p& local,
     const Nym_p& remote,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     network::ServerConnection& connection) -> otx::context::internal::Server*;
 auto ServerContext(
     const api::session::Client& api,

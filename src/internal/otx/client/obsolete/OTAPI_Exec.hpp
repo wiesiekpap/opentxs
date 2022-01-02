@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
-
 #include <chrono>
 #include <cstdint>
 #include <mutex>
@@ -14,9 +12,10 @@
 #include <string>
 
 #include "internal/otx/client/obsolete/OT_API.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
@@ -54,7 +53,7 @@ class OT_API;
 
 namespace opentxs
 {
-class OPENTXS_EXPORT OTAPI_Exec : Lockable
+class OTAPI_Exec : Lockable
 {
 public:
     /**
@@ -828,7 +827,7 @@ public:
         const std::string& words,
         const std::string& passphrase) const -> std::string;
 
-    OPENTXS_NO_EXPORT ~OTAPI_Exec() override = default;
+    ~OTAPI_Exec() override = default;
 
 private:
     friend api::session::imp::Client;

@@ -8,17 +8,18 @@
 #include <string>
 
 #include "Basic.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
+#include "internal/otx/common/Message.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Message.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/crypto/OTCallback.hpp"
-#include "opentxs/core/crypto/OTCaller.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/PasswordCallback.hpp"
+#include "opentxs/util/PasswordCaller.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
@@ -30,7 +31,7 @@ std::string server_id_{};
 #define TEST_PASSWORD "blah foo blah foo blah"
 #define TEST_DIFF_PASSWORD "time keeps on slippin slippin slippin"
 
-class TestCallback : public opentxs::OTCallback
+class TestCallback : public opentxs::PasswordCallback
 {
     std::string password_;
 
@@ -57,14 +58,14 @@ public:
 };
 
 TestCallback::TestCallback()
-    : opentxs::OTCallback()
+    : opentxs::PasswordCallback()
     , password_()
 {
 }
 
 TEST(PasswordCallback, create)
 {
-    opentxs::OTCaller caller;
+    opentxs::PasswordCaller caller;
     TestCallback callback;
     callback.SetPassword(TEST_PASSWORD);
     caller.SetCallback(&callback);
@@ -84,7 +85,7 @@ TEST(PasswordCallback, create)
 
 TEST(PasswordCallback, load)
 {
-    opentxs::OTCaller caller;
+    opentxs::PasswordCaller caller;
     TestCallback callback;
     callback.SetPassword(TEST_PASSWORD);
     caller.SetCallback(&callback);
@@ -105,7 +106,7 @@ TEST(PasswordCallback, load)
     // Have the Nym sign something here, which should succeed.
 
     auto reason = client.Factory().PasswordPrompt(__func__);
-    auto message{client.Factory().Message()};
+    auto message{client.Factory().InternalSession().Message()};
 
     const auto signed_success = message->SignContract(*nym, reason);
     ASSERT_TRUE(signed_success);
@@ -115,7 +116,7 @@ TEST(PasswordCallback, load)
 
 TEST(PasswordCallback, wrongpw)
 {
-    opentxs::OTCaller caller;
+    opentxs::PasswordCaller caller;
     TestCallback callback;
     callback.SetPassword(TEST_DIFF_PASSWORD);
     caller.SetCallback(&callback);
@@ -131,7 +132,7 @@ TEST(PasswordCallback, wrongpw)
     // we deliberately used the wrong password.
 
     auto reason = client.Factory().PasswordPrompt(__func__);
-    auto message{client.Factory().Message()};
+    auto message{client.Factory().InternalSession().Message()};
 
     const auto signed_success = message->SignContract(*nym, reason);
     ASSERT_FALSE(signed_success);

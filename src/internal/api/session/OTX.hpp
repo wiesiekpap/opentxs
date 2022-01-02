@@ -7,14 +7,14 @@
 
 #include "opentxs/api/session/OTX.hpp"
 
-#include "opentxs/core/UniqueQueue.hpp"
+#include "internal/util/UniqueQueue.hpp"
 
 namespace opentxs
 {
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -36,7 +36,7 @@ public:
         const OTPayment& payment,
         const identifier::Nym& recipient,
         const Identifier& accountIDHint,
-        identifier::Server& depositServer,
+        identifier::Notary& depositServer,
         identifier::UnitDefinition& unitID,
         Identifier& depositAccount) const -> Depositability = 0;
     virtual auto finish_task(
@@ -47,7 +47,7 @@ public:
     {
         return *this;
     }
-    virtual auto get_nym_fetch(const identifier::Server& serverID) const
+    virtual auto get_nym_fetch(const identifier::Notary& serverID) const
         -> UniqueQueue<OTNymID>& = 0;
     virtual auto start_task(const TaskID taskID, bool success) const
         -> BackgroundTask = 0;

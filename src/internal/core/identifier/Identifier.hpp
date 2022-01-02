@@ -6,8 +6,8 @@
 #pragma once
 
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "util/Blank.hpp"
 
@@ -30,10 +30,10 @@ struct make_blank<OTNymID> {
 };
 
 template <>
-struct make_blank<OTServerID> {
-    static auto value(const api::Session&) -> OTServerID
+struct make_blank<OTNotaryID> {
+    static auto value(const api::Session&) -> OTNotaryID
     {
-        return identifier::Server::Factory();
+        return identifier::Notary::Factory();
     }
 };
 

@@ -14,7 +14,7 @@ namespace opentxs
 {
 namespace identifier
 {
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 namespace contract
@@ -44,7 +44,7 @@ class OPENTXS_EXPORT Bailment : virtual public peer::Request
 public:
     ~Bailment() override = default;
 
-    virtual auto ServerID() const -> const identifier::Server& = 0;
+    virtual auto ServerID() const -> const identifier::Notary& = 0;
     virtual auto UnitID() const -> const identifier::UnitDefinition& = 0;
 
 protected:
