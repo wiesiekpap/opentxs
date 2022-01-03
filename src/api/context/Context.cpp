@@ -69,6 +69,8 @@ auto Context(
 
 namespace opentxs::api
 {
+auto Context::PrepareSignalHandling() noexcept -> void { Signals::Block(); }
+
 auto Context::SuggestFolder(const std::string& app) noexcept -> std::string
 {
     return Legacy::SuggestFolder(app);

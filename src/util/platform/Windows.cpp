@@ -24,6 +24,7 @@ extern "C" {
 #include <direct.h>
 #include <robin_hood.h>
 #include <xstring>
+#include <iostream>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"
@@ -102,12 +103,12 @@ auto vformat(const char* fmt, va_list* pvl, std::string& str_Output) -> bool
 
 auto Signals::Block() -> void
 {
-    LogError()("Signal handling is not supported on Windows").Flush();
+    std::cout << "Signal handling is not supported on Windows\n";
 }
 
 auto Signals::handle() -> void
 {
-    LogError()("Signal handling is not supported on Windows").Flush();
+    std::cout << "Signal handling is not supported on Windows\n";
 }
 }  // namespace opentxs
 

@@ -74,6 +74,9 @@ class OPENTXS_EXPORT Context : virtual public Periodic
 public:
     using ShutdownCallback = std::function<void()>;
 
+    /** NOTE You must call PrepareSignalHandling() prior to initializating the
+     * context if you intend to use signal handling */
+    static auto PrepareSignalHandling() noexcept -> void;
     static auto SuggestFolder(const std::string& app) noexcept -> std::string;
 
     virtual auto Asio() const noexcept -> const network::Asio& = 0;
@@ -85,6 +88,8 @@ public:
         -> const api::Settings& = 0;
     virtual auto Crypto() const noexcept -> const api::Crypto& = 0;
     virtual auto Factory() const noexcept -> const api::Factory& = 0;
+    /** WARNING You must call PrepareSignalHandling() prior to initializating
+     * the context if you intend to use this function */
     virtual auto HandleSignals(
         ShutdownCallback* callback = nullptr) const noexcept -> void = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
