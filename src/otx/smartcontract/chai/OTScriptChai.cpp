@@ -34,6 +34,7 @@
 #include <utility>
 #include <vector>
 
+#include "internal/otx/common/script/OTScriptable.hpp"
 #include "internal/otx/smartcontract/Factory.hpp"
 #include "internal/otx/smartcontract/OTParty.hpp"
 #include "internal/otx/smartcontract/OTPartyAccount.hpp"
@@ -41,10 +42,9 @@
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/script/OTScriptable.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"  // IWYU pragma: keep
 
 namespace opentxs::factory
 {

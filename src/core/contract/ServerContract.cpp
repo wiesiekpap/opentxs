@@ -20,8 +20,8 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/core/contract/Contract.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/ServerContract.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/ServerContract.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -30,7 +30,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/Types.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
@@ -152,7 +152,7 @@ Server::Server(
     const std::string& name,
     std::list<contract::Server::Endpoint>&& endpoints,
     OTData&& key,
-    OTServerID&& id,
+    OTNotaryID&& id,
     Signatures&& signatures)
     : Signable(
           api,
@@ -326,7 +326,7 @@ auto Server::SetAlias(const std::string& alias) noexcept -> bool
 {
     InitAlias(alias);
     api_.Wallet().SetServerAlias(
-        identifier::Server::Factory(id_->str()), alias);  // TODO conversion
+        identifier::Notary::Factory(id_->str()), alias);  // TODO conversion
 
     return true;
 }

@@ -3,13 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/StorageAccounts.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/StorageAccounts.hpp"  // IWYU pragma: associated
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/StorageAccountIndex.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/StorageIDList.hpp"    // IWYU pragma: keep
-#include "internal/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyStorage.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/StorageAccountIndex.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/StorageIDList.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyStorage.hpp"
 #include "serialization/protobuf/StorageAccounts.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

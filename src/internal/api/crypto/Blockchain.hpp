@@ -17,15 +17,12 @@ class Contacts;
 }  // namespace session
 }  // namespace api
 
-namespace contact
-{
-class Contact;
-}  // namespace contact
-
 namespace proto
 {
 class HDPath;
 }  // namespace proto
+
+class Contact;
 }  // namespace opentxs
 
 namespace opentxs::api::crypto::internal
@@ -55,11 +52,11 @@ public:
         const Chain chain,
         const PasswordPrompt& reason) const noexcept(false)
         -> const opentxs::blockchain::crypto::PaymentCode& = 0;
-    virtual auto ProcessContact(const contact::Contact& contact) const noexcept
+    virtual auto ProcessContact(const Contact& contact) const noexcept
         -> bool = 0;
     virtual auto ProcessMergedContact(
-        const contact::Contact& parent,
-        const contact::Contact& child) const noexcept -> bool = 0;
+        const Contact& parent,
+        const Contact& child) const noexcept -> bool = 0;
     virtual auto ProcessTransaction(
         const Chain chain,
         const opentxs::blockchain::block::bitcoin::Transaction& transaction,

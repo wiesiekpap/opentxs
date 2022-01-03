@@ -13,7 +13,7 @@
 #include "opentxs/core/contract/peer/BailmentNotice.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 
 namespace opentxs
@@ -47,7 +47,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const identifier::UnitDefinition& unitID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& requestID,
         const std::string& txid,
         const Amount& amount);
@@ -64,7 +64,7 @@ private:
     friend opentxs::Factory;
 
     const OTUnitID unit_;
-    const OTServerID server_;
+    const OTNotaryID server_;
     const OTIdentifier requestID_;
     const std::string txid_;
     const Amount amount_;

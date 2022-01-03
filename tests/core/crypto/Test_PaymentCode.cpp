@@ -21,7 +21,6 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -31,6 +30,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 
 using namespace opentxs;
 

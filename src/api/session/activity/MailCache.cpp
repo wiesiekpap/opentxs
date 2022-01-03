@@ -20,6 +20,8 @@
 
 #include "core/Worker.hpp"
 #include "internal/api/network/Asio.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
+#include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -28,8 +30,6 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -38,6 +38,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/ByteLiterals.hpp"
@@ -117,7 +118,7 @@ struct MailCache::Imp {
             return output;
         }
 
-        output = api_.Factory().Message();
+        output = api_.Factory().InternalSession().Message();
 
         OT_ASSERT(output);
 

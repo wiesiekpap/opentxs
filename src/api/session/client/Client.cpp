@@ -35,6 +35,7 @@
 #include "internal/otx/client/ServerAction.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "internal/otx/client/obsolete/OT_API.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -48,9 +49,8 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/core/Flag.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 
@@ -243,7 +243,7 @@ auto Client::Init() -> void
 
 auto Client::Lock(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID) const -> std::recursive_mutex&
+    const identifier::Notary& serverID) const -> std::recursive_mutex&
 {
     return get_lock({nymID.str(), serverID.str()});
 }

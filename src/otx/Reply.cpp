@@ -15,15 +15,15 @@
 #include "core/contract/Signable.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/OTX.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/ServerReply.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/ServerReply.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/Reply.hpp"
@@ -58,7 +58,7 @@ auto Reply::Factory(
     const api::Session& api,
     const Nym_p signer,
     const identifier::Nym& recipient,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const otx::ServerReplyType type,
     const RequestNumber number,
     const bool success,
@@ -91,7 +91,7 @@ auto Reply::Factory(
     const api::Session& api,
     const Nym_p signer,
     const identifier::Nym& recipient,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const otx::ServerReplyType type,
     const RequestNumber number,
     const bool success,
@@ -131,7 +131,7 @@ Reply::Reply(
     const api::Session& api,
     const Nym_p signer,
     const identifier::Nym& recipient,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const otx::ServerReplyType type,
     const RequestNumber number,
     const bool success,
@@ -161,7 +161,7 @@ Reply::Reply(const api::Session& api, const proto::ServerReply serialized)
                     serialized.signature())}
               : Signatures{})
     , recipient_(identifier::Nym::Factory(serialized.nym()))
-    , server_(identifier::Server::Factory(serialized.server()))
+    , server_(identifier::Notary::Factory(serialized.server()))
     , type_(translate(serialized.type()))
     , success_(serialized.success())
     , number_(serialized.request())
@@ -189,7 +189,7 @@ auto Reply::extract_nym(
     const api::Session& api,
     const proto::ServerReply serialized) -> Nym_p
 {
-    const auto serverID = identifier::Server::Factory(serialized.server());
+    const auto serverID = identifier::Notary::Factory(serialized.server());
 
     try {
         return api.Wallet().Server(serverID)->Nym();

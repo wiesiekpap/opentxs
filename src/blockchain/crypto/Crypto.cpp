@@ -8,7 +8,10 @@
 #include "internal/blockchain/crypto/Crypto.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
+#include <cstring>
+#include <iterator>
 #include <memory>
+#include <type_traits>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
@@ -69,6 +72,20 @@ auto operator!=(
     return lIndex != rIndex;
 }
 
+auto preimage(const blockchain::crypto::Key& in) noexcept -> Space
+{
+    const auto& [id, subchain, index] = in;
+    auto out = space(id.size() + sizeof(subchain) + sizeof(index));
+    auto i = out.data();
+    std::memcpy(i, id.data(), id.size());
+    std::advance(i, id.size());
+    std::memcpy(i, &subchain, sizeof(subchain));
+    std::advance(i, sizeof(subchain));
+    std::memcpy(i, &index, sizeof(index));
+    std::advance(i, sizeof(index));
+
+    return out;
+}
 auto print(blockchain::crypto::HDProtocol value) noexcept -> std::string
 {
     using Proto = blockchain::crypto::HDProtocol;

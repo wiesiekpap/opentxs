@@ -15,8 +15,8 @@
 
 #include "Proto.tpp"
 #include "internal/network/p2p/Factory.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/BlockchainP2PSync.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/BlockchainP2PSync.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/p2p/Base.hpp"
 #include "opentxs/Types.hpp"

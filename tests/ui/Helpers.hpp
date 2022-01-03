@@ -8,7 +8,7 @@
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/Subchain.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
-// IWYU pragma: no_include "opentxs/ui/Blockchains.hpp"
+// IWYU pragma: no_include "opentxs/core/ui/Blockchains.hpp"
 
 #pragma once
 
@@ -25,10 +25,10 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Types.hpp"
-#include "opentxs/ui/Types.hpp"
+#include "opentxs/core/ui/Types.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 

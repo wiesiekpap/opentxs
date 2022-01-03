@@ -15,8 +15,9 @@
 #include <vector>
 
 #include "Basic.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/RPCResponse.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/RPCResponse.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -32,30 +33,29 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactGroup.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Group.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
-#include "opentxs/rpc/AccountData.hpp"
-#include "opentxs/rpc/AccountEvent.hpp"
-#include "opentxs/rpc/AccountEventType.hpp"
-#include "opentxs/rpc/AccountType.hpp"
-#include "opentxs/rpc/ResponseCode.hpp"
-#include "opentxs/rpc/request/SendPayment.hpp"
-#include "opentxs/rpc/response/Base.hpp"
-#include "opentxs/rpc/response/SendPayment.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/rpc/AccountData.hpp"
+#include "opentxs/util/rpc/AccountEvent.hpp"
+#include "opentxs/util/rpc/AccountEventType.hpp"
+#include "opentxs/util/rpc/AccountType.hpp"
+#include "opentxs/util/rpc/ResponseCode.hpp"
+#include "opentxs/util/rpc/request/SendPayment.hpp"
+#include "opentxs/util/rpc/response/Base.hpp"
+#include "opentxs/util/rpc/response/SendPayment.hpp"
 #include "serialization/protobuf/APIArgument.pb.h"
 #include "serialization/protobuf/AddClaim.pb.h"
 #include "serialization/protobuf/AddContact.pb.h"
@@ -222,7 +222,7 @@ protected:
     void wait_for_state_machine(
         const ot::api::session::Client& api,
         const identifier::Nym& nymID,
-        const identifier::Server& serverID)
+        const identifier::Notary& serverID)
     {
         auto task = api.OTX().DownloadNym(nymID, serverID, nymID);
         ThreadStatus status{ThreadStatus::RUNNING};
@@ -243,7 +243,7 @@ protected:
     void receive_payment(
         const ot::api::session::Client& api,
         const identifier::Nym& nymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID)
     {
         auto task = api.OTX().ProcessInbox(nymID, serverID, accountID);
@@ -631,7 +631,7 @@ TEST_F(Test_Rpc, Create_Nym)
     EXPECT_NE(nullptr, createnym);
 
     createnym->set_version(CREATENYM_VERSION);
-    createnym->set_type(translate(contact::ClaimType::Individual));
+    createnym->set_type(translate(identity::wot::claim::ClaimType::Individual));
     createnym->set_name("testNym1");
     createnym->set_index(-1);
 
@@ -658,7 +658,7 @@ TEST_F(Test_Rpc, Create_Nym)
     EXPECT_NE(nullptr, createnym);
 
     createnym->set_version(CREATENYM_VERSION);
-    createnym->set_type(translate(contact::ClaimType::Individual));
+    createnym->set_type(translate(identity::wot::claim::ClaimType::Individual));
     createnym->set_name("testNym2");
     createnym->set_index(-1);
 
@@ -681,7 +681,7 @@ TEST_F(Test_Rpc, Create_Nym)
     EXPECT_NE(nullptr, createnym);
 
     createnym->set_version(CREATENYM_VERSION);
-    createnym->set_type(translate(contact::ClaimType::Individual));
+    createnym->set_type(translate(identity::wot::claim::ClaimType::Individual));
     createnym->set_name("testNym3");
     createnym->set_index(-1);
 
@@ -812,7 +812,7 @@ TEST_F(Test_Rpc, Create_Unit_Definition)
     def->set_tla("GTD");
     def->set_power(2);
     def->set_terms("Google Test Dollars");
-    def->set_unitofaccount(translate(contact::ClaimType::USD));
+    def->set_unitofaccount(translate(identity::wot::claim::ClaimType::USD));
     auto response = ot_.RPC(command);
 
     EXPECT_TRUE(proto::Validate(response, VERBOSE));
@@ -920,8 +920,8 @@ TEST_F(Test_Rpc, Delete_Claim_No_Nym)
     auto nym = client.Wallet().Nym(ot::identifier::Nym::Factory(nym1_id_));
     auto& claims = nym->Claims();
     auto group = claims.Group(
-        opentxs::contact::SectionType::Relationship,
-        opentxs::contact::ClaimType::Alias);
+        opentxs::identity::wot::claim::SectionType::Relationship,
+        opentxs::identity::wot::claim::ClaimType::Alias);
     const auto claim = group->Best();
     claim_id_ = claim->ID().str();
     command.add_identifier(claim_id_);
@@ -1219,7 +1219,7 @@ TEST_F(Test_Rpc, Send_Payment_Transfer)
     const auto nym1id = identifier::Nym::Factory(nym1_id_);
     const auto nym3id = identifier::Nym::Factory(nym3_id_);
     wait_for_state_machine(
-        client, nym1id, identifier::Server::Factory(server_id_));
+        client, nym1id, identifier::Notary::Factory(server_id_));
 
     {
         const auto account =
@@ -1233,7 +1233,7 @@ TEST_F(Test_Rpc, Send_Payment_Transfer)
     receive_payment(
         client,
         nym3id,
-        identifier::Server::Factory(server_id_),
+        identifier::Notary::Factory(server_id_),
         Identifier::Factory(nym3_account1_id_));
 
     {
@@ -1274,7 +1274,7 @@ TEST_F(Test_Rpc, Move_Funds)
     EXPECT_EQ(command.type(), response.type());
 
     wait_for_state_machine(
-        manager, nym3id, identifier::Server::Factory(server_id_));
+        manager, nym3id, identifier::Notary::Factory(server_id_));
 
     {
         const auto account =
@@ -1287,7 +1287,7 @@ TEST_F(Test_Rpc, Move_Funds)
     receive_payment(
         manager,
         nym3id,
-        identifier::Server::Factory(server_id_),
+        identifier::Notary::Factory(server_id_),
         Identifier::Factory(nym3_account2_id_));
 
     {

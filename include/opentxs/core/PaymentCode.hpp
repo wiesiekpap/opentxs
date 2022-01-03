@@ -16,6 +16,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -47,8 +48,11 @@ class PasswordPrompt;
 namespace std
 {
 template <>
-struct hash<opentxs::PaymentCode>;
-}
+struct hash<opentxs::PaymentCode> {
+    auto operator()(const opentxs::PaymentCode& rhs) const noexcept
+        -> std::size_t;
+};
+}  // namespace std
 
 namespace opentxs
 {

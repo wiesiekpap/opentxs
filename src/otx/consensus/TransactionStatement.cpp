@@ -10,12 +10,12 @@
 #include <irrxml/irrXML.hpp>
 #include <memory>
 
+#include "internal/otx/common/NumList.hpp"
+#include "internal/otx/common/StringXML.hpp"
 #include "internal/otx/common/XML.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/NumList.hpp"
-#include "opentxs/core/StringXML.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

@@ -3,17 +3,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/StorageContacts.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/StorageContacts.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
 #include <utility>
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/StorageContactAddressIndex.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/StorageIDList.hpp"    // IWYU pragma: keep
-#include "internal/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyStorage.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/StorageContactAddressIndex.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/StorageIDList.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyStorage.hpp"
 #include "serialization/protobuf/StorageContactAddressIndex.pb.h"
 #include "serialization/protobuf/StorageContacts.pb.h"
 #include "serialization/protobuf/StorageIDList.pb.h"

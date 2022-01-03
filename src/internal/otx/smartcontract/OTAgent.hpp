@@ -9,8 +9,8 @@
 #include <map>
 #include <string>
 
+#include "internal/otx/common/Account.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Numbers.hpp"
 
@@ -28,7 +28,7 @@ class Session;
 
 namespace identifier
 {
-class Server;
+class Notary;
 }  // namespace identifier
 
 namespace identity
@@ -362,7 +362,7 @@ public:
         const api::Session& api,
         bool bSuccessMsg,  // the notice can be "acknowledgment" or "rejection"
         const identity::Nym& theServerNym,
-        const identifier::Server& theNotaryID,
+        const identifier::Notary& theNotaryID,
         const std::int64_t& lNewTransactionNumber,
         const std::int64_t& lInReferenceTo,
         const String& strReference,

@@ -15,7 +15,7 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Algorithm.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Generic.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Nym.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Server.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Notary.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Type.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/Types.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/core/identifier/UnitDefinition.hpp"

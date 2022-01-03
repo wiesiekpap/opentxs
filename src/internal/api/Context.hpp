@@ -14,7 +14,7 @@ namespace api
 class Legacy;
 }  // namespace api
 
-class OTCaller;
+class PasswordCaller;
 }  // namespace opentxs
 
 namespace opentxs::api::internal
@@ -22,7 +22,7 @@ namespace opentxs::api::internal
 class Context : virtual public api::Context
 {
 public:
-    virtual auto GetPasswordCaller() const noexcept -> OTCaller& = 0;
+    virtual auto GetPasswordCaller() const noexcept -> PasswordCaller& = 0;
     auto Internal() const noexcept -> const Context& final { return *this; }
     virtual auto Legacy() const noexcept -> const api::Legacy& = 0;
 

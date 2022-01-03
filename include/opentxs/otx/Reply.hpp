@@ -49,7 +49,7 @@ public:
         const api::Session& api,
         const Nym_p signer,
         const identifier::Nym& recipient,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const otx::ServerReplyType type,
         const RequestNumber number,
         const bool success,
@@ -60,7 +60,7 @@ public:
         const api::Session& api,
         const Nym_p signer,
         const identifier::Nym& recipient,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const otx::ServerReplyType type,
         const RequestNumber number,
         const bool success,
@@ -81,7 +81,7 @@ public:
     virtual auto Serialize(AllocateOutput destination) const -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(
         proto::ServerReply& serialized) const -> bool = 0;
-    virtual auto Server() const -> const identifier::Server& = 0;
+    virtual auto Server() const -> const identifier::Notary& = 0;
     virtual auto Success() const -> bool = 0;
     virtual auto Type() const -> otx::ServerReplyType = 0;
 

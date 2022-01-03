@@ -332,3 +332,12 @@ using SendOutcome = std::pair<SendResult, block::pTxid>;
 
 auto print(const blockchain::block::Position&) noexcept -> std::string;
 }  // namespace opentxs
+
+namespace std
+{
+template <>
+struct hash<opentxs::blockchain::block::Position> {
+    auto operator()(const opentxs::blockchain::block::Position& data)
+        const noexcept -> std::size_t;
+};
+}  // namespace std

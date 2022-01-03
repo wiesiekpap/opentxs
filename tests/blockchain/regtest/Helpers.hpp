@@ -52,7 +52,6 @@
 #include "opentxs/blockchain/node/Types.hpp"
 #include "opentxs/blockchain/node/Wallet.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
@@ -61,6 +60,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Options.hpp"
@@ -89,7 +89,7 @@ namespace bitcoin
 class Transaction;
 }  // namespace bitcoin
 
-struct Outpoint;
+class Outpoint;
 }  // namespace block
 
 namespace crypto
@@ -107,7 +107,7 @@ class Address;
 
 namespace identifier
 {
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -504,7 +504,7 @@ protected:
     static TXOs txos_;
     static std::unique_ptr<ScanListener> listener_p_;
 
-    const ot::identifier::Server& expected_notary_;
+    const ot::identifier::Notary& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
     const std::string expected_display_unit_;
     const std::string expected_account_name_;
@@ -539,7 +539,7 @@ protected:
     static std::unique_ptr<ScanListener> listener_bob_p_;
 
     const ot::api::session::Notary& api_server_1_;
-    const ot::identifier::Server& expected_notary_;
+    const ot::identifier::Notary& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
     const std::string expected_display_unit_;
     const std::string expected_account_name_;

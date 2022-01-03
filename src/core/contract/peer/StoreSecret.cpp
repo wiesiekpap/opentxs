@@ -14,8 +14,8 @@
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
 #include "internal/core/contract/peer/Peer.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/PeerRequest.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
@@ -37,7 +37,7 @@ auto Factory::StoreSecret(
     const contract::peer::SecretType type,
     const std::string& primary,
     const std::string& secondary,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::StoreSecret>
 {
@@ -106,7 +106,7 @@ StoreSecret::StoreSecret(
     const SecretType type,
     const std::string& primary,
     const std::string& secondary,
-    const identifier::Server& serverID)
+    const identifier::Notary& serverID)
     : Request(
           api,
           nym,

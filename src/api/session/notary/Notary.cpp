@@ -21,13 +21,13 @@
 #include "api/session/Session.hpp"
 #include "api/session/base/Scheduler.hpp"
 #include "api/session/base/Storage.hpp"
-#include "core/OTStorage.hpp"
 #include "core/Shutdown.hpp"
 #include "internal/api/Context.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/api/network/Factory.hpp"
 #include "internal/api/session/Factory.hpp"
 #include "internal/otx/blind/Mint.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
@@ -39,20 +39,20 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
+#include "otx/common/OTStorage.hpp"
 #include "otx/server/MessageProcessor.hpp"
 #include "otx/server/Server.hpp"
 #include "otx/server/ServerSettings.hpp"
@@ -370,7 +370,7 @@ auto Notary::GetUserName() const -> std::string { return args_.NotaryName(); }
 
 auto Notary::GetUserTerms() const -> std::string { return args_.NotaryTerms(); }
 
-auto Notary::ID() const -> const identifier::Server&
+auto Notary::ID() const -> const identifier::Notary&
 {
     return server_.GetServerID();
 }

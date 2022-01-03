@@ -17,24 +17,24 @@
 
 #include "Proto.hpp"
 #include "Proto.tpp"
-#include "core/OTStorage.hpp"
 #include "internal/api/network/Asio.hpp"
 #include "internal/api/session/Factory.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
-#include "internal/storage/drivers/Drivers.hpp"
-#include "internal/storage/drivers/Factory.hpp"
+#include "internal/util/Editor.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/storage/drivers/Drivers.hpp"
+#include "internal/util/storage/drivers/Factory.hpp"
 #include "opentxs/api/network/Asio.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "otx/common/OTStorage.hpp"
 #include "serialization/protobuf/Bip47Channel.pb.h"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Contact.pb.h"
@@ -52,27 +52,27 @@
 #include "serialization/protobuf/StorageThread.pb.h"
 #include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
-#include "storage/Config.hpp"
-#include "storage/tree/Accounts.hpp"
-#include "storage/tree/Bip47Channels.hpp"
-#include "storage/tree/Contacts.hpp"
-#include "storage/tree/Contexts.hpp"
-#include "storage/tree/Credentials.hpp"
-#include "storage/tree/Issuers.hpp"
-#include "storage/tree/Mailbox.hpp"
-#include "storage/tree/Notary.hpp"
-#include "storage/tree/Nym.hpp"
-#include "storage/tree/Nyms.hpp"
-#include "storage/tree/PaymentWorkflows.hpp"
-#include "storage/tree/PeerReplies.hpp"
-#include "storage/tree/PeerRequests.hpp"
-#include "storage/tree/Root.hpp"
-#include "storage/tree/Seeds.hpp"
-#include "storage/tree/Servers.hpp"
-#include "storage/tree/Thread.hpp"
-#include "storage/tree/Threads.hpp"
-#include "storage/tree/Tree.hpp"
-#include "storage/tree/Units.hpp"
+#include "util/storage/Config.hpp"
+#include "util/storage/tree/Accounts.hpp"
+#include "util/storage/tree/Bip47Channels.hpp"
+#include "util/storage/tree/Contacts.hpp"
+#include "util/storage/tree/Contexts.hpp"
+#include "util/storage/tree/Credentials.hpp"
+#include "util/storage/tree/Issuers.hpp"
+#include "util/storage/tree/Mailbox.hpp"
+#include "util/storage/tree/Notary.hpp"
+#include "util/storage/tree/Nym.hpp"
+#include "util/storage/tree/Nyms.hpp"
+#include "util/storage/tree/PaymentWorkflows.hpp"
+#include "util/storage/tree/PeerReplies.hpp"
+#include "util/storage/tree/PeerRequests.hpp"
+#include "util/storage/tree/Root.hpp"
+#include "util/storage/tree/Seeds.hpp"
+#include "util/storage/tree/Servers.hpp"
+#include "util/storage/tree/Thread.hpp"
+#include "util/storage/tree/Threads.hpp"
+#include "util/storage/tree/Tree.hpp"
+#include "util/storage/tree/Units.hpp"
 
 namespace opentxs::factory
 {
@@ -146,7 +146,7 @@ auto Storage::AccountOwner(const Identifier& accountID) const -> OTNymID
     return Root().Tree().Accounts().AccountOwner(accountID);
 }
 
-auto Storage::AccountServer(const Identifier& accountID) const -> OTServerID
+auto Storage::AccountServer(const Identifier& accountID) const -> OTNotaryID
 {
     return Root().Tree().Accounts().AccountServer(accountID);
 }
@@ -179,7 +179,7 @@ auto Storage::AccountsByOwner(const identifier::Nym& ownerNym) const
     return Root().Tree().Accounts().AccountsByOwner(ownerNym);
 }
 
-auto Storage::AccountsByServer(const identifier::Server& server) const
+auto Storage::AccountsByServer(const identifier::Notary& server) const
     -> std::set<OTIdentifier>
 {
     return Root().Tree().Accounts().AccountsByServer(server);
@@ -281,7 +281,7 @@ auto Storage::BlockchainTransactionList(
 }
 
 auto Storage::CheckTokenSpent(
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit,
     const std::uint64_t series,
     const std::string& key) const -> bool
@@ -757,7 +757,7 @@ auto Storage::Load(
 
 auto Storage::Load(
     const identifier::Nym& nym,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit,
     proto::Purse& output,
     const bool checking) const -> bool
@@ -803,7 +803,7 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const identifier::Server& id,
+    const identifier::Notary& id,
     proto::ServerContract& output,
     const bool checking) const -> bool
 {
@@ -813,7 +813,7 @@ auto Storage::Load(
 }
 
 auto Storage::Load(
-    const identifier::Server& id,
+    const identifier::Notary& id,
     proto::ServerContract& output,
     std::string& alias,
     const bool checking) const -> bool
@@ -902,7 +902,7 @@ void Storage::MapUnitDefinitions(UnitLambda& cb) const
 }
 
 auto Storage::MarkTokenSpent(
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit,
     const std::uint64_t series,
     const std::string& key) const -> bool
@@ -1720,7 +1720,7 @@ auto Storage::SetSeedAlias(const std::string& id, const std::string& alias)
 }
 
 auto Storage::SetServerAlias(
-    const identifier::Server& id,
+    const identifier::Notary& id,
     const std::string& alias) const -> bool
 {
     return mutable_Root()
@@ -1784,7 +1784,7 @@ auto Storage::Store(
     const identifier::Nym& ownerNym,
     const identifier::Nym& signerNym,
     const identifier::Nym& issuerNym,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& contract,
     const core::UnitType unit) const -> bool
 {
@@ -1808,7 +1808,7 @@ auto Storage::Store(
 
 auto Storage::Store(
     const std::string& nymID,
-    const contact::ClaimType type,
+    const identity::wot::claim::ClaimType type,
     const proto::HDAccount& data) const -> bool
 {
     return mutable_Root()

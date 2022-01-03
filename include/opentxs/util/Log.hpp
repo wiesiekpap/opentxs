@@ -17,11 +17,10 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/StringXML.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -37,8 +36,8 @@ namespace opentxs
 {
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -48,6 +47,7 @@ class Log;
 }  // namespace internal
 
 class Amount;
+class StringXML;
 }  // namespace opentxs
 
 namespace opentxs
@@ -64,7 +64,6 @@ public:
     auto operator()(const std::chrono::nanoseconds& in) const noexcept
         -> const Log&;
     auto operator()(const OTString& in) const noexcept -> const Log&;
-    auto operator()(const OTStringXML& in) const noexcept -> const Log&;
     auto operator()(const OTArmored& in) const noexcept -> const Log&;
     auto operator()(const Amount& in) const noexcept -> const Log&;
     auto operator()(const Amount& in, core::UnitType currency) const noexcept
@@ -76,8 +75,8 @@ public:
     auto operator()(const Identifier& in) const noexcept -> const Log&;
     auto operator()(const OTNymID& in) const noexcept -> const Log&;
     auto operator()(const identifier::Nym& in) const noexcept -> const Log&;
-    auto operator()(const OTServerID& in) const noexcept -> const Log&;
-    auto operator()(const identifier::Server& in) const noexcept -> const Log&;
+    auto operator()(const OTNotaryID& in) const noexcept -> const Log&;
+    auto operator()(const identifier::Notary& in) const noexcept -> const Log&;
     auto operator()(const OTUnitID& in) const noexcept -> const Log&;
     auto operator()(const identifier::UnitDefinition& in) const noexcept
         -> const Log&;

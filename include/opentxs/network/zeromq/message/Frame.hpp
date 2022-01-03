@@ -35,7 +35,10 @@ class Frame;
 namespace std
 {
 template <>
-struct hash<opentxs::network::zeromq::Frame>;
+struct hash<opentxs::network::zeromq::Frame> {
+    auto operator()(const opentxs::network::zeromq::Frame& data) const noexcept
+        -> std::size_t;
+};
 }  // namespace std
 
 namespace opentxs::network::zeromq

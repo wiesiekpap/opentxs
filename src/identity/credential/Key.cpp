@@ -16,13 +16,13 @@
 #include "identity/credential/Base.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/crypto/key/Key.hpp"
+#include "internal/otx/common/crypto/OTSignatureMetadata.hpp"
+#include "internal/otx/common/crypto/Signature.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/crypto/OTSignatureMetadata.hpp"
-#include "opentxs/core/crypto/Signature.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
@@ -204,10 +204,10 @@ auto Key::deserialize_key(
     if (hasPrivate) {
         const auto privateKey = credential.privatecredential().key(index - 1);
 
-        return api.Factory().Keypair(publicKey, privateKey);
+        return api.Factory().InternalSession().Keypair(publicKey, privateKey);
     }
 
-    return api.Factory().Keypair(publicKey);
+    return api.Factory().InternalSession().Keypair(publicKey);
 }
 
 auto Key::GetKeypair(

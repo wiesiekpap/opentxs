@@ -11,6 +11,7 @@
 #include <functional>
 #include <iosfwd>
 #include <iterator>
+#include <string_view>
 
 namespace opentxs
 {
@@ -32,7 +33,10 @@ class FrameIterator;
 namespace std
 {
 template <>
-struct hash<opentxs::network::zeromq::FrameIterator>;
+struct hash<opentxs::network::zeromq::FrameIterator> {
+    auto operator()(const opentxs::network::zeromq::FrameIterator& rhs)
+        const noexcept -> std::size_t;
+};
 }  // namespace std
 
 namespace opentxs::network::zeromq

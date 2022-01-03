@@ -17,12 +17,16 @@
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/otx/blind/Purse.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/PaymentWorkflow.hpp"
-#include "internal/protobuf/verify/RPCPush.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PaymentWorkflow.hpp"
+#include "internal/serialization/protobuf/verify/RPCPush.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Activity.hpp"
@@ -32,14 +36,11 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Workflow.hpp"
-#include "opentxs/core/Cheque.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
@@ -224,7 +225,7 @@ auto Workflow::InstantiateCheque(
         case PaymentWorkflowType::IncomingCheque:
         case PaymentWorkflowType::OutgoingInvoice:
         case PaymentWorkflowType::IncomingInvoice: {
-            cheque.reset(api.Factory().Cheque().release());
+            cheque.reset(api.Factory().InternalSession().Cheque().release());
 
             OT_ASSERT(cheque)
 
@@ -283,7 +284,7 @@ auto Workflow::InstantiatePurse(
                     return out;
                 }();
 
-                purse = api.Factory().Purse(serialized);
+                purse = api.Factory().InternalSession().Purse(serialized);
 
                 if (false == bool(purse)) {
                     throw std::runtime_error{"Failed to instantiate purse"};
@@ -328,7 +329,8 @@ auto Workflow::InstantiateTransfer(
 
             if (serialized.empty()) { return output; }
 
-            transfer.reset(api.Factory().Item(serialized).release());
+            transfer.reset(
+                api.Factory().InternalSession().Item(serialized).release());
 
             if (false == bool(transfer)) {
                 LogError()(OT_PRETTY_STATIC(Workflow))(
@@ -517,7 +519,7 @@ auto Workflow::AbortTransfer(
 // Works for Incoming and Internal transfer workflows.
 auto Workflow::AcceptTransfer(
     const identifier::Nym& nymID,
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const OTTransaction& pending,
     const Message& reply) const -> bool
 {
@@ -1192,7 +1194,7 @@ auto Workflow::ClearCheque(
         return false;
     }
 
-    auto cheque{api_.Factory().Cheque(receipt)};
+    auto cheque{api_.Factory().InternalSession().Cheque(receipt)};
 
     if (false == bool(cheque)) {
         LogError()(OT_PRETTY_CLASS())("Failed to load cheque from receipt.")
@@ -1263,7 +1265,7 @@ auto Workflow::ClearCheque(
 
 auto Workflow::ClearTransfer(
     const identifier::Nym& nymID,
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const OTTransaction& receipt) const -> bool
 {
     auto depositorNymID = identifier::Nym::Factory();
@@ -1367,7 +1369,7 @@ auto Workflow::ClearTransfer(
 // Works for outgoing and internal transfer workflows.
 auto Workflow::CompleteTransfer(
     const identifier::Nym& nymID,
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const OTTransaction& receipt,
     const Message& reply) const -> bool
 {
@@ -1444,7 +1446,7 @@ auto Workflow::CompleteTransfer(
 // then add the new event to it).
 auto Workflow::convey_incoming_transfer(
     const identifier::Nym& nymID,
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const OTTransaction& pending,
     const std::string& senderNymID,
     const std::string& recipientNymID,
@@ -1511,7 +1513,7 @@ auto Workflow::convey_incoming_transfer(
 // corresponding transfer workflow since it does not already exist.
 auto Workflow::convey_internal_transfer(
     const identifier::Nym& nymID,
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const OTTransaction& pending,
     const std::string& senderNymID,
     const Item& transfer) const -> OTIdentifier
@@ -1556,7 +1558,7 @@ auto Workflow::convey_internal_transfer(
 
 auto Workflow::ConveyTransfer(
     const identifier::Nym& nymID,
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const OTTransaction& pending) const -> OTIdentifier
 {
     const auto transfer = extract_transfer_from_pending(pending);
@@ -1981,7 +1983,7 @@ auto Workflow::extract_transfer_from_pending(const OTTransaction& receipt) const
         return nullptr;
     }
 
-    auto transfer = api_.Factory().Item(serializedTransfer);
+    auto transfer = api_.Factory().InternalSession().Item(serializedTransfer);
 
     if (false == bool(transfer)) {
         LogError()(OT_PRETTY_CLASS())("Unable to instantiate transfer item")
@@ -2025,7 +2027,8 @@ auto Workflow::extract_transfer_from_receipt(
         return nullptr;
     }
 
-    const auto acceptPending = api_.Factory().Item(serializedAcceptPending);
+    const auto acceptPending =
+        api_.Factory().InternalSession().Item(serializedAcceptPending);
 
     if (false == bool(acceptPending)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -2053,7 +2056,7 @@ auto Workflow::extract_transfer_from_receipt(
         return nullptr;
     }
 
-    auto pending = api_.Factory().Transaction(
+    auto pending = api_.Factory().InternalSession().Transaction(
         receipt.GetNymID(),
         receipt.GetRealAccountID(),
         receipt.GetRealNotaryID());
@@ -2093,7 +2096,7 @@ auto Workflow::extract_transfer_from_receipt(
         return nullptr;
     }
 
-    auto transfer = api_.Factory().Item(serializedTransfer);
+    auto transfer = api_.Factory().InternalSession().Item(serializedTransfer);
 
     if (false == bool(transfer)) {
         LogError()(OT_PRETTY_CLASS())("Unable to instantiate transfer item")

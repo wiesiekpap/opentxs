@@ -219,12 +219,12 @@ public:
     {
         throw std::out_of_range{""};
     }
-    auto ProcessContact(const contact::Contact&) const noexcept -> bool final
+    auto ProcessContact(const Contact&) const noexcept -> bool final
     {
         return {};
     }
-    auto ProcessMergedContact(const contact::Contact&, const contact::Contact&)
-        const noexcept -> bool final
+    auto ProcessMergedContact(const Contact&, const Contact&) const noexcept
+        -> bool final
     {
         return {};
     }

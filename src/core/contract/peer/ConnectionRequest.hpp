@@ -22,8 +22,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 namespace proto
@@ -46,7 +46,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const contract::peer::ConnectionInfoType type,
-        const identifier::Server& serverID);
+        const identifier::Notary& serverID);
     Connection(
         const api::Session& api,
         const Nym_p& nym,

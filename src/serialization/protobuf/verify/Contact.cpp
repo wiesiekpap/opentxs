@@ -3,64 +3,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/Contact.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/Contact.hpp"  // IWYU pragma: associated
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Crypto.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/crypto/HashType.hpp"
-
-namespace std
-{
-auto hash<opentxs::proto::ContactSectionVersion>::operator()(
-    const opentxs::proto::ContactSectionVersion& sectionversion) const noexcept
-    -> std::size_t
-{
-    const auto key = std::array<char, 16>{};
-    auto out = std::size_t{};
-    auto bytes = opentxs::space(
-        sizeof(sectionversion.first) + sizeof(sectionversion.second));
-    auto i = bytes.data();
-    std::memcpy(i, &sectionversion.first, sizeof(sectionversion.first));
-    std::advance(i, sizeof(sectionversion.first));
-    std::memcpy(i, &sectionversion.second, sizeof(sectionversion.second));
-    std::advance(i, sizeof(sectionversion.second));
-
-    opentxs::Context().Crypto().Hash().HMAC(
-        opentxs::crypto::HashType::SipHash24,
-        {key.data(), key.size()},
-        opentxs::reader(bytes),
-        opentxs::preallocated(sizeof(out), &out));
-
-    return out;
-}
-
-auto hash<opentxs::proto::EnumLang>::operator()(
-    const opentxs::proto::EnumLang& enumlang) const noexcept -> std::size_t
-{
-    const auto key = std::array<char, 16>{};
-    auto out = std::size_t{};
-    auto bytes = opentxs::space(sizeof(enumlang.first) + 2 * sizeof(char));
-    auto i = bytes.data();
-    std::memcpy(i, &enumlang.first, sizeof(enumlang.first));
-    std::advance(i, sizeof(enumlang.first));
-    if (1 < enumlang.second.size()) {
-        std::memcpy(i, &enumlang.second[0], sizeof(char));
-        std::advance(i, sizeof(char));
-        std::memcpy(i, &enumlang.second[1], sizeof(char));
-        std::advance(i, sizeof(char));
-    }
-
-    opentxs::Context().Crypto().Hash().HMAC(
-        opentxs::crypto::HashType::SipHash24,
-        {key.data(), key.size()},
-        opentxs::reader(bytes),
-        opentxs::preallocated(sizeof(out), &out));
-
-    return out;
-}
-}  // namespace std
 
 namespace opentxs::proto
 {

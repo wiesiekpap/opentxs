@@ -11,7 +11,7 @@
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Token.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Token.hpp"
@@ -27,7 +27,7 @@ class Session;
 
 namespace identifier
 {
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -64,7 +64,7 @@ public:
     auto ID(const PasswordPrompt&) const -> std::string override { return {}; }
     auto IsSpent(const PasswordPrompt&) const -> bool override { return {}; }
     virtual auto IsValid() const noexcept -> bool { return false; }
-    auto Notary() const -> const identifier::Server& override;
+    auto Notary() const -> const identifier::Notary& override;
     auto Owner() const noexcept -> internal::Purse& override;
     auto Series() const -> MintSeries override { return {}; }
     auto State() const -> blind::TokenState override { return {}; }

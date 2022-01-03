@@ -12,7 +12,7 @@ namespace opentxs
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -33,9 +33,9 @@ auto IdentifierNym() noexcept -> std::unique_ptr<opentxs::identifier::Nym>;
 auto IdentifierNym(const proto::Identifier& in) noexcept
     -> std::unique_ptr<opentxs::identifier::Nym>;
 auto IdentifierNotary() noexcept
-    -> std::unique_ptr<opentxs::identifier::Server>;
+    -> std::unique_ptr<opentxs::identifier::Notary>;
 auto IdentifierNotary(const proto::Identifier& in) noexcept
-    -> std::unique_ptr<opentxs::identifier::Server>;
+    -> std::unique_ptr<opentxs::identifier::Notary>;
 auto IdentifierUnit() noexcept
     -> std::unique_ptr<opentxs::identifier::UnitDefinition>;
 auto IdentifierUnit(const proto::Identifier& in) noexcept

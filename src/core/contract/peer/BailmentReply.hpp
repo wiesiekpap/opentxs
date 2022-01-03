@@ -21,8 +21,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 class Factory;
@@ -45,7 +45,7 @@ public:
         const Nym_p& nym,
         const identifier::Nym& initiator,
         const Identifier& request,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const std::string& terms);
 
     ~Bailment() final = default;

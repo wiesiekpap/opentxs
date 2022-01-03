@@ -10,8 +10,8 @@
 #include <string>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/Account.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/String.hpp"
 
 namespace opentxs

@@ -25,7 +25,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
-#include "opentxs/contact/Contact.hpp"
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
@@ -302,8 +302,8 @@ auto Wallet::update_contact(
     return output;
 }
 
-auto Wallet::UpdateContact(const opentxs::contact::Contact& contact)
-    const noexcept -> std::vector<pTxid>
+auto Wallet::UpdateContact(const opentxs::Contact& contact) const noexcept
+    -> std::vector<pTxid>
 {
     auto incoming = std::set<OTData>{};
 
@@ -325,8 +325,8 @@ auto Wallet::UpdateContact(const opentxs::contact::Contact& contact)
 }
 
 auto Wallet::UpdateMergedContact(
-    const opentxs::contact::Contact& parent,
-    const opentxs::contact::Contact& child) const noexcept -> std::vector<pTxid>
+    const opentxs::Contact& parent,
+    const opentxs::Contact& child) const noexcept -> std::vector<pTxid>
 {
     auto deleted = std::set<OTData>{};
     auto incoming = std::set<OTData>{};

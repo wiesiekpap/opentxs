@@ -16,7 +16,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -86,7 +86,7 @@ public:
     virtual auto IsUnlocked() const -> bool { return {}; }
     virtual auto IsValid() const noexcept -> bool { return false; }
     virtual auto LatestValidFrom() const -> Time { return {}; }
-    auto Notary() const -> const identifier::Server& override;
+    auto Notary() const -> const identifier::Notary& override;
     auto Process(const identity::Nym&, const Mint&, const PasswordPrompt&)
         -> bool override
     {

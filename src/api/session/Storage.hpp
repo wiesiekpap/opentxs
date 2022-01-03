@@ -22,20 +22,20 @@
 
 #include "Proto.hpp"
 #include "internal/api/session/Storage.hpp"
+#include "internal/util/Editor.hpp"
+#include "internal/util/Flag.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/otx/client/Types.hpp"
@@ -43,7 +43,7 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
-#include "storage/Config.hpp"
+#include "util/storage/Config.hpp"
 
 namespace opentxs
 {
@@ -67,8 +67,8 @@ class Symmetric;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -141,7 +141,7 @@ public:
     auto AccountContract(const Identifier& accountID) const -> OTUnitID final;
     auto AccountIssuer(const Identifier& accountID) const -> OTNymID final;
     auto AccountOwner(const Identifier& accountID) const -> OTNymID final;
-    auto AccountServer(const Identifier& accountID) const -> OTServerID final;
+    auto AccountServer(const Identifier& accountID) const -> OTNotaryID final;
     auto AccountSigner(const Identifier& accountID) const -> OTNymID final;
     auto AccountUnit(const Identifier& accountID) const -> core::UnitType final;
     auto AccountsByContract(const identifier::UnitDefinition& contract) const
@@ -150,7 +150,7 @@ public:
         -> std::set<OTIdentifier> final;
     auto AccountsByOwner(const identifier::Nym& ownerNym) const
         -> std::set<OTIdentifier> final;
-    auto AccountsByServer(const identifier::Server& server) const
+    auto AccountsByServer(const identifier::Notary& server) const
         -> std::set<OTIdentifier> final;
     auto AccountsByUnit(const core::UnitType unit) const
         -> std::set<OTIdentifier> final;
@@ -170,7 +170,7 @@ public:
     auto BlockchainTransactionList(const identifier::Nym& nym) const noexcept
         -> std::vector<OTData> final;
     auto CheckTokenSpent(
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,
         const std::uint64_t series,
         const std::string& key) const -> bool final;
@@ -270,7 +270,7 @@ public:
         const bool checking = false) const -> bool final;
     auto Load(
         const identifier::Nym& nym,
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,
         proto::Purse& output,
         const bool checking) const -> bool final;
@@ -284,11 +284,11 @@ public:
         std::string& alias,
         const bool checking = false) const -> bool final;
     auto Load(
-        const identifier::Server& id,
+        const identifier::Notary& id,
         proto::ServerContract& contract,
         const bool checking = false) const -> bool final;
     auto Load(
-        const identifier::Server& id,
+        const identifier::Notary& id,
         proto::ServerContract& contract,
         std::string& alias,
         const bool checking = false) const -> bool final;
@@ -312,7 +312,7 @@ public:
     void MapServers(ServerLambda& lambda) const final;
     void MapUnitDefinitions(UnitLambda& lambda) const final;
     auto MarkTokenSpent(
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,
         const std::uint64_t series,
         const std::string& key) const -> bool final;
@@ -389,7 +389,7 @@ public:
         const bool unread) const -> bool final;
     auto SetSeedAlias(const std::string& id, const std::string& alias) const
         -> bool final;
-    auto SetServerAlias(const identifier::Server& id, const std::string& alias)
+    auto SetServerAlias(const identifier::Notary& id, const std::string& alias)
         const -> bool final;
     auto SetThreadAlias(
         const std::string& nymId,
@@ -405,12 +405,12 @@ public:
         const identifier::Nym& ownerNym,
         const identifier::Nym& signerNym,
         const identifier::Nym& issuerNym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const identifier::UnitDefinition& contract,
         const core::UnitType unit) const -> bool final;
     auto Store(
         const std::string& nymID,
-        const contact::ClaimType type,
+        const identity::wot::claim::ClaimType type,
         const proto::HDAccount& data) const -> bool final;
     auto Store(
         const identifier::Nym& nymID,

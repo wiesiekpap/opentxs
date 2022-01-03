@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <limits>
 
-#include "opentxs/contact/Types.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 
 namespace opentxs
 {

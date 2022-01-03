@@ -18,7 +18,7 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/ServerContract.pb.h"
@@ -78,7 +78,7 @@ public:
         const std::string& name,
         std::list<contract::Server::Endpoint>&& endpoints,
         OTData&& key,
-        OTServerID&& id,
+        OTNotaryID&& id,
         Signatures&& signatures = {});
     Server(
         const api::Session& api,

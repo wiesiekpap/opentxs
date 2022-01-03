@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/VerifyContacts.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/VerifyContacts.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
 #include <iterator>
@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include "internal/protobuf/verify/VerifyCredentials.hpp"
+#include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
 
 namespace opentxs
 {

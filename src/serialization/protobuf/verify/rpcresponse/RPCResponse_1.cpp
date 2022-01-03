@@ -3,21 +3,21 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/RPCResponse.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/RPCResponse.hpp"  // IWYU pragma: associated
 
-#include "internal/protobuf/Basic.hpp"
-#include "internal/protobuf/verify/AccountData.hpp"      // IWYU pragma: keep
-#include "internal/protobuf/verify/AccountEvent.hpp"     // IWYU pragma: keep
-#include "internal/protobuf/verify/Contact.hpp"          // IWYU pragma: keep
-#include "internal/protobuf/verify/ContactEvent.hpp"     // IWYU pragma: keep
-#include "internal/protobuf/verify/HDSeed.hpp"           // IWYU pragma: keep
-#include "internal/protobuf/verify/Nym.hpp"              // IWYU pragma: keep
-#include "internal/protobuf/verify/PaymentWorkflow.hpp"  // IWYU pragma: keep
-#include "internal/protobuf/verify/RPCStatus.hpp"        // IWYU pragma: keep
-#include "internal/protobuf/verify/RPCTask.hpp"          // IWYU pragma: keep
-#include "internal/protobuf/verify/ServerContract.hpp"   // IWYU pragma: keep
-#include "internal/protobuf/verify/SessionData.hpp"      // IWYU pragma: keep
-#include "internal/protobuf/verify/VerifyRPC.hpp"
+#include "internal/serialization/protobuf/Basic.hpp"
+#include "internal/serialization/protobuf/verify/AccountData.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/AccountEvent.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/Contact.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/ContactEvent.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/HDSeed.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/Nym.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/PaymentWorkflow.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/RPCStatus.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/RPCTask.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/ServerContract.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/SessionData.hpp"  // IWYU pragma: keep
+#include "internal/serialization/protobuf/verify/VerifyRPC.hpp"
 #include "serialization/protobuf/RPCEnums.pb.h"
 #include "serialization/protobuf/RPCResponse.pb.h"
 #include "serialization/protobuf/RPCStatus.pb.h"

@@ -13,10 +13,10 @@
 #include <utility>
 
 #include "internal/otx/AccountList.hpp"
+#include "internal/otx/common/Account.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Notary.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"

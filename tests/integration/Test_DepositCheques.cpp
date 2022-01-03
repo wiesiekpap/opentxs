@@ -12,6 +12,8 @@
 #include "internal/api/session/Client.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Message.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -24,11 +26,8 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/Contact.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Message.hpp"
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
@@ -36,12 +35,13 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/NymEditor.hpp"
@@ -199,16 +199,16 @@ TEST_F(Test_DepositCheques, payment_codes)
     auto bob = bob_client_.Wallet().mutable_Nym(bob_nym_id_, reasonB);
     auto issuer = issuer_client_.Wallet().mutable_Nym(issuer_nym_id_, reasonI);
 
-    EXPECT_EQ(ot::contact::ClaimType::Individual, alice.Type());
-    EXPECT_EQ(ot::contact::ClaimType::Individual, bob.Type());
-    EXPECT_EQ(ot::contact::ClaimType::Individual, issuer.Type());
+    EXPECT_EQ(ot::identity::wot::claim::ClaimType::Individual, alice.Type());
+    EXPECT_EQ(ot::identity::wot::claim::ClaimType::Individual, bob.Type());
+    EXPECT_EQ(ot::identity::wot::claim::ClaimType::Individual, issuer.Type());
 
-    auto aliceScopeSet =
-        alice.SetScope(ot::contact::ClaimType::Individual, ALEX, true, reasonA);
-    auto bobScopeSet =
-        bob.SetScope(contact::ClaimType::Individual, BOB, true, reasonB);
-    auto issuerScopeSet =
-        issuer.SetScope(contact::ClaimType::Individual, ISSUER, true, reasonI);
+    auto aliceScopeSet = alice.SetScope(
+        ot::identity::wot::claim::ClaimType::Individual, ALEX, true, reasonA);
+    auto bobScopeSet = bob.SetScope(
+        identity::wot::claim::ClaimType::Individual, BOB, true, reasonB);
+    auto issuerScopeSet = issuer.SetScope(
+        identity::wot::claim::ClaimType::Individual, ISSUER, true, reasonI);
 
     EXPECT_TRUE(aliceScopeSet);
     EXPECT_TRUE(bobScopeSet);

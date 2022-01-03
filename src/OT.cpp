@@ -13,8 +13,8 @@
 
 #include "internal/api/Context.hpp"
 #include "internal/api/Factory.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -53,14 +53,14 @@ auto InitContext(const Options& args) -> const api::Context&
     return InitContext(args, nullptr);
 }
 
-auto InitContext(OTCaller* cb) -> const api::Context&
+auto InitContext(PasswordCaller* cb) -> const api::Context&
 {
     static const auto empty = Options{};
 
     return InitContext(empty, cb);
 }
 
-auto InitContext(const Options& args, OTCaller* externalPasswordCallback)
+auto InitContext(const Options& args, PasswordCaller* externalPasswordCallback)
     -> const api::Context&
 {
     if (nullptr != instance_pointer_) {

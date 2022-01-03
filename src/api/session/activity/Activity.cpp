@@ -19,10 +19,12 @@
 
 #include "Proto.hpp"
 #include "internal/api/session/Factory.hpp"
+#include "internal/otx/common/Cheque.hpp"  // IWYU pragma: keep
+#include "internal/otx/common/Item.hpp"    // IWYU pragma: keep
+#include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Network.hpp"
-#include "opentxs/api/session/Activity.hpp"
 #include "opentxs/api/session/Contacts.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -32,12 +34,8 @@
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
-#include "opentxs/contact/Contact.hpp"
-#include "opentxs/core/Cheque.hpp"  // IWYU pragma: keep
+#include "opentxs/core/Contact.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Item.hpp"  // IWYU pragma: keep
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
@@ -50,6 +48,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
@@ -528,7 +527,7 @@ auto Activity::MarkUnread(
 }
 
 auto Activity::nym_to_contact(const std::string& id) const noexcept
-    -> std::shared_ptr<const contact::Contact>
+    -> std::shared_ptr<const Contact>
 {
     const auto nymID = identifier::Nym::Factory(id);
     const auto contactID = contact_.NymToContact(nymID);

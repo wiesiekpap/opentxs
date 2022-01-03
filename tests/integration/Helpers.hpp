@@ -24,18 +24,18 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 
 namespace opentxs
 {
@@ -91,7 +91,7 @@ using StateMap =
 struct Server {
     const ot::api::session::Notary* api_{nullptr};
     bool init_{false};
-    const ot::OTServerID id_{ot::identifier::Server::Factory()};
+    const ot::OTNotaryID id_{ot::identifier::Notary::Factory()};
     const std::string password_;
 
     auto Contract() const noexcept -> ot::OTServerContract;
@@ -130,14 +130,16 @@ struct User {
 
     auto init(
         const ot::api::session::Client& api,
-        const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
+        const ot::identity::wot::claim::ClaimType type =
+            ot::identity::wot::claim::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> bool;
     auto init(
         const ot::api::session::Client& api,
         const Server& server,
-        const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
+        const ot::identity::wot::claim::ClaimType type =
+            ot::identity::wot::claim::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> bool;
@@ -145,14 +147,16 @@ struct User {
         const ot::api::session::Client& api,
         const Server& server,
         const std::function<void(User&)> custom,
-        const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
+        const ot::identity::wot::claim::ClaimType type =
+            ot::identity::wot::claim::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> void;
     auto init_custom(
         const ot::api::session::Client& api,
         const std::function<void(User&)> custom,
-        const ot::contact::ClaimType type = ot::contact::ClaimType::Individual,
+        const ot::identity::wot::claim::ClaimType type =
+            ot::identity::wot::claim::ClaimType::Individual,
         const std::uint32_t index = 0,
         const ot::crypto::SeedStyle seed =
             ot::crypto::SeedStyle::BIP39) noexcept -> void;
@@ -169,7 +173,7 @@ private:
 
     auto init_basic(
         const ot::api::session::Client& api,
-        const ot::contact::ClaimType type,
+        const ot::identity::wot::claim::ClaimType type,
         const std::uint32_t index,
         const ot::crypto::SeedStyle seed) noexcept -> bool;
 

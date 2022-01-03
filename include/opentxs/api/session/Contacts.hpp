@@ -14,7 +14,6 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/Types.hpp"
 
 namespace opentxs
@@ -30,16 +29,12 @@ class Contacts;
 }  // namespace session
 }  // namespace api
 
-namespace contact
-{
-class Contact;
-}  // namespace contact
-
 namespace identity
 {
 class Nym;
 }  // namespace identity
 
+class Contact;
 class Identifier;
 class PaymentCode;
 }  // namespace opentxs
@@ -50,7 +45,7 @@ class OPENTXS_EXPORT Contacts
 {
 public:
     virtual auto Contact(const Identifier& id) const
-        -> std::shared_ptr<const contact::Contact> = 0;
+        -> std::shared_ptr<const opentxs::Contact> = 0;
     /** Returns the contact ID for a nym, if it exists */
     virtual auto ContactID(const identifier::Nym& nymID) const
         -> OTIdentifier = 0;
@@ -63,21 +58,19 @@ public:
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Contacts& = 0;
     virtual auto Merge(const Identifier& parent, const Identifier& child) const
-        -> std::shared_ptr<const contact::Contact> = 0;
-    virtual auto mutable_Contact(const Identifier& id) const
-        -> std::unique_ptr<Editor<contact::Contact>> = 0;
+        -> std::shared_ptr<const opentxs::Contact> = 0;
     virtual auto NewContact(const std::string& label) const
-        -> std::shared_ptr<const contact::Contact> = 0;
+        -> std::shared_ptr<const opentxs::Contact> = 0;
     virtual auto NewContact(
         const std::string& label,
         const identifier::Nym& nymID,
         const PaymentCode& paymentCode) const
-        -> std::shared_ptr<const contact::Contact> = 0;
+        -> std::shared_ptr<const opentxs::Contact> = 0;
     virtual auto NewContactFromAddress(
         const std::string& address,
         const std::string& label,
         const opentxs::blockchain::Type currency) const
-        -> std::shared_ptr<const contact::Contact> = 0;
+        -> std::shared_ptr<const opentxs::Contact> = 0;
     /** Returns an existing contact ID if it exists, or creates a new one */
     virtual auto NymToContact(const identifier::Nym& nymID) const
         -> OTIdentifier = 0;
@@ -89,7 +82,7 @@ public:
         const std::string& code,
         const opentxs::blockchain::Type currency) const -> OTIdentifier = 0;
     virtual auto Update(const identity::Nym& nym) const
-        -> std::shared_ptr<const contact::Contact> = 0;
+        -> std::shared_ptr<const opentxs::Contact> = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Contacts& = 0;

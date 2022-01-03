@@ -65,11 +65,6 @@ class Header;
 class GCS;
 }  // namespace blockchain
 
-namespace contact
-{
-class Contact;
-}  // namespace contact
-
 namespace network
 {
 namespace p2p
@@ -79,6 +74,7 @@ class Data;
 }  // namespace p2p
 }  // namespace network
 
+class Contact;
 class Data;
 class Options;
 }  // namespace opentxs
@@ -180,11 +176,10 @@ public:
     auto StoreTransaction(const block::bitcoin::Transaction& tx) const noexcept
         -> bool;
     auto SyncTip(const Chain chain) const noexcept -> Height;
-    auto UpdateContact(const contact::Contact& contact) const noexcept
+    auto UpdateContact(const Contact& contact) const noexcept
         -> std::vector<pTxid>;
-    auto UpdateMergedContact(
-        const contact::Contact& parent,
-        const contact::Contact& child) const noexcept -> std::vector<pTxid>;
+    auto UpdateMergedContact(const Contact& parent, const Contact& child)
+        const noexcept -> std::vector<pTxid>;
 
     Database(
         const api::Session& api,

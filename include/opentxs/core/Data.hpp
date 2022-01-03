@@ -8,6 +8,7 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,20 @@ class Data;
 
 using OTData = Pimpl<Data>;
 }  // namespace opentxs
+
+namespace std
+{
+template <>
+struct OPENTXS_EXPORT hash<opentxs::OTData> {
+    auto operator()(const opentxs::Data& data) const noexcept -> std::size_t;
+};
+
+template <>
+struct OPENTXS_EXPORT less<opentxs::OTData> {
+    auto operator()(const opentxs::OTData& lhs, const opentxs::OTData& rhs)
+        const -> bool;
+};
+}  // namespace std
 
 namespace opentxs
 {
@@ -164,12 +179,3 @@ private:
     auto operator=(Data&& rhs) -> Data& = delete;
 };
 }  // namespace opentxs
-
-namespace std
-{
-template <>
-struct OPENTXS_EXPORT less<opentxs::OTData> {
-    auto operator()(const opentxs::OTData& lhs, const opentxs::OTData& rhs)
-        const -> bool;
-};
-}  // namespace std

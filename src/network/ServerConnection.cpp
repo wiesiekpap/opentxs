@@ -20,9 +20,12 @@
 
 #include "Proto.tpp"
 #include "internal/api/session/Endpoints.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/ServerReply.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/ServerReply.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/ZMQ.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
@@ -30,8 +33,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/Flag.hpp"
-#include "opentxs/core/Message.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -429,7 +430,7 @@ auto ServerConnection::Send(
     NetworkReplyMessage output{SendResult::Error, nullptr};
     auto& status = output.first;
     auto& reply = output.second;
-    reply.reset(api_.Factory().Message().release());
+    reply.reset(api_.Factory().InternalSession().Message().release());
 
     OT_ASSERT(false != bool(reply));
 
@@ -456,7 +457,7 @@ auto ServerConnection::Send(
 
     status = sendresult.first;
     auto in = sendresult.second;
-    auto replymessage{api_.Factory().Message()};
+    auto replymessage{api_.Factory().InternalSession().Message()};
 
     OT_ASSERT(false != bool(replymessage));
 

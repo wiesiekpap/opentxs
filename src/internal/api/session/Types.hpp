@@ -5,7 +5,7 @@
 
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/SubaccountType.hpp"
-// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/otx/client/PaymentWorkflowState.hpp"
 // IWYU pragma: no_include "opentxs/otx/client/PaymentWorkflowType.hpp"
 

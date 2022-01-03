@@ -8,12 +8,12 @@
 #include <memory>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Item.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 
 namespace opentxs
@@ -28,8 +28,8 @@ class Notary;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -120,7 +120,7 @@ private:
         const Ledger& outbox,
         const Identifier& accounthash) const;
     auto extract_cheque(
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& unitID,
         const Item& item) const -> std::unique_ptr<Cheque>;
     void send_push_notification(

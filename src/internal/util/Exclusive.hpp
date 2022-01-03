@@ -14,8 +14,8 @@
 #include <tuple>
 #include <utility>
 
+#include "internal/otx/common/Account.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Account.hpp"
 
 namespace opentxs
 {

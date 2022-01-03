@@ -21,12 +21,12 @@ extern "C" {
 #include <string>
 #include <utility>
 
+#include "internal/otx/common/Contract.hpp"
+#include "internal/otx/common/NymFile.hpp"
+#include "internal/otx/common/crypto/Signature.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/String.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Contract.hpp"
-#include "opentxs/core/NymFile.hpp"
-#include "opentxs/core/crypto/Signature.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"

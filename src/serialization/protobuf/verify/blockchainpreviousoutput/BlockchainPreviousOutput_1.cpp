@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/BlockchainPreviousOutput.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/BlockchainPreviousOutput.hpp"  // IWYU pragma: associated
 
 #include "serialization/protobuf/BlockchainPreviousOutput.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

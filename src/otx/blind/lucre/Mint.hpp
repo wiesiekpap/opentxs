@@ -21,8 +21,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -67,11 +67,11 @@ public:
     Lucre(const api::Session& api);
     Lucre(
         const api::Session& api,
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit);
     Lucre(
         const api::Session& api,
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::Nym& serverNym,
         const identifier::UnitDefinition& unit);
 

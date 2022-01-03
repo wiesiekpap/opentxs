@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/EquityParams.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/EquityParams.hpp"  // IWYU pragma: associated
 
 #include "serialization/protobuf/ContractEnums.pb.h"
 #include "serialization/protobuf/EquityParams.pb.h"

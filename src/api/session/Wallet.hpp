@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 
 #pragma once
@@ -27,21 +27,21 @@
 #include "Proto.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/identity/Identity.hpp"
+#include "internal/otx/common/Account.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
+#include "internal/util/Editor.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Types.hpp"
+#include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/contract/basket/BasketContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -97,7 +97,7 @@ namespace context
 {
 namespace internal
 {
-struct Base;
+class Base;
 }  // namespace internal
 
 class Base;
@@ -135,7 +135,7 @@ public:
         -> OTIdentifier final;
     auto CreateAccount(
         const identifier::Nym& ownerNymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const identity::Nym& signer,
         Account::AccountType type,
@@ -194,7 +194,7 @@ public:
     auto Nym(const proto::Nym& nym) const -> Nym_p final;
     auto Nym(const ReadView& bytes) const -> Nym_p final;
     auto Nym(
-        const contact::ClaimType type,
+        const identity::wot::claim::ClaimType type,
         const PasswordPrompt& reason,
         const std::string& name) const -> Nym_p final;
     auto Nym(
@@ -205,7 +205,7 @@ public:
         -> Nym_p final;
     auto Nym(
         const opentxs::crypto::Parameters& parameters,
-        const contact::ClaimType type,
+        const identity::wot::claim::ClaimType type,
         const PasswordPrompt& reason,
         const std::string& name) const -> Nym_p final;
     auto mutable_Nym(const identifier::Nym& id, const PasswordPrompt& reason)
@@ -290,21 +290,21 @@ public:
         const StorageBox& box) const -> bool final;
     auto Purse(
         const identifier::Nym& nym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const identifier::UnitDefinition& unit,
         const bool checking) const -> const otx::blind::Purse& final;
     auto mutable_Purse(
         const identifier::Nym& nym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const identifier::UnitDefinition& unit,
         const PasswordPrompt& reason,
         const otx::blind::CashType type) const
         -> Editor<otx::blind::Purse, std::shared_mutex> final;
-    auto RemoveServer(const identifier::Server& id) const -> bool final;
+    auto RemoveServer(const identifier::Notary& id) const -> bool final;
     auto RemoveUnitDefinition(const identifier::UnitDefinition& id) const
         -> bool final;
     auto Server(
-        const identifier::Server& id,
+        const identifier::Notary& id,
         const std::chrono::milliseconds& timeout =
             std::chrono::milliseconds(0)) const -> OTServerContract final;
     auto Server(const proto::ServerContract& contract) const
@@ -320,7 +320,7 @@ public:
     auto ServerList() const -> ObjectList final;
     auto SetNymAlias(const identifier::Nym& id, const std::string& alias) const
         -> bool final;
-    auto SetServerAlias(const identifier::Server& id, const std::string& alias)
+    auto SetServerAlias(const identifier::Notary& id, const std::string& alias)
         const -> bool final;
     auto SetUnitDefinitionAlias(
         const identifier::UnitDefinition& id,
@@ -422,13 +422,13 @@ private:
     using NymLock =
         std::pair<std::mutex, std::shared_ptr<identity::internal::Nym>>;
     using NymMap = std::map<OTNymID, NymLock>;
-    using ServerMap = std::map<OTServerID, std::shared_ptr<contract::Server>>;
+    using ServerMap = std::map<OTNotaryID, std::shared_ptr<contract::Server>>;
     using UnitMap = std::map<OTUnitID, std::shared_ptr<contract::Unit>>;
     using IssuerID = std::pair<OTIdentifier, OTIdentifier>;
     using IssuerLock =
         std::pair<std::mutex, std::shared_ptr<otx::client::Issuer>>;
     using IssuerMap = std::map<IssuerID, IssuerLock>;
-    using PurseID = std::tuple<OTNymID, OTServerID, OTUnitID>;
+    using PurseID = std::tuple<OTNymID, OTNotaryID, OTUnitID>;
     using PurseMap =
         std::map<PurseID, std::pair<std::shared_mutex, otx::blind::Purse>>;
     using UnitNameMap = std::map<std::string, proto::ContactItemType>;
@@ -505,12 +505,12 @@ private:
     }
     auto nymfile_lock(const identifier::Nym& nymID) const -> std::mutex&;
     auto peer_lock(const std::string& nymID) const -> std::mutex&;
-    auto publish_server(const identifier::Server& id) const noexcept -> void;
+    auto publish_server(const identifier::Notary& id) const noexcept -> void;
     auto publish_unit(const identifier::UnitDefinition& id) const noexcept
         -> void;
     auto purse(
         const identifier::Nym& nym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const identifier::UnitDefinition& unit,
         const bool checking) const -> PurseMap::mapped_type&;
     void save(

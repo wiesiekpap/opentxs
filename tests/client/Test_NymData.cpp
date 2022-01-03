@@ -13,27 +13,28 @@
 #include <tuple>
 
 #include "1_Internal.hpp"
-#include "internal/contact/Contact.hpp"
-#include "internal/protobuf/Contact.hpp"
+#include "internal/identity/wot/claim/Types.hpp"
+#include "internal/serialization/protobuf/Contact.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/Attribute.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/UnitType.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
+#include "opentxs/identity/wot/claim/Attribute.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -78,13 +79,13 @@ TEST_F(Test_NymData, AddClaim)
 {
     ot::Claim claim = std::make_tuple(
         std::string(""),
-        ot::translate(ot::contact::SectionType::Contract),
-        ot::translate(ot::contact::ClaimType::USD),
+        ot::translate(ot::identity::wot::claim::SectionType::Contract),
+        ot::translate(ot::identity::wot::claim::ClaimType::USD),
         std::string("claimValue"),
         NULL_START,
         NULL_END,
-        std::set<std::uint32_t>{
-            static_cast<uint32_t>(ot::contact::Attribute::Active)});
+        std::set<std::uint32_t>{static_cast<uint32_t>(
+            ot::identity::wot::claim::Attribute::Active)});
 
     auto added = nymData_.AddClaim(claim, reason_);
     EXPECT_TRUE(added);
@@ -100,8 +101,8 @@ TEST_F(Test_NymData, AddContract)
         ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
-            ot::contact::SectionType::Contract,
-            ot::contact::ClaimType::USD,
+            ot::identity::wot::claim::SectionType::Contract,
+            ot::identity::wot::claim::ClaimType::USD,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID1",
@@ -143,12 +144,12 @@ TEST_F(Test_NymData, AddPhoneNumber)
 
 TEST_F(Test_NymData, AddPreferredOTServer)
 {
-    const auto identifier(ot::identifier::Server::Factory(
+    const auto identifier(ot::identifier::Notary::Factory(
         ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
-            ot::contact::SectionType::Communication,
-            ot::contact::ClaimType::Opentxs,
+            ot::identity::wot::claim::SectionType::Communication,
+            ot::identity::wot::claim::ClaimType::Opentxs,
             NULL_START,
             NULL_END,
             "localhost",
@@ -165,11 +166,19 @@ TEST_F(Test_NymData, AddPreferredOTServer)
 TEST_F(Test_NymData, AddSocialMediaProfile)
 {
     auto added = nymData_.AddSocialMediaProfile(
-        "profile1", ot::contact::ClaimType::Twitter, false, false, reason_);
+        "profile1",
+        ot::identity::wot::claim::ClaimType::Twitter,
+        false,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 
     added = nymData_.AddSocialMediaProfile(
-        "", ot::contact::ClaimType::Twitter, false, false, reason_);
+        "",
+        ot::identity::wot::claim::ClaimType::Twitter,
+        false,
+        false,
+        reason_);
     EXPECT_FALSE(added);
 }
 
@@ -202,15 +211,23 @@ TEST_F(Test_NymData, BestPhoneNumber)
 TEST_F(Test_NymData, BestSocialMediaProfile)
 {
     auto added = nymData_.AddSocialMediaProfile(
-        "profile1", ot::contact::ClaimType::Yahoo, false, false, reason_);
+        "profile1",
+        ot::identity::wot::claim::ClaimType::Yahoo,
+        false,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 
     added = nymData_.AddSocialMediaProfile(
-        "profile2", ot::contact::ClaimType::Yahoo, false, true, reason_);
+        "profile2",
+        ot::identity::wot::claim::ClaimType::Yahoo,
+        false,
+        true,
+        reason_);
     EXPECT_TRUE(added);
 
-    std::string profile =
-        nymData_.BestSocialMediaProfile(ot::contact::ClaimType::Yahoo);
+    std::string profile = nymData_.BestSocialMediaProfile(
+        ot::identity::wot::claim::ClaimType::Yahoo);
     // First profile added is made primary.
     EXPECT_STREQ("profile1", profile.c_str());
 }
@@ -230,13 +247,13 @@ TEST_F(Test_NymData, DeleteClaim)
 {
     ot::Claim claim = std::make_tuple(
         std::string(""),
-        ot::translate(ot::contact::SectionType::Contract),
-        ot::translate(ot::contact::ClaimType::USD),
+        ot::translate(ot::identity::wot::claim::SectionType::Contract),
+        ot::translate(ot::identity::wot::claim::ClaimType::USD),
         std::string("claimValue"),
         NULL_START,
         NULL_END,
-        std::set<std::uint32_t>{
-            static_cast<uint32_t>(ot::contact::Attribute::Active)});
+        std::set<std::uint32_t>{static_cast<uint32_t>(
+            ot::identity::wot::claim::Attribute::Active)});
 
     auto added = nymData_.AddClaim(claim, reason_);
     ASSERT_TRUE(added);
@@ -245,8 +262,8 @@ TEST_F(Test_NymData, DeleteClaim)
         ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
-            ot::contact::SectionType::Contract,
-            ot::contact::ClaimType::USD,
+            ot::identity::wot::claim::SectionType::Contract,
+            ot::identity::wot::claim::ClaimType::USD,
             NULL_START,
             NULL_END,
             "claimValue",
@@ -286,8 +303,8 @@ TEST_F(Test_NymData, HaveContract)
         ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
-            ot::contact::SectionType::Contract,
-            ot::contact::ClaimType::USD,
+            ot::identity::wot::claim::SectionType::Contract,
+            ot::identity::wot::claim::ClaimType::USD,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID1",
@@ -317,8 +334,8 @@ TEST_F(Test_NymData, HaveContract)
         ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
-            ot::contact::SectionType::Contract,
-            ot::contact::ClaimType::USD,
+            ot::identity::wot::claim::SectionType::Contract,
+            ot::identity::wot::claim::ClaimType::USD,
             NULL_START,
             NULL_END,
             "instrumentDefinitionID2",
@@ -396,12 +413,12 @@ TEST_F(Test_NymData, PreferredOTServer)
     auto preferred = nymData_.PreferredOTServer();
     EXPECT_TRUE(preferred.empty());
 
-    const auto identifier(ot::identifier::Server::Factory(
+    const auto identifier(ot::identifier::Notary::Factory(
         ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(client_),
             "testNym",
-            ot::contact::SectionType::Communication,
-            ot::contact::ClaimType::Opentxs,
+            ot::identity::wot::claim::SectionType::Communication,
+            ot::identity::wot::claim::ClaimType::Opentxs,
             NULL_START,
             NULL_END,
             "localhost",
@@ -426,7 +443,7 @@ TEST_F(Test_NymData, PrintContactData)
 
 TEST_F(Test_NymData, SetContactData)
 {
-    const ot::contact::ContactData contactData(
+    const ot::identity::wot::claim::Data contactData(
         dynamic_cast<const ot::api::session::Client&>(client_),
         std::string("contactData"),
         nymData_.Nym().ContactDataVersion(),
@@ -442,39 +459,55 @@ TEST_F(Test_NymData, SetContactData)
 TEST_F(Test_NymData, SetScope)
 {
     auto set = nymData_.SetScope(
-        ot::contact::ClaimType::Organization,
+        ot::identity::wot::claim::ClaimType::Organization,
         "organizationScope",
         true,
         reason_);
     EXPECT_TRUE(set);
 
     set = nymData_.SetScope(
-        ot::contact::ClaimType::Business, "businessScope", false, reason_);
+        ot::identity::wot::claim::ClaimType::Business,
+        "businessScope",
+        false,
+        reason_);
     EXPECT_TRUE(set);
 }
 
 TEST_F(Test_NymData, SocialMediaProfiles)
 {
     auto added = nymData_.AddSocialMediaProfile(
-        "profile1", ot::contact::ClaimType::Facebook, false, false, reason_);
+        "profile1",
+        ot::identity::wot::claim::ClaimType::Facebook,
+        false,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 
     added = nymData_.AddSocialMediaProfile(
-        "profile2", ot::contact::ClaimType::Facebook, false, false, reason_);
+        "profile2",
+        ot::identity::wot::claim::ClaimType::Facebook,
+        false,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 
     added = nymData_.AddSocialMediaProfile(
-        "profile3", ot::contact::ClaimType::Facebook, true, false, reason_);
+        "profile3",
+        ot::identity::wot::claim::ClaimType::Facebook,
+        true,
+        false,
+        reason_);
     EXPECT_TRUE(added);
 
-    auto profiles =
-        nymData_.SocialMediaProfiles(ot::contact::ClaimType::Facebook, false);
+    auto profiles = nymData_.SocialMediaProfiles(
+        ot::identity::wot::claim::ClaimType::Facebook, false);
     EXPECT_TRUE(
         profiles.find("profile1") != std::string::npos &&
         profiles.find("profile2") != std::string::npos &&
         profiles.find("profile3") != std::string::npos);
 
-    profiles = nymData_.SocialMediaProfiles(ot::contact::ClaimType::Facebook);
+    profiles = nymData_.SocialMediaProfiles(
+        ot::identity::wot::claim::ClaimType::Facebook);
     // First profile added is made primary and active.
     EXPECT_TRUE(
         profiles.find("profile1") != std::string::npos &&
@@ -487,14 +520,15 @@ TEST_F(Test_NymData, SocialMediaProfileTypes)
     std::set<ot::proto::ContactItemType> profileTypes =
         ot::proto::AllowedItemTypes().at(ot::proto::ContactSectionVersion(
             CONTACT_CONTACT_DATA_VERSION,
-            ot::translate(ot::contact::SectionType::Profile)));
+            ot::translate(ot::identity::wot::claim::SectionType::Profile)));
 
-    std::set<ot::contact::ClaimType> output;
+    std::set<ot::identity::wot::claim::ClaimType> output;
     std::transform(
         profileTypes.begin(),
         profileTypes.end(),
         std::inserter(output, output.end()),
-        [](ot::proto::ContactItemType itemtype) -> ot::contact::ClaimType {
+        [](ot::proto::ContactItemType itemtype)
+            -> ot::identity::wot::claim::ClaimType {
             return ot::translate(itemtype);
         });
 
@@ -503,7 +537,7 @@ TEST_F(Test_NymData, SocialMediaProfileTypes)
 
 TEST_F(Test_NymData, Type)
 {
-    EXPECT_EQ(ot::contact::ClaimType::Individual, nymData_.Type());
+    EXPECT_EQ(ot::identity::wot::claim::ClaimType::Individual, nymData_.Type());
 }
 
 TEST_F(Test_NymData, Valid) { EXPECT_TRUE(nymData_.Valid()); }

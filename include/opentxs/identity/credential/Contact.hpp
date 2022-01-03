@@ -11,8 +11,8 @@
 #include <string>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/identity/credential/Base.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 
 namespace opentxs
 {
@@ -45,8 +45,8 @@ public:
     static auto ClaimID(
         const api::Session& api,
         const std::string& nymid,
-        const contact::SectionType section,
-        const contact::ClaimType type,
+        const wot::claim::SectionType section,
+        const wot::claim::ClaimType type,
         const std::int64_t start,
         const std::int64_t end,
         const std::string& value,

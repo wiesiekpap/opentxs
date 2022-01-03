@@ -9,15 +9,19 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <iosfwd>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
+#include <variant>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {
@@ -29,10 +33,9 @@ class EllipticCurve;
 class HD;
 }  // namespace key
 }  // namespace crypto
+}  // namespace opentxs
 
-namespace blockchain
-{
-namespace crypto
+namespace opentxs::blockchain::crypto
 {
 enum class AddressStyle : std::uint16_t;
 enum class HDProtocol : std::uint16_t;
@@ -46,16 +49,29 @@ using HDKey = std::shared_ptr<const opentxs::crypto::key::HD>;
 /// account id, chain, index
 using Key = std::tuple<std::string, Subchain, Bip32Index>;
 using Activity = std::tuple<Coin, Key, Amount>;
-}  // namespace crypto
-}  // namespace blockchain
+}  // namespace opentxs::blockchain::crypto
 
-auto operator==(
+namespace std
+{
+template <>
+struct hash<opentxs::blockchain::crypto::Key> {
+    auto operator()(const opentxs::blockchain::crypto::Key& data) const noexcept
+        -> std::size_t;
+};
+}  // namespace std
+
+namespace opentxs
+{
+OPENTXS_EXPORT auto operator==(
     const blockchain::crypto::Key& lhs,
     const blockchain::crypto::Key& rhs) noexcept -> bool;
-auto operator!=(
+OPENTXS_EXPORT auto operator!=(
     const blockchain::crypto::Key& lhs,
     const blockchain::crypto::Key& rhs) noexcept -> bool;
-auto print(blockchain::crypto::HDProtocol) noexcept -> std::string;
-auto print(blockchain::crypto::Subchain) noexcept -> std::string;
-auto print(const blockchain::crypto::Key&) noexcept -> std::string;
+auto preimage(const blockchain::crypto::Key& in) noexcept -> Space;
+OPENTXS_EXPORT auto print(blockchain::crypto::HDProtocol) noexcept
+    -> std::string;
+OPENTXS_EXPORT auto print(blockchain::crypto::Subchain) noexcept -> std::string;
+OPENTXS_EXPORT auto print(const blockchain::crypto::Key&) noexcept
+    -> std::string;
 }  // namespace opentxs

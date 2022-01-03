@@ -96,7 +96,7 @@ constexpr auto value(const WorkType in) noexcept
  *
  *   NotaryUpdated: reports that a notary contract has been modified
  *       * Additional frames:
- *          1: id as identifier::Server (encoded as byte sequence)
+ *          1: id as identifier::Notary (encoded as byte sequence)
  *
  *   UnitDefinitionUpdated: reports that a unit definition contract has been
  *                          modified
@@ -254,7 +254,7 @@ constexpr auto value(const WorkType in) noexcept
  *
  *   OTXConnectionStatus: reports state changes to notary connections
  *       * Additional frames:
- *          1: notary id as identifier::Server (encoded as byte sequence)
+ *          1: notary id as identifier::Notary (encoded as byte sequence)
  *          2: state as bool (active = true)
  *
  *   OTXTaskComplete: reports completion of OTX task
@@ -275,7 +275,7 @@ constexpr auto value(const WorkType in) noexcept
  *
  *   OTXSearchServer: request messages for OTX notary contract search
  *       * Additional frames:
- *          1: target id as identifier::Server (encoded as byte sequence)
+ *          1: target id as identifier::Notary (encoded as byte sequence)
  *
  *   OTXSearchUnit: request messages for OTX unit definition contract search
  *       * Additional frames:
@@ -292,7 +292,7 @@ constexpr auto value(const WorkType in) noexcept
  *   DHTRequestServer: request and response messages for dht notary contract
  *                     retrieval
  *       * Request message additional frames:
- *          1: target id as identifier::Server (encoded as byte sequence)
+ *          1: target id as identifier::Notary (encoded as byte sequence)
  *
  *       * Response message additional frames:
  *          1: return value as bool (valid id = true)

@@ -53,7 +53,7 @@ auto MintLucre(const api::Session& api) noexcept -> ReturnType
 
 auto MintLucre(
     const api::Session& api,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit) noexcept -> ReturnType
 {
     return std::make_unique<Imp>(api, notary, unit).release();
@@ -61,7 +61,7 @@ auto MintLucre(
 
 auto MintLucre(
     const api::Session& api,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::Nym& serverNym,
     const identifier::UnitDefinition& unit) noexcept -> ReturnType
 {
@@ -78,7 +78,7 @@ Lucre::Lucre(const api::Session& api)
 
 Lucre::Lucre(
     const api::Session& api,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit)
     : Mint(api, notary, unit)
 {
@@ -86,7 +86,7 @@ Lucre::Lucre(
 
 Lucre::Lucre(
     const api::Session& api,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::Nym& serverNym,
     const identifier::UnitDefinition& unit)
     : Mint(api, notary, serverNym, unit)

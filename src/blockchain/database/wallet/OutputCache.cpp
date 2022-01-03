@@ -12,21 +12,18 @@
 #include <chrono>  // IWYU pragma: keep
 #include <cstring>
 #include <iosfwd>
-#include <iterator>
 #include <ostream>
 #include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 
 #include "Proto.hpp"
 #include "Proto.tpp"
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/Subchain.hpp"
-#include "blockchain/database/wallet/Types.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
@@ -48,24 +45,6 @@
 #include "opentxs/util/Time.hpp"  // IWYU pragma: keep
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"  // IWYU pragma: keep
 #include "util/LMDB.hpp"
-
-namespace opentxs
-{
-auto key_to_bytes(const blockchain::crypto::Key& in) noexcept -> Space
-{
-    const auto& [id, subchain, index] = in;
-    auto out = space(id.size() + sizeof(subchain) + sizeof(index));
-    auto i = out.data();
-    std::memcpy(i, id.data(), id.size());
-    std::advance(i, id.size());
-    std::memcpy(i, &subchain, sizeof(subchain));
-    std::advance(i, sizeof(subchain));
-    std::memcpy(i, &index, sizeof(index));
-    std::advance(i, sizeof(index));
-
-    return out;
-}
-}  // namespace opentxs
 
 namespace opentxs::blockchain::database::wallet
 {
@@ -220,7 +199,7 @@ auto OutputCache::AddToKey(
     LogInsane()(OT_PRETTY_CLASS())("loading index for key ")(opentxs::print(id))
         .Flush();
 #endif  // defined OPENTXS_DETAILED_DEBUG
-    const auto key = key_to_bytes(id);
+    const auto key = preimage(id);
 
     try {
         auto& set = load_output_index(
@@ -561,7 +540,7 @@ auto OutputCache::GetKey(const sLock&, const crypto::Key& id) noexcept
     LogInsane()(OT_PRETTY_CLASS())("loading index for key ")(opentxs::print(id))
         .Flush();
 #endif  // defined OPENTXS_DETAILED_DEBUG
-    const auto key = key_to_bytes(id);
+    const auto key = preimage(id);
 
     try {
         auto lock = Lock{key_lock_};
@@ -581,7 +560,7 @@ auto OutputCache::GetKey(const eLock&, const crypto::Key& id) noexcept
     LogInsane()(OT_PRETTY_CLASS())("loading index for key ")(opentxs::print(id))
         .Flush();
 #endif  // defined OPENTXS_DETAILED_DEBUG
-    const auto key = key_to_bytes(id);
+    const auto key = preimage(id);
 
     try {
         return load_output_index(
@@ -1187,7 +1166,7 @@ auto OutputCache::write_output(
 {
     try {
         for (const auto& key : output.Keys()) {
-            const auto sKey = key_to_bytes(key);
+            const auto sKey = preimage(key);
             auto rc =
                 lmdb_.Store(wallet::keys_, reader(sKey), id.Bytes(), tx).first;
 

@@ -35,8 +35,8 @@
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/Envelope.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/Envelope.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"  // TODO remove
 #include "opentxs/Version.hpp"
@@ -52,21 +52,27 @@
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #endif  // OT_BLOCKCHAIN
-#include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Contract.hpp"
-#include "opentxs/core/Item.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/OTTransaction.hpp"
-#include "opentxs/core/OTTransactionType.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Contract.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/otx/common/OTTransactionType.hpp"
+#include "internal/otx/common/basket/Basket.hpp"
+#include "internal/otx/common/cron/OTCronItem.hpp"
+#include "internal/otx/common/crypto/OTSignedFile.hpp"
+#include "internal/otx/common/recurring/OTPaymentPlan.hpp"
+#include "internal/otx/common/script/OTScriptable.hpp"
+#include "internal/otx/common/trade/OTMarket.hpp"
+#include "internal/otx/common/trade/OTOffer.hpp"
+#include "internal/otx/common/trade/OTTrade.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/CurrencyContract.hpp"
 #include "opentxs/core/contract/SecurityContract.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/contract/basket/Basket.hpp"
-#include "opentxs/core/contract/basket/BasketContract.hpp"
 #include "opentxs/core/contract/peer/BailmentNotice.hpp"
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/BailmentRequest.hpp"
@@ -80,18 +86,11 @@
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
-#include "opentxs/core/cron/OTCronItem.hpp"
-#include "opentxs/core/crypto/OTSignedFile.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/Type.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/recurring/OTPaymentPlan.hpp"
-#include "opentxs/core/script/OTScriptable.hpp"
-#include "opentxs/core/trade/OTMarket.hpp"
-#include "opentxs/core/trade/OTOffer.hpp"
-#include "opentxs/core/trade/OTTrade.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -109,6 +108,7 @@
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/blind/Types.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/BlockchainPeerAddress.pb.h"  // IWYU pragma: keep
@@ -208,7 +208,7 @@ auto Factory::BailmentNotice(
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
-    const identifier::Server& serverID,
+    const identifier::Notary& serverID,
     const opentxs::Identifier& requestID,
     const std::string& txid,
     const Amount& amount,
@@ -251,7 +251,7 @@ auto Factory::BailmentReply(
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const opentxs::Identifier& request,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const std::string& terms,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTBailmentReply
@@ -283,7 +283,7 @@ auto Factory::BailmentRequest(
     const Nym_p& nym,
     const identifier::Nym& recipient,
     const identifier::UnitDefinition& unit,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTBailmentRequest
 {
@@ -649,7 +649,7 @@ auto Factory::Cheque() const -> std::unique_ptr<opentxs::Cheque>
 }
 
 auto Factory::Cheque(
-    const identifier::Server& NOTARY_ID,
+    const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID) const
     -> std::unique_ptr<opentxs::Cheque>
 {
@@ -664,7 +664,7 @@ auto Factory::ConnectionReply(
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const opentxs::Identifier& request,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const bool ack,
     const std::string& url,
     const std::string& login,
@@ -711,7 +711,7 @@ auto Factory::ConnectionRequest(
     const Nym_p& nym,
     const identifier::Nym& recipient,
     const contract::peer::ConnectionInfoType type,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTConnectionRequest
 {
@@ -1181,7 +1181,7 @@ auto Factory::Item(
 // to verify that the user ID is actually the owner of the AccountID. TOdo that.
 auto Factory::Item(
     const String& strItem,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     std::int64_t lTransactionNumber) const -> std::unique_ptr<opentxs::Item>
 {
     if (!strItem.Exists()) {
@@ -1394,7 +1394,7 @@ auto Factory::Keypair(
 
 auto Factory::Ledger(
     const opentxs::Identifier& theAccountID,
-    const identifier::Server& theNotaryID) const
+    const identifier::Notary& theNotaryID) const
     -> std::unique_ptr<opentxs::Ledger>
 {
     std::unique_ptr<opentxs::Ledger> ledger;
@@ -1406,7 +1406,7 @@ auto Factory::Ledger(
 auto Factory::Ledger(
     const identifier::Nym& theNymID,
     const opentxs::Identifier& theAccountID,
-    const identifier::Server& theNotaryID) const
+    const identifier::Notary& theNotaryID) const
     -> std::unique_ptr<opentxs::Ledger>
 {
     std::unique_ptr<opentxs::Ledger> ledger;
@@ -1419,7 +1419,7 @@ auto Factory::Ledger(
 auto Factory::Ledger(
     const identifier::Nym& theNymID,
     const opentxs::Identifier& theAcctID,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     ledgerType theType,
     bool bCreateFile) const -> std::unique_ptr<opentxs::Ledger>
 {
@@ -1449,7 +1449,7 @@ auto Factory::Market(const char* szFilename) const -> std::unique_ptr<OTMarket>
 }
 
 auto Factory::Market(
-    const identifier::Server& NOTARY_ID,
+    const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const identifier::UnitDefinition& CURRENCY_TYPE_ID,
     const Amount& lScale) const -> std::unique_ptr<OTMarket>
@@ -1494,7 +1494,7 @@ auto Factory::Mint() const noexcept -> otx::blind::Mint
 
 auto Factory::Mint(
     const otx::blind::CashType type,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit) const noexcept -> otx::blind::Mint
 {
     switch (type) {
@@ -1513,7 +1513,7 @@ auto Factory::Mint(
 }
 
 auto Factory::Mint(
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::UnitDefinition& unit) const noexcept -> otx::blind::Mint
 {
     return Mint(otx::blind::CashType::Lucre, notary, unit);
@@ -1521,7 +1521,7 @@ auto Factory::Mint(
 
 auto Factory::Mint(
     const otx::blind::CashType type,
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::Nym& serverNym,
     const identifier::UnitDefinition& unit) const noexcept -> otx::blind::Mint
 {
@@ -1541,7 +1541,7 @@ auto Factory::Mint(
 }
 
 auto Factory::Mint(
-    const identifier::Server& notary,
+    const identifier::Notary& notary,
     const identifier::Nym& serverNym,
     const identifier::UnitDefinition& unit) const noexcept -> otx::blind::Mint
 {
@@ -1604,7 +1604,7 @@ auto Factory::Offer() const -> std::unique_ptr<OTOffer>
 }
 
 auto Factory::Offer(
-    const identifier::Server& NOTARY_ID,
+    const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const identifier::UnitDefinition& CURRENCY_ID,
     const Amount& MARKET_SCALE) const -> std::unique_ptr<OTOffer>
@@ -1620,7 +1620,7 @@ auto Factory::OutbailmentReply(
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const opentxs::Identifier& request,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const std::string& terms,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTOutbailmentReply
@@ -1653,7 +1653,7 @@ auto Factory::OutbailmentRequest(
     const Nym_p& nym,
     const identifier::Nym& recipient,
     const identifier::UnitDefinition& unit,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const Amount& amount,
     const std::string& terms,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -1763,7 +1763,7 @@ auto Factory::PaymentPlan() const -> std::unique_ptr<OTPaymentPlan>
 }
 
 auto Factory::PaymentPlan(
-    const identifier::Server& NOTARY_ID,
+    const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID) const
     -> std::unique_ptr<OTPaymentPlan>
 {
@@ -1775,7 +1775,7 @@ auto Factory::PaymentPlan(
 }
 
 auto Factory::PaymentPlan(
-    const identifier::Server& NOTARY_ID,
+    const identifier::Notary& NOTARY_ID,
     const identifier::UnitDefinition& INSTRUMENT_DEFINITION_ID,
     const opentxs::Identifier& SENDER_ACCT_ID,
     const identifier::Nym& SENDER_NYM_ID,
@@ -2003,7 +2003,7 @@ auto Factory::Purse(const proto::Purse& serialized) const noexcept
 
 auto Factory::Purse(
     const identity::Nym& owner,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& unit,
     const otx::blind::CashType type,
     const opentxs::PasswordPrompt& reason) const noexcept -> otx::blind::Purse
@@ -2013,7 +2013,7 @@ auto Factory::Purse(
 
 auto Factory::Purse(
     const identity::Nym& owner,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& unit,
     const opentxs::PasswordPrompt& reason) const noexcept -> otx::blind::Purse
 {
@@ -2024,7 +2024,7 @@ auto Factory::ReplyAcknowledgement(
     const Nym_p& nym,
     const identifier::Nym& initiator,
     const opentxs::Identifier& request,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const contract::peer::PeerRequestType type,
     const bool& ack,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
@@ -2168,23 +2168,23 @@ auto Factory::ServerContract() const noexcept(false) -> OTServerContract
     return OTServerContract{opentxs::Factory::ServerContract(api_)};
 }
 
-auto Factory::ServerID() const -> OTServerID
+auto Factory::ServerID() const -> OTNotaryID
 {
-    return identifier::Server::Factory();
+    return identifier::Notary::Factory();
 }
 
-auto Factory::ServerID(const std::string& serialized) const -> OTServerID
+auto Factory::ServerID(const std::string& serialized) const -> OTNotaryID
 {
-    return identifier::Server::Factory(serialized);
+    return identifier::Notary::Factory(serialized);
 }
 
-auto Factory::ServerID(const opentxs::String& serialized) const -> OTServerID
+auto Factory::ServerID(const opentxs::String& serialized) const -> OTNotaryID
 {
-    return identifier::Server::Factory(serialized);
+    return identifier::Notary::Factory(serialized);
 }
 
 auto Factory::ServerID(const opentxs::network::zeromq::Frame& bytes) const
-    -> OTServerID
+    -> OTNotaryID
 {
     auto out = ServerID();
     out->Assign(bytes.data(), bytes.size());
@@ -2192,13 +2192,13 @@ auto Factory::ServerID(const opentxs::network::zeromq::Frame& bytes) const
     return out;
 }
 
-auto Factory::ServerID(const proto::Identifier& in) const noexcept -> OTServerID
+auto Factory::ServerID(const proto::Identifier& in) const noexcept -> OTNotaryID
 {
     return factory::IdentifierNotary(in);
 }
 
 auto Factory::ServerID(const opentxs::Identifier& in) const noexcept
-    -> OTServerID
+    -> OTNotaryID
 {
     auto out = ServerID();
 
@@ -2266,7 +2266,7 @@ auto Factory::SmartContract() const -> std::unique_ptr<OTSmartContract>
     return smartcontract;
 }
 
-auto Factory::SmartContract(const identifier::Server& NOTARY_ID) const
+auto Factory::SmartContract(const identifier::Notary& NOTARY_ID) const
     -> std::unique_ptr<OTSmartContract>
 {
     std::unique_ptr<OTSmartContract> smartcontract;
@@ -2281,7 +2281,7 @@ auto Factory::StoreSecret(
     const contract::peer::SecretType type,
     const std::string& primary,
     const std::string& secondary,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason) const noexcept(false)
     -> OTStoreSecret
 {
@@ -2380,7 +2380,7 @@ auto Factory::Trade() const -> std::unique_ptr<OTTrade>
 }
 
 auto Factory::Trade(
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const opentxs::Identifier& assetAcctId,
     const identifier::Nym& nymID,
@@ -2494,7 +2494,7 @@ auto Factory::Transaction(const opentxs::Ledger& theOwner) const
 auto Factory::Transaction(
     const identifier::Nym& theNymID,
     const opentxs::Identifier& theAccountID,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     originType theOriginType) const -> std::unique_ptr<OTTransaction>
 {
     std::unique_ptr<OTTransaction> transaction;
@@ -2507,7 +2507,7 @@ auto Factory::Transaction(
 auto Factory::Transaction(
     const identifier::Nym& theNymID,
     const opentxs::Identifier& theAccountID,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     std::int64_t lTransactionNum,
     originType theOriginType) const -> std::unique_ptr<OTTransaction>
 {
@@ -2529,7 +2529,7 @@ auto Factory::Transaction(
 auto Factory::Transaction(
     const identifier::Nym& theNymID,
     const opentxs::Identifier& theAccountID,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     const std::int64_t& lNumberOfOrigin,
     originType theOriginType,
     const std::int64_t& lTransactionNum,
@@ -2590,7 +2590,7 @@ auto Factory::Transaction(
 auto Factory::Transaction(
     const identifier::Nym& theNymID,
     const opentxs::Identifier& theAccountID,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     transactionType theType,
     originType theOriginType /*=originType::not_applicable*/,
     std::int64_t lTransactionNum /*=0*/) const -> std::unique_ptr<OTTransaction>

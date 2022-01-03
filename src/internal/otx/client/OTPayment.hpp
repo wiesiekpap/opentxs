@@ -9,16 +9,16 @@
 #include <cstdint>
 #include <memory>
 
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Contract.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/otx/common/recurring/OTPaymentPlan.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Contract.hpp"
-#include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/recurring/OTPaymentPlan.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 

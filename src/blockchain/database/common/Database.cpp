@@ -650,15 +650,14 @@ auto Database::SyncTip(const Chain chain) const noexcept -> Height
     return imp_.sync_.Tip(chain);
 }
 
-auto Database::UpdateContact(const contact::Contact& contact) const noexcept
+auto Database::UpdateContact(const Contact& contact) const noexcept
     -> std::vector<pTxid>
 {
     return imp_.wallet_.UpdateContact(contact);
 }
 
-auto Database::UpdateMergedContact(
-    const contact::Contact& parent,
-    const contact::Contact& child) const noexcept -> std::vector<pTxid>
+auto Database::UpdateMergedContact(const Contact& parent, const Contact& child)
+    const noexcept -> std::vector<pTxid>
 {
     return imp_.wallet_.UpdateMergedContact(parent, child);
 }

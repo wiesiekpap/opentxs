@@ -12,13 +12,13 @@
 #include <map>
 
 #include "internal/otx/blind/Mint.hpp"
+#include "internal/otx/common/Contract.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Contract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/util/Time.hpp"
@@ -38,8 +38,8 @@ class Session;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -88,7 +88,7 @@ public:
         const Time VALID_TO,
         const Time MINT_EXPIRATION,
         const identifier::UnitDefinition& theInstrumentDefinitionID,
-        const identifier::Server& theNotaryID,
+        const identifier::Notary& theNotaryID,
         const identity::Nym& theNotary,
         const Amount& nDenom1,
         const Amount& nDenom2,
@@ -132,7 +132,7 @@ protected:
 
     mapOfArmor m_mapPrivate;
     mapOfArmor m_mapPublic;
-    OTServerID m_NotaryID;
+    OTNotaryID m_NotaryID;
     OTNymID m_ServerNymID;
     OTUnitID m_InstrumentDefinitionID;
     std::int32_t m_nDenominationCount;
@@ -146,11 +146,11 @@ protected:
     Mint(const api::Session& api);
     Mint(
         const api::Session& api,
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit);
     Mint(
         const api::Session& api,
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::Nym& serverNym,
         const identifier::UnitDefinition& unit);
 

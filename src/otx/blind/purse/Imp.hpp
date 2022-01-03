@@ -12,7 +12,7 @@
 
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Secret.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
@@ -87,7 +87,7 @@ public:
     auto IsUnlocked() const -> bool final { return unlocked_; }
     auto IsValid() const noexcept -> bool final { return true; }
     auto LatestValidFrom() const -> Time final { return latest_valid_from_; }
-    auto Notary() const -> const identifier::Server& final { return notary_; }
+    auto Notary() const -> const identifier::Notary& final { return notary_; }
     auto Process(
         const identity::Nym& owner,
         const Mint& mint,
@@ -129,7 +129,7 @@ public:
     Purse(
         const api::Session& api,
         const identifier::Nym& owner,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const blind::CashType type,
         const Mint& mint,
         OTSecret&& secondaryKeyPassword,
@@ -137,14 +137,14 @@ public:
         std::unique_ptr<const OTEnvelope> secondaryEncrypted) noexcept;
     Purse(
         const api::Session& api,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const identifier::UnitDefinition& unit,
         const blind::CashType type) noexcept;
     Purse(
         const api::Session& api,
         const VersionNumber version,
         const blind::CashType type,
-        const identifier::Server& notary,
+        const identifier::Notary& notary,
         const identifier::UnitDefinition& unit,
         const blind::PurseType state,
         const Amount& totalValue,
@@ -168,7 +168,7 @@ private:
     const api::Session& api_;
     const VersionNumber version_;
     const blind::CashType type_;
-    const OTServerID notary_;
+    const OTNotaryID notary_;
     const OTUnitID unit_;
     blind::PurseType state_;
     Amount total_value_;

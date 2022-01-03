@@ -39,7 +39,7 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
-#include "storage/Config.hpp"
+#include "util/storage/Config.hpp"
 
 class QObject;
 

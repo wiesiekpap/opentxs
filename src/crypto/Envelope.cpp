@@ -32,7 +32,6 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/Parameters.hpp"
@@ -44,6 +43,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/Ciphertext.pb.h"
@@ -350,7 +350,7 @@ auto Envelope::read_dh(
 
     for (const auto& key : rhs.dhkey()) {
         auto& set = output[translate(key.type())];
-        set.emplace_back(api.Factory().AsymmetricKey(key));
+        set.emplace_back(api.Factory().InternalSession().AsymmetricKey(key));
     }
 
     return output;

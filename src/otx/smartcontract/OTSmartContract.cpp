@@ -12,8 +12,20 @@
 #include <memory>
 #include <utility>
 
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/AccountList.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Instrument.hpp"
+#include "internal/otx/common/Item.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/otx/common/StringXML.hpp"
+#include "internal/otx/common/cron/OTCron.hpp"
+#include "internal/otx/common/cron/OTCronItem.hpp"
+#include "internal/otx/common/script/OTScriptable.hpp"
+#include "internal/otx/common/util/Common.hpp"
+#include "internal/otx/common/util/Tag.hpp"
 #include "internal/otx/smartcontract/Factory.hpp"
 #include "internal/otx/smartcontract/OTAgent.hpp"
 #include "internal/otx/smartcontract/OTBylaw.hpp"
@@ -24,30 +36,19 @@
 #include "internal/otx/smartcontract/OTStash.hpp"
 #include "internal/otx/smartcontract/OTStashItem.hpp"
 #include "internal/otx/smartcontract/OTVariable.hpp"
+#include "internal/util/Editor.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Instrument.hpp"
-#include "opentxs/core/Item.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/OTTransaction.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/StringXML.hpp"
-#include "opentxs/core/cron/OTCron.hpp"
-#include "opentxs/core/cron/OTCronItem.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/script/OTScriptable.hpp"
-#include "opentxs/core/util/Common.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -723,7 +724,7 @@ OTSmartContract::OTSmartContract(const api::Session& api)
 
 OTSmartContract::OTSmartContract(
     const api::Session& api,
-    const identifier::Server& NOTARY_ID)
+    const identifier::Notary& NOTARY_ID)
     : ot_super(api)
     , m_mapStashes()
     , m_StashAccts(
@@ -792,7 +793,7 @@ OTPartyAccount    * GetPartyAccountByID(const Identifier& theAcctID);
 // Otherwise, if it wasn't empty (it had been already set) then
 // it will fail to set in this call, and return false.
 //
-auto OTSmartContract::SetNotaryIDIfEmpty(const identifier::Server& theID)
+auto OTSmartContract::SetNotaryIDIfEmpty(const identifier::Notary& theID)
     -> bool
 {
     if (GetNotaryID().empty()) {
@@ -2389,8 +2390,8 @@ auto OTSmartContract::StashFunds(
         // (No need for the stash's inbox -- the server owns it.)
 
         // Load the inbox in case it already exists
-        auto thePartyInbox{
-            api_.Factory().Ledger(PARTY_NYM_ID, PARTY_ACCT_ID, NOTARY_ID)};
+        auto thePartyInbox{api_.Factory().InternalSession().Ledger(
+            PARTY_NYM_ID, PARTY_ACCT_ID, NOTARY_ID)};
 
         OT_ASSERT(false != bool(thePartyInbox));
 
@@ -2433,7 +2434,7 @@ auto OTSmartContract::StashFunds(
                 return false;
             }
 
-            auto pTransParty{api_.Factory().Transaction(
+            auto pTransParty{api_.Factory().InternalSession().Transaction(
                 *thePartyInbox,
                 transactionType::paymentReceipt,
                 originType::origin_smart_contract,
@@ -2450,7 +2451,7 @@ auto OTSmartContract::StashFunds(
             // set up the transaction item (each transaction may have multiple
             // items... but not in this case.)
             //
-            auto pItemParty{api_.Factory().Item(
+            auto pItemParty{api_.Factory().InternalSession().Item(
                 *pTransParty,
                 itemType::paymentReceipt,
                 api_.Factory().Identifier())};
@@ -2932,14 +2933,14 @@ auto OTSmartContract::MoveAcctFundsStr(
     if (nullptr == pFromAcct) {
         LogConsole()(OT_PRETTY_CLASS())("Error: from_acct (")(
             from_acct_name)(") not found on any party.")(": FULL CONTRACT: ")(
-            m_xmlUnsigned)(".")
+            m_xmlUnsigned.get())(".")
             .Flush();
         return false;
     }
     if (nullptr == pToAcct) {
         LogConsole()(OT_PRETTY_CLASS())("Error: to_acct (")(
             to_acct_name)(") not found on any party.")(": FULL CONTRACT: ")(
-            m_xmlUnsigned)(".")
+            m_xmlUnsigned.get())(".")
             .Flush();
 
         return false;
@@ -5708,9 +5709,9 @@ auto OTSmartContract::MoveFunds(
         // IF they can be loaded up from file, or generated, that is.
 
         // Load the inboxes in case they already exist
-        auto theSenderInbox{
-            api_.Factory().Ledger(SENDER_NYM_ID, SOURCE_ACCT_ID, NOTARY_ID)};
-        auto theRecipientInbox{api_.Factory().Ledger(
+        auto theSenderInbox{api_.Factory().InternalSession().Ledger(
+            SENDER_NYM_ID, SOURCE_ACCT_ID, NOTARY_ID)};
+        auto theRecipientInbox{api_.Factory().InternalSession().Ledger(
             RECIPIENT_NYM_ID, RECIPIENT_ACCT_ID, NOTARY_ID)};
 
         // ALL inboxes -- no outboxes. All will receive notification of
@@ -5755,7 +5756,7 @@ auto OTSmartContract::MoveFunds(
                 return false;
             }
 
-            auto pTransSend{api_.Factory().Transaction(
+            auto pTransSend{api_.Factory().InternalSession().Transaction(
                 *theSenderInbox,
                 transactionType::paymentReceipt,
                 originType::origin_smart_contract,
@@ -5763,7 +5764,7 @@ auto OTSmartContract::MoveFunds(
 
             OT_ASSERT(false != bool(pTransSend));
 
-            auto pTransRecip{api_.Factory().Transaction(
+            auto pTransRecip{api_.Factory().InternalSession().Transaction(
                 *theRecipientInbox,
                 transactionType::paymentReceipt,
                 originType::origin_smart_contract,
@@ -5779,11 +5780,11 @@ auto OTSmartContract::MoveFunds(
 
             // set up the transaction items (each transaction may have multiple
             // items... but not in this case.)
-            auto pItemSend{api_.Factory().Item(
+            auto pItemSend{api_.Factory().InternalSession().Item(
                 *pTransSend,
                 itemType::paymentReceipt,
                 api_.Factory().Identifier())};
-            auto pItemRecip{api_.Factory().Item(
+            auto pItemRecip{api_.Factory().InternalSession().Item(
                 *pTransRecip,
                 itemType::paymentReceipt,
                 api_.Factory().Identifier())};

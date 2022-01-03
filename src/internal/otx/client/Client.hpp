@@ -12,11 +12,11 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "util/Blank.hpp"
@@ -57,7 +57,7 @@ using CheckNymTask = OTNymID;
 /** DepositPaymentTask: unit id, accountID, payment */
 using DepositPaymentTask =
     std::tuple<OTUnitID, OTIdentifier, std::shared_ptr<const OTPayment>>;
-using DownloadContractTask = OTServerID;
+using DownloadContractTask = OTNotaryID;
 using DownloadMintTask = std::pair<OTUnitID, int>;
 using DownloadNymboxTask = OT_DownloadNymboxType;
 using DownloadUnitDefinitionTask = OTUnitID;
@@ -76,7 +76,7 @@ using PeerReplyTask = std::tuple<OTNymID, OTPeerReply, OTPeerRequest>;
 /** PeerRequestTask: targetNymID, peer request */
 using PeerRequestTask = std::pair<OTNymID, OTPeerRequest>;
 using ProcessInboxTask = OTIdentifier;
-using PublishServerContractTask = std::pair<OTServerID, bool>;
+using PublishServerContractTask = std::pair<OTNotaryID, bool>;
 /** RegisterAccountTask: account label, unit definition id */
 using RegisterAccountTask = std::pair<std::string, OTUnitID>;
 using RegisterNymTask = bool;
@@ -166,7 +166,7 @@ struct make_blank<otx::client::PublishServerContractTask> {
     static auto value(const api::Session& api)
         -> otx::client::PublishServerContractTask
     {
-        return {make_blank<OTServerID>::value(api), false};
+        return {make_blank<OTNotaryID>::value(api), false};
     }
 };
 template <>
@@ -217,11 +217,11 @@ struct Operation {
     using Future = std::future<Result>;
 
     virtual auto NymID() const -> const identifier::Nym& = 0;
-    virtual auto ServerID() const -> const identifier::Server& = 0;
+    virtual auto ServerID() const -> const identifier::Notary& = 0;
 
     virtual auto AddClaim(
-        const contact::SectionType section,
-        const contact::ClaimType type,
+        const identity::wot::claim::SectionType section,
+        const identity::wot::claim::ClaimType type,
         const String& value,
         const bool primary) -> bool = 0;
     virtual auto ConveyPayment(
@@ -245,7 +245,7 @@ struct Operation {
         const otx::context::Server::ExtraArgs& args = {}) -> bool = 0;
     virtual void join() = 0;
     virtual auto PublishContract(const identifier::Nym& id) -> bool = 0;
-    virtual auto PublishContract(const identifier::Server& id) -> bool = 0;
+    virtual auto PublishContract(const identifier::Notary& id) -> bool = 0;
     virtual auto PublishContract(const identifier::UnitDefinition& id)
         -> bool = 0;
     virtual auto RequestAdmin(const String& password) -> bool = 0;

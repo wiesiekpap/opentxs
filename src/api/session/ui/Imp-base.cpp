@@ -12,7 +12,7 @@
 #include <tuple>
 
 #include "internal/core/Core.hpp"
-#include "internal/ui/UI.hpp"
+#include "internal/core/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -20,7 +20,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/ui/Blockchains.hpp"
+#include "opentxs/core/ui/Blockchains.hpp"
 
 namespace opentxs::api::session::imp
 {
@@ -282,7 +282,7 @@ auto UI::Imp::BlockchainIssuerID(const opentxs::blockchain::Type chain)
 }
 
 auto UI::Imp::BlockchainNotaryID(const opentxs::blockchain::Type chain)
-    const noexcept -> const identifier::Server&
+    const noexcept -> const identifier::Notary&
 {
     return opentxs::blockchain::NotaryID(api_, chain);
 }

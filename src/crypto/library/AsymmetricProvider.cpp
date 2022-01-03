@@ -15,6 +15,7 @@ extern "C" {
 #include <cstring>
 #include <vector>
 
+#include "internal/otx/common/crypto/Signature.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -25,7 +26,6 @@ extern "C" {
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/crypto/Signature.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"

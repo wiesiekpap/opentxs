@@ -190,7 +190,7 @@ auto Server::init(const ot::api::session::Notary& api) noexcept -> void
     if (init_) { return; }
 
     api_ = &api;
-    const_cast<ot::OTServerID&>(id_) = api.ID();
+    const_cast<ot::OTNotaryID&>(id_) = api.ID();
 
     {
         const auto section = ot::String::Factory("permissions");
@@ -266,7 +266,7 @@ auto User::Contact(const std::string& contact) const noexcept
 
 auto User::init_basic(
     const ot::api::session::Client& api,
-    const ot::contact::ClaimType type,
+    const ot::identity::wot::claim::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
 {
@@ -302,7 +302,7 @@ auto User::init_basic(
 auto User::init(
     const ot::api::session::Client& api,
     const Server& server,
-    const ot::contact::ClaimType type,
+    const ot::identity::wot::claim::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
 {
@@ -318,7 +318,7 @@ auto User::init(
 
 auto User::init(
     const ot::api::session::Client& api,
-    const ot::contact::ClaimType type,
+    const ot::identity::wot::claim::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> bool
 {
@@ -335,7 +335,7 @@ auto User::init_custom(
     const ot::api::session::Client& api,
     const Server& server,
     const std::function<void(User&)> custom,
-    const ot::contact::ClaimType type,
+    const ot::identity::wot::claim::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> void
 {
@@ -345,7 +345,7 @@ auto User::init_custom(
 auto User::init_custom(
     const ot::api::session::Client& api,
     const std::function<void(User&)> custom,
-    const ot::contact::ClaimType type,
+    const ot::identity::wot::claim::ClaimType type,
     const std::uint32_t index,
     const ot::crypto::SeedStyle seed) noexcept -> void
 {

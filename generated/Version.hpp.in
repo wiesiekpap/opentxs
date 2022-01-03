@@ -9,44 +9,4 @@
 #include "opentxs/Export.hpp"  // IWYU pragma: export
 
 #define OT_BLOCKCHAIN @OT_BLOCKCHAIN_EXPORT@
-
-namespace opentxs
-{
-inline namespace v1 {
-namespace api
-{
-namespace crypto
-{
-namespace internal
-{
-}  // namespace internal
-}  // namespace crypto
-
-namespace internal
-{
-}  // namespace internal
-
-namespace network
-{
-namespace internal
-{
-}  // namespace internal
-}  // namespace network
-
-namespace session
-{
-namespace internal
-{
-}  // namespace internal
-}  // namespace session
-}  // namespace api
-
-namespace contact
-{
-namespace internal
-{
-}  // namespace internal
-}  // namespace contact
-}  // namespace v1
-}  // namespace opentxs
 // clang-format on

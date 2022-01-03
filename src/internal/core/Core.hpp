@@ -14,9 +14,9 @@
 #include <memory>
 #include <string>
 
+#include "internal/otx/common/NymFile.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/NymFile.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -35,7 +35,7 @@ class Session;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -67,7 +67,7 @@ namespace opentxs::blockchain
 {
 auto AccountName(const Type chain) noexcept -> std::string;
 auto Chain(const api::Session& api, const identifier::Nym& id) noexcept -> Type;
-auto Chain(const api::Session& api, const identifier::Server& id) noexcept
+auto Chain(const api::Session& api, const identifier::Notary& id) noexcept
     -> Type;
 auto Chain(
     const api::Session& api,
@@ -75,7 +75,7 @@ auto Chain(
 auto IssuerID(const api::Session& api, const Type chain) noexcept
     -> const identifier::Nym&;
 auto NotaryID(const api::Session& api, const Type chain) noexcept
-    -> const identifier::Server&;
+    -> const identifier::Notary&;
 auto UnitID(const api::Session& api, const Type chain) noexcept
     -> const identifier::UnitDefinition&;
 }  // namespace opentxs::blockchain

@@ -5,16 +5,23 @@
 
 add_subdirectory(license)
 add_subdirectory(platform)
+add_subdirectory(rpc)
+add_subdirectory(storage)
 
 target_sources(
   opentxs-common
   PRIVATE
+    "${opentxs_SOURCE_DIR}/src/internal/util/Editor.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Exclusive.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/Flag.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/Lockable.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Log.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/LogMacros.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Shared.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/Signals.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Timer.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Types.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/UniqueQueue.hpp"
     "Allocator.hpp"
     "AsyncValue.hpp"
     "Backoff.hpp"
@@ -22,6 +29,8 @@ target_sources(
     "Bytes.cpp"
     "Container.hpp"
     "Exclusive.tpp"
+    "Flag.cpp"
+    "Flag.hpp"
     "Gatekeeper.cpp"
     "Gatekeeper.hpp"
     "HDIndex.hpp"
@@ -30,9 +39,14 @@ target_sources(
     "Latest.hpp"
     "Log.cpp"
     "Log.hpp"
+    "NullCallback.cpp"
+    "NullCallback.hpp"
     "NymEditor.cpp"
     "Options.cpp"
     "Options.hpp"
+    "PasswordCallback.cpp"
+    "PasswordCaller.cpp"
+    "PasswordPrompt.cpp"
     "Polarity.hpp"
     "Random.cpp"
     "Random.hpp"
@@ -59,9 +73,11 @@ set(cxx-install-headers
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Numbers.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/NymEditor.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Options.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/PasswordCallback.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/PasswordCaller.hpp"
+    "${opentxs_SOURCE_DIR}/include/opentxs/util/PasswordPrompt.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Pimpl.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/SharedPimpl.hpp"
-    "${opentxs_SOURCE_DIR}/include/opentxs/util/Signals.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/Time.hpp"
     "${opentxs_SOURCE_DIR}/include/opentxs/util/WorkType.hpp"
 )

@@ -3,8 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-// IWYU pragma: no_include "internal/api/network/Network.hpp"
-
 #pragma once
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -19,17 +17,6 @@
 
 namespace opentxs
 {
-namespace api
-{
-namespace network
-{
-namespace internal
-{
-class Asio;
-}  // namespace internal
-}  // namespace network
-}  // namespace api
-
 namespace network
 {
 namespace asio
@@ -50,7 +37,6 @@ class OPENTXS_EXPORT Socket
 public:
     struct Imp;
 
-    using Asio = api::network::internal::Asio;
     using SendStatus = std::promise<bool>;
     using Notification = std::unique_ptr<SendStatus>;
 

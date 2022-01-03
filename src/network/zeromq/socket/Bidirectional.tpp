@@ -12,10 +12,10 @@
 #include <mutex>
 #include <thread>
 
+#include "internal/util/Flag.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "network/zeromq/socket/Sender.tpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"

@@ -13,7 +13,7 @@
 #include <tuple>
 #include <utility>
 
-#include "opentxs/core/Flag.hpp"
+#include "internal/util/Flag.hpp"
 
 namespace opentxs::api::imp
 {

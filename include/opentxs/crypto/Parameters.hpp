@@ -16,9 +16,11 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
+#include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <string_view>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
@@ -50,8 +52,11 @@ class Secret;
 namespace std
 {
 template <>
-struct hash<opentxs::crypto::Parameters>;
-}
+struct hash<opentxs::crypto::Parameters> {
+    auto operator()(const opentxs::crypto::Parameters& rhs) const noexcept
+        -> std::size_t;
+};
+}  // namespace std
 
 namespace opentxs::crypto
 {

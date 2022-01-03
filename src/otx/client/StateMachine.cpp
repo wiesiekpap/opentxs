@@ -24,36 +24,37 @@
 #include "2_Factory.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/api/session/Client.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/client/obsolete/OT_API.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/UniqueQueue.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/SectionType.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/UniqueQueue.hpp"
 #include "opentxs/core/contract/ContractType.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "otx/client/StateMachine.hpp"
@@ -159,7 +160,7 @@ StateMachine::StateMachine(
     std::atomic<TaskID>& nextTaskID,
     const UniqueQueue<CheckNymTask>& missingnyms,
     const UniqueQueue<CheckNymTask>& outdatednyms,
-    const UniqueQueue<OTServerID>& missingservers,
+    const UniqueQueue<OTNotaryID>& missingservers,
     const UniqueQueue<OTUnitID>& missingUnitDefinitions,
     const PasswordPrompt& reason)
     : opentxs::internal::StateMachine(
@@ -272,7 +273,7 @@ void StateMachine::check_nym_revision(const otx::context::Server& context) const
 
 auto StateMachine::check_registration(
     const identifier::Nym& nymID,
-    const identifier::Server& serverID) const -> bool
+    const identifier::Notary& serverID) const -> bool
 {
     OT_ASSERT(false == nymID.empty())
     OT_ASSERT(false == serverID.empty())
@@ -319,7 +320,7 @@ auto StateMachine::check_registration(
 }
 
 auto StateMachine::check_server_contract(
-    const identifier::Server& serverID) const -> bool
+    const identifier::Notary& serverID) const -> bool
 {
     OT_ASSERT(false == serverID.empty())
 
@@ -356,8 +357,8 @@ auto StateMachine::check_server_name(const otx::context::Server& context) const
 
         DO_OPERATION(
             AddClaim,
-            contact::SectionType::Scope,
-            contact::ClaimType::Server,
+            identity::wot::claim::SectionType::Scope,
+            identity::wot::claim::ClaimType::Server,
             String::Factory(myName),
             true);
 
@@ -409,7 +410,8 @@ auto StateMachine::deposit_cheque(
         return finish_task(taskID, false, error_result());
     }
 
-    std::shared_ptr<Cheque> cheque{client_.Factory().Cheque()};
+    std::shared_ptr<Cheque> cheque{
+        client_.Factory().InternalSession().Cheque()};
 
     OT_ASSERT(cheque);
 
@@ -438,7 +440,7 @@ auto StateMachine::deposit_cheque_wrapper(
 
     OT_ASSERT(payment);
 
-    auto depositServer = identifier::Server::Factory();
+    auto depositServer = identifier::Notary::Factory();
     auto depositUnitID = identifier::UnitDefinition::Factory();
     auto depositAccount = Identifier::Factory();
     output = deposit_cheque(task, param);
@@ -1168,7 +1170,7 @@ auto StateMachine::write_and_send_cheque(
     }
 
     std::shared_ptr<OTPayment> payment{
-        client_.Factory().Payment(String::Factory(*cheque))};
+        client_.Factory().InternalSession().Payment(String::Factory(*cheque))};
 
     if (false == bool(payment)) {
         LogError()(OT_PRETTY_CLASS())("Failed to instantiate payment.").Flush();

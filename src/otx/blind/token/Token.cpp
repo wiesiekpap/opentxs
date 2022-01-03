@@ -97,7 +97,7 @@ auto Token(
 
 namespace opentxs::otx::blind
 {
-auto Token::Imp::Notary() const -> const identifier::Server&
+auto Token::Imp::Notary() const -> const identifier::Notary&
 {
     static const auto id = factory::IdentifierNotary();
 
@@ -164,7 +164,7 @@ auto Token::IsSpent(const PasswordPrompt& reason) const -> bool
     return imp_->IsSpent(reason);
 }
 
-auto Token::Notary() const -> const identifier::Server&
+auto Token::Notary() const -> const identifier::Notary&
 {
     return imp_->Notary();
 }

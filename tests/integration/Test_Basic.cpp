@@ -15,6 +15,8 @@
 
 #include "integration/Helpers.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Message.hpp"
 #include "internal/util/Shared.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -25,16 +27,7 @@
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/contact/ContactGroup.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/ContactSection.hpp"
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
@@ -42,32 +35,39 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/contract/UnitType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/core/ui/AccountActivity.hpp"
+#include "opentxs/core/ui/AccountList.hpp"
+#include "opentxs/core/ui/AccountListItem.hpp"
+#include "opentxs/core/ui/AccountSummary.hpp"
+#include "opentxs/core/ui/ActivitySummary.hpp"
+#include "opentxs/core/ui/ActivitySummaryItem.hpp"
+#include "opentxs/core/ui/ActivityThread.hpp"
+#include "opentxs/core/ui/ActivityThreadItem.hpp"
+#include "opentxs/core/ui/BalanceItem.hpp"
+#include "opentxs/core/ui/Contact.hpp"
+#include "opentxs/core/ui/ContactList.hpp"
+#include "opentxs/core/ui/ContactListItem.hpp"
+#include "opentxs/core/ui/ContactSection.hpp"
+#include "opentxs/core/ui/IssuerItem.hpp"
+#include "opentxs/core/ui/MessagableList.hpp"
+#include "opentxs/core/ui/PayableList.hpp"
+#include "opentxs/core/ui/PayableListItem.hpp"
+#include "opentxs/core/ui/Profile.hpp"
+#include "opentxs/core/ui/ProfileSection.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/identity/wot/claim/Group.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/Section.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/ui/AccountActivity.hpp"
-#include "opentxs/ui/AccountList.hpp"
-#include "opentxs/ui/AccountListItem.hpp"
-#include "opentxs/ui/AccountSummary.hpp"
-#include "opentxs/ui/ActivitySummary.hpp"
-#include "opentxs/ui/ActivitySummaryItem.hpp"
-#include "opentxs/ui/ActivityThread.hpp"
-#include "opentxs/ui/ActivityThreadItem.hpp"
-#include "opentxs/ui/BalanceItem.hpp"
-#include "opentxs/ui/Contact.hpp"
-#include "opentxs/ui/ContactList.hpp"
-#include "opentxs/ui/ContactListItem.hpp"
-#include "opentxs/ui/ContactSection.hpp"
-#include "opentxs/ui/IssuerItem.hpp"
-#include "opentxs/ui/MessagableList.hpp"
-#include "opentxs/ui/PayableList.hpp"
-#include "opentxs/ui/PayableListItem.hpp"
-#include "opentxs/ui/Profile.hpp"
-#include "opentxs/ui/ProfileSection.hpp"
 #include "opentxs/util/NymEditor.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "ui/Helpers.hpp"
@@ -529,16 +529,22 @@ TEST_F(Integration, payment_codes)
     auto issuer =
         api_issuer_.Wallet().mutable_Nym(issuer_.nym_id_, issuer_.Reason());
 
-    EXPECT_EQ(ot::contact::ClaimType::Individual, alex.Type());
-    EXPECT_EQ(ot::contact::ClaimType::Individual, bob.Type());
-    EXPECT_EQ(ot::contact::ClaimType::Individual, issuer.Type());
+    EXPECT_EQ(ot::identity::wot::claim::ClaimType::Individual, alex.Type());
+    EXPECT_EQ(ot::identity::wot::claim::ClaimType::Individual, bob.Type());
+    EXPECT_EQ(ot::identity::wot::claim::ClaimType::Individual, issuer.Type());
 
     auto alexScopeSet = alex.SetScope(
-        ot::contact::ClaimType::Individual, alex_.name_, true, alex_.Reason());
+        ot::identity::wot::claim::ClaimType::Individual,
+        alex_.name_,
+        true,
+        alex_.Reason());
     auto bobScopeSet = bob.SetScope(
-        ot::contact::ClaimType::Individual, bob_.name_, true, bob_.Reason());
+        ot::identity::wot::claim::ClaimType::Individual,
+        bob_.name_,
+        true,
+        bob_.Reason());
     auto issuerScopeSet = issuer.SetScope(
-        ot::contact::ClaimType::Individual,
+        ot::identity::wot::claim::ClaimType::Individual,
         issuer_.name_,
         true,
         issuer_.Reason());
@@ -1205,12 +1211,13 @@ TEST_F(Integration, issue_dollars)
         const auto& nym = *pNym;
         const auto& claims = nym.Claims();
         const auto pSection =
-            claims.Section(ot::contact::SectionType::Contract);
+            claims.Section(ot::identity::wot::claim::SectionType::Contract);
 
         ASSERT_TRUE(pSection);
 
         const auto& section = *pSection;
-        const auto pGroup = section.Group(ot::contact::ClaimType::USD);
+        const auto pGroup =
+            section.Group(ot::identity::wot::claim::ClaimType::USD);
 
         ASSERT_TRUE(pGroup);
 
@@ -1406,12 +1413,13 @@ TEST_F(Integration, issuer_claims)
 
     const auto& nym = *pNym;
     const auto& claims = nym.Claims();
-    const auto pSection = claims.Section(ot::contact::SectionType::Contract);
+    const auto pSection =
+        claims.Section(ot::identity::wot::claim::SectionType::Contract);
 
     ASSERT_TRUE(pSection);
 
     const auto& section = *pSection;
-    const auto pGroup = section.Group(ot::contact::ClaimType::USD);
+    const auto pGroup = section.Group(ot::identity::wot::claim::ClaimType::USD);
 
     ASSERT_TRUE(pGroup);
 

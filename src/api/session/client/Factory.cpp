@@ -24,8 +24,8 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "internal/core/contract/peer/Factory.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/BlockchainBlockHeader.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/BlockchainBlockHeader.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"

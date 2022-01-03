@@ -33,13 +33,13 @@
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/rpc/CommandType.hpp"
-#include "opentxs/rpc/ResponseCode.hpp"
-#include "opentxs/rpc/request/Base.hpp"
-#include "opentxs/rpc/request/SendPayment.hpp"
-#include "opentxs/rpc/response/Base.hpp"
-#include "opentxs/rpc/response/SendPayment.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/rpc/CommandType.hpp"
+#include "opentxs/util/rpc/ResponseCode.hpp"
+#include "opentxs/util/rpc/request/Base.hpp"
+#include "opentxs/util/rpc/request/SendPayment.hpp"
+#include "opentxs/util/rpc/response/Base.hpp"
+#include "opentxs/util/rpc/response/SendPayment.hpp"
 
 namespace ottest
 {

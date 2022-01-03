@@ -6,7 +6,7 @@
 // IWYU pragma: no_include "opentxs/blockchain/BlockchainType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/FilterType.hpp"
 // IWYU pragma: no_include "opentxs/blockchain/crypto/AddressStyle.hpp"
-// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 // IWYU pragma: no_include "opentxs/crypto/Bip44Type.hpp"
 // IWYU pragma: no_include <boost/intrusive/detail/iterator.hpp>

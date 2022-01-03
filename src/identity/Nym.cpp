@@ -23,25 +23,23 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/identity/Identity.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/ContactData.hpp"
-#include "internal/protobuf/verify/Nym.hpp"
-#include "internal/protobuf/verify/VerifyContacts.hpp"
+#include "internal/otx/common/util/Tag.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/ContactData.hpp"
+#include "internal/serialization/protobuf/verify/Nym.hpp"
+#include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/ContactData.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
-#include "opentxs/core/util/Tag.hpp"
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
@@ -55,6 +53,8 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
 #include "opentxs/identity/SourceType.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Authority.pb.h"
@@ -71,7 +71,7 @@ namespace opentxs
 auto Factory::Nym(
     const api::Session& api,
     const crypto::Parameters& params,
-    const contact::ClaimType type,
+    const identity::wot::claim::ClaimType type,
     const std::string name,
     const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*
 {
@@ -98,17 +98,17 @@ auto Factory::Nym(
             return nullptr;
         }
 
-        if (contact::ClaimType::Error != type && !name.empty()) {
+        if (identity::wot::claim::ClaimType::Error != type && !name.empty()) {
             const auto version =
                 ReturnType::contact_credential_to_contact_data_version_.at(
                     identity::internal::Authority::NymToContactCredential(
                         identity::Nym::DefaultVersion));
-            const auto blank = contact::ContactData{
+            const auto blank = identity::wot::claim::Data{
                 api,
                 pSource->NymID()->str(),
                 version,
                 version,
-                contact::ContactData::SectionMap{}};
+                identity::wot::claim::Data::SectionMap{}};
             const auto scope = blank.SetScope(type, name);
             revised.Internal().SetContactData([&] {
                 auto out = proto::ContactData{};
@@ -306,8 +306,7 @@ auto Nym::AddClaim(const Claim& claim, const opentxs::PasswordPrompt& reason)
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(
-        new contact::ContactData(contact_data_->AddItem(claim)));
+    contact_data_.reset(new wot::claim::Data(contact_data_->AddItem(claim)));
 
     OT_ASSERT(contact_data_);
 
@@ -337,7 +336,7 @@ auto Nym::AddContract(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new contact::ContactData(
+    contact_data_.reset(new wot::claim::Data(
         contact_data_->AddContract(id, currency, primary, active)));
 
     OT_ASSERT(contact_data_);
@@ -365,8 +364,8 @@ auto Nym::AddEmail(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new contact::ContactData(
-        contact_data_->AddEmail(value, primary, active)));
+    contact_data_.reset(
+        new wot::claim::Data(contact_data_->AddEmail(value, primary, active)));
 
     OT_ASSERT(contact_data_);
 
@@ -396,7 +395,7 @@ auto Nym::AddPaymentCode(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new contact::ContactData(
+    contact_data_.reset(new wot::claim::Data(
         contact_data_->AddPaymentCode(paymentCode, currency, primary, active)));
 
     OT_ASSERT(contact_data_);
@@ -424,7 +423,7 @@ auto Nym::AddPhoneNumber(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new contact::ContactData(
+    contact_data_.reset(new wot::claim::Data(
         contact_data_->AddPhoneNumber(value, primary, active)));
 
     OT_ASSERT(contact_data_);
@@ -451,8 +450,8 @@ auto Nym::AddPreferredOTServer(
     OT_ASSERT(contact_data_)
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new contact::ContactData(
-        contact_data_->AddPreferredOTServer(id, primary)));
+    contact_data_.reset(
+        new wot::claim::Data(contact_data_->AddPreferredOTServer(id, primary)));
 
     OT_ASSERT(contact_data_);
 
@@ -468,7 +467,7 @@ auto Nym::AddPreferredOTServer(
 
 auto Nym::AddSocialMediaProfile(
     const std::string& value,
-    const contact::ClaimType type,
+    const wot::claim::ClaimType type,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -480,7 +479,7 @@ auto Nym::AddSocialMediaProfile(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new contact::ContactData(
+    contact_data_.reset(new wot::claim::Data(
         contact_data_->AddSocialMediaProfile(value, type, primary, active)));
 
     OT_ASSERT(contact_data_);
@@ -551,7 +550,7 @@ auto Nym::BestPhoneNumber() const -> std::string
     return contact_data_->BestPhoneNumber();
 }
 
-auto Nym::BestSocialMediaProfile(const contact::ClaimType type) const
+auto Nym::BestSocialMediaProfile(const wot::claim::ClaimType type) const
     -> std::string
 {
     eLock lock(shared_lock_);
@@ -563,7 +562,7 @@ auto Nym::BestSocialMediaProfile(const contact::ClaimType type) const
     return contact_data_->BestSocialMediaProfile(type);
 }
 
-auto Nym::Claims() const -> const contact::ContactData&
+auto Nym::Claims() const -> const wot::claim::Data&
 {
     eLock lock(shared_lock_);
 
@@ -641,7 +640,7 @@ auto Nym::DeleteClaim(
     if (false == bool(contact_data_)) { init_claims(lock); }
 
     // NOLINTNEXTLINE(modernize-make-unique)
-    contact_data_.reset(new contact::ContactData(contact_data_->Delete(id)));
+    contact_data_.reset(new wot::claim::Data(contact_data_->Delete(id)));
 
     OT_ASSERT(contact_data_);
 
@@ -969,12 +968,8 @@ void Nym::init_claims(const eLock& lock) const
 
     const auto nymID{id_->str()};
     const auto dataVersion = ContactDataVersion();
-    contact_data_ = std::make_unique<contact::ContactData>(
-        api_,
-        nymID,
-        dataVersion,
-        dataVersion,
-        contact::ContactData::SectionMap());
+    contact_data_ = std::make_unique<wot::claim::Data>(
+        api_, nymID, dataVersion, dataVersion, wot::claim::Data::SectionMap());
 
     OT_ASSERT(contact_data_);
 
@@ -987,11 +982,10 @@ void Nym::init_claims(const eLock& lock) const
             OT_ASSERT(
                 proto::Validate(serialized, VERBOSE, proto::ClaimType::Normal));
 
-            contact::ContactData claimCred(
-                api_, nymID, dataVersion, serialized);
+            wot::claim::Data claimCred(api_, nymID, dataVersion, serialized);
             // NOLINTNEXTLINE(modernize-make-unique)
             contact_data_.reset(
-                new contact::ContactData(*contact_data_ + claimCred));
+                new wot::claim::Data(*contact_data_ + claimCred));
         }
     }
 
@@ -1190,7 +1184,8 @@ auto Nym::PaymentCode() const -> std::string
     auto serialized = proto::NymIDSource{};
     if (false == source_.Serialize(serialized)) { return ""; }
 
-    auto paymentCode = api_.Factory().PaymentCode(serialized.paymentcode());
+    auto paymentCode =
+        api_.Factory().InternalSession().PaymentCode(serialized.paymentcode());
 
     return paymentCode.asBase58();
 }
@@ -1409,7 +1404,7 @@ auto Nym::SetCommonName(
 
     // NOLINTNEXTLINE(modernize-make-unique)
     contact_data_.reset(
-        new contact::ContactData(contact_data_->SetCommonName(name)));
+        new wot::claim::Data(contact_data_->SetCommonName(name)));
 
     OT_ASSERT(contact_data_);
 
@@ -1435,14 +1430,14 @@ auto Nym::SetContactData(
     const opentxs::PasswordPrompt& reason) -> bool
 {
     eLock lock(shared_lock_);
-    contact_data_ = std::make_unique<contact::ContactData>(
+    contact_data_ = std::make_unique<wot::claim::Data>(
         api_, id_->str(), ContactDataVersion(), data);
 
     return set_contact_data(lock, data, reason);
 }
 
 auto Nym::SetScope(
-    const contact::ClaimType type,
+    const wot::claim::ClaimType type,
     const std::string& name,
     const opentxs::PasswordPrompt& reason,
     const bool primary) -> bool
@@ -1451,14 +1446,14 @@ auto Nym::SetScope(
 
     if (false == bool(contact_data_)) { init_claims(lock); }
 
-    if (contact::ClaimType::Unknown != contact_data_->Type()) {
+    if (wot::claim::ClaimType::Unknown != contact_data_->Type()) {
         // NOLINTNEXTLINE(modernize-make-unique)
         contact_data_.reset(
-            new contact::ContactData(contact_data_->SetName(name, primary)));
+            new wot::claim::Data(contact_data_->SetName(name, primary)));
     } else {
         // NOLINTNEXTLINE(modernize-make-unique)
         contact_data_.reset(
-            new contact::ContactData(contact_data_->SetScope(type, name)));
+            new wot::claim::Data(contact_data_->SetScope(type, name)));
     }
 
     OT_ASSERT(contact_data_);
@@ -1516,8 +1511,8 @@ auto Nym::Sign(
     return haveSig;
 }
 
-auto Nym::SocialMediaProfiles(const contact::ClaimType type, bool active) const
-    -> std::string
+auto Nym::SocialMediaProfiles(const wot::claim::ClaimType type, bool active)
+    const -> std::string
 {
     eLock lock(shared_lock_);
 
@@ -1528,7 +1523,8 @@ auto Nym::SocialMediaProfiles(const contact::ClaimType type, bool active) const
     return contact_data_->SocialMediaProfiles(type, active);
 }
 
-auto Nym::SocialMediaProfileTypes() const -> const std::set<contact::ClaimType>
+auto Nym::SocialMediaProfileTypes() const
+    -> const std::set<wot::claim::ClaimType>
 {
     eLock lock(shared_lock_);
 

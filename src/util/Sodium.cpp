@@ -11,6 +11,7 @@ extern "C" {
 #include <sodium.h>
 }
 
+#include <cassert>
 #include <functional>
 #include <string_view>
 
@@ -100,6 +101,35 @@ auto ExpandSeed(
                     pub.as<unsigned char>(),
                     prv.as<unsigned char>(),
                     reinterpret_cast<const unsigned char*>(nSeed.data()));
+}
+
+auto MakeSiphashKey(const ReadView data) noexcept -> SiphashKey
+{
+    auto out = SiphashKey{};
+
+    static_assert(sizeof(out) == crypto_shorthash_KEYBYTES);
+
+    if (valid(data)) {
+        std::memcpy(out.data(), data.data(), std::min(data.size(), out.size()));
+    }
+
+    return out;
+}
+
+auto Siphash(const SiphashKey& key, const ReadView data) noexcept -> std::size_t
+{
+    assert(-1 != ::sodium_init());
+
+    auto output = std::size_t{};
+    auto hash = std::array<unsigned char, crypto_shorthash_BYTES>{};
+    ::crypto_shorthash(
+        hash.data(),
+        reinterpret_cast<const unsigned char*>(data.data()),
+        data.size(),
+        key.data());
+    std::memcpy(&output, hash.data(), std::min(sizeof(output), hash.size()));
+
+    return output;
 }
 
 auto ToCurveKeypair(

@@ -10,25 +10,11 @@
 #include <cstdint>
 #include <memory>
 #include <stdexcept>
-#include <string_view>
-#include <typeindex>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-
-namespace std
-{
-template <>
-struct hash<opentxs::network::zeromq::FrameIterator> {
-    auto operator()(const opentxs::network::zeromq::FrameIterator& rhs)
-        const noexcept -> std::size_t
-    {
-        return rhs.Internal().hash();
-    }
-};
-}  // namespace std
 
 namespace opentxs::network::zeromq
 {

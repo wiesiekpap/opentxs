@@ -13,14 +13,14 @@
 
 #include "2_Factory.hpp"
 #include "core/contract/peer/PeerRequest.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/PeerRequest.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/Bailment.pb.h"
@@ -38,7 +38,7 @@ auto Factory::BailmentRequest(
     const Nym_p& nym,
     const identifier::Nym& recipient,
     const identifier::UnitDefinition& unit,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::Bailment>
 {
@@ -107,7 +107,7 @@ Bailment::Bailment(
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const identifier::UnitDefinition& unitID,
-    const identifier::Server& serverID)
+    const identifier::Notary& serverID)
     : Request(
           api,
           nym,

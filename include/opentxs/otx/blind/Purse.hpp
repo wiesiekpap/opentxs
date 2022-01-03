@@ -35,7 +35,7 @@ class Symmetric;
 
 namespace identifier
 {
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -86,7 +86,7 @@ public:
     auto Internal() const noexcept -> const internal::Purse&;
     auto IsUnlocked() const -> bool;
     auto LatestValidFrom() const -> Time;
-    auto Notary() const -> const identifier::Server&;
+    auto Notary() const -> const identifier::Notary&;
     auto Serialize(AllocateOutput destination) const noexcept -> bool;
     auto size() const noexcept -> std::size_t;
     auto State() const -> blind::PurseType;

@@ -15,6 +15,11 @@ namespace otx
 {
 namespace context
 {
+namespace internal
+{
+class Client;
+}  // namespace internal
+
 class TransactionStatement;
 }  // namespace context
 }  // namespace otx
@@ -30,6 +35,8 @@ class OPENTXS_EXPORT Client : virtual public Base
 {
 public:
     virtual auto hasOpenTransactions() const -> bool = 0;
+    OPENTXS_NO_EXPORT virtual auto InternalClient() const noexcept
+        -> const internal::Client& = 0;
     using Base::IssuedNumbers;
     virtual auto IssuedNumbers(const TransactionNumbers& exclude) const
         -> std::size_t = 0;
@@ -48,6 +55,8 @@ public:
     virtual auto AcceptIssuedNumbers(TransactionNumbers& newNumbers)
         -> bool = 0;
     virtual void FinishAcknowledgements(const RequestNumbers& req) = 0;
+    OPENTXS_NO_EXPORT virtual auto InternalClient() noexcept
+        -> internal::Client& = 0;
     virtual auto IssueNumber(const TransactionNumber& number) -> bool = 0;
 
     ~Client() override = default;

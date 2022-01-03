@@ -21,6 +21,7 @@
 #include "blockchain/crypto/Deterministic.hpp"
 #include "blockchain/crypto/Element.hpp"
 #include "blockchain/crypto/Subaccount.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/crypto/Factory.hpp"
 #include "internal/core/PaymentCode.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -78,7 +79,8 @@ auto BlockchainPCSubaccount(
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::PaymentCode>
 {
     auto contact = contacts.PaymentCodeToContact(
-        api.Factory().PaymentCode(serialized.remote()), parent.Chain());
+        api.Factory().InternalSession().PaymentCode(serialized.remote()),
+        parent.Chain());
 
     OT_ASSERT(false == contact->empty());
 
@@ -240,8 +242,12 @@ PaymentCode::PaymentCode(
 
         return out;
     }())
-    , local_(api_.Factory().PaymentCode(serialized.local()), compare_)
-    , remote_(api_.Factory().PaymentCode(serialized.remote()), compare_)
+    , local_(
+          api_.Factory().InternalSession().PaymentCode(serialized.local()),
+          compare_)
+    , remote_(
+          api_.Factory().InternalSession().PaymentCode(serialized.remote()),
+          compare_)
     , contact_id_(contacts.PaymentCodeToContact(remote_, chain_))
 {
     if (contact_id_->empty()) { throw std::runtime_error("Missing contact"); }

@@ -16,14 +16,14 @@
 #include "Proto.hpp"
 #include "core/Data.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 
@@ -48,7 +48,7 @@ namespace opentxs::implementation
 {
 class Identifier final : virtual public opentxs::Identifier,
                          virtual public opentxs::identifier::Nym,
-                         virtual public opentxs::identifier::Server,
+                         virtual public opentxs::identifier::Notary,
                          virtual public opentxs::identifier::UnitDefinition,
                          public Data
 {
@@ -119,7 +119,7 @@ public:
     Identifier(const identity::Nym& nym) noexcept;
     Identifier(const Contract& contract) noexcept;
     Identifier(
-        const contact::ClaimType type,
+        const identity::wot::claim::ClaimType type,
         const proto::HDPath& path) noexcept;
     Identifier(
         Vector&& data,
@@ -139,7 +139,7 @@ public:
 private:
     friend opentxs::Identifier;
     friend opentxs::identifier::Nym;
-    friend opentxs::identifier::Server;
+    friend opentxs::identifier::Notary;
     friend opentxs::identifier::UnitDefinition;
 
     identifier::Algorithm algorithm_;
@@ -162,7 +162,7 @@ private:
     static auto is_supported(const identifier::Algorithm type) noexcept -> bool;
     static auto is_supported(const identifier::Type type) noexcept -> bool;
     static auto path_to_data(
-        const contact::ClaimType type,
+        const identity::wot::claim::ClaimType type,
         const proto::HDPath& path) -> OTData;
     static auto required_payload(const identifier::Algorithm type) noexcept
         -> std::size_t

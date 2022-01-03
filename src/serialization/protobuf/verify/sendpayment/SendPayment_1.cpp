@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/SendPayment.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/SendPayment.hpp"  // IWYU pragma: associated
 
 #include "serialization/protobuf/RPCEnums.pb.h"
 #include "serialization/protobuf/SendPayment.pb.h"

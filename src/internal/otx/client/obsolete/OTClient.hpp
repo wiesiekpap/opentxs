@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
-
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -14,6 +12,7 @@
 #include <vector>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 

@@ -19,11 +19,10 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/OTXPushType.hpp"
@@ -32,6 +31,7 @@
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -54,7 +54,7 @@ public:
     const ot::api::session::Notary& server_;
     ot::OTPasswordPrompt reason_c_;
     ot::OTPasswordPrompt reason_s_;
-    const identifier::Server& server_id_;
+    const identifier::Notary& server_id_;
     const OTServerContract server_contract_;
 
     Test_Messages()

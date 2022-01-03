@@ -56,7 +56,7 @@ struct Output;
 class Output;
 }  // namespace bitcoin
 
-struct Outpoint;
+class Outpoint;
 }  // namespace block
 }  // namespace blockchain
 }  // namespace opentxs

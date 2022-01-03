@@ -25,13 +25,13 @@
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/ui/qt/AccountActivity.hpp"
-#include "opentxs/ui/qt/AccountList.hpp"
-#include "opentxs/ui/qt/ActivityThread.hpp"
-#include "opentxs/ui/qt/BlockchainAccountStatus.hpp"
-#include "opentxs/ui/qt/BlockchainSelection.hpp"
-#include "opentxs/ui/qt/ContactList.hpp"
-#include "opentxs/ui/qt/MessagableList.hpp"
+#include "opentxs/core/ui/qt/AccountActivity.hpp"
+#include "opentxs/core/ui/qt/AccountList.hpp"
+#include "opentxs/core/ui/qt/ActivityThread.hpp"
+#include "opentxs/core/ui/qt/BlockchainAccountStatus.hpp"
+#include "opentxs/core/ui/qt/BlockchainSelection.hpp"
+#include "opentxs/core/ui/qt/ContactList.hpp"
+#include "opentxs/core/ui/qt/MessagableList.hpp"
 
 namespace ottest
 {

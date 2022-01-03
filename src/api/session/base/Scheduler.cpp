@@ -12,10 +12,10 @@
 #include <ratio>
 
 #include "internal/api/network/Dht.hpp"
+#include "internal/util/Flag.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/network/Dht.hpp"
 #include "opentxs/api/session/Storage.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/Nym.pb.h"

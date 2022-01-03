@@ -16,11 +16,9 @@
 
 #include "Proto.hpp"
 #include "internal/identity/Identity.hpp"
+#include "internal/util/Lockable.hpp"
 #include "internal/util/Types.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/ContactData.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/Types.hpp"
@@ -34,6 +32,8 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Enums.pb.h"
@@ -91,7 +91,7 @@ public:
     auto begin() const noexcept -> const_iterator final { return cbegin(); }
     auto BestEmail() const -> std::string final;
     auto BestPhoneNumber() const -> std::string final;
-    auto BestSocialMediaProfile(const contact::ClaimType type) const
+    auto BestSocialMediaProfile(const wot::claim::ClaimType type) const
         -> std::string final;
     auto cbegin() const noexcept -> const_iterator final
     {
@@ -101,7 +101,7 @@ public:
     {
         return const_iterator(this, size());
     }
-    auto Claims() const -> const contact::ContactData& final;
+    auto Claims() const -> const wot::claim::Data& final;
     auto CompareID(const identity::Nym& RHS) const -> bool final;
     auto CompareID(const identifier::Nym& rhs) const -> bool final;
     auto ContactCredentialVersion() const -> VersionNumber final;
@@ -164,10 +164,10 @@ public:
         -> bool final;
     void SerializeNymIDSource(Tag& parent) const final;
     auto size() const noexcept -> std::size_t final { return active_.size(); }
-    auto SocialMediaProfiles(const contact::ClaimType type, bool active) const
-        -> std::string final;
+    auto SocialMediaProfiles(const wot::claim::ClaimType type, bool active)
+        const -> std::string final;
     auto SocialMediaProfileTypes() const
-        -> const std::set<contact::ClaimType> final;
+        -> const std::set<wot::claim::ClaimType> final;
     auto Source() const -> const identity::Source& final { return source_; }
     auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
         -> OTSecret final;
@@ -214,7 +214,7 @@ public:
         const bool active) -> bool final;
     auto AddSocialMediaProfile(
         const std::string& value,
-        const contact::ClaimType type,
+        const wot::claim::ClaimType type,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;
@@ -230,7 +230,7 @@ public:
         const proto::ContactData& data,
         const PasswordPrompt& reason) -> bool final;
     auto SetScope(
-        const contact::ClaimType type,
+        const wot::claim::ClaimType type,
         const std::string& name,
         const PasswordPrompt& reason,
         const bool primary) -> bool final;
@@ -265,7 +265,7 @@ private:
     std::uint32_t index_;
     std::string alias_;
     std::atomic<std::uint64_t> revision_;
-    mutable std::unique_ptr<contact::ContactData> contact_data_;
+    mutable std::unique_ptr<wot::claim::Data> contact_data_;
     CredentialMap active_;
     CredentialMap m_mapRevokedSets;
     // Revoked child credential IDs

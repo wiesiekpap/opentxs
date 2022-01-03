@@ -17,19 +17,19 @@
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
-#include "internal/contact/Contact.hpp"
 #include "internal/crypto/Parameters.hpp"
 #include "internal/crypto/key/Key.hpp"
+#include "internal/identity/wot/claim/Types.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/key/asymmetric/Mode.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Claim.pb.h"
@@ -112,8 +112,8 @@ auto Contact::ClaimID(
 auto Contact::ClaimID(
     const api::Session& api,
     const std::string& nymid,
-    const contact::SectionType section,
-    const contact::ClaimType type,
+    const wot::claim::SectionType section,
+    const wot::claim::ClaimType type,
     const std::int64_t start,
     const std::int64_t end,
     const std::string& value,

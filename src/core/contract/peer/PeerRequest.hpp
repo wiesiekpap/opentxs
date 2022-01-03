@@ -19,8 +19,8 @@
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -47,7 +47,7 @@ class StoreSecret;
 
 namespace identifier
 {
-class Server;
+class Notary;
 }  // namespace identifier
 
 namespace proto
@@ -85,7 +85,7 @@ public:
     }
     auto Serialize() const noexcept -> OTData final;
     auto Serialize(SerializedType&) const -> bool final;
-    auto Server() const -> const identifier::Server& final { return server_; }
+    auto Server() const -> const identifier::Notary& final { return server_; }
     auto Type() const -> PeerRequestType final { return type_; }
     auto SetAlias(const std::string&) noexcept -> bool final { return false; }
 
@@ -102,7 +102,7 @@ protected:
         const Nym_p& nym,
         VersionNumber version,
         const identifier::Nym& recipient,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const PeerRequestType& type,
         const std::string& conditions = {});
     Request(
@@ -117,7 +117,7 @@ private:
 
     const OTNymID initiator_;
     const OTNymID recipient_;
-    const OTServerID server_;
+    const OTNotaryID server_;
     const OTIdentifier cookie_;
     const PeerRequestType type_;
 

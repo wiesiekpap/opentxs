@@ -23,19 +23,19 @@
 #include "internal/api/session/OTX.hpp"
 #include "internal/otx/client/Client.hpp"
 #include "internal/otx/client/OTPayment.hpp"
+#include "internal/util/UniqueQueue.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
-#include "opentxs/core/UniqueQueue.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "otx/client/PaymentTasks.hpp"
@@ -183,7 +183,7 @@ class StateMachine final : public opentxs::internal::StateMachine,
 {
 public:
     using BackgroundTask = api::session::OTX::BackgroundTask;
-    using ContextID = std::pair<OTNymID, OTServerID>;
+    using ContextID = std::pair<OTNymID, OTNotaryID>;
     using Future = api::session::OTX::Future;
     using RefreshTask = std::pair<int, std::promise<void>>;
     using Result = api::session::OTX::Result;
@@ -252,7 +252,7 @@ public:
         std::atomic<TaskID>& nextTaskID,
         const UniqueQueue<CheckNymTask>& missingNyms,
         const UniqueQueue<CheckNymTask>& outdatedNyms,
-        const UniqueQueue<OTServerID>& missingServers,
+        const UniqueQueue<OTNotaryID>& missingServers,
         const UniqueQueue<OTUnitID>& missingUnitDefinitions,
         const PasswordPrompt& reason);
     ~StateMachine() override = default;
@@ -266,7 +266,7 @@ private:
     std::atomic<TaskID>& next_task_id_;
     const UniqueQueue<CheckNymTask>& missing_nyms_;
     const UniqueQueue<CheckNymTask>& outdated_nyms_;
-    const UniqueQueue<OTServerID>& missing_servers_;
+    const UniqueQueue<OTNotaryID>& missing_servers_;
     const UniqueQueue<OTUnitID>& missing_unit_definitions_;
     const OTPasswordPrompt reason_;
     std::unique_ptr<otx::client::internal::Operation> pOp_;
@@ -299,7 +299,7 @@ private:
     std::vector<RefreshTask> tasks_;
     mutable State state_;
     mutable std::map<OTNymID, int> unknown_nyms_;
-    mutable std::map<OTServerID, int> unknown_servers_;
+    mutable std::map<OTNotaryID, int> unknown_servers_;
     mutable std::map<OTUnitID, int> unknown_units_;
 
     static auto task_done(bool done) -> TaskDone
@@ -320,8 +320,8 @@ private:
     void check_nym_revision(const otx::context::Server& context) const;
     auto check_registration(
         const identifier::Nym& nymID,
-        const identifier::Server& serverID) const -> bool;
-    auto check_server_contract(const identifier::Server& serverID) const
+        const identifier::Notary& serverID) const -> bool;
+    auto check_server_contract(const identifier::Notary& serverID) const
         -> bool;
     auto check_server_name(const otx::context::Server& context) const -> bool;
     void check_server_nym(const otx::context::Server& context) const;
@@ -359,7 +359,7 @@ private:
             taskID, success, std::move(result));
     }
     auto get_admin(const TaskID taskID, const Secret& password) const -> bool;
-    auto get_nym_fetch(const identifier::Server& serverID) const
+    auto get_nym_fetch(const identifier::Notary& serverID) const
         -> UniqueQueue<OTNymID>&
     {
         return parent_.Internal().get_nym_fetch(serverID);

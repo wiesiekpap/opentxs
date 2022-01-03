@@ -22,6 +22,7 @@
 #include "blockchain/database/common/Database.hpp"
 #include "blockchain/node/UpdateTransaction.hpp"
 #include "core/Worker.hpp"
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
@@ -409,7 +410,8 @@ auto Headers::import_genesis(const blockchain::Type type) const noexcept -> void
         const auto serialized = common_.LoadBlockHeader(hash);
 
         if (false == lmdb_.Exists(BlockHeaderMetadata, hash.Bytes())) {
-            auto genesis = api_.Factory().BlockHeader(serialized);
+            auto genesis =
+                api_.Factory().InternalSession().BlockHeader(serialized);
 
             OT_ASSERT(genesis);
 
@@ -516,7 +518,7 @@ auto Headers::load_header(const block::Hash& hash) const
         throw std::out_of_range("Block header metadata not found");
     }
 
-    auto output = api_.Factory().BlockHeader(proto);
+    auto output = api_.Factory().InternalSession().BlockHeader(proto);
 
     OT_ASSERT(output);
 

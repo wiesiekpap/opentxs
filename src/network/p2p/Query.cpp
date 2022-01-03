@@ -15,6 +15,17 @@
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/State.hpp"
 
+namespace opentxs
+{
+namespace network
+{
+namespace zeromq
+{
+class Message;
+}  // namespace zeromq
+}  // namespace network
+}  // namespace opentxs
+
 namespace opentxs::factory
 {
 using ReturnType = network::p2p::Query;

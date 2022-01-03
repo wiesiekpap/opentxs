@@ -10,18 +10,19 @@
 #include <chrono>
 #include <memory>
 
+#include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/AccountVisitor.hpp"
+#include "internal/otx/common/Cheque.hpp"
+#include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/AccountVisitor.hpp"
-#include "opentxs/core/Cheque.hpp"
-#include "opentxs/core/Editor.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Log.hpp"
@@ -35,7 +36,7 @@ namespace opentxs
 {
 PayDividendVisitor::PayDividendVisitor(
     server::Server& server,
-    const identifier::Server& theNotaryID,
+    const identifier::Notary& theNotaryID,
     const identifier::Nym& theNymID,
     const identifier::UnitDefinition& thePayoutUnitTypeId,
     const Identifier& theVoucherAcctID,
@@ -102,7 +103,7 @@ auto PayDividendVisitor::Trigger(
     // just having it get lost in the ether.)
     bool bReturnValue = false;
 
-    auto theVoucher{server_.API().Factory().Cheque(
+    auto theVoucher{server_.API().Factory().InternalSession().Cheque(
         theNotaryID, server_.API().Factory().UnitID())};
 
     OT_ASSERT(false != bool(theVoucher));
@@ -169,7 +170,8 @@ auto PayDividendVisitor::Trigger(
             // Send the voucher to the payments inbox of the recipient.
             //
             const auto strVoucher = String::Factory(*theVoucher);
-            auto thePayment{server_.API().Factory().Payment(strVoucher)};
+            auto thePayment{
+                server_.API().Factory().InternalSession().Payment(strVoucher)};
 
             OT_ASSERT(false != bool(thePayment));
 
@@ -204,8 +206,9 @@ auto PayDividendVisitor::Trigger(
         // came from.
         //
         if (!bSent) {
-            auto theReturnVoucher{server_.API().Factory().Cheque(
-                theNotaryID, server_.API().Factory().UnitID())};
+            auto theReturnVoucher{
+                server_.API().Factory().InternalSession().Cheque(
+                    theNotaryID, server_.API().Factory().UnitID())};
 
             OT_ASSERT(false != bool(theReturnVoucher));
 
@@ -241,7 +244,8 @@ auto PayDividendVisitor::Trigger(
                 const auto strReturnVoucher =
                     String::Factory(*theReturnVoucher);
                 auto theReturnPayment{
-                    server_.API().Factory().Payment(strReturnVoucher)};
+                    server_.API().Factory().InternalSession().Payment(
+                        strReturnVoucher)};
 
                 OT_ASSERT(false != bool(theReturnPayment));
 

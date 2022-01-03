@@ -21,13 +21,7 @@ class VerificationIdentity;
 class PasswordPrompt;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace identity
-{
-namespace wot
-{
-namespace verification
+namespace opentxs::identity::wot::verification
 {
 class OPENTXS_EXPORT Nym
 {
@@ -74,7 +68,4 @@ private:
     auto operator=(const Nym&) -> Nym& = delete;
     auto operator=(Nym&&) -> Nym& = delete;
 };
-}  // namespace verification
-}  // namespace wot
-}  // namespace identity
-}  // namespace opentxs
+}  // namespace opentxs::identity::wot::verification

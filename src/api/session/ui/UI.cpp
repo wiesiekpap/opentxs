@@ -11,8 +11,8 @@
 #include <utility>
 
 #include "api/session/ui/Imp-base.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 
 namespace opentxs::api::session::imp
@@ -135,7 +135,7 @@ auto UI::BlockchainIssuerID(const opentxs::blockchain::Type chain)
 }
 
 auto UI::BlockchainNotaryID(const opentxs::blockchain::Type chain)
-    const noexcept -> const identifier::Server&
+    const noexcept -> const identifier::Notary&
 {
     return imp_->BlockchainNotaryID(chain);
 }

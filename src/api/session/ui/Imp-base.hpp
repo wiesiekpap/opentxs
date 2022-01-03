@@ -20,35 +20,35 @@
 #include "Proto.hpp"
 #include "api/session/ui/UI.hpp"
 #include "api/session/ui/UpdateManager.hpp"
-#include "internal/ui/UI.hpp"
+#include "internal/core/ui/UI.hpp"
+#include "internal/util/Lockable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/core/Lockable.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/core/ui/AccountActivity.hpp"
+#include "opentxs/core/ui/AccountList.hpp"
+#include "opentxs/core/ui/AccountSummary.hpp"
+#include "opentxs/core/ui/ActivitySummary.hpp"
+#include "opentxs/core/ui/ActivityThread.hpp"
+#include "opentxs/core/ui/Blockchains.hpp"
+#include "opentxs/core/ui/Contact.hpp"
+#include "opentxs/core/ui/ContactList.hpp"
+#include "opentxs/core/ui/List.hpp"
+#include "opentxs/core/ui/MessagableList.hpp"
+#include "opentxs/core/ui/PayableList.hpp"
+#include "opentxs/core/ui/Profile.hpp"
+#include "opentxs/core/ui/Types.hpp"
+#include "opentxs/core/ui/UnitList.hpp"
 #include "opentxs/crypto/Types.hpp"
-#include "opentxs/ui/AccountActivity.hpp"
-#include "opentxs/ui/AccountList.hpp"
-#include "opentxs/ui/AccountSummary.hpp"
-#include "opentxs/ui/ActivitySummary.hpp"
-#include "opentxs/ui/ActivityThread.hpp"
-#include "opentxs/ui/Blockchains.hpp"
-#include "opentxs/ui/Contact.hpp"
-#include "opentxs/ui/ContactList.hpp"
-#include "opentxs/ui/List.hpp"
-#include "opentxs/ui/MessagableList.hpp"
-#include "opentxs/ui/PayableList.hpp"
-#include "opentxs/ui/Profile.hpp"
-#include "opentxs/ui/Types.hpp"
-#include "opentxs/ui/UnitList.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 
 class QAbstractItemModel;
 
@@ -69,7 +69,7 @@ class Client;
 
 namespace identifier
 {
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -218,7 +218,7 @@ public:
     auto BlockchainIssuerID(const opentxs::blockchain::Type chain)
         const noexcept -> const identifier::Nym&;
     auto BlockchainNotaryID(const opentxs::blockchain::Type chain)
-        const noexcept -> const identifier::Server&;
+        const noexcept -> const identifier::Notary&;
     auto BlockchainSelection(
         const opentxs::ui::Blockchains type,
         const SimpleCallback updateCB) const noexcept

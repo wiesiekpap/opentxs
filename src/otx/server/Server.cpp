@@ -17,13 +17,16 @@
 #include <vector>
 
 #include "Proto.tpp"
-#include "core/OTStorage.hpp"
 #include "internal/api/session/Endpoints.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Notary.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
 #include "internal/otx/client/OTPayment.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/otx/common/OTTransaction.hpp"
+#include "internal/otx/common/cron/OTCron.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/crypto/Config.hpp"
@@ -36,18 +39,13 @@
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/AddressType.hpp"
-#include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Armored.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/OTTransaction.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ProtocolVersion.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
-#include "opentxs/core/cron/OTCron.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Envelope.hpp"
@@ -55,6 +53,7 @@
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
@@ -63,6 +62,7 @@
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+#include "otx/common/OTStorage.hpp"
 #include "otx/server/ConfigLoader.hpp"
 #include "otx/server/MainFile.hpp"
 #include "otx/server/Transactor.hpp"
@@ -99,7 +99,7 @@ Server::Server(
     , m_notaryID(manager_.Factory().ServerID())
     , m_strServerNymID()
     , m_nymServer(nullptr)
-    , m_Cron(manager.Factory().Cron())
+    , m_Cron(manager.Factory().InternalSession().Cron())
     , notification_socket_(manager_.Network().ZeroMQ().PushSocket(
           zmq::socket::Socket::Direction::Connect))
 {
@@ -154,7 +154,7 @@ void Server::ProcessCron()
     // Such as sweeping server accounts after expiration dates, etc.
 }
 
-auto Server::GetServerID() const noexcept -> const identifier::Server&
+auto Server::GetServerID() const noexcept -> const identifier::Notary&
 {
     init_future_.get();
 
@@ -228,7 +228,7 @@ void Server::CreateMainFile(bool& mainFileExists)
     nymParameters.SetNym(0);
     nymParameters.SetDefault(false);
     m_nymServer = manager_.Wallet().Nym(
-        nymParameters, contact::ClaimType::Server, reason_, name);
+        nymParameters, identity::wot::claim::ClaimType::Server, reason_, name);
 
     if (false == bool(m_nymServer)) {
         LogError()(OT_PRETTY_CLASS())("Error: Failed to create server nym.")
@@ -550,7 +550,7 @@ auto Server::LoadServerNym(const identifier::Nym& nymID) -> bool
 // szCommand for passing payDividend (as the message command instead of
 // sendNymInstrument, the default.)
 auto Server::SendInstrumentToNym(
-    const identifier::Server& NOTARY_ID,
+    const identifier::Notary& NOTARY_ID,
     const identifier::Nym& SENDER_NYM_ID,
     const identifier::Nym& RECIPIENT_NYM_ID,
     const OTPayment& pPayment,
@@ -582,7 +582,7 @@ auto Server::SendInstrumentToNym(
 }
 
 auto Server::SendInstrumentToNym(
-    const identifier::Server& NOTARY_ID,
+    const identifier::Notary& NOTARY_ID,
     const identifier::Nym& SENDER_NYM_ID,
     const identifier::Nym& RECIPIENT_NYM_ID,
     const Message& pMsg) -> bool
@@ -596,7 +596,7 @@ auto Server::SendInstrumentToNym(
 }
 
 auto Server::DropMessageToNymbox(
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const identifier::Nym& senderNymID,
     const identifier::Nym& recipientNymID,
     transactionType transactionType,
@@ -668,7 +668,7 @@ auto Server::DropMessageToNymbox(
 // the voucher memo.
 //
 auto Server::DropMessageToNymbox(
-    const identifier::Server& NOTARY_ID,
+    const identifier::Notary& NOTARY_ID,
     const identifier::Nym& SENDER_NYM_ID,
     const identifier::Nym& RECIPIENT_NYM_ID,
     transactionType theType,
@@ -713,7 +713,8 @@ auto Server::DropMessageToNymbox(
     const Message* message{nullptr};
 
     if (nullptr == pMsg) {
-        theMsgAngel.reset(manager_.Factory().Message().release());
+        theMsgAngel.reset(
+            manager_.Factory().InternalSession().Message().release());
 
         if (nullptr != szCommand)
             theMsgAngel->m_strCommand = String::Factory(szCommand);
@@ -788,7 +789,7 @@ auto Server::DropMessageToNymbox(
     // Grab a string copy of message.
     //
     const auto strInMessage = String::Factory(*message);
-    auto theLedger{manager_.Factory().Ledger(
+    auto theLedger{manager_.Factory().InternalSession().Ledger(
         RECIPIENT_NYM_ID, RECIPIENT_NYM_ID, NOTARY_ID)};  // The
                                                           // recipient's
                                                           // Nymbox.
@@ -802,7 +803,7 @@ auto Server::DropMessageToNymbox(
                                            // Signature only.
          theLedger->VerifySignature(*m_nymServer))) {
         // Create the instrumentNotice to put in the Nymbox.
-        auto pTransaction{manager_.Factory().Transaction(
+        auto pTransaction{manager_.Factory().InternalSession().Transaction(
             *theLedger, theType, originType::not_applicable, lTransNum)};
 
         if (false != bool(pTransaction))  // The above has an OT_ASSERT within,
@@ -926,7 +927,7 @@ auto Server::nymbox_push(
     return output;
 }
 
-auto Server::SetNotaryID(const identifier::Server& id) noexcept -> void
+auto Server::SetNotaryID(const identifier::Notary& id) noexcept -> void
 {
     OT_ASSERT(false == id.empty());
 

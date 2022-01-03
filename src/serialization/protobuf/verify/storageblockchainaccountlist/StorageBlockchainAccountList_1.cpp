@@ -3,12 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "internal/protobuf/verify/StorageBlockchainAccountList.hpp"  // IWYU pragma: associated
+#include "internal/serialization/protobuf/verify/StorageBlockchainAccountList.hpp"  // IWYU pragma: associated
 
 #include <string>
 
-#include "internal/protobuf/Contact.hpp"
-#include "internal/protobuf/verify/VerifyContacts.hpp"
+#include "internal/serialization/protobuf/Contact.hpp"
+#include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
 #include "serialization/protobuf/StorageBlockchainAccountList.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

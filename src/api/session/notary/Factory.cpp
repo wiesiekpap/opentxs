@@ -10,8 +10,8 @@
 #include <exception>
 
 #include "internal/api/session/Factory.hpp"
+#include "internal/otx/common/cron/OTCron.hpp"
 #include "opentxs/api/session/Notary.hpp"
-#include "opentxs/core/cron/OTCron.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory

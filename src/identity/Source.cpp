@@ -206,7 +206,7 @@ auto Source::deserialize_paymentcode(
 {
     if (identity::SourceType::Bip47 == type) {
 
-        return factory.PaymentCode(serialized.paymentcode());
+        return factory.InternalSession().PaymentCode(serialized.paymentcode());
     } else {
 
         return factory.PaymentCode(std::string{});
@@ -220,7 +220,7 @@ auto Source::deserialize_pubkey(
 {
     if (identity::SourceType::PubKey == type) {
 
-        return factory.AsymmetricKey(serialized.key());
+        return factory.InternalSession().AsymmetricKey(serialized.key());
     } else {
 
         return crypto::key::Asymmetric::Factory();

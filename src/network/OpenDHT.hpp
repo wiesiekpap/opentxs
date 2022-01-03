@@ -12,9 +12,9 @@
 #include <mutex>
 #include <string>
 
+#include "internal/util/Flag.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/core/Flag.hpp"
 #include "opentxs/network/OpenDHT.hpp"
 
 namespace dht

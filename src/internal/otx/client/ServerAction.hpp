@@ -5,12 +5,11 @@
 
 #pragma once
 
-#include "opentxs/Version.hpp"  // IWYU pragma: associated
-
 #include <chrono>
 #include <string>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/Version.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -23,7 +22,7 @@ class ServerAction;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -40,7 +39,7 @@ class PasswordPrompt;
 
 namespace opentxs::otx::client
 {
-class OPENTXS_EXPORT ServerAction
+class ServerAction
 {
 public:
     using Action = Pimpl<opentxs::client::ServerAction>;
@@ -48,20 +47,20 @@ public:
     virtual auto ActivateSmartContract(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID,
         const std::string& agentName,
         std::unique_ptr<OTSmartContract>& contract) const -> Action = 0;
     virtual auto AdjustUsageCredits(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::Nym& targetNymID,
         const Amount& adjustment) const -> Action = 0;
     virtual auto CancelPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         std::unique_ptr<OTPaymentPlan>& plan) const -> Action = 0;
     virtual auto CreateMarketOffer(
         const PasswordPrompt& reason,
@@ -78,31 +77,31 @@ public:
     virtual auto DepositPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         std::unique_ptr<OTPaymentPlan>& plan) const -> Action = 0;
     virtual auto DownloadMarketList(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const -> Action = 0;
+        const identifier::Notary& serverID) const -> Action = 0;
     virtual auto DownloadMarketOffers(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& marketID,
         const Amount depth) const -> Action = 0;
     virtual auto DownloadMarketRecentTrades(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& marketID) const -> Action = 0;
     virtual auto DownloadNymMarketOffers(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const -> Action = 0;
+        const identifier::Notary& serverID) const -> Action = 0;
     virtual auto ExchangeBasketCurrency(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& accountID,
         const Identifier& basketID,
@@ -110,25 +109,25 @@ public:
     virtual auto IssueBasketCurrency(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const proto::UnitDefinition& basket,
         const std::string& label = "") const -> Action = 0;
     virtual auto KillMarketOffer(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID,
         const TransactionNumber number) const -> Action = 0;
     virtual auto KillPaymentPlan(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID,
         const TransactionNumber number) const -> Action = 0;
     virtual auto PayDividend(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& accountID,
         const std::string& memo,
@@ -136,29 +135,29 @@ public:
     virtual auto TriggerClause(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const TransactionNumber transactionNumber,
         const std::string& clause,
         const std::string& parameter) const -> Action = 0;
     virtual auto UnregisterAccount(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID) const -> Action = 0;
     virtual auto UnregisterNym(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID) const -> Action = 0;
+        const identifier::Notary& serverID) const -> Action = 0;
     virtual auto WithdrawVoucher(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
-        const identifier::Server& serverID,
+        const identifier::Notary& serverID,
         const Identifier& accountID,
         const identifier::Nym& recipientNymID,
         const Amount amount,
         const std::string& memo) const -> Action = 0;
 
-    OPENTXS_NO_EXPORT virtual ~ServerAction() = default;
+    virtual ~ServerAction() = default;
 
 protected:
     ServerAction() = default;

@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <ctime>
 
-#include "opentxs/core/Contract.hpp"
+#include "internal/otx/common/Contract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -27,7 +27,7 @@ class Session;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -76,7 +76,7 @@ public:
         const Time VALID_TO,
         const Time MINT_EXPIRATION,
         const identifier::UnitDefinition& theInstrumentDefinitionID,
-        const identifier::Server& theNotaryID,
+        const identifier::Notary& theNotaryID,
         const identity::Nym& theNotary,
         const Amount& nDenom1,
         const Amount& nDenom2,

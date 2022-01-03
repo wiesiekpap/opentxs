@@ -23,7 +23,6 @@
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -42,9 +41,7 @@
 #include "opentxs/blockchain/crypto/PaymentCode.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/PaymentCode.hpp"  // IWYU pragma: keep
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
@@ -52,7 +49,10 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -66,7 +66,8 @@ struct AddressData {
 };
 
 bool init_{false};
-const ot::contact::ClaimType individual_{ot::contact::ClaimType::Individual};
+const ot::identity::wot::claim::ClaimType individual_{
+    ot::identity::wot::claim::ClaimType::Individual};
 const ot::blockchain::Type btc_chain_{ot::blockchain::Type::Bitcoin};
 const ot::blockchain::Type bch_chain_{ot::blockchain::Type::BitcoinCash};
 const ot::blockchain::Type ltc_chain_{ot::blockchain::Type::Litecoin};

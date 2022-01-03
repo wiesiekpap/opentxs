@@ -30,7 +30,6 @@
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/blockchain/crypto/Subchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
-#include "opentxs/contact/ClaimType.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
@@ -38,6 +37,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/p2p/State.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -92,11 +92,6 @@ class Manager;
 }  // namespace node
 }  // namespace blockchain
 
-namespace contact
-{
-class Contact;
-}  // namespace contact
-
 namespace identifier
 {
 class Nym;
@@ -123,6 +118,7 @@ namespace proto
 class HDPath;
 }  // namespace proto
 
+class Contact;
 class PasswordPrompt;
 class PaymentCode;
 }  // namespace opentxs
@@ -239,11 +235,10 @@ struct Blockchain::Imp {
         const opentxs::blockchain::Type chain,
         const PasswordPrompt& reason) const noexcept(false)
         -> const opentxs::blockchain::crypto::PaymentCode&;
-    virtual auto ProcessContact(const contact::Contact& contact) const noexcept
-        -> bool;
+    virtual auto ProcessContact(const Contact& contact) const noexcept -> bool;
     virtual auto ProcessMergedContact(
-        const contact::Contact& parent,
-        const contact::Contact& child) const noexcept -> bool;
+        const Contact& parent,
+        const Contact& child) const noexcept -> bool;
     virtual auto ProcessTransaction(
         const opentxs::blockchain::Type chain,
         const opentxs::blockchain::block::bitcoin::Transaction& in,

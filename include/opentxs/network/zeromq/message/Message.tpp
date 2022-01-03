@@ -9,7 +9,7 @@
 
 #include <type_traits>
 
-#include "network/zeromq/message/Message.hpp"
+#include "opentxs/network/zeromq/message/Message.hpp"
 
 namespace opentxs::network::zeromq
 {

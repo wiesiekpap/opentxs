@@ -22,8 +22,10 @@
 #include "integration/Helpers.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -46,8 +48,8 @@ class Definition;
 
 namespace identifier
 {
+class Notary;
 class Nym;
-class Server;
 }  // namespace identifier
 
 namespace network
@@ -189,15 +191,15 @@ protected:
     auto RefreshAccount(
         const ot::api::session::Client& api,
         const ot::identifier::Nym& nym,
-        const ot::identifier::Server& server) const noexcept -> void;
+        const ot::identifier::Notary& server) const noexcept -> void;
     auto RefreshAccount(
         const ot::api::session::Client& api,
         const std::vector<std::string> nyms,
-        const ot::identifier::Server& server) const noexcept -> void;
+        const ot::identifier::Notary& server) const noexcept -> void;
     auto RefreshAccount(
         const ot::api::session::Client& api,
         const std::vector<const User*> nyms,
-        const ot::identifier::Server& server) const noexcept -> void;
+        const ot::identifier::Notary& server) const noexcept -> void;
     auto RegisterAccount(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,

@@ -7,8 +7,8 @@
 
 #include <cstdint>
 
-#include "opentxs/core/Account.hpp"
-#include "opentxs/core/AccountVisitor.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/AccountVisitor.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
@@ -19,7 +19,7 @@ namespace opentxs
 {
 namespace identifier
 {
-class Server;
+class Notary;
 }  // namespace identifier
 
 namespace server
@@ -59,7 +59,7 @@ class PayDividendVisitor final : public AccountVisitor
 public:
     PayDividendVisitor(
         server::Server& theServer,
-        const identifier::Server& theNotaryID,
+        const identifier::Notary& theNotaryID,
         const identifier::Nym& theNymID,
         const identifier::UnitDefinition& thePayoutUnitTypeId,
         const Identifier& theVoucherAcctID,

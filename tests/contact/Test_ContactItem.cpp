@@ -9,17 +9,18 @@
 #include <string>
 
 #include "1_Internal.hpp"
-#include "internal/contact/Contact.hpp"
+#include "internal/identity/wot/claim/Types.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
-#include "opentxs/contact/Attribute.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/ContactItem.hpp"
-#include "opentxs/contact/SectionType.hpp"
+#include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
+#include "opentxs/identity/wot/claim/Attribute.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 namespace ot = opentxs;
@@ -36,10 +37,10 @@ public:
               std::string("testNym"),
               CONTACT_CONTACT_DATA_VERSION,
               CONTACT_CONTACT_DATA_VERSION,
-              ot::contact::SectionType::Identifier,
-              ot::contact::ClaimType::Employee,
+              ot::identity::wot::claim::SectionType::Identifier,
+              ot::identity::wot::claim::ClaimType::Employee,
               std::string("testValue"),
-              {ot::contact::Attribute::Active},
+              {ot::identity::wot::claim::Attribute::Active},
               NULL_START,
               NULL_END,
               "")
@@ -47,20 +48,20 @@ public:
     }
 
     const ot::api::session::Client& api_;
-    const ot::contact::ContactItem contactItem_;
+    const ot::identity::wot::claim::Item contactItem_;
 };
 
 TEST_F(Test_ContactItem, first_constructor)
 {
-    const ot::contact::ContactItem contactItem1(
+    const ot::identity::wot::claim::Item contactItem1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
-        ot::contact::ClaimType::Employee,
+        ot::identity::wot::claim::SectionType::Identifier,
+        ot::identity::wot::claim::ClaimType::Employee,
         std::string("testValue"),
-        {ot::contact::Attribute::Active},
+        {ot::identity::wot::claim::Attribute::Active},
         NULL_START,
         NULL_END,
         "");
@@ -69,16 +70,19 @@ TEST_F(Test_ContactItem, first_constructor)
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "testContactItemNym",
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::Employee,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::Employee,
             NULL_START,
             NULL_END,
             "testValue",
             "")));
     ASSERT_EQ(identifier, contactItem1.ID());
     ASSERT_EQ(CONTACT_CONTACT_DATA_VERSION, contactItem1.Version());
-    ASSERT_EQ(ot::contact::SectionType::Identifier, contactItem1.Section());
-    ASSERT_EQ(ot::contact::ClaimType::Employee, contactItem1.Type());
+    ASSERT_EQ(
+        ot::identity::wot::claim::SectionType::Identifier,
+        contactItem1.Section());
+    ASSERT_EQ(
+        ot::identity::wot::claim::ClaimType::Employee, contactItem1.Type());
     ASSERT_EQ("testValue", contactItem1.Value());
     ASSERT_EQ(contactItem1.Start(), NULL_START);
     ASSERT_EQ(contactItem1.End(), NULL_END);
@@ -90,15 +94,15 @@ TEST_F(Test_ContactItem, first_constructor)
 
 TEST_F(Test_ContactItem, first_constructor_different_versions)
 {
-    const ot::contact::ContactItem contactItem1(
+    const ot::identity::wot::claim::Item contactItem1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION - 1,  // previous version
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
-        ot::contact::ClaimType::Employee,
+        ot::identity::wot::claim::SectionType::Identifier,
+        ot::identity::wot::claim::ClaimType::Employee,
         std::string("testValue"),
-        {ot::contact::Attribute::Active},
+        {ot::identity::wot::claim::Attribute::Active},
         NULL_START,
         NULL_END,
         "");
@@ -107,34 +111,38 @@ TEST_F(Test_ContactItem, first_constructor_different_versions)
 
 TEST_F(Test_ContactItem, second_constructor)
 {
-    const ot::contact::ContactItem contactItem1(
+    const ot::identity::wot::claim::Item contactItem1(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testContactItemNym"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
         ot::Claim(
             "",
-            ot::translate(ot::contact::SectionType::Identifier),
-            ot::translate(ot::contact::ClaimType::Employee),
+            ot::translate(ot::identity::wot::claim::SectionType::Identifier),
+            ot::translate(ot::identity::wot::claim::ClaimType::Employee),
             "testValue",
             NULL_START,
             NULL_END,
-            {static_cast<uint32_t>(ot::contact::Attribute::Active)}));
+            {static_cast<uint32_t>(
+                ot::identity::wot::claim::Attribute::Active)}));
 
     const ot::OTIdentifier identifier(
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "testContactItemNym",
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::Employee,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::Employee,
             NULL_START,
             NULL_END,
             "testValue",
             "")));
     ASSERT_EQ(identifier, contactItem1.ID());
     ASSERT_EQ(CONTACT_CONTACT_DATA_VERSION, contactItem1.Version());
-    ASSERT_EQ(ot::contact::SectionType::Identifier, contactItem1.Section());
-    ASSERT_EQ(ot::contact::ClaimType::Employee, contactItem1.Type());
+    ASSERT_EQ(
+        ot::identity::wot::claim::SectionType::Identifier,
+        contactItem1.Section());
+    ASSERT_EQ(
+        ot::identity::wot::claim::ClaimType::Employee, contactItem1.Type());
     ASSERT_EQ("testValue", contactItem1.Value());
     ASSERT_EQ(contactItem1.Start(), NULL_START);
     ASSERT_EQ(contactItem1.End(), NULL_END);
@@ -146,7 +154,7 @@ TEST_F(Test_ContactItem, second_constructor)
 
 TEST_F(Test_ContactItem, copy_constructor)
 {
-    ot::contact::ContactItem copiedContactItem(contactItem_);
+    ot::identity::wot::claim::Item copiedContactItem(contactItem_);
 
     ASSERT_EQ(contactItem_.ID(), copiedContactItem.ID());
     ASSERT_EQ(contactItem_.Version(), copiedContactItem.Version());
@@ -168,15 +176,15 @@ TEST_F(Test_ContactItem, operator_equal_true)
 
 TEST_F(Test_ContactItem, operator_equal_false)
 {
-    ot::contact::ContactItem contactItem2(
+    ot::identity::wot::claim::Item contactItem2(
         dynamic_cast<const ot::api::session::Client&>(api_),
         std::string("testNym2"),
         CONTACT_CONTACT_DATA_VERSION,
         CONTACT_CONTACT_DATA_VERSION,
-        ot::contact::SectionType::Identifier,
-        ot::contact::ClaimType::Employee,
+        ot::identity::wot::claim::SectionType::Identifier,
+        ot::identity::wot::claim::ClaimType::Employee,
         std::string("testValue2"),
-        {ot::contact::Attribute::Active},
+        {ot::identity::wot::claim::Attribute::Active},
         NULL_START,
         NULL_END,
         "");
@@ -192,15 +200,18 @@ TEST_F(Test_ContactItem, public_accessors)
         ot::Identifier::Factory(ot::identity::credential::Contact::ClaimID(
             dynamic_cast<const ot::api::session::Client&>(api_),
             "testNym",
-            ot::contact::SectionType::Identifier,
-            ot::contact::ClaimType::Employee,
+            ot::identity::wot::claim::SectionType::Identifier,
+            ot::identity::wot::claim::ClaimType::Employee,
             NULL_START,
             NULL_END,
             "testValue",
             "")));
     ASSERT_EQ(identifier, contactItem_.ID());
-    ASSERT_EQ(ot::contact::SectionType::Identifier, contactItem_.Section());
-    ASSERT_EQ(ot::contact::ClaimType::Employee, contactItem_.Type());
+    ASSERT_EQ(
+        ot::identity::wot::claim::SectionType::Identifier,
+        contactItem_.Section());
+    ASSERT_EQ(
+        ot::identity::wot::claim::ClaimType::Employee, contactItem_.Type());
     ASSERT_EQ("testValue", contactItem_.Value());
     ASSERT_EQ(contactItem_.Start(), NULL_START);
     ASSERT_EQ(contactItem_.End(), NULL_END);
@@ -263,7 +274,7 @@ TEST_F(Test_ContactItem, Serialize)
     auto bytes = ot::Space{};
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), false));
 
-    auto restored1 = ot::contact::ContactItem{
+    auto restored1 = ot::identity::wot::claim::Item{
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testNym",
         contactItem_.Version(),
@@ -279,7 +290,7 @@ TEST_F(Test_ContactItem, Serialize)
     // Test with id.
     EXPECT_TRUE(contactItem_.Serialize(ot::writer(bytes), true));
 
-    auto restored2 = ot::contact::ContactItem{
+    auto restored2 = ot::identity::wot::claim::Item{
         dynamic_cast<const ot::api::session::Client&>(api_),
         "testNym",
         contactItem_.Version(),

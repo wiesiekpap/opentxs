@@ -21,7 +21,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/core/AddressType.hpp"
 #include "opentxs/core/String.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
@@ -187,7 +187,7 @@ auto ZMQ::Server(const std::string& id) const noexcept(false)
 
     if (server_connections_.end() != existing) { return existing->second; }
 
-    auto contract = api_.Wallet().Server(identifier::Server::Factory(id));
+    auto contract = api_.Wallet().Server(identifier::Notary::Factory(id));
     auto [it, created] = server_connections_.emplace(
         id,
         opentxs::network::ServerConnection::Factory(

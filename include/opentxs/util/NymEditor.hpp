@@ -5,7 +5,7 @@
 
 #pragma once
 
-// IWYU pragma: no_include "opentxs/contact/ClaimType.hpp"
+// IWYU pragma: no_include "opentxs/identity/wot/claim/ClaimType.hpp"
 // IWYU pragma: no_include "opentxs/core/UnitType.hpp"
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
@@ -21,9 +21,9 @@
 #include <vector>
 
 #include "opentxs/Types.hpp"
-#include "opentxs/contact/Types.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
@@ -41,11 +41,6 @@ class Factory;
 }  // namespace session
 }  // namespace api
 
-namespace contact
-{
-class ContactData;
-}  // namespace contact
-
 namespace crypto
 {
 class Parameters;
@@ -55,6 +50,17 @@ namespace identifier
 {
 class UnitDefinition;
 }  // namespace identifier
+
+namespace identity
+{
+namespace wot
+{
+namespace claim
+{
+class Data;
+}  // namespace claim
+}  // namespace wot
+}  // namespace identity
 
 namespace proto
 {
@@ -76,9 +82,9 @@ public:
     auto asPublicNym() const -> identity::Nym::Serialized;
     auto BestEmail() const -> std::string;
     auto BestPhoneNumber() const -> std::string;
-    auto BestSocialMediaProfile(const contact::ClaimType type) const
-        -> std::string;
-    auto Claims() const -> const contact::ContactData&;
+    auto BestSocialMediaProfile(
+        const identity::wot::claim::ClaimType type) const -> std::string;
+    auto Claims() const -> const identity::wot::claim::Data&;
     auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
         -> bool;
     auto EmailAddresses(bool active = true) const -> std::string;
@@ -93,10 +99,12 @@ public:
     auto PhoneNumbers(bool active = true) const -> std::string;
     auto PreferredOTServer() const -> std::string;
     auto PrintContactData() const -> std::string;
-    auto SocialMediaProfiles(const contact::ClaimType type, bool active = true)
-        const -> std::string;
-    auto SocialMediaProfileTypes() const -> std::set<contact::ClaimType>;
-    auto Type() const -> contact::ClaimType;
+    auto SocialMediaProfiles(
+        const identity::wot::claim::ClaimType type,
+        bool active = true) const -> std::string;
+    auto SocialMediaProfileTypes() const
+        -> std::set<identity::wot::claim::ClaimType>;
+    auto Type() const -> identity::wot::claim::ClaimType;
     auto Valid() const -> bool;
 
     auto AddChildKeyCredential(
@@ -132,7 +140,7 @@ public:
         const PasswordPrompt& reason) -> bool;
     auto AddSocialMediaProfile(
         const std::string& value,
-        const contact::ClaimType type,
+        const identity::wot::claim::ClaimType type,
         const bool primary,
         const bool active,
         const PasswordPrompt& reason) -> bool;
@@ -145,7 +153,7 @@ public:
     auto SetContactData(const ReadView& data, const PasswordPrompt& reason)
         -> bool;
     auto SetScope(
-        const contact::ClaimType type,
+        const identity::wot::claim::ClaimType type,
         const std::string& name,
         const bool primary,
         const PasswordPrompt& reason) -> bool;
@@ -164,7 +172,7 @@ private:
 
     std::shared_ptr<identity::Nym> nym_;
 
-    auto data() const -> const contact::ContactData&;
+    auto data() const -> const identity::wot::claim::Data&;
 
     auto nym() const -> const identity::Nym&;
     auto nym() -> identity::Nym&;

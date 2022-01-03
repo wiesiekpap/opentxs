@@ -50,11 +50,6 @@ class Bulk;
 }  // namespace database
 }  // namespace blockchain
 
-namespace contact
-{
-class Contact;
-}  // namespace contact
-
 namespace storage
 {
 namespace lmdb
@@ -62,6 +57,8 @@ namespace lmdb
 class LMDB;
 }  // namespace lmdb
 }  // namespace storage
+
+class Contact;
 }  // namespace opentxs
 
 namespace opentxs::blockchain::database::common
@@ -84,11 +81,10 @@ public:
         -> std::vector<pTxid>;
     auto StoreTransaction(const block::bitcoin::Transaction& tx) const noexcept
         -> bool;
-    auto UpdateContact(const contact::Contact& contact) const noexcept
+    auto UpdateContact(const Contact& contact) const noexcept
         -> std::vector<pTxid>;
-    auto UpdateMergedContact(
-        const contact::Contact& parent,
-        const contact::Contact& child) const noexcept -> std::vector<pTxid>;
+    auto UpdateMergedContact(const Contact& parent, const Contact& child)
+        const noexcept -> std::vector<pTxid>;
 
     Wallet(
         const api::Session& api,

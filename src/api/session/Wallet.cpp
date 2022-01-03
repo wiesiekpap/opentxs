@@ -26,13 +26,15 @@
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/client/Factory.hpp"
 #include "internal/otx/client/Issuer.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/NymFile.hpp"
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
-#include "internal/protobuf/Check.hpp"
-#include "internal/protobuf/verify/Nym.hpp"
-#include "internal/protobuf/verify/Purse.hpp"
-#include "internal/protobuf/verify/ServerContract.hpp"
-#include "internal/protobuf/verify/UnitDefinition.hpp"
+#include "internal/serialization/protobuf/Check.hpp"
+#include "internal/serialization/protobuf/verify/Nym.hpp"
+#include "internal/serialization/protobuf/verify/Purse.hpp"
+#include "internal/serialization/protobuf/verify/ServerContract.hpp"
+#include "internal/serialization/protobuf/verify/UnitDefinition.hpp"
 #include "internal/util/Exclusive.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/Shared.hpp"
@@ -43,24 +45,22 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/NymFile.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
-#include "opentxs/core/contract/basket/BasketContract.hpp"
 #include "opentxs/core/contract/peer/PeerObject.hpp"
 #include "opentxs/core/contract/peer/PeerObjectType.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
@@ -379,7 +379,7 @@ auto Wallet::BasketContract(
 
 auto Wallet::CreateAccount(
     const identifier::Nym& ownerNymID,
-    const identifier::Server& notaryID,
+    const identifier::Notary& notaryID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const identity::Nym& signer,
     Account::AccountType type,
@@ -1136,7 +1136,7 @@ auto Wallet::Nym(const ReadView& bytes) const -> Nym_p
 }
 
 auto Wallet::Nym(
-    const contact::ClaimType type,
+    const identity::wot::claim::ClaimType type,
     const PasswordPrompt& reason,
     const std::string& name) const -> Nym_p
 {
@@ -1148,18 +1148,19 @@ auto Wallet::Nym(
     const PasswordPrompt& reason,
     const std::string& name) const -> Nym_p
 {
-    return Nym(parameters, contact::ClaimType::Individual, reason, name);
+    return Nym(
+        parameters, identity::wot::claim::ClaimType::Individual, reason, name);
 }
 
 auto Wallet::Nym(const PasswordPrompt& reason, const std::string& name) const
     -> Nym_p
 {
-    return Nym({}, contact::ClaimType::Individual, reason, name);
+    return Nym({}, identity::wot::claim::ClaimType::Individual, reason, name);
 }
 
 auto Wallet::Nym(
     const opentxs::crypto::Parameters& parameters,
-    const contact::ClaimType type,
+    const identity::wot::claim::ClaimType type,
     const PasswordPrompt& reason,
     const std::string& name) const -> Nym_p
 {
@@ -1883,7 +1884,7 @@ auto Wallet::PeerRequestUpdate(
 
 auto Wallet::purse(
     const identifier::Nym& nym,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& unit,
     const bool checking) const -> PurseMap::mapped_type&
 {
@@ -1923,7 +1924,7 @@ auto Wallet::purse(
 
 auto Wallet::Purse(
     const identifier::Nym& nym,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& unit,
     const bool checking) const -> const otx::blind::Purse&
 {
@@ -1932,7 +1933,7 @@ auto Wallet::Purse(
 
 auto Wallet::mutable_Purse(
     const identifier::Nym& nymID,
-    const identifier::Server& server,
+    const identifier::Notary& server,
     const identifier::UnitDefinition& unit,
     const PasswordPrompt& reason,
     const otx::blind::CashType type) const
@@ -1958,7 +1959,7 @@ auto Wallet::mutable_Purse(
         });
 }
 
-auto Wallet::RemoveServer(const identifier::Server& id) const -> bool
+auto Wallet::RemoveServer(const identifier::Notary& id) const -> bool
 {
     Lock mapLock(server_map_lock_);
     auto deleted = server_map_.erase(id);
@@ -1979,7 +1980,7 @@ auto Wallet::RemoveUnitDefinition(const identifier::UnitDefinition& id) const
     return false;
 }
 
-auto Wallet::publish_server(const identifier::Server& id) const noexcept -> void
+auto Wallet::publish_server(const identifier::Notary& id) const noexcept -> void
 {
     server_publisher_->Send([&] {
         auto work =
@@ -2201,7 +2202,7 @@ auto Wallet::SetNymAlias(const identifier::Nym& id, const std::string& alias)
 }
 
 auto Wallet::Server(
-    const identifier::Server& id,
+    const identifier::Notary& id,
     const std::chrono::milliseconds& timeout) const -> OTServerContract
 {
     if (blockchain::Type::Unknown != blockchain::Chain(api_, id)) {
@@ -2431,7 +2432,7 @@ auto Wallet::Server(
         LogError()(OT_PRETTY_CLASS())("Error: Nym does not exist.").Flush();
     }
 
-    return Server(identifier::Server::Factory(std::string{}));
+    return Server(identifier::Notary::Factory(std::string{}));
 }
 
 auto Wallet::ServerList() const -> ObjectList
@@ -2490,7 +2491,7 @@ auto Wallet::server_to_nym(Identifier& input) const -> OTNymID
 }
 
 auto Wallet::SetServerAlias(
-    const identifier::Server& id,
+    const identifier::Notary& id,
     const std::string& alias) const -> bool
 {
     const bool saved = api_.Storage().SetServerAlias(id, alias);

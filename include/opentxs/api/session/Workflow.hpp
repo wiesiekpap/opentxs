@@ -33,7 +33,7 @@ class Session;
 namespace identifier
 {
 class Nym;
-class Server;
+class Notary;
 class UnitDefinition;
 }  // namespace identifier
 
@@ -183,7 +183,7 @@ public:
     /** Record a transfer accept, or accept attempt */
     virtual auto AcceptTransfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& pending,
         const Message& reply) const -> bool = 0;
     /** Record a successful transfer attempt */
@@ -206,19 +206,19 @@ public:
     /** Record receipt of a transfer receipt */
     virtual auto ClearTransfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& receipt) const -> bool = 0;
     /** Record a process inbox for sender that accepts a transfer receipt */
     virtual auto CompleteTransfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& receipt,
         const Message& reply) const -> bool = 0;
     /** Create a new incoming transfer workflow, or update an existing internal
      *  transfer workflow. */
     virtual auto ConveyTransfer(
         const identifier::Nym& nymID,
-        const identifier::Server& notaryID,
+        const identifier::Notary& notaryID,
         const OTTransaction& pending) const -> OTIdentifier = 0;
     /** Record a new outgoing or internal "sent transfer" (or attempt) workflow
      */

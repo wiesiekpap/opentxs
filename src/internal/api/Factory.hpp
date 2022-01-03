@@ -39,7 +39,7 @@ class Context;
 
 class Flag;
 class Options;
-class OTCaller;
+class PasswordCaller;
 class String;
 }  // namespace opentxs
 
@@ -48,7 +48,7 @@ namespace opentxs::factory
 auto Context(
     Flag& running,
     const Options& args,
-    OTCaller* externalPasswordCallback = nullptr) noexcept
+    PasswordCaller* externalPasswordCallback = nullptr) noexcept
     -> std::unique_ptr<api::internal::Context>;
 auto Legacy(const std::string& home) noexcept -> std::unique_ptr<api::Legacy>;
 auto Log(

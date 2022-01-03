@@ -12,6 +12,7 @@
 #include <optional>
 #include <set>
 
+#include "blockchain/database/wallet/Pattern.hpp"
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/SubchainID.hpp"
 #include "blockchain/database/wallet/Types.hpp"

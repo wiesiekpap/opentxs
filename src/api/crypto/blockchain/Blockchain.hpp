@@ -83,11 +83,6 @@ class Manager;
 }  // namespace node
 }  // namespace blockchain
 
-namespace contact
-{
-class Contact;
-}  // namespace contact
-
 namespace identifier
 {
 class Nym;
@@ -230,11 +225,9 @@ public:
         -> const opentxs::blockchain::crypto::PaymentCode& final;
     auto PubkeyHash(const Chain chain, const Data& pubkey) const noexcept(false)
         -> OTData final;
-    auto ProcessContact(const contact::Contact& contact) const noexcept
-        -> bool final;
-    auto ProcessMergedContact(
-        const contact::Contact& parent,
-        const contact::Contact& child) const noexcept -> bool final;
+    auto ProcessContact(const Contact& contact) const noexcept -> bool final;
+    auto ProcessMergedContact(const Contact& parent, const Contact& child)
+        const noexcept -> bool final;
     auto ProcessTransaction(
         const Chain chain,
         const opentxs::blockchain::block::bitcoin::Transaction& transaction,

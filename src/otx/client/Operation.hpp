@@ -20,30 +20,30 @@
 #include "Proto.hpp"
 #include "core/StateMachine.hpp"
 #include "internal/otx/client/Client.hpp"
+#include "internal/otx/common/Account.hpp"
+#include "internal/otx/common/Ledger.hpp"
+#include "internal/otx/common/Message.hpp"
+#include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
-#include "opentxs/contact/ClaimType.hpp"
-#include "opentxs/contact/SectionType.hpp"
-#include "opentxs/core/Account.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/Editor.hpp"
-#include "opentxs/core/Ledger.hpp"
-#include "opentxs/core/Message.hpp"
-#include "opentxs/core/PasswordPrompt.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/Types.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/otx/OperationType.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/PasswordPrompt.hpp"
 
 namespace opentxs
 {
@@ -89,14 +89,14 @@ class Operation final : virtual public otx::client::internal::Operation,
 {
 public:
     auto NymID() const -> const identifier::Nym& override { return nym_id_; }
-    auto ServerID() const -> const identifier::Server& override
+    auto ServerID() const -> const identifier::Notary& override
     {
         return server_id_;
     }
 
     auto AddClaim(
-        const contact::SectionType section,
-        const contact::ClaimType type,
+        const identity::wot::claim::SectionType section,
+        const identity::wot::claim::ClaimType type,
         const String& value,
         const bool primary) -> bool override;
     auto ConveyPayment(
@@ -118,7 +118,7 @@ public:
         const otx::context::Server::ExtraArgs& args) -> bool override;
     void join() override;
     auto PublishContract(const identifier::Nym& id) -> bool override;
-    auto PublishContract(const identifier::Server& id) -> bool override;
+    auto PublishContract(const identifier::Notary& id) -> bool override;
     auto PublishContract(const identifier::UnitDefinition& id) -> bool override;
     auto RequestAdmin(const String& password) -> bool override;
     auto SendCash(
@@ -194,7 +194,7 @@ private:
     const api::session::Client& api_;
     const OTPasswordPrompt reason_;
     const OTNymID nym_id_;
-    const OTServerID server_id_;
+    const OTNotaryID server_id_;
     std::atomic<otx::OperationType> type_;
     std::atomic<State> state_;
     std::atomic<bool> refresh_account_;
@@ -205,7 +205,7 @@ private:
     std::atomic<bool> enable_otx_push_;
     Promise result_;
     OTNymID target_nym_id_;
-    OTServerID target_server_id_;
+    OTNotaryID target_server_id_;
     OTUnitID target_unit_id_;
     contract::Type contract_type_;
     std::shared_ptr<const proto::UnitDefinition> unit_definition_;
@@ -214,8 +214,8 @@ private:
     Amount amount_;
     OTString memo_;
     bool bool_;
-    contact::SectionType claim_section_;
-    contact::ClaimType claim_type_;
+    identity::wot::claim::SectionType claim_section_;
+    identity::wot::claim::ClaimType claim_type_;
     std::shared_ptr<Cheque> cheque_;
     std::shared_ptr<const OTPayment> payment_;
     std::shared_ptr<Ledger> inbox_;
@@ -339,7 +339,7 @@ private:
     Operation(
         const api::session::Client& api,
         const identifier::Nym& nym,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const PasswordPrompt& reason);
     Operation() = delete;
     Operation(const Operation&) = delete;

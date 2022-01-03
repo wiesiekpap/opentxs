@@ -5,12 +5,45 @@
 
 #pragma once
 
+#include <cstddef>
+#include <functional>
+#include <string_view>
+#include <variant>
+
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
 
+namespace opentxs
+{
+namespace blockchain
+{
+namespace database
+{
+namespace wallet
+{
+namespace db
+{
+struct Pattern;
+}  // namespace db
+}  // namespace wallet
+}  // namespace database
+}  // namespace blockchain
+}  // namespace opentxs
+
+namespace std
+{
+template <>
+struct hash<opentxs::blockchain::database::wallet::db::Pattern> {
+    auto operator()(const opentxs::blockchain::database::wallet::db::Pattern&
+                        data) const noexcept -> std::size_t;
+};
+}  // namespace std
+
 namespace opentxs::blockchain::database::wallet::db
 {
+auto operator==(const Pattern& lhs, const Pattern& rhs) noexcept -> bool;
+
 struct Pattern {
     const Space data_;
 
@@ -31,6 +64,4 @@ private:
     auto operator=(const Pattern&) -> Pattern& = delete;
     auto operator=(Pattern&&) -> Pattern& = delete;
 };
-
-auto operator==(const Pattern& lhs, const Pattern& rhs) noexcept -> bool;
 }  // namespace opentxs::blockchain::database::wallet::db

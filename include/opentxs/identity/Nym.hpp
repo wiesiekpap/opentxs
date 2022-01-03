@@ -33,11 +33,6 @@ class MessageLite;
 
 namespace opentxs
 {
-namespace contact
-{
-class ContactData;
-}  // namespace contact
-
 namespace crypto
 {
 namespace key
@@ -56,6 +51,14 @@ class UnitDefinition;
 
 namespace identity
 {
+namespace wot
+{
+namespace claim
+{
+class Data;
+}  // namespace claim
+}  // namespace wot
+
 class Authority;
 class Source;
 }  // namespace identity
@@ -100,11 +103,11 @@ public:
     virtual auto begin() const noexcept -> const_iterator = 0;
     virtual auto BestEmail() const -> std::string = 0;
     virtual auto BestPhoneNumber() const -> std::string = 0;
-    virtual auto BestSocialMediaProfile(const contact::ClaimType type) const
+    virtual auto BestSocialMediaProfile(const wot::claim::ClaimType type) const
         -> std::string = 0;
     virtual auto cbegin() const noexcept -> const_iterator = 0;
     virtual auto cend() const noexcept -> const_iterator = 0;
-    virtual auto Claims() const -> const contact::ContactData& = 0;
+    virtual auto Claims() const -> const wot::claim::Data& = 0;
     virtual auto CompareID(const Nym& RHS) const -> bool = 0;
     virtual auto CompareID(const identifier::Nym& rhs) const -> bool = 0;
     virtual auto ContactCredentialVersion() const -> VersionNumber = 0;
@@ -180,10 +183,10 @@ public:
         -> bool = 0;
     virtual auto size() const noexcept -> std::size_t = 0;
     virtual auto SocialMediaProfiles(
-        const contact::ClaimType type,
+        const wot::claim::ClaimType type,
         bool active = true) const -> std::string = 0;
     virtual auto SocialMediaProfileTypes() const
-        -> const std::set<contact::ClaimType> = 0;
+        -> const std::set<wot::claim::ClaimType> = 0;
     virtual auto Source() const -> const identity::Source& = 0;
     virtual auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
         -> OTSecret = 0;
@@ -233,7 +236,7 @@ public:
         const bool primary) -> bool = 0;
     virtual auto AddSocialMediaProfile(
         const std::string& value,
-        const contact::ClaimType type,
+        const wot::claim::ClaimType type,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool = 0;
@@ -249,7 +252,7 @@ public:
         const proto::ContactData& data,
         const PasswordPrompt& reason) -> bool = 0;
     virtual auto SetScope(
-        const contact::ClaimType type,
+        const wot::claim::ClaimType type,
         const std::string& name,
         const PasswordPrompt& reason,
         const bool primary) -> bool = 0;

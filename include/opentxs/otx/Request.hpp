@@ -47,7 +47,7 @@ public:
     static auto Factory(
         const api::Session& api,
         const Nym_p signer,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const otx::ServerRequestType type,
         const RequestNumber number,
         const PasswordPrompt& reason) -> Pimpl<opentxs::otx::Request>;
@@ -63,7 +63,7 @@ public:
     virtual auto Serialize(AllocateOutput destination) const -> bool = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(
         proto::ServerRequest& serialized) const -> bool = 0;
-    virtual auto Server() const -> const identifier::Server& = 0;
+    virtual auto Server() const -> const identifier::Notary& = 0;
     virtual auto Type() const -> otx::ServerRequestType = 0;
 
     virtual auto SetIncludeNym(const bool include, const PasswordPrompt& reason)

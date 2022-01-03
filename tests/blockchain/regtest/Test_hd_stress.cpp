@@ -42,15 +42,15 @@
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/blockchain/node/TxoState.hpp"
 #include "opentxs/core/UnitType.hpp"
+#include "opentxs/core/ui/AccountActivity.hpp"
+#include "opentxs/core/ui/BalanceItem.hpp"
 #include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/Parameters.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
-#include "opentxs/ui/AccountActivity.hpp"
-#include "opentxs/ui/BalanceItem.hpp"
-#include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "paymentcode/VectorsV3.hpp"
 #include "ui/Helpers.hpp"
 
@@ -81,7 +81,7 @@ protected:
     const ot::blockchain::crypto::HD& bob_account_;
     const ot::Identifier& expected_account_alice_;
     const ot::Identifier& expected_account_bob_;
-    const ot::identifier::Server& expected_notary_;
+    const ot::identifier::Notary& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
     const std::string expected_display_unit_;
     const std::string expected_account_name_;

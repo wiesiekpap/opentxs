@@ -30,7 +30,7 @@ namespace bitcoin
 class Output;
 }  // namespace bitcoin
 
-struct Outpoint;
+class Outpoint;
 }  // namespace block
 }  // namespace blockchain
 

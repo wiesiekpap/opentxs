@@ -17,11 +17,11 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/UI.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
+#include "opentxs/core/ui/ContactList.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
-#include "opentxs/ui/ContactList.hpp"
 #include "ui/Helpers.hpp"
 
 namespace opentxs

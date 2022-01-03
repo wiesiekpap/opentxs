@@ -13,8 +13,8 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
-#include "opentxs/core/identifier/Server.hpp"
 #include "opentxs/otx/Reply.hpp"
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/Types.hpp"
@@ -55,7 +55,7 @@ public:
     }
     auto Serialize(proto::ServerReply& serialize) const -> bool final;
     auto Serialize(AllocateOutput destination) const -> bool final;
-    auto Server() const -> const identifier::Server& final { return server_; }
+    auto Server() const -> const identifier::Notary& final { return server_; }
     auto Success() const -> bool final { return success_; }
     auto Type() const -> otx::ServerReplyType final { return type_; }
 
@@ -65,7 +65,7 @@ private:
     friend otx::Reply;
 
     const OTNymID recipient_;
-    const OTServerID server_;
+    const OTNotaryID server_;
     const otx::ServerReplyType type_;
     const bool success_;
     const RequestNumber number_;
@@ -93,7 +93,7 @@ private:
         const api::Session& api,
         const Nym_p signer,
         const identifier::Nym& recipient,
-        const identifier::Server& server,
+        const identifier::Notary& server,
         const otx::ServerReplyType type,
         const RequestNumber number,
         const bool success,
