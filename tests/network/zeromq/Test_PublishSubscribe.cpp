@@ -26,8 +26,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -60,7 +58,7 @@ public:
         const std::string& msg);
 
     Test_PublishSubscribe()
-        : context_(Context().ZMQ())
+        : context_(ot::Context().ZMQ())
     {
     }
 };
@@ -69,8 +67,8 @@ void Test_PublishSubscribe::subscribeSocketThread(
     const std::set<std::string>& endpoints,
     const std::set<std::string>& msgs)
 {
-    auto listenCallback = network::zeromq::ListenCallback::Factory(
-        [this, msgs](network::zeromq::Message&& input) -> void {
+    auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
+        [this, msgs](ot::network::zeromq::Message&& input) -> void {
             const auto inputString = std::string{input.Body().begin()->Bytes()};
             bool found = msgs.count(inputString);
             EXPECT_TRUE(found);
@@ -157,8 +155,8 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
 
     ASSERT_TRUE(set);
 
-    auto listenCallback = network::zeromq::ListenCallback::Factory(
-        [this](network::zeromq::Message&& input) -> void {
+    auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
+        [this](ot::network::zeromq::Message&& input) -> void {
             const auto inputString = std::string{input.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
@@ -196,7 +194,7 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
     auto end = std::time(nullptr) + 30;
 
     while ((1 > callbackFinishedCount_) && (std::time(nullptr) < end)) {
-        Sleep(std::chrono::milliseconds(1));
+        ot::Sleep(std::chrono::milliseconds(1));
     }
 
     EXPECT_EQ(1, callbackFinishedCount_);
@@ -271,8 +269,8 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_1)
 
     ASSERT_EQ(2, publishThreadStartedCount_);
 
-    auto listenCallback = network::zeromq::ListenCallback::Factory(
-        [this](network::zeromq::Message&& input) -> void {
+    auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
+        [this](ot::network::zeromq::Message&& input) -> void {
             const auto inputString = std::string{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage_ || inputString == testMessage2_;

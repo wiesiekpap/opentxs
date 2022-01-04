@@ -25,6 +25,7 @@
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/blind/Purse.hpp"

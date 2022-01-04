@@ -14,8 +14,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -29,7 +27,7 @@ public:
     const std::string testMessage_{"zeromq test message"};
 
     Test_RequestSocket()
-        : context_(Context().ZMQ())
+        : context_(ot::Context().ZMQ())
     {
     }
 };

@@ -14,9 +14,9 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-using namespace opentxs;
+namespace ot = opentxs;
 
-namespace
+namespace ottest
 {
 class Test_ReplyCallback : public ::testing::Test
 {
@@ -24,13 +24,12 @@ public:
     const std::string testMessage_{"zeromq test message"};
 };
 
-}  // namespace
-
 TEST(ReplyCallback, ReplyCallback_Factory)
 {
-    auto replyCallback = network::zeromq::ReplyCallback::Factory(
-        [](const network::zeromq::Message&& input) -> network::zeromq::Message {
-            return opentxs::network::zeromq::reply_to_message(input);
+    auto replyCallback = ot::network::zeromq::ReplyCallback::Factory(
+        [](const ot::network::zeromq::Message&& input)
+            -> ot::network::zeromq::Message {
+            return ot::network::zeromq::reply_to_message(input);
         });
 
     ASSERT_NE(nullptr, &replyCallback.get());
@@ -38,19 +37,20 @@ TEST(ReplyCallback, ReplyCallback_Factory)
 
 TEST_F(Test_ReplyCallback, ReplyCallback_Process)
 {
-    auto replyCallback = network::zeromq::ReplyCallback::Factory(
-        [this](network::zeromq::Message&& input) -> network::zeromq::Message {
+    auto replyCallback = ot::network::zeromq::ReplyCallback::Factory(
+        [this](ot::network::zeromq::Message&& input)
+            -> ot::network::zeromq::Message {
             const auto inputString = std::string{input.Body().begin()->Bytes()};
             EXPECT_EQ(testMessage_, inputString);
 
-            auto reply = opentxs::network::zeromq::reply_to_message(input);
+            auto reply = ot::network::zeromq::reply_to_message(input);
             reply.AddFrame(inputString);
             return reply;
         });
 
     ASSERT_NE(nullptr, &replyCallback.get());
 
-    auto testMessage = network::zeromq::Message{};
+    auto testMessage = ot::network::zeromq::Message{};
     testMessage.AddFrame(testMessage_);
 
     ASSERT_NE(nullptr, &testMessage);
@@ -60,3 +60,4 @@ TEST_F(Test_ReplyCallback, ReplyCallback_Process)
     const auto messageString = std::string{message.Body().begin()->Bytes()};
     ASSERT_EQ(testMessage_, messageString);
 }
+}  // namespace ottest

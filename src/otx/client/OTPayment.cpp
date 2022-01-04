@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Cheque.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/Item.hpp"
@@ -27,7 +28,6 @@
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Armored.hpp"

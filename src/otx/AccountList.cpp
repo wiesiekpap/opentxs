@@ -30,9 +30,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-using namespace irr;
-using namespace io;
-
 namespace opentxs::otx::internal
 {
 AccountList::AccountList(const api::Session& api)
@@ -110,7 +107,7 @@ auto AccountList::ReadFromXMLNode(
                 return -1;
             }
 
-            if ((xml->getNodeType() == EXN_ELEMENT) &&
+            if ((xml->getNodeType() == irr::io::EXN_ELEMENT) &&
                 (!strcmp("accountEntry", xml->getNodeName()))) {
                 auto instrumentDefinitionID =
                     String::Factory(xml->getAttributeValue(

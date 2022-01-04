@@ -29,8 +29,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -50,7 +48,7 @@ public:
     void dealerSocketThread(const std::string& msg);
 
     Test_DealerReply()
-        : context_(Context().ZMQ())
+        : context_(ot::Context().ZMQ())
     {
     }
 };
@@ -91,7 +89,7 @@ void Test_DealerReply::dealerSocketThread(const std::string& msg)
 
     auto end = std::time(nullptr) + 5;
     while (!replyProcessed && std::time(nullptr) < end) {
-        Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(std::chrono::milliseconds(100));
     }
 
     EXPECT_TRUE(replyProcessed);
@@ -102,7 +100,7 @@ TEST_F(Test_DealerReply, Dealer_Reply)
     bool replyReturned{false};
     auto replyCallback = zmq::ReplyCallback::Factory(
         [this,
-         &replyReturned](zmq::Message&& input) -> network::zeromq::Message {
+         &replyReturned](zmq::Message&& input) -> ot::network::zeromq::Message {
             EXPECT_EQ(1, input.size());
             EXPECT_EQ(input.Header().size(), 0);
             EXPECT_EQ(1, input.Body().size());
@@ -188,14 +186,14 @@ TEST_F(Test_DealerReply, Dealer_Reply)
 
     auto end = std::time(nullptr) + 5;
     while (!replyReturned && std::time(nullptr) < end) {
-        Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(std::chrono::milliseconds(100));
     }
 
     EXPECT_TRUE(replyReturned);
 
     end = std::time(nullptr) + 5;
     while (!replyProcessed && std::time(nullptr) < end) {
-        Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(std::chrono::milliseconds(100));
     }
 
     EXPECT_TRUE(replyProcessed);
@@ -204,7 +202,7 @@ TEST_F(Test_DealerReply, Dealer_Reply)
 TEST_F(Test_DealerReply, Dealer_2_Reply_1)
 {
     auto replyCallback = zmq::ReplyCallback::Factory(
-        [this](zmq::Message&& input) -> network::zeromq::Message {
+        [this](zmq::Message&& input) -> ot::network::zeromq::Message {
             const auto inputString = std::string{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage2_ || inputString == testMessage3_;
@@ -243,7 +241,7 @@ TEST_F(Test_DealerReply, Dealer_Reply_Multipart)
     bool replyReturned{false};
     auto replyCallback = zmq::ReplyCallback::Factory(
         [this,
-         &replyReturned](zmq::Message&& input) -> network::zeromq::Message {
+         &replyReturned](zmq::Message&& input) -> ot::network::zeromq::Message {
             // ReplySocket removes the delimiter frame.
             EXPECT_EQ(4, input.size());
             EXPECT_EQ(1, input.Header().size());
@@ -331,14 +329,14 @@ TEST_F(Test_DealerReply, Dealer_Reply_Multipart)
 
     auto end = std::time(nullptr) + 5;
     while (!replyReturned && std::time(nullptr) < end) {
-        Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(std::chrono::milliseconds(100));
     }
 
     EXPECT_TRUE(replyReturned);
 
     end = std::time(nullptr) + 5;
     while (!replyProcessed && std::time(nullptr) < end) {
-        Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(std::chrono::milliseconds(100));
     }
 
     EXPECT_TRUE(replyProcessed);

@@ -84,6 +84,7 @@ set_target_properties(
     C_INCLUDE_WHAT_YOU_USE ""
     CXX_INCLUDE_WHAT_YOU_USE ""
     C_STANDARD 11
+    UNITY_BUILD OFF
 )
 if(NOT MSVC)
   target_compile_options(packetcrypt PRIVATE "-fwrapv")

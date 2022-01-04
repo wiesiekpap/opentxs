@@ -14,8 +14,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -27,7 +25,7 @@ public:
     const zmq::Context& context_;
 
     Test_PublishSocket()
-        : context_(Context().ZMQ())
+        : context_(ot::Context().ZMQ())
     {
     }
 };

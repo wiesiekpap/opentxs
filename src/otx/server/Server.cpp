@@ -22,6 +22,7 @@
 #include "internal/api/session/Notary.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/Ledger.hpp"
 #include "internal/otx/common/Message.hpp"

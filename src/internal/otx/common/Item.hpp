@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/NumList.hpp"
 #include "internal/otx/common/OTTransactionType.hpp"

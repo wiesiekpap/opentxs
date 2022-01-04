@@ -15,18 +15,20 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 
-using namespace opentxs;
+namespace ot = opentxs;
 
+namespace ottest
+{
 TEST(Message, Factory)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     ASSERT_NE(nullptr, &multipartMessage);
 }
 
 TEST(Message, AddFrame)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     auto& message = multipartMessage.AddFrame();
     ASSERT_EQ(1, multipartMessage.size());
@@ -36,9 +38,10 @@ TEST(Message, AddFrame)
 
 TEST(Message, AddFrame_Data)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
-    auto& message = multipartMessage.AddFrame(Data::Factory("testString", 10));
+    auto& message =
+        multipartMessage.AddFrame(ot::Data::Factory("testString", 10));
     ASSERT_EQ(multipartMessage.size(), 1);
     ASSERT_NE(nullptr, message.data());
     ASSERT_EQ(message.size(), 10);
@@ -49,7 +52,7 @@ TEST(Message, AddFrame_Data)
 
 TEST(Message, AddFrame_string)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     auto& message = multipartMessage.AddFrame("testString");
     ASSERT_EQ(multipartMessage.size(), 1);
@@ -62,7 +65,7 @@ TEST(Message, AddFrame_string)
 
 TEST(Message, at)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -72,18 +75,18 @@ TEST(Message, at)
     auto messageString = std::string{message.Bytes()};
     ASSERT_STREQ("msg1", messageString.c_str());
 
-    network::zeromq::Frame& message2 = multipartMessage.at(1);
+    ot::network::zeromq::Frame& message2 = multipartMessage.at(1);
     messageString = message2.Bytes();
     ASSERT_STREQ("msg2", messageString.c_str());
 
-    network::zeromq::Frame& message3 = multipartMessage.at(2);
+    ot::network::zeromq::Frame& message3 = multipartMessage.at(2);
     messageString = message3.Bytes();
     ASSERT_STREQ("msg3", messageString.c_str());
 }
 
 TEST(Message, at_const)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -93,18 +96,18 @@ TEST(Message, at_const)
     auto messageString = std::string{message.Bytes()};
     ASSERT_STREQ("msg1", messageString.c_str());
 
-    const network::zeromq::Frame& message2 = multipartMessage.at(1);
+    const ot::network::zeromq::Frame& message2 = multipartMessage.at(1);
     messageString = message2.Bytes();
     ASSERT_STREQ("msg2", messageString.c_str());
 
-    const network::zeromq::Frame& message3 = multipartMessage.at(2);
+    const ot::network::zeromq::Frame& message3 = multipartMessage.at(2);
     messageString = message3.Bytes();
     ASSERT_STREQ("msg3", messageString.c_str());
 }
 
 TEST(Message, begin)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     auto it = multipartMessage.begin();
     ASSERT_EQ(multipartMessage.end(), it);
@@ -124,7 +127,7 @@ TEST(Message, begin)
 
 TEST(Message, Body)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -132,7 +135,8 @@ TEST(Message, Body)
     multipartMessage.AddFrame("msg3");
     multipartMessage.AddFrame("msg4");
 
-    const network::zeromq::FrameSection bodySection = multipartMessage.Body();
+    const ot::network::zeromq::FrameSection bodySection =
+        multipartMessage.Body();
     ASSERT_EQ(bodySection.size(), 2);
 
     const auto& message = bodySection.at(1);
@@ -142,7 +146,7 @@ TEST(Message, Body)
 
 TEST(Message, Body_at)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -157,7 +161,7 @@ TEST(Message, Body_at)
 
 TEST(Message, Body_begin)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -172,7 +176,7 @@ TEST(Message, Body_begin)
 
 TEST(Message, Body_end)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -187,7 +191,7 @@ TEST(Message, Body_end)
 
 TEST(Message, end)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     auto it = multipartMessage.end();
     ASSERT_EQ(multipartMessage.begin(), it);
@@ -209,7 +213,7 @@ TEST(Message, end)
 TEST(Message, EnsureDelimiter)
 {
     // Empty message.
-    auto message = network::zeromq::Message{};
+    auto message = ot::network::zeromq::Message{};
 
     ASSERT_EQ(message.size(), 0);
 
@@ -277,7 +281,7 @@ TEST(Message, EnsureDelimiter)
 
 TEST(Message, Header)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -285,7 +289,7 @@ TEST(Message, Header)
     multipartMessage.AddFrame("msg3");
     multipartMessage.AddFrame("msg4");
 
-    network::zeromq::FrameSection headerSection = multipartMessage.Header();
+    ot::network::zeromq::FrameSection headerSection = multipartMessage.Header();
     ASSERT_EQ(headerSection.size(), 2);
 
     const auto& message = headerSection.at(1);
@@ -295,7 +299,7 @@ TEST(Message, Header)
 
 TEST(Message, Header_at)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -310,7 +314,7 @@ TEST(Message, Header_at)
 
 TEST(Message, Header_begin)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -325,7 +329,7 @@ TEST(Message, Header_begin)
 
 TEST(Message, Header_end)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame("msg1");
     multipartMessage.AddFrame("msg2");
@@ -340,7 +344,7 @@ TEST(Message, Header_end)
 
 TEST(Message, size)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     std::size_t size = multipartMessage.size();
     ASSERT_EQ(size, 0);
@@ -352,3 +356,4 @@ TEST(Message, size)
     size = multipartMessage.size();
     ASSERT_EQ(size, 3);
 }
+}  // namespace ottest

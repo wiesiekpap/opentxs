@@ -20,6 +20,7 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Types.hpp"
 #include "internal/network/zeromq/message/Message.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/common/Cheque.hpp"
 #include "internal/otx/common/Message.hpp"

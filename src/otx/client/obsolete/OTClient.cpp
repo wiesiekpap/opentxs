@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <memory>
 
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/LogMacros.hpp"

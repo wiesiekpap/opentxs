@@ -10,6 +10,7 @@
 #include <future>
 #include <tuple>
 
+#include "internal/otx/Types.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"

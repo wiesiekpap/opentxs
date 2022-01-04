@@ -30,6 +30,7 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/client/Client.hpp"

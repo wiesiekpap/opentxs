@@ -21,6 +21,7 @@
 
 #include "Proto.hpp"
 #include "core/StateMachine.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Item.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/otx/common/OTTransaction.hpp"

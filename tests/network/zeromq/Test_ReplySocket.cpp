@@ -17,8 +17,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -30,7 +28,7 @@ public:
     const zmq::Context& context_;
 
     Test_ReplySocket()
-        : context_(Context().ZMQ())
+        : context_(ot::Context().ZMQ())
     {
     }
 };
@@ -38,7 +36,7 @@ public:
 TEST_F(Test_ReplySocket, ReplySocket_Factory)
 {
     auto replyCallback = zmq::ReplyCallback::Factory(
-        [](zmq::Message&& input) -> network::zeromq::Message {
+        [](zmq::Message&& input) -> ot::network::zeromq::Message {
             return zmq::Message{};
         });
 

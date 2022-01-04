@@ -14,6 +14,7 @@
 #include <tuple>
 #include <utility>
 
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Item.hpp"
 #include "internal/otx/common/Ledger.hpp"

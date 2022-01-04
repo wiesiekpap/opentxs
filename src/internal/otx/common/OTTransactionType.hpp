@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/NumList.hpp"
 #include "opentxs/Types.hpp"

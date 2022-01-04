@@ -13,7 +13,6 @@
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Config.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -29,10 +28,9 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
-
-using namespace opentxs;
 
 namespace ot = opentxs;
 
@@ -44,12 +42,12 @@ public:
     static const bool have_hd_;
 
     const ot::api::session::Client& client_;
-    OTPasswordPrompt reason_;
+    ot::OTPasswordPrompt reason_;
     std::string seed, fingerprint, nymID_0, paycode_0, nymID_1, paycode_1,
         nymID_2, paycode_2, nymID_3, paycode_3;
     ot::NymData nymData_0, nymData_1, nymData_2, nymData_3;
-    core::UnitType currency = ot::core::UnitType::BCH;
-    core::UnitType currency_2 = ot::core::UnitType::BTC;
+    ot::core::UnitType currency = ot::core::UnitType::BCH;
+    ot::core::UnitType currency_2 = ot::core::UnitType::BTC;
 
     /* Is evaluated every test, therefore indexes are fixed to 0,1,2,3 */
     Test_PaymentCode()
@@ -89,16 +87,16 @@ public:
               "PM8TJbNzqDcdqCcpkMLLa9H83CjoWdHMTQ4Lk11qSpThkyrmDFA4AeGd2kFeLK2s"
               "T6UVXy2jwWABsfLd7JmcS4hMAy9zUdWRFRhmu33RiRJCS6qRmGew")
         , nymData_0(client_.Wallet().mutable_Nym(
-              identifier::Nym::Factory(nymID_0),
+              ot::identifier::Nym::Factory(nymID_0),
               reason_))
         , nymData_1(client_.Wallet().mutable_Nym(
-              identifier::Nym::Factory(nymID_1),
+              ot::identifier::Nym::Factory(nymID_1),
               reason_))
         , nymData_2(client_.Wallet().mutable_Nym(
-              identifier::Nym::Factory(nymID_2),
+              ot::identifier::Nym::Factory(nymID_2),
               reason_))
         , nymData_3(client_.Wallet().mutable_Nym(
-              identifier::Nym::Factory(nymID_3),
+              ot::identifier::Nym::Factory(nymID_3),
               reason_))
     {
         nymData_0.AddPaymentCode(paycode_0, currency, true, true, reason_);
@@ -153,10 +151,10 @@ TEST_F(Test_PaymentCode, primary_paycodes)
         nymData_3.PaymentCode(currency_2).c_str());  // not primary nor active
                                                      // defaults to primary
 
-    auto nym0 = client_.Wallet().Nym(identifier::Nym::Factory(nymID_0));
-    auto nym1 = client_.Wallet().Nym(identifier::Nym::Factory(nymID_1));
-    auto nym2 = client_.Wallet().Nym(identifier::Nym::Factory(nymID_2));
-    auto nym3 = client_.Wallet().Nym(identifier::Nym::Factory(nymID_3));
+    auto nym0 = client_.Wallet().Nym(ot::identifier::Nym::Factory(nymID_0));
+    auto nym1 = client_.Wallet().Nym(ot::identifier::Nym::Factory(nymID_1));
+    auto nym2 = client_.Wallet().Nym(ot::identifier::Nym::Factory(nymID_2));
+    auto nym3 = client_.Wallet().Nym(ot::identifier::Nym::Factory(nymID_3));
 
     if (have_hd_) {
         EXPECT_STREQ(nym0->PaymentCode().c_str(), paycode_0.c_str());
@@ -275,7 +273,8 @@ TEST_F(Test_PaymentCode, factory)
     EXPECT_STREQ(paycode_1.c_str(), factory_2b.asBase58().c_str());
 
     // Factory 3: std:
-    const auto nym = client_.Wallet().Nym(identifier::Nym::Factory(nymID_0));
+    const auto nym =
+        client_.Wallet().Nym(ot::identifier::Nym::Factory(nymID_0));
     const auto& fingerprint = nym.get()->PathRoot();
     auto factory_3 = client_.Factory().PaymentCode(
         fingerprint, 0, 1, reason_);  // seed, nym, paycode version
@@ -304,7 +303,7 @@ TEST_F(Test_PaymentCode, factory_seed_nym)
         [[maybe_unused]] std::uint8_t bitmessage_stream = 0;
 
         const auto nym =
-            client_.Wallet().Nym(identifier::Nym::Factory(nymID_0));
+            client_.Wallet().Nym(ot::identifier::Nym::Factory(nymID_0));
 
         EXPECT_TRUE(nym.get()->HasPath());
 

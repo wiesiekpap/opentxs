@@ -114,7 +114,7 @@ public:
 protected:
     const ot::api::Context& ot_;
 
-    static OTUnitID unit_definition_id_;
+    static ot::OTUnitID unit_definition_id_;
     static std::string issuer_account_id_;
     static proto::ServerContract server_contract_;
     static proto::ServerContract server2_contract_;
@@ -221,19 +221,19 @@ protected:
 
     void wait_for_state_machine(
         const ot::api::session::Client& api,
-        const identifier::Nym& nymID,
-        const identifier::Notary& serverID)
+        const ot::identifier::Nym& nymID,
+        const ot::identifier::Notary& serverID)
     {
         auto task = api.OTX().DownloadNym(nymID, serverID, nymID);
         ThreadStatus status{ThreadStatus::RUNNING};
 
         while (0 == std::get<0>(task)) {
-            Sleep(std::chrono::milliseconds(100));
+            ot::Sleep(std::chrono::milliseconds(100));
             task = api.OTX().DownloadNym(nymID, serverID, nymID);
         }
 
         while (ThreadStatus::RUNNING == status) {
-            Sleep(std::chrono::milliseconds(10));
+            ot::Sleep(std::chrono::milliseconds(10));
             status = api.OTX().Status(std::get<0>(task));
         }
 
@@ -242,20 +242,20 @@ protected:
 
     void receive_payment(
         const ot::api::session::Client& api,
-        const identifier::Nym& nymID,
-        const identifier::Notary& serverID,
+        const ot::identifier::Nym& nymID,
+        const ot::identifier::Notary& serverID,
         const Identifier& accountID)
     {
         auto task = api.OTX().ProcessInbox(nymID, serverID, accountID);
         ThreadStatus status{ThreadStatus::RUNNING};
 
         while (0 == std::get<0>(task)) {
-            Sleep(std::chrono::milliseconds(100));
+            ot::Sleep(std::chrono::milliseconds(100));
             task = api.OTX().ProcessInbox(nymID, serverID, accountID);
         }
 
         while (ThreadStatus::RUNNING == status) {
-            Sleep(std::chrono::milliseconds(10));
+            ot::Sleep(std::chrono::milliseconds(10));
             status = api.OTX().Status(std::get<0>(task));
         }
 
@@ -263,7 +263,8 @@ protected:
     }
 };
 
-OTUnitID Test_Rpc::unit_definition_id_{identifier::UnitDefinition::Factory()};
+OTUnitID Test_Rpc::unit_definition_id_{
+    ot::identifier::UnitDefinition::Factory()};
 std::string Test_Rpc::issuer_account_id_{};
 proto::ServerContract Test_Rpc::server_contract_;
 proto::ServerContract Test_Rpc::server2_contract_;
@@ -773,8 +774,9 @@ TEST_F(Test_Rpc, Add_Contact)
 
     auto& addcontact3 = *command.add_addcontact();
     addcontact3.set_version(ADDCONTACT_VERSION);
-    addcontact3.set_paymentcode(
-        client.Wallet().Nym(identifier::Nym::Factory(nym3_id_))->PaymentCode());
+    addcontact3.set_paymentcode(client.Wallet()
+                                    .Nym(ot::identifier::Nym::Factory(nym3_id_))
+                                    ->PaymentCode());
 
     response = ot_.RPC(command);
 
@@ -847,7 +849,7 @@ TEST_F(Test_Rpc, List_Unit_Definitions)
     EXPECT_EQ(1, response.identifier_size());
 
     const auto unitID =
-        identifier::UnitDefinition::Factory(response.identifier(0));
+        ot::identifier::UnitDefinition::Factory(response.identifier(0));
 
     EXPECT_EQ(unit_definition_id_, unitID);
 }
@@ -1195,7 +1197,7 @@ TEST_F(Test_Rpc, Send_Payment_Transfer)
     auto& client = ot_.ClientSession(0);
     auto& contacts = client.Contacts();
     const auto contactid =
-        contacts.ContactID(identifier::Nym::Factory(nym3_id_));
+        contacts.ContactID(ot::identifier::Nym::Factory(nym3_id_));
     const auto command = ot::rpc::request::SendPayment{
         0,
         issuer_account_id_,
@@ -1216,10 +1218,10 @@ TEST_F(Test_Rpc, Send_Payment_Transfer)
     EXPECT_EQ(codes.at(0).second, ot::rpc::ResponseCode::success);
     ASSERT_EQ(pending.size(), 0);
 
-    const auto nym1id = identifier::Nym::Factory(nym1_id_);
-    const auto nym3id = identifier::Nym::Factory(nym3_id_);
+    const auto nym1id = ot::identifier::Nym::Factory(nym1_id_);
+    const auto nym3id = ot::identifier::Nym::Factory(nym3_id_);
     wait_for_state_machine(
-        client, nym1id, identifier::Notary::Factory(server_id_));
+        client, nym1id, ot::identifier::Notary::Factory(server_id_));
 
     {
         const auto account =
@@ -1233,8 +1235,8 @@ TEST_F(Test_Rpc, Send_Payment_Transfer)
     receive_payment(
         client,
         nym3id,
-        identifier::Notary::Factory(server_id_),
-        Identifier::Factory(nym3_account1_id_));
+        ot::identifier::Notary::Factory(server_id_),
+        ot::Identifier::Factory(nym3_account1_id_));
 
     {
         const auto account =
@@ -1253,7 +1255,7 @@ TEST_F(Test_Rpc, Move_Funds)
     auto command = init(proto::RPCCOMMAND_MOVEFUNDS);
     command.set_session(0);
     const auto& manager = ot_.ClientSession(0);
-    auto nym3id = identifier::Nym::Factory(nym3_id_);
+    auto nym3id = ot::identifier::Nym::Factory(nym3_id_);
     auto movefunds = command.mutable_movefunds();
 
     EXPECT_NE(nullptr, movefunds);
@@ -1274,7 +1276,7 @@ TEST_F(Test_Rpc, Move_Funds)
     EXPECT_EQ(command.type(), response.type());
 
     wait_for_state_machine(
-        manager, nym3id, identifier::Notary::Factory(server_id_));
+        manager, nym3id, ot::identifier::Notary::Factory(server_id_));
 
     {
         const auto account =
@@ -1287,8 +1289,8 @@ TEST_F(Test_Rpc, Move_Funds)
     receive_payment(
         manager,
         nym3id,
-        identifier::Notary::Factory(server_id_),
-        Identifier::Factory(nym3_account2_id_));
+        ot::identifier::Notary::Factory(server_id_),
+        ot::Identifier::Factory(nym3_account2_id_));
 
     {
         const auto account =
@@ -1306,13 +1308,13 @@ TEST_F(Test_Rpc, Get_Workflow)
     // Make sure the workflows on the client are up-to-date.
     client.OTX().Refresh();
 
-    auto nym3id = identifier::Nym::Factory(nym3_id_);
+    auto nym3id = ot::identifier::Nym::Factory(nym3_id_);
 
     const auto& workflow = client.Workflow();
     auto workflows = workflow.List(
         nym3id,
-        otx::client::PaymentWorkflowType::InternalTransfer,
-        otx::client::PaymentWorkflowState::Completed);
+        ot::otx::client::PaymentWorkflowType::InternalTransfer,
+        ot::otx::client::PaymentWorkflowState::Completed);
 
     EXPECT_TRUE(!workflows.empty());
 
@@ -1343,10 +1345,10 @@ TEST_F(Test_Rpc, Get_Workflow)
     const auto& paymentworkflow = response.workflow(0);
     EXPECT_STREQ(workflowid->str().c_str(), paymentworkflow.id().c_str());
     EXPECT_EQ(
-        otx::client::PaymentWorkflowType::InternalTransfer,
+        ot::otx::client::PaymentWorkflowType::InternalTransfer,
         translate(paymentworkflow.type()));
     EXPECT_EQ(
-        otx::client::PaymentWorkflowState::Completed,
+        ot::otx::client::PaymentWorkflowState::Completed,
         translate(paymentworkflow.state()));
 
     workflow_id_ = workflowid->str();

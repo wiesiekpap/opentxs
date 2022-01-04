@@ -29,8 +29,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -52,7 +50,7 @@ public:
     void replySocketThread(const std::string& endpoint);
 
     Test_RequestReply()
-        : context_(Context().ZMQ())
+        : context_(ot::Context().ZMQ())
     {
     }
 };
@@ -77,7 +75,7 @@ void Test_RequestReply::requestSocketThread(const std::string& msg)
         return out;
     }());
 
-    ASSERT_EQ(result, SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
 
     const auto messageString = std::string{message.Body().begin()->Bytes()};
     ASSERT_EQ(msg, messageString);
@@ -89,7 +87,7 @@ void Test_RequestReply::replySocketThread(const std::string& endpoint)
 
     auto replyCallback = zmq::ReplyCallback::Factory(
         [this,
-         &replyReturned](zmq::Message&& input) -> network::zeromq::Message {
+         &replyReturned](zmq::Message&& input) -> ot::network::zeromq::Message {
             const auto inputString = std::string{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage2_ || inputString == testMessage3_;
@@ -117,7 +115,7 @@ void Test_RequestReply::replySocketThread(const std::string& endpoint)
 
     auto end = std::time(nullptr) + 15;
     while (!replyReturned && std::time(nullptr) < end) {
-        Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(std::chrono::milliseconds(100));
     }
 
     EXPECT_TRUE(replyReturned);
@@ -126,7 +124,7 @@ void Test_RequestReply::replySocketThread(const std::string& endpoint)
 TEST_F(Test_RequestReply, Request_Reply)
 {
     auto replyCallback = zmq::ReplyCallback::Factory(
-        [this](zmq::Message&& input) -> network::zeromq::Message {
+        [this](zmq::Message&& input) -> ot::network::zeromq::Message {
             const auto inputString = std::string{input.Body().begin()->Bytes()};
             EXPECT_EQ(testMessage_, inputString);
 
@@ -167,7 +165,7 @@ TEST_F(Test_RequestReply, Request_Reply)
         return out;
     }());
 
-    ASSERT_EQ(result, SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
 
     const auto messageString = std::string{message.Body().begin()->Bytes()};
     ASSERT_EQ(testMessage_, messageString);
@@ -176,7 +174,7 @@ TEST_F(Test_RequestReply, Request_Reply)
 TEST_F(Test_RequestReply, Request_2_Reply_1)
 {
     auto replyCallback = zmq::ReplyCallback::Factory(
-        [this](zmq::Message&& input) -> network::zeromq::Message {
+        [this](zmq::Message&& input) -> ot::network::zeromq::Message {
             const auto inputString = std::string{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage2_ || inputString == testMessage3_;
@@ -236,7 +234,7 @@ TEST_F(Test_RequestReply, Request_1_Reply_2)
         return out;
     }());
 
-    ASSERT_EQ(result, SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
 
     auto messageString = std::string{message.Body().begin()->Bytes()};
     ASSERT_EQ(testMessage2_, messageString);
@@ -248,7 +246,7 @@ TEST_F(Test_RequestReply, Request_1_Reply_2)
         return out;
     }());
 
-    ASSERT_EQ(result2, SendResult::VALID_REPLY);
+    ASSERT_EQ(result2, ot::SendResult::VALID_REPLY);
 
     messageString = message2.Body().begin()->Bytes();
     ASSERT_EQ(testMessage3_, messageString);
@@ -260,7 +258,7 @@ TEST_F(Test_RequestReply, Request_1_Reply_2)
 TEST_F(Test_RequestReply, Request_Reply_Multipart)
 {
     auto replyCallback = zmq::ReplyCallback::Factory(
-        [this](const auto& input) -> network::zeromq::Message {
+        [this](const auto& input) -> ot::network::zeromq::Message {
             EXPECT_EQ(4, input.size());
             EXPECT_EQ(1, input.Header().size());
             EXPECT_EQ(2, input.Body().size());
@@ -314,7 +312,7 @@ TEST_F(Test_RequestReply, Request_Reply_Multipart)
 
     auto [result, message] = requestSocket->Send(std::move(multipartMessage));
 
-    ASSERT_EQ(result, SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
 
     const auto messageHeader = std::string{message.Header().begin()->Bytes()};
 

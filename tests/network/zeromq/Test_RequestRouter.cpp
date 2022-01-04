@@ -30,8 +30,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -56,7 +54,7 @@ public:
     void requestSocketThreadMultipart();
 
     Test_RequestRouter()
-        : context_(Context().ZMQ())
+        : context_(ot::Context().ZMQ())
     {
     }
 };
@@ -75,13 +73,13 @@ void Test_RequestRouter::requestSocketThread(const std::string& msg)
     requestSocket->Start(endpoint_);
 
     auto [result, message] = requestSocket->Send([&] {
-        auto out = opentxs::network::zeromq::Message{};
+        auto out = ot::network::zeromq::Message{};
         out.AddFrame(msg);
 
         return out;
     }());
 
-    ASSERT_EQ(result, SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
     // RouterSocket removes the identity frame and RequestSocket removes the
     // delimiter.
     ASSERT_EQ(1, message.size());
@@ -103,7 +101,7 @@ void Test_RequestRouter::requestSocketThreadMultipart()
         std::chrono::milliseconds(30000));
     requestSocket->Start(endpoint_);
 
-    auto multipartMessage = opentxs::network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
     multipartMessage.AddFrame(testMessage_);
     multipartMessage.StartBody();
     multipartMessage.AddFrame(testMessage2_);
@@ -111,7 +109,7 @@ void Test_RequestRouter::requestSocketThreadMultipart()
 
     auto [result, message] = requestSocket->Send(std::move(multipartMessage));
 
-    ASSERT_EQ(result, SendResult::VALID_REPLY);
+    ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
     // RouterSocket removes the identity frame and RequestSocket removes the
     // delimiter.
     ASSERT_EQ(4, message.size());
@@ -129,7 +127,7 @@ void Test_RequestRouter::requestSocketThreadMultipart()
 
 TEST_F(Test_RequestRouter, Request_Router)
 {
-    auto replyMessage = opentxs::network::zeromq::Message{};
+    auto replyMessage = ot::network::zeromq::Message{};
 
     auto routerCallback = zmq::ListenCallback::Factory(
         [this, &replyMessage](zmq::Message&& input) -> void {
@@ -185,9 +183,10 @@ TEST_F(Test_RequestRouter, Request_2_Router_1)
 {
     callbackCount_ = 2;
 
-    std::map<std::string, network::zeromq::Message> replyMessages{
-        std::pair<std::string, network::zeromq::Message>(testMessage2_, {}),
-        std::pair<std::string, network::zeromq::Message>(testMessage3_, {})};
+    std::map<std::string, ot::network::zeromq::Message> replyMessages{
+        std::pair<std::string, ot::network::zeromq::Message>(testMessage2_, {}),
+        std::pair<std::string, ot::network::zeromq::Message>(
+            testMessage3_, {})};
 
     auto routerCallback = zmq::ListenCallback::Factory(
         [this, &replyMessages](auto&& input) -> void {
@@ -263,7 +262,7 @@ TEST_F(Test_RequestRouter, Request_2_Router_1)
 
 TEST_F(Test_RequestRouter, Request_Router_Multipart)
 {
-    auto replyMessage = opentxs::network::zeromq::Message{};
+    auto replyMessage = ot::network::zeromq::Message{};
 
     auto routerCallback = zmq::ListenCallback::Factory(
         [this, &replyMessage](auto&& input) -> void {

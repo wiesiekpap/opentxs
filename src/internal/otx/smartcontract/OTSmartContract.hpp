@@ -13,6 +13,7 @@
 #include <string>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/OTTransactionType.hpp"

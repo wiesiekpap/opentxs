@@ -30,6 +30,7 @@
 #include "internal/crypto/key/Null.hpp"
 #include "internal/network/p2p/Factory.hpp"
 #include "internal/network/zeromq/socket/Factory.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/client/OTPayment.hpp"

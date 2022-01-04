@@ -28,9 +28,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-using namespace irr;
-using namespace io;
-
 namespace opentxs
 {
 Cheque::Cheque(const api::Session& api)
@@ -117,7 +114,7 @@ void Cheque::UpdateContents([[maybe_unused]] const PasswordPrompt& reason)
 }
 
 // return -1 if error, 0 if nothing, and 1 if the node was processed.
-auto Cheque::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
+auto Cheque::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 {
     std::int32_t nReturnVal = 0;
 

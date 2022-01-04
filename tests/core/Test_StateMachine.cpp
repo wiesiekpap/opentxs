@@ -14,8 +14,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 
 namespace ottest

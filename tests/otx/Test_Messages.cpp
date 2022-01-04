@@ -12,7 +12,6 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/api/session/Factory.hpp"
@@ -31,13 +30,12 @@
 #include "opentxs/otx/ServerReplyType.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace ot = opentxs;
-
-using namespace opentxs;
 
 namespace ottest
 {
@@ -48,20 +46,20 @@ class Test_Messages : public ::testing::Test
 public:
     static const std::string SeedA_;
     static const std::string Alice_;
-    static const OTNymID alice_nym_id_;
+    static const ot::OTNymID alice_nym_id_;
 
     const ot::api::session::Client& client_;
     const ot::api::session::Notary& server_;
     ot::OTPasswordPrompt reason_c_;
     ot::OTPasswordPrompt reason_s_;
-    const identifier::Notary& server_id_;
-    const OTServerContract server_contract_;
+    const ot::identifier::Notary& server_id_;
+    const ot::OTServerContract server_contract_;
 
     Test_Messages()
         : client_(dynamic_cast<const ot::api::session::Client&>(
-              Context().StartClientSession(0)))
+              ot::Context().StartClientSession(0)))
         , server_(dynamic_cast<const ot::api::session::Notary&>(
-              Context().StartNotarySession(0)))
+              ot::Context().StartNotarySession(0)))
         , reason_c_(client_.Factory().PasswordPrompt(__func__))
         , reason_s_(server_.Factory().PasswordPrompt(__func__))
         , server_id_(server_.ID())
@@ -71,7 +69,7 @@ public:
     }
 
     void import_server_contract(
-        const contract::Server& contract,
+        const ot::contract::Server& contract,
         const ot::api::session::Client& client)
     {
         auto bytes = ot::Space{};
@@ -87,7 +85,7 @@ public:
                 "spike nominee miss inquiry fee nothing belt list other "
                 "daughter leave valley twelve gossip paper",
                 "");
-        const_cast<OTNymID&>(alice_nym_id_) =
+        const_cast<ot::OTNymID&>(alice_nym_id_) =
             client_.Wallet().Nym({SeedA_, 0}, reason_c_, "Alice")->ID();
         const_cast<std::string&>(Alice_) = alice_nym_id_->str();
 
@@ -101,12 +99,12 @@ public:
 
 const std::string Test_Messages::SeedA_{""};
 const std::string Test_Messages::Alice_{""};
-const OTNymID Test_Messages::alice_nym_id_{identifier::Nym::Factory()};
+const ot::OTNymID Test_Messages::alice_nym_id_{ot::identifier::Nym::Factory()};
 
 TEST_F(Test_Messages, activateRequest)
 {
-    const otx::ServerRequestType type{otx::ServerRequestType::Activate};
-    auto requestID = Identifier::Factory();
+    const ot::otx::ServerRequestType type{ot::otx::ServerRequestType::Activate};
+    auto requestID = ot::Identifier::Factory();
     const auto alice = client_.Wallet().Nym(alice_nym_id_);
 
     ASSERT_TRUE(alice);
@@ -152,8 +150,8 @@ TEST_F(Test_Messages, activateRequest)
 TEST_F(Test_Messages, pushReply)
 {
     const std::string payload{"TEST PAYLOAD"};
-    const otx::ServerReplyType type{otx::ServerReplyType::Push};
-    auto replyID = Identifier::Factory();
+    const ot::otx::ServerReplyType type{ot::otx::ServerReplyType::Push};
+    auto replyID = ot::Identifier::Factory();
     const auto server = server_.Wallet().Nym(server_.NymID());
 
     ASSERT_TRUE(server);

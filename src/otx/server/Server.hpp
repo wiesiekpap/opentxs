@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "Proto.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/client/OTPayment.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/otx/common/OTTransaction.hpp"
