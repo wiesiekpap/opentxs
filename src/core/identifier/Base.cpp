@@ -60,58 +60,67 @@ template class std::map<opentxs::OTIdentifier, std::set<opentxs::OTIdentifier>>;
 
 namespace opentxs::factory
 {
-using ReturnType = implementation::Identifier;
-auto decode_proto(const proto::Identifier& in) noexcept
-    -> std::unique_ptr<ReturnType>;
+auto decode_identifier_proto(const proto::Identifier& in) noexcept
+    -> std::unique_ptr<implementation::Identifier>;
 
 auto IdentifierGeneric() noexcept -> std::unique_ptr<opentxs::Identifier>
 {
+    using ReturnType = implementation::Identifier;
+
     return std::make_unique<ReturnType>();
 }
 
 auto IdentifierGeneric(const proto::Identifier& in) noexcept
     -> std::unique_ptr<opentxs::Identifier>
 {
-    return decode_proto(in);
+    return decode_identifier_proto(in);
 }
 
 auto IdentifierNym() noexcept -> std::unique_ptr<opentxs::identifier::Nym>
 {
+    using ReturnType = implementation::Identifier;
+
     return std::make_unique<ReturnType>();
 }
 
 auto IdentifierNym(const proto::Identifier& in) noexcept
     -> std::unique_ptr<opentxs::identifier::Nym>
 {
-    return decode_proto(in);
+    return decode_identifier_proto(in);
 }
 
 auto IdentifierNotary() noexcept -> std::unique_ptr<opentxs::identifier::Notary>
 {
+    using ReturnType = implementation::Identifier;
+
     return std::make_unique<ReturnType>();
 }
 
 auto IdentifierNotary(const proto::Identifier& in) noexcept
     -> std::unique_ptr<opentxs::identifier::Notary>
 {
-    return decode_proto(in);
+    return decode_identifier_proto(in);
 }
 
 auto IdentifierUnit() noexcept
     -> std::unique_ptr<opentxs::identifier::UnitDefinition>
 {
+    using ReturnType = implementation::Identifier;
+
     return std::make_unique<ReturnType>();
 }
 
 auto IdentifierUnit(const proto::Identifier& in) noexcept
     -> std::unique_ptr<opentxs::identifier::UnitDefinition>
 {
-    return decode_proto(in);
+    return decode_identifier_proto(in);
 }
 
-auto decode_proto(const proto::Identifier& in) noexcept
-    -> std::unique_ptr<ReturnType>
+auto decode_identifier_proto(const proto::Identifier& in) noexcept
+    -> std::unique_ptr<implementation::Identifier>
 {
+    using ReturnType = implementation::Identifier;
+
     try {
         if (false == proto::Validate(in, VERBOSE)) {
             throw std::runtime_error{"invalid serialized identifier"};

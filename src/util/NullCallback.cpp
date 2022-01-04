@@ -27,15 +27,17 @@ auto DefaultPassword() noexcept -> const char*
 
 namespace opentxs::implementation
 {
-auto NullCallback::runOne(const char*, Secret& output, const std::string& key)
-    const -> void
+auto NullCallback::runOne(
+    const char*,
+    opentxs::Secret& output,
+    const std::string& key) const -> void
 {
     output.AssignText(DefaultPassword());
 }
 
 auto NullCallback::runTwo(
     const char* display,
-    Secret& output,
+    opentxs::Secret& output,
     const std::string& key) const -> void
 {
     runOne(display, output, key);

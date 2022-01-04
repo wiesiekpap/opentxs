@@ -14,11 +14,11 @@
 
 namespace opentxs::factory
 {
-using ReturnType = api::imp::Factory;
-
 auto FactoryAPI(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<api::Factory>
 {
+    using ReturnType = api::imp::Factory;
+
     return std::make_unique<ReturnType>(crypto);
 }
 }  // namespace opentxs::factory

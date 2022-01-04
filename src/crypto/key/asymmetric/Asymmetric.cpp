@@ -364,7 +364,7 @@ auto Asymmetric::create_key(
     const crypto::key::asymmetric::Role role,
     const AllocateOutput publicKey,
     const AllocateOutput privateKey,
-    const Secret& prv,
+    const opentxs::Secret& prv,
     const AllocateOutput params,
     const PasswordPrompt& reason) -> std::unique_ptr<proto::Ciphertext>
 {

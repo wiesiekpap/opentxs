@@ -79,7 +79,7 @@ public:
     Secp256k1(
         const api::Session& api,
         const crypto::EcdsaProvider& ecdsa,
-        const Secret& privateKey,
+        const opentxs::Secret& privateKey,
         const Data& publicKey,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version,
@@ -88,8 +88,8 @@ public:
     Secp256k1(
         const api::Session& api,
         const crypto::EcdsaProvider& ecdsa,
-        const Secret& privateKey,
-        const Secret& chainCode,
+        const opentxs::Secret& privateKey,
+        const opentxs::Secret& chainCode,
         const Data& publicKey,
         const proto::HDPath& path,
         const Bip32Fingerprint parent,
@@ -100,8 +100,8 @@ public:
     Secp256k1(
         const api::Session& api,
         const crypto::EcdsaProvider& ecdsa,
-        const Secret& privateKey,
-        const Secret& chainCode,
+        const opentxs::Secret& privateKey,
+        const opentxs::Secret& chainCode,
         const Data& publicKey,
         const proto::HDPath& path,
         const Bip32Fingerprint parent,

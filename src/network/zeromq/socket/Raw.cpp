@@ -18,10 +18,10 @@
 
 namespace opentxs
 {
-using Type = network::zeromq::socket::Type;
-
-auto print(const Type type) noexcept -> const char*
+auto print(const network::zeromq::socket::Type type) noexcept -> const char*
 {
+    using Type = network::zeromq::socket::Type;
+
     static const auto map = robin_hood::unordered_flat_map<Type, const char*>{
         {Type::Request, "ZMQ_REQ"},
         {Type::Reply, "ZMQ_REP"},
@@ -45,6 +45,8 @@ auto print(const Type type) noexcept -> const char*
 
 auto to_native(const network::zeromq::socket::Type type) noexcept -> int
 {
+    using Type = network::zeromq::socket::Type;
+
     static const auto map = robin_hood::unordered_flat_map<Type, int>{
         {Type::Request, ZMQ_REQ},
         {Type::Reply, ZMQ_REP},
@@ -69,19 +71,20 @@ auto to_native(const network::zeromq::socket::Type type) noexcept -> int
 
 namespace opentxs::factory
 {
-using ReturnType = network::zeromq::socket::Raw;
-
 auto ZMQSocket(
     const network::zeromq::Context& context,
-    const network::zeromq::socket::Type type) noexcept -> ReturnType
+    const network::zeromq::socket::Type type) noexcept
+    -> network::zeromq::socket::Raw
 {
     using Imp = network::zeromq::socket::implementation::Raw;
 
     return std::make_unique<Imp>(context, type).release();
 }
 
-auto ZMQSocketNull() noexcept -> ReturnType
+auto ZMQSocketNull() noexcept -> network::zeromq::socket::Raw
 {
+    using ReturnType = network::zeromq::socket::Raw;
+
     return std::make_unique<ReturnType::Imp>().release();
 }
 }  // namespace opentxs::factory

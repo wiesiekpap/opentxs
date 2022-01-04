@@ -96,7 +96,9 @@ public:
     ~ClientContext() final = default;
 
 private:
-    std::set<TransactionNumber> open_cron_items_{};
+    static constexpr auto current_version_ = VersionNumber{1};
+
+    std::set<TransactionNumber> open_cron_items_;
 
     auto client_nym_id(const Lock& lock) const -> const identifier::Nym& final;
     using Base::serialize;

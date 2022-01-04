@@ -149,7 +149,7 @@ protected:
         Batch& generated,
         const PasswordPrompt& reason) const noexcept(false) -> void;
     auto element(const rLock& lock, const Subchain type, const Bip32Index index)
-        const noexcept(false) -> const Element&
+        const noexcept(false) -> const crypto::Element&
     {
         return const_cast<Deterministic*>(this)->element(lock, type, index);
     }
@@ -181,7 +181,7 @@ protected:
 
     Deterministic(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         const SubaccountType type,
         OTIdentifier&& id,
         const proto::HDPath path,
@@ -189,7 +189,7 @@ protected:
         Identifier& out) noexcept;
     Deterministic(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         const SubaccountType type,
         const SerializedType& serialized,
         const Bip32Index generated,

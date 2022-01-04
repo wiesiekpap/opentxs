@@ -96,5 +96,5 @@ auto Subscribe::SetSocksProxy(const std::string& proxy) const noexcept -> bool
     return set_socks_proxy(proxy);
 }
 
-Subscribe::~Subscribe() SHUTDOWN
+Subscribe::~Subscribe() SHUTDOWN_SOCKET
 }  // namespace opentxs::network::zeromq::socket::implementation

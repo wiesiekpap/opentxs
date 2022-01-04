@@ -969,8 +969,8 @@ auto PaymentCode::Sign(
 }
 
 auto PaymentCode::Sign(
-    const Data& data,
-    Data& output,
+    const opentxs::Data& data,
+    opentxs::Data& output,
     const PasswordPrompt& reason) const noexcept -> bool
 {
     const auto& key = *key_;

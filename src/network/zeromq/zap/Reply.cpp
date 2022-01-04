@@ -30,13 +30,13 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::zeromq::zap::Reply;
-
 auto ZAPReply(
     const network::zeromq::zap::Request& request,
     const network::zeromq::zap::Status code,
     const ReadView status) noexcept -> network::zeromq::zap::Reply
 {
+    using ReturnType = network::zeromq::zap::Reply;
+
     return ZAPReply(
         request, code, status, {}, {}, ReturnType::Imp::default_version_);
 }
@@ -47,8 +47,10 @@ auto ZAPReply(
     const ReadView status,
     const ReadView userID,
     const ReadView metadata,
-    const ReadView version) noexcept -> ReturnType
+    const ReadView version) noexcept -> network::zeromq::zap::Reply
 {
+    using ReturnType = network::zeromq::zap::Reply;
+
     return std::make_unique<ReturnType::Imp>(
                request, code, status, userID, metadata, version)
         .release();

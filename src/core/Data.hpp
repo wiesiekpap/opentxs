@@ -125,7 +125,7 @@ protected:
 
     Data() noexcept;
     Data(const void* data, std::size_t size) noexcept;
-    Data(const Armored& source) noexcept;
+    Data(const opentxs::Armored& source) noexcept;
     Data(const Vector& sourceVector) noexcept;
     Data(Vector&& data) noexcept;
     Data(const std::vector<std::byte>& sourceVector) noexcept;

@@ -36,8 +36,6 @@ namespace be = boost::endian;
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::block::bitcoin::implementation::Script;
-
 auto BitcoinScript(
     const blockchain::Type chain,
     const ReadView bytes,
@@ -46,6 +44,7 @@ auto BitcoinScript(
     const bool mute) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Script;
     auto elements = blockchain::block::bitcoin::ScriptElements{};
 
     if ((nullptr == bytes.data()) || (0 == bytes.size()) ||
@@ -194,6 +193,8 @@ auto BitcoinScript(
     const blockchain::block::bitcoin::Script::Position role) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Script>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Script;
+
     if (false == ReturnType::validate(elements)) {
         LogVerbose()("opentxs::factory::")(__func__)(": Invalid elements")
             .Flush();

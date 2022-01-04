@@ -11,13 +11,13 @@
 
 namespace opentxs::factory
 {
-using ReturnType = crypto::key::blank::RSA;
-
 auto RSAKey(
     const api::Session&,
     const crypto::AsymmetricProvider&,
     const proto::AsymmetricKey&) noexcept -> std::unique_ptr<crypto::key::RSA>
 {
+    using ReturnType = crypto::key::blank::RSA;
+
     return std::make_unique<ReturnType>();
 }
 
@@ -30,6 +30,8 @@ auto RSAKey(
     const opentxs::PasswordPrompt&) noexcept
     -> std::unique_ptr<crypto::key::RSA>
 {
+    using ReturnType = crypto::key::blank::RSA;
+
     return std::make_unique<ReturnType>();
 }
 }  // namespace opentxs::factory

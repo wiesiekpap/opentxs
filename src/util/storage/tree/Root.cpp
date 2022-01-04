@@ -21,8 +21,6 @@
 #include "util/storage/tree/Node.hpp"
 #include "util/storage/tree/Tree.hpp"
 
-#define CURRENT_VERSION 2
-
 namespace opentxs::storage
 {
 Root::Root(
@@ -42,7 +40,7 @@ Root::Root(
     if (check_hash(hash)) {
         init(hash);
     } else {
-        blank(CURRENT_VERSION);
+        blank(current_version_);
     }
 }
 
@@ -66,7 +64,7 @@ void Root::init(const std::string& hash)
         OT_FAIL;
     }
 
-    init_version(CURRENT_VERSION, *data);
+    init_version(current_version_, *data);
     current_bucket_.Set(data->altlocation());
     sequence_.store(data->sequence());
     tree_root_ = normalize_hash(data->items());

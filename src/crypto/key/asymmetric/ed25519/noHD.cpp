@@ -11,13 +11,11 @@
 
 namespace opentxs::factory
 {
-using ReturnType = crypto::key::blank::Ed25519;
-
 auto Ed25519Key(
     const api::Session&,
     const crypto::EcdsaProvider&,
-    const Secret&,
-    const Secret&,
+    const opentxs::Secret&,
+    const opentxs::Secret&,
     const Data&,
     const proto::HDPath&,
     const Bip32Fingerprint,
@@ -26,6 +24,8 @@ auto Ed25519Key(
     const opentxs::PasswordPrompt&) noexcept
     -> std::unique_ptr<crypto::key::Ed25519>
 {
+    using ReturnType = crypto::key::blank::Ed25519;
+
     return std::make_unique<ReturnType>();
 }
 }  // namespace opentxs::factory

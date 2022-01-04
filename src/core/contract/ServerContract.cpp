@@ -42,8 +42,6 @@
 
 namespace opentxs
 {
-using ReturnType = contract::implementation::Server;
-
 auto Factory::ServerContract(const api::Session& api) noexcept
     -> std::unique_ptr<contract::Server>
 {
@@ -60,6 +58,8 @@ auto Factory::ServerContract(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<contract::Server>
 {
+    using ReturnType = contract::implementation::Server;
+
     if (false == bool(nym)) { return {}; }
     if (false == nym->HasCapability(NymCapability::AUTHENTICATE_CONNECTION)) {
         return {};
@@ -119,6 +119,8 @@ auto Factory::ServerContract(
     const proto::ServerContract& serialized) noexcept
     -> std::unique_ptr<contract::Server>
 {
+    using ReturnType = contract::implementation::Server;
+
     if (false == proto::Validate<proto::ServerContract>(serialized, VERBOSE)) {
         return nullptr;
     }

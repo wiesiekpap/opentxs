@@ -52,9 +52,6 @@ namespace be = boost::endian;
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::block::bitcoin::implementation::Input;
-using Position = blockchain::block::bitcoin::Script::Position;
-
 auto BitcoinTransactionInput(
     const api::Session& api,
     const blockchain::Type chain,
@@ -62,6 +59,8 @@ auto BitcoinTransactionInput(
     const std::optional<std::uint32_t> sequence) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Input>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Input;
+    using Position = blockchain::block::bitcoin::Script::Position;
     namespace b = opentxs::blockchain;
     namespace bb = b::block::bitcoin;
     namespace bi = bb::internal;
@@ -153,6 +152,9 @@ auto BitcoinTransactionInput(
     std::vector<Space>&& witness) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Input>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Input;
+    using Position = blockchain::block::bitcoin::Script::Position;
+
     try {
         auto buf = be::little_uint32_buf_t{};
 
@@ -198,6 +200,8 @@ auto BitcoinTransactionInput(
     const bool coinbase) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Input>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Input;
+    using Position = blockchain::block::bitcoin::Script::Position;
     const auto& outpoint = in.previous();
     auto witness = std::vector<Space>{};
 

@@ -28,10 +28,7 @@ void RPC::evaluate_register_account(
     const api::session::OTX::Result& result,
     T& output) const
 {
-    // TODO use structured binding
-    // const auto& [status, pReply] = result;
-    const auto& status = std::get<0>(result);
-    const auto& pReply = std::get<1>(result);
+    const auto& [status, pReply] = result;
 
     if (otx::LastReplyStatus::NotSent == status) {
         add_output_status(output, proto::RPCRESPONSE_ERROR);
@@ -53,9 +50,7 @@ void RPC::evaluate_register_nym(
     const api::session::OTX::Result& result,
     T& output) const
 {
-    // TODO use structured binding
-    // const auto& [status, pReply] = result;
-    const auto& status = std::get<0>(result);
+    const auto& [status, pReply] = result;
 
     if (otx::LastReplyStatus::NotSent == status) {
         add_output_status(output, proto::RPCRESPONSE_ERROR);

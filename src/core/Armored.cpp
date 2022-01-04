@@ -89,7 +89,7 @@ auto Factory::Armored() -> opentxs::Armored*
     return new implementation::Armored();
 }
 
-auto Factory::Armored(const Data& input) -> opentxs::Armored*
+auto Factory::Armored(const opentxs::Data& input) -> opentxs::Armored*
 {
     return new implementation::Armored(input);
 }
@@ -121,7 +121,7 @@ Armored::Armored(const opentxs::String& strValue)
 }
 
 // encodes
-Armored::Armored(const Data& theValue)
+Armored::Armored(const opentxs::Data& theValue)
     : Armored()
 {
     SetData(theValue);
@@ -159,7 +159,7 @@ auto Armored::operator=(const opentxs::String& strValue) -> Armored&
 }
 
 // encodes
-auto Armored::operator=(const Data& theValue) -> Armored&
+auto Armored::operator=(const opentxs::Data& theValue) -> Armored&
 {
     SetData(theValue);
     return *this;
@@ -263,7 +263,7 @@ auto Armored::decompress_string(const std::string& str) const -> std::string
 }
 
 // Base64-decode
-auto Armored::GetData(Data& theData, bool bLineBreaks) const -> bool
+auto Armored::GetData(opentxs::Data& theData, bool bLineBreaks) const -> bool
 {
     theData.Release();
 
@@ -466,7 +466,7 @@ auto Armored::LoadFromString(
 }
 
 // Base64-encode
-auto Armored::SetData(const Data& theData, bool) -> bool
+auto Armored::SetData(const opentxs::Data& theData, bool) -> bool
 {
     Release();
 

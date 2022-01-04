@@ -5,9 +5,10 @@
 
 #include "0_stdafx.hpp"      // IWYU pragma: associated
 #include "1_Internal.hpp"    // IWYU pragma: associated
-#include "util/rpc/RPC.tpp"  // IWYU pragma: associated
+#include "util/rpc/RPC.hpp"  // IWYU pragma: associated
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "opentxs/Types.hpp"
@@ -34,7 +35,6 @@
 #include "opentxs/util/rpc/response/GetAccountActivity.hpp"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
-#include "util/rpc/RPC.hpp"
 
 namespace opentxs::rpc::implementation
 {

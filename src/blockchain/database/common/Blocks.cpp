@@ -17,6 +17,7 @@
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
@@ -26,12 +27,6 @@
 
 namespace opentxs::blockchain::database::common
 {
-template <typename Input>
-auto tsv(const Input& in) noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(&in), sizeof(in)};
-}
-
 struct Blocks::Imp {
     storage::lmdb::LMDB& lmdb_;
     Bulk& bulk_;

@@ -41,5 +41,5 @@ Publish::Publish(const zeromq::Context& context) noexcept
     init();
 }
 
-Publish::~Publish() SHUTDOWN
+Publish::~Publish() SHUTDOWN_SOCKET
 }  // namespace opentxs::network::zeromq::socket::implementation

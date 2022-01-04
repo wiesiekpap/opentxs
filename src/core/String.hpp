@@ -83,11 +83,11 @@ public:
 protected:
     virtual void Release_String();
 
-    explicit String(const Armored& value);
-    explicit String(const Signature& value);
-    explicit String(const Contract& value);
-    explicit String(const Identifier& value);
-    explicit String(const NymFile& value);
+    explicit String(const opentxs::Armored& value);
+    explicit String(const opentxs::Signature& value);
+    explicit String(const opentxs::Contract& value);
+    explicit String(const opentxs::Identifier& value);
+    explicit String(const opentxs::NymFile& value);
     String(const char* value);
     explicit String(const std::string& value);
     String(const char* value, std::size_t size);

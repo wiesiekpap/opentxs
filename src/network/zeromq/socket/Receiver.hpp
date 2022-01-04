@@ -29,9 +29,6 @@ class Context;
 }  // namespace network
 }  // namespace opentxs
 
-#define CALLBACK_WAIT_MILLISECONDS 50
-#define RECEIVER_POLL_MILLISECONDS 100
-
 #define RECEIVER_METHOD "opentxs::network::zeromq::implementation::Receiver::"
 
 namespace opentxs::network::zeromq::socket::implementation
@@ -66,6 +63,9 @@ protected:
     ~Receiver() override;
 
 private:
+    static constexpr auto callback_wait_milliseconds_{50};
+    static constexpr auto receiver_poll_milliseconds_{100};
+
     mutable int next_task_;
     mutable std::mutex task_lock_;
     mutable std::map<int, SocketCallback> socket_tasks_;

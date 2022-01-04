@@ -12,6 +12,7 @@
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageSeeds.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -35,6 +36,8 @@ class Seeds final : public Node
 {
 private:
     friend Tree;
+
+    static constexpr auto current_version_ = VersionNumber{2};
 
     std::string default_seed_;
 

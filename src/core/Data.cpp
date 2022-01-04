@@ -107,7 +107,7 @@ auto Data::Factory(const void* data, std::size_t size) -> OTData
     return OTData(new implementation::Data(data, size));
 }
 
-auto Data::Factory(const Armored& source) -> OTData
+auto Data::Factory(const opentxs::Armored& source) -> OTData
 {
     return OTData(new implementation::Data(source));
 }
@@ -173,7 +173,7 @@ Data::Data() noexcept
 {
 }
 
-Data::Data(const Armored& source) noexcept
+Data::Data(const opentxs::Armored& source) noexcept
     : data_()
 {
     if (source.Exists()) { source.GetData(*this); }

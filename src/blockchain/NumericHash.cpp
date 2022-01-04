@@ -33,11 +33,10 @@ namespace be = boost::endian;
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::implementation::NumericHash;
-
 auto NumericHashNBits(const std::uint32_t input) noexcept
     -> std::unique_ptr<blockchain::NumericHash>
 {
+    using ReturnType = blockchain::implementation::NumericHash;
     using ArgumentType = ReturnType::Type;
     using MantissaType = bmp::checked_cpp_int;
 
@@ -65,6 +64,7 @@ auto NumericHashNBits(const std::uint32_t input) noexcept
 auto NumericHash(const blockchain::block::Hash& hash) noexcept
     -> std::unique_ptr<blockchain::NumericHash>
 {
+    using ReturnType = blockchain::implementation::NumericHash;
     ReturnType::Type value{};
 
     if (hash.empty()) { return std::make_unique<ReturnType>(); }

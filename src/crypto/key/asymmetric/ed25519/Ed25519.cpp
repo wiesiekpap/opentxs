@@ -46,8 +46,8 @@ Ed25519::Ed25519(
 Ed25519::Ed25519(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
-    const Secret& privateKey,
-    const Secret& chainCode,
+    const opentxs::Secret& privateKey,
+    const opentxs::Secret& chainCode,
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,

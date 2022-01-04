@@ -29,13 +29,8 @@
 #include "serialization/protobuf/OutBailment.pb.h"
 #include "serialization/protobuf/PeerRequest.pb.h"
 
-#define CURRENT_VERSION 4
-
 namespace opentxs
 {
-using ParentType = contract::peer::implementation::Request;
-using ReturnType = contract::peer::request::implementation::Outbailment;
-
 auto Factory::OutbailmentRequest(
     const api::Session& api,
     const Nym_p& nym,
@@ -47,6 +42,9 @@ auto Factory::OutbailmentRequest(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::Outbailment>
 {
+    using ParentType = contract::peer::implementation::Request;
+    using ReturnType = contract::peer::request::implementation::Outbailment;
+
     try {
         api.Wallet().UnitDefinition(unitID);
         auto output = std::make_shared<ReturnType>(
@@ -72,6 +70,8 @@ auto Factory::OutbailmentRequest(
     const proto::PeerRequest& serialized) noexcept
     -> std::shared_ptr<contract::peer::request::Outbailment>
 {
+    using ReturnType = contract::peer::request::implementation::Outbailment;
+
     if (false == proto::Validate(serialized, VERBOSE)) {
         LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
@@ -117,7 +117,7 @@ Outbailment::Outbailment(
     : Request(
           api,
           nym,
-          CURRENT_VERSION,
+          current_version_,
           recipientID,
           serverID,
           PeerRequestType::OutBailment,

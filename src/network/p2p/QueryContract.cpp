@@ -25,21 +25,27 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::p2p::QueryContract;
-
-auto BlockchainSyncQueryContract() noexcept -> ReturnType
+auto BlockchainSyncQueryContract() noexcept -> network::p2p::QueryContract
 {
+    using ReturnType = network::p2p::QueryContract;
+
     return std::make_unique<ReturnType::Imp>().release();
 }
-auto BlockchainSyncQueryContract(const Identifier& id) noexcept -> ReturnType
+
+auto BlockchainSyncQueryContract(const Identifier& id) noexcept
+    -> network::p2p::QueryContract
 {
+    using ReturnType = network::p2p::QueryContract;
+
     return std::make_unique<ReturnType::Imp>(id).release();
 }
 
 auto BlockchainSyncQueryContract_p(
     const api::Session& api,
-    const ReadView id) noexcept -> std::unique_ptr<ReturnType>
+    const ReadView id) noexcept -> std::unique_ptr<network::p2p::QueryContract>
 {
+    using ReturnType = network::p2p::QueryContract;
+
     return std::make_unique<ReturnType>(
         std::make_unique<ReturnType::Imp>(api, id).release());
 }

@@ -29,13 +29,14 @@
 
 namespace opentxs::blockchain::node::implementation
 {
-using BlockDM = download::Manager<
+using BlockDMBlock = download::Manager<
     BlockOracle::BlockDownloader,
     std::shared_ptr<const block::bitcoin::Block>,
     int>;
-using BlockWorker = Worker<BlockOracle::BlockDownloader, api::Session>;
+using BlockWorkerBlock = Worker<BlockOracle::BlockDownloader, api::Session>;
 
-class BlockOracle::BlockDownloader : public BlockDM, public BlockWorker
+class BlockOracle::BlockDownloader : public BlockDMBlock,
+                                     public BlockWorkerBlock
 {
 public:
     auto NextBatch() noexcept { return allocate_batch(0); }
@@ -51,7 +52,7 @@ public:
         const internal::Network& node,
         const blockchain::Type chain,
         const std::string& shutdown) noexcept
-        : BlockDM(
+        : BlockDMBlock(
               [&] { return db.BlockTip(); }(),
               [&] {
                   auto promise = std::promise<int>{};
@@ -62,7 +63,7 @@ public:
               "block",
               2000,
               1000)
-        , BlockWorker(api, std::chrono::milliseconds{20})
+        , BlockWorkerBlock(api, std::chrono::milliseconds{20})
         , db_(db)
         , header_(header)
         , node_(node)
@@ -79,8 +80,8 @@ public:
     ~BlockDownloader() { signal_shutdown().get(); }
 
 private:
-    friend BlockDM;
-    friend BlockWorker;
+    friend BlockDMBlock;
+    friend BlockWorkerBlock;
 
     const internal::BlockDatabase& db_;
     const HeaderOracle& header_;

@@ -15,16 +15,18 @@ extern "C" {
 
 #include "opentxs/core/String.hpp"
 
-namespace opentxs::crypto::implementation
+namespace opentxs::crypto::openssl
 {
-class OpenSSL_BIO
+class BIO
 {
 private:
-    BIO& m_refBIO;
+    static constexpr auto read_amount_ = std::size_t{256};
+
+    ::BIO& m_refBIO;
     bool bCleanup;
     bool bFreeOnly;
 
-    static auto assertBioNotNull(BIO* pBIO) -> BIO*;
+    static auto assertBioNotNull(::BIO* pBIO) -> ::BIO*;
 
     void read_bio(
         const std::size_t amount,
@@ -33,11 +35,11 @@ private:
         std::vector<std::byte>& output);
 
 public:
-    OpenSSL_BIO(BIO* pBIO);
+    BIO(::BIO* pBIO);
 
-    ~OpenSSL_BIO();
+    ~BIO();
 
-    operator BIO*() const;
+    operator ::BIO*() const;
 
     void release();
     void setFreeOnly();
@@ -45,4 +47,4 @@ public:
     auto ToBytes() -> std::vector<std::byte>;
     auto ToString() -> OTString;
 };
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::crypto::openssl

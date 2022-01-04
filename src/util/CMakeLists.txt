@@ -19,6 +19,7 @@ target_sources(
     "${opentxs_SOURCE_DIR}/src/internal/util/LogMacros.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Shared.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Signals.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/util/TSV.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Timer.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/Types.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/util/UniqueQueue.hpp"

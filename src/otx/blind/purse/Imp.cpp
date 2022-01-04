@@ -54,16 +54,13 @@
 
 namespace opentxs::factory
 {
-using ReturnType = otx::blind::Purse;
-using Imp = otx::blind::purse::Purse;
-
 auto Purse(
     const api::Session& api,
     const otx::context::Server& context,
     const otx::blind::CashType type,
     const otx::blind::Mint& mint,
     const Amount& totalValue,
-    const opentxs::PasswordPrompt& reason) noexcept -> ReturnType
+    const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Purse
 {
     return Purse(
         api,
@@ -84,8 +81,10 @@ auto Purse(
     const otx::blind::CashType type,
     const otx::blind::Mint& mint,
     const Amount& totalValue,
-    const opentxs::PasswordPrompt& reason) noexcept -> ReturnType
+    const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Purse
 {
+    using ReturnType = otx::blind::Purse;
+    using Imp = otx::blind::purse::Purse;
     auto pEnvelope = std::make_unique<OTEnvelope>(api.Factory().Envelope());
 
     OT_ASSERT(pEnvelope);
@@ -135,8 +134,10 @@ auto Purse(
 }
 
 auto Purse(const api::Session& api, const proto::Purse& in) noexcept
-    -> ReturnType
+    -> otx::blind::Purse
 {
+    using ReturnType = otx::blind::Purse;
+    using Imp = otx::blind::purse::Purse;
     auto output = std::make_unique<Imp>(api, in);
     auto* imp = output.get();
     auto& internal = *imp;
@@ -146,7 +147,8 @@ auto Purse(const api::Session& api, const proto::Purse& in) noexcept
     return purse;
 }
 
-auto Purse(const api::Session& api, const ReadView& in) noexcept -> ReturnType
+auto Purse(const api::Session& api, const ReadView& in) noexcept
+    -> otx::blind::Purse
 {
     return Purse(api, opentxs::proto::Factory<proto::Purse>(in));
 }
@@ -155,8 +157,9 @@ auto Purse(
     const api::Session& api,
     const otx::blind::Purse& request,
     const identity::Nym& requester,
-    const opentxs::PasswordPrompt& reason) noexcept -> ReturnType
+    const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Purse
 {
+    using Imp = otx::blind::purse::Purse;
     auto* rhs = dynamic_cast<const Imp*>(&(request.Internal()));
 
     if (nullptr == rhs) {
@@ -184,8 +187,9 @@ auto Purse(
     const identifier::Notary& server,
     const identifier::UnitDefinition& unit,
     const otx::blind::CashType type,
-    const opentxs::PasswordPrompt& reason) noexcept -> ReturnType
+    const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Purse
 {
+    using Imp = otx::blind::purse::Purse;
     auto output = std::make_unique<Imp>(api, server, unit, type);
 
     OT_ASSERT(output);

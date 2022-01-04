@@ -16,6 +16,7 @@
 #include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -37,6 +38,8 @@ class Nyms final : public Node
 {
 private:
     friend Tree;
+
+    static constexpr auto current_version_ = VersionNumber{3};
 
     mutable std::map<std::string, std::unique_ptr<storage::Nym>> nyms_;
     std::set<std::string> local_nyms_{};

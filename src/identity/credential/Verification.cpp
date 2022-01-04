@@ -37,8 +37,6 @@
 
 namespace opentxs
 {
-using ReturnType = identity::credential::implementation::Verification;
-
 auto Factory::VerificationCredential(
     const api::Session& api,
     identity::internal::Authority& parent,
@@ -49,6 +47,8 @@ auto Factory::VerificationCredential(
     const opentxs::PasswordPrompt& reason)
     -> identity::credential::internal::Verification*
 {
+    using ReturnType = identity::credential::implementation::Verification;
+
     try {
 
         return new ReturnType(
@@ -70,6 +70,8 @@ auto Factory::VerificationCredential(
     const proto::Credential& serialized)
     -> identity::credential::internal::Verification*
 {
+    using ReturnType = identity::credential::implementation::Verification;
+
     try {
 
         return new ReturnType(api, parent, source, master, serialized);

@@ -12,14 +12,14 @@
 
 namespace opentxs::factory
 {
-using ReturnType = api::network::BlockchainImp;
-
 auto BlockchainNetworkAPI(
     const api::Session& api,
     const api::session::Endpoints& endpoints,
     const opentxs::network::zeromq::Context& zmq) noexcept
     -> api::network::Blockchain::Imp*
 {
+    using ReturnType = api::network::BlockchainImp;
+
     return std::make_unique<ReturnType>(api, endpoints, zmq).release();
 }
 }  // namespace opentxs::factory

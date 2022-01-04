@@ -73,14 +73,14 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
 {
-using ReturnType = api::session::imp::Workflow;
-
 auto Workflow(
     const api::Session& api,
     const api::session::Activity& activity,
     const api::session::Contacts& contact) noexcept
     -> std::unique_ptr<api::session::Workflow>
 {
+    using ReturnType = api::session::imp::Workflow;
+
     return std::make_unique<ReturnType>(api, activity, contact);
 }
 }  // namespace opentxs::factory

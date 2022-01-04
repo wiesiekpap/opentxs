@@ -28,25 +28,31 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::p2p::PublishContractReply;
-
-auto BlockchainSyncPublishContractReply() noexcept -> ReturnType
+auto BlockchainSyncPublishContractReply() noexcept
+    -> network::p2p::PublishContractReply
 {
+    using ReturnType = network::p2p::PublishContractReply;
+
     return std::make_unique<ReturnType::Imp>().release();
 }
 
 auto BlockchainSyncPublishContractReply(
     const Identifier& id,
-    const bool success) noexcept -> ReturnType
+    const bool success) noexcept -> network::p2p::PublishContractReply
 {
+    using ReturnType = network::p2p::PublishContractReply;
+
     return std::make_unique<ReturnType::Imp>(id, success).release();
 }
 
 auto BlockchainSyncPublishContractReply_p(
     const api::Session& api,
     const ReadView id,
-    const ReadView success) noexcept -> std::unique_ptr<ReturnType>
+    const ReadView success) noexcept
+    -> std::unique_ptr<network::p2p::PublishContractReply>
 {
+    using ReturnType = network::p2p::PublishContractReply;
+
     return std::make_unique<ReturnType>(
         std::make_unique<ReturnType::Imp>(api, id, success).release());
 }

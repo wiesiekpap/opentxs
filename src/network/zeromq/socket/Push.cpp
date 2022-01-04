@@ -43,5 +43,5 @@ Push::Push(
     init();
 }
 
-Push::~Push() SHUTDOWN
+Push::~Push() SHUTDOWN_SOCKET
 }  // namespace opentxs::network::zeromq::socket::implementation

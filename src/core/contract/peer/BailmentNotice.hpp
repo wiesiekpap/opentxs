@@ -15,6 +15,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -62,6 +63,8 @@ public:
 
 private:
     friend opentxs::Factory;
+
+    static constexpr auto current_version_ = VersionNumber{6};
 
     const OTUnitID unit_;
     const OTNotaryID server_;

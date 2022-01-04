@@ -127,6 +127,8 @@ private:
     using WorkflowMap = std::map<contract::peer::PeerRequestType, Workflow>;
     using UnitAccountPair = std::pair<OTUnitID, OTIdentifier>;
 
+    static constexpr auto current_version_ = VersionNumber{1};
+
     const api::session::Wallet& wallet_;
     VersionNumber version_{0};
     std::string pairing_code_{""};

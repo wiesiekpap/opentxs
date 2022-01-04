@@ -40,8 +40,6 @@
 
 namespace opentxs
 {
-using ReturnType = identity::credential::implementation::Contact;
-
 auto Factory::ContactCredential(
     const api::Session& api,
     identity::internal::Authority& parent,
@@ -52,6 +50,8 @@ auto Factory::ContactCredential(
     const opentxs::PasswordPrompt& reason)
     -> identity::credential::internal::Contact*
 {
+    using ReturnType = identity::credential::implementation::Contact;
+
     try {
 
         return new ReturnType(
@@ -73,6 +73,8 @@ auto Factory::ContactCredential(
     const proto::Credential& serialized)
     -> identity::credential::internal::Contact*
 {
+    using ReturnType = identity::credential::implementation::Contact;
+
     try {
 
         return new ReturnType(api, parent, source, master, serialized);

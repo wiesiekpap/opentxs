@@ -18,21 +18,26 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::p2p::Request;
-
-auto BlockchainSyncRequest() noexcept -> ReturnType
+auto BlockchainSyncRequest() noexcept -> network::p2p::Request
 {
+    using ReturnType = network::p2p::Request;
+
     return {std::make_unique<ReturnType::Imp>().release()};
 }
 
-auto BlockchainSyncRequest(network::p2p::StateData in) noexcept -> ReturnType
+auto BlockchainSyncRequest(network::p2p::StateData in) noexcept
+    -> network::p2p::Request
 {
+    using ReturnType = network::p2p::Request;
+
     return {std::make_unique<ReturnType::Imp>(std::move(in)).release()};
 }
 
 auto BlockchainSyncRequest_p(network::p2p::StateData in) noexcept
-    -> std::unique_ptr<ReturnType>
+    -> std::unique_ptr<network::p2p::Request>
 {
+    using ReturnType = network::p2p::Request;
+
     return std::make_unique<ReturnType>(
         std::make_unique<ReturnType::Imp>(std::move(in)).release());
 }

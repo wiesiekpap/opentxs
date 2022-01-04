@@ -30,14 +30,14 @@
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::block::bitcoin::implementation::Outputs;
-
 auto BitcoinTransactionOutputs(
     std::vector<std::unique_ptr<blockchain::block::bitcoin::internal::Output>>&&
         outputs,
     std::optional<std::size_t> size) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Outputs>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Outputs;
+
     try {
 
         return std::make_unique<ReturnType>(std::move(outputs), size);

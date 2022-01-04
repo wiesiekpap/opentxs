@@ -78,5 +78,5 @@ void Router::process_incoming(const Lock& lock, Message&& message) noexcept
     LogTrace()(OT_PRETTY_CLASS())("Done.").Flush();
 }
 
-Router::~Router() SHUTDOWN
+Router::~Router() SHUTDOWN_SOCKET
 }  // namespace opentxs::network::zeromq::socket::implementation

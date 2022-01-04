@@ -26,6 +26,7 @@
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/HeaderOracle.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/network/Asio.hpp"
 #include "opentxs/api/network/Network.hpp"
@@ -286,7 +287,9 @@ struct SubchainData::Imp {
         , current_version_([&] {
             auto version = std::optional<VersionNumber>{};
             lmdb_.Load(
-                config_, tsv(database::Key::Version), [&](const auto bytes) {
+                subchain_config_,
+                tsv(database::Key::Version),
+                [&](const auto bytes) {
                     if (sizeof(VersionNumber) == bytes.size()) {
                         auto& out = version.emplace();
                         std::memcpy(&out, bytes.data(), bytes.size());

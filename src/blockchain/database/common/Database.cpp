@@ -34,6 +34,7 @@ extern "C" {
 #include "blockchain/database/common/Wallet.hpp"
 #include "internal/api/Legacy.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/GCS.hpp"  // IWYU pragma: keep
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"  // IWYU pragma: keep
 #include "opentxs/core/String.hpp"
@@ -48,12 +49,6 @@ constexpr auto true_byte_ = std::byte{0x1};
 
 namespace opentxs::blockchain::database::common
 {
-template <typename Input>
-auto tsv(const Input& in) noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(&in), sizeof(in)};
-}
-
 struct Database::Imp {
     using SiphashKey = Space;
 

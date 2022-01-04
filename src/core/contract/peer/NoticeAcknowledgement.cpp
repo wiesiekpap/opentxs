@@ -23,13 +23,8 @@
 #include "serialization/protobuf/PeerReply.pb.h"
 #include "serialization/protobuf/PeerRequest.pb.h"
 
-#define CURRENT_VERSION 4
-
 namespace opentxs
 {
-using ParentType = contract::peer::implementation::Reply;
-using ReturnType = contract::peer::reply::implementation::Acknowledgement;
-
 auto Factory::NoticeAcknowledgement(
     const api::Session& api,
     const Nym_p& nym,
@@ -41,6 +36,9 @@ auto Factory::NoticeAcknowledgement(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::reply::Acknowledgement>
 {
+    using ParentType = contract::peer::implementation::Reply;
+    using ReturnType = contract::peer::reply::implementation::Acknowledgement;
+
     try {
         auto peerRequest = proto::PeerRequest{};
         if (false == ParentType::LoadRequest(api, nym, request, peerRequest)) {
@@ -76,6 +74,8 @@ auto Factory::NoticeAcknowledgement(
     const proto::PeerReply& serialized) noexcept
     -> std::shared_ptr<contract::peer::reply::Acknowledgement>
 {
+    using ReturnType = contract::peer::reply::implementation::Acknowledgement;
+
     if (false == proto::Validate(serialized, VERBOSE)) {
         LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized reply.")
@@ -118,7 +118,7 @@ Acknowledgement::Acknowledgement(
     const identifier::Notary& server,
     const contract::peer::PeerRequestType type,
     const bool& ack)
-    : Reply(api, nym, CURRENT_VERSION, initiator, server, type, request)
+    : Reply(api, nym, current_version_, initiator, server, type, request)
     , ack_(ack)
 {
     Lock lock(lock_);

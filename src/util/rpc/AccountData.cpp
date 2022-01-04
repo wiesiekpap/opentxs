@@ -21,9 +21,9 @@
 
 namespace opentxs::rpc
 {
-constexpr auto default_version_ = VersionNumber{2};
-
 struct AccountData::Imp {
+    static constexpr auto default_version_ = VersionNumber{2};
+
     const VersionNumber version_;
     const std::string id_;
     const std::string name_;
@@ -98,7 +98,7 @@ AccountData::AccountData(
     Amount pending,
     AccountType type) noexcept(false)
     : imp_(std::make_unique<Imp>(
-               default_version_,
+               Imp::default_version_,
                id,
                name,
                unit,
@@ -187,7 +187,7 @@ auto AccountData::PendingBalance_str() const noexcept -> std::string
 auto AccountData::Serialize(proto::AccountData& dest) const noexcept -> bool
 {
     const auto& imp = *imp_;
-    dest.set_version(std::max(default_version_, imp.version_));
+    dest.set_version(std::max(Imp::default_version_, imp.version_));
     dest.set_id(imp.id_);
     dest.set_label(imp.name_);
     dest.set_unit(imp.unit_);

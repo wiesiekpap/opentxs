@@ -23,13 +23,8 @@
 #include "serialization/protobuf/PeerRequest.pb.h"
 #include "serialization/protobuf/StoreSecret.pb.h"
 
-#define CURRENT_VERSION 4
-
 namespace opentxs
 {
-using ParentType = contract::peer::implementation::Request;
-using ReturnType = contract::peer::request::implementation::StoreSecret;
-
 auto Factory::StoreSecret(
     const api::Session& api,
     const Nym_p& nym,
@@ -41,6 +36,9 @@ auto Factory::StoreSecret(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::StoreSecret>
 {
+    using ParentType = contract::peer::implementation::Request;
+    using ReturnType = contract::peer::request::implementation::StoreSecret;
+
     try {
         auto output = std::make_shared<ReturnType>(
             api, nym, recipientID, type, primary, secondary, server);
@@ -65,6 +63,8 @@ auto Factory::StoreSecret(
     const proto::PeerRequest& serialized) noexcept
     -> std::shared_ptr<contract::peer::request::StoreSecret>
 {
+    using ReturnType = contract::peer::request::implementation::StoreSecret;
+
     if (false == proto::Validate(serialized, VERBOSE)) {
         LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
@@ -110,7 +110,7 @@ StoreSecret::StoreSecret(
     : Request(
           api,
           nym,
-          CURRENT_VERSION,
+          current_version_,
           recipientID,
           serverID,
           contract::peer::PeerRequestType::StoreSecret)

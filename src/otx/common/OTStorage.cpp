@@ -2976,7 +2976,7 @@ auto StorageFS::onEraseValueByKey(
     // own subclass, where you can override onEraseValueByKey and do that stuff
     // yourself. It's outside of the scope of OT.
 
-    if (remove(strOutput.c_str()) != 0) {
+    if (std::remove(strOutput.c_str()) != 0) {
         bSuccess = false;
         LogError()(OT_PRETTY_CLASS())("** Failed trying to delete file: ")(
             strOutput)(".")

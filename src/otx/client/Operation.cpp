@@ -95,7 +95,7 @@
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"  // IWYU pragma: keep
 
-#define START()                                                                \
+#define START_OPERATION()                                                      \
     Lock lock(decision_lock_);                                                 \
                                                                                \
     if (running().load()) {                                                    \
@@ -437,7 +437,7 @@ auto Operation::AddClaim(
     const String& value,
     const bool primary) -> bool
 {
-    START()
+    START_OPERATION()
 
     memo_ = value;
     bool_ = primary;
@@ -1439,7 +1439,7 @@ auto Operation::ConveyPayment(
     const identifier::Nym& recipient,
     const std::shared_ptr<const OTPayment> payment) -> bool
 {
-    START()
+    START_OPERATION()
 
     target_nym_id_ = recipient;
     payment_ = payment;
@@ -1482,7 +1482,7 @@ auto Operation::DepositCash(
         return false;
     }
 
-    START()
+    START_OPERATION()
 
     account_id_ = depositAccountID;
     affected_accounts_.insert(depositAccountID);
@@ -1495,7 +1495,7 @@ auto Operation::DepositCheque(
     const Identifier& depositAccountID,
     const std::shared_ptr<Cheque> cheque) -> bool
 {
-    START()
+    START_OPERATION()
 
     account_id_ = depositAccountID;
     affected_accounts_.insert(depositAccountID);
@@ -1645,7 +1645,7 @@ auto Operation::DownloadContract(
     const Identifier& ID,
     const contract::Type type) -> bool
 {
-    START()
+    START_OPERATION()
 
     generic_id_ = ID;
     contract_type_ = type;
@@ -1987,7 +1987,7 @@ auto Operation::IssueUnitDefinition(
         return false;
     }
 
-    START()
+    START_OPERATION()
 
     unit_definition_ = unitDefinition;
 
@@ -2294,7 +2294,7 @@ auto Operation::process_inbox(
 
 auto Operation::PublishContract(const identifier::Nym& id) -> bool
 {
-    START()
+    START_OPERATION()
 
     target_nym_id_ = id;
 
@@ -2303,7 +2303,7 @@ auto Operation::PublishContract(const identifier::Nym& id) -> bool
 
 auto Operation::PublishContract(const identifier::Notary& id) -> bool
 {
-    START()
+    START_OPERATION()
 
     target_server_id_ = id;
 
@@ -2312,7 +2312,7 @@ auto Operation::PublishContract(const identifier::Notary& id) -> bool
 
 auto Operation::PublishContract(const identifier::UnitDefinition& id) -> bool
 {
-    START()
+    START_OPERATION()
 
     target_unit_id_ = id;
 
@@ -2328,7 +2328,7 @@ void Operation::refresh()
 
 auto Operation::RequestAdmin(const String& password) -> bool
 {
-    START()
+    START_OPERATION()
 
     memo_ = password;
 
@@ -2431,7 +2431,7 @@ auto Operation::SendCash(
             return false;
         }
 
-        START()
+        START_OPERATION()
 
         target_nym_id_ = recipientID;
         generic_id_ = workflowID;
@@ -2450,7 +2450,7 @@ auto Operation::SendMessage(
     const String& message,
     const SetID setID) -> bool
 {
-    START()
+    START_OPERATION()
 
     target_nym_id_ = recipient;
     memo_ = message;
@@ -2464,7 +2464,7 @@ auto Operation::SendPeerReply(
     const OTPeerReply peerreply,
     const OTPeerRequest peerrequest) -> bool
 {
-    START()
+    START_OPERATION()
 
     target_nym_id_ = targetNymID;
     peer_reply_ = peerreply;
@@ -2477,7 +2477,7 @@ auto Operation::SendPeerRequest(
     const identifier::Nym& targetNymID,
     const OTPeerRequest peerrequest) -> bool
 {
-    START()
+    START_OPERATION()
 
     target_nym_id_ = targetNymID;
     peer_request_ = peerrequest;
@@ -2491,7 +2491,7 @@ auto Operation::SendTransfer(
     const Amount& amount,
     const String& memo) -> bool
 {
-    START()
+    START_OPERATION()
 
     account_id_ = sourceAccountID;
     generic_id_ = destinationAccountID;
@@ -2534,7 +2534,7 @@ auto Operation::Start(
     const otx::OperationType type,
     const otx::context::Server::ExtraArgs& args) -> bool
 {
-    START()
+    START_OPERATION()
 
     switch (type) {
         case otx::OperationType::GetTransactionNumbers:
@@ -2556,7 +2556,7 @@ auto Operation::Start(
     const identifier::UnitDefinition& targetUnitID,
     const otx::context::Server::ExtraArgs& args) -> bool
 {
-    START()
+    START_OPERATION()
 
     switch (type) {
         case otx::OperationType::DownloadMint:
@@ -2580,7 +2580,7 @@ auto Operation::Start(
     const identifier::Nym& targetNymID,
     const otx::context::Server::ExtraArgs& args) -> bool
 {
-    START()
+    START_OPERATION()
 
     switch (type) {
         case otx::OperationType::CheckNym: {
@@ -2792,7 +2792,7 @@ void Operation::update_workflow_send_cash(
 
 auto Operation::UpdateAccount(const Identifier& accountID) -> bool
 {
-    START()
+    START_OPERATION()
 
     affected_accounts_.insert(accountID);
     redownload_accounts_.clear();
@@ -2803,7 +2803,7 @@ auto Operation::UpdateAccount(const Identifier& accountID) -> bool
 auto Operation::WithdrawCash(const Identifier& accountID, const Amount& amount)
     -> bool
 {
-    START()
+    START_OPERATION()
 
     account_id_ = accountID;
     amount_ = amount;

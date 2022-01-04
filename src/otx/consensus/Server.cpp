@@ -119,7 +119,7 @@
 #include "serialization/protobuf/ServerContract.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
-#define START()                                                                \
+#define START_SERVER_CONTEXT()                                                 \
     Lock lock(decision_lock_);                                                 \
                                                                                \
     if (running().load()) {                                                    \
@@ -129,16 +129,8 @@
         return {};                                                             \
     }
 
-#define CURRENT_VERSION 3
-#define PENDING_COMMAND_VERSION 1
-#define DEFAULT_NODE_NAME "Stash Node Pro"
-#define NYMBOX_BOX_TYPE 0
-#define FAILURE_COUNT_LIMIT 3
-
 namespace opentxs::factory
 {
-using ReturnType = opentxs::otx::context::implementation::Server;
-
 auto ServerContext(
     const api::session::Client& api,
     const network::zeromq::socket::Publish& requestSent,
@@ -148,6 +140,8 @@ auto ServerContext(
     const identifier::Notary& server,
     network::ServerConnection& connection) -> otx::context::internal::Server*
 {
+    using ReturnType = opentxs::otx::context::implementation::Server;
+
     return new ReturnType(
         api, requestSent, replyReceived, local, remote, server, connection);
 }
@@ -161,6 +155,8 @@ auto ServerContext(
     const Nym_p& remote,
     network::ServerConnection& connection) -> otx::context::internal::Server*
 {
+    using ReturnType = opentxs::otx::context::implementation::Server;
+
     return new ReturnType(
         api, requestSent, replyReceived, serialized, local, remote, connection);
 }
@@ -168,7 +164,6 @@ auto ServerContext(
 
 namespace opentxs::otx::context::implementation
 {
-const std::string Server::default_node_name_{DEFAULT_NODE_NAME};
 const std::set<MessageType> Server::do_not_need_request_number_{
     MessageType::pingNotary,
     MessageType::registerNym,
@@ -183,7 +178,7 @@ Server::Server(
     const Nym_p& remote,
     const identifier::Notary& server,
     network::ServerConnection& connection)
-    : Base(api, CURRENT_VERSION, local, remote, server)
+    : Base(api, current_version_, local, remote, server)
     , StateMachine(std::bind(&Server::state_machine, this))
     , request_sent_(requestSent)
     , reply_received_(replyReceived)
@@ -233,7 +228,7 @@ Server::Server(
     network::ServerConnection& connection)
     : Base(
           api,
-          CURRENT_VERSION,
+          current_version_,
           serialized,
           local,
           remote,
@@ -2339,7 +2334,7 @@ void Server::need_box_items(
             server_id_,
             nym_->ID(),
             nym_->ID(),
-            NYMBOX_BOX_TYPE,
+            nymbox_box_type_,
             number);
 
         if (exists) {
@@ -2355,7 +2350,7 @@ void Server::need_box_items(
         OT_ASSERT(message);
 
         message->m_strAcctID = String::Factory(nym_->ID());
-        message->m_lDepth = NYMBOX_BOX_TYPE;
+        message->m_lDepth = nymbox_box_type_;
         message->m_lTransactionNum = number;
         const auto finalized = FinalizeServerCommand(*message, reason);
 
@@ -6466,7 +6461,7 @@ auto Server::Queue(
     const PasswordPrompt& reason,
     const ExtraArgs& args) -> Server::QueueResult
 {
-    START();
+    START_SERVER_CONTEXT();
 
     return start(lock, reason, client, message, args);
 }
@@ -6480,7 +6475,7 @@ auto Server::Queue(
     const PasswordPrompt& reason,
     const ExtraArgs& args) -> Server::QueueResult
 {
-    START();
+    START_SERVER_CONTEXT();
 
     if (false == bool(inbox)) {
         LogError()(OT_PRETTY_CLASS())("Inbox is not instantiated").Flush();
@@ -6511,7 +6506,7 @@ auto Server::RefreshNymbox(
     const api::session::Client& client,
     const PasswordPrompt& reason) -> Server::QueueResult
 {
-    START();
+    START_SERVER_CONTEXT();
 
     return start(
         lock,
@@ -7269,7 +7264,7 @@ auto Server::serialize(const Lock& lock) const -> proto::Context
 
         if (pending_message_) {
             auto& pending = *server.mutable_pending();
-            pending.set_version(PENDING_COMMAND_VERSION);
+            pending.set_version(pending_command_version_);
             pending.set_serialized(String::Factory(*pending_message_)->Get());
             pending.set_accountlabel(std::get<0>(pending_args_));
             pending.set_resync(std::get<1>(pending_args_));
@@ -7509,7 +7504,7 @@ auto Server::state_machine() noexcept -> bool
     }
 
     const bool more = proto::DELIVERTYSTATE_IDLE != state_.load();
-    const bool retry = FAILURE_COUNT_LIMIT >= failure_counter_.load();
+    const bool retry = failure_count_limit_ >= failure_counter_.load();
 
     if (false == more) {
         LogDetail()(OT_PRETTY_CLASS())("Delivery complete").Flush();

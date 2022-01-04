@@ -45,8 +45,6 @@
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::block::bitcoin::implementation::Header;
-
 auto BitcoinBlockHeader(
     const api::Session& api,
     const opentxs::blockchain::block::Header& previous,
@@ -56,6 +54,7 @@ auto BitcoinBlockHeader(
     const AbortFunction abort) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Header;
     static const auto now = []() {
         return static_cast<std::uint32_t>(Clock::to_time_t(Clock::now()));
     };
@@ -119,6 +118,8 @@ auto BitcoinBlockHeader(
     const proto::BlockchainBlockHeader& serialized) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Header;
+
     try {
         return std::make_unique<ReturnType>(api, serialized);
     } catch (const std::exception& e) {
@@ -134,6 +135,8 @@ auto BitcoinBlockHeader(
     const ReadView raw) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Header>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Header;
+
     if (OT_BITCOIN_BLOCK_HEADER_SIZE != raw.size()) {
         LogError()("opentxs::factory::")(__func__)(
             ": Invalid serialized block size. Got: ")(raw.size())(" expected ")(

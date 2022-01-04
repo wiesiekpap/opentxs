@@ -24,13 +24,8 @@
 #include "serialization/protobuf/PeerReply.pb.h"
 #include "serialization/protobuf/PeerRequest.pb.h"
 
-#define CURRENT_VERSION 4
-
 namespace opentxs
 {
-using ParentType = contract::peer::implementation::Reply;
-using ReturnType = contract::peer::reply::implementation::Connection;
-
 auto Factory::ConnectionReply(
     const api::Session& api,
     const Nym_p& nym,
@@ -45,7 +40,10 @@ auto Factory::ConnectionReply(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::reply::Connection>
 {
+    using ParentType = contract::peer::implementation::Reply;
+    using ReturnType = contract::peer::reply::implementation::Connection;
     auto peerRequest = proto::PeerRequest{};
+
     if (false == ParentType::LoadRequest(api, nym, request, peerRequest)) {
         return {};
     }
@@ -83,6 +81,8 @@ auto Factory::ConnectionReply(
     const proto::PeerReply& serialized) noexcept
     -> std::shared_ptr<contract::peer::reply::Connection>
 {
+    using ReturnType = contract::peer::reply::implementation::Connection;
+
     if (false == proto::Validate(serialized, VERBOSE)) {
         LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized reply.")
@@ -131,7 +131,7 @@ Connection::Connection(
     : Reply(
           api,
           nym,
-          CURRENT_VERSION,
+          current_version_,
           initiator,
           server,
           contract::peer::PeerRequestType::ConnectionInfo,

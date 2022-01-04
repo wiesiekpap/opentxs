@@ -24,16 +24,18 @@ template class opentxs::Pimpl<opentxs::Secret>;
 
 namespace opentxs::factory
 {
-using ReturnType = implementation::Secret;
-
 auto Secret(const std::size_t bytes) noexcept
     -> std::unique_ptr<opentxs::Secret>
 {
+    using ReturnType = implementation::Secret;
+
     return std::make_unique<ReturnType>(bytes);
 }
 auto Secret(const ReadView bytes, const bool mode) noexcept
     -> std::unique_ptr<opentxs::Secret>
 {
+    using ReturnType = implementation::Secret;
+
     return std::make_unique<ReturnType>(
         bytes, static_cast<ReturnType::Mode>(mode));
 }

@@ -49,8 +49,6 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
 {
-using ReturnType = api::network::imp::Dht;
-
 auto DhtAPI(
     const api::Session& api,
     const opentxs::network::zeromq::Context& zeromq,
@@ -64,6 +62,8 @@ auto DhtAPI(
     std::int64_t& unitRefreshInterval) noexcept
     -> std::unique_ptr<api::network::Dht>
 {
+    using ReturnType = api::network::imp::Dht;
+
     auto config = network::DhtConfig{};
     auto notUsed{false};
     api.Config().CheckSet_bool(

@@ -107,9 +107,9 @@ auto NymFile::DeserializeNymFile(
 template <typename T>
 auto NymFile::deserialize_nymfile(
     const T& lock,
-    const String& strNym,
+    const opentxs::String& strNym,
     bool& converted,
-    String::Map* pMapCredentials,
+    opentxs::String::Map* pMapCredentials,
     const OTPassword* pImportPassword) -> bool
 {
     OT_ASSERT(verify_lock(lock));
@@ -193,7 +193,7 @@ auto NymFile::deserialize_nymfile(
                     // internal map so that it is available for future lookups.
                     //
                     if (strAccountID->Exists() && strHashValue->Exists()) {
-                        auto pID = Identifier::Factory(strHashValue);
+                        auto pID = opentxs::Identifier::Factory(strHashValue);
                         OT_ASSERT(!pID->empty())
                         m_mapInboxHash.emplace(strAccountID->Get(), pID);
                     }
@@ -213,7 +213,8 @@ auto NymFile::deserialize_nymfile(
                     // internal map so that it is available for future lookups.
                     //
                     if (strAccountID->Exists() && strHashValue->Exists()) {
-                        OTIdentifier pID = Identifier::Factory(strHashValue);
+                        OTIdentifier pID =
+                            opentxs::Identifier::Factory(strHashValue);
                         OT_ASSERT(!pID->empty())
                         m_mapOutboxHash.emplace(strAccountID->Get(), pID);
                     }
@@ -308,7 +309,7 @@ auto NymFile::deserialize_nymfile(
     return bSuccess;
 }
 
-void NymFile::DisplayStatistics(String& strOutput) const
+void NymFile::DisplayStatistics(opentxs::String& strOutput) const
 {
     sLock lock(shared_lock_);
     strOutput.Concatenate(
@@ -330,7 +331,7 @@ void NymFile::DisplayStatistics(String& strOutput) const
 auto NymFile::GetHash(
     const mapOfIdentifiers& the_map,
     const std::string& str_id,
-    Identifier& theOutput) const -> bool  // client-side
+    opentxs::Identifier& theOutput) const -> bool  // client-side
 {
     sLock lock(shared_lock_);
 
@@ -363,14 +364,14 @@ auto NymFile::GetHash(
 
 auto NymFile::GetInboxHash(
     const std::string& acct_id,
-    Identifier& theOutput) const -> bool  // client-side
+    opentxs::Identifier& theOutput) const -> bool  // client-side
 {
     return GetHash(m_mapInboxHash, acct_id, theOutput);
 }
 
 auto NymFile::GetOutboxHash(
     const std::string& acct_id,
-    Identifier& theOutput) const -> bool  // client-side
+    opentxs::Identifier& theOutput) const -> bool  // client-side
 {
     return GetHash(m_mapOutboxHash, acct_id, theOutput);
 }
@@ -527,7 +528,7 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
 
 // Sometimes for testing I need to clear out all the transaction numbers from a
 // nym. So I added this method to make such a thing easy to do.
-void NymFile::RemoveAllNumbers(const String& pstrNotaryID)
+void NymFile::RemoveAllNumbers(const opentxs::String& pstrNotaryID)
 {
     std::list<mapOfIdentifiers::iterator> listOfInboxHash;
     std::list<mapOfIdentifiers::iterator> listOfOutboxHash;
@@ -596,7 +597,7 @@ auto NymFile::RemoveOutpaymentsByTransNum(
 }
 
 // Save the Pseudonym to a string...
-auto NymFile::SerializeNymFile(String& output) const -> bool
+auto NymFile::SerializeNymFile(opentxs::String& output) const -> bool
 {
     sLock lock(shared_lock_);
 
@@ -604,7 +605,8 @@ auto NymFile::SerializeNymFile(String& output) const -> bool
 }
 
 template <typename T>
-auto NymFile::serialize_nymfile(const T& lock, String& strNym) const -> bool
+auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
+    -> bool
 {
     OT_ASSERT(verify_lock(lock));
 
@@ -664,7 +666,7 @@ auto NymFile::serialize_nymfile(const T& lock, String& strNym) const -> bool
     // client-side
     for (auto& it : m_mapInboxHash) {
         std::string strAcctID = it.first;
-        const Identifier& theID = it.second;
+        const opentxs::Identifier& theID = it.second;
 
         if ((strAcctID.size() > 0) && !theID.empty()) {
             const auto strHash = String::Factory(theID);
@@ -678,7 +680,7 @@ auto NymFile::serialize_nymfile(const T& lock, String& strNym) const -> bool
     // client-side
     for (auto& it : m_mapOutboxHash) {
         std::string strAcctID = it.first;
-        const Identifier& theID = it.second;
+        const opentxs::Identifier& theID = it.second;
 
         if ((strAcctID.size() > 0) && !theID.empty()) {
             const auto strHash = String::Factory(theID);
@@ -783,7 +785,7 @@ auto NymFile::save_signed_nymfile(const T& lock, const PasswordPrompt& reason)
 auto NymFile::SetHash(
     mapOfIdentifiers& the_map,
     const std::string& str_id,
-    const Identifier& theInput) -> bool  // client-side
+    const opentxs::Identifier& theInput) -> bool  // client-side
 {
     the_map.emplace(str_id, theInput);
 
@@ -792,7 +794,7 @@ auto NymFile::SetHash(
 
 auto NymFile::SetInboxHash(
     const std::string& acct_id,
-    const Identifier& theInput) -> bool  // client-side
+    const opentxs::Identifier& theInput) -> bool  // client-side
 {
     eLock lock(shared_lock_);
 
@@ -801,7 +803,7 @@ auto NymFile::SetInboxHash(
 
 auto NymFile::SetOutboxHash(
     const std::string& acct_id,
-    const Identifier& theInput) -> bool  // client-side
+    const opentxs::Identifier& theInput) -> bool  // client-side
 {
     eLock lock(shared_lock_);
 

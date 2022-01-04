@@ -75,5 +75,5 @@ void Dealer::process_incoming(
     LogTrace()(OT_PRETTY_CLASS())("Done.").Flush();
 }
 
-Dealer::~Dealer() SHUTDOWN
+Dealer::~Dealer() SHUTDOWN_SOCKET
 }  // namespace opentxs::network::zeromq::socket::implementation

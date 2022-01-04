@@ -17,6 +17,7 @@
 #include "blockchain/database/wallet/SubchainID.hpp"
 #include "blockchain/database/wallet/Types.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
@@ -52,21 +53,15 @@ struct Position;
 
 namespace opentxs::blockchain::database::wallet
 {
-template <typename Input>
-auto tsv(const Input& in) noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(&in), sizeof(in)};
-}
-
 using Mode = storage::lmdb::LMDB::Mode;
 
-constexpr auto config_{Table::Config};
+constexpr auto id_index_{Table::SubchainID};
 constexpr auto last_indexed_{Table::SubchainLastIndexed};
 constexpr auto last_scanned_{Table::SubchainLastScanned};
-constexpr auto id_index_{Table::SubchainID};
-constexpr auto patterns_{Table::WalletPatterns};
-constexpr auto pattern_index_{Table::SubchainPatterns};
 constexpr auto match_index_{Table::SubchainMatches};
+constexpr auto pattern_index_{Table::SubchainPatterns};
+constexpr auto patterns_{Table::WalletPatterns};
+constexpr auto subchain_config_{Table::Config};
 
 class SubchainCache
 {

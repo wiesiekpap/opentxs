@@ -60,7 +60,7 @@ auto Receiver<InterfaceType, MessageType>::apply_socket(
     const auto id = add_task(std::move(cb));
 
     while (task_running(id)) {
-        Sleep(std::chrono::milliseconds(RECEIVER_POLL_MILLISECONDS));
+        Sleep(std::chrono::milliseconds(receiver_poll_milliseconds_));
     }
 
     return task_result(id);
@@ -138,7 +138,7 @@ void Receiver<InterfaceType, MessageType>::thread() noexcept
     while (running_.get()) {
         if (have_callback()) { break; }
 
-        Sleep(std::chrono::milliseconds(CALLBACK_WAIT_MILLISECONDS));
+        Sleep(std::chrono::milliseconds(callback_wait_milliseconds_));
     }
 
     zmq_pollitem_t poll[1];
@@ -154,7 +154,7 @@ void Receiver<InterfaceType, MessageType>::thread() noexcept
         for (const auto& endpoint : newEndpoints) { start(lock, endpoint); }
 
         run_tasks(lock);
-        const auto events = zmq_poll(poll, 1, RECEIVER_POLL_MILLISECONDS);
+        const auto events = zmq_poll(poll, 1, receiver_poll_milliseconds_);
 
         if (0 == events) { continue; }
 

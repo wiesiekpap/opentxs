@@ -16,6 +16,7 @@ extern "C" {
 
 #include "internal/blockchain/node/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::factory
@@ -36,12 +37,6 @@ auto BlockchainDatabase(
 
 namespace opentxs::blockchain::implementation
 {
-template <typename Input>
-auto tsv(const Input& in) noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(&in), sizeof(in)};
-}
-
 const VersionNumber Database::db_version_{1};
 const storage::lmdb::TableNames Database::table_names_{
     {database::Config, "config"},

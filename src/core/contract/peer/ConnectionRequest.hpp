@@ -12,6 +12,7 @@
 #include "opentxs/core/contract/peer/ConnectionRequest.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -61,6 +62,8 @@ public:
 
 private:
     friend opentxs::Factory;
+
+    static constexpr auto current_version_ = VersionNumber{4};
 
     const contract::peer::ConnectionInfoType connection_type_;
 

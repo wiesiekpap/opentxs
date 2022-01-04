@@ -19,21 +19,25 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::zeromq::Frame;
-
 auto ZMQFrame(const std::size_t size) noexcept -> network::zeromq::Frame
 {
+    using ReturnType = network::zeromq::Frame;
+
     return std::make_unique<ReturnType::Imp>(size).release();
 }
 
 auto ZMQFrame(const void* data, const std::size_t size) noexcept
     -> network::zeromq::Frame
 {
+    using ReturnType = network::zeromq::Frame;
+
     return std::make_unique<ReturnType::Imp>(data, size).release();
 }
 
 auto ZMQFrame(const ProtobufType& data) noexcept -> network::zeromq::Frame
 {
+    using ReturnType = network::zeromq::Frame;
+
     return std::make_unique<ReturnType::Imp>(data).release();
 }
 }  // namespace opentxs::factory

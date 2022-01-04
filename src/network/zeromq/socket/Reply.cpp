@@ -71,5 +71,5 @@ auto Reply::process_incoming(const Lock& lock, Message&& message) noexcept
     send_message(lock, std::move(reply));
 }
 
-Reply::~Reply() SHUTDOWN
+Reply::~Reply() SHUTDOWN_SOCKET
 }  // namespace opentxs::network::zeromq::socket::implementation

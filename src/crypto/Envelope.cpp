@@ -52,11 +52,11 @@
 
 namespace opentxs
 {
-using ReturnType = crypto::implementation::Envelope;
-
 auto Factory::Envelope(const api::Session& api) noexcept
     -> std::unique_ptr<crypto::Envelope>
 {
+    using ReturnType = crypto::implementation::Envelope;
+
     return std::make_unique<ReturnType>(api);
 }
 
@@ -65,6 +65,8 @@ auto Factory::Envelope(
     const proto::Envelope& serialized) noexcept(false)
     -> std::unique_ptr<crypto::Envelope>
 {
+    using ReturnType = crypto::implementation::Envelope;
+
     return std::make_unique<ReturnType>(api, serialized);
 }
 
@@ -73,6 +75,8 @@ auto Factory::Envelope(
     const ReadView& serialized) noexcept(false)
     -> std::unique_ptr<crypto::Envelope>
 {
+    using ReturnType = crypto::implementation::Envelope;
+
     return std::make_unique<ReturnType>(api, serialized);
 }
 }  // namespace opentxs

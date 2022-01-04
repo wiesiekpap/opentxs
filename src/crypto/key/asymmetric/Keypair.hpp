@@ -43,8 +43,8 @@ public:
 
     auto CheckCapability(const NymCapability& capability) const noexcept
         -> bool final;
-    auto GetPrivateKey() const noexcept(false) -> const Asymmetric& final;
-    auto GetPublicKey() const noexcept(false) -> const Asymmetric& final;
+    auto GetPrivateKey() const noexcept(false) -> const key::Asymmetric& final;
+    auto GetPublicKey() const noexcept(false) -> const key::Asymmetric& final;
     auto GetPublicKeyBySignature(
         Keys& listOutput,
         const Signature& theSignature,

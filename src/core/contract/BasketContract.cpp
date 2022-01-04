@@ -29,8 +29,6 @@
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
-using ReturnType = opentxs::contract::unit::implementation::Basket;
-
 namespace opentxs
 {
 // Unlike the other factory functions, this one does not produce a complete,
@@ -48,6 +46,8 @@ auto Factory::BasketContract(
     const Amount& redemptionIncrement) noexcept
     -> std::shared_ptr<contract::unit::Basket>
 {
+    using ReturnType = opentxs::contract::unit::implementation::Basket;
+
     return std::make_shared<ReturnType>(
         api,
         nym,
@@ -66,6 +66,8 @@ auto Factory::BasketContract(
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::unit::Basket>
 {
+    using ReturnType = opentxs::contract::unit::implementation::Basket;
+
     if (false == proto::Validate<ReturnType::SerializedType>(
                      serialized, VERBOSE, true)) {
 
@@ -109,6 +111,7 @@ auto Basket::FinalizeTemplate(
     proto::UnitDefinition& serialized,
     const PasswordPrompt& reason) -> bool
 {
+    using ReturnType = opentxs::contract::unit::implementation::Basket;
     auto contract = std::make_unique<ReturnType>(api, nym, serialized);
 
     if (!contract) { return false; }

@@ -11,6 +11,7 @@
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageIssuers.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -46,6 +47,8 @@ public:
 
 private:
     friend Nym;
+
+    static constexpr auto current_version_ = VersionNumber{1};
 
     void init(const std::string& hash) final;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;

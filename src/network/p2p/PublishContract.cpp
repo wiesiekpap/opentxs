@@ -32,16 +32,18 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::p2p::PublishContract;
-
-auto BlockchainSyncPublishContract() noexcept -> ReturnType
+auto BlockchainSyncPublishContract() noexcept -> network::p2p::PublishContract
 {
+    using ReturnType = network::p2p::PublishContract;
+
     return std::make_unique<ReturnType::Imp>().release();
 }
 
 auto BlockchainSyncPublishContract(const identity::Nym& payload) noexcept
-    -> ReturnType
+    -> network::p2p::PublishContract
 {
+    using ReturnType = network::p2p::PublishContract;
+
     try {
         return std::make_unique<ReturnType::Imp>(
                    contract::Type::nym,
@@ -64,8 +66,10 @@ auto BlockchainSyncPublishContract(const identity::Nym& payload) noexcept
 }
 
 auto BlockchainSyncPublishContract(const contract::Server& payload) noexcept
-    -> ReturnType
+    -> network::p2p::PublishContract
 {
+    using ReturnType = network::p2p::PublishContract;
+
     try {
         return std::make_unique<ReturnType::Imp>(
                    contract::Type::notary,
@@ -89,8 +93,10 @@ auto BlockchainSyncPublishContract(const contract::Server& payload) noexcept
 }
 
 auto BlockchainSyncPublishContract(const contract::Unit& payload) noexcept
-    -> ReturnType
+    -> network::p2p::PublishContract
 {
+    using ReturnType = network::p2p::PublishContract;
+
     try {
         return std::make_unique<ReturnType::Imp>(
                    contract::Type::unit,
@@ -116,8 +122,11 @@ auto BlockchainSyncPublishContract_p(
     const api::Session& api,
     const contract::Type type,
     const ReadView id,
-    const ReadView payload) noexcept -> std::unique_ptr<ReturnType>
+    const ReadView payload) noexcept
+    -> std::unique_ptr<network::p2p::PublishContract>
 {
+    using ReturnType = network::p2p::PublishContract;
+
     return std::make_unique<ReturnType>(
         std::make_unique<ReturnType::Imp>(api, type, id, payload).release());
 }

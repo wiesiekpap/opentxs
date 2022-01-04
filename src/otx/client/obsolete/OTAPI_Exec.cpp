@@ -65,9 +65,6 @@ OTAPI_Exec::OTAPI_Exec(
     const OT_API& otapi,
     const ContextLockCallback& lockCallback)
     : api_(api)
-    , activity_(activity)
-    , contacts_(contacts)
-    , zeromq_(zeromq)
     , ot_api_(otapi)
     , lock_callback_(lockCallback)
 {

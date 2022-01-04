@@ -23,6 +23,7 @@
 #include "blockchain/database/wallet/Position.hpp"
 #include "blockchain/database/wallet/Types.hpp"
 #include "internal/blockchain/database/Database.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -64,10 +65,10 @@ class Outpoint;
 namespace opentxs::blockchain::database::wallet
 {
 constexpr auto accounts_{Table::AccountOutputs};
-constexpr auto config_{Table::Config};
 constexpr auto generation_{Table::GenerationOutputs};
 constexpr auto keys_{Table::KeyOutputs};
 constexpr auto nyms_{Table::NymOutputs};
+constexpr auto output_config_{Table::Config};
 constexpr auto output_proposal_{Table::OutputProposals};
 constexpr auto outputs_{Table::WalletOutputs};
 constexpr auto positions_{Table::PositionOutputs};
@@ -87,12 +88,6 @@ using NymBalances = std::map<OTNymID, Balance>;
 using Nyms = robin_hood::unordered_node_set<OTNymID>;
 
 auto all_states() noexcept -> const States&;
-
-template <typename Input>
-auto tsv(const Input& in) noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(&in), sizeof(in)};
-}
 
 class OutputCache
 {

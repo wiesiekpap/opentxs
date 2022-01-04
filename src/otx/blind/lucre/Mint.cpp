@@ -17,7 +17,7 @@ extern "C" {
 #include <memory>
 #include <utility>
 
-#include "crypto/library/openssl/OpenSSL_BIO.hpp"
+#include "crypto/library/openssl/BIO.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Token.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -43,29 +43,32 @@ extern "C" {
 
 namespace opentxs::factory
 {
-using ReturnType = otx::blind::Mint;
-using Imp = otx::blind::mint::Lucre;
-
-auto MintLucre(const api::Session& api) noexcept -> ReturnType
+auto MintLucre(const api::Session& api) noexcept -> otx::blind::Mint
 {
-    return std::make_unique<Imp>(api).release();
+    using ReturnType = otx::blind::mint::Lucre;
+
+    return std::make_unique<ReturnType>(api).release();
 }
 
 auto MintLucre(
     const api::Session& api,
     const identifier::Notary& notary,
-    const identifier::UnitDefinition& unit) noexcept -> ReturnType
+    const identifier::UnitDefinition& unit) noexcept -> otx::blind::Mint
 {
-    return std::make_unique<Imp>(api, notary, unit).release();
+    using ReturnType = otx::blind::mint::Lucre;
+
+    return std::make_unique<ReturnType>(api, notary, unit).release();
 }
 
 auto MintLucre(
     const api::Session& api,
     const identifier::Notary& notary,
     const identifier::Nym& serverNym,
-    const identifier::UnitDefinition& unit) noexcept -> ReturnType
+    const identifier::UnitDefinition& unit) noexcept -> otx::blind::Mint
 {
-    return std::make_unique<Imp>(api, notary, serverNym, unit).release();
+    using ReturnType = otx::blind::mint::Lucre;
+
+    return std::make_unique<ReturnType>(api, notary, serverNym, unit).release();
 }
 }  // namespace opentxs::factory
 
@@ -138,8 +141,8 @@ auto Lucre::AddDenomination(
     }
 
     auto setDumper = LucreDumper{};
-    crypto::implementation::OpenSSL_BIO bio = BIO_new(BIO_s_mem());
-    crypto::implementation::OpenSSL_BIO bioPublic = BIO_new(BIO_s_mem());
+    crypto::openssl::BIO bio = ::BIO_new(::BIO_s_mem());
+    crypto::openssl::BIO bioPublic = ::BIO_new(::BIO_s_mem());
 
     // Generate the mint private key information
     Bank bank(size / 8);
@@ -219,9 +222,9 @@ auto Lucre::SignToken(
     }
 
     auto& lToken = *lucre;
-    crypto::implementation::OpenSSL_BIO bioBank = BIO_new(BIO_s_mem());
-    crypto::implementation::OpenSSL_BIO bioRequest = BIO_new(BIO_s_mem());
-    crypto::implementation::OpenSSL_BIO bioSignature = BIO_new(BIO_s_mem());
+    crypto::openssl::BIO bioBank = ::BIO_new(::BIO_s_mem());
+    crypto::openssl::BIO bioRequest = ::BIO_new(::BIO_s_mem());
+    crypto::openssl::BIO bioSignature = ::BIO_new(::BIO_s_mem());
 
     auto armoredPrivate = Armored::Factory();
 
@@ -253,7 +256,7 @@ auto Lucre::SignToken(
         return false;
     }
 
-    BIO_puts(bioBank, privateKey->Get());
+    ::BIO_puts(bioBank, privateKey->Get());
     Bank bank(bioBank);
     auto prototoken = String::Factory();
 
@@ -265,7 +268,7 @@ auto Lucre::SignToken(
         LogInsane()(OT_PRETTY_CLASS())("Extracted prototoken").Flush();
     }
 
-    BIO_puts(bioRequest, prototoken->Get());
+    ::BIO_puts(bioRequest, prototoken->Get());
     PublicCoinRequest req(bioRequest);
     BIGNUM* bnSignature = bank.SignRequest(req);
 
@@ -329,8 +332,8 @@ auto Lucre::VerifyToken(
 
     const auto& lucreToken = *lucre;
     auto setDumper = LucreDumper{};
-    crypto::implementation::OpenSSL_BIO bioBank = BIO_new(BIO_s_mem());
-    crypto::implementation::OpenSSL_BIO bioCoin = BIO_new(BIO_s_mem());
+    crypto::openssl::BIO bioBank = ::BIO_new(::BIO_s_mem());
+    crypto::openssl::BIO bioCoin = ::BIO_new(::BIO_s_mem());
     auto spendable = String::Factory();
 
     if (false == lucreToken.GetSpendable(spendable, reason)) {
@@ -339,7 +342,7 @@ auto Lucre::VerifyToken(
         return false;
     }
 
-    BIO_puts(bioCoin, spendable->Get());
+    ::BIO_puts(bioCoin, spendable->Get());
     auto armoredPrivate = Armored::Factory();
     GetPrivate(armoredPrivate, token.Value());
     auto privateKey = String::Factory();
@@ -361,7 +364,7 @@ auto Lucre::VerifyToken(
         return false;
     }
 
-    BIO_puts(bioBank, privateKey->Get());
+    ::BIO_puts(bioBank, privateKey->Get());
     Bank bank(bioBank);
     Coin coin(bioCoin);
 

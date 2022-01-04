@@ -208,10 +208,8 @@ OT_API::OT_API(
     const api::network::ZMQ& zmq,
     const ContextLockCallback& lockCallback)
     : api_(api)
-    , activity_(activity)
-    , contacts_(contacts)
     , workflow_(workflow)
-    , zmq_(zmq)
+    , m_bDefaultStore(false)
     , m_strDataPath(String::Factory())
     , m_strConfigFilename(String::Factory())
     , m_strConfigFilePath(String::Factory())

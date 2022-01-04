@@ -297,7 +297,7 @@ private:
     struct Factory {
         static auto get(
             const api::Session& api,
-            const Account& parent,
+            const crypto::Account& parent,
             Identifier& id,
             const Args&... args) noexcept -> std::unique_ptr<ReturnType>;
     };

@@ -79,10 +79,10 @@ auto reader(const ArrayType& in) noexcept -> ReadView
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::block::bitcoin::implementation::Block;
+using BlockReturnType = blockchain::block::bitcoin::implementation::Block;
 using ByteIterator = const std::byte*;
 using ParsedTransactions =
-    std::pair<ReturnType::TxidIndex, ReturnType::TransactionMap>;
+    std::pair<BlockReturnType::TxidIndex, BlockReturnType::TransactionMap>;
 
 auto parse_header(
     const api::Session& api,
@@ -106,7 +106,7 @@ auto parse_transactions(
     const blockchain::Type chain,
     const ReadView in,
     const blockchain::block::bitcoin::Header& header,
-    ReturnType::CalculatedSize& sizeData,
+    BlockReturnType::CalculatedSize& sizeData,
     ByteIterator& it,
     std::size_t& expectedSize) -> ParsedTransactions;
 }  // namespace opentxs::factory

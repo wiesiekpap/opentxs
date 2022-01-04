@@ -77,14 +77,15 @@ class Message;
 
 namespace opentxs::blockchain::node::implementation
 {
-using BlockDM = download::Manager<
+using BlockDMFilter = download::Manager<
     FilterOracle::BlockIndexer,
     std::shared_ptr<const block::bitcoin::Block>,
     filter::pHeader,
     filter::Type>;
-using BlockWorker = Worker<FilterOracle::BlockIndexer, api::Session>;
+using BlockWorkerFilter = Worker<FilterOracle::BlockIndexer, api::Session>;
 
-class FilterOracle::BlockIndexer : public BlockDM, public BlockWorker
+class FilterOracle::BlockIndexer : public BlockDMFilter,
+                                   public BlockWorkerFilter
 {
 public:
     auto NextBatch() noexcept { return allocate_batch(type_); }
@@ -104,8 +105,8 @@ public:
     ~BlockIndexer();
 
 private:
-    friend BlockDM;
-    friend BlockWorker;
+    friend BlockDMFilter;
+    friend BlockWorkerFilter;
 
     const internal::FilterDatabase& db_;
     const HeaderOracle& header_;

@@ -25,10 +25,9 @@
 
 namespace opentxs::factory
 {
-using ReturnType = otx::blind::Token;
-
-auto Token(const ReturnType& token, otx::blind::internal::Purse& purse) noexcept
-    -> ReturnType
+auto Token(
+    const otx::blind::Token& token,
+    otx::blind::internal::Purse& purse) noexcept -> otx::blind::Token
 {
     const auto type = token.Type();
 
@@ -50,7 +49,7 @@ auto Token(const ReturnType& token, otx::blind::internal::Purse& purse) noexcept
 auto Token(
     const api::Session& api,
     otx::blind::internal::Purse& purse,
-    const proto::Token& serialized) noexcept -> ReturnType
+    const proto::Token& serialized) noexcept -> otx::blind::Token
 {
     const auto type = translate(serialized.type());
 
@@ -75,7 +74,7 @@ auto Token(
     const otx::blind::Mint& mint,
     const otx::blind::Denomination value,
     otx::blind::internal::Purse& purse,
-    const opentxs::PasswordPrompt& reason) noexcept -> ReturnType
+    const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Token
 {
     const auto type = purse.Type();
 

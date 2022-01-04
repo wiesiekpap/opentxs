@@ -17,6 +17,7 @@
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/StoragePaymentWorkflows.pb.h"
 #include "util/storage/tree/Node.hpp"
@@ -65,6 +66,11 @@ public:
 
 private:
     friend Nym;
+
+    static constexpr auto current_version_ = VersionNumber{3};
+    static constexpr auto type_version_ = VersionNumber{3};
+    static constexpr auto index_version_ = VersionNumber{1};
+    static constexpr auto hash_version_ = VersionNumber{2};
 
     Workflows archived_;
     std::map<std::string, std::string> item_workflow_map_;

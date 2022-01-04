@@ -67,8 +67,6 @@ auto for_each(Range& range, Function f) -> Function
     return std::for_each(std::begin(range), std::end(range), f);
 }
 
-using ReturnType = identity::implementation::Authority;
-
 auto Factory::Authority(
     const api::Session& api,
     const identity::Nym& parent,
@@ -76,6 +74,8 @@ auto Factory::Authority(
     const proto::KeyMode mode,
     const proto::Authority& serialized) -> identity::internal::Authority*
 {
+    using ReturnType = identity::implementation::Authority;
+
     try {
 
         return new ReturnType(api, parent, source, mode, serialized);
@@ -96,6 +96,8 @@ auto Factory::Authority(
     const VersionNumber nymVersion,
     const opentxs::PasswordPrompt& reason) -> identity::internal::Authority*
 {
+    using ReturnType = identity::implementation::Authority;
+
     try {
 
         return new ReturnType(
@@ -115,6 +117,8 @@ namespace opentxs::identity::internal
 auto Authority::NymToContactCredential(const VersionNumber nym) noexcept(false)
     -> VersionNumber
 {
+    using ReturnType = identity::implementation::Authority;
+
     return ReturnType::authority_to_contact_.at(
         ReturnType::nym_to_authority_.at(nym));
 }

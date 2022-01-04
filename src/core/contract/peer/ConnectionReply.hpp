@@ -11,6 +11,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -61,6 +62,8 @@ public:
 
 private:
     friend opentxs::Factory;
+
+    static constexpr auto current_version_ = VersionNumber{4};
 
     const bool success_;
     const std::string url_;

@@ -73,7 +73,7 @@ namespace blockchain
 {
 namespace node
 {
-struct Mempool;
+class Mempool;
 }  // namespace node
 }  // namespace blockchain
 

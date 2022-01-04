@@ -14,14 +14,14 @@
 
 namespace opentxs::factory
 {
-using ReturnType = crypto::key::implementation::RSA;
-
 auto RSAKey(
     const api::Session& api,
     const crypto::AsymmetricProvider& engine,
     const proto::AsymmetricKey& input) noexcept
     -> std::unique_ptr<crypto::key::RSA>
 {
+    using ReturnType = crypto::key::implementation::RSA;
+
     try {
         return std::make_unique<ReturnType>(api, engine, input);
     } catch (const std::exception& e) {
@@ -40,6 +40,8 @@ auto RSAKey(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::RSA>
 {
+    using ReturnType = crypto::key::implementation::RSA;
+
     try {
         auto params = Space{};
 

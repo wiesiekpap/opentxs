@@ -66,8 +66,6 @@ constexpr auto range(std::uint32_t N, std::uint32_t M) noexcept -> std::uint64_t
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::implementation::GCS;
-
 auto GCS(
     const api::Session& api,
     const std::uint8_t bits,
@@ -76,6 +74,8 @@ auto GCS(
     const std::vector<OTData>& elements) noexcept
     -> std::unique_ptr<blockchain::GCS>
 {
+    using ReturnType = blockchain::implementation::GCS;
+
     try {
         auto effective = std::vector<ReadView>{};
 
@@ -98,6 +98,8 @@ auto GCS(
 auto GCS(const api::Session& api, const proto::GCS& in) noexcept
     -> std::unique_ptr<blockchain::GCS>
 {
+    using ReturnType = blockchain::implementation::GCS;
+
     try {
         return std::make_unique<ReturnType>(
             api, in.bits(), in.fprate(), in.count(), in.key(), in.filter());
@@ -134,6 +136,8 @@ auto GCS(
     const std::uint32_t filterElementCount,
     const ReadView filter) noexcept -> std::unique_ptr<blockchain::GCS>
 {
+    using ReturnType = blockchain::implementation::GCS;
+
     try {
         return std::make_unique<ReturnType>(
             api, bits, fpRate, filterElementCount, key, filter);
@@ -150,6 +154,7 @@ auto GCS(
     const ReadView key,
     const ReadView encoded) noexcept -> std::unique_ptr<blockchain::GCS>
 {
+    using ReturnType = blockchain::implementation::GCS;
     const auto params = blockchain::internal::GetFilterParams(type);
 
     try {
@@ -171,6 +176,8 @@ auto GCS(
     const blockchain::block::Block& block) noexcept
     -> std::unique_ptr<blockchain::GCS>
 {
+    using ReturnType = blockchain::implementation::GCS;
+
     if (blockchain::filter::Type::Basic_BIP158 == type) {
         LogError()("opentxs::factory::")(__func__)(
             ": Filter can not be constructed without previous outputs")

@@ -614,11 +614,8 @@ private:
     friend api::session::imp::Client;
 
     const api::Session& api_;
-    const api::session::Activity& activity_;
-    const api::session::Contacts& contacts_;
     const api::session::Workflow& workflow_;
-    const api::network::ZMQ& zmq_;
-    bool m_bDefaultStore{false};
+    bool m_bDefaultStore;
     OTString m_strDataPath;
     OTString m_strConfigFilename;
     OTString m_strConfigFilePath;

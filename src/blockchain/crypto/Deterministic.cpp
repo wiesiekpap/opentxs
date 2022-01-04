@@ -36,20 +36,9 @@
 
 namespace opentxs::blockchain::crypto::implementation
 {
-Deterministic::ChainData::ChainData(
-    const api::Session& api,
-    Subchain internalType,
-    bool internalContact,
-    Subchain externalType,
-    bool externalContact) noexcept
-    : internal_(api, internalType, internalContact)
-    , external_(api, externalType, externalContact)
-{
-}
-
 Deterministic::Deterministic(
     const api::Session& api,
-    const Account& parent,
+    const crypto::Account& parent,
     const SubaccountType type,
     OTIdentifier&& id,
     const proto::HDPath path,
@@ -69,7 +58,7 @@ Deterministic::Deterministic(
 
 Deterministic::Deterministic(
     const api::Session& api,
-    const Account& parent,
+    const crypto::Account& parent,
     const SubaccountType type,
     const SerializedType& serialized,
     const Bip32Index internal,
@@ -87,6 +76,17 @@ Deterministic::Deterministic(
            {data_.external_.type_, serialized.externalindex()}})
     , last_allocation_()
     , cached_key_()
+{
+}
+
+Deterministic::ChainData::ChainData(
+    const api::Session& api,
+    Subchain internalType,
+    bool internalContact,
+    Subchain externalType,
+    bool externalContact) noexcept
+    : internal_(api, internalType, internalContact)
+    , external_(api, externalType, externalContact)
 {
 }
 

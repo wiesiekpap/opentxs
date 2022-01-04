@@ -37,7 +37,7 @@ auto parse_header(
     }
 
     it = reinterpret_cast<ByteIterator>(in.data());
-    expectedSize = std::size_t{ReturnType::header_bytes_};
+    expectedSize = std::size_t{BlockReturnType::header_bytes_};
 
     if (in.size() < expectedSize) {
         throw std::runtime_error("Block size too short (header)");
@@ -46,13 +46,13 @@ auto parse_header(
     auto pHeader = BitcoinBlockHeader(
         api,
         chain,
-        {reinterpret_cast<const char*>(it), ReturnType::header_bytes_});
+        {reinterpret_cast<const char*>(it), BlockReturnType::header_bytes_});
 
     if (false == bool(pHeader)) {
         throw std::runtime_error("Invalid block header");
     }
 
-    std::advance(it, ReturnType::header_bytes_);
+    std::advance(it, BlockReturnType::header_bytes_);
 
     return pHeader;
 }
@@ -62,7 +62,7 @@ auto parse_transactions(
     const blockchain::Type chain,
     const ReadView in,
     const blockchain::block::bitcoin::Header& header,
-    ReturnType::CalculatedSize& sizeData,
+    BlockReturnType::CalculatedSize& sizeData,
     ByteIterator& it,
     std::size_t& expectedSize) -> ParsedTransactions
 {
@@ -107,7 +107,8 @@ auto parse_transactions(
                 api, chain, ++counter, header.Timestamp(), std::move(data)));
     }
 
-    const auto merkle = ReturnType::calculate_merkle_value(api, chain, index);
+    const auto merkle =
+        BlockReturnType::calculate_merkle_value(api, chain, index);
 
     if (header.MerkleRoot() != merkle) {
         throw std::runtime_error("Invalid merkle hash");

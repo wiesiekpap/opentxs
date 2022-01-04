@@ -27,8 +27,6 @@
 
 template class opentxs::Pimpl<opentxs::network::zeromq::socket::Request>;
 
-#define POLL_MILLISECONDS 10
-
 namespace opentxs::factory
 {
 auto RequestSocket(const network::zeromq::Context& context)
@@ -101,7 +99,7 @@ auto Request::wait(const Lock& lock) const noexcept -> bool
 
     while (running_.get()) {
         std::this_thread::yield();
-        const auto events = zmq_poll(poll, 1, POLL_MILLISECONDS);
+        const auto events = zmq_poll(poll, 1, poll_milliseconds_);
 
         if (0 == events) {
             LogVerbose()(OT_PRETTY_CLASS())("No messages.").Flush();
@@ -131,5 +129,5 @@ auto Request::wait(const Lock& lock) const noexcept -> bool
     return false;
 }
 
-Request::~Request() SHUTDOWN
+Request::~Request() SHUTDOWN_SOCKET
 }  // namespace opentxs::network::zeromq::socket::implementation

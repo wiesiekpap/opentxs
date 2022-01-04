@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/FileSize.hpp"
 
@@ -24,12 +25,6 @@ namespace fs = boost::filesystem;
 
 namespace opentxs::util
 {
-template <typename Input>
-auto tsv(const Input& in) noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(&in), sizeof(in)};
-}
-
 constexpr auto get_file_count(const std::size_t bytes) noexcept -> std::size_t
 {
     return std::max(

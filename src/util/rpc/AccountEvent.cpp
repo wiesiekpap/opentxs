@@ -22,9 +22,9 @@
 
 namespace opentxs::rpc
 {
-constexpr auto default_version_ = VersionNumber{2};
-
 struct AccountEvent::Imp {
+    static constexpr auto default_version_ = VersionNumber{2};
+
     const VersionNumber version_;
     const std::string account_;
     const AccountEventType type_;
@@ -121,7 +121,7 @@ AccountEvent::AccountEvent(
     const std::string& uuid,
     int state) noexcept(false)
     : imp_(std::make_unique<Imp>(
-               default_version_,
+               Imp::default_version_,
                account,
                type,
                contact,
@@ -209,7 +209,7 @@ auto AccountEvent::PendingAmount_str() const noexcept -> const std::string&
 auto AccountEvent::Serialize(proto::AccountEvent& dest) const noexcept -> bool
 {
     const auto& imp = *imp_;
-    dest.set_version(std::max(default_version_, imp.version_));
+    dest.set_version(std::max(Imp::default_version_, imp.version_));
     dest.set_id(imp.account_);
     dest.set_type(translate(imp.type_));
     dest.set_contact(imp.contact_);
