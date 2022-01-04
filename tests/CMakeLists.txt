@@ -98,7 +98,7 @@ add_library(
   "Cli.hpp"
 )
 
-if(NOT OT_IWYU)
+if(OT_PCH)
   target_precompile_headers(
     opentxs-test-helpers
     PRIVATE

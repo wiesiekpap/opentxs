@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <set>
+
 #include "opentxs/Version.hpp"
 
 namespace opentxs

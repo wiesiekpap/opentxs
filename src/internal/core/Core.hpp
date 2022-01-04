@@ -34,8 +34,8 @@ class Session;
 
 namespace identifier
 {
-class Nym;
 class Notary;
+class Nym;
 class UnitDefinition;
 }  // namespace identifier
 

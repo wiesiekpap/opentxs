@@ -15,6 +15,7 @@
 #include <string>
 #include <string_view>
 #include <tuple>
+#include <typeindex>
 #include <utility>
 #include <variant>
 

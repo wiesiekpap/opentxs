@@ -7,11 +7,15 @@
 #include "1_Internal.hpp"                   // IWYU pragma: associated
 #include "network/zeromq/context/Pool.hpp"  // IWYU pragma: associated
 
-#include <zmq.h>
+#include <zmq.h>  // IWYU pragma: keep
+#include <algorithm>
+#include <cassert>
+#include <functional>
+#include <iostream>
+#include <stdexcept>
+#include <string>
 #include <thread>
 
-#include "internal/network/zeromq/Batch.hpp"
-#include "internal/network/zeromq/Thread.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/context/Thread.hpp"
 #include "opentxs/Types.hpp"

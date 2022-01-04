@@ -96,10 +96,24 @@ option(
   OFF
 )
 option(
+  OT_PCH
+  "Use precompiled headers"
+  ON
+)
+option(
   OT_IWYU
   "Enable include-what-you-use static analysis"
   OFF
 )
+
+if(OT_IWYU)
+  set(OT_PCH OFF)
+endif()
+
+if(NOT OT_PCH)
+  set(CMAKE_UNITY_BUILD OFF)
+endif()
+
 option(
   OT_DHT
   "Enable OpenDHT support"
@@ -367,15 +381,14 @@ message(STATUS "Lucre debug info:         ${OT_LUCRE_DEBUG}")
 message(STATUS "Script engines-------------------------------")
 message(STATUS "Chai:                     ${OT_SCRIPT_USING_CHAI}")
 
-message(STATUS "UI-------------------------------------------")
+message(STATUS "Interface------------------------------------")
 message(STATUS "Qt:                       ${OT_WITH_QT}")
 message(STATUS "QML:                      ${OT_WITH_QML}")
-
-message(STATUS "Extra ---------------------------------------")
-message(STATUS "RPC server:               ${OT_ENABLE_RPC}")
+message(STATUS "RPC:                      ${OT_ENABLE_RPC}")
 
 message(STATUS "Developer -----------------------------------")
-message(STATUS "Valgrind integration:     ${OT_VALGRIND}")
+message(STATUS "Valgrind support:         ${OT_VALGRIND}")
+message(STATUS "precompiled headers:      ${OT_PCH}")
 message(STATUS "iwyu:                     ${OPENTXS_IWYU_ARGS}")
 message(STATUS "fix_includes:             ${OPENTXS_FIX_INCLUDES_ARGS}")
 

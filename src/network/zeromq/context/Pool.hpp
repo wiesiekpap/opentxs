@@ -4,8 +4,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <robin_hood.h>
+#include <future>
 #include <mutex>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 #include "internal/network/zeromq/Batch.hpp"
@@ -14,6 +16,8 @@
 #include "internal/network/zeromq/Types.hpp"
 #include "network/zeromq/context/Thread.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/network/zeromq/Context.hpp"
+#include "opentxs/network/zeromq/socket/Types.hpp"
 #include "util/Gatekeeper.hpp"
 
 #pragma once
@@ -34,6 +38,11 @@ namespace internal
 class Batch;
 class Thread;
 }  // namespace internal
+
+namespace socket
+{
+class Raw;
+}  // namespace socket
 
 class Context;
 }  // namespace zeromq

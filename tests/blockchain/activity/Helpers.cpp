@@ -30,6 +30,7 @@
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

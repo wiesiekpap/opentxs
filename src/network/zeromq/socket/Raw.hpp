@@ -6,6 +6,7 @@
 #pragma once
 
 #include <zmq.h>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -13,6 +14,7 @@
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Bytes.hpp"
 
 namespace opentxs
 {

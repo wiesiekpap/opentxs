@@ -38,6 +38,7 @@ class Authority;
 namespace proto
 {
 class AsymmetricKey;
+class Signature;
 }  // namespace proto
 
 class OTSignatureMetadata;

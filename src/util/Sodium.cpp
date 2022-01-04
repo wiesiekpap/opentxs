@@ -11,7 +11,9 @@ extern "C" {
 #include <sodium.h>
 }
 
+#include <algorithm>
 #include <cassert>
+#include <cstring>
 #include <functional>
 #include <string_view>
 
