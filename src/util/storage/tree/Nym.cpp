@@ -46,10 +46,6 @@
 #include "util/storage/tree/Thread.hpp"  // IWYU pragma: keep
 #include "util/storage/tree/Threads.hpp"
 
-#define CURRENT_VERSION 9
-#define BLOCKCHAIN_INDEX_VERSION 1
-#define STORAGE_PURSE_VERSION 1
-
 namespace opentxs::storage
 {
 template <>
@@ -146,7 +142,7 @@ Nym::Nym(
     if (check_hash(hash)) {
         init(hash);
     } else {
-        blank(CURRENT_VERSION);
+        blank(current_version_);
     }
 }
 
@@ -288,7 +284,7 @@ void Nym::init(const std::string& hash)
         OT_FAIL;
     }
 
-    init_version(CURRENT_VERSION, *serialized);
+    init_version(current_version_, *serialized);
 
     nymid_ = serialized->nymid();
     credentials_ = normalize_hash(serialized->credlist().hash());
@@ -767,7 +763,7 @@ auto Nym::serialize() const -> proto::StorageNym
         const auto& chainType = it.first;
         const auto& accountSet = it.second;
         auto& index = *serialized.add_blockchainaccountindex();
-        index.set_version(BLOCKCHAIN_INDEX_VERSION);
+        index.set_version(blockchain_index_version_);
         index.set_id(translate(UnitToClaim(chainType)));
 
         for (const auto& accountID : accountSet) { index.add_list(accountID); }
@@ -787,7 +783,7 @@ auto Nym::serialize() const -> proto::StorageNym
     for (const auto& [key, hash] : purse_id_) {
         const auto& [server, unit] = key;
         auto& purse = *serialized.add_purse();
-        purse.set_version(STORAGE_PURSE_VERSION);
+        purse.set_version(storage_purse_version_);
         purse.set_notary(server->str());
         purse.set_unit(unit->str());
         set_hash(purse.version(), unit->str(), hash, *purse.mutable_purse());

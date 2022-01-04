@@ -95,7 +95,7 @@ PeerManager::PeerManager(
           api,
           config,
           mempool,
-          node,
+          node_,
           headers,
           filter,
           block,

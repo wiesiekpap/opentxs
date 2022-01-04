@@ -28,20 +28,25 @@ class Message;
 
 namespace opentxs::factory
 {
-using ReturnType = network::p2p::Query;
-
-auto BlockchainSyncQuery() noexcept -> ReturnType
+auto BlockchainSyncQuery() noexcept -> network::p2p::Query
 {
+    using ReturnType = network::p2p::Query;
+
     return {std::make_unique<ReturnType::Imp>().release()};
 }
 
-auto BlockchainSyncQuery(int arg) noexcept -> ReturnType
+auto BlockchainSyncQuery(int arg) noexcept -> network::p2p::Query
 {
+    using ReturnType = network::p2p::Query;
+
     return {std::make_unique<ReturnType::Imp>(arg).release()};
 }
 
-auto BlockchainSyncQuery_p(int arg) noexcept -> std::unique_ptr<ReturnType>
+auto BlockchainSyncQuery_p(int arg) noexcept
+    -> std::unique_ptr<network::p2p::Query>
 {
+    using ReturnType = network::p2p::Query;
+
     return std::make_unique<ReturnType>(
         std::make_unique<ReturnType::Imp>(arg).release());
 }

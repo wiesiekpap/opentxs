@@ -56,8 +56,6 @@
 
 namespace opentxs::factory
 {
-using ReturnType = opentxs::blockchain::node::implementation::FilterOracle;
-
 auto BlockchainFilterOracle(
     const api::Session& api,
     const blockchain::node::internal::Config& config,
@@ -70,6 +68,8 @@ auto BlockchainFilterOracle(
     const std::string& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::FilterOracle>
 {
+    using ReturnType = opentxs::blockchain::node::implementation::FilterOracle;
+
     return std::make_unique<ReturnType>(
         api, config, node, header, block, database, chain, filter, shutdown);
 }

@@ -50,13 +50,13 @@ class NymFile final : public opentxs::internal::NymFile, Lockable
 {
 public:
     auto CompareID(const identifier::Nym& rhs) const -> bool final;
-    void DisplayStatistics(String& strOutput) const final;
+    void DisplayStatistics(opentxs::String& strOutput) const final;
     auto GetInboxHash(
         const std::string& acct_id,
-        Identifier& theOutput) const -> bool final;  // client-side
+        opentxs::Identifier& theOutput) const -> bool final;  // client-side
     auto GetOutboxHash(
         const std::string& acct_id,
-        Identifier& theOutput) const -> bool final;  // client-side
+        opentxs::Identifier& theOutput) const -> bool final;  // client-side
     auto GetOutpaymentsByIndex(const std::int32_t nIndex) const
         -> std::shared_ptr<Message> final;
     auto GetOutpaymentsByTransNum(
@@ -80,7 +80,7 @@ public:
     {
         return target_nym_->PaymentCode();
     }
-    auto SerializeNymFile(String& output) const -> bool final;
+    auto SerializeNymFile(opentxs::String& output) const -> bool final;
 
     void AddOutpayments(std::shared_ptr<Message> theMessage) final;
     auto GetSetAssetAccounts() -> std::set<std::string>& final
@@ -96,10 +96,10 @@ public:
     auto SaveSignedNymFile(const identity::Nym& SIGNER_NYM) -> bool;
     auto SetInboxHash(
         const std::string& acct_id,
-        const Identifier& theInput) -> bool final;  // client-side
+        const opentxs::Identifier& theInput) -> bool final;  // client-side
     auto SetOutboxHash(
         const std::string& acct_id,
-        const Identifier& theInput) -> bool final;  // client-side
+        const opentxs::Identifier& theInput) -> bool final;  // client-side
     void SetUsageCredits(const std::int64_t& lUsage) final
     {
         eLock lock(shared_lock_);
@@ -140,7 +140,7 @@ private:
     auto GetHash(
         const mapOfIdentifiers& the_map,
         const std::string& str_id,
-        Identifier& theOutput) const -> bool;
+        opentxs::Identifier& theOutput) const -> bool;
 
     void ClearAll();
     auto DeserializeNymFile(
@@ -151,27 +151,29 @@ private:
     template <typename T>
     auto deserialize_nymfile(
         const T& lock,
-        const String& strNym,
+        const opentxs::String& strNym,
         bool& converted,
-        String::Map* pMapCredentials,
+        opentxs::String::Map* pMapCredentials,
         const OTPassword* pImportPassword = nullptr) -> bool;
     auto LoadSignedNymFile(const PasswordPrompt& reason) -> bool final;
     template <typename T>
     auto load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
         -> bool;
-    void RemoveAllNumbers(const String& pstrNotaryID = String::Factory());
+    void RemoveAllNumbers(
+        const opentxs::String& pstrNotaryID = String::Factory());
     auto SaveSignedNymFile(const PasswordPrompt& reason) -> bool final;
     template <typename T>
     auto save_signed_nymfile(const T& lock, const PasswordPrompt& reason)
         -> bool;
     template <typename T>
-    auto serialize_nymfile(const T& lock, String& strNym) const -> bool;
+    auto serialize_nymfile(const T& lock, opentxs::String& strNym) const
+        -> bool;
     auto SerializeNymFile(const char* szFoldername, const char* szFilename)
         -> bool;
     auto SetHash(
         mapOfIdentifiers& the_map,
         const std::string& str_id,
-        const Identifier& theInput) -> bool;
+        const opentxs::Identifier& theInput) -> bool;
 
     NymFile(const api::Session& api, Nym_p targetNym, Nym_p signerNym);
     NymFile() = delete;

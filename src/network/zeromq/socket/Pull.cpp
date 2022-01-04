@@ -96,5 +96,5 @@ auto Pull::process_incoming(const Lock& lock, Message&& message) noexcept
     callback_.Process(std::move(message));
 }
 
-Pull::~Pull() SHUTDOWN
+Pull::~Pull() SHUTDOWN_SOCKET
 }  // namespace opentxs::network::zeromq::socket::implementation

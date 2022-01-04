@@ -3,9 +3,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "0_stdafx.hpp"                            // IWYU pragma: associated
-#include "1_Internal.hpp"                          // IWYU pragma: associated
-#include "crypto/library/openssl/OpenSSL_BIO.hpp"  // IWYU pragma: associated
+#include "0_stdafx.hpp"                    // IWYU pragma: associated
+#include "1_Internal.hpp"                  // IWYU pragma: associated
+#include "crypto/library/openssl/BIO.hpp"  // IWYU pragma: associated
 
 extern "C" {
 #include <openssl/bio.h>
@@ -21,25 +21,22 @@ extern "C" {
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#define READ_AMOUNT 256
-
-namespace opentxs::crypto::implementation
+namespace opentxs::crypto::openssl
 {
-// OpenSSL_BIO
-auto OpenSSL_BIO::assertBioNotNull(BIO* pBIO) -> BIO*
+auto BIO::assertBioNotNull(::BIO* pBIO) -> ::BIO*
 {
     if (nullptr == pBIO) OT_FAIL;
     return pBIO;
 }
 
-OpenSSL_BIO::OpenSSL_BIO(BIO* pBIO)
+BIO::BIO(::BIO* pBIO)
     : m_refBIO(*assertBioNotNull(pBIO))
     , bCleanup(true)
     , bFreeOnly(false)
 {
 }
 
-OpenSSL_BIO::~OpenSSL_BIO()
+BIO::~BIO()
 {
     if (bCleanup) {
         if (bFreeOnly) {
@@ -50,13 +47,13 @@ OpenSSL_BIO::~OpenSSL_BIO()
     }
 }
 
-OpenSSL_BIO::operator BIO*() const { return (&m_refBIO); }
+BIO::operator ::BIO*() const { return (&m_refBIO); }
 
-void OpenSSL_BIO::release() { bCleanup = false; }
+void BIO::release() { bCleanup = false; }
 
-void OpenSSL_BIO::setFreeOnly() { bFreeOnly = true; }
+void BIO::setFreeOnly() { bFreeOnly = true; }
 
-void OpenSSL_BIO::read_bio(
+void BIO::read_bio(
     const std::size_t amount,
     std::size_t& read,
     std::size_t& total,
@@ -69,12 +66,12 @@ void OpenSSL_BIO::read_bio(
     total += read;
 }
 
-auto OpenSSL_BIO::ToBytes() -> std::vector<std::byte>
+auto BIO::ToBytes() -> std::vector<std::byte>
 {
     std::size_t read{0};
     std::size_t total{0};
     std::vector<std::byte> output{};
-    read_bio(READ_AMOUNT, read, total, output);
+    read_bio(read_amount_, read, total, output);
 
     if (0 == read) {
         LogError()(OT_PRETTY_CLASS())("Read failed").Flush();
@@ -82,7 +79,9 @@ auto OpenSSL_BIO::ToBytes() -> std::vector<std::byte>
         return {};
     }
 
-    while (READ_AMOUNT == read) { read_bio(READ_AMOUNT, read, total, output); }
+    while (read_amount_ == read) {
+        read_bio(read_amount_, read, total, output);
+    }
 
     output.resize(total);
     LogInsane()(OT_PRETTY_CLASS())("Read ")(total)(" bytes").Flush();
@@ -90,7 +89,7 @@ auto OpenSSL_BIO::ToBytes() -> std::vector<std::byte>
     return output;
 }
 
-auto OpenSSL_BIO::ToString() -> OTString
+auto BIO::ToString() -> OTString
 {
     auto output = String::Factory();
     auto bytes = ToBytes();
@@ -109,4 +108,4 @@ auto OpenSSL_BIO::ToString() -> OTString
 
     return output;
 }
-}  // namespace opentxs::crypto::implementation
+}  // namespace opentxs::crypto::openssl

@@ -39,7 +39,7 @@ class Message;
 
 #define CURVE_KEY_BYTES 32
 #define CURVE_KEY_Z85_BYTES 40
-#define SHUTDOWN                                                               \
+#define SHUTDOWN_SOCKET                                                        \
     {                                                                          \
         running_->Off();                                                       \
         Lock lock(lock_);                                                      \

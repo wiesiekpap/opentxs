@@ -122,7 +122,7 @@ public:
     PaymentCode(
         const api::Session& api,
         const api::session::Contacts& contacts,
-        const Account& parent,
+        const crypto::Account& parent,
         const opentxs::PaymentCode& local,
         const opentxs::PaymentCode& remote,
         const proto::HDPath& path,
@@ -132,7 +132,7 @@ public:
     PaymentCode(
         const api::Session& api,
         const api::session::Contacts& contacts,
-        const Account& parent,
+        const crypto::Account& parent,
         const SerializedType& serialized,
         Identifier& id,
         OTIdentifier&& contact) noexcept(false);
@@ -140,6 +140,8 @@ public:
     ~PaymentCode() final = default;
 
 private:
+    static constexpr auto internal_type_{Subchain::Outgoing};
+    static constexpr auto external_type_{Subchain::Incoming};
     static constexpr auto DefaultVersion = VersionNumber{1};
     static constexpr auto Bip47DirectionVersion = VersionNumber{1};
     static constexpr auto compare_ = [](const opentxs::PaymentCode& lhs,

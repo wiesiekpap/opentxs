@@ -26,11 +26,7 @@
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 
-#define CURRENT_VERSION 2
-
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 Seeds::Seeds(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
@@ -39,7 +35,7 @@ Seeds::Seeds(const Driver& storage, const std::string& hash)
     if (check_hash(hash)) {
         init(hash);
     } else {
-        blank(CURRENT_VERSION);
+        blank(current_version_);
     }
 }
 
@@ -68,7 +64,7 @@ void Seeds::init(const std::string& hash)
         abort();
     }
 
-    init_version(CURRENT_VERSION, *serialized);
+    init_version(current_version_, *serialized);
     default_seed_ = serialized->defaultseed();
 
     for (const auto& it : serialized->seed()) {
@@ -175,5 +171,4 @@ auto Seeds::Store(const proto::Seed& data, const std::string& alias) -> bool
 
     return save(lock);
 }
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

@@ -20,18 +20,16 @@
 #include "serialization/protobuf/ClientContext.pb.h"
 #include "serialization/protobuf/Context.pb.h"
 
-#define CURRENT_VERSION 1
-
 namespace opentxs::factory
 {
-using ReturnType = otx::context::implementation::ClientContext;
-
 auto ClientContext(
     const api::Session& api,
     const Nym_p& local,
     const Nym_p& remote,
     const identifier::Notary& server) -> otx::context::internal::Client*
 {
+    using ReturnType = otx::context::implementation::ClientContext;
+
     return new ReturnType(api, local, remote, server);
 }
 
@@ -42,6 +40,8 @@ auto ClientContext(
     const Nym_p& remote,
     const identifier::Notary& server) -> otx::context::internal::Client*
 {
+    using ReturnType = otx::context::implementation::ClientContext;
+
     return new ReturnType(api, serialized, local, remote, server);
 }
 }  // namespace opentxs::factory
@@ -53,7 +53,8 @@ ClientContext::ClientContext(
     const Nym_p& local,
     const Nym_p& remote,
     const identifier::Notary& server)
-    : Base(api, CURRENT_VERSION, local, remote, server)
+    : Base(api, current_version_, local, remote, server)
+    , open_cron_items_()
 {
     {
         Lock lock(lock_);
@@ -67,7 +68,8 @@ ClientContext::ClientContext(
     const Nym_p& local,
     const Nym_p& remote,
     const identifier::Notary& server)
-    : Base(api, CURRENT_VERSION, serialized, local, remote, server)
+    : Base(api, current_version_, serialized, local, remote, server)
+    , open_cron_items_()
 {
     if (serialized.has_clientcontext()) {
         for (const auto& it : serialized.clientcontext().opencronitems()) {

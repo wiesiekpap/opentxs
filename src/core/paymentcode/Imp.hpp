@@ -129,8 +129,10 @@ public:
         const identity::credential::Base& credential,
         proto::Signature& sig,
         const PasswordPrompt& reason) const noexcept -> bool final;
-    auto Sign(const Data& data, Data& output, const PasswordPrompt& reason)
-        const noexcept -> bool final;
+    auto Sign(
+        const opentxs::Data& data,
+        opentxs::Data& output,
+        const PasswordPrompt& reason) const noexcept -> bool final;
     auto Unblind(
         const ReadView blinded,
         const crypto::key::EllipticCurve& publicKey,

@@ -11,10 +11,8 @@
 
 namespace opentxs::factory
 {
-using ReturnType = otx::blind::Token;
-
 auto TokenLucre(const otx::blind::Token&, otx::blind::internal::Purse&) noexcept
-    -> ReturnType
+    -> otx::blind::Token
 {
     return {};
 }
@@ -22,7 +20,7 @@ auto TokenLucre(const otx::blind::Token&, otx::blind::internal::Purse&) noexcept
 auto TokenLucre(
     const api::Session&,
     otx::blind::internal::Purse&,
-    const proto::Token&) noexcept -> ReturnType
+    const proto::Token&) noexcept -> otx::blind::Token
 {
     return {};
 }
@@ -33,7 +31,7 @@ auto TokenLucre(
     const otx::blind::Mint&,
     const otx::blind::Denomination,
     otx::blind::internal::Purse&,
-    const opentxs::PasswordPrompt&) noexcept -> ReturnType
+    const opentxs::PasswordPrompt&) noexcept -> otx::blind::Token
 {
     return {};
 }

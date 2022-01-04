@@ -33,10 +33,10 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::p2p::Data;
-
-auto BlockchainSyncData() noexcept -> ReturnType
+auto BlockchainSyncData() noexcept -> network::p2p::Data
 {
+    using ReturnType = network::p2p::Data;
+
     return {std::make_unique<ReturnType::Imp>().release()};
 }
 
@@ -44,8 +44,10 @@ auto BlockchainSyncData(
     WorkType type,
     network::p2p::State state,
     network::p2p::SyncData blocks,
-    ReadView cfheader) noexcept -> ReturnType
+    ReadView cfheader) noexcept -> network::p2p::Data
 {
+    using ReturnType = network::p2p::Data;
+
     return {std::make_unique<ReturnType::Imp>(
                 type, std::move(state), std::move(blocks), cfheader)
                 .release()};
@@ -55,8 +57,10 @@ auto BlockchainSyncData_p(
     WorkType type,
     network::p2p::State state,
     network::p2p::SyncData blocks,
-    ReadView cfheader) noexcept -> std::unique_ptr<ReturnType>
+    ReadView cfheader) noexcept -> std::unique_ptr<network::p2p::Data>
 {
+    using ReturnType = network::p2p::Data;
+
     return std::make_unique<ReturnType>(
         std::make_unique<ReturnType::Imp>(
             type, std::move(state), std::move(blocks), cfheader)

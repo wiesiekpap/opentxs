@@ -28,6 +28,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
@@ -937,7 +938,7 @@ auto OutputCache::load_position() noexcept -> void
     const auto start = Clock::now();
 #endif  // defined OPENTXS_DETAILED_DEBUG
     lmdb_.Load(
-        wallet::config_,
+        wallet::output_config_,
         tsv(database::Key::WalletPosition),
         [&](const auto bytes) { position_.emplace(bytes); });
 #if defined OPENTXS_DETAILED_DEBUG
@@ -1139,7 +1140,7 @@ auto OutputCache::UpdatePosition(
         const auto serialized = db::Position{pos};
         const auto rc = lmdb_
                             .Store(
-                                wallet::config_,
+                                wallet::output_config_,
                                 tsv(database::Key::WalletPosition),
                                 reader(serialized.data_),
                                 tx)

@@ -83,8 +83,9 @@ public:
     auto Serialize(proto::SymmetricKey& output) const -> bool final;
     auto Unlock(const PasswordPrompt& reason) const -> bool final;
 
-    auto ChangePassword(const PasswordPrompt& reason, const Secret& newPassword)
-        -> bool final;
+    auto ChangePassword(
+        const PasswordPrompt& reason,
+        const opentxs::Secret& newPassword) -> bool final;
 
     Symmetric(const api::Session& api, const crypto::SymmetricProvider& engine);
     Symmetric(
@@ -94,7 +95,7 @@ public:
     Symmetric(
         const api::Session& api,
         const crypto::SymmetricProvider& engine,
-        const Secret& seed,
+        const opentxs::Secret& seed,
         const ReadView salt,
         const std::size_t size,
         const std::uint64_t operations,
@@ -116,7 +117,7 @@ private:
         SymmetricKey(
             const api::Session&,
             const crypto::SymmetricProvider&,
-            const Secret&,
+            const opentxs::Secret&,
             const std::uint64_t,
             const std::uint64_t,
             const std::size_t,
@@ -125,7 +126,7 @@ private:
         SymmetricKey(
             const api::Session&,
             const crypto::SymmetricProvider&,
-            const Secret&,
+            const opentxs::Secret&,
             const opentxs::PasswordPrompt&) noexcept;
     friend key::Symmetric;
 
@@ -179,7 +180,7 @@ private:
         const bool text = false) const -> bool;
     auto encrypt_key(
         const Lock& lock,
-        const Secret& plaintextKey,
+        const opentxs::Secret& plaintextKey,
         const PasswordPrompt& reason,
         const crypto::key::symmetric::Source type =
             crypto::key::symmetric::Source::Argon2i) const -> bool;

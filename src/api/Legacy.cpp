@@ -26,31 +26,29 @@
 #define CONFIG_FILE_EXT ".cfg"
 #define PID_FILE "opentxs.lock"
 
-using ReturnType = opentxs::api::imp::Legacy;
-
 namespace opentxs::factory
 {
 auto Legacy(const std::string& home) noexcept -> std::unique_ptr<api::Legacy>
 {
+    using ReturnType = opentxs::api::imp::Legacy;
+
     return std::make_unique<ReturnType>(home);
 }
 }  // namespace opentxs::factory
 
-namespace opentxs
-{
-namespace api
+namespace opentxs::api
 {
 auto Legacy::PathSeparator() noexcept -> const char* { return "/"; }
 
 auto Legacy::SuggestFolder(const std::string& app) noexcept -> std::string
 {
+    using ReturnType = opentxs::api::imp::Legacy;
     const auto path =
         ReturnType::get_home_directory() / ReturnType::get_suffix(app.c_str());
 
     return path.string();
 }
-}  // namespace api
-}  // namespace opentxs
+}  // namespace opentxs::api
 
 namespace opentxs::api::imp
 {

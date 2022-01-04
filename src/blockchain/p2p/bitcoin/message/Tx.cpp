@@ -23,8 +23,6 @@
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::p2p::bitcoin::message::Tx;
-
 auto BitcoinP2PTx(
     const api::Session& api,
     std::unique_ptr<blockchain::p2p::bitcoin::Header> pHeader,
@@ -33,6 +31,8 @@ auto BitcoinP2PTx(
     const std::size_t size) noexcept
     -> std::unique_ptr<blockchain::p2p::bitcoin::message::internal::Tx>
 {
+    using ReturnType = blockchain::p2p::bitcoin::message::Tx;
+
     if (false == bool(pHeader)) {
         LogError()("opentxs::factory::")(__func__)(": Invalid header").Flush();
 
@@ -58,6 +58,8 @@ auto BitcoinP2PTx(
     const ReadView transaction) noexcept
     -> std::unique_ptr<blockchain::p2p::bitcoin::message::internal::Tx>
 {
+    using ReturnType = blockchain::p2p::bitcoin::message::Tx;
+
     return std::make_unique<ReturnType>(api, network, transaction);
 }
 }  // namespace opentxs::factory

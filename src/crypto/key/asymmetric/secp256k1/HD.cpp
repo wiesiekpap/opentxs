@@ -19,13 +19,11 @@
 
 namespace opentxs::factory
 {
-using ReturnType = crypto::key::implementation::Secp256k1;
-
 auto Secp256k1Key(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
-    const Secret& privateKey,
-    const Secret& chainCode,
+    const opentxs::Secret& privateKey,
+    const opentxs::Secret& chainCode,
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,
@@ -34,6 +32,8 @@ auto Secp256k1Key(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>
 {
+    using ReturnType = crypto::key::implementation::Secp256k1;
+
     try {
         auto sessionKey = api.Crypto().Symmetric().Key(reason);
 
@@ -61,8 +61,8 @@ auto Secp256k1Key(
 auto Secp256k1Key(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
-    const Secret& privateKey,
-    const Secret& chainCode,
+    const opentxs::Secret& privateKey,
+    const opentxs::Secret& chainCode,
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,
@@ -70,6 +70,8 @@ auto Secp256k1Key(
     const VersionNumber version) noexcept
     -> std::unique_ptr<crypto::key::Secp256k1>
 {
+    using ReturnType = crypto::key::implementation::Secp256k1;
+
     try {
         return std::make_unique<ReturnType>(
             api,

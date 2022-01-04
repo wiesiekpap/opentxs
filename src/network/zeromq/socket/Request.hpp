@@ -40,6 +40,8 @@ public:
     ~Request() final;
 
 private:
+    static constexpr auto poll_milliseconds_{10};
+
     auto clone() const noexcept -> Request* final;
     auto wait(const Lock& lock) const noexcept -> bool;
 

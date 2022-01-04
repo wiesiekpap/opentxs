@@ -84,14 +84,14 @@ public:
     auto Standard() const noexcept -> HDProtocol final { return standard_; }
 
     HD(const api::Session& api,
-       const Account& parent,
+       const crypto::Account& parent,
        const proto::HDPath& path,
        const HDProtocol standard,
        const PasswordPrompt& reason,
        Identifier& id)
     noexcept(false);
     HD(const api::Session& api,
-       const Account& parent,
+       const crypto::Account& parent,
        const SerializedType& serialized,
        Identifier& id)
     noexcept(false);
@@ -99,7 +99,9 @@ public:
     ~HD() final = default;
 
 private:
-    static const VersionNumber DefaultVersion{1};
+    static constexpr auto internal_type_{Subchain::Internal};
+    static constexpr auto external_type_{Subchain::External};
+    static constexpr VersionNumber DefaultVersion{1};
     static constexpr auto proto_hd_version_ = VersionNumber{1};
 
     const HDProtocol standard_;

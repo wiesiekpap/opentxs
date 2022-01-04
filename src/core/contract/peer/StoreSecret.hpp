@@ -13,6 +13,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/contract/peer/StoreSecret.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/PeerEnums.pb.h"
 
 namespace opentxs
@@ -65,6 +66,8 @@ public:
 
 private:
     friend opentxs::Factory;
+
+    static constexpr auto current_version_ = VersionNumber{4};
 
     const SecretType secret_type_;
     const std::string primary_;

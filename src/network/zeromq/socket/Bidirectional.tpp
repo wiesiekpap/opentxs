@@ -23,9 +23,6 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Log.hpp"
 
-#define CALLBACK_WAIT_MILLISECONDS 50
-#define POLL_MILLISECONDS 100
-
 namespace opentxs::network::zeromq::socket::implementation
 {
 template <typename InterfaceType, typename MessageType>
@@ -234,7 +231,7 @@ void Bidirectional<InterfaceType, MessageType>::thread() noexcept
     while (this->running_.get()) {
         if (this->have_callback()) { break; }
 
-        Sleep(std::chrono::milliseconds(CALLBACK_WAIT_MILLISECONDS));
+        Sleep(std::chrono::milliseconds(callback_wait_milliseconds_));
     }
 
     LogTrace()(OT_PRETTY_CLASS())("Callback ready").Flush();
@@ -256,7 +253,7 @@ void Bidirectional<InterfaceType, MessageType>::thread() noexcept
         }
 
         this->run_tasks(lock);
-        const auto events = zmq_poll(poll, 2, POLL_MILLISECONDS);
+        const auto events = zmq_poll(poll, 2, poll_milliseconds_);
 
         if (0 == events) {
             LogInsane()(OT_PRETTY_CLASS())("No messages.").Flush();

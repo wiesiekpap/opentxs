@@ -30,9 +30,6 @@
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
 #include "opentxs/util/Log.hpp"
-#include "opentxs/util/Pimpl.hpp"
-
-template class opentxs::Pimpl<opentxs::crypto::key::Symmetric>;
 
 namespace opentxs::factory
 {

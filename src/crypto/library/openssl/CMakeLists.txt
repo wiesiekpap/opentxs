@@ -8,10 +8,10 @@ if(OPENSSL_EXPORT)
     opentxs-common
     PRIVATE
       "${opentxs_SOURCE_DIR}/src/internal/crypto/library/OpenSSL.hpp"
+      "BIO.cpp"
+      "BIO.hpp"
       "OpenSSL.cpp"
       "OpenSSL.hpp"
-      "OpenSSL_BIO.cpp"
-      "OpenSSL_BIO.hpp"
   )
   target_link_libraries(opentxs-common PRIVATE OpenSSL::Crypto)
   target_link_libraries(opentxs PUBLIC OpenSSL::Crypto)

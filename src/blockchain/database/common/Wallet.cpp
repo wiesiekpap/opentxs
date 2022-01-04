@@ -22,6 +22,7 @@
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
@@ -32,12 +33,6 @@
 #include "util/Container.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
-
-template <typename Input>
-auto tsv(const Input& in) noexcept -> opentxs::ReadView
-{
-    return {reinterpret_cast<const char*>(&in), sizeof(in)};
-}
 
 namespace opentxs::blockchain::database::common
 {

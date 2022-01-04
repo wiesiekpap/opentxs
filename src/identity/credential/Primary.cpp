@@ -44,8 +44,6 @@
 
 namespace opentxs
 {
-using ReturnType = identity::credential::implementation::Primary;
-
 auto Factory::PrimaryCredential(
     const api::Session& api,
     identity::internal::Authority& parent,
@@ -55,6 +53,8 @@ auto Factory::PrimaryCredential(
     const opentxs::PasswordPrompt& reason)
     -> identity::credential::internal::Primary*
 {
+    using ReturnType = identity::credential::implementation::Primary;
+
     try {
 
         return new ReturnType(api, parent, source, parameters, version, reason);
@@ -74,6 +74,8 @@ auto Factory::PrimaryCredential(
     const proto::Credential& serialized)
     -> identity::credential::internal::Primary*
 {
+    using ReturnType = identity::credential::implementation::Primary;
+
     try {
 
         return new ReturnType(api, parent, source, serialized);

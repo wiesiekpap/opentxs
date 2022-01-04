@@ -17,7 +17,6 @@
 
 #include "crypto/Bip39.hpp"
 #include "opentxs/OT.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
@@ -34,7 +33,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Language.hpp"
-#include "opentxs/crypto/Parameters.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/Types.hpp"

@@ -230,13 +230,13 @@ String::String()
 // This constructor gets the string version of the ID passed in,
 // and sets that string on this object. (For when you need a string
 // version of an ID.)
-String::String(const Identifier& theValue)
+String::String(const opentxs::Identifier& theValue)
     : String()
 {
     if (theValue.size() > 0) theValue.GetString(*this);
 }
 
-String::String(const Contract& theValue)
+String::String(const opentxs::Contract& theValue)
     : String()
 {
     (const_cast<Contract&>(theValue)).SaveContractRaw(*this);
@@ -244,7 +244,7 @@ String::String(const Contract& theValue)
 
 // This version base64-DECODES the ascii-armored string passed in,
 // and then sets the decoded plaintext string onto this object.
-String::String(const Armored& strValue)
+String::String(const opentxs::Armored& strValue)
     : String()
 {
     if (strValue.Exists()) strValue.GetString(*this);
@@ -258,13 +258,13 @@ String::String(const Armored& strValue)
 // But Lucre signatures, as used in this library, ARE in text form, so I
 // provided this constructor to easily base64-decode them to prepare for
 // loading into a bio and then a Lucre object.
-String::String(const Signature& strValue)
+String::String(const opentxs::Signature& strValue)
     : String()
 {
     if (strValue.Exists()) strValue.GetString(*this);
 }
 
-String::String(const NymFile& value)
+String::String(const opentxs::NymFile& value)
     : String()
 {
     value.SerializeNymFile(*this);

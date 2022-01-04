@@ -24,8 +24,6 @@ template class opentxs::Pimpl<opentxs::crypto::key::Keypair>;
 
 namespace opentxs::factory
 {
-using ReturnType = crypto::key::implementation::Keypair;
-
 auto Keypair() noexcept -> std::unique_ptr<crypto::key::Keypair>
 {
     return std::make_unique<crypto::key::blank::Keypair>();
@@ -38,6 +36,8 @@ auto Keypair(
     std::unique_ptr<crypto::key::Asymmetric> privateKey) noexcept(false)
     -> std::unique_ptr<crypto::key::Keypair>
 {
+    using ReturnType = crypto::key::implementation::Keypair;
+
     if (false == bool(publicKey)) {
         throw std::runtime_error("Invalid public key");
     }
@@ -89,7 +89,7 @@ auto Keypair::CheckCapability(const NymCapability& capability) const noexcept
 }
 
 // Return the private key as an Asymmetric object
-auto Keypair::GetPrivateKey() const -> const Asymmetric&
+auto Keypair::GetPrivateKey() const -> const key::Asymmetric&
 {
     if (m_pkeyPrivate.get()) { return m_pkeyPrivate; }
 
@@ -97,7 +97,7 @@ auto Keypair::GetPrivateKey() const -> const Asymmetric&
 }
 
 // Return the public key as an Asymmetric object
-auto Keypair::GetPublicKey() const -> const Asymmetric&
+auto Keypair::GetPublicKey() const -> const key::Asymmetric&
 {
     if (m_pkeyPublic.get()) { return m_pkeyPublic; }
 

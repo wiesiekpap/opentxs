@@ -25,6 +25,7 @@
 #include "opentxs/core/Types.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageNym.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -136,6 +137,10 @@ private:
     friend Nyms;
 
     using PurseID = std::pair<OTNotaryID, OTUnitID>;
+
+    static constexpr auto current_version_ = VersionNumber{9};
+    static constexpr auto blockchain_index_version_ = VersionNumber{1};
+    static constexpr auto storage_purse_version_ = VersionNumber{1};
 
     std::string alias_;
     std::string nymid_;

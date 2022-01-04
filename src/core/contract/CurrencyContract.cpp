@@ -20,8 +20,6 @@
 
 namespace opentxs
 {
-using ReturnType = contract::unit::implementation::Currency;
-
 auto Factory::CurrencyContract(
     const api::Session& api,
     const Nym_p& nym,
@@ -34,6 +32,8 @@ auto Factory::CurrencyContract(
     const Amount& redemptionIncrement) noexcept
     -> std::shared_ptr<contract::unit::Currency>
 {
+    using ReturnType = contract::unit::implementation::Currency;
+
     auto output = std::make_shared<ReturnType>(
         api,
         nym,
@@ -67,6 +67,8 @@ auto Factory::CurrencyContract(
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::unit::Currency>
 {
+    using ReturnType = contract::unit::implementation::Currency;
+
     if (false == proto::Validate<ReturnType::SerializedType>(
                      serialized, VERBOSE, true)) {
 

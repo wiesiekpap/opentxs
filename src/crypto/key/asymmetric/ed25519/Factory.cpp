@@ -14,14 +14,14 @@
 
 namespace opentxs::factory
 {
-using ReturnType = crypto::key::implementation::Ed25519;
-
 auto Ed25519Key(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
     const proto::AsymmetricKey& input) noexcept
     -> std::unique_ptr<crypto::key::Ed25519>
 {
+    using ReturnType = crypto::key::implementation::Ed25519;
+
     try {
 
         return std::make_unique<ReturnType>(api, ecdsa, input);
@@ -42,6 +42,8 @@ auto Ed25519Key(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Ed25519>
 {
+    using ReturnType = crypto::key::implementation::Ed25519;
+
     try {
 
         return std::make_unique<ReturnType>(api, ecdsa, input, version, reason);

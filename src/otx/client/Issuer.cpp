@@ -51,17 +51,15 @@
 #include "serialization/protobuf/PeerRequestWorkflow.pb.h"
 #include "serialization/protobuf/UnitAccountMap.pb.h"
 
-#define CURRENT_VERSION 1
-
 namespace opentxs::factory
 {
-using ReturnType = otx::client::implementation::Issuer;
-
 auto Issuer(
     const api::session::Wallet& wallet,
     const identifier::Nym& nymID,
     const proto::Issuer& serialized) -> otx::client::Issuer*
 {
+    using ReturnType = otx::client::implementation::Issuer;
+
     return new ReturnType(wallet, nymID, serialized);
 }
 
@@ -70,6 +68,8 @@ auto Issuer(
     const identifier::Nym& nymID,
     const identifier::Nym& issuerID) -> otx::client::Issuer*
 {
+    using ReturnType = otx::client::implementation::Issuer;
+
     return new ReturnType(wallet, nymID, issuerID);
 }
 }  // namespace opentxs::factory
@@ -81,7 +81,7 @@ Issuer::Issuer(
     const identifier::Nym& nymID,
     const identifier::Nym& issuerID)
     : wallet_(wallet)
-    , version_(CURRENT_VERSION)
+    , version_(current_version_)
     , pairing_code_("")
     , paired_(Flag::Factory(false))
     , nym_id_(nymID)

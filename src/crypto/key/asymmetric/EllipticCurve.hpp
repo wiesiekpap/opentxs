@@ -77,9 +77,11 @@ public:
     {
         return ecdsa_;
     }
-    auto IncrementPrivate(const Secret& scalar, const PasswordPrompt& reason)
-        const noexcept -> std::unique_ptr<key::EllipticCurve> final;
-    auto IncrementPublic(const Secret& scalar) const noexcept
+    auto IncrementPrivate(
+        const opentxs::Secret& scalar,
+        const PasswordPrompt& reason) const noexcept
+        -> std::unique_ptr<key::EllipticCurve> final;
+    auto IncrementPublic(const opentxs::Secret& scalar) const noexcept
         -> std::unique_ptr<key::EllipticCurve> final;
     auto Path() const noexcept -> const std::string override { return {}; }
     auto Path(proto::HDPath&) const noexcept -> bool override { return {}; }
@@ -117,7 +119,7 @@ protected:
         const api::Session& api,
         const crypto::EcdsaProvider& ecdsa,
         const crypto::key::asymmetric::Algorithm keyType,
-        const Secret& privateKey,
+        const opentxs::Secret& privateKey,
         const Data& publicKey,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version,
@@ -127,7 +129,7 @@ protected:
         const api::Session& api,
         const crypto::EcdsaProvider& ecdsa,
         const crypto::key::asymmetric::Algorithm keyType,
-        const Secret& privateKey,
+        const opentxs::Secret& privateKey,
         const Data& publicKey,
         const crypto::key::asymmetric::Role role,
         const VersionNumber version) noexcept(false);

@@ -11,28 +11,31 @@
 
 namespace opentxs::factory
 {
-using ReturnType = otx::blind::Mint;
-using Imp = ReturnType::Imp;
-
-auto MintLucre(const api::Session& api) noexcept -> ReturnType
+auto MintLucre(const api::Session& api) noexcept -> otx::blind::Mint
 {
-    return std::make_unique<Imp>(api).release();
+    using ReturnType = otx::blind::Mint::Imp;
+
+    return std::make_unique<ReturnType>(api).release();
 }
 
 auto MintLucre(
     const api::Session& api,
     const identifier::Notary&,
-    const identifier::UnitDefinition&) noexcept -> ReturnType
+    const identifier::UnitDefinition&) noexcept -> otx::blind::Mint
 {
-    return std::make_unique<Imp>(api).release();
+    using ReturnType = otx::blind::Mint::Imp;
+
+    return std::make_unique<ReturnType>(api).release();
 }
 
 auto MintLucre(
     const api::Session& api,
     const identifier::Notary&,
     const identifier::Nym&,
-    const identifier::UnitDefinition&) noexcept -> ReturnType
+    const identifier::UnitDefinition&) noexcept -> otx::blind::Mint
 {
-    return std::make_unique<Imp>(api).release();
+    using ReturnType = otx::blind::Mint::Imp;
+
+    return std::make_unique<ReturnType>(api).release();
 }
 }  // namespace opentxs::factory

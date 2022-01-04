@@ -136,12 +136,12 @@
     const auto success =                                                       \
         otx::LastReplyStatus::MessageSuccess == std::get<0>(result);
 
-#define SHUTDOWN()                                                             \
+#define SM_SHUTDOWN()                                                          \
     {                                                                          \
-        YIELD(50);                                                             \
+        SM_YIELD(50);                                                          \
     }
 
-#define YIELD(a)                                                               \
+#define SM_YIELD(a)                                                            \
     {                                                                          \
         if (shutdown().load()) { return false; }                               \
                                                                                \
@@ -234,11 +234,11 @@ auto StateMachine::check_admin(const otx::context::Server& context) const
         get_admin(next_task_id(), serverPassword);
     }
 
-    SHUTDOWN()
+    SM_SHUTDOWN()
 
     if (haveAdmin) { check_server_name(context); }
 
-    SHUTDOWN()
+    SM_SHUTDOWN()
 
     return true;
 }
@@ -250,7 +250,7 @@ auto StateMachine::check_missing_contract(M& missing, U& unknown, bool skip)
     auto items = missing.Copy();
 
     for (const auto& [targetID, taskID] : items) {
-        SHUTDOWN()
+        SM_SHUTDOWN()
 
         find_contract<T, C>(taskID, targetID, missing, unknown, skip);
     }
@@ -314,7 +314,7 @@ auto StateMachine::check_registration(
 
         return false;
     } else {
-        YIELD(NYM_REGISTRATION_MILLISECONDS);
+        SM_YIELD(NYM_REGISTRATION_MILLISECONDS);
 
         return true;
     }
@@ -341,7 +341,7 @@ auto StateMachine::check_server_contract(
         .Flush();
     missing_servers_.Push(next_task_id(), serverID);
 
-    YIELD(CONTRACT_DOWNLOAD_MILLISECONDS);
+    SM_YIELD(CONTRACT_DOWNLOAD_MILLISECONDS);
 
     return true;
 }
@@ -867,7 +867,7 @@ auto StateMachine::queue_nyms() -> bool
     auto nymID = client_.Factory().NymID();
 
     while (get_nym_fetch(op_.ServerID()).Pop(task_id_, nymID)) {
-        SHUTDOWN();
+        SM_SHUTDOWN();
 
         if (0 == unknown_nyms_.count(nymID)) {
             bump_task(get_task<CheckNymTask>().Push(task_id_, nymID));
@@ -875,7 +875,7 @@ auto StateMachine::queue_nyms() -> bool
     }
 
     while (get_nym_fetch(blank).Pop(task_id_, nymID)) {
-        SHUTDOWN();
+        SM_SHUTDOWN();
 
         if (0 == unknown_nyms_.count(nymID)) {
             bump_task(get_task<CheckNymTask>().Push(task_id_, nymID));
@@ -1023,7 +1023,7 @@ auto StateMachine::run_task(std::function<bool(const TaskID, const T&)> func)
     while (get_task<T>().Pop(task_id_, param)) {
         LogInsane()(OT_PRETTY_CLASS())(--task_count_).Flush();
 
-        SHUTDOWN()
+        SM_SHUTDOWN()
 
         func(task_id_, param);
     }
@@ -1097,14 +1097,14 @@ auto StateMachine::state_machine() noexcept -> bool
 
     switch (state_) {
         case State::needServerContract: {
-            SHUTDOWN();
+            SM_SHUTDOWN();
 
             if (check_server_contract(serverID)) { return true; }
 
             [[fallthrough]];
         }
         case State::needRegistration: {
-            SHUTDOWN();
+            SM_SHUTDOWN();
 
             if (check_registration(nymID, serverID)) { return true; }
 
@@ -1112,7 +1112,7 @@ auto StateMachine::state_machine() noexcept -> bool
         }
         case State::ready:
         default: {
-            SHUTDOWN();
+            SM_SHUTDOWN();
 
             return main_loop();
         }

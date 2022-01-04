@@ -19,8 +19,8 @@ extern "C" {
 #include <stdexcept>
 #include <vector>
 
+#include "crypto/library/openssl/BIO.hpp"
 #include "crypto/library/openssl/OpenSSL.hpp"
-#include "crypto/library/openssl/OpenSSL_BIO.hpp"
 #include "internal/otx/blind/Factory.hpp"
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Token.hpp"
@@ -49,14 +49,12 @@ extern "C" {
 
 namespace opentxs::factory
 {
-using ReturnType = otx::blind::Token;
-using Imp = otx::blind::token::Lucre;
-
 auto TokenLucre(
     const otx::blind::Token& token,
-    otx::blind::internal::Purse& purse) noexcept -> ReturnType
+    otx::blind::internal::Purse& purse) noexcept -> otx::blind::Token
 {
-    auto* lucre = dynamic_cast<const Imp*>(&(token.Internal()));
+    using ReturnType = otx::blind::token::Lucre;
+    auto* lucre = dynamic_cast<const ReturnType*>(&(token.Internal()));
 
     if (nullptr == lucre) {
         LogError()("opentxs::factory::")(__func__)(": wrong token type")
@@ -65,15 +63,17 @@ auto TokenLucre(
         return {};
     }
 
-    return std::make_unique<Imp>(*lucre, purse).release();
+    return std::make_unique<ReturnType>(*lucre, purse).release();
 }
 
 auto TokenLucre(
     const api::Session& api,
     otx::blind::internal::Purse& purse,
-    const proto::Token& serialized) noexcept -> ReturnType
+    const proto::Token& serialized) noexcept -> otx::blind::Token
 {
-    return std::make_unique<Imp>(api, purse, serialized).release();
+    using ReturnType = otx::blind::token::Lucre;
+
+    return std::make_unique<ReturnType>(api, purse, serialized).release();
 }
 
 auto TokenLucre(
@@ -82,9 +82,11 @@ auto TokenLucre(
     const otx::blind::Mint& mint,
     const otx::blind::Denomination value,
     otx::blind::internal::Purse& purse,
-    const opentxs::PasswordPrompt& reason) noexcept -> ReturnType
+    const opentxs::PasswordPrompt& reason) noexcept -> otx::blind::Token
 {
-    return std::make_unique<Imp>(api, owner, mint, value, purse, reason)
+    using ReturnType = otx::blind::token::Lucre;
+
+    return std::make_unique<ReturnType>(api, owner, mint, value, purse, reason)
         .release();
 }
 }  // namespace opentxs::factory
@@ -302,7 +304,7 @@ auto Lucre::GenerateTokenRequest(
     const PasswordPrompt& reason) -> bool
 {
     auto setDumper = LucreDumper{};
-    crypto::implementation::OpenSSL_BIO bioBank = BIO_new(BIO_s_mem());
+    crypto::openssl::BIO bioBank = ::BIO_new(::BIO_s_mem());
     auto armoredMint = Armored::Factory();
     mint.GetPublic(armoredMint, denomination_);
     auto serializedMint = String::Factory(armoredMint);
@@ -320,11 +322,11 @@ auto Lucre::GenerateTokenRequest(
         LogInsane()(OT_PRETTY_CLASS())("End mint").Flush();
     }
 
-    BIO_puts(bioBank, serializedMint->Get());
+    ::BIO_puts(bioBank, serializedMint->Get());
     PublicBank bank;
     bank.ReadBIO(bioBank);
-    crypto::implementation::OpenSSL_BIO bioCoin = BIO_new(BIO_s_mem());
-    crypto::implementation::OpenSSL_BIO bioPublicCoin = BIO_new(BIO_s_mem());
+    crypto::openssl::BIO bioCoin = ::BIO_new(::BIO_s_mem());
+    crypto::openssl::BIO bioPublicCoin = ::BIO_new(::BIO_s_mem());
     CoinRequest req(bank);
     req.WriteBIO(bioCoin);
     static_cast<PublicCoinRequest*>(&req)->WriteBIO(bioPublicCoin);
@@ -560,12 +562,12 @@ auto Lucre::Process(
     }
 
     auto setDumper = LucreDumper{};
-    using BIO = crypto::OpenSSL_BIO;
-    auto bioBank = BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
-    auto bioSignature = BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
-    auto bioPrivateRequest = BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
-    auto bioCoin =
-        crypto::implementation::OpenSSL_BIO{::BIO_new(::BIO_s_mem())};
+    auto bioBank = crypto::OpenSSL_BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
+    auto bioSignature =
+        crypto::OpenSSL_BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
+    auto bioPrivateRequest =
+        crypto::OpenSSL_BIO{::BIO_new(::BIO_s_mem()), ::BIO_free};
+    auto bioCoin = crypto::openssl::BIO{::BIO_new(::BIO_s_mem())};
     auto armoredMint = Armored::Factory();
     mint.GetPublic(armoredMint, denomination_);
     auto serializedMint = String::Factory(armoredMint);
@@ -583,8 +585,8 @@ auto Lucre::Process(
         LogInsane()(OT_PRETTY_CLASS())("End mint").Flush();
     }
 
-    BIO_puts(bioBank.get(), serializedMint->Get());
-    BIO_puts(bioSignature.get(), signature_->Get());
+    ::BIO_puts(bioBank.get(), serializedMint->Get());
+    ::BIO_puts(bioSignature.get(), signature_->Get());
     auto prototoken = String::Factory();
 
     try {
@@ -615,7 +617,7 @@ auto Lucre::Process(
         LogInsane()(OT_PRETTY_CLASS())("Prototoken ready:").Flush();
     }
 
-    BIO_puts(bioPrivateRequest.get(), prototoken->Get());
+    ::BIO_puts(bioPrivateRequest.get(), prototoken->Get());
     PublicBank bank(bioBank.get());
     CoinRequest req(bioPrivateRequest.get());
     using BN = crypto::OpenSSL_BN;

@@ -32,20 +32,9 @@
 
 namespace opentxs::blockchain::crypto::implementation
 {
-Subaccount::AddressData::AddressData(
-    const api::Session& api,
-    Subchain type,
-    bool contact) noexcept
-    : type_(type)
-    , set_contact_(contact)
-    , progress_(-1, block::BlankHash())
-    , map_()
-{
-}
-
 Subaccount::Subaccount(
     const api::Session& api,
-    const Account& parent,
+    const crypto::Account& parent,
     const SubaccountType type,
     OTIdentifier&& id,
     const Revision revision,
@@ -67,7 +56,7 @@ Subaccount::Subaccount(
 
 Subaccount::Subaccount(
     const api::Session& api,
-    const Account& parent,
+    const crypto::Account& parent,
     const SubaccountType type,
     OTIdentifier&& id,
     Identifier& out) noexcept
@@ -77,7 +66,7 @@ Subaccount::Subaccount(
 
 Subaccount::Subaccount(
     const api::Session& api,
-    const Account& parent,
+    const crypto::Account& parent,
     const SubaccountType type,
     const SerializedType& serialized,
     Identifier& out) noexcept(false)
@@ -95,6 +84,17 @@ Subaccount::Subaccount(
         chain_) {
         throw std::runtime_error("Wrong account type");
     }
+}
+
+Subaccount::AddressData::AddressData(
+    const api::Session& api,
+    Subchain type,
+    bool contact) noexcept
+    : type_(type)
+    , set_contact_(contact)
+    , progress_(-1, block::BlankHash())
+    , map_()
+{
 }
 
 auto Subaccount::AssociateTransaction(

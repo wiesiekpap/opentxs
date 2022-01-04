@@ -31,8 +31,6 @@ namespace zmq = opentxs::network::zeromq;
 
 namespace opentxs::factory
 {
-using ReturnType = api::crypto::imp::Blockchain;
-
 auto BlockchainAPI(
     const api::Session& api,
     const api::session::Activity& activity,
@@ -41,6 +39,8 @@ auto BlockchainAPI(
     const std::string& dataFolder,
     const Options& args) noexcept -> std::shared_ptr<api::crypto::Blockchain>
 {
+    using ReturnType = api::crypto::imp::Blockchain;
+
     return std::make_shared<ReturnType>(
         api, activity, contacts, legacy, dataFolder, args);
 }

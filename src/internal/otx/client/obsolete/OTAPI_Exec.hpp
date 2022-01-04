@@ -833,9 +833,6 @@ private:
     friend api::session::imp::Client;
 
     const api::Session& api_;
-    const api::session::Activity& activity_;
-    const api::session::Contacts& contacts_;
-    const api::network::ZMQ& zeromq_;
     const OT_API& ot_api_;
     ContextLockCallback lock_callback_;
 

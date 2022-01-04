@@ -19,6 +19,7 @@
 #include "blockchain/database/wallet/SubchainID.hpp"
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"

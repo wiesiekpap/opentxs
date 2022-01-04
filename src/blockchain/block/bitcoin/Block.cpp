@@ -209,12 +209,12 @@ auto parse_normal_block(
     OT_ASSERT(pHeader);
 
     const auto& header = *pHeader;
-    auto sizeData = ReturnType::CalculatedSize{
+    auto sizeData = BlockReturnType::CalculatedSize{
         in.size(), network::blockchain::bitcoin::CompactSize{}};
     auto [index, transactions] =
         parse_transactions(api, chain, in, header, sizeData, it, expectedSize);
 
-    return std::make_shared<ReturnType>(
+    return std::make_shared<BlockReturnType>(
         api,
         chain,
         std::move(pHeader),

@@ -30,8 +30,6 @@
 
 namespace opentxs::factory
 {
-using ReturnType = api::crypto::imp::Hash;
-
 auto Hash(
     const api::crypto::Encode& encode,
     const crypto::HashingProvider& sha,
@@ -40,6 +38,8 @@ auto Hash(
     const crypto::Ripemd160& ripe,
     const crypto::Scrypt& scrypt) noexcept -> std::unique_ptr<api::crypto::Hash>
 {
+    using ReturnType = api::crypto::imp::Hash;
+
     return std::make_unique<ReturnType>(
         encode, sha, blake, pbkdf2, ripe, scrypt);
 }

@@ -47,8 +47,6 @@
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::crypto::implementation::PaymentCode;
-
 auto BlockchainPCSubaccount(
     const api::Session& api,
     const api::session::Contacts& contacts,
@@ -60,6 +58,8 @@ auto BlockchainPCSubaccount(
     const PasswordPrompt& reason,
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::PaymentCode>
 {
+    using ReturnType = blockchain::crypto::implementation::PaymentCode;
+
     try {
 
         return std::make_unique<ReturnType>(
@@ -78,6 +78,7 @@ auto BlockchainPCSubaccount(
     const proto::Bip47Channel& serialized,
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::PaymentCode>
 {
+    using ReturnType = blockchain::crypto::implementation::PaymentCode;
     auto contact = contacts.PaymentCodeToContact(
         api.Factory().InternalSession().PaymentCode(serialized.remote()),
         parent.Chain());
@@ -117,13 +118,10 @@ auto PaymentCode::GetID(
 
 namespace opentxs::blockchain::crypto::implementation
 {
-constexpr auto internalType{Subchain::Outgoing};
-constexpr auto externalType{Subchain::Incoming};
-
 PaymentCode::PaymentCode(
     const api::Session& api,
     const api::session::Contacts& contacts,
-    const Account& parent,
+    const crypto::Account& parent,
     const opentxs::PaymentCode& local,
     const opentxs::PaymentCode& remote,
     const proto::HDPath& path,
@@ -136,7 +134,7 @@ PaymentCode::PaymentCode(
           SubaccountType::PaymentCode,
           internal::PaymentCode::GetID(api, parent.Chain(), local, remote),
           path,
-          {api, internalType, false, externalType, false},
+          {api, internal_type_, false, external_type_, false},
           id)
     , version_(DefaultVersion)
     , outgoing_notifications_()
@@ -171,7 +169,7 @@ PaymentCode::PaymentCode(
 PaymentCode::PaymentCode(
     const api::Session& api,
     const api::session::Contacts& contacts,
-    const Account& parent,
+    const crypto::Account& parent,
     const SerializedType& serialized,
     Identifier& id,
     OTIdentifier&& contact) noexcept(false)
@@ -184,7 +182,7 @@ PaymentCode::PaymentCode(
           serialized.outgoing().address().size(),
           [&, fallback = std::move(contact)] {
               auto out =
-                  ChainData{api, internalType, false, externalType, false};
+                  ChainData{api, internal_type_, false, external_type_, false};
               auto& internal = out.internal_.map_;
               auto& external = out.external_.map_;
               internal.reserve(serialized.outgoing().address().size());
@@ -200,7 +198,7 @@ PaymentCode::PaymentCode(
                               parent.Parent().Parent(),
                               *this,
                               parent.Chain(),
-                              internalType,
+                              internal_type_,
                               address,
                               OTIdentifier{fallback})));
               }
@@ -215,7 +213,7 @@ PaymentCode::PaymentCode(
                               parent.Parent().Parent(),
                               *this,
                               parent.Chain(),
-                              externalType,
+                              external_type_,
                               address,
                               OTIdentifier{fallback})));
               }
@@ -318,10 +316,10 @@ auto PaymentCode::PrivateKey(
     }
 
     switch (type) {
-        case internalType: {
+        case internal_type_: {
             return local_.get().Outgoing(remote_, index, chain_, reason);
         }
-        case externalType: {
+        case external_type_: {
             return local_.get().Incoming(remote_, index, chain_, reason);
         }
         default: {

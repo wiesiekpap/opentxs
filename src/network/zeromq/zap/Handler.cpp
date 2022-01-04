@@ -77,5 +77,5 @@ auto Handler::process_incoming(
     send_message(lock, callback_.Process(std::move(message)));
 }
 
-Handler::~Handler() SHUTDOWN
+Handler::~Handler() SHUTDOWN_SOCKET
 }  // namespace opentxs::network::zeromq::zap::implementation

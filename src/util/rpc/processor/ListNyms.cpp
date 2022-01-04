@@ -5,9 +5,10 @@
 
 #include "0_stdafx.hpp"      // IWYU pragma: associated
 #include "1_Internal.hpp"    // IWYU pragma: associated
-#include "util/rpc/RPC.tpp"  // IWYU pragma: associated
+#include "util/rpc/RPC.hpp"  // IWYU pragma: associated
 
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "opentxs/api/session/Session.hpp"
@@ -18,7 +19,6 @@
 #include "opentxs/util/rpc/request/Base.hpp"
 #include "opentxs/util/rpc/response/Base.hpp"
 #include "opentxs/util/rpc/response/ListNyms.hpp"
-#include "util/rpc/RPC.hpp"
 
 namespace opentxs::rpc::implementation
 {

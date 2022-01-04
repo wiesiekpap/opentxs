@@ -18,6 +18,7 @@
 #include "blockchain/database/common/Bulk.hpp"
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Log.hpp"
@@ -28,12 +29,6 @@
 
 namespace opentxs::blockchain::database::common
 {
-template <typename Input>
-auto tsv(const Input& in) noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(&in), sizeof(in)};
-}
-
 BlockFilter::BlockFilter(
     const api::Session& api,
     storage::lmdb::LMDB& lmdb,

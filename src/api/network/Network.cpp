@@ -15,8 +15,6 @@
 
 namespace opentxs::factory
 {
-using ReturnType = api::network::Network;
-
 auto NetworkAPI(
     const api::Session& api,
     const api::network::Asio& asio,
@@ -26,6 +24,8 @@ auto NetworkAPI(
     api::session::Scheduler& config,
     bool dhtDefault) noexcept -> api::network::Network::Imp*
 {
+    using ReturnType = api::network::Network;
+
     return std::make_unique<ReturnType::Imp>(
                api,
                asio,

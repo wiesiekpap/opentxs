@@ -24,13 +24,8 @@
 #include "serialization/protobuf/PeerReply.pb.h"
 #include "serialization/protobuf/PeerRequest.pb.h"
 
-#define CURRENT_VERSION 4
-
 namespace opentxs
 {
-using ParentType = contract::peer::implementation::Reply;
-using ReturnType = contract::peer::reply::implementation::Bailment;
-
 auto Factory::BailmentReply(
     const api::Session& api,
     const Nym_p& nym,
@@ -41,7 +36,10 @@ auto Factory::BailmentReply(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::reply::Bailment>
 {
+    using ParentType = contract::peer::implementation::Reply;
+    using ReturnType = contract::peer::reply::implementation::Bailment;
     auto peerRequest = proto::PeerRequest{};
+
     if (false == ParentType::LoadRequest(api, nym, request, peerRequest)) {
         return {};
     }
@@ -75,6 +73,8 @@ auto Factory::BailmentReply(
     const proto::PeerReply& serialized) noexcept
     -> std::shared_ptr<contract::peer::reply::Bailment>
 {
+    using ReturnType = contract::peer::reply::implementation::Bailment;
+
     if (false == proto::Validate(serialized, VERBOSE)) {
         LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized reply.")
@@ -119,7 +119,7 @@ Bailment::Bailment(
     : Reply(
           api,
           nym,
-          CURRENT_VERSION,
+          current_version_,
           initiator,
           server,
           PeerRequestType::Bailment,

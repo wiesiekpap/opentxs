@@ -20,17 +20,19 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::p2p::Acknowledgement;
-
-auto BlockchainSyncAcknowledgement() noexcept -> ReturnType
+auto BlockchainSyncAcknowledgement() noexcept -> network::p2p::Acknowledgement
 {
+    using ReturnType = network::p2p::Acknowledgement;
+
     return {std::make_unique<ReturnType::Imp>().release()};
 }
 
 auto BlockchainSyncAcknowledgement(
     network::p2p::StateData in,
-    std::string endpoint) noexcept -> ReturnType
+    std::string endpoint) noexcept -> network::p2p::Acknowledgement
 {
+    using ReturnType = network::p2p::Acknowledgement;
+
     return {
         std::make_unique<ReturnType::Imp>(std::move(in), std::move(endpoint))
             .release()};
@@ -38,8 +40,11 @@ auto BlockchainSyncAcknowledgement(
 
 auto BlockchainSyncAcknowledgement_p(
     network::p2p::StateData in,
-    std::string endpoint) noexcept -> std::unique_ptr<ReturnType>
+    std::string endpoint) noexcept
+    -> std::unique_ptr<network::p2p::Acknowledgement>
 {
+    using ReturnType = network::p2p::Acknowledgement;
+
     return std::make_unique<ReturnType>(
         std::make_unique<ReturnType::Imp>(std::move(in), std::move(endpoint))
             .release());

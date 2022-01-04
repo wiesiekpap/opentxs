@@ -53,8 +53,6 @@ namespace be = boost::endian;
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::block::bitcoin::implementation::Transaction;
-
 auto BitcoinTransaction(
     const api::Session& api,
     const blockchain::Type chain,
@@ -67,6 +65,8 @@ auto BitcoinTransaction(
         outputs) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Transaction;
+
     OT_ASSERT(inputs);
     OT_ASSERT(outputs);
 
@@ -150,6 +150,8 @@ auto BitcoinTransaction(
     blockchain::bitcoin::EncodedTransaction&& parsed) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Transaction;
+
     try {
         auto inputBytes = std::size_t{};
         auto instantiatedInputs = std::vector<
@@ -260,6 +262,7 @@ auto BitcoinTransaction(
     const proto::BlockchainTransaction& in) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Transaction>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Transaction;
     auto chains = std::vector<blockchain::Type>{};
     std::transform(
         std::begin(in.chain()),

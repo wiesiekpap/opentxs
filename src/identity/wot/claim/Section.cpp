@@ -25,16 +25,6 @@
 
 namespace opentxs::identity::wot::claim
 {
-static auto check_version(
-    const VersionNumber in,
-    const VersionNumber targetVersion) -> VersionNumber
-{
-    // Upgrade version
-    if (targetVersion > in) { return targetVersion; }
-
-    return in;
-}
-
 static auto create_group(
     const std::string& nym,
     const claim::SectionType section,

@@ -52,8 +52,6 @@ auto SymmetricKey() noexcept -> std::unique_ptr<crypto::key::Symmetric>
     return std::make_unique<crypto::key::blank::Symmetric>();
 }
 
-using ReturnType = crypto::key::implementation::Symmetric;
-
 auto SymmetricKey(
     const api::Session& api,
     const crypto::SymmetricProvider& engine,
@@ -61,6 +59,8 @@ auto SymmetricKey(
     const opentxs::crypto::key::symmetric::Algorithm mode) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>
 {
+    using ReturnType = crypto::key::implementation::Symmetric;
+
     auto output = std::make_unique<ReturnType>(api, engine);
 
     if (false == bool(output)) { return nullptr; }
@@ -91,6 +91,8 @@ auto SymmetricKey(
     const proto::SymmetricKey serialized) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>
 {
+    using ReturnType = crypto::key::implementation::Symmetric;
+
     if (proto::Validate(serialized, VERBOSE)) {
 
         return std::make_unique<ReturnType>(api, engine, serialized);
@@ -102,13 +104,14 @@ auto SymmetricKey(
 auto SymmetricKey(
     const api::Session& api,
     const crypto::SymmetricProvider& engine,
-    const Secret& seed,
+    const opentxs::Secret& seed,
     const std::uint64_t operations,
     const std::uint64_t difficulty,
     const std::size_t size,
     const crypto::key::symmetric::Source type) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>
 {
+    using ReturnType = crypto::key::implementation::Symmetric;
     auto salt = Space{};
     ReturnType::Allocate(api, engine.SaltSize(type), salt, false);
 
@@ -119,7 +122,7 @@ auto SymmetricKey(
 auto SymmetricKey(
     const api::Session& api,
     const crypto::SymmetricProvider& engine,
-    const Secret& seed,
+    const opentxs::Secret& seed,
     const ReadView salt,
     const std::uint64_t operations,
     const std::uint64_t difficulty,
@@ -128,6 +131,7 @@ auto SymmetricKey(
     const crypto::key::symmetric::Source type) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>
 {
+    using ReturnType = crypto::key::implementation::Symmetric;
     const std::uint64_t ops =
         (0 == operations) ? OT_SYMMETRIC_KEY_DEFAULT_OPERATIONS : operations;
     const std::uint64_t mem =
@@ -142,10 +146,11 @@ auto SymmetricKey(
 auto SymmetricKey(
     const api::Session& api,
     const crypto::SymmetricProvider& engine,
-    const Secret& raw,
+    const opentxs::Secret& raw,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<crypto::key::Symmetric>
 {
+    using ReturnType = crypto::key::implementation::Symmetric;
     auto output = std::make_unique<ReturnType>(api, engine);
 
     if (!output) { return {}; }
@@ -242,7 +247,7 @@ Symmetric::Symmetric(
 Symmetric::Symmetric(
     const api::Session& api,
     const crypto::SymmetricProvider& engine,
-    const Secret& seed,
+    const opentxs::Secret& seed,
     const ReadView salt,
     const std::size_t size,
     const std::uint64_t operations,
@@ -362,7 +367,7 @@ auto Symmetric::allocate(
 
 auto Symmetric::ChangePassword(
     const opentxs::PasswordPrompt& reason,
-    const Secret& newPassword) -> bool
+    const opentxs::Secret& newPassword) -> bool
 {
     auto lock = Lock{lock_};
     auto& plain = get_plaintext(lock);
@@ -575,7 +580,7 @@ auto Symmetric::Encrypt(
 
 auto Symmetric::encrypt_key(
     const Lock& lock,
-    const Secret& plaintextKey,
+    const opentxs::Secret& plaintextKey,
     const opentxs::PasswordPrompt& reason,
     const crypto::key::symmetric::Source type) const -> bool
 {

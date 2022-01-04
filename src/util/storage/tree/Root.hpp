@@ -125,6 +125,8 @@ private:
             const SimpleCallback done) noexcept -> void;
     };
 
+    static constexpr auto current_version_ = VersionNumber{2};
+
     Flag& current_bucket_;
     mutable std::atomic<std::uint64_t> sequence_;
     mutable GC gc_;

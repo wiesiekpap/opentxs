@@ -51,8 +51,6 @@
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::crypto::implementation::HD;
-
 auto BlockchainHDSubaccount(
     const api::Session& api,
     const blockchain::crypto::Account& parent,
@@ -61,6 +59,8 @@ auto BlockchainHDSubaccount(
     const PasswordPrompt& reason,
     Identifier& id) noexcept -> std::unique_ptr<blockchain::crypto::HD>
 {
+    using ReturnType = blockchain::crypto::implementation::HD;
+
     try {
         return std::make_unique<ReturnType>(
             api, parent, path, standard, reason, id);
@@ -91,12 +91,9 @@ auto BlockchainHDSubaccount(
 
 namespace opentxs::blockchain::crypto::implementation
 {
-constexpr auto internalType{Subchain::Internal};
-constexpr auto externalType{Subchain::External};
-
 HD::HD(
     const api::Session& api,
-    const Account& parent,
+    const crypto::Account& parent,
     const proto::HDPath& path,
     const HDProtocol standard,
     const PasswordPrompt& reason,
@@ -109,7 +106,7 @@ HD::HD(
               UnitToClaim(BlockchainToUnit(parent.Chain())),
               path),
           path,
-          {api, internalType, false, externalType, true},
+          {api, internal_type_, false, external_type_, true},
           id)
     , standard_(standard)
     , version_(DefaultVersion)
@@ -122,7 +119,7 @@ HD::HD(
 
 HD::HD(
     const api::Session& api,
-    const Account& parent,
+    const crypto::Account& parent,
     const SerializedType& serialized,
     Identifier& id) noexcept(false)
     : Deterministic(
@@ -134,7 +131,7 @@ HD::HD(
           serialized.externaladdress().size(),
           [&] {
               auto out =
-                  ChainData{api, internalType, false, externalType, true};
+                  ChainData{api, internal_type_, false, external_type_, true};
               auto& internal = out.internal_.map_;
               auto& external = out.external_.map_;
               internal.reserve(serialized.internaladdress().size());
@@ -150,7 +147,7 @@ HD::HD(
                               parent.Parent().Parent(),
                               *this,
                               parent.Chain(),
-                              internalType,
+                              internal_type_,
                               address)));
               }
 
@@ -164,7 +161,7 @@ HD::HD(
                               parent.Parent().Parent(),
                               *this,
                               parent.Chain(),
-                              externalType,
+                              external_type_,
                               address)));
               }
 
@@ -238,8 +235,8 @@ auto HD::PrivateKey(
     const PasswordPrompt& reason) const noexcept -> ECKey
 {
     switch (type) {
-        case internalType:
-        case externalType: {
+        case internal_type_:
+        case external_type_: {
         } break;
         case Subchain::Error: {
 
@@ -247,8 +244,8 @@ auto HD::PrivateKey(
         }
         default: {
             LogError()(OT_PRETTY_CLASS())("Invalid subchain (")(opentxs::print(
-                type))("). Only ")(opentxs::print(internalType))(" and ")(
-                opentxs::print(externalType))(" are valid for this account.")
+                type))("). Only ")(opentxs::print(internal_type_))(" and ")(
+                opentxs::print(external_type_))(" are valid for this account.")
                 .Flush();
 
             return {};
@@ -258,8 +255,8 @@ auto HD::PrivateKey(
     if (false == api::crypto::HaveHDKeys()) { return {}; }
 
     const auto change =
-        (internalType == type) ? INTERNAL_CHAIN : EXTERNAL_CHAIN;
-    auto& pKey = (internalType == type) ? cached_internal_ : cached_external_;
+        (internal_type_ == type) ? INTERNAL_CHAIN : EXTERNAL_CHAIN;
+    auto& pKey = (internal_type_ == type) ? cached_internal_ : cached_external_;
     auto lock = rLock{lock_};
 
     if (!pKey) {

@@ -29,13 +29,8 @@
 #include "serialization/protobuf/PeerRequest.pb.h"
 #include "serialization/protobuf/PendingBailment.pb.h"
 
-#define CURRENT_VERSION 6
-
 namespace opentxs
 {
-using ParentType = contract::peer::implementation::Request;
-using ReturnType = contract::peer::request::implementation::BailmentNotice;
-
 auto Factory::BailmentNotice(
     const api::Session& api,
     const Nym_p& nym,
@@ -48,6 +43,9 @@ auto Factory::BailmentNotice(
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::BailmentNotice>
 {
+    using ParentType = contract::peer::implementation::Request;
+    using ReturnType = contract::peer::request::implementation::BailmentNotice;
+
     try {
         api.Wallet().UnitDefinition(unitID);
         auto output = std::make_shared<ReturnType>(
@@ -73,6 +71,8 @@ auto Factory::BailmentNotice(
     const proto::PeerRequest& serialized) noexcept
     -> std::shared_ptr<contract::peer::request::BailmentNotice>
 {
+    using ReturnType = contract::peer::request::implementation::BailmentNotice;
+
     if (false == proto::Validate(serialized, VERBOSE)) {
         LogError()("opentxs::Factory::")(__func__)(
             ": Invalid serialized request.")
@@ -116,7 +116,7 @@ BailmentNotice::BailmentNotice(
     : Request(
           api,
           nym,
-          CURRENT_VERSION,
+          current_version_,
           recipientID,
           serverID,
           PeerRequestType::PendingBailment)

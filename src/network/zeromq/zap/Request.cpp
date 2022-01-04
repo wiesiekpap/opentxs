@@ -32,8 +32,6 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::zeromq::zap::Request;
-
 auto ZAPRequest(
     const ReadView address,
     const ReadView domain,
@@ -42,6 +40,8 @@ auto ZAPRequest(
     const ReadView identity,
     const ReadView version) noexcept -> network::zeromq::zap::Request
 {
+    using ReturnType = network::zeromq::zap::Request;
+
     return std::make_unique<ReturnType::Imp>(
                address, domain, mechanism, requestID, identity, version)
         .release();
@@ -181,7 +181,8 @@ auto Request::Credentials() const noexcept -> const FrameSection
         Message::imp_->body_position() + Imp::credentials_start_position_};
     auto size = std::max(Message::imp_->size() - position, std::size_t{0});
 
-    return std::make_unique<implementation::FrameSection>(this, position, size)
+    return std::make_unique<zeromq::implementation::FrameSection>(
+               this, position, size)
         .release();
 }
 

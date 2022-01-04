@@ -87,7 +87,7 @@ EllipticCurve::EllipticCurve(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Algorithm keyType,
-    const Secret& privateKey,
+    const opentxs::Secret& privateKey,
     const Data& publicKey,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version,
@@ -118,7 +118,7 @@ EllipticCurve::EllipticCurve(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
     const crypto::key::asymmetric::Algorithm keyType,
-    const Secret& privateKey,
+    const opentxs::Secret& privateKey,
     const Data& publicKey,
     const crypto::key::asymmetric::Role role,
     const VersionNumber version) noexcept(false)
@@ -214,7 +214,7 @@ auto EllipticCurve::extract_key(
 }
 
 auto EllipticCurve::IncrementPrivate(
-    const Secret& rhs,
+    const opentxs::Secret& rhs,
     const PasswordPrompt& reason) const noexcept
     -> std::unique_ptr<key::EllipticCurve>
 {
@@ -237,7 +237,7 @@ auto EllipticCurve::IncrementPrivate(
     }
 }
 
-auto EllipticCurve::IncrementPublic(const Secret& rhs) const noexcept
+auto EllipticCurve::IncrementPublic(const opentxs::Secret& rhs) const noexcept
     -> std::unique_ptr<key::EllipticCurve>
 {
     try {

@@ -14,10 +14,10 @@
 
 namespace opentxs::factory
 {
-using ReturnType = api::network::Blockchain;
-
 auto BlockchainNetworkAPINull() noexcept -> api::network::Blockchain::Imp*
 {
+    using ReturnType = api::network::Blockchain;
+
     return std::make_unique<ReturnType::Imp>().release();
 }
 }  // namespace opentxs::factory

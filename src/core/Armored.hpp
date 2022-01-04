@@ -35,7 +35,8 @@ namespace opentxs::implementation
 class Armored : virtual public opentxs::Armored, public String
 {
 public:
-    auto GetData(Data& theData, bool bLineBreaks = true) const -> bool override;
+    auto GetData(opentxs::Data& theData, bool bLineBreaks = true) const
+        -> bool override;
     auto GetString(opentxs::String& theData, bool bLineBreaks = true) const
         -> bool override;
     auto WriteArmoredString(
@@ -50,7 +51,8 @@ public:
         const std::string str_override = "-----BEGIN") -> bool override;
     auto SaveTo_ofstream(std::ofstream& fout) -> bool override;
     auto SaveToExactPath(const std::string& filename) -> bool override;
-    auto SetData(const Data& theData, bool bLineBreaks = true) -> bool override;
+    auto SetData(const opentxs::Data& theData, bool bLineBreaks = true)
+        -> bool override;
     auto SetString(const opentxs::String& theData, bool bLineBreaks = true)
         -> bool override;
 
@@ -71,13 +73,13 @@ private:
         const -> std::string;
     auto decompress_string(const std::string& str) const -> std::string;
 
-    explicit Armored(const Data& theValue);
+    explicit Armored(const opentxs::Data& theValue);
     explicit Armored(const opentxs::String& strValue);
     explicit Armored(const crypto::Envelope& theEnvelope);
     Armored(const Armored& strValue);
 
     auto operator=(const char* szValue) -> Armored&;
-    auto operator=(const Data& theValue) -> Armored&;
+    auto operator=(const opentxs::Data& theValue) -> Armored&;
     auto operator=(const opentxs::String& strValue) -> Armored&;
     auto operator=(const Armored& strValue) -> Armored&;
 };

@@ -157,7 +157,7 @@ protected:
     };
 
     const api::Session& api_;
-    const Account& parent_;
+    const crypto::Account& parent_;
     const opentxs::blockchain::Type chain_;
     const SubaccountType type_;
     const OTIdentifier id_;
@@ -203,13 +203,13 @@ protected:
 
     Subaccount(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         const SubaccountType type,
         OTIdentifier&& id,
         Identifier& out) noexcept;
     Subaccount(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         const SubaccountType type,
         const SerializedType& serialized,
         Identifier& out) noexcept(false);
@@ -239,7 +239,7 @@ private:
 
     Subaccount(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         const SubaccountType type,
         OTIdentifier&& id,
         const Revision revision,

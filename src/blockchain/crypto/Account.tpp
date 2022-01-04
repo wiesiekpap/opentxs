@@ -29,7 +29,7 @@ template <>
 struct Account::Factory<crypto::HD, proto::HDPath, HDProtocol, PasswordPrompt> {
     static auto get(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         Identifier& id,
         const proto::HDPath& data,
         const HDProtocol standard,
@@ -43,7 +43,7 @@ template <>
 struct Account::Factory<crypto::HD, proto::HDAccount> {
     static auto get(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         Identifier& id,
         const proto::HDAccount& data) noexcept -> std::unique_ptr<crypto::HD>
     {
@@ -60,7 +60,7 @@ struct Account::Factory<
     PasswordPrompt> {
     static auto get(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         Identifier& id,
         const api::session::Contacts& contacts,
         const opentxs::PaymentCode& local,
@@ -86,7 +86,7 @@ struct Account::Factory<
     PasswordPrompt> {
     static auto get(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         Identifier& id,
         const api::session::Contacts& contacts,
         const opentxs::PaymentCode& local,
@@ -105,7 +105,7 @@ struct Account::
     Factory<crypto::PaymentCode, api::session::Contacts, proto::Bip47Channel> {
     static auto get(
         const api::Session& api,
-        const Account& parent,
+        const crypto::Account& parent,
         Identifier& id,
         const api::session::Contacts& contacts,
         const proto::Bip47Channel& data) noexcept

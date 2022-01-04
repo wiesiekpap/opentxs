@@ -14,25 +14,19 @@ extern "C" {
 #include "blockchain/database/common/Database.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "internal/util/TSV.hpp"
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
-#include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::blockchain::database::common
 {
-template <typename Input>
-auto tsv(const Input& in) noexcept -> ReadView
-{
-    return {reinterpret_cast<const char*>(&in), sizeof(in)};
-}
-
 Configuration::Configuration(
     const api::Session& api,
     storage::lmdb::LMDB& lmdb) noexcept

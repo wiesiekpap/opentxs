@@ -25,11 +25,7 @@
 #include "util/storage/Plugin.hpp"
 #include "util/storage/tree/Node.hpp"
 
-#define CURRENT_VERSION 1
-
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 Issuers::Issuers(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
@@ -37,7 +33,7 @@ Issuers::Issuers(const Driver& storage, const std::string& hash)
     if (check_hash(hash)) {
         init(hash);
     } else {
-        blank(CURRENT_VERSION);
+        blank(current_version_);
     }
 }
 
@@ -54,7 +50,7 @@ void Issuers::init(const std::string& hash)
         abort();
     }
 
-    init_version(CURRENT_VERSION, *serialized);
+    init_version(current_version_, *serialized);
 
     for (const auto& it : serialized->issuer()) {
         item_map_.emplace(
@@ -108,5 +104,4 @@ auto Issuers::Store(const proto::Issuer& data, const std::string& alias) -> bool
 {
     return store_proto(data, data.id(), alias);
 }
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

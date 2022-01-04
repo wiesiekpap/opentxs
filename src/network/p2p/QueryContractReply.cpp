@@ -33,23 +33,28 @@
 
 namespace opentxs::factory
 {
-using ReturnType = network::p2p::QueryContractReply;
-
-auto BlockchainSyncQueryContractReply() noexcept -> ReturnType
+auto BlockchainSyncQueryContractReply() noexcept
+    -> network::p2p::QueryContractReply
 {
+    using ReturnType = network::p2p::QueryContractReply;
+
     return std::make_unique<ReturnType::Imp>().release();
 }
 
 auto BlockchainSyncQueryContractReply(const Identifier& id) noexcept
-    -> ReturnType
+    -> network::p2p::QueryContractReply
 {
+    using ReturnType = network::p2p::QueryContractReply;
+
     return std::make_unique<ReturnType::Imp>(translate(id.Type()), id, Space{})
         .release();
 }
 
 auto BlockchainSyncQueryContractReply(const identity::Nym& payload) noexcept
-    -> ReturnType
+    -> network::p2p::QueryContractReply
 {
+    using ReturnType = network::p2p::QueryContractReply;
+
     try {
         return std::make_unique<ReturnType::Imp>(
                    contract::Type::nym,
@@ -72,8 +77,10 @@ auto BlockchainSyncQueryContractReply(const identity::Nym& payload) noexcept
 }
 
 auto BlockchainSyncQueryContractReply(const contract::Server& payload) noexcept
-    -> ReturnType
+    -> network::p2p::QueryContractReply
 {
+    using ReturnType = network::p2p::QueryContractReply;
+
     try {
         return std::make_unique<ReturnType::Imp>(
                    contract::Type::notary,
@@ -97,8 +104,10 @@ auto BlockchainSyncQueryContractReply(const contract::Server& payload) noexcept
 }
 
 auto BlockchainSyncQueryContractReply(const contract::Unit& payload) noexcept
-    -> ReturnType
+    -> network::p2p::QueryContractReply
 {
+    using ReturnType = network::p2p::QueryContractReply;
+
     try {
         return std::make_unique<ReturnType::Imp>(
                    contract::Type::unit,
@@ -124,8 +133,11 @@ auto BlockchainSyncQueryContractReply_p(
     const api::Session& api,
     const contract::Type type,
     const ReadView id,
-    const ReadView payload) noexcept -> std::unique_ptr<ReturnType>
+    const ReadView payload) noexcept
+    -> std::unique_ptr<network::p2p::QueryContractReply>
 {
+    using ReturnType = network::p2p::QueryContractReply;
+
     return std::make_unique<ReturnType>(
         std::make_unique<ReturnType::Imp>(api, type, id, payload).release());
 }

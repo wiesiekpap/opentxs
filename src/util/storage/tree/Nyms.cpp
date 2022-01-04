@@ -29,11 +29,7 @@
 #include "util/storage/tree/Thread.hpp"
 #include "util/storage/tree/Threads.hpp"
 
-#define CURRENT_VERSION 3
-
-namespace opentxs
-{
-namespace storage
+namespace opentxs::storage
 {
 Nyms::Nyms(const Driver& storage, const std::string& hash)
     : Node(storage, hash)
@@ -43,7 +39,7 @@ Nyms::Nyms(const Driver& storage, const std::string& hash)
     if (check_hash(hash)) {
         init(hash);
     } else {
-        blank(CURRENT_VERSION);
+        blank(current_version_);
     }
 }
 
@@ -65,7 +61,7 @@ void Nyms::init(const std::string& hash)
         abort();
     }
 
-    init_version(CURRENT_VERSION, *serialized);
+    init_version(current_version_, *serialized);
 
     for (const auto& it : serialized->nym()) {
         item_map_.emplace(
@@ -203,7 +199,7 @@ auto Nyms::save(const Lock& lock) const -> bool
 
     if (!proto::Validate(serialized, VERBOSE)) { return false; }
 
-    OT_ASSERT(CURRENT_VERSION == serialized.version())
+    OT_ASSERT(current_version_ == serialized.version())
 
     return driver_.StoreProto(serialized, root_);
 }
@@ -282,5 +278,4 @@ void Nyms::UpgradeLocalnym()
 
     save(lock);
 }
-}  // namespace storage
-}  // namespace opentxs
+}  // namespace opentxs::storage

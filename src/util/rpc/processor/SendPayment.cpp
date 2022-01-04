@@ -5,12 +5,13 @@
 
 #include "0_stdafx.hpp"      // IWYU pragma: associated
 #include "1_Internal.hpp"    // IWYU pragma: associated
-#include "util/rpc/RPC.tpp"  // IWYU pragma: associated
+#include "util/rpc/RPC.hpp"  // IWYU pragma: associated
 
 #include <chrono>
 #include <future>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "opentxs/Types.hpp"
@@ -30,13 +31,13 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Pimpl.hpp"
+#include "opentxs/util/Time.hpp"
 #include "opentxs/util/rpc/PaymentType.hpp"
 #include "opentxs/util/rpc/ResponseCode.hpp"
 #include "opentxs/util/rpc/request/Base.hpp"
 #include "opentxs/util/rpc/request/SendPayment.hpp"
 #include "opentxs/util/rpc/response/Base.hpp"
 #include "opentxs/util/rpc/response/SendPayment.hpp"
-#include "util/rpc/RPC.hpp"
 
 namespace opentxs::rpc::implementation
 {

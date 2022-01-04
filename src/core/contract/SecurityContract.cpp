@@ -22,8 +22,6 @@
 
 namespace opentxs
 {
-using ReturnType = contract::unit::implementation::Security;
-
 auto Factory::SecurityContract(
     const api::Session& api,
     const Nym_p& nym,
@@ -36,6 +34,7 @@ auto Factory::SecurityContract(
     const Amount& redemptionIncrement) noexcept
     -> std::shared_ptr<contract::unit::Security>
 {
+    using ReturnType = contract::unit::implementation::Security;
     auto output = std::make_shared<ReturnType>(
         api,
         nym,
@@ -69,6 +68,8 @@ auto Factory::SecurityContract(
     const proto::UnitDefinition serialized) noexcept
     -> std::shared_ptr<contract::unit::Security>
 {
+    using ReturnType = contract::unit::implementation::Security;
+
     if (false == proto::Validate<ReturnType::SerializedType>(
                      serialized, VERBOSE, true)) {
 

@@ -13,6 +13,7 @@
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequestType.hpp"
 #include "opentxs/core/contract/peer/Types.hpp"
+#include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
@@ -61,6 +62,8 @@ public:
 
 private:
     friend opentxs::Factory;
+
+    static constexpr auto current_version_ = VersionNumber{4};
 
     const bool ack_;
 

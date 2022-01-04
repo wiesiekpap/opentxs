@@ -47,6 +47,9 @@ protected:
 private:
     using RawSocket = std::unique_ptr<void, decltype(&::zmq_close)>;
 
+    static constexpr auto poll_milliseconds_{100};
+    static constexpr auto callback_wait_milliseconds_{50};
+
     const bool bidirectional_start_thread_;
     const std::string endpoint_;
     RawSocket push_socket_;

@@ -52,7 +52,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
     const filter::Type type,
     const std::string& shutdown,
     const NotifyCallback& notify) noexcept
-    : BlockDM(
+    : BlockDMFilter(
           [&] { return db.FilterTip(type); }(),
           [&] {
               auto promise = std::promise<filter::pHeader>{};
@@ -64,7 +64,7 @@ FilterOracle::BlockIndexer::BlockIndexer(
           "filter",
           2000,
           1000)
-    , BlockWorker(api, std::chrono::milliseconds{20})
+    , BlockWorkerFilter(api, std::chrono::milliseconds{20})
     , db_(db)
     , header_(header)
     , block_(block)

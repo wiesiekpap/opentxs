@@ -44,8 +44,14 @@ public:
     operator SerializedType() const noexcept final;
 
     auto API() const noexcept -> const api::Session& final { return api_; }
-    auto External() const noexcept -> const Group& final { return *external_; }
-    auto Internal() const noexcept -> const Group& final { return *internal_; }
+    auto External() const noexcept -> const verification::Group& final
+    {
+        return *external_;
+    }
+    auto Internal() const noexcept -> const verification::Group& final
+    {
+        return *internal_;
+    }
     auto NymID() const noexcept -> const identifier::Nym& final
     {
         return nym_id_;
@@ -65,8 +71,14 @@ public:
         const identifier::Nym& verifier,
         const Item::SerializedType verification) noexcept -> bool final;
     auto DeleteItem(const Identifier& item) noexcept -> bool final;
-    auto External() noexcept -> Group& final { return *external_; }
-    auto Internal() noexcept -> Group& final { return *internal_; }
+    auto External() noexcept -> verification::Group& final
+    {
+        return *external_;
+    }
+    auto Internal() noexcept -> verification::Group& final
+    {
+        return *internal_;
+    }
     void Register(const Identifier& id, const bool external) noexcept final;
     void Unregister(const Identifier& id) noexcept final;
     auto UpgradeGroupVersion(const VersionNumber groupVersion) noexcept

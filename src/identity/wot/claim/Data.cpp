@@ -36,16 +36,6 @@
 
 namespace opentxs::identity::wot::claim
 {
-static auto check_version(
-    const VersionNumber in,
-    const VersionNumber targetVersion) -> VersionNumber
-{
-    // Upgrade version
-    if (targetVersion > in) { return targetVersion; }
-
-    return in;
-}
-
 static auto extract_sections(
     const api::Session& api,
     const std::string& nym,

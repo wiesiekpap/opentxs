@@ -5,16 +5,15 @@
 
 #include "0_stdafx.hpp"      // IWYU pragma: associated
 #include "1_Internal.hpp"    // IWYU pragma: associated
-#include "util/rpc/RPC.tpp"  // IWYU pragma: associated
+#include "util/rpc/RPC.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "internal/api/session/Wallet.hpp"
-#include "internal/blockchain/Blockchain.hpp"
-#include "internal/blockchain/Params.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/util/Shared.hpp"
@@ -27,15 +26,14 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/api/session/Wallet.hpp"
+#include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/Amount.hpp"
-#include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Pimpl.hpp"
-#include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/rpc/AccountData.hpp"
 #include "opentxs/util/rpc/AccountType.hpp"
 #include "opentxs/util/rpc/ResponseCode.hpp"
@@ -43,7 +41,6 @@
 #include "opentxs/util/rpc/request/GetAccountBalance.hpp"
 #include "opentxs/util/rpc/response/Base.hpp"
 #include "opentxs/util/rpc/response/GetAccountBalance.hpp"
-#include "util/rpc/RPC.hpp"
 
 namespace opentxs::rpc::implementation
 {

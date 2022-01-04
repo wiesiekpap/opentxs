@@ -50,9 +50,6 @@
 
 namespace opentxs::factory
 {
-using ReturnType = blockchain::block::bitcoin::implementation::Output;
-using Position = opentxs::blockchain::block::bitcoin::Script::Position;
-
 auto BitcoinTransactionOutput(
     const api::Session& api,
     const blockchain::Type chain,
@@ -62,6 +59,8 @@ auto BitcoinTransactionOutput(
     const std::set<blockchain::crypto::Key>& keys) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Output;
+
     try {
         auto keySet = boost::container::flat_set<blockchain::crypto::Key>{};
         std::for_each(std::begin(keys), std::end(keys), [&](const auto& key) {
@@ -86,6 +85,8 @@ auto BitcoinTransactionOutput(
     const ReadView script) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Output;
+
     try {
         return std::make_unique<ReturnType>(
             api, chain, index, value, sizeof(value) + cs.Total(), script);
@@ -102,6 +103,9 @@ auto BitcoinTransactionOutput(
     const proto::BlockchainTransactionOutput& in) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
 {
+    using ReturnType = blockchain::block::bitcoin::implementation::Output;
+    using Position = opentxs::blockchain::block::bitcoin::Script::Position;
+
     try {
         auto value = Amount{in.value()};
         auto cs = blockchain::bitcoin::CompactSize(in.script().size());

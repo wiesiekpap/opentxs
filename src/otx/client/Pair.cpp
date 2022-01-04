@@ -77,22 +77,20 @@
 
 #define MINIMUM_UNUSED_BAILMENTS 3
 
-#define SHUTDOWN()                                                             \
+#define PAIR_SHUTDOWN()                                                        \
     {                                                                          \
         if (!running_) { return; }                                             \
                                                                                \
         Sleep(std::chrono::milliseconds(50));                                  \
     }
 
-template class opentxs::Pimpl<opentxs::network::zeromq::socket::Publish>;
-
 namespace opentxs::factory
 {
-using ReturnType = otx::client::implementation::Pair;
-
 auto PairAPI(const Flag& running, const api::session::Client& client)
     -> otx::client::Pair*
 {
+    using ReturnType = otx::client::implementation::Pair;
+
     return new ReturnType(running, client);
 }
 }  // namespace opentxs::factory
@@ -534,13 +532,13 @@ void Pair::check_accounts(
     if (false == haveAccounts) { return; }
 
     for (const auto& [type, pGroup] : *contractSection) {
-        SHUTDOWN()
+        PAIR_SHUTDOWN()
         OT_ASSERT(pGroup);
 
         const auto& group = *pGroup;
 
         for (const auto& [id, pClaim] : group) {
-            SHUTDOWN()
+            PAIR_SHUTDOWN()
             OT_ASSERT(pClaim);
 
             const auto& notUsed [[maybe_unused]] = id;
@@ -1314,7 +1312,7 @@ void Pair::state_machine(const IssuerID& id) const
         return;
     }
 
-    SHUTDOWN()
+    PAIR_SHUTDOWN()
 
     const auto& issuerClaims = issuerNym->Claims();
     serverID = issuerClaims.PreferredOTServer();
@@ -1330,14 +1328,14 @@ void Pair::state_machine(const IssuerID& id) const
         return;
     }
 
-    SHUTDOWN()
+    PAIR_SHUTDOWN()
 
     auto editor =
         client_.Wallet().Internal().mutable_Issuer(localNymID, issuerNymID);
     auto& issuer = editor.get();
     trusted = issuer.Paired();
 
-    SHUTDOWN()
+    PAIR_SHUTDOWN()
 
     switch (status) {
         case Status::Error: {
@@ -1357,7 +1355,7 @@ void Pair::state_machine(const IssuerID& id) const
                 try {
                     const auto contract = client_.Wallet().Server(serverID);
 
-                    SHUTDOWN()
+                    PAIR_SHUTDOWN()
 
                     pending.emplace_back(
                         queue_nym_registration(localNymID, serverID, trusted));
@@ -1379,7 +1377,7 @@ void Pair::state_machine(const IssuerID& id) const
             [[fallthrough]];
         }
         case Status::Registered: {
-            SHUTDOWN()
+            PAIR_SHUTDOWN()
 
             LogDetail()(OT_PRETTY_CLASS())(
                 ": Local nym is registered on issuer's notary.")
@@ -1395,19 +1393,19 @@ void Pair::state_machine(const IssuerID& id) const
                 }
             }
 
-            SHUTDOWN()
+            PAIR_SHUTDOWN()
 
             check_rename(issuer, serverID, reason, needRename);
 
-            SHUTDOWN()
+            PAIR_SHUTDOWN()
 
             check_store_secret(issuer, serverID);
 
-            SHUTDOWN()
+            PAIR_SHUTDOWN()
 
             check_connection_info(issuer, serverID);
 
-            SHUTDOWN()
+            PAIR_SHUTDOWN()
 
             check_accounts(
                 issuerClaims,

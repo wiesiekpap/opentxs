@@ -277,7 +277,12 @@ private:
     enum class ActionType : bool { ProcessNymbox = true, Normal = false };
     enum class TransactionAttempt : bool { Accepted = true, Rejected = false };
 
-    static const std::string default_node_name_;
+    static constexpr auto current_version_ = VersionNumber{3};
+    static constexpr auto pending_command_version_ = VersionNumber{1};
+    static constexpr auto default_node_name_{"Remote Notary"};
+    static constexpr auto nymbox_box_type_{0};
+    static constexpr auto failure_count_limit_{3};
+
     static const std::set<MessageType> do_not_need_request_number_;
 
     const network::zeromq::socket::Publish& request_sent_;

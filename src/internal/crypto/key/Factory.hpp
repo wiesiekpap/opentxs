@@ -139,8 +139,8 @@ auto Secp256k1Key(
 auto Secp256k1Key(
     const api::Session& api,
     const crypto::EcdsaProvider& ecdsa,
-    const Secret& privateKey,
-    const Secret& chainCode,
+    const opentxs::Secret& privateKey,
+    const opentxs::Secret& chainCode,
     const Data& publicKey,
     const proto::HDPath& path,
     const Bip32Fingerprint parent,
