@@ -10,6 +10,7 @@
 #include <string_view>
 
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/crypto/key/Ed25519.hpp"

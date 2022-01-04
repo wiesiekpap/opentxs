@@ -15,7 +15,14 @@
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/Data.hpp"
+#include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/crypto/key/Secp256k1.hpp"
+#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/util/Log.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/HDPath.pb.h"
 
 namespace opentxs::factory
 {

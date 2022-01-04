@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Version.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
 #include "opentxs/api/session/Client.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"

@@ -7,14 +7,12 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "crypto/parameters/Imp.hpp"  // IWYU pragma: associated
 
-#include <cstddef>
 #include <cstdint>
-#include <map>
 #include <memory>
+#include <vector>
 
 #include "Proto.hpp"
 #include "internal/crypto/key/Factory.hpp"
-#include "internal/util/LogMacros.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
 #include "opentxs/api/Factory.hpp"
@@ -24,14 +22,13 @@
 #include "opentxs/crypto/ParameterType.hpp"
 #include "opentxs/crypto/SeedStrength.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
-#include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/SourceType.hpp"
-#include "opentxs/identity/credential/Base.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/AsymmetricKey.pb.h"
 #include "serialization/protobuf/ContactData.pb.h"
 #include "serialization/protobuf/VerificationSet.pb.h"
-#include "util/Container.hpp"
 
 namespace opentxs::crypto
 {

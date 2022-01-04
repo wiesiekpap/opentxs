@@ -7,20 +7,31 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "internal/core/Factory.hpp"  // IWYU pragma: associated
 
+#include <array>
+#include <cstddef>
+#include <cstring>
+#include <iterator>
+#include <memory>
+#include <utility>
+
 #include "core/paymentcode/Imp.hpp"
-#include "core/paymentcode/PaymentCode.hpp"
 #include "core/paymentcode/Preimage.hpp"
 #include "internal/crypto/key/Factory.hpp"
+#include "internal/crypto/key/Null.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/api/crypto/Asymmetric.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/crypto/Hash.hpp"
 #include "opentxs/api/crypto/Seed.hpp"
-#include "opentxs/api/crypto/Util.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/crypto/HashType.hpp"
+#include "opentxs/crypto/key/Secp256k1.hpp"
+#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Pimpl.hpp"
+#include "serialization/protobuf/PaymentCode.pb.h"
 
 namespace opentxs::factory
 {

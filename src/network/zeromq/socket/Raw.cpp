@@ -8,10 +8,16 @@
 #include "network/zeromq/socket/Raw.hpp"  // IWYU pragma: associated
 
 #include <robin_hood.h>
+#include <array>
+#include <cassert>
+#include <iostream>
+#include <mutex>
+#include <utility>
 
 #include "internal/network/zeromq/socket/Factory.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "network/zeromq/socket/Socket.hpp"
+#include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"

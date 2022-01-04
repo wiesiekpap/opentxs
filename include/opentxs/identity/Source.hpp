@@ -23,6 +23,7 @@ class Primary;
 
 namespace proto
 {
+class Credential;
 class NymIDSource;
 }  // namespace proto
 }  // namespace opentxs

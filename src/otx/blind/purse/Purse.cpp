@@ -7,49 +7,17 @@
 #include "1_Internal.hpp"             // IWYU pragma: associated
 #include "otx/blind/purse/Purse.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <limits>
-#include <set>
-#include <stdexcept>
-#include <string>
-#include <type_traits>
 #include <utility>
-#include <vector>
 
-#include "Proto.hpp"
-#include "Proto.tpp"
-#include "internal/api/crypto/Symmetric.hpp"
 #include "internal/core/identifier/Factory.hpp"
 #include "internal/crypto/key/Null.hpp"
-#include "internal/otx/blind/Factory.hpp"
-#include "internal/otx/blind/Token.hpp"
-#include "internal/otx/blind/Types.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
-#include "opentxs/api/crypto/Symmetric.hpp"
-#include "opentxs/api/session/Crypto.hpp"
-#include "opentxs/api/session/Factory.hpp"
-#include "opentxs/api/session/Notary.hpp"
-#include "opentxs/api/session/Session.hpp"
-#include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
-#include "opentxs/crypto/key/symmetric/Algorithm.hpp"
-#include "opentxs/identity/Nym.hpp"
-#include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/otx/blind/PurseType.hpp"
 #include "opentxs/otx/blind/Token.hpp"
-#include "opentxs/otx/blind/TokenState.hpp"
-#include "opentxs/otx/consensus/Server.hpp"
-#include "opentxs/util/Log.hpp"
-#include "opentxs/util/PasswordPrompt.hpp"
-#include "opentxs/util/Pimpl.hpp"
-#include "serialization/protobuf/Envelope.pb.h"
-#include "serialization/protobuf/Purse.pb.h"
 
 namespace opentxs::otx::blind
 {

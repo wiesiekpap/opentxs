@@ -44,6 +44,7 @@ class EcdsaProvider;
 namespace proto
 {
 class AsymmetricKey;
+class Ciphertext;
 class HDPath;
 }  // namespace proto
 

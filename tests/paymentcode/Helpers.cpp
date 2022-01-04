@@ -21,6 +21,7 @@
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
+#include "opentxs/crypto/key/Secp256k1.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ottest

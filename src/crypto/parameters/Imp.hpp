@@ -5,11 +5,34 @@
 
 #pragma once
 
+#include <cstdint>
+#include <memory>
 #include <optional>
+#include <string>
 
 #include "internal/crypto/Parameters.hpp"
+#include "opentxs/core/Data.hpp"
 #include "opentxs/core/Secret.hpp"
+#include "opentxs/crypto/Language.hpp"
+#include "opentxs/crypto/ParameterType.hpp"
 #include "opentxs/crypto/Parameters.hpp"
+#include "opentxs/crypto/SeedStrength.hpp"
+#include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/crypto/Types.hpp"
+#include "opentxs/crypto/key/Keypair.hpp"
+#include "opentxs/identity/CredentialType.hpp"
+#include "opentxs/identity/SourceProofType.hpp"
+#include "opentxs/identity/SourceType.hpp"
+#include "opentxs/util/Bytes.hpp"
+
+namespace opentxs
+{
+namespace proto
+{
+class ContactData;
+class VerificationSet;
+}  // namespace proto
+}  // namespace opentxs
 
 namespace opentxs::crypto
 {

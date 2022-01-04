@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -22,6 +23,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
 #include "opentxs/util/Numbers.hpp"
+#include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs

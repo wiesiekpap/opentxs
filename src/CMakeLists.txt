@@ -10,7 +10,7 @@ target_include_directories(
 )
 add_dependencies(opentxs-common generated_code)
 
-if(NOT OT_IWYU)
+if(OT_PCH)
   target_precompile_headers(
     opentxs-common
     PUBLIC
@@ -234,16 +234,16 @@ if(NOT OT_IWYU)
     [["serialization/protobuf/VerifyClaim.pb.h"]]
     [["serialization/protobuf/ZMQEnums.pb.h"]]
   )
-endif()
 
-if(APPLE)
-  target_precompile_headers(
-    opentxs-common
-    PUBLIC
-    [["TargetConditionals.h"]]
-    <limits.h>
-    <mach-o/dyld.h>
-  )
+  if(APPLE)
+    target_precompile_headers(
+      opentxs-common
+      PUBLIC
+      [["TargetConditionals.h"]]
+      <limits.h>
+      <mach-o/dyld.h>
+    )
+  endif()
 endif()
 
 set(OPENTXS_QT_PUBLIC_HEADERS "")
