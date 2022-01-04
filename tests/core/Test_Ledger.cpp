@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Ledger.hpp"
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"

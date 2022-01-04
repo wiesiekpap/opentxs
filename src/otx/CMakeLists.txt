@@ -15,6 +15,7 @@ target_sources(
   PRIVATE
     "${opentxs_SOURCE_DIR}/src/internal/otx/AccountList.hpp"
     "${opentxs_SOURCE_DIR}/src/internal/otx/OTX.hpp"
+    "${opentxs_SOURCE_DIR}/src/internal/otx/Types.hpp"
     "AccountList.cpp"
     "OTX.cpp"
     "Reply.cpp"

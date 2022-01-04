@@ -26,6 +26,7 @@
 #include "internal/api/session/Types.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/OTX.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/client/OTPayment.hpp"

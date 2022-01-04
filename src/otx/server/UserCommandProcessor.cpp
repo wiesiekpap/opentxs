@@ -20,6 +20,7 @@
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/Contract.hpp"
 #include "internal/identity/wot/claim/Types.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Item.hpp"

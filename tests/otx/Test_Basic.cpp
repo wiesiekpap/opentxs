@@ -98,8 +98,6 @@
 #include "otx/server/Server.hpp"
 #include "otx/server/Transactor.hpp"
 
-using namespace opentxs;
-
 #define CHEQUE_AMOUNT 144488
 #define TRANSFER_AMOUNT 1144888
 #define SECOND_TRANSFER_AMOUNT 500000
@@ -147,9 +145,9 @@ public:
     static ot::RequestNumber bob_counter_;
     static const std::string SeedA_;
     static const std::string SeedB_;
-    static const OTNymID alice_nym_id_;
-    static const OTNymID bob_nym_id_;
-    static TransactionNumber cheque_transaction_number_;
+    static const ot::OTNymID alice_nym_id_;
+    static const ot::OTNymID bob_nym_id_;
+    static ot::TransactionNumber cheque_transaction_number_;
     static std::string bob_account_1_id_;
     static std::string bob_account_2_id_;
     static std::string outgoing_cheque_workflow_id_;
@@ -163,7 +161,7 @@ public:
         alice_state_machine_;
     static std::unique_ptr<ot::otx::client::internal::Operation>
         bob_state_machine_;
-    static std::shared_ptr<otx::blind::Purse> untrusted_purse_;
+    static std::shared_ptr<ot::otx::blind::Purse> untrusted_purse_;
 
     const ot::api::session::Client& client_1_;
     const ot::api::session::Client& client_2_;
@@ -173,22 +171,22 @@ public:
     ot::OTPasswordPrompt reason_c2_;
     ot::OTPasswordPrompt reason_s1_;
     ot::OTPasswordPrompt reason_s2_;
-    const OTUnitDefinition asset_contract_1_;
-    const OTUnitDefinition asset_contract_2_;
+    const ot::OTUnitDefinition asset_contract_1_;
+    const ot::OTUnitDefinition asset_contract_2_;
     const ot::identifier::Notary& server_1_id_;
     const ot::identifier::Notary& server_2_id_;
-    const OTServerContract server_contract_;
+    const ot::OTServerContract server_contract_;
     const ot::otx::context::Server::ExtraArgs extra_args_;
 
     Test_Basic()
         : client_1_(dynamic_cast<const ot::api::session::Client&>(
-              Context().StartClientSession(0)))
+              ot::Context().StartClientSession(0)))
         , client_2_(dynamic_cast<const ot::api::session::Client&>(
-              Context().StartClientSession(1)))
+              ot::Context().StartClientSession(1)))
         , server_1_(dynamic_cast<const ot::api::session::Notary&>(
-              Context().StartNotarySession(0)))
+              ot::Context().StartNotarySession(0)))
         , server_2_(dynamic_cast<const ot::api::session::Notary&>(
-              Context().StartNotarySession(1)))
+              ot::Context().StartNotarySession(1)))
         , reason_c1_(client_1_.Factory().PasswordPrompt(__func__))
         , reason_c2_(client_2_.Factory().PasswordPrompt(__func__))
         , reason_s1_(server_1_.Factory().PasswordPrompt(__func__))
@@ -205,14 +203,14 @@ public:
         if (false == init_) { init(); }
     }
 
-    static bool find_id(const std::string& id, const ObjectList& list)
+    static bool find_id(const std::string& id, const ot::ObjectList& list)
     {
         matchID matchid(id);
 
         return std::find_if(list.begin(), list.end(), matchid) != list.end();
     }
 
-    static OTUnitDefinition load_unit(
+    static ot::OTUnitDefinition load_unit(
         const ot::api::Session& api,
         const std::string& id) noexcept
     {
@@ -223,34 +221,35 @@ public:
         }
     }
 
-    static SendResult translate_result(const otx::LastReplyStatus status)
+    static ot::SendResult translate_result(
+        const ot::otx::LastReplyStatus status)
     {
         switch (status) {
-            case otx::LastReplyStatus::MessageSuccess:
-            case otx::LastReplyStatus::MessageFailed: {
+            case ot::otx::LastReplyStatus::MessageSuccess:
+            case ot::otx::LastReplyStatus::MessageFailed: {
 
-                return SendResult::VALID_REPLY;
+                return ot::SendResult::VALID_REPLY;
             }
-            case otx::LastReplyStatus::Unknown: {
+            case ot::otx::LastReplyStatus::Unknown: {
 
-                return SendResult::TIMEOUT;
+                return ot::SendResult::TIMEOUT;
             }
-            case otx::LastReplyStatus::NotSent: {
+            case ot::otx::LastReplyStatus::NotSent: {
 
-                return SendResult::UNNECESSARY;
+                return ot::SendResult::UNNECESSARY;
             }
-            case otx::LastReplyStatus::Invalid:
-            case otx::LastReplyStatus::None:
+            case ot::otx::LastReplyStatus::Invalid:
+            case ot::otx::LastReplyStatus::None:
             default: {
 
-                return SendResult::Error;
+                return ot::SendResult::Error;
             }
         }
     }
 
     void break_consensus()
     {
-        TransactionNumber newNumber{0};
+        ot::TransactionNumber newNumber{0};
         server_1_.Server().GetTransactor().issueNextTransactionNumber(
             newNumber);
 
@@ -260,7 +259,7 @@ public:
     }
 
     void import_server_contract(
-        const contract::Server& contract,
+        const ot::contract::Server& contract,
         const ot::api::session::Client& client)
     {
         auto bytes = ot::Space{};
@@ -287,9 +286,9 @@ public:
                 "anchor skate property fringe obey butter text tank drama "
                 "palm guilt pudding laundry stay axis prosper",
                 "");
-        const_cast<OTNymID&>(alice_nym_id_) =
+        const_cast<ot::OTNymID&>(alice_nym_id_) =
             client_1_.Wallet().Nym({SeedA_, 0}, reason_c1_, "Alice")->ID();
-        const_cast<OTNymID&>(bob_nym_id_) =
+        const_cast<ot::OTNymID&>(bob_nym_id_) =
             client_2_.Wallet().Nym({SeedB_, 0}, reason_c2_, "Bob")->ID();
 
         OT_ASSERT(false == server_1_id_.empty());
@@ -314,7 +313,7 @@ public:
 
     void create_unit_definition_1()
     {
-        const_cast<OTUnitDefinition&>(asset_contract_1_) =
+        const_cast<ot::OTUnitDefinition&>(asset_contract_1_) =
             client_1_.Wallet().CurrencyContract(
                 alice_nym_id_->str(),
                 UNIT_DEFINITION_CONTRACT_NAME,
@@ -322,7 +321,7 @@ public:
                 UNIT_DEFINITION_UNIT_OF_ACCOUNT,
                 1,
                 reason_c1_);
-        EXPECT_EQ(contract::UnitType::Currency, asset_contract_1_->Type());
+        EXPECT_EQ(ot::contract::UnitType::Currency, asset_contract_1_->Type());
 
         if (asset_contract_1_->ID()->empty()) {
             throw std::runtime_error("Failed to create unit definition 1");
@@ -333,7 +332,7 @@ public:
 
     void create_unit_definition_2()
     {
-        const_cast<OTUnitDefinition&>(asset_contract_2_) =
+        const_cast<ot::OTUnitDefinition&>(asset_contract_2_) =
             client_2_.Wallet().CurrencyContract(
                 bob_nym_id_->str(),
                 UNIT_DEFINITION_CONTRACT_NAME_2,
@@ -341,7 +340,7 @@ public:
                 UNIT_DEFINITION_UNIT_OF_ACCOUNT_2,
                 1,
                 reason_c2_);
-        EXPECT_EQ(contract::UnitType::Currency, asset_contract_2_->Type());
+        EXPECT_EQ(ot::contract::UnitType::Currency, asset_contract_2_->Type());
 
         if (asset_contract_2_->ID()->empty()) {
             throw std::runtime_error("Failed to create unit definition 2");
@@ -350,7 +349,7 @@ public:
         const_cast<std::string&>(unit_id_2_) = asset_contract_2_->ID()->str();
     }
 
-    OTIdentifier find_issuer_account()
+    ot::OTIdentifier find_issuer_account()
     {
         const auto accounts =
             client_1_.Storage().AccountsByOwner(alice_nym_id_);
@@ -360,7 +359,7 @@ public:
         return *accounts.begin();
     }
 
-    OTUnitID find_unit_definition_id_1()
+    ot::OTUnitID find_unit_definition_id_1()
     {
         const auto accountID = find_issuer_account();
 
@@ -373,32 +372,32 @@ public:
         return output;
     }
 
-    OTUnitID find_unit_definition_id_2()
+    ot::OTUnitID find_unit_definition_id_2()
     {
         // TODO conversion
-        return identifier::UnitDefinition::Factory(
+        return ot::identifier::UnitDefinition::Factory(
             asset_contract_2_->ID()->str());
     }
 
-    OTIdentifier find_user_account()
+    ot::OTIdentifier find_user_account()
     {
-        return Identifier::Factory(bob_account_1_id_);
+        return ot::Identifier::Factory(bob_account_1_id_);
     }
 
-    OTIdentifier find_second_user_account()
+    ot::OTIdentifier find_second_user_account()
     {
-        return Identifier::Factory(bob_account_2_id_);
+        return ot::Identifier::Factory(bob_account_2_id_);
     }
 
     void receive_reply(
-        const std::shared_ptr<const identity::Nym>& recipient,
-        const std::shared_ptr<const identity::Nym>& sender,
-        const OTPeerReply& peerreply,
-        const OTPeerRequest& peerrequest,
-        contract::peer::PeerRequestType requesttype)
+        const std::shared_ptr<const ot::identity::Nym>& recipient,
+        const std::shared_ptr<const ot::identity::Nym>& sender,
+        const ot::OTPeerReply& peerreply,
+        const ot::OTPeerRequest& peerrequest,
+        ot::contract::peer::PeerRequestType requesttype)
     {
-        const RequestNumber sequence = alice_counter_;
-        const RequestNumber messages{4};
+        const ot::RequestNumber sequence = alice_counter_;
+        const ot::RequestNumber messages{4};
         alice_counter_ += messages;
         auto serverContext =
             client_1_.Wallet().Internal().mutable_ServerContext(
@@ -418,11 +417,11 @@ public:
         context.ResetThread();
         const auto& [status, message] = finished;
 
-        EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, status);
+        EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, status);
         ASSERT_TRUE(message);
 
-        const RequestNumber requestNumber =
-            String::StringToUlong(message->m_strRequestNum->Get());
+        const ot::RequestNumber requestNumber =
+            ot::String::StringToUlong(message->m_strRequestNum->Get());
         const auto result = translate_result(std::get<0>(finished));
         verify_state_post(
             client_1_,
@@ -452,7 +451,7 @@ public:
         EXPECT_TRUE(client_1_.Wallet().PeerReply(
             alice_nym_id_,
             peerreply->ID(),
-            StorageBox::INCOMINGPEERREPLY,
+            ot::StorageBox::INCOMINGPEERREPLY,
             ot::writer(bytes)));
         auto incomingreply =
             client_1_.Factory().PeerReply(recipient, ot::reader(bytes));
@@ -477,7 +476,7 @@ public:
         EXPECT_TRUE(client_1_.Wallet().PeerRequest(
             alice_nym_id_,
             peerrequest->ID(),
-            StorageBox::FINISHEDPEERREQUEST,
+            ot::StorageBox::FINISHEDPEERREQUEST,
             notused,
             ot::writer(bytes)));
         auto finishedrequest =
@@ -508,7 +507,7 @@ public:
         EXPECT_TRUE(client_1_.Wallet().PeerReply(
             alice_nym_id_,
             peerreply->ID(),
-            StorageBox::PROCESSEDPEERREPLY,
+            ot::StorageBox::PROCESSEDPEERREPLY,
             ot::writer(bytes)));
         auto processedreply =
             client_1_.Factory().PeerReply(recipient, ot::reader(bytes));
@@ -516,12 +515,12 @@ public:
     }
 
     void receive_request(
-        const std::shared_ptr<const identity::Nym>& nym,
-        const OTPeerRequest& peerrequest,
-        contract::peer::PeerRequestType requesttype)
+        const std::shared_ptr<const ot::identity::Nym>& nym,
+        const ot::OTPeerRequest& peerrequest,
+        ot::contract::peer::PeerRequestType requesttype)
     {
-        const RequestNumber sequence = bob_counter_;
-        const RequestNumber messages{4};
+        const ot::RequestNumber sequence = bob_counter_;
+        const ot::RequestNumber messages{4};
         bob_counter_ += messages;
         auto serverContext =
             client_2_.Wallet().Internal().mutable_ServerContext(
@@ -541,11 +540,11 @@ public:
         context.ResetThread();
         const auto& [status, message] = finished;
 
-        EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, status);
+        EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, status);
         ASSERT_TRUE(message);
 
-        const RequestNumber requestNumber =
-            String::StringToUlong(message->m_strRequestNum->Get());
+        const ot::RequestNumber requestNumber =
+            ot::String::StringToUlong(message->m_strRequestNum->Get());
         const auto result = translate_result(std::get<0>(finished));
         verify_state_post(
             client_2_,
@@ -576,7 +575,7 @@ public:
         EXPECT_TRUE(client_2_.Wallet().PeerRequest(
             bob_nym_id_,
             peerrequest->ID(),
-            StorageBox::INCOMINGPEERREQUEST,
+            ot::StorageBox::INCOMINGPEERREQUEST,
             notused,
             ot::writer(bytes)));
         auto incomingrequest =
@@ -590,13 +589,13 @@ public:
     }
 
     void send_peer_reply(
-        const std::shared_ptr<const identity::Nym>& nym,
-        const OTPeerReply& peerreply,
-        const OTPeerRequest& peerrequest,
-        contract::peer::PeerRequestType requesttype)
+        const std::shared_ptr<const ot::identity::Nym>& nym,
+        const ot::OTPeerReply& peerreply,
+        const ot::OTPeerRequest& peerrequest,
+        ot::contract::peer::PeerRequestType requesttype)
     {
-        const RequestNumber sequence = bob_counter_;
-        const RequestNumber messages{1};
+        const ot::RequestNumber sequence = bob_counter_;
+        const ot::RequestNumber messages{1};
         bob_counter_ += messages;
 
         auto serverContext =
@@ -622,8 +621,8 @@ public:
 
         ASSERT_TRUE(message);
 
-        const RequestNumber requestNumber =
-            String::StringToUlong(message->m_strRequestNum->Get());
+        const ot::RequestNumber requestNumber =
+            ot::String::StringToUlong(message->m_strRequestNum->Get());
         const auto result = translate_result(std::get<0>(finished));
         verify_state_post(
             client_2_,
@@ -652,7 +651,7 @@ public:
         EXPECT_TRUE(client_2_.Wallet().PeerReply(
             bob_nym_id_,
             peerreply->ID(),
-            StorageBox::SENTPEERREPLY,
+            ot::StorageBox::SENTPEERREPLY,
             ot::writer(bytes)));
         auto sentreply = client_2_.Factory().PeerReply(nym, ot::reader(bytes));
 
@@ -676,7 +675,7 @@ public:
         auto loaded = client_2_.Wallet().PeerRequest(
             bob_nym_id_,
             peerrequest->ID(),
-            StorageBox::PROCESSEDPEERREQUEST,
+            ot::StorageBox::PROCESSEDPEERREQUEST,
             notused,
             ot::writer(processedrequest));
 
@@ -702,19 +701,19 @@ public:
         loaded = client_2_.Wallet().PeerReply(
             bob_nym_id_,
             peerreply->ID(),
-            StorageBox::FINISHEDPEERREPLY,
+            ot::StorageBox::FINISHEDPEERREPLY,
             ot::writer(finishedreply));
 
         ASSERT_TRUE(loaded);
     }
 
     void send_peer_request(
-        const std::shared_ptr<const identity::Nym>& nym,
-        const OTPeerRequest& peerrequest,
-        contract::peer::PeerRequestType requesttype)
+        const std::shared_ptr<const ot::identity::Nym>& nym,
+        const ot::OTPeerRequest& peerrequest,
+        ot::contract::peer::PeerRequestType requesttype)
     {
-        const RequestNumber sequence = alice_counter_;
-        const RequestNumber messages{1};
+        const ot::RequestNumber sequence = alice_counter_;
+        const ot::RequestNumber messages{1};
         alice_counter_ += messages;
 
         auto serverContext =
@@ -739,8 +738,8 @@ public:
 
         ASSERT_TRUE(message);
 
-        const RequestNumber requestNumber =
-            String::StringToUlong(message->m_strRequestNum->Get());
+        const ot::RequestNumber requestNumber =
+            ot::String::StringToUlong(message->m_strRequestNum->Get());
         const auto result = translate_result(std::get<0>(finished));
         verify_state_post(
             client_1_,
@@ -771,7 +770,7 @@ public:
         EXPECT_TRUE(client_1_.Wallet().PeerRequest(
             alice_nym_id_,
             peerrequest->ID(),
-            StorageBox::SENTPEERREQUEST,
+            ot::StorageBox::SENTPEERREQUEST,
             notused,
             ot::writer(bytes)));
         auto sentrequest =
@@ -785,32 +784,32 @@ public:
     }
 
     void verify_account(
-        const identity::Nym& clientNym,
-        const identity::Nym& serverNym,
-        const Account& client,
-        const Account& server,
-        const PasswordPrompt& reasonC,
-        const PasswordPrompt& reasonS)
+        const ot::identity::Nym& clientNym,
+        const ot::identity::Nym& serverNym,
+        const ot::Account& client,
+        const ot::Account& server,
+        const ot::PasswordPrompt& reasonC,
+        const ot::PasswordPrompt& reasonS)
     {
         EXPECT_EQ(client.GetBalance(), server.GetBalance());
         EXPECT_EQ(
             client.GetInstrumentDefinitionID(),
             server.GetInstrumentDefinitionID());
 
-        std::unique_ptr<Ledger> clientInbox(client.LoadInbox(clientNym));
-        std::unique_ptr<Ledger> serverInbox(server.LoadInbox(serverNym));
-        std::unique_ptr<Ledger> clientOutbox(client.LoadOutbox(clientNym));
-        std::unique_ptr<Ledger> serverOutbox(server.LoadOutbox(serverNym));
+        std::unique_ptr<ot::Ledger> clientInbox(client.LoadInbox(clientNym));
+        std::unique_ptr<ot::Ledger> serverInbox(server.LoadInbox(serverNym));
+        std::unique_ptr<ot::Ledger> clientOutbox(client.LoadOutbox(clientNym));
+        std::unique_ptr<ot::Ledger> serverOutbox(server.LoadOutbox(serverNym));
 
         ASSERT_TRUE(clientInbox);
         ASSERT_TRUE(serverInbox);
         ASSERT_TRUE(clientOutbox);
         ASSERT_TRUE(serverOutbox);
 
-        auto clientInboxHash = Identifier::Factory();
-        auto serverInboxHash = Identifier::Factory();
-        auto clientOutboxHash = Identifier::Factory();
-        auto serverOutboxHash = Identifier::Factory();
+        auto clientInboxHash = ot::Identifier::Factory();
+        auto serverInboxHash = ot::Identifier::Factory();
+        auto clientOutboxHash = ot::Identifier::Factory();
+        auto serverOutboxHash = ot::Identifier::Factory();
 
         EXPECT_TRUE(clientInbox->CalculateInboxHash(clientInboxHash));
         EXPECT_TRUE(serverInbox->CalculateInboxHash(serverInboxHash));
@@ -819,8 +818,8 @@ public:
     }
 
     void verify_acknowledgement(
-        const contract::peer::Reply& originalreply,
-        const contract::peer::Reply& restoredreply)
+        const ot::contract::peer::Reply& originalreply,
+        const ot::contract::peer::Reply& restoredreply)
     {
         const auto& acknowledgement = restoredreply.asAcknowledgement();
         verify_reply_properties(originalreply, acknowledgement);
@@ -834,8 +833,8 @@ public:
     }
 
     void verify_bailment(
-        const contract::peer::Reply& originalreply,
-        const contract::peer::Reply& restoredreply)
+        const ot::contract::peer::Reply& originalreply,
+        const ot::contract::peer::Reply& restoredreply)
     {
         const auto& bailment = restoredreply.asBailment();
         verify_reply_properties(originalreply, bailment);
@@ -849,8 +848,8 @@ public:
     }
 
     void verify_bailment(
-        const contract::peer::Request& originalrequest,
-        const contract::peer::Request& restoredrequest)
+        const ot::contract::peer::Request& originalrequest,
+        const ot::contract::peer::Request& restoredrequest)
     {
         const auto& original = originalrequest.asBailment();
         const auto& bailment = restoredrequest.asBailment();
@@ -869,8 +868,8 @@ public:
     }
 
     void verify_bailment_notice(
-        const contract::peer::Request& originalrequest,
-        const contract::peer::Request& restoredrequest)
+        const ot::contract::peer::Request& originalrequest,
+        const ot::contract::peer::Request& restoredrequest)
     {
         const auto& bailmentnotice = restoredrequest.asBailmentNotice();
         verify_request_properties(originalrequest, bailmentnotice);
@@ -886,8 +885,8 @@ public:
     }
 
     void verify_connection(
-        const contract::peer::Reply& originalreply,
-        const contract::peer::Reply& restoredreply)
+        const ot::contract::peer::Reply& originalreply,
+        const ot::contract::peer::Reply& restoredreply)
     {
         const auto& connection = restoredreply.asConnection();
         verify_reply_properties(originalreply, connection);
@@ -901,8 +900,8 @@ public:
     }
 
     void verify_connection(
-        const contract::peer::Request& originalrequest,
-        const contract::peer::Request& restoredrequest)
+        const ot::contract::peer::Request& originalrequest,
+        const ot::contract::peer::Request& restoredrequest)
     {
         const auto& connection = restoredrequest.asConnection();
         verify_request_properties(originalrequest, connection);
@@ -918,8 +917,8 @@ public:
     }
 
     void verify_outbailment(
-        const contract::peer::Reply& originalreply,
-        const contract::peer::Reply& restoredreply)
+        const ot::contract::peer::Reply& originalreply,
+        const ot::contract::peer::Reply& restoredreply)
     {
         const auto& outbailment = restoredreply.asOutbailment();
         verify_reply_properties(originalreply, outbailment);
@@ -933,8 +932,8 @@ public:
     }
 
     void verify_outbailment(
-        const contract::peer::Request& originalrequest,
-        const contract::peer::Request& restoredrequest)
+        const ot::contract::peer::Request& originalrequest,
+        const ot::contract::peer::Request& restoredrequest)
     {
         const auto& outbailment = restoredrequest.asOutbailment();
         verify_request_properties(originalrequest, outbailment);
@@ -950,65 +949,65 @@ public:
     }
 
     void verify_reply(
-        contract::peer::PeerRequestType requesttype,
-        const contract::peer::Reply& original,
-        const contract::peer::Reply& restored)
+        ot::contract::peer::PeerRequestType requesttype,
+        const ot::contract::peer::Reply& original,
+        const ot::contract::peer::Reply& restored)
     {
         switch (requesttype) {
-            case contract::peer::PeerRequestType::Bailment: {
+            case ot::contract::peer::PeerRequestType::Bailment: {
                 verify_bailment(original, restored);
                 break;
             }
-            case contract::peer::PeerRequestType::PendingBailment: {
+            case ot::contract::peer::PeerRequestType::PendingBailment: {
                 verify_acknowledgement(original, restored);
                 break;
             }
-            case contract::peer::PeerRequestType::ConnectionInfo: {
+            case ot::contract::peer::PeerRequestType::ConnectionInfo: {
                 verify_connection(original, restored);
                 break;
             }
-            case contract::peer::PeerRequestType::OutBailment: {
+            case ot::contract::peer::PeerRequestType::OutBailment: {
                 verify_outbailment(original, restored);
                 break;
             }
-            case contract::peer::PeerRequestType::StoreSecret:
-            case contract::peer::PeerRequestType::VerificationOffer:
-            case contract::peer::PeerRequestType::Faucet:
-            case contract::peer::PeerRequestType::Error:
+            case ot::contract::peer::PeerRequestType::StoreSecret:
+            case ot::contract::peer::PeerRequestType::VerificationOffer:
+            case ot::contract::peer::PeerRequestType::Faucet:
+            case ot::contract::peer::PeerRequestType::Error:
             default:
                 break;
         }
     }
 
     void verify_request(
-        contract::peer::PeerRequestType requesttype,
-        const contract::peer::Request& original,
-        const contract::peer::Request& restored)
+        ot::contract::peer::PeerRequestType requesttype,
+        const ot::contract::peer::Request& original,
+        const ot::contract::peer::Request& restored)
     {
         switch (requesttype) {
-            case contract::peer::PeerRequestType::Bailment: {
+            case ot::contract::peer::PeerRequestType::Bailment: {
                 verify_bailment(original, restored);
                 break;
             }
-            case contract::peer::PeerRequestType::PendingBailment: {
+            case ot::contract::peer::PeerRequestType::PendingBailment: {
                 verify_bailment_notice(original, restored);
                 break;
             }
-            case contract::peer::PeerRequestType::ConnectionInfo: {
+            case ot::contract::peer::PeerRequestType::ConnectionInfo: {
                 verify_connection(original, restored);
                 break;
             }
-            case contract::peer::PeerRequestType::OutBailment: {
+            case ot::contract::peer::PeerRequestType::OutBailment: {
                 verify_outbailment(original, restored);
                 break;
             }
-            case contract::peer::PeerRequestType::StoreSecret: {
+            case ot::contract::peer::PeerRequestType::StoreSecret: {
                 verify_storesecret(original, restored);
                 break;
             }
-            case contract::peer::PeerRequestType::VerificationOffer:
-            case contract::peer::PeerRequestType::Faucet:
-            case contract::peer::PeerRequestType::Error:
+            case ot::contract::peer::PeerRequestType::VerificationOffer:
+            case ot::contract::peer::PeerRequestType::Faucet:
+            case ot::contract::peer::PeerRequestType::Error:
             default:
                 break;
         }
@@ -1016,7 +1015,7 @@ public:
 
     template <typename T>
     void verify_reply_properties(
-        const contract::peer::Reply& original,
+        const ot::contract::peer::Reply& original,
         const T& restored)
     {
         EXPECT_NE(restored.Version(), 0);
@@ -1030,7 +1029,7 @@ public:
 
     template <typename T>
     void verify_request_properties(
-        const contract::peer::Request& original,
+        const ot::contract::peer::Request& original,
         const T& restored)
     {
         EXPECT_NE(restored.Version(), 0);
@@ -1046,17 +1045,17 @@ public:
     }
 
     void verify_storesecret(
-        const contract::peer::Request& originalrequest,
-        const contract::peer::Request& restoredrequest)
+        const ot::contract::peer::Request& originalrequest,
+        const ot::contract::peer::Request& restoredrequest)
     {
         const auto& storesecret = restoredrequest.asStoreSecret();
         verify_request_properties(originalrequest, storesecret);
     }
 
     void verify_state_pre(
-        const otx::context::Client& clientContext,
-        const otx::context::Server& serverContext,
-        const RequestNumber initialRequestNumber)
+        const ot::otx::context::Client& clientContext,
+        const ot::otx::context::Server& serverContext,
+        const ot::RequestNumber initialRequestNumber)
     {
         EXPECT_EQ(serverContext.Request(), initialRequestNumber);
         EXPECT_EQ(clientContext.Request(), initialRequestNumber);
@@ -1064,13 +1063,13 @@ public:
 
     void verify_state_post(
         const ot::api::session::Client& client,
-        const otx::context::Client& clientContext,
-        const otx::context::Server& serverContext,
-        const RequestNumber initialRequestNumber,
-        const RequestNumber finalRequestNumber,
-        const RequestNumber messageRequestNumber,
-        const SendResult messageResult,
-        const std::shared_ptr<Message>& message,
+        const ot::otx::context::Client& clientContext,
+        const ot::otx::context::Server& serverContext,
+        const ot::RequestNumber initialRequestNumber,
+        const ot::RequestNumber finalRequestNumber,
+        const ot::RequestNumber messageRequestNumber,
+        const ot::SendResult messageResult,
+        const std::shared_ptr<ot::Message>& message,
         const bool messageSuccess,
         const std::size_t expectedNymboxItems,
         ot::RequestNumber& counter)
@@ -1082,11 +1081,11 @@ public:
             serverContext.RemoteNymboxHash(), clientContext.LocalNymboxHash());
         EXPECT_EQ(
             serverContext.LocalNymboxHash(), serverContext.RemoteNymboxHash());
-        EXPECT_EQ(SendResult::VALID_REPLY, messageResult);
+        EXPECT_EQ(ot::SendResult::VALID_REPLY, messageResult);
         ASSERT_TRUE(message);
         EXPECT_EQ(messageSuccess, message->m_bSuccess);
 
-        std::unique_ptr<Ledger> nymbox{
+        std::unique_ptr<ot::Ledger> nymbox{
             client.InternalClient().OTAPI().LoadNymbox(
                 server_1_id_, serverContext.Nym()->ID())};
 
@@ -1107,9 +1106,9 @@ ot::RequestNumber Test_Basic::alice_counter_{0};
 ot::RequestNumber Test_Basic::bob_counter_{0};
 const std::string Test_Basic::SeedA_{""};
 const std::string Test_Basic::SeedB_{""};
-const OTNymID Test_Basic::alice_nym_id_{identifier::Nym::Factory()};
-const OTNymID Test_Basic::bob_nym_id_{identifier::Nym::Factory()};
-TransactionNumber Test_Basic::cheque_transaction_number_{0};
+const ot::OTNymID Test_Basic::alice_nym_id_{ot::identifier::Nym::Factory()};
+const ot::OTNymID Test_Basic::bob_nym_id_{ot::identifier::Nym::Factory()};
+ot::TransactionNumber Test_Basic::cheque_transaction_number_{0};
 std::string Test_Basic::bob_account_1_id_{""};
 std::string Test_Basic::bob_account_2_id_{""};
 std::string Test_Basic::outgoing_cheque_workflow_id_{};
@@ -1123,7 +1122,7 @@ std::unique_ptr<ot::otx::client::internal::Operation>
     Test_Basic::alice_state_machine_{nullptr};
 std::unique_ptr<ot::otx::client::internal::Operation>
     Test_Basic::bob_state_machine_{nullptr};
-std::shared_ptr<otx::blind::Purse> Test_Basic::untrusted_purse_{};
+std::shared_ptr<ot::otx::blind::Purse> Test_Basic::untrusted_purse_{};
 
 TEST_F(Test_Basic, zmq_disconnected)
 {
@@ -1160,8 +1159,8 @@ TEST_F(Test_Basic, zmq_connected)
 
 TEST_F(Test_Basic, registerNym_first_time)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{2};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{2};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1186,8 +1185,8 @@ TEST_F(Test_Basic, registerNym_first_time)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     clientContext = server_1_.Wallet().ClientContext(alice_nym_id_);
     verify_state_post(
@@ -1206,8 +1205,8 @@ TEST_F(Test_Basic, registerNym_first_time)
 
 TEST_F(Test_Basic, getTransactionNumbers_Alice)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{5};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{5};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1234,8 +1233,8 @@ TEST_F(Test_Basic, getTransactionNumbers_Alice)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -1260,8 +1259,8 @@ TEST_F(Test_Basic, getTransactionNumbers_Alice)
 
 TEST_F(Test_Basic, Reregister)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{5};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{5};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1286,8 +1285,8 @@ TEST_F(Test_Basic, Reregister)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     clientContext = server_1_.Wallet().ClientContext(alice_nym_id_);
     verify_state_post(
@@ -1306,8 +1305,8 @@ TEST_F(Test_Basic, Reregister)
 
 TEST_F(Test_Basic, issueAsset)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{3};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{3};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1336,8 +1335,8 @@ TEST_F(Test_Basic, issueAsset)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -1351,7 +1350,7 @@ TEST_F(Test_Basic, issueAsset)
         SUCCESS,
         0,
         alice_counter_);
-    const auto accountID = Identifier::Factory(message->m_strAcctID);
+    const auto accountID = ot::Identifier::Factory(message->m_strAcctID);
 
     ASSERT_FALSE(accountID->empty());
 
@@ -1372,8 +1371,8 @@ TEST_F(Test_Basic, issueAsset)
 
 TEST_F(Test_Basic, checkNym_missing)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1399,8 +1398,8 @@ TEST_F(Test_Basic, checkNym_missing)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -1421,8 +1420,8 @@ TEST_F(Test_Basic, checkNym_missing)
 
 TEST_F(Test_Basic, publishNym)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1454,8 +1453,8 @@ TEST_F(Test_Basic, publishNym)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -1473,8 +1472,8 @@ TEST_F(Test_Basic, publishNym)
 
 TEST_F(Test_Basic, checkNym)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1500,8 +1499,8 @@ TEST_F(Test_Basic, checkNym)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -1522,8 +1521,8 @@ TEST_F(Test_Basic, checkNym)
 
 TEST_F(Test_Basic, downloadServerContract_missing)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1537,7 +1536,7 @@ TEST_F(Test_Basic, downloadServerContract_missing)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started =
-        stateMachine.DownloadContract(server_2_id_, contract::Type::notary);
+        stateMachine.DownloadContract(server_2_id_, ot::contract::Type::notary);
 
     ASSERT_TRUE(started);
 
@@ -1549,8 +1548,8 @@ TEST_F(Test_Basic, downloadServerContract_missing)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -1571,8 +1570,8 @@ TEST_F(Test_Basic, downloadServerContract_missing)
 
 TEST_F(Test_Basic, publishServer)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1601,8 +1600,8 @@ TEST_F(Test_Basic, publishServer)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -1620,8 +1619,8 @@ TEST_F(Test_Basic, publishServer)
 
 TEST_F(Test_Basic, downloadServerContract)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1635,7 +1634,7 @@ TEST_F(Test_Basic, downloadServerContract)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started =
-        stateMachine.DownloadContract(server_2_id_, contract::Type::notary);
+        stateMachine.DownloadContract(server_2_id_, ot::contract::Type::notary);
 
     ASSERT_TRUE(started);
 
@@ -1647,8 +1646,8 @@ TEST_F(Test_Basic, downloadServerContract)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -1669,8 +1668,8 @@ TEST_F(Test_Basic, downloadServerContract)
 
 TEST_F(Test_Basic, registerNym_Bob)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{2};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{2};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -1695,8 +1694,8 @@ TEST_F(Test_Basic, registerNym_Bob)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     clientContext = server_1_.Wallet().ClientContext(bob_nym_id_);
     verify_state_post(
@@ -1715,8 +1714,8 @@ TEST_F(Test_Basic, registerNym_Bob)
 
 TEST_F(Test_Basic, getInstrumentDefinition_missing)
 {
-    const auto sequence = RequestNumber{bob_counter_};
-    const auto messages = RequestNumber{1};
+    const auto sequence = ot::RequestNumber{bob_counter_};
+    const auto messages = ot::RequestNumber{1};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -1730,7 +1729,7 @@ TEST_F(Test_Basic, getInstrumentDefinition_missing)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.DownloadContract(
-        find_unit_definition_id_2(), contract::Type::unit);
+        find_unit_definition_id_2(), ot::contract::Type::unit);
 
     ASSERT_TRUE(started);
 
@@ -1742,8 +1741,8 @@ TEST_F(Test_Basic, getInstrumentDefinition_missing)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -1764,8 +1763,8 @@ TEST_F(Test_Basic, getInstrumentDefinition_missing)
 
 TEST_F(Test_Basic, publishUnitDefinition)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{1};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -1790,8 +1789,8 @@ TEST_F(Test_Basic, publishUnitDefinition)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -1809,8 +1808,8 @@ TEST_F(Test_Basic, publishUnitDefinition)
 
 TEST_F(Test_Basic, getInstrumentDefinition_Alice)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -1823,7 +1822,7 @@ TEST_F(Test_Basic, getInstrumentDefinition_Alice)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.DownloadContract(
-        find_unit_definition_id_2(), contract::Type::unit);
+        find_unit_definition_id_2(), ot::contract::Type::unit);
 
     ASSERT_TRUE(started);
 
@@ -1835,8 +1834,8 @@ TEST_F(Test_Basic, getInstrumentDefinition_Alice)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -1857,8 +1856,8 @@ TEST_F(Test_Basic, getInstrumentDefinition_Alice)
 
 TEST_F(Test_Basic, getInstrumentDefinition_Bob)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{1};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -1871,7 +1870,7 @@ TEST_F(Test_Basic, getInstrumentDefinition_Bob)
     ot::otx::context::Server::DeliveryResult finished{};
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.DownloadContract(
-        find_unit_definition_id_1(), contract::Type::unit);
+        find_unit_definition_id_1(), ot::contract::Type::unit);
 
     ASSERT_TRUE(started);
 
@@ -1883,8 +1882,8 @@ TEST_F(Test_Basic, getInstrumentDefinition_Bob)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -1905,8 +1904,8 @@ TEST_F(Test_Basic, getInstrumentDefinition_Bob)
 
 TEST_F(Test_Basic, registerAccount)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{3};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{3};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -1933,8 +1932,8 @@ TEST_F(Test_Basic, registerAccount)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -1949,7 +1948,7 @@ TEST_F(Test_Basic, registerAccount)
         0,
         bob_counter_);
 
-    const auto accountID = Identifier::Factory(message->m_strAcctID);
+    const auto accountID = ot::Identifier::Factory(message->m_strAcctID);
     const auto clientAccount = client_2_.Wallet().Internal().Account(accountID);
     const auto serverAccount = server_1_.Wallet().Internal().Account(accountID);
 
@@ -1969,10 +1968,10 @@ TEST_F(Test_Basic, registerAccount)
 
 TEST_F(Test_Basic, send_cheque)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
-    std::unique_ptr<Cheque> cheque{
+    std::unique_ptr<ot::Cheque> cheque{
         client_1_.InternalClient().OTAPI().WriteCheque(
             server_1_id_,
             CHEQUE_AMOUNT,
@@ -1980,7 +1979,7 @@ TEST_F(Test_Basic, send_cheque)
             {},
             find_issuer_account(),
             alice_nym_id_,
-            String::Factory(CHEQUE_MEMO),
+            ot::String::Factory(CHEQUE_MEMO),
             bob_nym_id_)};
 
     ASSERT_TRUE(cheque);
@@ -1989,9 +1988,9 @@ TEST_F(Test_Basic, send_cheque)
 
     EXPECT_NE(0, cheque_transaction_number_);
 
-    std::shared_ptr<OTPayment> payment{
+    std::shared_ptr<ot::OTPayment> payment{
         client_1_.Factory().InternalSession().Payment(
-            String::Factory(*cheque))};
+            ot::String::Factory(*cheque))};
 
     ASSERT_TRUE(payment);
 
@@ -2017,8 +2016,8 @@ TEST_F(Test_Basic, send_cheque)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -2039,8 +2038,8 @@ TEST_F(Test_Basic, send_cheque)
 
     const auto workflows = client_1_.Storage().PaymentWorkflowsByState(
         alice_nym_id_->str(),
-        otx::client::PaymentWorkflowType::OutgoingCheque,
-        otx::client::PaymentWorkflowState::Conveyed);
+        ot::otx::client::PaymentWorkflowType::OutgoingCheque,
+        ot::otx::client::PaymentWorkflowState::Conveyed);
 
     ASSERT_EQ(1, workflows.size());
 
@@ -2049,8 +2048,8 @@ TEST_F(Test_Basic, send_cheque)
 
 TEST_F(Test_Basic, getNymbox_receive_cheque)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{4};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{4};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -2069,11 +2068,11 @@ TEST_F(Test_Basic, getNymbox_receive_cheque)
     context.ResetThread();
     const auto& [status, message] = finished;
 
-    EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, status);
+    EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, status);
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -2094,8 +2093,8 @@ TEST_F(Test_Basic, getNymbox_receive_cheque)
 
     const auto workflows = client_2_.Storage().PaymentWorkflowsByState(
         bob_nym_id_->str(),
-        otx::client::PaymentWorkflowType::IncomingCheque,
-        otx::client::PaymentWorkflowState::Conveyed);
+        ot::otx::client::PaymentWorkflowType::IncomingCheque,
+        ot::otx::client::PaymentWorkflowState::Conveyed);
 
     EXPECT_EQ(1, workflows.size());
 
@@ -2104,8 +2103,8 @@ TEST_F(Test_Basic, getNymbox_receive_cheque)
 
 TEST_F(Test_Basic, getNymbox_after_clearing_nymbox_2_Bob)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{1};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -2124,11 +2123,11 @@ TEST_F(Test_Basic, getNymbox_after_clearing_nymbox_2_Bob)
     context.ResetThread();
     const auto& [status, message] = finished;
 
-    EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, status);
+    EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, status);
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -2147,16 +2146,17 @@ TEST_F(Test_Basic, getNymbox_after_clearing_nymbox_2_Bob)
 TEST_F(Test_Basic, depositCheque)
 {
     const auto accountID = find_user_account();
-    const auto workflowID = Identifier::Factory(incoming_cheque_workflow_id_);
+    const auto workflowID =
+        ot::Identifier::Factory(incoming_cheque_workflow_id_);
     auto [state, pCheque] =
         client_2_.Workflow().InstantiateCheque(bob_nym_id_, workflowID);
 
-    ASSERT_EQ(otx::client::PaymentWorkflowState::Conveyed, state);
+    ASSERT_EQ(ot::otx::client::PaymentWorkflowState::Conveyed, state);
     ASSERT_TRUE(pCheque);
 
-    std::shared_ptr<Cheque> cheque{std::move(pCheque)};
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{12};
+    std::shared_ptr<ot::Cheque> cheque{std::move(pCheque)};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{12};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -2180,8 +2180,8 @@ TEST_F(Test_Basic, depositCheque)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -2211,14 +2211,14 @@ TEST_F(Test_Basic, depositCheque)
     const auto [wType, wState] = client_2_.Storage().PaymentWorkflowState(
         bob_nym_id_->str(), incoming_cheque_workflow_id_);
 
-    EXPECT_EQ(otx::client::PaymentWorkflowType::IncomingCheque, wType);
-    EXPECT_EQ(otx::client::PaymentWorkflowState::Completed, wState);
+    EXPECT_EQ(ot::otx::client::PaymentWorkflowType::IncomingCheque, wType);
+    EXPECT_EQ(ot::otx::client::PaymentWorkflowState::Completed, wState);
 }
 
 TEST_F(Test_Basic, getAccountData_after_cheque_deposited)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{5};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{5};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -2246,8 +2246,8 @@ TEST_F(Test_Basic, getAccountData_after_cheque_deposited)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -2282,16 +2282,16 @@ TEST_F(Test_Basic, getAccountData_after_cheque_deposited)
     const auto [wType, wState] = client_1_.Storage().PaymentWorkflowState(
         alice_nym_id_->str(), outgoing_cheque_workflow_id_);
 
-    EXPECT_EQ(wType, otx::client::PaymentWorkflowType::OutgoingCheque);
+    EXPECT_EQ(wType, ot::otx::client::PaymentWorkflowType::OutgoingCheque);
     // TODO should be completed?
-    EXPECT_EQ(wState, otx::client::PaymentWorkflowState::Accepted);
+    EXPECT_EQ(wState, ot::otx::client::PaymentWorkflowState::Accepted);
 }
 
 TEST_F(Test_Basic, resync)
 {
     break_consensus();
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{2};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{2};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -2316,8 +2316,8 @@ TEST_F(Test_Basic, resync)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     clientContext = server_1_.Wallet().ClientContext(alice_nym_id_);
     verify_state_post(
@@ -2336,8 +2336,8 @@ TEST_F(Test_Basic, resync)
 
 TEST_F(Test_Basic, sendTransfer)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{5};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{5};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -2361,7 +2361,7 @@ TEST_F(Test_Basic, sendTransfer)
         senderAccountID,
         recipientAccountID,
         TRANSFER_AMOUNT,
-        String::Factory(TRANSFER_MEMO));
+        ot::String::Factory(TRANSFER_MEMO));
 
     ASSERT_TRUE(started);
 
@@ -2373,8 +2373,8 @@ TEST_F(Test_Basic, sendTransfer)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -2406,8 +2406,8 @@ TEST_F(Test_Basic, sendTransfer)
 
     const auto workflows = client_1_.Storage().PaymentWorkflowsByState(
         alice_nym_id_->str(),
-        otx::client::PaymentWorkflowType::OutgoingTransfer,
-        otx::client::PaymentWorkflowState::Acknowledged);
+        ot::otx::client::PaymentWorkflowType::OutgoingTransfer,
+        ot::otx::client::PaymentWorkflowState::Acknowledged);
 
     ASSERT_EQ(1, workflows.size());
 
@@ -2418,15 +2418,15 @@ TEST_F(Test_Basic, sendTransfer)
     auto partysize = int{-1};
     EXPECT_TRUE(client_1_.Workflow().WorkflowPartySize(
         alice_nym_id_,
-        Identifier::Factory(outgoing_transfer_workflow_id_),
+        ot::Identifier::Factory(outgoing_transfer_workflow_id_),
         partysize));
     EXPECT_EQ(partysize, 0);
 }
 
 TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{5};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{5};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -2454,8 +2454,8 @@ TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -2493,8 +2493,8 @@ TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
 
     const auto workflows = client_2_.Storage().PaymentWorkflowsByState(
         bob_nym_id_->str(),
-        otx::client::PaymentWorkflowType::IncomingTransfer,
-        otx::client::PaymentWorkflowState::Completed);
+        ot::otx::client::PaymentWorkflowType::IncomingTransfer,
+        ot::otx::client::PaymentWorkflowState::Completed);
 
     ASSERT_EQ(1, workflows.size());
 
@@ -2505,7 +2505,7 @@ TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
     auto partysize = int{-1};
     EXPECT_TRUE(client_2_.Workflow().WorkflowPartySize(
         bob_nym_id_,
-        Identifier::Factory(incoming_transfer_workflow_id_),
+        ot::Identifier::Factory(incoming_transfer_workflow_id_),
         partysize));
     EXPECT_EQ(1, partysize);
 
@@ -2514,24 +2514,26 @@ TEST_F(Test_Basic, getAccountData_after_incomingTransfer)
         client_2_.Workflow()
             .WorkflowParty(
                 bob_nym_id_,
-                Identifier::Factory(incoming_transfer_workflow_id_),
+                ot::Identifier::Factory(incoming_transfer_workflow_id_),
                 0)
             .c_str());
 
     EXPECT_EQ(
         client_2_.Workflow().WorkflowType(
-            bob_nym_id_, Identifier::Factory(incoming_transfer_workflow_id_)),
-        otx::client::PaymentWorkflowType::IncomingTransfer);
+            bob_nym_id_,
+            ot::Identifier::Factory(incoming_transfer_workflow_id_)),
+        ot::otx::client::PaymentWorkflowType::IncomingTransfer);
     EXPECT_EQ(
         client_2_.Workflow().WorkflowState(
-            bob_nym_id_, Identifier::Factory(incoming_transfer_workflow_id_)),
-        otx::client::PaymentWorkflowState::Completed);
+            bob_nym_id_,
+            ot::Identifier::Factory(incoming_transfer_workflow_id_)),
+        ot::otx::client::PaymentWorkflowState::Completed);
 }
 
 TEST_F(Test_Basic, getAccountData_after_transfer_accepted)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{5};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{5};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -2559,8 +2561,8 @@ TEST_F(Test_Basic, getAccountData_after_transfer_accepted)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -2600,14 +2602,14 @@ TEST_F(Test_Basic, getAccountData_after_transfer_accepted)
     const auto [type, state] = client_1_.Storage().PaymentWorkflowState(
         alice_nym_id_->str(), outgoing_transfer_workflow_id_);
 
-    EXPECT_EQ(type, otx::client::PaymentWorkflowType::OutgoingTransfer);
-    EXPECT_EQ(state, otx::client::PaymentWorkflowState::Completed);
+    EXPECT_EQ(type, ot::otx::client::PaymentWorkflowType::OutgoingTransfer);
+    EXPECT_EQ(state, ot::otx::client::PaymentWorkflowState::Completed);
 }
 
 TEST_F(Test_Basic, register_second_account)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{3};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{3};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -2634,8 +2636,8 @@ TEST_F(Test_Basic, register_second_account)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -2649,7 +2651,7 @@ TEST_F(Test_Basic, register_second_account)
         SUCCESS,
         0,
         bob_counter_);
-    const auto accountID = Identifier::Factory(message->m_strAcctID);
+    const auto accountID = ot::Identifier::Factory(message->m_strAcctID);
     const auto clientAccount = client_2_.Wallet().Internal().Account(accountID);
     const auto serverAccount = server_1_.Wallet().Internal().Account(accountID);
 
@@ -2669,8 +2671,8 @@ TEST_F(Test_Basic, register_second_account)
 
 TEST_F(Test_Basic, send_internal_transfer)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{5};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{5};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -2694,7 +2696,7 @@ TEST_F(Test_Basic, send_internal_transfer)
         senderAccountID,
         recipientAccountID,
         SECOND_TRANSFER_AMOUNT,
-        String::Factory(TRANSFER_MEMO));
+        ot::String::Factory(TRANSFER_MEMO));
 
     ASSERT_TRUE(started);
 
@@ -2706,8 +2708,8 @@ TEST_F(Test_Basic, send_internal_transfer)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -2738,18 +2740,18 @@ TEST_F(Test_Basic, send_internal_transfer)
         // The state change from ACKNOWLEDGED to CONVEYED occurs
         // asynchronously due to server push notifications so the order in
         // which these states are observed by the sender is undefined.
-        Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(std::chrono::milliseconds(100));
         workflows = client_2_.Storage().PaymentWorkflowsByState(
             bob_nym_id_->str(),
-            otx::client::PaymentWorkflowType::InternalTransfer,
-            otx::client::PaymentWorkflowState::Acknowledged);
+            ot::otx::client::PaymentWorkflowType::InternalTransfer,
+            ot::otx::client::PaymentWorkflowState::Acknowledged);
         count = workflows.size();
 
         if (0 == count) {
             workflows = client_2_.Storage().PaymentWorkflowsByState(
                 bob_nym_id_->str(),
-                otx::client::PaymentWorkflowType::InternalTransfer,
-                otx::client::PaymentWorkflowState::Conveyed);
+                ot::otx::client::PaymentWorkflowType::InternalTransfer,
+                ot::otx::client::PaymentWorkflowState::Conveyed);
             count = workflows.size();
         }
 
@@ -2770,8 +2772,8 @@ TEST_F(Test_Basic, send_internal_transfer)
 
 TEST_F(Test_Basic, getAccountData_after_incoming_internal_Transfer)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{5};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{5};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -2799,8 +2801,8 @@ TEST_F(Test_Basic, getAccountData_after_incoming_internal_Transfer)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -2835,15 +2837,15 @@ TEST_F(Test_Basic, getAccountData_after_incoming_internal_Transfer)
     const auto [type, state] = client_2_.Storage().PaymentWorkflowState(
         bob_nym_id_->str(), internal_transfer_workflow_id_);
 
-    EXPECT_EQ(type, otx::client::PaymentWorkflowType::InternalTransfer);
-    EXPECT_EQ(state, otx::client::PaymentWorkflowState::Conveyed);
+    EXPECT_EQ(type, ot::otx::client::PaymentWorkflowType::InternalTransfer);
+    EXPECT_EQ(state, ot::otx::client::PaymentWorkflowState::Conveyed);
     EXPECT_EQ(SECOND_TRANSFER_AMOUNT, serverAccount.get().GetBalance());
 }
 
 TEST_F(Test_Basic, getAccountData_after_internal_transfer_accepted)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{5};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{5};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -2871,8 +2873,8 @@ TEST_F(Test_Basic, getAccountData_after_internal_transfer_accepted)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -2907,8 +2909,8 @@ TEST_F(Test_Basic, getAccountData_after_internal_transfer_accepted)
     const auto [type, state] = client_2_.Storage().PaymentWorkflowState(
         bob_nym_id_->str(), internal_transfer_workflow_id_);
 
-    EXPECT_EQ(type, otx::client::PaymentWorkflowType::InternalTransfer);
-    EXPECT_EQ(state, otx::client::PaymentWorkflowState::Completed);
+    EXPECT_EQ(type, ot::otx::client::PaymentWorkflowType::InternalTransfer);
+    EXPECT_EQ(state, ot::otx::client::PaymentWorkflowState::Completed);
     EXPECT_EQ(
         CHEQUE_AMOUNT + TRANSFER_AMOUNT - SECOND_TRANSFER_AMOUNT,
         serverAccount.get().GetBalance());
@@ -2916,8 +2918,8 @@ TEST_F(Test_Basic, getAccountData_after_internal_transfer_accepted)
 
 TEST_F(Test_Basic, send_message)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -2928,10 +2930,10 @@ TEST_F(Test_Basic, send_message)
 
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *alice_state_machine_;
-    auto messageID = Identifier::Factory();
-    auto setID = [&](const Identifier& in) -> void { messageID = in; };
+    auto messageID = ot::Identifier::Factory();
+    auto setID = [&](const ot::Identifier& in) -> void { messageID = in; };
     auto started = stateMachine.SendMessage(
-        bob_nym_id_, String::Factory(MESSAGE_TEXT), setID);
+        bob_nym_id_, ot::String::Factory(MESSAGE_TEXT), setID);
 
     ASSERT_TRUE(started);
 
@@ -2943,8 +2945,8 @@ TEST_F(Test_Basic, send_message)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -2964,8 +2966,8 @@ TEST_F(Test_Basic, send_message)
 
 TEST_F(Test_Basic, receive_message)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{4};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{4};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -2984,11 +2986,11 @@ TEST_F(Test_Basic, receive_message)
     context.ResetThread();
     const auto& [status, message] = finished;
 
-    EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, status);
+    EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, status);
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -3003,21 +3005,21 @@ TEST_F(Test_Basic, receive_message)
         0,
         bob_counter_);
     const auto mailList =
-        client_2_.Activity().Mail(bob_nym_id_, StorageBox::MAILINBOX);
+        client_2_.Activity().Mail(bob_nym_id_, ot::StorageBox::MAILINBOX);
 
     ASSERT_EQ(1, mailList.size());
 
-    const auto mailID = Identifier::Factory(std::get<0>(*mailList.begin()));
+    const auto mailID = ot::Identifier::Factory(std::get<0>(*mailList.begin()));
     const auto text = client_2_.Activity().MailText(
-        bob_nym_id_, mailID, StorageBox::MAILINBOX, reason_c2_);
+        bob_nym_id_, mailID, ot::StorageBox::MAILINBOX, reason_c2_);
 
     EXPECT_STREQ(MESSAGE_TEXT, text.get().c_str());
 }
 
 TEST_F(Test_Basic, request_admin_wrong_password)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -3028,7 +3030,8 @@ TEST_F(Test_Basic, request_admin_wrong_password)
 
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *alice_state_machine_;
-    auto started = stateMachine.RequestAdmin(String::Factory("WRONG PASSWORD"));
+    auto started =
+        stateMachine.RequestAdmin(ot::String::Factory("WRONG PASSWORD"));
 
     ASSERT_TRUE(started);
 
@@ -3040,8 +3043,8 @@ TEST_F(Test_Basic, request_admin_wrong_password)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -3063,8 +3066,8 @@ TEST_F(Test_Basic, request_admin_wrong_password)
 
 TEST_F(Test_Basic, request_admin)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -3076,7 +3079,7 @@ TEST_F(Test_Basic, request_admin)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.RequestAdmin(
-        String::Factory(server_1_.GetAdminPassword()));
+        ot::String::Factory(server_1_.GetAdminPassword()));
 
     ASSERT_TRUE(started);
 
@@ -3088,8 +3091,8 @@ TEST_F(Test_Basic, request_admin)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -3111,8 +3114,8 @@ TEST_F(Test_Basic, request_admin)
 
 TEST_F(Test_Basic, request_admin_already_admin)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -3124,7 +3127,7 @@ TEST_F(Test_Basic, request_admin_already_admin)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.RequestAdmin(
-        String::Factory(server_1_.GetAdminPassword()));
+        ot::String::Factory(server_1_.GetAdminPassword()));
 
     ASSERT_TRUE(started);
 
@@ -3136,8 +3139,8 @@ TEST_F(Test_Basic, request_admin_already_admin)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -3159,8 +3162,8 @@ TEST_F(Test_Basic, request_admin_already_admin)
 
 TEST_F(Test_Basic, request_admin_second_nym)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{1};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -3172,7 +3175,7 @@ TEST_F(Test_Basic, request_admin_second_nym)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.RequestAdmin(
-        String::Factory(server_1_.GetAdminPassword()));
+        ot::String::Factory(server_1_.GetAdminPassword()));
 
     ASSERT_TRUE(started);
 
@@ -3184,8 +3187,8 @@ TEST_F(Test_Basic, request_admin_second_nym)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -3207,8 +3210,8 @@ TEST_F(Test_Basic, request_admin_second_nym)
 
 TEST_F(Test_Basic, addClaim)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -3220,9 +3223,9 @@ TEST_F(Test_Basic, addClaim)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *alice_state_machine_;
     auto started = stateMachine.AddClaim(
-        identity::wot::claim::SectionType::Scope,
-        identity::wot::claim::ClaimType::Server,
-        String::Factory(NEW_SERVER_NAME),
+        ot::identity::wot::claim::SectionType::Scope,
+        ot::identity::wot::claim::ClaimType::Server,
+        ot::String::Factory(NEW_SERVER_NAME),
         true);
 
     ASSERT_TRUE(started);
@@ -3235,8 +3238,8 @@ TEST_F(Test_Basic, addClaim)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -3256,8 +3259,8 @@ TEST_F(Test_Basic, addClaim)
 
 TEST_F(Test_Basic, renameServer)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{1};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -3285,8 +3288,8 @@ TEST_F(Test_Basic, renameServer)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -3311,8 +3314,8 @@ TEST_F(Test_Basic, renameServer)
 
 TEST_F(Test_Basic, addClaim_not_admin)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{1};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -3324,9 +3327,9 @@ TEST_F(Test_Basic, addClaim_not_admin)
     verify_state_pre(*clientContext, serverContext.get(), sequence);
     auto& stateMachine = *bob_state_machine_;
     auto started = stateMachine.AddClaim(
-        identity::wot::claim::SectionType::Scope,
-        identity::wot::claim::ClaimType::Server,
-        String::Factory(NEW_SERVER_NAME),
+        ot::identity::wot::claim::SectionType::Scope,
+        ot::identity::wot::claim::ClaimType::Server,
+        ot::String::Factory(NEW_SERVER_NAME),
         true);
 
     ASSERT_TRUE(started);
@@ -3339,8 +3342,8 @@ TEST_F(Test_Basic, addClaim_not_admin)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -3374,11 +3377,11 @@ TEST_F(Test_Basic, initiate_and_acknowledge_bailment)
     send_peer_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::Bailment);
+        ot::contract::peer::PeerRequestType::Bailment);
     receive_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::Bailment);
+        ot::contract::peer::PeerRequestType::Bailment);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
     ASSERT_TRUE(bobNym);
@@ -3394,13 +3397,13 @@ TEST_F(Test_Basic, initiate_and_acknowledge_bailment)
         bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::Bailment);
+        ot::contract::peer::PeerRequestType::Bailment);
     receive_reply(
         bobNym,
         aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::Bailment);
+        ot::contract::peer::PeerRequestType::Bailment);
 }
 
 TEST_F(Test_Basic, initiate_and_acknowledge_outbailment)
@@ -3421,11 +3424,11 @@ TEST_F(Test_Basic, initiate_and_acknowledge_outbailment)
     send_peer_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::OutBailment);
+        ot::contract::peer::PeerRequestType::OutBailment);
     receive_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::OutBailment);
+        ot::contract::peer::PeerRequestType::OutBailment);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
     ASSERT_TRUE(bobNym);
@@ -3441,13 +3444,13 @@ TEST_F(Test_Basic, initiate_and_acknowledge_outbailment)
         bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::OutBailment);
+        ot::contract::peer::PeerRequestType::OutBailment);
     receive_reply(
         bobNym,
         aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::OutBailment);
+        ot::contract::peer::PeerRequestType::OutBailment);
 }
 
 TEST_F(Test_Basic, notify_bailment_and_acknowledge_notice)
@@ -3461,18 +3464,18 @@ TEST_F(Test_Basic, notify_bailment_and_acknowledge_notice)
         bob_nym_id_,
         find_unit_definition_id_2(),
         server_1_id_,
-        Identifier::Random(),
-        Identifier::Random()->str(),
+        ot::Identifier::Random(),
+        ot::Identifier::Random()->str(),
         1000,
         reason_c1_);
     send_peer_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::PendingBailment);
+        ot::contract::peer::PeerRequestType::PendingBailment);
     receive_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::PendingBailment);
+        ot::contract::peer::PeerRequestType::PendingBailment);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
     ASSERT_TRUE(bobNym);
@@ -3482,20 +3485,20 @@ TEST_F(Test_Basic, notify_bailment_and_acknowledge_notice)
         alice_nym_id_,
         peerrequest->ID(),
         server_1_id_,
-        contract::peer::PeerRequestType::PendingBailment,
+        ot::contract::peer::PeerRequestType::PendingBailment,
         true,
         reason_c2_);
     send_peer_reply(
         bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::PendingBailment);
+        ot::contract::peer::PeerRequestType::PendingBailment);
     receive_reply(
         bobNym,
         aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::PendingBailment);
+        ot::contract::peer::PeerRequestType::PendingBailment);
 }
 
 TEST_F(Test_Basic, initiate_request_connection_and_acknowledge_connection)
@@ -3507,17 +3510,17 @@ TEST_F(Test_Basic, initiate_request_connection_and_acknowledge_connection)
     auto peerrequest = client_1_.Factory().ConnectionRequest(
         aliceNym,
         bob_nym_id_,
-        contract::peer::ConnectionInfoType::Bitcoin,
+        ot::contract::peer::ConnectionInfoType::Bitcoin,
         server_1_id_,
         reason_c1_);
     send_peer_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::ConnectionInfo);
+        ot::contract::peer::PeerRequestType::ConnectionInfo);
     receive_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::ConnectionInfo);
+        ot::contract::peer::PeerRequestType::ConnectionInfo);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
     ASSERT_TRUE(bobNym);
@@ -3537,13 +3540,13 @@ TEST_F(Test_Basic, initiate_request_connection_and_acknowledge_connection)
         bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::ConnectionInfo);
+        ot::contract::peer::PeerRequestType::ConnectionInfo);
     receive_reply(
         bobNym,
         aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::ConnectionInfo);
+        ot::contract::peer::PeerRequestType::ConnectionInfo);
 }
 
 TEST_F(Test_Basic, initiate_store_secret_and_acknowledge_notice)
@@ -3555,7 +3558,7 @@ TEST_F(Test_Basic, initiate_store_secret_and_acknowledge_notice)
     auto peerrequest = client_1_.Factory().StoreSecret(
         aliceNym,
         bob_nym_id_,
-        contract::peer::SecretType::Bip39,
+        ot::contract::peer::SecretType::Bip39,
         TEST_SEED,
         TEST_SEED_PASSPHRASE,
         server_1_id_,
@@ -3563,11 +3566,11 @@ TEST_F(Test_Basic, initiate_store_secret_and_acknowledge_notice)
     send_peer_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::StoreSecret);
+        ot::contract::peer::PeerRequestType::StoreSecret);
     receive_request(
         aliceNym,
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::StoreSecret);
+        ot::contract::peer::PeerRequestType::StoreSecret);
     const auto bobNym = client_2_.Wallet().Nym(bob_nym_id_);
 
     ASSERT_TRUE(bobNym);
@@ -3577,20 +3580,20 @@ TEST_F(Test_Basic, initiate_store_secret_and_acknowledge_notice)
         alice_nym_id_,
         peerrequest->ID(),
         server_1_id_,
-        contract::peer::PeerRequestType::StoreSecret,
+        ot::contract::peer::PeerRequestType::StoreSecret,
         true,
         reason_c2_);
     send_peer_reply(
         bobNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::StoreSecret);
+        ot::contract::peer::PeerRequestType::StoreSecret);
     receive_reply(
         bobNym,
         aliceNym,
         peerreply.as<ot::contract::peer::Reply>(),
         peerrequest.as<ot::contract::peer::Request>(),
-        contract::peer::PeerRequestType::StoreSecret);
+        ot::contract::peer::PeerRequestType::StoreSecret);
 }
 
 TEST_F(Test_Basic, waitForCash_Alice)
@@ -3599,15 +3602,15 @@ TEST_F(Test_Basic, waitForCash_Alice)
         return server_1_.GetPublicMint(find_unit_definition_id_1());
     };
     auto mint = CheckMint();
-    const auto start = Clock::now();
+    const auto start = ot::Clock::now();
     std::cout << "Pausing for up to " << MINT_TIME_LIMIT_MINUTES
               << " minutes until mint generation is finished." << std::endl;
 
     while (false == mint) {
         std::cout << "* Waiting for mint..." << std::endl;
-        Sleep(std::chrono::seconds(10));
+        ot::Sleep(std::chrono::seconds(10));
         mint = CheckMint();
-        const auto wait = Clock::now() - start;
+        const auto wait = ot::Clock::now() - start;
         const auto limit = std::chrono::minutes(MINT_TIME_LIMIT_MINUTES);
 
         if (wait > limit) { break; }
@@ -3618,8 +3621,8 @@ TEST_F(Test_Basic, waitForCash_Alice)
 
 TEST_F(Test_Basic, downloadMint)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{1};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -3643,8 +3646,8 @@ TEST_F(Test_Basic, downloadMint)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -3665,8 +3668,8 @@ TEST_F(Test_Basic, downloadMint)
 
 TEST_F(Test_Basic, withdrawCash)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{4};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{4};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -3691,8 +3694,8 @@ TEST_F(Test_Basic, withdrawCash)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -3720,7 +3723,7 @@ TEST_F(Test_Basic, withdrawCash)
 
     // TODO conversion
     auto purseEditor = context.InternalServer().mutable_Purse(
-        identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str()),
+        ot::identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str()),
         reason_c2_);
     auto& purse = purseEditor.get();
 
@@ -3729,8 +3732,8 @@ TEST_F(Test_Basic, withdrawCash)
 
 TEST_F(Test_Basic, send_cash)
 {
-    const RequestNumber sequence = bob_counter_;
-    const RequestNumber messages{1};
+    const ot::RequestNumber sequence = bob_counter_;
+    const ot::RequestNumber messages{1};
     bob_counter_ += messages;
     auto serverContext = client_2_.Wallet().Internal().mutable_ServerContext(
         bob_nym_id_, server_1_id_, reason_c2_);
@@ -3743,7 +3746,7 @@ TEST_F(Test_Basic, send_cash)
 
     // TODO conversion
     const auto unitID =
-        identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str());
+        ot::identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str());
     auto localPurseEditor =
         context.InternalServer().mutable_Purse(unitID, reason_c2_);
     auto& localPurse = localPurseEditor.get();
@@ -3792,8 +3795,8 @@ TEST_F(Test_Basic, send_cash)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_2_,
@@ -3811,14 +3814,14 @@ TEST_F(Test_Basic, send_cash)
     EXPECT_EQ(localPurse.Value(), 0);
 
     EXPECT_EQ(
-        otx::client::PaymentWorkflowState::Conveyed,
+        ot::otx::client::PaymentWorkflowState::Conveyed,
         client_2_.Workflow().WorkflowState(bob_nym_id_, workflowID));
 }
 
 TEST_F(Test_Basic, receive_cash)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{4};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{4};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -3837,11 +3840,11 @@ TEST_F(Test_Basic, receive_cash)
     context.ResetThread();
     const auto& [status, message] = finished;
 
-    EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, status);
+    EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, status);
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,
@@ -3857,16 +3860,16 @@ TEST_F(Test_Basic, receive_cash)
         alice_counter_);
     // TODO conversion
     const auto unitID =
-        identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str());
+        ot::identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str());
 
     const auto workflows = client_1_.Storage().PaymentWorkflowsByState(
         alice_nym_id_->str(),
-        otx::client::PaymentWorkflowType::IncomingCash,
-        otx::client::PaymentWorkflowState::Conveyed);
+        ot::otx::client::PaymentWorkflowType::IncomingCash,
+        ot::otx::client::PaymentWorkflowState::Conveyed);
 
     ASSERT_EQ(1, workflows.size());
 
-    const auto& workflowID = Identifier::Factory(*workflows.begin());
+    const auto& workflowID = ot::Identifier::Factory(*workflows.begin());
     auto [state, incomingPurse] =
         client_1_.Workflow().InstantiatePurse(alice_nym_id_, workflowID);
 
@@ -3893,8 +3896,8 @@ TEST_F(Test_Basic, receive_cash)
 
 TEST_F(Test_Basic, depositCash)
 {
-    const RequestNumber sequence = alice_counter_;
-    const RequestNumber messages{4};
+    const ot::RequestNumber sequence = alice_counter_;
+    const ot::RequestNumber messages{4};
     alice_counter_ += messages;
     auto serverContext = client_1_.Wallet().Internal().mutable_ServerContext(
         alice_nym_id_, server_1_id_, reason_c1_);
@@ -3906,7 +3909,7 @@ TEST_F(Test_Basic, depositCash)
     const auto accountID = find_issuer_account();
     // TODO conversion
     const auto unitID =
-        identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str());
+        ot::identifier::UnitDefinition::Factory(asset_contract_1_->ID()->str());
     auto& walletPurse = context.Purse(unitID);
 
     ASSERT_TRUE(walletPurse);
@@ -3947,8 +3950,8 @@ TEST_F(Test_Basic, depositCash)
 
     ASSERT_TRUE(message);
 
-    const RequestNumber requestNumber =
-        String::StringToUlong(message->m_strRequestNum->Get());
+    const ot::RequestNumber requestNumber =
+        ot::String::StringToUlong(message->m_strRequestNum->Get());
     const auto result = translate_result(std::get<0>(finished));
     verify_state_post(
         client_1_,

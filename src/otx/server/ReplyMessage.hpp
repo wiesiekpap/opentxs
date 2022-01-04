@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"

@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/OTTransaction.hpp"
 #include "opentxs/Types.hpp"

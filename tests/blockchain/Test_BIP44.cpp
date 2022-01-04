@@ -123,7 +123,6 @@ TEST_F(Test_BIP44, generate_expected_keys)
     auto& external = const_cast<ExpectedKeys&>(external_);
     internal.reserve(count_);
     external.reserve(count_);
-    using EcdsaCurve = ot::EcdsaCurve;
     using Path = std::vector<ot::Bip32Index>;
     const auto MakePath = [&](auto change, auto index) -> Path {
         constexpr auto hard =
@@ -141,7 +140,7 @@ TEST_F(Test_BIP44, generate_expected_keys)
         [&](auto subchain, auto index, auto& vector) -> bool {
         auto output{true};
         const auto pKey = api_.Crypto().Seed().GetHDKey(
-            id, EcdsaCurve::secp256k1, MakePath(subchain, index), reason_);
+            id, ot::EcdsaCurve::secp256k1, MakePath(subchain, index), reason_);
 
         EXPECT_TRUE(pKey);
 

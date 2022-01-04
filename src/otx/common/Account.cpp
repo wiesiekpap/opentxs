@@ -16,6 +16,7 @@
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Session.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/Helpers.hpp"
 #include "internal/otx/common/Ledger.hpp"
@@ -39,9 +40,6 @@
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
-
-using namespace irr;
-using namespace io;
 
 namespace opentxs
 {
@@ -942,7 +940,7 @@ void Account::UpdateContents(const PasswordPrompt& reason)
 }
 
 // return -1 if error, 0 if nothing, and 1 if the node was processed.
-auto Account::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
+auto Account::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 {
     std::int32_t retval = 0;
 

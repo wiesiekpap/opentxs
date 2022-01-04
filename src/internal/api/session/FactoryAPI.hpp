@@ -7,6 +7,7 @@
 
 #include "internal/api/FactoryAPI.hpp"
 
+#include "internal/otx/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"

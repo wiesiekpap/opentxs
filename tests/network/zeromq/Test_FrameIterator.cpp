@@ -11,11 +11,13 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
 
-using namespace opentxs;
+namespace ot = opentxs;
 
+namespace ottest
+{
 TEST(FrameIterator, constructors)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     auto frameIterator{multipartMessage.begin()};
     ASSERT_EQ(multipartMessage.begin(), frameIterator);
@@ -31,7 +33,7 @@ TEST(FrameIterator, constructors)
 
 TEST(FrameIterator, assignment_operator)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     auto frameIterator{multipartMessage.begin()};
     ASSERT_EQ(multipartMessage.begin(), frameIterator);
@@ -48,7 +50,7 @@ TEST(FrameIterator, assignment_operator)
 
 TEST(FrameIterator, operator_asterisk)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame(std::string{"msg1"});
 
@@ -60,7 +62,7 @@ TEST(FrameIterator, operator_asterisk)
 
 TEST(FrameIterator, operator_asterisk_const)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame(std::string{"msg1"});
 
@@ -72,7 +74,7 @@ TEST(FrameIterator, operator_asterisk_const)
 
 TEST(FrameIterator, operator_equal)
 {
-    auto message = network::zeromq::Message{};
+    auto message = ot::network::zeromq::Message{};
 
     EXPECT_TRUE(message.begin() == message.end());
 
@@ -89,7 +91,7 @@ TEST(FrameIterator, operator_equal)
 
 TEST(FrameIterator, operator_notEqual)
 {
-    auto message = network::zeromq::Message{};
+    auto message = ot::network::zeromq::Message{};
 
     EXPECT_FALSE(message.begin() != message.end());
 
@@ -106,7 +108,7 @@ TEST(FrameIterator, operator_notEqual)
 
 TEST(FrameIterator, operator_pre_increment)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame(std::string{"msg1"});
     multipartMessage.AddFrame(std::string{"msg2"});
@@ -125,7 +127,7 @@ TEST(FrameIterator, operator_pre_increment)
 
 TEST(FrameIterator, operator_post_increment)
 {
-    auto multipartMessage = network::zeromq::Message{};
+    auto multipartMessage = ot::network::zeromq::Message{};
 
     multipartMessage.AddFrame(std::string{"msg1"});
     multipartMessage.AddFrame(std::string{"msg2"});
@@ -141,3 +143,4 @@ TEST(FrameIterator, operator_post_increment)
     stringMessage = message2.Bytes();
     ASSERT_STREQ("msg2", stringMessage.c_str());
 }
+}  // namespace ottest

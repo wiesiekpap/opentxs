@@ -13,6 +13,7 @@
 #include <string>
 
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Cheque.hpp"
 #include "internal/otx/common/Ledger.hpp"
@@ -23,7 +24,6 @@
 #include "internal/otx/common/XML.hpp"
 #include "internal/otx/common/util/Tag.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"

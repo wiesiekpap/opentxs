@@ -31,7 +31,6 @@ namespace ottest
 class Test_BIP32 : public ::testing::Test
 {
 protected:
-    using EcdsaCurve = ot::EcdsaCurve;
     using Path = std::vector<ot::Bip32Index>;
 
     const ot::api::session::Client& api_;
@@ -80,7 +79,7 @@ TEST_F(Test_BIP32, cases)
 
         for (const auto& child : item.children_) {
             const auto pKey = api_.Crypto().Seed().GetHDKey(
-                id, EcdsaCurve::secp256k1, make_path(child.path_), reason_);
+                id, ot::EcdsaCurve::secp256k1, make_path(child.path_), reason_);
             const auto& key = *pKey;
 
             ASSERT_TRUE(pKey);
@@ -108,7 +107,7 @@ TEST_F(Test_BIP32, stress)
     for (auto i{0}; i < 1000; ++i) {
         auto id{seedID};
         const auto pKey = api_.Crypto().Seed().GetHDKey(
-            id, EcdsaCurve::secp256k1, make_path(child.path_), reason_);
+            id, ot::EcdsaCurve::secp256k1, make_path(child.path_), reason_);
         const auto& key = *pKey;
 
         ASSERT_TRUE(pKey);

@@ -15,8 +15,6 @@
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -30,15 +28,15 @@ public:
     const std::string testMessage_{"zeromq test message"};
 
     Test_SubscribeSocket()
-        : context_(Context().ZMQ())
+        : context_(ot::Context().ZMQ())
     {
     }
 };
 
 TEST_F(Test_SubscribeSocket, SubscribeSocket_Factory)
 {
-    auto subscribeSocket =
-        context_.SubscribeSocket(network::zeromq::ListenCallback::Factory());
+    auto subscribeSocket = context_.SubscribeSocket(
+        ot::network::zeromq::ListenCallback::Factory());
 
     ASSERT_NE(nullptr, &subscribeSocket.get());
     ASSERT_EQ(zmq::socket::Type::Subscribe, subscribeSocket->Type());

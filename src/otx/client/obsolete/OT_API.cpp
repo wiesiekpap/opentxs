@@ -21,6 +21,7 @@
 #include "internal/api/session/Session.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/contract/Contract.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/client/obsolete/OTClient.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Cheque.hpp"

@@ -26,8 +26,6 @@
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 
 namespace ottest
@@ -108,12 +106,13 @@ TEST_F(Test_CreateNymHD, TestNym_ABCD)
     EXPECT_EQ(2, NymA->PathChildSize());
 
     EXPECT_EQ(
-        static_cast<Bip32Index>(Bip43Purpose::NYM) |
-            static_cast<Bip32Index>(Bip32Child::HARDENED),
+        static_cast<ot::Bip32Index>(ot::Bip43Purpose::NYM) |
+            static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
         NymA->PathChild(0));
 
     EXPECT_EQ(
-        0 | static_cast<Bip32Index>(Bip32Child::HARDENED), NymA->PathChild(1));
+        0 | static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
+        NymA->PathChild(1));
 
     // Bob
     EXPECT_TRUE(NymB->HasPath());
@@ -121,12 +120,13 @@ TEST_F(Test_CreateNymHD, TestNym_ABCD)
     EXPECT_EQ(2, NymB->PathChildSize());
 
     EXPECT_EQ(
-        static_cast<Bip32Index>(Bip43Purpose::NYM) |
-            static_cast<Bip32Index>(Bip32Child::HARDENED),
+        static_cast<ot::Bip32Index>(ot::Bip43Purpose::NYM) |
+            static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
         NymB->PathChild(0));
 
     EXPECT_EQ(
-        0 | static_cast<Bip32Index>(Bip32Child::HARDENED), NymB->PathChild(1));
+        0 | static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
+        NymB->PathChild(1));
 
     // Charly
     EXPECT_TRUE(NymC->HasPath());
@@ -134,12 +134,13 @@ TEST_F(Test_CreateNymHD, TestNym_ABCD)
     EXPECT_EQ(2, NymC->PathChildSize());
 
     EXPECT_EQ(
-        static_cast<Bip32Index>(Bip43Purpose::NYM) |
-            static_cast<Bip32Index>(Bip32Child::HARDENED),
+        static_cast<ot::Bip32Index>(ot::Bip43Purpose::NYM) |
+            static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
         NymC->PathChild(0));
 
     EXPECT_EQ(
-        1 | static_cast<Bip32Index>(Bip32Child::HARDENED), NymC->PathChild(1));
+        1 | static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
+        NymC->PathChild(1));
 }
 
 TEST_F(Test_CreateNymHD, TestNym_Dave)
@@ -153,12 +154,13 @@ TEST_F(Test_CreateNymHD, TestNym_Dave)
     EXPECT_EQ(2, NymD->PathChildSize());
 
     EXPECT_EQ(
-        static_cast<Bip32Index>(Bip43Purpose::NYM) |
-            static_cast<Bip32Index>(Bip32Child::HARDENED),
+        static_cast<ot::Bip32Index>(ot::Bip43Purpose::NYM) |
+            static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
         NymD->PathChild(0));
 
     EXPECT_EQ(
-        1 | static_cast<Bip32Index>(Bip32Child::HARDENED), NymD->PathChild(1));
+        1 | static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
+        NymD->PathChild(1));
 }
 
 TEST_F(Test_CreateNymHD, TestNym_Eve)
@@ -174,12 +176,13 @@ TEST_F(Test_CreateNymHD, TestNym_Eve)
     EXPECT_EQ(2, NymE->PathChildSize());
 
     EXPECT_EQ(
-        static_cast<Bip32Index>(Bip43Purpose::NYM) |
-            static_cast<Bip32Index>(Bip32Child::HARDENED),
+        static_cast<ot::Bip32Index>(ot::Bip43Purpose::NYM) |
+            static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
         NymE->PathChild(0));
 
     EXPECT_EQ(
-        2 | static_cast<Bip32Index>(Bip32Child::HARDENED), NymE->PathChild(1));
+        2 | static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
+        NymE->PathChild(1));
 }
 
 TEST_F(Test_CreateNymHD, TestNym_Frank)
@@ -201,14 +204,16 @@ TEST_F(Test_CreateNymHD, TestNym_Frank)
     EXPECT_EQ(2, NymF2->PathChildSize());
 
     EXPECT_EQ(
-        static_cast<Bip32Index>(Bip43Purpose::NYM) |
-            static_cast<Bip32Index>(Bip32Child::HARDENED),
+        static_cast<ot::Bip32Index>(ot::Bip43Purpose::NYM) |
+            static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
         NymF->PathChild(0));
 
     EXPECT_EQ(
-        3 | static_cast<Bip32Index>(Bip32Child::HARDENED), NymF->PathChild(1));
+        3 | static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
+        NymF->PathChild(1));
     EXPECT_EQ(
-        3 | static_cast<Bip32Index>(Bip32Child::HARDENED), NymF2->PathChild(1));
+        3 | static_cast<ot::Bip32Index>(ot::Bip32Child::HARDENED),
+        NymF2->PathChild(1));
 }
 
 TEST_F(Test_CreateNymHD, TestNym_NonnegativeIndex)

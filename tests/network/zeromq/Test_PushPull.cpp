@@ -24,8 +24,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 namespace zmq = ot::network::zeromq;
 
@@ -43,7 +41,7 @@ public:
     const std::string endpoint_{"inproc://opentxs/test/push_pull_test"};
 
     Test_PushPull()
-        : context_(Context().ZMQ())
+        : context_(ot::Context().ZMQ())
     {
     }
 };
@@ -99,7 +97,7 @@ TEST_F(Test_PushPull, Push_Pull)
 
     auto end = std::time(nullptr) + 15;
     while (!callbackFinished && std::time(nullptr) < end) {
-        Sleep(std::chrono::milliseconds(100));
+        ot::Sleep(std::chrono::milliseconds(100));
     }
 
     ASSERT_TRUE(callbackFinished);

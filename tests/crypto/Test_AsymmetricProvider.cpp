@@ -40,8 +40,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "util/HDIndex.hpp"  // IWYU pragma: keep
 
-using namespace opentxs;
-
 namespace ot = opentxs;
 
 namespace ottest
@@ -59,26 +57,28 @@ public:
 
     const ot::api::session::Client& api_;
     const std::string fingerprint_;
-    const crypto::HashType sha256_{crypto::HashType::Sha256};
-    const crypto::HashType sha512_{crypto::HashType::Sha512};
-    const crypto::HashType blake160_{crypto::HashType::Blake2b160};
-    const crypto::HashType blake256_{crypto::HashType::Blake2b256};
-    const crypto::HashType blake512_{crypto::HashType::Blake2b512};
-    const crypto::HashType ripemd160_{crypto::HashType::Ripemd160};
+    const ot::crypto::HashType sha256_{ot::crypto::HashType::Sha256};
+    const ot::crypto::HashType sha512_{ot::crypto::HashType::Sha512};
+    const ot::crypto::HashType blake160_{ot::crypto::HashType::Blake2b160};
+    const ot::crypto::HashType blake256_{ot::crypto::HashType::Blake2b256};
+    const ot::crypto::HashType blake512_{ot::crypto::HashType::Blake2b512};
+    const ot::crypto::HashType ripemd160_{ot::crypto::HashType::Ripemd160};
     const std::string plaintext_string_1_{"Test string"};
     const std::string plaintext_string_2_{"Another string"};
-    const OTData plaintext_1{
-        Data::Factory(plaintext_string_1_.data(), plaintext_string_1_.size())};
-    const OTData plaintext_2{
-        Data::Factory(plaintext_string_2_.data(), plaintext_string_2_.size())};
-    OTAsymmetricKey ed_;
-    OTAsymmetricKey ed_hd_;
-    OTAsymmetricKey ed_2_;
-    OTAsymmetricKey secp_;
-    OTAsymmetricKey secp_hd_;
-    OTAsymmetricKey secp_2_;
-    OTAsymmetricKey rsa_sign_1_;
-    OTAsymmetricKey rsa_sign_2_;
+    const ot::OTData plaintext_1{ot::Data::Factory(
+        plaintext_string_1_.data(),
+        plaintext_string_1_.size())};
+    const ot::OTData plaintext_2{ot::Data::Factory(
+        plaintext_string_2_.data(),
+        plaintext_string_2_.size())};
+    ot::OTAsymmetricKey ed_;
+    ot::OTAsymmetricKey ed_hd_;
+    ot::OTAsymmetricKey ed_2_;
+    ot::OTAsymmetricKey secp_;
+    ot::OTAsymmetricKey secp_hd_;
+    ot::OTAsymmetricKey secp_2_;
+    ot::OTAsymmetricKey rsa_sign_1_;
+    ot::OTAsymmetricKey rsa_sign_2_;
 
     [[maybe_unused]] Test_Signatures()
         : api_(dynamic_cast<const ot::api::session::Client&>(
@@ -87,85 +87,92 @@ public:
               "response seminar brave tip suit recall often sound stick owner "
               "lottery motion",
               ""))
-        , ed_(get_key(api_, EcdsaCurve::ed25519, Role::Sign))
+        , ed_(get_key(api_, ot::EcdsaCurve::ed25519, Role::Sign))
         , ed_hd_([&] {
             if (have_hd_) {
 
-                return get_hd_key(api_, fingerprint_, EcdsaCurve::ed25519);
+                return get_hd_key(api_, fingerprint_, ot::EcdsaCurve::ed25519);
             } else {
 
-                return get_key(api_, EcdsaCurve::ed25519, Role::Sign);
+                return get_key(api_, ot::EcdsaCurve::ed25519, Role::Sign);
             }
         }())
         , ed_2_([&] {
             if (have_hd_) {
 
-                return get_hd_key(api_, fingerprint_, EcdsaCurve::ed25519, 1);
+                return get_hd_key(
+                    api_, fingerprint_, ot::EcdsaCurve::ed25519, 1);
             } else {
 
-                return get_key(api_, EcdsaCurve::ed25519, Role::Sign);
+                return get_key(api_, ot::EcdsaCurve::ed25519, Role::Sign);
             }
         }())
-        , secp_(get_key(api_, EcdsaCurve::secp256k1, Role::Sign))
+        , secp_(get_key(api_, ot::EcdsaCurve::secp256k1, Role::Sign))
         , secp_hd_([&] {
             if (have_hd_) {
 
-                return get_hd_key(api_, fingerprint_, EcdsaCurve::secp256k1);
+                return get_hd_key(
+                    api_, fingerprint_, ot::EcdsaCurve::secp256k1);
             } else {
 
-                return get_key(api_, EcdsaCurve::secp256k1, Role::Sign);
+                return get_key(api_, ot::EcdsaCurve::secp256k1, Role::Sign);
             }
         }())
         , secp_2_([&] {
             if (have_hd_) {
 
-                return get_hd_key(api_, fingerprint_, EcdsaCurve::secp256k1, 1);
+                return get_hd_key(
+                    api_, fingerprint_, ot::EcdsaCurve::secp256k1, 1);
             } else {
 
-                return get_key(api_, EcdsaCurve::secp256k1, Role::Sign);
+                return get_key(api_, ot::EcdsaCurve::secp256k1, Role::Sign);
             }
         }())
-        , rsa_sign_1_(get_key(api_, EcdsaCurve::invalid, Role::Sign))
-        , rsa_sign_2_(get_key(api_, EcdsaCurve::invalid, Role::Sign))
+        , rsa_sign_1_(get_key(api_, ot::EcdsaCurve::invalid, Role::Sign))
+        , rsa_sign_2_(get_key(api_, ot::EcdsaCurve::invalid, Role::Sign))
     {
     }
 
-    static OTAsymmetricKey get_hd_key(
+    static ot::OTAsymmetricKey get_hd_key(
         const ot::api::session::Client& api,
         const std::string& fingerprint,
-        const EcdsaCurve& curve,
+        const ot::EcdsaCurve& curve,
         const std::uint32_t index = 0)
     {
         auto reason = api.Factory().PasswordPrompt(__func__);
         std::string id{fingerprint};
 
-        return OTAsymmetricKey{
+        return ot::OTAsymmetricKey{
             api.Crypto()
                 .Seed()
                 .GetHDKey(
                     id,
                     curve,
-                    {HDIndex{Bip43Purpose::NYM, Bip32Child::HARDENED},
-                     HDIndex{0, Bip32Child::HARDENED},
-                     HDIndex{0, Bip32Child::HARDENED},
-                     HDIndex{index, Bip32Child::HARDENED},
-                     HDIndex{Bip32Child::SIGN_KEY, Bip32Child::HARDENED}},
+                    {ot::HDIndex{
+                         ot::Bip43Purpose::NYM, ot::Bip32Child::HARDENED},
+                     ot::HDIndex{0, ot::Bip32Child::HARDENED},
+                     ot::HDIndex{0, ot::Bip32Child::HARDENED},
+                     ot::HDIndex{index, ot::Bip32Child::HARDENED},
+                     ot::HDIndex{
+                         ot::Bip32Child::SIGN_KEY, ot::Bip32Child::HARDENED}},
                     reason)
                 .release()};
     }
-    [[maybe_unused]] static OTAsymmetricKey get_key(
+    [[maybe_unused]] static ot::OTAsymmetricKey get_key(
         const ot::api::session::Client& api,
-        const EcdsaCurve curve,
+        const ot::EcdsaCurve curve,
         const Role role)
     {
         const auto reason = api.Factory().PasswordPrompt(__func__);
         const auto params = [&] {
-            if (EcdsaCurve::secp256k1 == curve) {
+            if (ot::EcdsaCurve::secp256k1 == curve) {
 
-                return ot::crypto::Parameters{crypto::ParameterType::secp256k1};
-            } else if (EcdsaCurve::ed25519 == curve) {
+                return ot::crypto::Parameters{
+                    ot::crypto::ParameterType::secp256k1};
+            } else if (ot::EcdsaCurve::ed25519 == curve) {
 
-                return ot::crypto::Parameters{crypto::ParameterType::ed25519};
+                return ot::crypto::Parameters{
+                    ot::crypto::ParameterType::ed25519};
             } else {
 
                 return ot::crypto::Parameters{1024};
@@ -176,9 +183,9 @@ public:
     }
 
     [[maybe_unused]] bool test_dh(
-        const crypto::AsymmetricProvider& lib,
-        const crypto::key::Asymmetric& keyOne,
-        const crypto::key::Asymmetric& keyTwo,
+        const ot::crypto::AsymmetricProvider& lib,
+        const ot::crypto::key::Asymmetric& keyOne,
+        const ot::crypto::key::Asymmetric& keyTwo,
         const ot::Data& expected)
     {
         constexpr auto style = ot::crypto::SecretStyle::Default;
@@ -209,10 +216,10 @@ public:
     }
 
     [[maybe_unused]] bool test_signature(
-        const Data& plaintext,
-        const crypto::AsymmetricProvider& lib,
-        const crypto::key::Asymmetric& key,
-        const crypto::HashType hash)
+        const ot::Data& plaintext,
+        const ot::crypto::AsymmetricProvider& lib,
+        const ot::crypto::key::Asymmetric& key,
+        const ot::crypto::HashType hash)
     {
         auto reason = api_.Factory().PasswordPrompt(__func__);
         auto sig = ot::Space{};
@@ -227,17 +234,17 @@ public:
         if ((0 == pubkey.size()) || (0 == seckey.size())) { return false; }
 
         const auto haveSig =
-            lib.Sign(plaintext.Bytes(), seckey, hash, writer(sig));
+            lib.Sign(plaintext.Bytes(), seckey, hash, ot::writer(sig));
         const auto verified =
-            lib.Verify(plaintext.Bytes(), pubkey, reader(sig), hash);
+            lib.Verify(plaintext.Bytes(), pubkey, ot::reader(sig), hash);
 
         return haveSig && verified;
     }
 
     [[maybe_unused]] bool bad_signature(
-        const crypto::AsymmetricProvider& lib,
-        const crypto::key::Asymmetric& key,
-        const crypto::HashType hash)
+        const ot::crypto::AsymmetricProvider& lib,
+        const ot::crypto::key::Asymmetric& key,
+        const ot::crypto::HashType hash)
     {
         auto reason = api_.Factory().PasswordPrompt(__func__);
         auto sig = ot::Space{};
@@ -252,14 +259,17 @@ public:
         if ((0 == pubkey.size()) || (0 == seckey.size())) { return false; }
 
         const auto haveSig = lib.Sign(
-            plaintext_1->Bytes(), key.PrivateKey(reason), hash, writer(sig));
+            plaintext_1->Bytes(),
+            key.PrivateKey(reason),
+            hash,
+            ot::writer(sig));
 
         EXPECT_TRUE(haveSig);
 
         if (false == haveSig) { return false; }
 
         const auto verified = lib.Verify(
-            plaintext_2->Bytes(), key.PublicKey(), reader(sig), hash);
+            plaintext_2->Bytes(), key.PublicKey(), ot::reader(sig), hash);
 
         EXPECT_FALSE(verified);
 

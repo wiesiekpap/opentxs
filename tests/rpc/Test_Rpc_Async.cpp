@@ -92,8 +92,8 @@ public:
     {
         if (false == bool(notification_callback_)) {
             notification_callback_.reset(new OTZMQListenCallback(
-                network::zeromq::ListenCallback::Factory(
-                    [](const network::zeromq::Message&& incoming) -> void {
+                ot::network::zeromq::ListenCallback::Factory(
+                    [](const ot::network::zeromq::Message&& incoming) -> void {
                         process_notification(incoming);
                     })));
         }
@@ -108,15 +108,15 @@ protected:
 
     static int sender_session_;
     static int receiver_session_;
-    static OTIdentifier destination_account_id_;
+    static ot::OTIdentifier destination_account_id_;
     static int intro_server_;
     static std::unique_ptr<OTZMQListenCallback> notification_callback_;
     static std::unique_ptr<OTZMQSubscribeSocket> notification_socket_;
-    static OTNymID receiver_nym_id_;
-    static OTNymID sender_nym_id_;
+    static ot::OTNymID receiver_nym_id_;
+    static ot::OTNymID sender_nym_id_;
     static int server_;
-    static OTUnitID unit_definition_id_;
-    static OTIdentifier workflow_id_;
+    static ot::OTUnitID unit_definition_id_;
+    static ot::OTIdentifier workflow_id_;
     static ot::OTNotaryID intro_server_id_;
     static ot::OTNotaryID server_id_;
 
@@ -129,7 +129,8 @@ protected:
     static void cleanup();
     static std::size_t get_index(const std::int32_t instance);
     static const api::Session& get_session(const std::int32_t instance);
-    static void process_notification(const network::zeromq::Message&& incoming);
+    static void process_notification(
+        const ot::network::zeromq::Message&& incoming);
     static bool default_push_callback(const ot::proto::RPCPush& push);
     static void setup();
 
@@ -165,20 +166,20 @@ private:
 
 int Test_Rpc_Async::sender_session_{0};
 int Test_Rpc_Async::receiver_session_{0};
-OTIdentifier Test_Rpc_Async::destination_account_id_{Identifier::Factory()};
+OTIdentifier Test_Rpc_Async::destination_account_id_{ot::Identifier::Factory()};
 int Test_Rpc_Async::intro_server_{0};
 std::unique_ptr<OTZMQListenCallback> Test_Rpc_Async::notification_callback_{
     nullptr};
 std::unique_ptr<OTZMQSubscribeSocket> Test_Rpc_Async::notification_socket_{
     nullptr};
-OTNymID Test_Rpc_Async::receiver_nym_id_{identifier::Nym::Factory()};
-OTNymID Test_Rpc_Async::sender_nym_id_{identifier::Nym::Factory()};
+OTNymID Test_Rpc_Async::receiver_nym_id_{ot::identifier::Nym::Factory()};
+OTNymID Test_Rpc_Async::sender_nym_id_{ot::identifier::Nym::Factory()};
 int Test_Rpc_Async::server_{0};
 OTUnitID Test_Rpc_Async::unit_definition_id_{
-    identifier::UnitDefinition::Factory()};
-OTIdentifier Test_Rpc_Async::workflow_id_{Identifier::Factory()};
-OTNotaryID Test_Rpc_Async::intro_server_id_{identifier::Notary::Factory()};
-OTNotaryID Test_Rpc_Async::server_id_{identifier::Notary::Factory()};
+    ot::identifier::UnitDefinition::Factory()};
+OTIdentifier Test_Rpc_Async::workflow_id_{ot::Identifier::Factory()};
+OTNotaryID Test_Rpc_Async::intro_server_id_{ot::identifier::Notary::Factory()};
+OTNotaryID Test_Rpc_Async::server_id_{ot::identifier::Notary::Factory()};
 Test_Rpc_Async::PushChecker Test_Rpc_Async::push_checker_{};
 std::promise<std::vector<bool>> Test_Rpc_Async::push_received_{};
 std::vector<bool> Test_Rpc_Async::push_results_{};
@@ -209,7 +210,7 @@ const api::Session& Test_Rpc_Async::get_session(const std::int32_t instance)
 }
 
 void Test_Rpc_Async::process_notification(
-    const network::zeromq::Message&& incoming)
+    const ot::network::zeromq::Message&& incoming)
 {
     if (1 < incoming.Body().size()) { return; }
 
@@ -264,11 +265,11 @@ void Test_Rpc_Async::setup()
     server.SetMintKeySize(OT_MINT_KEY_SIZE_TEST);
     auto server_contract = server.Wallet().Server(server.ID());
     intro_server.Wallet().Server(server_contract->PublicContract());
-    server_id_ = identifier::Notary::Factory(server_contract->ID()->str());
+    server_id_ = ot::identifier::Notary::Factory(server_contract->ID()->str());
     auto intro_server_contract =
         intro_server.Wallet().Server(intro_server.ID());
     intro_server_id_ =
-        identifier::Notary::Factory(intro_server_contract->ID()->str());
+        ot::identifier::Notary::Factory(intro_server_contract->ID()->str());
     auto cookie = ot::Identifier::Random()->str();
     proto::RPCCommand command;
     command.set_version(COMMAND_VERSION);
@@ -328,7 +329,7 @@ void Test_Rpc_Async::setup()
         ot::core::UnitType::USD,
         reasonS);
     unit_definition_id_ =
-        identifier::UnitDefinition::Factory(unit_definition->ID()->str());
+        ot::identifier::UnitDefinition::Factory(unit_definition->ID()->str());
     intro_server_ = intro_server.Instance();
     server_ = server.Instance();
     sender_session_ = senderClient.Instance();
@@ -453,7 +454,7 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Account_Owner)
 
     const auto contact = client_a.Contacts().NewContact(
         "label_only_contact",
-        identifier::Nym::Factory(),
+        ot::identifier::Nym::Factory(),
         client_a.Factory().PaymentCode(std::string{}));
 
     auto sendpayment = command.mutable_sendpayment();
@@ -494,7 +495,7 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Path)
 
     const auto contact = client_a.Contacts().NewContact(
         "label_only_contact",
-        identifier::Nym::Factory(),
+        ot::identifier::Nym::Factory(),
         client_a.Factory().PaymentCode(std::string{}));
 
     auto sendpayment = command.mutable_sendpayment();
@@ -606,8 +607,8 @@ TEST_F(Test_Rpc_Async, Get_Pending_Payments)
     do {
         workflows = workflow.List(
             receiver_nym_id_,
-            otx::client::PaymentWorkflowType::IncomingCheque,
-            otx::client::PaymentWorkflowState::Conveyed);
+            ot::otx::client::PaymentWorkflowType::IncomingCheque,
+            ot::otx::client::PaymentWorkflowState::Conveyed);
     } while (workflows.empty() && std::time(nullptr) < end);
 
     ASSERT_TRUE(!workflows.empty());
@@ -631,7 +632,7 @@ TEST_F(Test_Rpc_Async, Get_Pending_Payments)
     EXPECT_EQ(1, response.accountevent_size());
 
     const auto& accountevent = response.accountevent(0);
-    workflow_id_ = Identifier::Factory(accountevent.workflow());
+    workflow_id_ = ot::Identifier::Factory(accountevent.workflow());
 
     ASSERT_TRUE(!workflow_id_->empty());
 }
@@ -656,7 +657,7 @@ TEST_F(Test_Rpc_Async, Create_Compatible_Account)
     EXPECT_EQ(command.type(), response.type());
 
     destination_account_id_ =
-        Identifier::Factory(response.identifier(0).c_str());
+        ot::Identifier::Factory(response.identifier(0).c_str());
 
     EXPECT_TRUE(!destination_account_id_->empty());
 }
@@ -776,10 +777,10 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
     do {
         workflows = workflow.List(
             sender_nym_id_,
-            otx::client::PaymentWorkflowType::OutgoingCheque,
-            otx::client::PaymentWorkflowState::Conveyed);
+            ot::otx::client::PaymentWorkflowType::OutgoingCheque,
+            ot::otx::client::PaymentWorkflowState::Conveyed);
 
-        if (workflows.empty()) { Sleep(std::chrono::milliseconds(100)); }
+        if (workflows.empty()) { ot::Sleep(std::chrono::milliseconds(100)); }
     } while (workflows.empty() && std::time(nullptr) < end);
 
     ASSERT_TRUE(!workflows.empty());
@@ -843,11 +844,11 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
     do {
         receiverworkflows = receiverworkflow.List(
             receiver_nym_id_,
-            otx::client::PaymentWorkflowType::IncomingCheque,
-            otx::client::PaymentWorkflowState::Completed);
+            ot::otx::client::PaymentWorkflowType::IncomingCheque,
+            ot::otx::client::PaymentWorkflowState::Completed);
 
         if (receiverworkflows.empty()) {
-            Sleep(std::chrono::milliseconds(100));
+            ot::Sleep(std::chrono::milliseconds(100));
         }
     } while (receiverworkflows.empty() && std::time(nullptr) < end);
 
@@ -1016,8 +1017,8 @@ TEST_F(Test_Rpc_Async, Accept_2_Pending_Payments)
     do {
         workflows = workflow.List(
             receiver_nym_id_,
-            otx::client::PaymentWorkflowType::IncomingCheque,
-            otx::client::PaymentWorkflowState::Conveyed);
+            ot::otx::client::PaymentWorkflowType::IncomingCheque,
+            ot::otx::client::PaymentWorkflowState::Conveyed);
     } while (workflows.empty() && std::time(nullptr) < end);
 
     ASSERT_TRUE(!workflows.empty());

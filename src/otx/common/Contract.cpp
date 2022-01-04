@@ -41,9 +41,6 @@
 #include "otx/common/OTStorage.hpp"
 #include "serialization/protobuf/Nym.pb.h"
 
-using namespace irr;
-using namespace io;
-
 namespace opentxs
 {
 
@@ -1265,28 +1262,28 @@ auto Contract::LoadContractXML() -> bool
 
     m_xmlUnsigned->reset();
 
-    IrrXMLReader* xml = irr::io::createIrrXMLReader(m_xmlUnsigned.get());
+    auto* xml = irr::io::createIrrXMLReader(m_xmlUnsigned.get());
     OT_ASSERT_MSG(
         nullptr != xml,
         "Memory allocation issue with xml reader in "
         "Contract::LoadContractXML()\n");
-    std::unique_ptr<IrrXMLReader> xmlAngel(xml);
+    std::unique_ptr<irr::io::IrrXMLReader> xmlAngel(xml);
 
     // parse the file until end reached
     while (xml->read()) {
         auto strNodeType = String::Factory();
 
         switch (xml->getNodeType()) {
-            case EXN_NONE:
+            case irr::io::EXN_NONE:
                 strNodeType->Set("EXN_NONE");
                 goto switch_log;
-            case EXN_COMMENT:
+            case irr::io::EXN_COMMENT:
                 strNodeType->Set("EXN_COMMENT");
                 goto switch_log;
-            case EXN_ELEMENT_END:
+            case irr::io::EXN_ELEMENT_END:
                 strNodeType->Set("EXN_ELEMENT_END");
                 goto switch_log;
-            case EXN_CDATA:
+            case irr::io::EXN_CDATA:
                 strNodeType->Set("EXN_CDATA");
                 goto switch_log;
 
@@ -1300,7 +1297,7 @@ auto Contract::LoadContractXML() -> bool
 
                 break;
 
-            case EXN_TEXT: {
+            case irr::io::EXN_TEXT: {
                 // unknown element type
                 //                otErr << "SKIPPING unknown text element type
                 //                in
@@ -1308,7 +1305,7 @@ auto Contract::LoadContractXML() -> bool
                 //                              xml->getNodeName(),
                 // xml->getNodeData());
             } break;
-            case EXN_ELEMENT: {
+            case irr::io::EXN_ELEMENT: {
                 retProcess = ProcessXMLNode(xml);
 
                 // an error was returned. file format or whatever.
@@ -1528,7 +1525,7 @@ void Contract::CreateContents()
 }
 
 // return -1 if error, 0 if nothing, and 1 if the node was processed.
-auto Contract::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
+auto Contract::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 {
     const auto strNodeName = String::Factory(xml->getNodeName());
 
@@ -1571,7 +1568,7 @@ auto Contract::ProcessXMLNode(IrrXMLReader*& xml) -> std::int32_t
             return (-1);  // error condition
         }
 
-        if (EXN_TEXT == xml->getNodeType()) {
+        if (irr::io::EXN_TEXT == xml->getNodeType()) {
             strConditionValue = String::Factory(xml->getNodeData());
         } else {
             LogError()(OT_PRETTY_CLASS())(

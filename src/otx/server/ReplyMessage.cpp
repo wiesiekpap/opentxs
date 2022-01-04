@@ -11,6 +11,7 @@
 #include <string>
 
 #include "internal/api/session/Wallet.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Message.hpp"
 #include "internal/otx/common/NumList.hpp"
 #include "internal/util/LogMacros.hpp"

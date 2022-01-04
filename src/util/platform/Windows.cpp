@@ -23,8 +23,8 @@ extern "C" {
 #include <WinSock2.h>
 #include <direct.h>
 #include <robin_hood.h>
-#include <xstring>
 #include <iostream>
+#include <xstring>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/util/Log.hpp"

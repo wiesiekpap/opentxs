@@ -14,6 +14,7 @@
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/OTX.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Ledger.hpp"
 #include "internal/otx/common/NymFile.hpp"  // IWYU pragma: keep
 #include "internal/util/LogMacros.hpp"

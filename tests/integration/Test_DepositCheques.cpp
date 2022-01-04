@@ -48,8 +48,6 @@
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
-using namespace opentxs;
-
 #define ALEX "Alice"
 #define BOB "Bob"
 #define ISSUER "Issuer"
@@ -73,15 +71,15 @@ public:
     static const std::string SeedA_;
     static const std::string SeedB_;
     static const std::string SeedC_;
-    static const OTNymID alice_nym_id_;
-    static const OTNymID bob_nym_id_;
-    static const OTNymID issuer_nym_id_;
-    static OTIdentifier contact_id_alice_bob_;
-    static OTIdentifier contact_id_alice_issuer_;
-    static OTIdentifier contact_id_bob_alice_;
-    static OTIdentifier contact_id_bob_issuer_;
-    static OTIdentifier contact_id_issuer_alice_;
-    static OTIdentifier contact_id_issuer_bob_;
+    static const ot::OTNymID alice_nym_id_;
+    static const ot::OTNymID bob_nym_id_;
+    static const ot::OTNymID issuer_nym_id_;
+    static ot::OTIdentifier contact_id_alice_bob_;
+    static ot::OTIdentifier contact_id_alice_issuer_;
+    static ot::OTIdentifier contact_id_bob_alice_;
+    static ot::OTIdentifier contact_id_bob_issuer_;
+    static ot::OTIdentifier contact_id_issuer_alice_;
+    static ot::OTIdentifier contact_id_issuer_bob_;
 
     static const ot::api::session::Client* alice_;
     static const ot::api::session::Client* bob_;
@@ -90,28 +88,28 @@ public:
     static std::string bob_payment_code_;
     static std::string issuer_payment_code_;
 
-    static OTUnitID unit_id_;
-    static OTIdentifier alice_account_id_;
-    static OTIdentifier issuer_account_id_;
+    static ot::OTUnitID unit_id_;
+    static ot::OTIdentifier alice_account_id_;
+    static ot::OTIdentifier issuer_account_id_;
 
     const ot::api::session::Client& alice_client_;
     const ot::api::session::Client& bob_client_;
     const ot::api::session::Notary& server_1_;
     const ot::api::session::Client& issuer_client_;
-    const OTServerContract server_contract_;
+    const ot::OTServerContract server_contract_;
 
     Test_DepositCheques()
-        : alice_client_(Context().StartClientSession(0))
-        , bob_client_(Context().StartClientSession(1))
-        , server_1_(Context().StartNotarySession(0))
-        , issuer_client_(Context().StartClientSession(2))
+        : alice_client_(ot::Context().StartClientSession(0))
+        , bob_client_(ot::Context().StartClientSession(1))
+        , server_1_(ot::Context().StartNotarySession(0))
+        , issuer_client_(ot::Context().StartClientSession(2))
         , server_contract_(server_1_.Wallet().Server(server_1_.ID()))
     {
         if (false == init_) { init(); }
     }
 
     void import_server_contract(
-        const contract::Server& contract,
+        const ot::contract::Server& contract,
         const ot::api::session::Client& client)
     {
         auto reason = client.Factory().PasswordPrompt(__func__);
@@ -143,11 +141,11 @@ public:
         auto reasonA = alice_client_.Factory().PasswordPrompt(__func__);
         auto reasonB = bob_client_.Factory().PasswordPrompt(__func__);
         auto reasonI = issuer_client_.Factory().PasswordPrompt(__func__);
-        const_cast<OTNymID&>(alice_nym_id_) =
+        const_cast<ot::OTNymID&>(alice_nym_id_) =
             alice_client_.Wallet().Nym({SeedA_, 0}, reasonA, ALEX)->ID();
-        const_cast<OTNymID&>(bob_nym_id_) =
+        const_cast<ot::OTNymID&>(bob_nym_id_) =
             bob_client_.Wallet().Nym({SeedB_, 0}, reasonB, BOB)->ID();
-        const_cast<OTNymID&>(issuer_nym_id_) =
+        const_cast<ot::OTNymID&>(issuer_nym_id_) =
             issuer_client_.Wallet().Nym({SeedC_, 0}, reasonI, ISSUER)->ID();
 
         import_server_contract(server_contract_, alice_client_);
@@ -170,25 +168,35 @@ const bool Test_DepositCheques::have_hd_{
 const std::string Test_DepositCheques::SeedA_{""};
 const std::string Test_DepositCheques::SeedB_{""};
 const std::string Test_DepositCheques::SeedC_{""};
-const OTNymID Test_DepositCheques::alice_nym_id_{identifier::Nym::Factory()};
-const OTNymID Test_DepositCheques::bob_nym_id_{identifier::Nym::Factory()};
-const OTNymID Test_DepositCheques::issuer_nym_id_{identifier::Nym::Factory()};
-OTIdentifier Test_DepositCheques::contact_id_alice_bob_{Identifier::Factory()};
-OTIdentifier Test_DepositCheques::contact_id_alice_issuer_{
-    Identifier::Factory()};
-OTIdentifier Test_DepositCheques::contact_id_bob_alice_{Identifier::Factory()};
-OTIdentifier Test_DepositCheques::contact_id_bob_issuer_{Identifier::Factory()};
-OTIdentifier Test_DepositCheques::contact_id_issuer_alice_{
-    Identifier::Factory()};
-OTIdentifier Test_DepositCheques::contact_id_issuer_bob_{Identifier::Factory()};
+const ot::OTNymID Test_DepositCheques::alice_nym_id_{
+    ot::identifier::Nym::Factory()};
+const ot::OTNymID Test_DepositCheques::bob_nym_id_{
+    ot::identifier::Nym::Factory()};
+const ot::OTNymID Test_DepositCheques::issuer_nym_id_{
+    ot::identifier::Nym::Factory()};
+ot::OTIdentifier Test_DepositCheques::contact_id_alice_bob_{
+    ot::Identifier::Factory()};
+ot::OTIdentifier Test_DepositCheques::contact_id_alice_issuer_{
+    ot::Identifier::Factory()};
+ot::OTIdentifier Test_DepositCheques::contact_id_bob_alice_{
+    ot::Identifier::Factory()};
+ot::OTIdentifier Test_DepositCheques::contact_id_bob_issuer_{
+    ot::Identifier::Factory()};
+ot::OTIdentifier Test_DepositCheques::contact_id_issuer_alice_{
+    ot::Identifier::Factory()};
+ot::OTIdentifier Test_DepositCheques::contact_id_issuer_bob_{
+    ot::Identifier::Factory()};
 const ot::api::session::Client* Test_DepositCheques::alice_{nullptr};
 const ot::api::session::Client* Test_DepositCheques::bob_{nullptr};
 std::string Test_DepositCheques::alice_payment_code_;
 std::string Test_DepositCheques::bob_payment_code_;
 std::string Test_DepositCheques::issuer_payment_code_;
-OTUnitID Test_DepositCheques::unit_id_{identifier::UnitDefinition::Factory()};
-OTIdentifier Test_DepositCheques::alice_account_id_{Identifier::Factory()};
-OTIdentifier Test_DepositCheques::issuer_account_id_{Identifier::Factory()};
+ot::OTUnitID Test_DepositCheques::unit_id_{
+    ot::identifier::UnitDefinition::Factory()};
+ot::OTIdentifier Test_DepositCheques::alice_account_id_{
+    ot::Identifier::Factory()};
+ot::OTIdentifier Test_DepositCheques::issuer_account_id_{
+    ot::Identifier::Factory()};
 
 TEST_F(Test_DepositCheques, payment_codes)
 {
@@ -206,9 +214,9 @@ TEST_F(Test_DepositCheques, payment_codes)
     auto aliceScopeSet = alice.SetScope(
         ot::identity::wot::claim::ClaimType::Individual, ALEX, true, reasonA);
     auto bobScopeSet = bob.SetScope(
-        identity::wot::claim::ClaimType::Individual, BOB, true, reasonB);
+        ot::identity::wot::claim::ClaimType::Individual, BOB, true, reasonB);
     auto issuerScopeSet = issuer.SetScope(
-        identity::wot::claim::ClaimType::Individual, ISSUER, true, reasonI);
+        ot::identity::wot::claim::ClaimType::Individual, ISSUER, true, reasonI);
 
     EXPECT_TRUE(aliceScopeSet);
     EXPECT_TRUE(bobScopeSet);
@@ -243,12 +251,12 @@ TEST_F(Test_DepositCheques, payment_codes)
         issuer_payment_code_, ot::core::UnitType::BCH, true, true, reasonI);
 
     if (have_hd_) {
-        EXPECT_FALSE(alice.PaymentCode(core::UnitType::BTC).empty());
-        EXPECT_FALSE(bob.PaymentCode(core::UnitType::BTC).empty());
-        EXPECT_FALSE(issuer.PaymentCode(core::UnitType::BTC).empty());
-        EXPECT_FALSE(alice.PaymentCode(core::UnitType::BCH).empty());
-        EXPECT_FALSE(bob.PaymentCode(core::UnitType::BCH).empty());
-        EXPECT_FALSE(issuer.PaymentCode(core::UnitType::BCH).empty());
+        EXPECT_FALSE(alice.PaymentCode(ot::core::UnitType::BTC).empty());
+        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::BTC).empty());
+        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::BTC).empty());
+        EXPECT_FALSE(alice.PaymentCode(ot::core::UnitType::BCH).empty());
+        EXPECT_FALSE(bob.PaymentCode(ot::core::UnitType::BCH).empty());
+        EXPECT_FALSE(issuer.PaymentCode(ot::core::UnitType::BCH).empty());
     } else {
         // TODO
     }
@@ -269,8 +277,10 @@ TEST_F(Test_DepositCheques, introduction_server)
 
     ASSERT_NE(0, task1.first);
     ASSERT_NE(0, task2.first);
-    EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, task1.second.get().first);
-    EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, task2.second.get().first);
+    EXPECT_EQ(
+        ot::otx::LastReplyStatus::MessageSuccess, task1.second.get().first);
+    EXPECT_EQ(
+        ot::otx::LastReplyStatus::MessageSuccess, task2.second.get().first);
 
     alice_client_.OTX().ContextIdle(alice_nym_id_, server_1_.ID()).get();
     bob_client_.OTX().ContextIdle(bob_nym_id_, server_1_.ID()).get();
@@ -344,7 +354,7 @@ TEST_F(Test_DepositCheques, issue_dollars)
         1,
         reasonI);
 
-    EXPECT_EQ(contract::UnitType::Currency, contract->Type());
+    EXPECT_EQ(ot::contract::UnitType::Currency, contract->Type());
     EXPECT_TRUE(unit_id_->empty());
 
     unit_id_->Assign(contract->ID());
@@ -356,7 +366,7 @@ TEST_F(Test_DepositCheques, issue_dollars)
             issuer_client_.Wallet().mutable_Nym(issuer_nym_id_, reasonI);
         issuer.AddPreferredOTServer(server_1_.ID().str(), true, reasonI);
         issuer.AddContract(
-            unit_id_->str(), core::UnitType::USD, true, true, reasonI);
+            unit_id_->str(), ot::core::UnitType::USD, true, true, reasonI);
     }
 
     auto task = issuer_client_.OTX().IssueUnitDefinition(
@@ -365,7 +375,7 @@ TEST_F(Test_DepositCheques, issue_dollars)
     const auto result = future.get();
 
     EXPECT_NE(0, taskID);
-    EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, result.first);
+    EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, result.first);
     ASSERT_TRUE(result.second);
 
     issuer_account_id_->SetString(result.second->m_strAcctID);
@@ -386,7 +396,7 @@ TEST_F(Test_DepositCheques, pay_alice)
     auto& [taskID, future] = task;
 
     ASSERT_NE(0, taskID);
-    EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, future.get().first);
+    EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, future.get().first);
 
     issuer_client_.OTX().ContextIdle(issuer_nym_id_, server_1_.ID()).get();
     alice_client_.OTX().ContextIdle(alice_nym_id_, server_1_.ID()).get();
@@ -418,7 +428,7 @@ TEST_F(Test_DepositCheques, process_inbox_issuer)
 
     const auto [status, message] = future.get();
 
-    EXPECT_EQ(otx::LastReplyStatus::MessageSuccess, status);
+    EXPECT_EQ(ot::otx::LastReplyStatus::MessageSuccess, status);
     ASSERT_TRUE(message);
 
     const auto account =

@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "internal/api/session/FactoryAPI.hpp"
+#include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/Ledger.hpp"
 #include "internal/otx/common/NumList.hpp"
