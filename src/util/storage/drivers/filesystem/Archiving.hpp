@@ -5,11 +5,10 @@
 
 #pragma once
 
-#include <string>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "util/storage/drivers/filesystem/Common.hpp"
 
@@ -65,7 +64,7 @@ public:
         const api::session::Storage& storage,
         const storage::Config& config,
         const Flag& bucket,
-        const std::string& folder,
+        const UnallocatedCString& folder,
         crypto::key::Symmetric& key);
 
     ~Archiving() final;
@@ -75,12 +74,14 @@ private:
     const bool encrypted_;
 
     auto calculate_path(
-        const std::string& key,
+        const UnallocatedCString& key,
         const bool bucket,
-        std::string& directory) const -> std::string final;
-    auto prepare_read(const std::string& ciphertext) const -> std::string final;
-    auto prepare_write(const std::string& plaintext) const -> std::string final;
-    auto root_filename() const -> std::string final;
+        UnallocatedCString& directory) const -> UnallocatedCString final;
+    auto prepare_read(const UnallocatedCString& ciphertext) const
+        -> UnallocatedCString final;
+    auto prepare_write(const UnallocatedCString& plaintext) const
+        -> UnallocatedCString final;
+    auto root_filename() const -> UnallocatedCString final;
 
     void Init_Archiving();
     void Cleanup_Archiving();

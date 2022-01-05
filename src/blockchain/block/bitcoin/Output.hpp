@@ -20,10 +20,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -42,6 +39,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -62,27 +60,27 @@ namespace opentxs::blockchain::block::bitcoin::implementation
 class Output final : public internal::Output
 {
 public:
-    auto AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
+    auto AssociatedLocalNyms(UnallocatedVector<OTNymID>& output) const noexcept
         -> void final;
     auto AssociatedRemoteContacts(
-        std::vector<OTIdentifier>& output) const noexcept -> void final;
+        UnallocatedVector<OTIdentifier>& output) const noexcept -> void final;
     auto CalculateSize() const noexcept -> std::size_t final;
     auto clone() const noexcept -> std::unique_ptr<internal::Output> final
     {
         return std::make_unique<Output>(*this);
     }
     auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> final;
+        -> UnallocatedVector<Space> final;
     auto FindMatches(
         const ReadView txid,
         const filter::Type type,
         const ParsedPatterns& patterns) const noexcept -> Matches final;
-    auto GetPatterns() const noexcept -> std::vector<PatternID> final;
+    auto GetPatterns() const noexcept -> UnallocatedVector<PatternID> final;
     auto Internal() const noexcept -> const internal::Output& final
     {
         return *this;
     }
-    auto Keys() const noexcept -> std::vector<crypto::Key> final
+    auto Keys() const noexcept -> UnallocatedVector<crypto::Key> final
     {
         return cache_.keys();
     }
@@ -92,10 +90,10 @@ public:
     }
     auto NetBalanceChange(const identifier::Nym& nym) const noexcept
         -> opentxs::Amount final;
-    auto Note() const noexcept -> std::string final;
+    auto Note() const noexcept -> UnallocatedCString final;
     auto Payee() const noexcept -> ContactID final { return cache_.payee(); }
     auto Payer() const noexcept -> ContactID final { return cache_.payer(); }
-    auto Print() const noexcept -> std::string final;
+    auto Print() const noexcept -> UnallocatedCString final;
     auto Serialize(const AllocateOutput destination) const noexcept
         -> std::optional<std::size_t> final;
     auto Serialize(SerializeType& destination) const noexcept -> bool final;
@@ -112,7 +110,7 @@ public:
     {
         return cache_.state();
     }
-    auto Tags() const noexcept -> const std::set<node::TxoTag> final
+    auto Tags() const noexcept -> const UnallocatedSet<node::TxoTag> final
     {
         return cache_.tags();
     }
@@ -184,7 +182,7 @@ public:
         bool indexed,
         block::Position minedPosition,
         node::TxoState state,
-        std::set<node::TxoTag> tags) noexcept(false);
+        UnallocatedSet<node::TxoTag> tags) noexcept(false);
     Output(const Output&) noexcept;
 
     ~Output() final = default;
@@ -197,12 +195,12 @@ private:
             auto lock = Lock{lock_};
             std::for_each(std::begin(keys_), std::end(keys_), cb);
         }
-        auto keys() const noexcept -> std::vector<crypto::Key>;
+        auto keys() const noexcept -> UnallocatedVector<crypto::Key>;
         auto payee() const noexcept -> OTIdentifier;
         auto payer() const noexcept -> OTIdentifier;
         auto position() const noexcept -> const block::Position&;
         auto state() const noexcept -> node::TxoState;
-        auto tags() const noexcept -> std::set<node::TxoTag>;
+        auto tags() const noexcept -> UnallocatedSet<node::TxoTag>;
 
         auto add(crypto::Key&& key) noexcept -> void;
         auto add(node::TxoTag tag) noexcept -> void;
@@ -231,7 +229,7 @@ private:
             boost::container::flat_set<crypto::Key>&& keys,
             block::Position&& minedPosition,
             node::TxoState state,
-            std::set<node::TxoTag>&& tags) noexcept;
+            UnallocatedSet<node::TxoTag>&& tags) noexcept;
         Cache(const Cache& rhs) noexcept;
 
     private:
@@ -242,7 +240,7 @@ private:
         boost::container::flat_set<crypto::Key> keys_;
         block::Position mined_position_;
         node::TxoState state_;
-        std::set<node::TxoTag> tags_;
+        UnallocatedSet<node::TxoTag> tags_;
 
         auto set_payee(OTIdentifier&& contact) noexcept -> void;
         auto set_payer(OTIdentifier&& contact) noexcept -> void;

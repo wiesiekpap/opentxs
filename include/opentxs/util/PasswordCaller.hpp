@@ -7,7 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -26,11 +26,11 @@ public:
     void AskOnce(
         const PasswordPrompt& prompt,
         Secret& output,
-        const std::string& key);
+        const UnallocatedCString& key);
     void AskTwice(
         const PasswordPrompt& prompt,
         Secret& output,
-        const std::string& key);
+        const UnallocatedCString& key);
     void SetCallback(PasswordCallback* callback);
 
     PasswordCaller();

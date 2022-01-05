@@ -8,10 +8,10 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -81,7 +81,7 @@ public:
         const std::size_t bytes,
         Data& output) const noexcept -> bool = 0;
     virtual auto PKCS5_PBKDF2_HMAC(
-        const std::string& input,
+        const UnallocatedCString& input,
         const Data& salt,
         const std::size_t iterations,
         const opentxs::crypto::HashType hashType,

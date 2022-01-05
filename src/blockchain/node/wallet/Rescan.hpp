@@ -7,11 +7,11 @@
 
 #include <mutex>
 #include <queue>
-#include <string>
 
 #include "blockchain/node/wallet/Scan.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

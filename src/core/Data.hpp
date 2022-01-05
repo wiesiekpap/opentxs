@@ -7,11 +7,10 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
-#include <vector>
 
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -23,7 +22,7 @@ namespace opentxs::implementation
 class Data : virtual public opentxs::Data
 {
 public:
-    using Vector = std::vector<std::uint8_t>;
+    using Vector = UnallocatedVector<std::uint8_t>;
 
     auto operator==(const opentxs::Data& rhs) const noexcept -> bool final;
     auto operator!=(const opentxs::Data& rhs) const noexcept -> bool final;
@@ -37,7 +36,7 @@ public:
     auto operator+=(const std::uint32_t rhs) -> Data& final;
     auto operator+=(const std::uint64_t rhs) -> Data& final;
 
-    auto asHex() const -> std::string final;
+    auto asHex() const -> UnallocatedCString final;
     auto at(const std::size_t position) const -> const std::byte& final
     {
         return reinterpret_cast<const std::byte&>(data_.at(position));
@@ -105,13 +104,13 @@ public:
     auto Concatenate(const void* data, const std::size_t size) noexcept
         -> bool override;
     auto data() -> void* final { return data_.data(); }
-    auto DecodeHex(const std::string& hex) -> bool final;
+    auto DecodeHex(const UnallocatedCString& hex) -> bool final;
     auto end() -> iterator final { return iterator(this, data_.size()); }
     auto Randomize(const std::size_t size) -> bool override;
     void Release() final;
     void resize(const std::size_t size) final { data_.resize(size); }
     void SetSize(const std::size_t size) final;
-    auto str() const -> std::string override;
+    auto str() const -> UnallocatedCString override;
     void swap(opentxs::Data&& rhs) final;
     auto WriteInto() noexcept -> AllocateOutput final;
     void zeroMemory() final;
@@ -128,7 +127,7 @@ protected:
     Data(const opentxs::Armored& source) noexcept;
     Data(const Vector& sourceVector) noexcept;
     Data(Vector&& data) noexcept;
-    Data(const std::vector<std::byte>& sourceVector) noexcept;
+    Data(const UnallocatedVector<std::byte>& sourceVector) noexcept;
 
 private:
     friend opentxs::Data;

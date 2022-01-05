@@ -8,12 +8,10 @@
 #include <atomic>
 #include <functional>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
-#include <vector>
 
 #include "blockchain/node/wallet/Index.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
@@ -35,6 +33,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 

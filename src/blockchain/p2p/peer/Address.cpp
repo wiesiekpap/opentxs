@@ -36,7 +36,7 @@ auto Address::Chain() const noexcept -> blockchain::Type
     return address_->Chain();
 }
 
-auto Address::Display() const noexcept -> std::string
+auto Address::Display() const noexcept -> UnallocatedCString
 {
     Lock lock(lock_);
 
@@ -64,7 +64,7 @@ auto Address::Port() const noexcept -> std::uint16_t
     return address_->Port();
 }
 
-auto Address::Services() const noexcept -> std::set<Service>
+auto Address::Services() const noexcept -> UnallocatedSet<Service>
 {
     Lock lock(lock_);
 
@@ -78,8 +78,8 @@ auto Address::Type() const noexcept -> Network
     return address_->Type();
 }
 
-auto Address::UpdateServices(const std::set<p2p::Service>& services) noexcept
-    -> pointer
+auto Address::UpdateServices(
+    const UnallocatedSet<p2p::Service>& services) noexcept -> pointer
 {
     Lock lock(lock_);
     address_->SetServices(services);

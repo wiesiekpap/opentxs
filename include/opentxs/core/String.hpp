@@ -10,13 +10,10 @@
 #include <cstdarg>
 #include <cstdint>
 #include <iosfwd>
-#include <list>
-#include <map>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 #ifdef __GNUC__
@@ -48,8 +45,8 @@ namespace opentxs
 class OPENTXS_EXPORT String
 {
 public:
-    using List = std::list<std::string>;
-    using Map = std::map<std::string, std::string>;
+    using List = UnallocatedList<UnallocatedCString>;
+    using Map = UnallocatedMap<UnallocatedCString, UnallocatedCString>;
 
     static auto Factory() -> opentxs::Pimpl<opentxs::String>;
     static auto Factory(const Armored& value)
@@ -63,23 +60,25 @@ public:
     static auto Factory(const NymFile& value)
         -> opentxs::Pimpl<opentxs::String>;
     static auto Factory(const char* value) -> opentxs::Pimpl<opentxs::String>;
-    static auto Factory(const std::string& value)
+    static auto Factory(const UnallocatedCString& value)
         -> opentxs::Pimpl<opentxs::String>;
     static auto Factory(const char* value, std::size_t size)
         -> opentxs::Pimpl<opentxs::String>;
 
-    static auto LongToString(const std::int64_t& lNumber) -> std::string;
+    static auto LongToString(const std::int64_t& lNumber) -> UnallocatedCString;
     static auto replace_chars(
-        const std::string& str,
-        const std::string& charsFrom,
-        const char& charTo) -> std::string;
+        const UnallocatedCString& str,
+        const UnallocatedCString& charsFrom,
+        const char& charTo) -> UnallocatedCString;
     static auto safe_strlen(const char* s, std::size_t max) -> std::size_t;
-    static auto StringToInt(const std::string& number) -> std::int32_t;
-    static auto StringToLong(const std::string& number) -> std::int64_t;
-    static auto StringToUint(const std::string& number) -> std::uint32_t;
-    static auto StringToUlong(const std::string& number) -> std::uint64_t;
-    static auto trim(std::string& str) -> std::string&;
-    static auto UlongToString(const std::uint64_t& uNumber) -> std::string;
+    static auto StringToInt(const UnallocatedCString& number) -> std::int32_t;
+    static auto StringToLong(const UnallocatedCString& number) -> std::int64_t;
+    static auto StringToUint(const UnallocatedCString& number) -> std::uint32_t;
+    static auto StringToUlong(const UnallocatedCString& number)
+        -> std::uint64_t;
+    static auto trim(UnallocatedCString& str) -> UnallocatedCString&;
+    static auto UlongToString(const std::uint64_t& uNumber)
+        -> UnallocatedCString;
 
     virtual auto operator>(const String& rhs) const -> bool = 0;
     virtual auto operator<(const String& rhs) const -> bool = 0;

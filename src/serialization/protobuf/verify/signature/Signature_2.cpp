@@ -6,8 +6,8 @@
 #include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
 
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/Signature.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
@@ -21,8 +21,8 @@ namespace proto
 auto CheckProto_2(
     const Signature& input,
     const bool silent,
-    const std::string& selfID,
-    const std::string& masterID,
+    const UnallocatedCString& selfID,
+    const UnallocatedCString& masterID,
     std::uint32_t& selfPublic,
     std::uint32_t& selfPrivate,
     std::uint32_t& masterPublic,

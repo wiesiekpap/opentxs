@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/rpc/request/Base.hpp"
 
@@ -32,16 +31,16 @@ class OPENTXS_EXPORT ListAccounts final : public Base
 public:
     static auto DefaultVersion() noexcept -> VersionNumber;
 
-    auto FilterNotary() const noexcept -> const std::string&;
-    auto FilterNym() const noexcept -> const std::string&;
-    auto FilterUnit() const noexcept -> const std::string&;
+    auto FilterNotary() const noexcept -> const UnallocatedCString&;
+    auto FilterNym() const noexcept -> const UnallocatedCString&;
+    auto FilterUnit() const noexcept -> const UnallocatedCString&;
 
     /// throws std::runtime_error for invalid constructor arguments
     ListAccounts(
         SessionIndex session,
-        const std::string& filterNym = {},
-        const std::string& filterNotary = {},
-        const std::string& filterUnit = {},
+        const UnallocatedCString& filterNym = {},
+        const UnallocatedCString& filterNotary = {},
+        const UnallocatedCString& filterUnit = {},
         const AssociateNyms& nyms = {}) noexcept(false);
     ListAccounts(const proto::RPCCommand& serialized) noexcept(false);
     ListAccounts() noexcept;

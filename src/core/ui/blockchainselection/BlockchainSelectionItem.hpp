@@ -8,7 +8,6 @@
 #include <atomic>
 #include <iosfwd>
 #include <memory>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/BlockchainSelectionItem.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
@@ -74,7 +74,7 @@ class BlockchainSelectionItem final
       public std::enable_shared_from_this<BlockchainSelectionItem>
 {
 public:
-    auto Name() const noexcept -> std::string final { return name_; }
+    auto Name() const noexcept -> UnallocatedCString final { return name_; }
     auto IsEnabled() const noexcept -> bool final { return enabled_; }
     auto IsTestnet() const noexcept -> bool final { return testnet_; }
     auto Type() const noexcept -> blockchain::Type final { return row_id_; }
@@ -90,7 +90,7 @@ public:
 
 private:
     const bool testnet_;
-    const std::string name_;
+    const UnallocatedCString name_;
     std::atomic_bool enabled_;
 
     auto qt_data(const int column, const int role, QVariant& out) const noexcept

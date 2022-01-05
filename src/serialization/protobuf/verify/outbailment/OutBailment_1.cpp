@@ -5,8 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/OutBailment.hpp"  // IWYU pragma: associated
 
-#include <string>
-
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/OutBailment.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

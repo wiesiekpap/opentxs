@@ -17,9 +17,7 @@
 #include <cstdint>
 #include <iterator>
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "core/Worker.hpp"
 #include "core/ui/accountactivity/AccountActivity.hpp"
@@ -36,6 +34,7 @@
 #include "opentxs/core/ui/qt/AmountValidator.hpp"
 #include "opentxs/core/ui/qt/DestinationValidator.hpp"
 #include "opentxs/core/ui/qt/DisplayScale.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/Polarity.hpp"
 
 namespace opentxs::factory
@@ -85,7 +84,9 @@ AccountActivityQt::AccountActivityQt(internal::AccountActivity& parent) noexcept
              emit syncPercentageUpdated(percent);
              emit syncProgressUpdated(current, max);
          },
-         [this](std::string balance) { emit balanceChanged(balance.c_str()); },
+         [this](UnallocatedCString balance) {
+             emit balanceChanged(balance.c_str());
+         },
          [this](int polarity) { emit balancePolarityChanged(polarity); }});
 }
 

@@ -9,10 +9,10 @@
 
 #include <chrono>
 #include <cstdint>
-#include <string>
 
 #include "ListRow.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -34,14 +34,14 @@ class OPENTXS_EXPORT ActivityThreadItem : virtual public ListRow
 public:
     virtual auto Amount() const noexcept -> opentxs::Amount = 0;
     virtual auto Deposit() const noexcept -> bool = 0;
-    virtual auto DisplayAmount() const noexcept -> std::string = 0;
-    virtual auto From() const noexcept -> std::string = 0;
+    virtual auto DisplayAmount() const noexcept -> UnallocatedCString = 0;
+    virtual auto From() const noexcept -> UnallocatedCString = 0;
     virtual auto Loading() const noexcept -> bool = 0;
     virtual auto MarkRead() const noexcept -> bool = 0;
-    virtual auto Memo() const noexcept -> std::string = 0;
+    virtual auto Memo() const noexcept -> UnallocatedCString = 0;
     virtual auto Outgoing() const noexcept -> bool = 0;
     virtual auto Pending() const noexcept -> bool = 0;
-    virtual auto Text() const noexcept -> std::string = 0;
+    virtual auto Text() const noexcept -> UnallocatedCString = 0;
     virtual auto Timestamp() const noexcept -> Time = 0;
     virtual auto Type() const noexcept -> StorageBox = 0;
 

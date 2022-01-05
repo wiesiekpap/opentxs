@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include <string>
-
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 
 namespace opentxs
@@ -30,12 +29,12 @@ namespace opentxs::storage::driver::internal
 class Multiplex : virtual public Driver
 {
 public:
-    virtual auto BestRoot(bool& primaryOutOfSync) -> std::string = 0;
+    virtual auto BestRoot(bool& primaryOutOfSync) -> UnallocatedCString = 0;
     virtual void InitBackup() = 0;
     virtual void InitEncryptedBackup(opentxs::crypto::key::Symmetric& key) = 0;
     virtual auto Primary() -> Driver& = 0;
     virtual void SynchronizePlugins(
-        const std::string& hash,
+        const UnallocatedCString& hash,
         const opentxs::storage::Root& root,
         const bool syncPrimary) = 0;
 

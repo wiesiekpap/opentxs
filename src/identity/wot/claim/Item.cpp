@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "opentxs/identity/wot/claim/Item.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -26,9 +27,9 @@
 namespace opentxs::identity::wot::claim
 {
 static auto extract_attributes(const proto::ContactItem& serialized)
-    -> std::set<claim::Attribute>
+    -> UnallocatedSet<claim::Attribute>
 {
-    std::set<claim::Attribute> output{};
+    UnallocatedSet<claim::Attribute> output{};
 
     for (const auto& attribute : serialized.attribute()) {
         output.emplace(static_cast<claim::Attribute>(attribute));
@@ -37,9 +38,10 @@ static auto extract_attributes(const proto::ContactItem& serialized)
     return output;
 }
 
-static auto extract_attributes(const Claim& claim) -> std::set<claim::Attribute>
+static auto extract_attributes(const Claim& claim)
+    -> UnallocatedSet<claim::Attribute>
 {
-    std::set<claim::Attribute> output{};
+    UnallocatedSet<claim::Attribute> output{};
 
     for (const auto& attribute : std::get<6>(claim)) {
         output.emplace(static_cast<claim::Attribute>(attribute));
@@ -51,15 +53,15 @@ static auto extract_attributes(const Claim& claim) -> std::set<claim::Attribute>
 struct Item::Imp {
     const api::Session& api_;
     const VersionNumber version_;
-    const std::string nym_;
+    const UnallocatedCString nym_;
     const claim::SectionType section_;
     const claim::ClaimType type_;
-    const std::string value_;
+    const UnallocatedCString value_;
     const std::time_t start_;
     const std::time_t end_;
-    const std::set<claim::Attribute> attributes_;
+    const UnallocatedSet<claim::Attribute> attributes_;
     const OTIdentifier id_;
-    const std::string subtype_;
+    const UnallocatedCString subtype_;
 
     static auto check_version(
         const VersionNumber in,
@@ -72,16 +74,16 @@ struct Item::Imp {
     }
 
     Imp(const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const claim::SectionType section,
         const claim::ClaimType& type,
-        const std::string& value,
-        const std::set<claim::Attribute>& attributes,
+        const UnallocatedCString& value,
+        const UnallocatedSet<claim::Attribute>& attributes,
         const std::time_t start,
         const std::time_t end,
-        const std::string subtype)
+        const UnallocatedCString subtype)
         : api_(api)
         , version_(check_version(version, parentVersion))
         , nym_(nym)
@@ -121,16 +123,16 @@ struct Item::Imp {
     Imp(Imp&& rhs)
         : api_(rhs.api_)
         , version_(rhs.version_)
-        , nym_(std::move(const_cast<std::string&>(rhs.nym_)))
+        , nym_(std::move(const_cast<UnallocatedCString&>(rhs.nym_)))
         , section_(rhs.section_)
         , type_(rhs.type_)
-        , value_(std::move(const_cast<std::string&>(rhs.value_)))
+        , value_(std::move(const_cast<UnallocatedCString&>(rhs.value_)))
         , start_(rhs.start_)
         , end_(rhs.end_)
         , attributes_(std::move(
-              const_cast<std::set<claim::Attribute>&>(rhs.attributes_)))
+              const_cast<UnallocatedSet<claim::Attribute>&>(rhs.attributes_)))
         , id_(std::move(const_cast<OTIdentifier&>(rhs.id_)))
-        , subtype_(std::move(const_cast<std::string&>(rhs.subtype_)))
+        , subtype_(std::move(const_cast<UnallocatedCString&>(rhs.subtype_)))
     {
     }
 
@@ -166,16 +168,16 @@ struct Item::Imp {
 
 Item::Item(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
     const claim::SectionType section,
     const claim::ClaimType& type,
-    const std::string& value,
-    const std::set<claim::Attribute>& attributes,
+    const UnallocatedCString& value,
+    const UnallocatedSet<claim::Attribute>& attributes,
     const std::time_t start,
     const std::time_t end,
-    const std::string subtype)
+    const UnallocatedCString subtype)
     : imp_(std::make_unique<Imp>(
           api,
           nym,
@@ -206,7 +208,7 @@ Item::Item(Item&& rhs) noexcept
 
 Item::Item(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
     const Claim& claim)
@@ -227,7 +229,7 @@ Item::Item(
 
 Item::Item(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber parentVersion,
     const claim::SectionType section,
     const proto::ContactItem& data)
@@ -248,7 +250,7 @@ Item::Item(
 
 Item::Item(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber parentVersion,
     const claim::SectionType section,
     const ReadView& bytes)
@@ -406,7 +408,7 @@ auto Item::SetStart(const std::time_t start) const -> Item
         imp_->subtype_);
 }
 
-auto Item::SetValue(const std::string& value) const -> Item
+auto Item::SetValue(const UnallocatedCString& value) const -> Item
 {
     if (imp_->value_ == value) { return *this; }
 
@@ -426,11 +428,14 @@ auto Item::SetValue(const std::string& value) const -> Item
 
 auto Item::Start() const -> const std::time_t& { return imp_->start_; }
 
-auto Item::Subtype() const -> const std::string& { return imp_->subtype_; }
+auto Item::Subtype() const -> const UnallocatedCString&
+{
+    return imp_->subtype_;
+}
 
 auto Item::Type() const -> const claim::ClaimType& { return imp_->type_; }
 
-auto Item::Value() const -> const std::string& { return imp_->value_; }
+auto Item::Value() const -> const UnallocatedCString& { return imp_->value_; }
 
 auto Item::Version() const -> VersionNumber { return imp_->version_; }
 

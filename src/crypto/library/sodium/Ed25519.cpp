@@ -13,7 +13,6 @@ extern "C" {
 
 #include <array>
 #include <functional>
-#include <string>
 #include <string_view>
 
 #include "internal/util/LogMacros.hpp"
@@ -24,6 +23,7 @@ extern "C" {
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/Parameters.hpp"
 #include "opentxs/crypto/SecretStyle.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Sodium.hpp"

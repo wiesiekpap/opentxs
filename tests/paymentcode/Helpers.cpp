@@ -85,7 +85,7 @@ auto PaymentCodeFixture::blinding_key_secret(
 
 auto PaymentCodeFixture::blinding_key_secret(
     const ot::api::session::Client& api,
-    const std::string& privateKey,
+    const ot::UnallocatedCString& privateKey,
     const ot::PasswordPrompt& reason) -> const ot::crypto::key::EllipticCurve&
 {
     auto& var = blind_key_secret_;
@@ -113,7 +113,7 @@ auto PaymentCodeFixture::cleanup() -> void
 
 auto PaymentCodeFixture::payment_code_public(
     const ot::api::Session& api,
-    const std::string& base58) -> const ot::PaymentCode&
+    const ot::UnallocatedCString& base58) -> const ot::PaymentCode&
 {
     auto& var = pc_public_;
 
@@ -150,7 +150,7 @@ auto PaymentCodeFixture::payment_code_secret(
 auto PaymentCodeFixture::seed(
     const ot::api::Session& api,
     const std::string_view wordList,
-    const ot::PasswordPrompt& reason) -> const std::string&
+    const ot::PasswordPrompt& reason) -> const ot::UnallocatedCString&
 {
     auto& var = seed_;
 
@@ -173,10 +173,10 @@ auto PaymentCodeFixture::seed(
 PC_Fixture_Base::PC_Fixture_Base(
     const std::uint8_t aliceVersion,
     const std::uint8_t bobVersion,
-    const std::string& aliceBip39,
-    const std::string& bobBip39,
-    const std::string& aliceExpectedPC,
-    const std::string& bobExpectedPC) noexcept
+    const ot::UnallocatedCString& aliceBip39,
+    const ot::UnallocatedCString& bobBip39,
+    const ot::UnallocatedCString& aliceExpectedPC,
+    const ot::UnallocatedCString& bobExpectedPC) noexcept
     : api_(ot::Context().StartClientSession(0))
     , reason_(api_.Factory().PasswordPrompt(__func__))
     , alice_seed_(user_1_.seed(api_, aliceBip39, reason_))

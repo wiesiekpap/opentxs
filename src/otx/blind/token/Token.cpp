@@ -8,7 +8,6 @@
 #include "opentxs/otx/blind/Token.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/core/identifier/Factory.hpp"
@@ -18,6 +17,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "otx/blind/purse/Purse.hpp"
 #include "otx/blind/token/Token.hpp"
@@ -146,7 +146,7 @@ Token::Token(Token&& rhs) noexcept
 
 Token::operator bool() const noexcept { return imp_->IsValid(); }
 
-auto Token::ID(const PasswordPrompt& reason) const -> std::string
+auto Token::ID(const PasswordPrompt& reason) const -> UnallocatedCString
 {
     return imp_->ID(reason);
 }

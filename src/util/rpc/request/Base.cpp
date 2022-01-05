@@ -31,13 +31,13 @@ namespace opentxs::rpc::request
 Base::Imp::Imp(
     const Base* parent,
     VersionNumber version,
-    const std::string& cookie,
+    const UnallocatedCString& cookie,
     const CommandType& type,
     SessionIndex session,
     const AssociateNyms& nyms,
-    const std::string& owner,
-    const std::string& notary,
-    const std::string& unit,
+    const UnallocatedCString& owner,
+    const UnallocatedCString& notary,
+    const UnallocatedCString& unit,
     const Identifiers identifiers) noexcept
     : parent_(parent)
     , version_(version)
@@ -130,9 +130,9 @@ Base::Imp::Imp(
     const CommandType& command,
     VersionNumber version,
     SessionIndex session,
-    const std::string& owner,
-    const std::string& notary,
-    const std::string& unit,
+    const UnallocatedCString& owner,
+    const UnallocatedCString& notary,
+    const UnallocatedCString& unit,
     const AssociateNyms& nyms) noexcept
     : Imp(parent,
           version,
@@ -202,7 +202,7 @@ auto Base::Imp::check_dups(const Identifiers& data, const char* type) noexcept(
     dedup(copy);
 
     if (copy.size() != data.size()) {
-        throw std::runtime_error{std::string{"Duplicate "} + type};
+        throw std::runtime_error{UnallocatedCString{"Duplicate "} + type};
     }
 }
 
@@ -222,9 +222,9 @@ auto Base::Imp::check_session() const noexcept(false) -> void
     if (0 > session_) { throw std::runtime_error{"Invalid session"}; }
 }
 
-auto Base::Imp::make_cookie() noexcept -> std::string
+auto Base::Imp::make_cookie() noexcept -> UnallocatedCString
 {
-    auto out = std::string{};
+    auto out = UnallocatedCString{};
     random_bytes_non_crypto(writer(out), 20u);
 
     return out;
@@ -313,7 +313,7 @@ auto Base::AssociatedNyms() const noexcept -> const AssociateNyms&
     return imp_->associate_nym_;
 }
 
-auto Base::Cookie() const noexcept -> const std::string&
+auto Base::Cookie() const noexcept -> const UnallocatedCString&
 {
     return imp_->cookie_;
 }

@@ -10,15 +10,11 @@
 #include <atomic>
 #include <chrono>
 #include <exception>
-#include <map>
 #include <memory>
 #include <optional>
-#include <set>
 #include <sstream>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "core/ui/base/List.hpp"
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
@@ -45,6 +41,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 
@@ -255,8 +252,8 @@ auto BlockchainAccountStatus::populate(
 auto BlockchainAccountStatus::populate(
     const blockchain::crypto::Subaccount& node,
     const Identifier& sourceID,
-    const std::string& sourceDescription,
-    const std::string& subaccountName,
+    const UnallocatedCString& sourceDescription,
+    const UnallocatedCString& subaccountName,
     const blockchain::crypto::Subchain subchain,
     SubaccountMap& out) const noexcept -> void
 {
@@ -267,7 +264,8 @@ auto BlockchainAccountStatus::populate(
 
     auto& subaccounts = [&]() -> auto&
     {
-        using Subaccounts = std::vector<BlockchainSubaccountSourceRowData>;
+        using Subaccounts =
+            UnallocatedVector<BlockchainSubaccountSourceRowData>;
         auto* ptr = [&] {
             auto& custom = data.second;
 
@@ -287,7 +285,7 @@ auto BlockchainAccountStatus::populate(
         return *reinterpret_cast<Subaccounts*>(ptr);
     }
     ();
-    using Subchains = std::vector<BlockchainSubaccountRowData>;
+    using Subchains = UnallocatedVector<BlockchainSubaccountRowData>;
     auto& subaccount = subaccounts.emplace_back(
         node.ID(), subaccountName, CustomData{}, CustomData{});
     auto& subchainData = [&]() -> auto&
@@ -305,7 +303,8 @@ auto BlockchainAccountStatus::populate(
         return *reinterpret_cast<Subchains*>(ptr);
     }
     ();
-    const auto subchainList = [&]() -> std::set<blockchain::crypto::Subchain> {
+    const auto subchainList =
+        [&]() -> UnallocatedSet<blockchain::crypto::Subchain> {
         if (blockchain::crypto::Subchain::Error == subchain) {
 
             return node.AllowedSubchains();
@@ -424,8 +423,8 @@ auto BlockchainAccountStatus::subchain_display_name(
 {
     auto out = std::pair<BlockchainSubaccountSortKey, CustomData>{};
     auto& nameOut = out.first;
-    auto& progressOut =
-        *static_cast<std::string*>(out.second.emplace_back(new std::string{}));
+    auto& progressOut = *static_cast<UnallocatedCString*>(
+        out.second.emplace_back(new UnallocatedCString{}));
     auto name = std::stringstream{};
     auto progress = std::stringstream{};
     using Height = blockchain::block::Height;

@@ -14,10 +14,10 @@ extern "C" {
 #include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -57,7 +57,7 @@ void BIO::read_bio(
     const std::size_t amount,
     std::size_t& read,
     std::size_t& total,
-    std::vector<std::byte>& output)
+    UnallocatedVector<std::byte>& output)
 {
     OT_ASSERT(std::numeric_limits<int>::max() >= amount);
 
@@ -66,11 +66,11 @@ void BIO::read_bio(
     total += read;
 }
 
-auto BIO::ToBytes() -> std::vector<std::byte>
+auto BIO::ToBytes() -> UnallocatedVector<std::byte>
 {
     std::size_t read{0};
     std::size_t total{0};
-    std::vector<std::byte> output{};
+    UnallocatedVector<std::byte> output{};
     read_bio(read_amount_, read, total, output);
 
     if (0 == read) {

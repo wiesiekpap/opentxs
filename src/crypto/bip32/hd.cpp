@@ -10,9 +10,7 @@
 #include <cstring>
 #include <iterator>
 #include <stdexcept>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "crypto/HDNode.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -23,6 +21,7 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/library/EcdsaProvider.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 
@@ -235,7 +234,7 @@ auto Bip32::Imp::root_node(
         return false;
     }
 
-    static const auto rootKey = std::string{"Bitcoin seed"};
+    static const auto rootKey = UnallocatedCString{"Bitcoin seed"};
     auto node = Space{};
 
     if (false ==

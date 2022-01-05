@@ -8,11 +8,11 @@
 #include <cstddef>
 #include <iosfwd>
 #include <mutex>
-#include <string>
 
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/curve/Client.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -44,9 +44,9 @@ class Client : virtual public zeromq::curve::Client
 {
 public:
     auto SetKeysZ85(
-        const std::string& serverPublic,
-        const std::string& clientPrivate,
-        const std::string& clientPublic) const noexcept -> bool final;
+        const UnallocatedCString& serverPublic,
+        const UnallocatedCString& clientPrivate,
+        const UnallocatedCString& clientPublic) const noexcept -> bool final;
     auto SetServerPubkey(const contract::Server& contract) const noexcept
         -> bool final;
     auto SetServerPubkey(const Data& key) const noexcept -> bool final;
@@ -65,8 +65,8 @@ private:
 
     auto set_local_keys() const noexcept -> bool;
     auto set_local_keys(
-        const std::string& privateKey,
-        const std::string& publicKey) const noexcept -> bool;
+        const UnallocatedCString& privateKey,
+        const UnallocatedCString& publicKey) const noexcept -> bool;
     auto set_local_keys(
         const void* privateKey,
         const std::size_t privateKeySize,

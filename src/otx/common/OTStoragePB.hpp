@@ -5,12 +5,10 @@
 
 #pragma once
 
-#include <deque>
 #include <iostream>
-#include <map>
-#include <vector>
 
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 #if defined(OTDB_PROTOCOL_BUFFERS)
 
@@ -59,14 +57,14 @@ public:
 };
 
 // BUFFER for Protocol Buffers.
-// Google's protocol buffers serializes to std::strings and streams. How
+// Google's protocol buffers serializes to UnallocatedCStrings and streams. How
 // conveeeeeenient.
 
 class BufferPB : public PackedBuffer
 {
     friend PackerSubclass<BufferPB>;
     friend IStorablePB;
-    std::string m_buffer;
+    UnallocatedCString m_buffer;
 
 public:
     BufferPB()
@@ -75,15 +73,15 @@ public:
     {
     }
     ~BufferPB() override = default;
-    bool PackString(const std::string& theString) override;
-    bool UnpackString(std::string& theString) override;
+    bool PackString(const UnallocatedCString& theString) override;
+    bool UnpackString(UnallocatedCString& theString) override;
     bool ReadFromIStream(std::istream& inStream, std::int64_t lFilesize)
         override;
     bool WriteToOStream(std::ostream& outStream) override;
     const std::uint8_t* GetData() override;
     size_t GetSize() override;
     void SetData(const std::uint8_t* pData, size_t theSize) override;
-    std::string& GetBuffer() { return m_buffer; }
+    UnallocatedCString& GetBuffer() { return m_buffer; }
 };
 
 // Protocol Buffers packer.
@@ -100,7 +98,7 @@ class ProtobufSubclass : public theBaseType, public IStorablePB
 {
 private:
     theInternalType __pb_obj;
-    std::string m_Type;
+    UnallocatedCString m_Type;
 
 public:
     static Storable* Instantiate()

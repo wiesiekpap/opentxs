@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

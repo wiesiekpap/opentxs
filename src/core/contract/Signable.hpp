@@ -5,13 +5,12 @@
 
 #pragma once
 
-#include <list>
 #include <mutex>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/Signable.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -34,28 +33,28 @@ namespace opentxs::contract::implementation
 class Signable : virtual public opentxs::contract::Signable
 {
 public:
-    auto Alias() const noexcept -> std::string override;
+    auto Alias() const noexcept -> UnallocatedCString override;
     auto ID() const noexcept -> OTIdentifier override;
     auto Nym() const noexcept -> Nym_p override;
-    auto Terms() const noexcept -> const std::string& override;
+    auto Terms() const noexcept -> const UnallocatedCString& override;
     auto Validate() const noexcept -> bool override;
     auto Version() const noexcept -> VersionNumber override;
 
-    auto SetAlias(const std::string& alias) noexcept -> bool override;
+    auto SetAlias(const UnallocatedCString& alias) noexcept -> bool override;
 
     ~Signable() override = default;
 
 protected:
-    using Signatures = std::list<Signature>;
+    using Signatures = UnallocatedList<Signature>;
 
     const api::Session& api_;
     mutable std::mutex lock_;
     const Nym_p nym_;
     const VersionNumber version_;
-    const std::string conditions_;
+    const UnallocatedCString conditions_;
     const OTIdentifier id_;
     Signatures signatures_;
-    std::string alias_;
+    UnallocatedCString alias_;
 
     auto CheckID(const Lock& lock) const -> bool;
     virtual auto id(const Lock& lock) const -> OTIdentifier;
@@ -80,22 +79,22 @@ protected:
         const api::Session& api,
         const Nym_p& nym,
         const VersionNumber version,
-        const std::string& conditions,
-        const std::string& alias) noexcept;
+        const UnallocatedCString& conditions,
+        const UnallocatedCString& alias) noexcept;
     Signable(
         const api::Session& api,
         const Nym_p& nym,
         const VersionNumber version,
-        const std::string& conditions,
-        const std::string& alias,
+        const UnallocatedCString& conditions,
+        const UnallocatedCString& alias,
         OTIdentifier&& id,
         Signatures&& signatures) noexcept;
     Signable(
         const api::Session& api,
         const Nym_p& nym,
         const VersionNumber version,
-        const std::string& conditions,
-        const std::string& alias,
+        const UnallocatedCString& conditions,
+        const UnallocatedCString& alias,
         const Identifier& id,
         Signatures&& signatures) noexcept;
     Signable(const Signable&) noexcept;

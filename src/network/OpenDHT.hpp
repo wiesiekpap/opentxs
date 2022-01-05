@@ -10,12 +10,12 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "internal/util/Flag.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/network/OpenDHT.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace dht
 {
@@ -36,11 +36,11 @@ class OpenDHT final : virtual public network::OpenDHT
 {
 public:
     auto Insert(
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         DhtDoneCallback cb = {}) const noexcept -> void final;
     auto Retrieve(
-        const std::string& key,
+        const UnallocatedCString& key,
         DhtResultsCallback vcb,
         DhtDoneCallback dcb = {}) const noexcept -> void final;
 

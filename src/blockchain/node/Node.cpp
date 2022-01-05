@@ -18,7 +18,7 @@
 
 namespace opentxs::blockchain::node::internal
 {
-auto Config::print() const noexcept -> std::string
+auto Config::print() const noexcept -> UnallocatedCString
 {
     constexpr auto print_bool = [](const bool in) {
         if (in) {
@@ -45,19 +45,20 @@ auto Config::print() const noexcept -> std::string
 
 namespace opentxs
 {
-auto print(blockchain::node::TxoState in) noexcept -> std::string
+auto print(blockchain::node::TxoState in) noexcept -> UnallocatedCString
 {
     using Type = blockchain::node::TxoState;
-    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
-        {Type::Error, "error"},
-        {Type::UnconfirmedNew, "unspent (unconfirmed)"},
-        {Type::UnconfirmedSpend, "spent (unconfirmed)"},
-        {Type::ConfirmedNew, "unspent"},
-        {Type::ConfirmedSpend, "spent"},
-        {Type::OrphanedNew, "orphaned"},
-        {Type::OrphanedSpend, "orphaned"},
-        {Type::Immature, "newly generated"},
-    };
+    static const auto map =
+        robin_hood::unordered_flat_map<Type, UnallocatedCString>{
+            {Type::Error, "error"},
+            {Type::UnconfirmedNew, "unspent (unconfirmed)"},
+            {Type::UnconfirmedSpend, "spent (unconfirmed)"},
+            {Type::ConfirmedNew, "unspent"},
+            {Type::ConfirmedSpend, "spent"},
+            {Type::OrphanedNew, "orphaned"},
+            {Type::OrphanedSpend, "orphaned"},
+            {Type::Immature, "newly generated"},
+        };
 
     try {
 
@@ -68,13 +69,14 @@ auto print(blockchain::node::TxoState in) noexcept -> std::string
     }
 }
 
-auto print(blockchain::node::TxoTag in) noexcept -> std::string
+auto print(blockchain::node::TxoTag in) noexcept -> UnallocatedCString
 {
     using Type = blockchain::node::TxoTag;
-    static const auto map = robin_hood::unordered_flat_map<Type, std::string>{
-        {Type::Normal, "normal"},
-        {Type::Generation, "generated"},
-    };
+    static const auto map =
+        robin_hood::unordered_flat_map<Type, UnallocatedCString>{
+            {Type::Normal, "normal"},
+            {Type::Generation, "generated"},
+        };
 
     try {
 

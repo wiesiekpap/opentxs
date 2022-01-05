@@ -33,10 +33,10 @@ auto Factory::ConnectionReply(
     const Identifier& request,
     const identifier::Notary& server,
     const bool ack,
-    const std::string& url,
-    const std::string& login,
-    const std::string& password,
-    const std::string& key,
+    const UnallocatedCString& url,
+    const UnallocatedCString& login,
+    const UnallocatedCString& password,
+    const UnallocatedCString& key,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::reply::Connection>
 {
@@ -124,10 +124,10 @@ Connection::Connection(
     const Identifier& request,
     const identifier::Notary& server,
     const bool ack,
-    const std::string& url,
-    const std::string& login,
-    const std::string& password,
-    const std::string& key)
+    const UnallocatedCString& url,
+    const UnallocatedCString& login,
+    const UnallocatedCString& password,
+    const UnallocatedCString& key)
     : Reply(
           api,
           nym,

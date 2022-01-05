@@ -8,10 +8,7 @@
 #include "internal/otx/smartcontract/OTBylaw.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <list>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "internal/otx/common/script/OTScriptable.hpp"
@@ -20,6 +17,7 @@
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
@@ -59,8 +57,8 @@ OTBylaw::OTBylaw(const char* szName, const char* szLanguage)
             "nullptr szLanguage passed in to OTBylaw::OTBylaw.")
             .Flush();
 
-    const std::string str_bylaw_name = m_strName->Get();
-    const std::string str_language = m_strLanguage->Get();
+    const UnallocatedCString str_bylaw_name = m_strName->Get();
+    const UnallocatedCString str_language = m_strLanguage->Get();
 
     // Let the calling function validate these, if he doesn't want to risk an
     // ASSERT...
@@ -106,8 +104,8 @@ void OTBylaw::Serialize(Tag& parent, bool bCalculatingID) const
     }
 
     for (auto& it : m_mapHooks) {
-        const std::string& str_hook_name = it.first;
-        const std::string& str_clause_name = it.second;
+        const UnallocatedCString& str_hook_name = it.first;
+        const UnallocatedCString& str_clause_name = it.second;
 
         TagPtr pTagHook(new Tag("hook"));
 
@@ -118,8 +116,8 @@ void OTBylaw::Serialize(Tag& parent, bool bCalculatingID) const
     }
 
     for (auto& it : m_mapCallbacks) {
-        const std::string& str_callback_name = it.first;
-        const std::string& str_clause_name = it.second;
+        const UnallocatedCString& str_callback_name = it.first;
+        const UnallocatedCString& str_clause_name = it.second;
 
         TagPtr pTagCallback(new Tag("callback"));
 
@@ -211,7 +209,7 @@ void OTBylaw::SetAsClean()
 void OTBylaw::RegisterVariablesForExecution(OTScript& theScript)
 {
     for (auto& it : m_mapVariables) {
-        const std::string str_var_name = it.first;
+        const UnallocatedCString str_var_name = it.first;
         OTVariable* pVar = it.second;
         OT_ASSERT((nullptr != pVar) && (str_var_name.size() > 0));
 
@@ -297,8 +295,8 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
         }
 
         for (const auto& it : m_mapCallbacks) {
-            const std::string& str_callback_name = it.first;
-            const std::string& str_clause_name = it.second;
+            const UnallocatedCString& str_callback_name = it.first;
+            const UnallocatedCString& str_clause_name = it.second;
 
             OTClause* pCallbackClause = GetCallback(str_callback_name);
             OTClause* pCallbackClause2 = rhs.GetCallback(str_callback_name);
@@ -336,18 +334,18 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
             // above) and that should actually be good enough.
         }
 
-        std::set<std::string> theHookSet;
+        UnallocatedSet<UnallocatedCString> theHookSet;
 
         // There might be MANY entries with the SAME HOOK NAME. So we add them
         // all to a SET in order to get unique keys.
         for (const auto& it : m_mapHooks) {
-            const std::string& str_hook_name = it.first;
+            const UnallocatedCString& str_hook_name = it.first;
             theHookSet.insert(str_hook_name);
         }
         // Now we loop through all the unique hook names, and get
         // the list of clauses for EACH bylaw for THAT HOOK.
         for (const auto& it_hook : theHookSet) {
-            const std::string& str_hook_name = it_hook;
+            const UnallocatedCString& str_hook_name = it_hook;
 
             mapOfClauses theHookClauses, theHookClauses2;
 
@@ -370,7 +368,7 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
             }
 
             for (auto& it : theHookClauses) {
-                const std::string str_clause_name = it.first;
+                const UnallocatedCString str_clause_name = it.first;
                 OTClause* pClause = it.second;
                 OT_ASSERT(nullptr != pClause);
 
@@ -401,7 +399,8 @@ auto OTBylaw::Compare(OTBylaw& rhs) -> bool
     return false;
 }
 
-auto OTBylaw::GetCallbackNameByIndex(std::int32_t nIndex) -> const std::string
+auto OTBylaw::GetCallbackNameByIndex(std::int32_t nIndex)
+    -> const UnallocatedCString
 {
     if ((nIndex < 0) ||
         (nIndex >= static_cast<std::int64_t>(m_mapCallbacks.size()))) {
@@ -411,7 +410,7 @@ auto OTBylaw::GetCallbackNameByIndex(std::int32_t nIndex) -> const std::string
         std::int32_t nLoopIndex = -1;
 
         for (auto& it : m_mapCallbacks) {
-            const std::string& str_callback_name = it.first;
+            const UnallocatedCString& str_callback_name = it.first;
             ++nLoopIndex;  // 0 on first iteration.
             if (nLoopIndex == nIndex) return str_callback_name;
         }
@@ -419,7 +418,7 @@ auto OTBylaw::GetCallbackNameByIndex(std::int32_t nIndex) -> const std::string
     return "";
 }
 
-auto OTBylaw::GetCallback(std::string str_Name) -> OTClause*
+auto OTBylaw::GetCallback(UnallocatedCString str_Name) -> OTClause*
 {
     if (false == OTScriptable::ValidateCallbackName(str_Name)) {
         LogError()(OT_PRETTY_CLASS())("Invalid Callback name: ")(str_Name)(".")
@@ -431,8 +430,8 @@ auto OTBylaw::GetCallback(std::string str_Name) -> OTClause*
 
     if (m_mapCallbacks.end() != it)  // Found it!
     {
-        //      const std::string& str_callback_name = it->first;
-        const std::string& str_clause_name = it->second;
+        //      const UnallocatedCString& str_callback_name = it->first;
+        const UnallocatedCString& str_clause_name = it->second;
 
         OTClause* pClause = GetClause(str_clause_name);
 
@@ -450,7 +449,7 @@ auto OTBylaw::GetCallback(std::string str_Name) -> OTClause*
     return nullptr;
 }
 
-auto OTBylaw::RemoveVariable(std::string str_Name) -> bool
+auto OTBylaw::RemoveVariable(UnallocatedCString str_Name) -> bool
 {
     if (!OTScriptable::ValidateVariableName(str_Name)) {
         LogError()(OT_PRETTY_CLASS())("Error: Invalid str_Name.").Flush();
@@ -473,7 +472,7 @@ auto OTBylaw::RemoveVariable(std::string str_Name) -> bool
     return false;
 }
 
-auto OTBylaw::RemoveClause(std::string str_Name) -> bool
+auto OTBylaw::RemoveClause(UnallocatedCString str_Name) -> bool
 {
     if (!OTScriptable::ValidateClauseName(str_Name)) {
         LogError()(OT_PRETTY_CLASS())("Failed: Empty or invalid str_Name.")
@@ -502,11 +501,11 @@ auto OTBylaw::RemoveClause(std::string str_Name) -> bool
     // Why AFTER? Because RemoveCallback calls RemoveClause again,
     // and we don't want this call to go into an infinite recursive loop.
     //
-    std::list<std::string> listStrings;
+    UnallocatedList<UnallocatedCString> listStrings;
 
     for (auto& cb : m_mapCallbacks) {
-        const std::string& str_callback_name = cb.first;
-        const std::string& str_clause_name = cb.second;
+        const UnallocatedCString& str_callback_name = cb.first;
+        const UnallocatedCString& str_clause_name = cb.second;
 
         if (0 == str_clause_name.compare(str_Name)) {
             listStrings.push_back(str_callback_name);
@@ -514,14 +513,14 @@ auto OTBylaw::RemoveClause(std::string str_Name) -> bool
     }
 
     while (listStrings.size() > 0) {
-        const std::string str_callback_name = listStrings.front();
+        const UnallocatedCString str_callback_name = listStrings.front();
         listStrings.pop_front();
         RemoveCallback(str_callback_name);
     }
 
     for (auto& hook : m_mapHooks) {
-        const std::string& str_hook_name = hook.first;
-        const std::string& str_clause_name = hook.second;
+        const UnallocatedCString& str_hook_name = hook.first;
+        const UnallocatedCString& str_clause_name = hook.second;
 
         if (0 == str_clause_name.compare(str_Name)) {
             listStrings.push_back(str_hook_name);
@@ -529,7 +528,7 @@ auto OTBylaw::RemoveClause(std::string str_Name) -> bool
     }
 
     while (listStrings.size() > 0) {
-        const std::string str_hook_name = listStrings.front();
+        const UnallocatedCString str_hook_name = listStrings.front();
         listStrings.pop_front();
         RemoveHook(str_hook_name, str_Name);
     }
@@ -537,8 +536,9 @@ auto OTBylaw::RemoveClause(std::string str_Name) -> bool
     return true;
 }
 
-auto OTBylaw::RemoveHook(std::string str_Name, std::string str_ClauseName)
-    -> bool
+auto OTBylaw::RemoveHook(
+    UnallocatedCString str_Name,
+    UnallocatedCString str_ClauseName) -> bool
 {
     if (!OTScriptable::ValidateHookName(str_Name)) {
         LogError()(OT_PRETTY_CLASS())("Failed: Empty or invalid str_Name.")
@@ -555,8 +555,8 @@ auto OTBylaw::RemoveHook(std::string str_Name, std::string str_ClauseName)
     bool bReturnVal = false;
 
     for (auto it = m_mapHooks.begin(); it != m_mapHooks.end();) {
-        const std::string& str_hook_name = it->first;
-        const std::string& str_clause_name = it->second;
+        const UnallocatedCString& str_hook_name = it->first;
+        const UnallocatedCString& str_clause_name = it->second;
 
         if ((0 == str_hook_name.compare(str_Name)) &&
             (0 == str_clause_name.compare(str_ClauseName))) {
@@ -569,7 +569,7 @@ auto OTBylaw::RemoveHook(std::string str_Name, std::string str_ClauseName)
     return bReturnVal;
 }
 
-auto OTBylaw::RemoveCallback(std::string str_Name) -> bool
+auto OTBylaw::RemoveCallback(UnallocatedCString str_Name) -> bool
 {
     if (false == OTScriptable::ValidateCallbackName(str_Name)) {
         LogError()(OT_PRETTY_CLASS())("Invalid Callback name: ")(str_Name)(".")
@@ -581,8 +581,8 @@ auto OTBylaw::RemoveCallback(std::string str_Name) -> bool
 
     if (m_mapCallbacks.end() != it)  // Found it!
     {
-        //      const std::string& str_callback_name = it->first;
-        const std::string& str_clause_name = it->second;
+        //      const UnallocatedCString& str_callback_name = it->first;
+        const UnallocatedCString& str_clause_name = it->second;
 
         m_mapCallbacks.erase(it);
         // -----------------------------
@@ -608,8 +608,8 @@ auto OTBylaw::RemoveCallback(std::string str_Name) -> bool
 // There can be only one clause that answers to any given callback.
 //
 auto OTBylaw::AddCallback(
-    std::string str_CallbackName,
-    std::string str_ClauseName) -> bool
+    UnallocatedCString str_CallbackName,
+    UnallocatedCString str_ClauseName) -> bool
 {
     // Make sure it's not already there...
     //
@@ -618,7 +618,7 @@ auto OTBylaw::AddCallback(
     if (m_mapCallbacks.end() != it)  // It's already there. (Can't add it
                                      // twice.)
     {
-        const std::string str_existing_clause = it->second;
+        const UnallocatedCString str_existing_clause = it->second;
         LogConsole()(OT_PRETTY_CLASS())("Failed to add callback (")(
             str_CallbackName)(") to bylaw ")(m_strName)(", already there as ")(
             str_existing_clause)(".")
@@ -636,7 +636,7 @@ auto OTBylaw::AddCallback(
         m_mapCallbacks.end() ==
         m_mapCallbacks.insert(
             m_mapCallbacks.begin(),
-            std::pair<std::string, std::string>(
+            std::pair<UnallocatedCString, UnallocatedCString>(
                 str_CallbackName.c_str(), str_ClauseName.c_str())))
         LogError()(OT_PRETTY_CLASS())("Failed inserting to m_mapCallbacks: ")(
             str_CallbackName)(" / ")(str_ClauseName)(".")
@@ -650,8 +650,9 @@ auto OTBylaw::AddCallback(
 // You ARE allowed to add multiple clauses for the same hook.
 // They will ALL trigger on that hook.
 //
-auto OTBylaw::AddHook(std::string str_HookName, std::string str_ClauseName)
-    -> bool
+auto OTBylaw::AddHook(
+    UnallocatedCString str_HookName,
+    UnallocatedCString str_ClauseName) -> bool
 {
     if (!OTScriptable::ValidateHookName(str_HookName) ||
         !OTScriptable::ValidateClauseName(str_ClauseName)) {
@@ -664,8 +665,8 @@ auto OTBylaw::AddHook(std::string str_HookName, std::string str_ClauseName)
     // See if it already exists.
     //
     for (auto& it : m_mapHooks) {
-        const std::string& str_hook_name = it.first;
-        const std::string& str_clause_name = it.second;
+        const UnallocatedCString& str_hook_name = it.first;
+        const UnallocatedCString& str_clause_name = it.second;
 
         if ((0 == str_hook_name.compare(str_HookName)) &&
             (0 == str_clause_name.compare(str_ClauseName))) {
@@ -679,7 +680,7 @@ auto OTBylaw::AddHook(std::string str_HookName, std::string str_ClauseName)
     // ------------------------
     // ----------------------------------------
     if (m_mapHooks.end() ==
-        m_mapHooks.insert(std::pair<std::string, std::string>(
+        m_mapHooks.insert(std::pair<UnallocatedCString, UnallocatedCString>(
             str_HookName.c_str(), str_ClauseName.c_str())))
         LogError()(OT_PRETTY_CLASS())("Failed inserting to m_mapHooks: ")(
             str_HookName)(" / ")(str_ClauseName)(".")
@@ -690,7 +691,7 @@ auto OTBylaw::AddHook(std::string str_HookName, std::string str_ClauseName)
     return false;
 }
 
-auto OTBylaw::GetVariable(std::string str_var_name)
+auto OTBylaw::GetVariable(UnallocatedCString str_var_name)
     -> OTVariable*  // not a
                     // reference,
                     // so you can
@@ -737,7 +738,7 @@ auto OTBylaw::GetVariableByIndex(std::int32_t nIndex) -> OTVariable*
     return nullptr;
 }
 
-auto OTBylaw::GetClause(std::string str_clause_name) const -> OTClause*
+auto OTBylaw::GetClause(UnallocatedCString str_clause_name) const -> OTClause*
 {
     if (!OTScriptable::ValidateClauseName(str_clause_name)) {
         LogError()(OT_PRETTY_CLASS())("Error: Empty str_clause_name.").Flush();
@@ -777,7 +778,8 @@ auto OTBylaw::GetClauseByIndex(std::int32_t nIndex) -> OTClause*
     return nullptr;
 }
 
-auto OTBylaw::GetHookNameByIndex(std::int32_t nIndex) -> const std::string
+auto OTBylaw::GetHookNameByIndex(std::int32_t nIndex)
+    -> const UnallocatedCString
 {
     if ((nIndex < 0) ||
         (nIndex >= static_cast<std::int64_t>(m_mapHooks.size()))) {
@@ -787,7 +789,7 @@ auto OTBylaw::GetHookNameByIndex(std::int32_t nIndex) -> const std::string
         std::int32_t nLoopIndex = -1;
 
         for (auto& it : m_mapHooks) {
-            const std::string& str_hook_name = it.first;
+            const UnallocatedCString& str_hook_name = it.first;
             ++nLoopIndex;  // 0 on first iteration.
 
             if (nLoopIndex == nIndex) return str_hook_name;
@@ -801,8 +803,9 @@ auto OTBylaw::GetHookNameByIndex(std::int32_t nIndex) -> const std::string
 // "GetHooks" could have been termed,
 // "GetAMapOfAllClausesRegisteredForTheHookWithName(str_HookName)
 //
-auto OTBylaw::GetHooks(std::string str_HookName, mapOfClauses& theResults)
-    -> bool
+auto OTBylaw::GetHooks(
+    UnallocatedCString str_HookName,
+    mapOfClauses& theResults) -> bool
 {
     if (!OTScriptable::ValidateHookName(str_HookName)) {
         LogError()(OT_PRETTY_CLASS())("Error: Invalid str_HookName.").Flush();
@@ -812,8 +815,8 @@ auto OTBylaw::GetHooks(std::string str_HookName, mapOfClauses& theResults)
     bool bReturnVal = false;
 
     for (auto& it : m_mapHooks) {
-        const std::string& str_hook_name = it.first;
-        const std::string& str_clause_name = it.second;
+        const UnallocatedCString& str_hook_name = it.first;
+        const UnallocatedCString& str_clause_name = it.second;
 
         // IF this entry (of a clause registered for a specific hook) MATCHES
         // the hook name passed in...
@@ -833,10 +836,11 @@ auto OTBylaw::GetHooks(std::string str_HookName, mapOfClauses& theResults)
                 // clauses are inserted into
                 // the result map, the duplicates are automatically weeded out.
                 //
-                if (theResults.end() != theResults.insert(
-                                            theResults.begin(),
-                                            std::pair<std::string, OTClause*>(
-                                                str_clause_name, pClause)))
+                if (theResults.end() !=
+                    theResults.insert(
+                        theResults.begin(),
+                        std::pair<UnallocatedCString, OTClause*>(
+                            str_clause_name, pClause)))
                     bReturnVal = true;
             } else {
                 LogConsole()(OT_PRETTY_CLASS())("Couldn't find clause (")(
@@ -853,7 +857,7 @@ auto OTBylaw::GetHooks(std::string str_HookName, mapOfClauses& theResults)
 
 auto OTBylaw::AddVariable(OTVariable& theVariable) -> bool
 {
-    const std::string str_name = theVariable.GetName().Get();
+    const UnallocatedCString str_name = theVariable.GetName().Get();
 
     if (!OTScriptable::ValidateVariableName(str_name)) {
         LogError()(OT_PRETTY_CLASS())("Failed due to invalid variable name. "
@@ -870,7 +874,7 @@ auto OTBylaw::AddVariable(OTVariable& theVariable) -> bool
     {
         // Then insert it...
         m_mapVariables.insert(
-            std::pair<std::string, OTVariable*>(str_name, &theVariable));
+            std::pair<UnallocatedCString, OTVariable*>(str_name, &theVariable));
 
         // Make sure it has a pointer back to me.
         theVariable.SetBylaw(*this);
@@ -886,7 +890,7 @@ auto OTBylaw::AddVariable(OTVariable& theVariable) -> bool
 }
 
 auto OTBylaw::AddVariable(
-    std::string str_Name,
+    UnallocatedCString str_Name,
     bool bValue,
     OTVariable::OTVariable_Access theAccess) -> bool
 {
@@ -902,8 +906,8 @@ auto OTBylaw::AddVariable(
 }
 
 auto OTBylaw::AddVariable(
-    std::string str_Name,
-    std::string str_Value,
+    UnallocatedCString str_Name,
+    UnallocatedCString str_Value,
     OTVariable::OTVariable_Access theAccess) -> bool
 {
     auto* pVar = new OTVariable(str_Name, str_Value, theAccess);
@@ -918,7 +922,7 @@ auto OTBylaw::AddVariable(
 }
 
 auto OTBylaw::AddVariable(
-    std::string str_Name,
+    UnallocatedCString str_Name,
     std::int32_t nValue,
     OTVariable::OTVariable_Access theAccess) -> bool
 {
@@ -952,7 +956,9 @@ auto OTBylaw::AddClause(const char* szName, const char* szCode) -> bool
     return true;
 }
 
-auto OTBylaw::UpdateClause(std::string str_Name, std::string str_Code) -> bool
+auto OTBylaw::UpdateClause(
+    UnallocatedCString str_Name,
+    UnallocatedCString str_Code) -> bool
 {
     if (!OTScriptable::ValidateClauseName(str_Name)) {
         LogError()(OT_PRETTY_CLASS())("Failed due to invalid clause name. In "
@@ -983,7 +989,7 @@ auto OTBylaw::AddClause(OTClause& theClause) -> bool
         return false;
     }
 
-    const std::string str_clause_name = theClause.GetName().Get();
+    const UnallocatedCString str_clause_name = theClause.GetName().Get();
 
     if (!OTScriptable::ValidateClauseName(str_clause_name)) {
         LogError()(OT_PRETTY_CLASS())("Failed due to invalid clause name. In "
@@ -997,8 +1003,8 @@ auto OTBylaw::AddClause(OTClause& theClause) -> bool
     if (m_mapClauses.end() == it)  // If it wasn't already there...
     {
         // Then insert it...
-        m_mapClauses.insert(
-            std::pair<std::string, OTClause*>(str_clause_name, &theClause));
+        m_mapClauses.insert(std::pair<UnallocatedCString, OTClause*>(
+            str_clause_name, &theClause));
 
         // Make sure it has a pointer back to me.
         theClause.SetBylaw(*this);
@@ -1047,7 +1053,7 @@ OTBylaw::~OTBylaw()
     m_pOwnerAgreement =
         nullptr;  // This Bylaw is owned by an agreement (OTScriptable-derived.)
 
-    // Hooks and Callbacks are maps of std::string to std::string.
+    // Hooks and Callbacks are maps of UnallocatedCString to UnallocatedCString.
     //
     // (THEREFORE NO NEED TO CLEAN THEM UP HERE.)
     //

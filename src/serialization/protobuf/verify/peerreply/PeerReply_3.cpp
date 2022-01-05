@@ -6,7 +6,6 @@
 #include "internal/serialization/protobuf/verify/PeerReply.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
@@ -17,6 +16,7 @@
 #include "internal/serialization/protobuf/verify/OutBailmentReply.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/Signature.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyPeer.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BailmentReply.pb.h"        // IWYU pragma: keep
 #include "serialization/protobuf/ConnectionInfoReply.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/Enums.pb.h"

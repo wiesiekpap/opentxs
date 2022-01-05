@@ -8,10 +8,8 @@
 #include "util/rpc/RPC.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/core/Core.hpp"
@@ -33,6 +31,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/rpc/AccountData.hpp"
 #include "opentxs/util/rpc/AccountType.hpp"
@@ -88,7 +87,7 @@ auto RPC::get_account_balance_blockchain(
     const request::Base& base,
     const std::size_t index,
     const Identifier& accountID,
-    std::vector<AccountData>& balances,
+    UnallocatedVector<AccountData>& balances,
     response::Base::Responses& codes) const noexcept -> void
 {
     try {
@@ -121,7 +120,7 @@ auto RPC::get_account_balance_custodial(
     const api::Session& api,
     const std::size_t index,
     const Identifier& accountID,
-    std::vector<AccountData>& balances,
+    UnallocatedVector<AccountData>& balances,
     response::Base::Responses& codes) const noexcept -> void
 {
     const auto account = api.Wallet().Internal().Account(accountID);

@@ -10,7 +10,6 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <vector>
 
 #include "internal/blockchain/block/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainTransactionInput.pb.h"
 
 namespace opentxs
@@ -40,12 +40,12 @@ namespace opentxs::blockchain::block::bitcoin::implementation
 class Inputs final : public internal::Inputs
 {
 public:
-    using InputList = std::vector<std::unique_ptr<internal::Input>>;
+    using InputList = UnallocatedVector<std::unique_ptr<internal::Input>>;
 
-    auto AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
+    auto AssociatedLocalNyms(UnallocatedVector<OTNymID>& output) const noexcept
         -> void final;
     auto AssociatedRemoteContacts(
-        std::vector<OTIdentifier>& output) const noexcept -> void final;
+        UnallocatedVector<OTIdentifier>& output) const noexcept -> void final;
     auto at(const std::size_t position) const noexcept(false)
         -> const value_type& final
     {
@@ -68,18 +68,18 @@ public:
     }
     auto end() const noexcept -> const_iterator final { return cend(); }
     auto ExtractElements(const filter::Type style) const noexcept
-        -> std::vector<Space> final;
+        -> UnallocatedVector<Space> final;
     auto FindMatches(
         const ReadView txid,
         const filter::Type type,
         const Patterns& txos,
         const ParsedPatterns& elements) const noexcept -> Matches final;
-    auto GetPatterns() const noexcept -> std::vector<PatternID> final;
+    auto GetPatterns() const noexcept -> UnallocatedVector<PatternID> final;
     auto Internal() const noexcept -> const internal::Inputs& final
     {
         return *this;
     }
-    auto Keys() const noexcept -> std::vector<crypto::Key> final;
+    auto Keys() const noexcept -> UnallocatedVector<crypto::Key> final;
     auto NetBalanceChange(const identifier::Nym& nym) const noexcept
         -> opentxs::Amount final;
     auto Serialize(const AllocateOutput destination) const noexcept

@@ -5,14 +5,13 @@
 
 #pragma once
 
-#include <string>
-
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "core/ui/contactlist/ContactListItem.hpp"
 #include "internal/core/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -57,7 +56,8 @@ public:
 private:
     using ot_super = implementation::ContactListItem;
 
-    auto calculate_section(const Lock& lock) const noexcept -> std::string final
+    auto calculate_section(const Lock& lock) const noexcept
+        -> UnallocatedCString final
     {
         return translate_section(lock);
     }

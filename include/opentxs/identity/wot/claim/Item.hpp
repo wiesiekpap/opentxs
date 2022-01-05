@@ -16,13 +16,12 @@
 #include <cstdint>
 #include <ctime>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -47,31 +46,31 @@ class OPENTXS_EXPORT Item
 public:
     Item(
         const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const claim::SectionType section,
         const claim::ClaimType& type,
-        const std::string& value,
-        const std::set<claim::Attribute>& attributes,
+        const UnallocatedCString& value,
+        const UnallocatedSet<claim::Attribute>& attributes,
         const std::time_t start,
         const std::time_t end,
-        const std::string subtype);
+        const UnallocatedCString subtype);
     Item(
         const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const Claim& claim);
     OPENTXS_NO_EXPORT Item(
         const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber parentVersion,
         const claim::SectionType section,
         const proto::ContactItem& serialized);
     Item(
         const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber parentVersion,
         const claim::SectionType section,
         const ReadView& serialized);
@@ -96,11 +95,11 @@ public:
     auto SetLocal(const bool local) const -> Item;
     auto SetPrimary(const bool primary) const -> Item;
     auto SetStart(const std::time_t start) const -> Item;
-    auto SetValue(const std::string& value) const -> Item;
+    auto SetValue(const UnallocatedCString& value) const -> Item;
     auto Start() const -> const std::time_t&;
-    auto Subtype() const -> const std::string&;
+    auto Subtype() const -> const UnallocatedCString&;
     auto Type() const -> const claim::ClaimType&;
-    auto Value() const -> const std::string&;
+    auto Value() const -> const UnallocatedCString&;
     auto Version() const -> VersionNumber;
 
     ~Item();

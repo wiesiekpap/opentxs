@@ -6,10 +6,10 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -21,7 +21,8 @@ public:
     virtual auto LastSendResult() const -> SendResult = 0;
     virtual auto Reply() const -> const std::shared_ptr<Message> = 0;
 
-    virtual auto Run(const std::size_t totalRetries = 2) -> std::string = 0;
+    virtual auto Run(const std::size_t totalRetries = 2)
+        -> UnallocatedCString = 0;
 
     virtual ~ServerAction() = default;
 

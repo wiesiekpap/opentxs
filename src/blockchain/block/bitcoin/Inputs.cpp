@@ -14,7 +14,6 @@
 #include <iterator>
 #include <numeric>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/blockchain/bitcoin/Bitcoin.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/blockchain/block/bitcoin/Input.hpp"
 #include "opentxs/blockchain/block/bitcoin/Inputs.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
@@ -30,8 +30,8 @@
 namespace opentxs::factory
 {
 auto BitcoinTransactionInputs(
-    std::vector<std::unique_ptr<blockchain::block::bitcoin::internal::Input>>&&
-        inputs,
+    UnallocatedVector<
+        std::unique_ptr<blockchain::block::bitcoin::internal::Input>>&& inputs,
     std::optional<std::size_t> size) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Inputs>
 {
@@ -84,8 +84,8 @@ auto Inputs::AnyoneCanPay(const std::size_t index) noexcept -> bool
     }
 }
 
-auto Inputs::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
-    -> void
+auto Inputs::AssociatedLocalNyms(
+    UnallocatedVector<OTNymID>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(inputs_), std::end(inputs_), [&](const auto& item) {
@@ -94,7 +94,7 @@ auto Inputs::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
 }
 
 auto Inputs::AssociatedRemoteContacts(
-    std::vector<OTIdentifier>& output) const noexcept -> void
+    UnallocatedVector<OTIdentifier>& output) const noexcept -> void
 {
     std::for_each(
         std::begin(inputs_), std::end(inputs_), [&](const auto& item) {
@@ -144,9 +144,9 @@ auto Inputs::clone(const InputList& rhs) noexcept -> InputList
 }
 
 auto Inputs::ExtractElements(const filter::Type style) const noexcept
-    -> std::vector<Space>
+    -> UnallocatedVector<Space>
 {
-    auto output = std::vector<Space>{};
+    auto output = UnallocatedVector<Space>{};
     LogTrace()(OT_PRETTY_CLASS())("processing ")(size())(" inputs").Flush();
 
     for (const auto& txin : *this) {
@@ -193,9 +193,9 @@ auto Inputs::FindMatches(
     return output;
 }
 
-auto Inputs::GetPatterns() const noexcept -> std::vector<PatternID>
+auto Inputs::GetPatterns() const noexcept -> UnallocatedVector<PatternID>
 {
-    auto output = std::vector<PatternID>{};
+    auto output = UnallocatedVector<PatternID>{};
     std::for_each(
         std::begin(inputs_), std::end(inputs_), [&](const auto& txin) {
             const auto patterns = txin->GetPatterns();
@@ -207,9 +207,9 @@ auto Inputs::GetPatterns() const noexcept -> std::vector<PatternID>
     return output;
 }
 
-auto Inputs::Keys() const noexcept -> std::vector<crypto::Key>
+auto Inputs::Keys() const noexcept -> UnallocatedVector<crypto::Key>
 {
-    auto out = std::vector<crypto::Key>{};
+    auto out = UnallocatedVector<crypto::Key>{};
 
     for (const auto& input : *this) {
         auto keys = input.Keys();

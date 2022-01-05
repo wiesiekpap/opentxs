@@ -9,8 +9,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <map>
-#include <set>
 #include <utility>
 
 #include "internal/util/LogMacros.hpp"
@@ -23,6 +21,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/SubaccountType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs::api::crypto::blockchain
@@ -68,7 +67,7 @@ auto AccountCache::get_account_map(
 auto AccountCache::List(
     const identifier::Nym& nymID,
     const opentxs::blockchain::Type chain) const noexcept
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     Lock lock(lock_);
     const auto& map = get_account_map(lock, chain);

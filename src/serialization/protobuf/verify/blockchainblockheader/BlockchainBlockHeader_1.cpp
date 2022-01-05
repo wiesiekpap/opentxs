@@ -7,13 +7,13 @@
 
 #include <cstdint>
 #include <limits>
-#include <string>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/BitcoinBlockHeaderFields.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/BlockchainBlockLocalData.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/EthereumBlockHeaderFields.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

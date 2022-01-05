@@ -8,7 +8,6 @@
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
-#include <string>
 #include <tuple>
 #include <utility>
 
@@ -22,6 +21,7 @@
 #include "opentxs/network/zeromq/ReplyCallback.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Reply.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -61,11 +61,14 @@ namespace opentxs::api::network::imp
 class Dht final : virtual public internal::Dht
 {
 public:
-    auto GetPublicNym(const std::string& key) const noexcept -> void final;
-    auto GetServerContract(const std::string& key) const noexcept -> void final;
-    auto GetUnitDefinition(const std::string& key) const noexcept -> void final;
-    auto Insert(const std::string& key, const std::string& value) const noexcept
+    auto GetPublicNym(const UnallocatedCString& key) const noexcept
         -> void final;
+    auto GetServerContract(const UnallocatedCString& key) const noexcept
+        -> void final;
+    auto GetUnitDefinition(const UnallocatedCString& key) const noexcept
+        -> void final;
+    auto Insert(const UnallocatedCString& key, const UnallocatedCString& value)
+        const noexcept -> void final;
     auto Insert(const proto::Nym& nym) const noexcept -> void final;
     auto Insert(const proto::ServerContract& contract) const noexcept
         -> void final;
@@ -97,23 +100,23 @@ private:
 
     static auto ProcessPublicNym(
         const api::Session& api,
-        const std::string key,
+        const UnallocatedCString key,
         const DhtResults& values,
         NotifyCB notifyCB) noexcept -> bool;
     static auto ProcessServerContract(
         const api::Session& api,
-        const std::string key,
+        const UnallocatedCString key,
         const DhtResults& values,
         NotifyCB notifyCB) noexcept -> bool;
     static auto ProcessUnitDefinition(
         const api::Session& api,
-        const std::string key,
+        const UnallocatedCString key,
         const DhtResults& values,
         NotifyCB notifyCB) noexcept -> bool;
 
     auto process_request(
         const opentxs::network::zeromq::Message& incoming,
-        void (Dht::*get)(const std::string&) const) const noexcept
+        void (Dht::*get)(const UnallocatedCString&) const) const noexcept
         -> opentxs::network::zeromq::Message;
 
     Dht() = delete;

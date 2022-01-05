@@ -9,17 +9,12 @@
 
 #include <functional>
 #include <future>
-#include <list>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <thread>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -37,6 +32,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/ActivityThread.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -152,24 +148,24 @@ class ActivityThread final : public ActivityThreadList, Worker<ActivityThread>
 public:
     auto CanMessage() const noexcept -> bool final;
     auto ClearCallbacks() const noexcept -> void final;
-    auto DisplayName() const noexcept -> std::string final;
-    auto GetDraft() const noexcept -> std::string final;
-    auto Participants() const noexcept -> std::string final;
+    auto DisplayName() const noexcept -> UnallocatedCString final;
+    auto GetDraft() const noexcept -> UnallocatedCString final;
+    auto Participants() const noexcept -> UnallocatedCString final;
     auto Pay(
-        const std::string& amount,
+        const UnallocatedCString& amount,
         const Identifier& sourceAccount,
-        const std::string& memo,
+        const UnallocatedCString& memo,
         const PaymentType type) const noexcept -> bool final;
     auto Pay(
         const Amount amount,
         const Identifier& sourceAccount,
-        const std::string& memo,
+        const UnallocatedCString& memo,
         const PaymentType type) const noexcept -> bool final;
     auto PaymentCode(const core::UnitType currency) const noexcept
-        -> std::string final;
+        -> UnallocatedCString final;
     auto SendDraft() const noexcept -> bool final;
-    auto SetDraft(const std::string& draft) const noexcept -> bool final;
-    auto ThreadID() const noexcept -> std::string final;
+    auto SetDraft(const UnallocatedCString& draft) const noexcept -> bool final;
+    auto ThreadID() const noexcept -> UnallocatedCString final;
 
     auto SetCallbacks(Callbacks&&) noexcept -> void final;
 
@@ -197,29 +193,30 @@ private:
 
     const OTIdentifier threadID_;
     const OTIdentifier self_contact_;
-    const std::set<OTIdentifier> contacts_;
-    const std::string participants_;
-    std::string me_;
-    std::string display_name_;
-    std::map<core::UnitType, std::string> payment_codes_;
+    const UnallocatedSet<OTIdentifier> contacts_;
+    const UnallocatedCString participants_;
+    UnallocatedCString me_;
+    UnallocatedCString display_name_;
+    UnallocatedMap<core::UnitType, UnallocatedCString> payment_codes_;
     std::optional<Messagability> can_message_;
-    mutable std::string draft_;
-    mutable std::map<api::session::OTX::TaskID, DraftTask> draft_tasks_;
+    mutable UnallocatedCString draft_;
+    mutable UnallocatedMap<api::session::OTX::TaskID, DraftTask> draft_tasks_;
     mutable std::optional<Callbacks> callbacks_;
 
-    auto calculate_display_name() const noexcept -> std::string;
-    auto calculate_participants() const noexcept -> std::string;
-    auto comma(const std::set<std::string>& list) const noexcept -> std::string;
+    auto calculate_display_name() const noexcept -> UnallocatedCString;
+    auto calculate_participants() const noexcept -> UnallocatedCString;
+    auto comma(const UnallocatedSet<UnallocatedCString>& list) const noexcept
+        -> UnallocatedCString;
     auto can_message() const noexcept -> bool;
     auto construct_row(
         const ActivityThreadRowID& id,
         const ActivityThreadSortKey& index,
         CustomData& custom) const noexcept -> RowPointer final;
-    auto from(bool outgoing) const noexcept -> std::string;
+    auto from(bool outgoing) const noexcept -> UnallocatedCString;
     auto send_cheque(
         const Amount amount,
         const Identifier& sourceAccount,
-        const std::string& memo) const noexcept -> bool;
+        const UnallocatedCString& memo) const noexcept -> bool;
     auto validate_account(const Identifier& sourceAccount) const noexcept
         -> bool;
 

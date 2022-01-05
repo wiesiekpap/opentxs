@@ -138,7 +138,7 @@ public:
 
     virtual auto AddChildKeyCredential(
         const crypto::Parameters& nymParameters,
-        const PasswordPrompt& reason) -> std::string = 0;
+        const PasswordPrompt& reason) -> UnallocatedCString = 0;
     virtual auto AddVerificationCredential(
         const proto::VerificationSet& verificationSet,
         const PasswordPrompt& reason) -> bool = 0;
@@ -146,9 +146,9 @@ public:
         const proto::ContactData& contactData,
         const PasswordPrompt& reason) -> bool = 0;
     virtual void RevokeContactCredentials(
-        std::list<std::string>& contactCredentialIDs) = 0;
+        UnallocatedList<UnallocatedCString>& contactCredentialIDs) = 0;
     virtual void RevokeVerificationCredentials(
-        std::list<std::string>& verificationCredentialIDs) = 0;
+        UnallocatedList<UnallocatedCString>& verificationCredentialIDs) = 0;
 
     virtual ~Authority() = default;
 

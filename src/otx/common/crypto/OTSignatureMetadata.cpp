@@ -7,12 +7,11 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "internal/otx/common/crypto/OTSignatureMetadata.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Encode.hpp"
 #include "opentxs/api/session/Crypto.hpp"
 #include "opentxs/api/session/Session.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
@@ -66,7 +65,7 @@ auto OTSignatureMetadata::SetMetadata(
     }
 
     // Todo: really should verify base58 here now, instead of base62.
-    std::string str_verify_base62;
+    UnallocatedCString str_verify_base62;
 
     str_verify_base62 += metaNymID;
     str_verify_base62 += metaMasterCredID;

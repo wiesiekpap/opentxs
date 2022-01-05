@@ -13,7 +13,7 @@ namespace opentxs::api::session::internal
 class Notary : virtual public session::Notary, virtual public Session
 {
 public:
-    virtual auto InprocEndpoint() const -> std::string = 0;
+    virtual auto InprocEndpoint() const -> UnallocatedCString = 0;
     auto InternalNotary() const noexcept
         -> const session::internal::Notary& final
     {

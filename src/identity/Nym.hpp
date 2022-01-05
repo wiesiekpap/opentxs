@@ -9,10 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/identity/Identity.hpp"
@@ -35,6 +32,7 @@
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
@@ -81,7 +79,7 @@ namespace opentxs::identity::implementation
 class Nym final : virtual public identity::internal::Nym, Lockable
 {
 public:
-    auto Alias() const -> std::string final;
+    auto Alias() const -> UnallocatedCString final;
     auto at(const key_type& id) const noexcept(false) -> const value_type& final
     {
         return *active_.at(id);
@@ -89,10 +87,10 @@ public:
     auto at(const std::size_t& index) const noexcept(false)
         -> const value_type& final;
     auto begin() const noexcept -> const_iterator final { return cbegin(); }
-    auto BestEmail() const -> std::string final;
-    auto BestPhoneNumber() const -> std::string final;
+    auto BestEmail() const -> UnallocatedCString final;
+    auto BestPhoneNumber() const -> UnallocatedCString final;
     auto BestSocialMediaProfile(const wot::claim::ClaimType type) const
-        -> std::string final;
+        -> UnallocatedCString final;
     auto cbegin() const noexcept -> const_iterator final
     {
         return const_iterator(this, 0);
@@ -111,8 +109,8 @@ public:
             ContactCredentialVersion());
     }
     auto Contracts(const core::UnitType currency, const bool onlyActive) const
-        -> std::set<OTIdentifier> final;
-    auto EmailAddresses(bool active) const -> std::string final;
+        -> UnallocatedSet<OTIdentifier> final;
+    auto EmailAddresses(bool active) const -> UnallocatedCString final;
     auto EncryptionTargets() const noexcept -> NymKeys final;
     auto end() const noexcept -> const_iterator final { return cend(); }
     void GetIdentifier(identifier::Nym& theIdentifier) const final;
@@ -146,15 +144,15 @@ public:
     auto HasCapability(const NymCapability& capability) const -> bool final;
     auto HasPath() const -> bool final;
     auto ID() const -> const identifier::Nym& final { return id_; }
-    auto Name() const -> std::string final;
+    auto Name() const -> UnallocatedCString final;
     auto Path(proto::HDPath& output) const -> bool final;
-    auto PathRoot() const -> const std::string final;
+    auto PathRoot() const -> const UnallocatedCString final;
     auto PathChildSize() const -> int final;
     auto PathChild(int index) const -> std::uint32_t final;
-    auto PaymentCode() const -> std::string final;
+    auto PaymentCode() const -> UnallocatedCString final;
     auto PaymentCodePath(proto::HDPath& output) const -> bool final;
     auto PaymentCodePath(AllocateOutput destination) const -> bool final;
-    auto PhoneNumbers(bool active) const -> std::string final;
+    auto PhoneNumbers(bool active) const -> UnallocatedCString final;
     auto Revision() const -> std::uint64_t final;
     auto Serialize(AllocateOutput destination) const -> bool final;
     auto Serialize(Serialized& serialized) const -> bool final;
@@ -165,9 +163,9 @@ public:
     void SerializeNymIDSource(Tag& parent) const final;
     auto size() const noexcept -> std::size_t final { return active_.size(); }
     auto SocialMediaProfiles(const wot::claim::ClaimType type, bool active)
-        const -> std::string final;
+        const -> UnallocatedCString final;
     auto SocialMediaProfileTypes() const
-        -> const std::set<wot::claim::ClaimType> final;
+        -> const UnallocatedSet<wot::claim::ClaimType> final;
     auto Source() const -> const identity::Source& final { return source_; }
     auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
         -> OTSecret final;
@@ -183,7 +181,7 @@ public:
     auto AddChildKeyCredential(
         const Identifier& strMasterID,
         const crypto::Parameters& nymParameters,
-        const PasswordPrompt& reason) -> std::string final;
+        const PasswordPrompt& reason) -> UnallocatedCString final;
     auto AddClaim(const Claim& claim, const PasswordPrompt& reason)
         -> bool final;
     auto AddContract(
@@ -193,7 +191,7 @@ public:
         const bool primary,
         const bool active) -> bool final;
     auto AddEmail(
-        const std::string& value,
+        const UnallocatedCString& value,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;
@@ -208,22 +206,26 @@ public:
         const PasswordPrompt& reason,
         const bool primary) -> bool final;
     auto AddPhoneNumber(
-        const std::string& value,
+        const UnallocatedCString& value,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;
     auto AddSocialMediaProfile(
-        const std::string& value,
+        const UnallocatedCString& value,
         const wot::claim::ClaimType type,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool final;
     auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
         -> bool final;
-    void SetAlias(const std::string& alias) final;
-    void SetAliasStartup(const std::string& alias) final { alias_ = alias; }
-    auto SetCommonName(const std::string& name, const PasswordPrompt& reason)
-        -> bool final;
+    void SetAlias(const UnallocatedCString& alias) final;
+    void SetAliasStartup(const UnallocatedCString& alias) final
+    {
+        alias_ = alias;
+    }
+    auto SetCommonName(
+        const UnallocatedCString& name,
+        const PasswordPrompt& reason) -> bool final;
     auto SetContactData(const ReadView protobuf, const PasswordPrompt& reason)
         -> bool final;
     auto SetContactData(
@@ -231,7 +233,7 @@ public:
         const PasswordPrompt& reason) -> bool final;
     auto SetScope(
         const wot::claim::ClaimType type,
-        const std::string& name,
+        const UnallocatedCString& name,
         const PasswordPrompt& reason,
         const bool primary) -> bool final;
     auto Sign(
@@ -247,8 +249,9 @@ public:
 
 private:
     using MasterID = OTIdentifier;
-    using CredentialMap =
-        std::map<MasterID, std::unique_ptr<identity::internal::Authority>>;
+    using CredentialMap = UnallocatedMap<
+        MasterID,
+        std::unique_ptr<identity::internal::Authority>>;
 
     friend opentxs::Factory;
 
@@ -263,7 +266,7 @@ private:
     const proto::NymMode mode_;
     std::int32_t version_;
     std::uint32_t index_;
-    std::string alias_;
+    UnallocatedCString alias_;
     std::atomic<std::uint64_t> revision_;
     mutable std::unique_ptr<wot::claim::Data> contact_data_;
     CredentialMap active_;
@@ -340,7 +343,7 @@ private:
         const PasswordPrompt& reason) noexcept(false);
     Nym(const api::Session& api,
         const proto::Nym& serialized,
-        const std::string& alias) noexcept(false);
+        const UnallocatedCString& alias) noexcept(false);
     Nym() = delete;
     Nym(const Nym&) = delete;
     Nym(Nym&&) = delete;

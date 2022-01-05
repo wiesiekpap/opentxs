@@ -7,16 +7,13 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "api/session/activity/MailCache.hpp"  // IWYU pragma: associated
 
-#include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <functional>
 #include <iterator>
-#include <map>
 #include <mutex>
 #include <queue>
 #include <utility>
-#include <vector>
 
 #include "core/Worker.hpp"
 #include "internal/api/network/Asio.hpp"
@@ -37,6 +34,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -57,7 +55,7 @@ struct MailCache::Imp {
         const OTIdentifier item_;
         const StorageBox box_;
         const SimpleCallback done_;
-        std::promise<std::string> promise_;
+        std::promise<UnallocatedCString> promise_;
 
         Task(
             const api::Session& api,
@@ -100,8 +98,8 @@ struct MailCache::Imp {
         const StorageBox& box) const noexcept -> std::unique_ptr<Message>
     {
         auto output = std::unique_ptr<Message>{};
-        auto raw = std::string{};
-        auto alias = std::string{};
+        auto raw = UnallocatedCString{};
+        auto alias = UnallocatedCString{};
         const bool loaded =
             api_.Storage().Load(nym.str(), id.str(), box, raw, alias, true);
 
@@ -137,7 +135,7 @@ struct MailCache::Imp {
         OT_ASSERT(nullptr != pTask);
 
         auto& task = *pTask;
-        auto message = std::string{};
+        auto message = UnallocatedCString{};
         auto postcondition = ScopeGuard{[&] {
             task.promise_.set_value(message);
 
@@ -197,10 +195,10 @@ struct MailCache::Imp {
         const identifier::Nym& nym,
         const Identifier& id,
         const StorageBox box,
-        const std::string& text) noexcept -> void
+        const UnallocatedCString& text) noexcept -> void
     {
         auto key = this->key(nym, id, box);
-        auto promise = std::promise<std::string>{};
+        auto promise = std::promise<UnallocatedCString>{};
         promise.set_value(text);
         auto lock = Lock{lock_};
         results_.try_emplace(std::move(key), promise.get_future());
@@ -210,7 +208,7 @@ struct MailCache::Imp {
         const Identifier& id,
         const StorageBox box,
         const PasswordPrompt& reason) noexcept
-        -> std::shared_future<std::string>
+        -> std::shared_future<UnallocatedCString>
     {
         auto lock = Lock{lock_};
         auto key = this->key(nym, id, box);
@@ -270,8 +268,9 @@ private:
     mutable std::mutex lock_;
     JobCounter jobs_;
     std::size_t cached_bytes_;
-    std::map<OTIdentifier, Task> tasks_;
-    std::map<OTIdentifier, std::shared_future<std::string>> results_;
+    UnallocatedMap<OTIdentifier, Task> tasks_;
+    UnallocatedMap<OTIdentifier, std::shared_future<UnallocatedCString>>
+        results_;
     std::queue<OTIdentifier> fifo_;
 
     auto key(
@@ -352,7 +351,7 @@ auto MailCache::CacheText(
     const identifier::Nym& nym,
     const Identifier& id,
     const StorageBox box,
-    const std::string& text) noexcept -> void
+    const UnallocatedCString& text) noexcept -> void
 {
     return imp_->CacheText(nym, id, box, text);
 }
@@ -361,7 +360,8 @@ auto MailCache::GetText(
     const identifier::Nym& nym,
     const Identifier& id,
     const StorageBox box,
-    const PasswordPrompt& reason) noexcept -> std::shared_future<std::string>
+    const PasswordPrompt& reason) noexcept
+    -> std::shared_future<UnallocatedCString>
 {
     return imp_->Get(nym, id, box, reason);
 }

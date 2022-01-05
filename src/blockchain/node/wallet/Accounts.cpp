@@ -8,11 +8,8 @@
 #include "blockchain/node/wallet/Accounts.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <map>
 #include <random>
-#include <set>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/wallet/Account.hpp"
 #include "blockchain/node/wallet/NotificationStateData.hpp"
@@ -29,6 +26,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
@@ -196,8 +194,8 @@ struct Accounts::Imp {
     ~Imp() { shutdown(); }
 
 private:
-    using AccountMap = std::map<OTNymID, wallet::Account>;
-    using PCMap = std::map<OTIdentifier, NotificationStateData>;
+    using AccountMap = UnallocatedMap<OTNymID, wallet::Account>;
+    using PCMap = UnallocatedMap<OTIdentifier, NotificationStateData>;
 
     const api::Session& api_;
     const node::internal::Network& node_;
@@ -217,7 +215,7 @@ private:
     {
         if (!action) { return; }
 
-        auto actors = std::vector<Actor*>{};
+        auto actors = UnallocatedVector<Actor*>{};
 
         for (auto& [nym, account] : map_) { actors.emplace_back(&account); }
 

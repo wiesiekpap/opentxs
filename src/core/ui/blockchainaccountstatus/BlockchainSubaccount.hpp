@@ -6,8 +6,6 @@
 #pragma once
 
 #include <iosfwd>
-#include <list>
-#include <string>
 
 #include "core/ui/base/Combined.hpp"
 #include "core/ui/base/List.hpp"
@@ -16,6 +14,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -61,7 +60,7 @@ class BlockchainSubaccount final : public Combined<
                                        BlockchainSubaccountSourceSortKey>
 {
 public:
-    auto Name() const noexcept -> std::string final { return key_; }
+    auto Name() const noexcept -> UnallocatedCString final { return key_; }
     auto NymID() const noexcept -> const identifier::Nym& final
     {
         return primary_id_;

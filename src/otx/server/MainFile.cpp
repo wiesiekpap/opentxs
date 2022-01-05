@@ -9,9 +9,7 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/api/Legacy.hpp"
@@ -31,6 +29,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -91,7 +90,7 @@ auto MainFile::SaveMainFileToString(String& strMainFile) -> bool
 
     server_.GetTransactor().voucherAccounts_.Serialize(tag);
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     strMainFile.Concatenate("%s", str_result.c_str());
@@ -150,9 +149,9 @@ auto MainFile::SaveMainFile() -> bool
 }
 
 auto MainFile::CreateMainFile(
-    const std::string& strContract,
-    const std::string& strNotaryID,
-    const std::string& strNymID) -> bool
+    const UnallocatedCString& strContract,
+    const UnallocatedCString& strNotaryID,
+    const UnallocatedCString& strNymID) -> bool
 {
     if (!OTDB::StorePlainString(
             server_.API(),
@@ -186,7 +185,7 @@ auto MainFile::CreateMainFile(
     strNotaryFile->Format(
         szBlankFile, strNotaryID.c_str(), strNymID.c_str(), lTransNum);
 
-    std::string str_Notary(strNotaryFile->Get());
+    UnallocatedCString str_Notary(strNotaryFile->Get());
 
     if (!OTDB::StorePlainString(
             server_.API(),

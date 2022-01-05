@@ -10,19 +10,14 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <deque>
 #include <functional>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <queue>
-#include <set>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "blockchain/p2p/peer/Activity.hpp"
 #include "blockchain/p2p/peer/Address.hpp"
@@ -45,6 +40,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -131,7 +127,7 @@ public:
 
 protected:
     using SendFuture = std::future<SendResult>;
-    using KnownHashes = robin_hood::unordered_flat_set<std::string>;
+    using KnownHashes = robin_hood::unordered_flat_set<UnallocatedCString>;
 
     enum class State {
         Init,
@@ -248,7 +244,7 @@ protected:
     const node::internal::PeerManager& manager_;
     const node::internal::Mempool& mempool_;
     const blockchain::Type chain_;
-    const std::string display_chain_;
+    const UnallocatedCString display_chain_;
     std::atomic_bool header_probe_;
     std::atomic_bool cfilter_probe_;
     peer::Address address_;
@@ -285,7 +281,7 @@ protected:
     auto reset_cfilter_job() noexcept -> void;
     auto send(std::pair<zmq::Frame, zmq::Frame>&& data) noexcept -> SendStatus;
     auto update_address_services(
-        const std::set<p2p::Service>& services) noexcept -> void;
+        const UnallocatedSet<p2p::Service>& services) noexcept -> void;
     auto verifying() noexcept -> bool
     {
         return (State::Verify == state_.value_.load());
@@ -300,7 +296,7 @@ protected:
         const node::internal::BlockOracle& block,
         const node::internal::PeerManager& manager,
         const int id,
-        const std::string& shutdown,
+        const UnallocatedCString& shutdown,
         const std::size_t headerSize,
         const std::size_t bodySize,
         std::unique_ptr<internal::Address> address) noexcept;
@@ -318,7 +314,7 @@ private:
     private:
         std::mutex lock_;
         int counter_;
-        std::map<int, std::promise<bool>> map_;
+        UnallocatedMap<int, std::promise<bool>> map_;
     };
 
     static constexpr auto peer_download_interval_ = std::chrono::minutes{10};
@@ -326,7 +322,7 @@ private:
     const Time init_start_;
     const bool verify_filter_checkpoint_;
     const int id_;
-    const std::string shutdown_endpoint_;
+    const UnallocatedCString shutdown_endpoint_;
     const std::size_t untrusted_connection_id_;
     std::unique_ptr<peer::ConnectionManager> connection_;
     SendPromises send_promises_;

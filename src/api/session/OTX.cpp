@@ -11,13 +11,10 @@
 #include <atomic>
 #include <chrono>
 #include <ctime>
-#include <list>
-#include <map>
 #include <memory>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
-#include <vector>
 
 #include "Proto.tpp"
 #include "core/StateMachine.hpp"
@@ -86,6 +83,7 @@
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
@@ -282,7 +280,7 @@ auto OTX::AcknowledgeBailment(
     const identifier::Notary& serverID,
     const identifier::Nym& targetNymID,
     const Identifier& requestID,
-    const std::string& instructions,
+    const UnallocatedCString& instructions,
     const SetID setID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, targetNymID)
@@ -338,10 +336,10 @@ auto OTX::AcknowledgeConnection(
     const identifier::Nym& recipientID,
     const Identifier& requestID,
     const bool ack,
-    const std::string& url,
-    const std::string& login,
-    const std::string& password,
-    const std::string& key,
+    const UnallocatedCString& url,
+    const UnallocatedCString& login,
+    const UnallocatedCString& password,
+    const UnallocatedCString& key,
     const SetID setID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, recipientID)
@@ -476,7 +474,7 @@ auto OTX::AcknowledgeOutbailment(
     const identifier::Notary& serverID,
     const identifier::Nym& recipientID,
     const Identifier& requestID,
-    const std::string& details,
+    const UnallocatedCString& details,
     const SetID setID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, recipientID)
@@ -869,7 +867,7 @@ auto OTX::DepositCheques(const identifier::Nym& nymID) const -> std::size_t
 
 auto OTX::DepositCheques(
     const identifier::Nym& nymID,
-    const std::set<OTIdentifier>& chequeIDs) const -> std::size_t
+    const UnallocatedSet<OTIdentifier>& chequeIDs) const -> std::size_t
 {
     std::size_t output{0};
 
@@ -1308,7 +1306,7 @@ auto OTX::InitiateOutbailment(
     const identifier::Nym& targetNymID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const Amount amount,
-    const std::string& message,
+    const UnallocatedCString& message,
     const SetID setID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, instrumentDefinitionID)
@@ -1375,8 +1373,8 @@ auto OTX::InitiateStoreSecret(
     const identifier::Notary& serverID,
     const identifier::Nym& targetNymID,
     const contract::peer::SecretType& type,
-    const std::string& primary,
-    const std::string& secondary,
+    const UnallocatedCString& primary,
+    const UnallocatedCString& secondary,
     const SetID setID) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, targetNymID)
@@ -1425,7 +1423,7 @@ auto OTX::IssueUnitDefinition(
     const identifier::Notary& serverID,
     const identifier::UnitDefinition& unitID,
     const core::UnitType advertise,
-    const std::string& label) const -> OTX::BackgroundTask
+    const UnallocatedCString& label) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, unitID)
 
@@ -1452,7 +1450,7 @@ void OTX::load_introduction_server(const Lock& lock) const
 auto OTX::MessageContact(
     const identifier::Nym& senderNymID,
     const Identifier& contactID,
-    const std::string& message,
+    const UnallocatedCString& message,
     const SetID setID) const -> OTX::BackgroundTask
 {
     CHECK_SERVER(senderNymID, contactID)
@@ -1505,7 +1503,7 @@ auto OTX::NotifyBailment(
     const identifier::Nym& targetNymID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const Identifier& requestID,
-    const std::string& txid,
+    const UnallocatedCString& txid,
     const Amount amount,
     const SetID setID) const -> OTX::BackgroundTask
 {
@@ -1919,7 +1917,7 @@ auto OTX::RegisterAccount(
     const identifier::Nym& localNymID,
     const identifier::Notary& serverID,
     const identifier::UnitDefinition& unitID,
-    const std::string& label) const -> OTX::BackgroundTask
+    const UnallocatedCString& label) const -> OTX::BackgroundTask
 {
     return schedule_register_account(localNymID, serverID, unitID, label);
 }
@@ -1989,7 +1987,7 @@ auto OTX::schedule_register_account(
     const identifier::Nym& localNymID,
     const identifier::Notary& serverID,
     const identifier::UnitDefinition& unitID,
-    const std::string& label) const -> OTX::BackgroundTask
+    const UnallocatedCString& label) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, unitID)
 
@@ -2010,7 +2008,7 @@ auto OTX::SendCheque(
     const Identifier& sourceAccountID,
     const Identifier& recipientContactID,
     const Amount value,
-    const std::string& memo,
+    const UnallocatedCString& memo,
     const Time validFrom,
     const Time validTo) const -> OTX::BackgroundTask
 {
@@ -2061,7 +2059,7 @@ auto OTX::SendExternalTransfer(
     const Identifier& sourceAccountID,
     const Identifier& targetAccountID,
     const Amount& value,
-    const std::string& memo) const -> OTX::BackgroundTask
+    const UnallocatedCString& memo) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, targetAccountID)
     VALIDATE_NYM(sourceAccountID)
@@ -2104,7 +2102,7 @@ auto OTX::SendTransfer(
     const Identifier& sourceAccountID,
     const Identifier& targetAccountID,
     const Amount& value,
-    const std::string& memo) const -> OTX::BackgroundTask
+    const UnallocatedCString& memo) const -> OTX::BackgroundTask
 {
     CHECK_ARGS(localNymID, serverID, targetAccountID)
     VALIDATE_NYM(sourceAccountID)
@@ -2328,7 +2326,7 @@ auto OTX::valid_account(
     const Identifier& accountIDHint,
     Identifier& depositAccount) const -> Depositability
 {
-    std::set<OTIdentifier> matchingAccounts{};
+    UnallocatedSet<OTIdentifier> matchingAccounts{};
 
     for (const auto& it : api_.Storage().AccountList()) {
         const auto accountID = Identifier::Factory(it.first);
@@ -2458,7 +2456,7 @@ OTX::~OTX()
     Lock lock(shutdown_lock_);
     shutdown_.store(true);
     lock.unlock();
-    std::vector<otx::client::implementation::StateMachine::WaitFuture>
+    UnallocatedVector<otx::client::implementation::StateMachine::WaitFuture>
         futures{};
 
     for (const auto& [id, queue] : operations_) {

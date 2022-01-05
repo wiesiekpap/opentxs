@@ -12,7 +12,6 @@
 #include <cstddef>
 #include <iostream>
 #include <memory>
-#include <string>
 #include <thread>
 
 #include "Helpers.hpp"
@@ -23,6 +22,7 @@
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace zmq = ot::network::zeromq;
@@ -35,7 +35,7 @@ protected:
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
 
     const zmq::Context& context_;
-    const std::string endpoint_;
+    const ot::UnallocatedCString endpoint_;
     const int linger_;
     Socket server_;
     Socket client_;

@@ -8,10 +8,10 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <string>
 
 #include "ListRow.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -32,10 +32,10 @@ namespace ui
 class OPENTXS_EXPORT ActivitySummaryItem : virtual public ListRow
 {
 public:
-    virtual auto DisplayName() const noexcept -> std::string = 0;
-    virtual auto ImageURI() const noexcept -> std::string = 0;
-    virtual auto Text() const noexcept -> std::string = 0;
-    virtual auto ThreadID() const noexcept -> std::string = 0;
+    virtual auto DisplayName() const noexcept -> UnallocatedCString = 0;
+    virtual auto ImageURI() const noexcept -> UnallocatedCString = 0;
+    virtual auto Text() const noexcept -> UnallocatedCString = 0;
+    virtual auto ThreadID() const noexcept -> UnallocatedCString = 0;
     virtual auto Timestamp() const noexcept -> Time = 0;
     virtual auto Type() const noexcept -> StorageBox = 0;
 

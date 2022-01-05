@@ -6,12 +6,7 @@
 #pragma once
 
 #include <iosfwd>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -25,6 +20,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
@@ -85,11 +81,12 @@ class ContactSection final
     : public Combined<ContactSectionList, ContactSectionRow, ContactSortKey>
 {
 public:
-    auto ContactID() const noexcept -> std::string final
+    auto ContactID() const noexcept -> UnallocatedCString final
     {
         return primary_id_->str();
     }
-    auto Name(const std::string& lang) const noexcept -> std::string final
+    auto Name(const UnallocatedCString& lang) const noexcept
+        -> UnallocatedCString final
     {
         return proto::TranslateSectionName(translate(row_id_), lang);
     }
@@ -107,12 +104,13 @@ public:
     ~ContactSection() final = default;
 
 private:
-    static const std::
-        map<identity::wot::claim::SectionType, std::set<proto::ContactItemType>>
-            allowed_types_;
     static const std::map<
         identity::wot::claim::SectionType,
-        std::map<proto::ContactItemType, int>>
+        UnallocatedSet<proto::ContactItemType>>
+        allowed_types_;
+    static const UnallocatedMap<
+        identity::wot::claim::SectionType,
+        UnallocatedMap<proto::ContactItemType, int>>
         sort_keys_;
 
     static auto sort_key(const ContactSectionRowID type) noexcept -> int;
@@ -128,7 +126,7 @@ private:
         return ContactSectionList::last(id);
     }
     auto process_section(const identity::wot::claim::Section& section) noexcept
-        -> std::set<ContactSectionRowID>;
+        -> UnallocatedSet<ContactSectionRowID>;
     auto reindex(
         const implementation::ContactSortKey& key,
         implementation::CustomData& custom) noexcept -> bool final;

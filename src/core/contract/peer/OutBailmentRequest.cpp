@@ -38,7 +38,7 @@ auto Factory::OutbailmentRequest(
     const identifier::UnitDefinition& unitID,
     const identifier::Notary& serverID,
     const Amount& amount,
-    const std::string& terms,
+    const UnallocatedCString& terms,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::Outbailment>
 {
@@ -113,7 +113,7 @@ Outbailment::Outbailment(
     const identifier::UnitDefinition& unitID,
     const identifier::Notary& serverID,
     const Amount& amount,
-    const std::string& terms)
+    const UnallocatedCString& terms)
     : Request(
           api,
           nym,

@@ -7,11 +7,7 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
-#include <unordered_map>
 #include <utility>
 
 #include "internal/otx/Types.hpp"
@@ -21,6 +17,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -73,13 +70,13 @@ public:
 class OTMessageStrategyManager
 {
 public:
-    auto findStrategy(std::string name) -> OTMessageStrategy*
+    auto findStrategy(UnallocatedCString name) -> OTMessageStrategy*
     {
         auto strategy = mapping.find(name);
         if (strategy == mapping.end()) return nullptr;
         return strategy->second.get();
     }
-    void registerStrategy(std::string name, OTMessageStrategy* strategy)
+    void registerStrategy(UnallocatedCString name, OTMessageStrategy* strategy)
     {
         mapping[name] = std::unique_ptr<OTMessageStrategy>(strategy);
     }
@@ -90,7 +87,10 @@ public:
     }
 
 private:
-    std::unordered_map<std::string, std::unique_ptr<OTMessageStrategy>> mapping;
+    UnallocatedUnorderedMap<
+        UnallocatedCString,
+        std::unique_ptr<OTMessageStrategy>>
+        mapping;
 };
 
 class Message final : public Contract
@@ -105,12 +105,12 @@ protected:
 private:
     friend api::session::imp::Factory;
 
-    using TypeMap = std::map<MessageType, std::string>;
-    using ReverseTypeMap = std::map<std::string, MessageType>;
+    using TypeMap = UnallocatedMap<MessageType, UnallocatedCString>;
+    using ReverseTypeMap = UnallocatedMap<UnallocatedCString, MessageType>;
 
     static const TypeMap message_names_;
     static const ReverseTypeMap message_types_;
-    static const std::map<MessageType, MessageType> reply_message_;
+    static const UnallocatedMap<MessageType, MessageType> reply_message_;
 
     static auto make_reverse_map() -> ReverseTypeMap;
     static auto reply_command(const MessageType& type) -> MessageType;
@@ -128,9 +128,9 @@ private:
         -> std::int32_t;
 
 public:
-    static auto Command(const MessageType type) -> std::string;
-    static auto Type(const std::string& type) -> MessageType;
-    static auto ReplyCommand(const MessageType type) -> std::string;
+    static auto Command(const MessageType type) -> UnallocatedCString;
+    static auto Type(const UnallocatedCString& type) -> MessageType;
+    static auto ReplyCommand(const MessageType type) -> UnallocatedCString;
 
     ~Message() final;
 
@@ -153,9 +153,11 @@ public:
     // that should be listed as acknowledged that the server reply has already
     // been seen for those request numbers.
     void SetAcknowledgments(const otx::context::Base& context);
-    void SetAcknowledgments(const std::set<RequestNumber>& numbers);
+    void SetAcknowledgments(const UnallocatedSet<RequestNumber>& numbers);
 
-    static void registerStrategy(std::string name, OTMessageStrategy* strategy);
+    static void registerStrategy(
+        UnallocatedCString name,
+        OTMessageStrategy* strategy);
 
     OTString m_strCommand;   // perhaps @register is the string for "reply to
                              // register" a-ha
@@ -228,7 +230,7 @@ public:
 class RegisterStrategy
 {
 public:
-    RegisterStrategy(std::string name, OTMessageStrategy* strategy)
+    RegisterStrategy(UnallocatedCString name, OTMessageStrategy* strategy)
     {
         Message::registerStrategy(name, strategy);
     }

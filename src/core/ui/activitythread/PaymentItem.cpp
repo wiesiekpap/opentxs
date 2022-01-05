@@ -70,8 +70,8 @@ PaymentItem::PaymentItem(
     const ActivityThreadSortKey& sortKey,
     CustomData& custom,
     opentxs::Amount amount,
-    std::string&& display,
-    std::string&& memo,
+    UnallocatedCString&& display,
+    UnallocatedCString&& memo,
     std::shared_ptr<const OTPayment>&& contract) noexcept
     : ActivityThreadItem(parent, api, nymID, rowID, sortKey, custom)
     , amount_(amount)
@@ -134,7 +134,7 @@ auto PaymentItem::Deposit() const noexcept -> bool
     return true;
 }
 
-auto PaymentItem::DisplayAmount() const noexcept -> std::string
+auto PaymentItem::DisplayAmount() const noexcept -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 
@@ -148,18 +148,18 @@ auto PaymentItem::extract(
     CustomData& custom) noexcept
     -> std::tuple<
         opentxs::Amount,
-        std::string,
-        std::string,
+        UnallocatedCString,
+        UnallocatedCString,
         std::shared_ptr<const OTPayment>>
 {
     const auto reason =
         api.Factory().PasswordPrompt("Decrypting payment activity");
     const auto& [itemID, box, account] = row;
-    auto& text = *static_cast<std::string*>(custom.front());
+    auto& text = *static_cast<UnallocatedCString*>(custom.front());
     auto output = std::tuple<
         opentxs::Amount,
-        std::string,
-        std::string,
+        UnallocatedCString,
+        UnallocatedCString,
         std::shared_ptr<OTPayment>>{};
     auto& [amount, displayAmount, memo, payment] = output;
 
@@ -213,7 +213,7 @@ auto PaymentItem::extract(
     return std::move(output);
 }
 
-auto PaymentItem::Memo() const noexcept -> std::string
+auto PaymentItem::Memo() const noexcept -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 

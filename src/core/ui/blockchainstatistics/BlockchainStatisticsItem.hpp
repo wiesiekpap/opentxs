@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/BlockchainStatisticsItem.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
@@ -81,7 +81,7 @@ public:
     {
         return active_peers_.load();
     }
-    auto Balance() const noexcept -> std::string final;
+    auto Balance() const noexcept -> UnallocatedCString final;
     auto BlockDownloadQueue() const noexcept -> std::size_t final
     {
         return blocks_.load();
@@ -93,7 +93,7 @@ public:
     }
     auto Filters() const noexcept -> Position final { return filter_.load(); }
     auto Headers() const noexcept -> Position final { return header_.load(); }
-    auto Name() const noexcept -> std::string final { return name_; }
+    auto Name() const noexcept -> UnallocatedCString final { return name_; }
 
     BlockchainStatisticsItem(
         const BlockchainStatisticsInternalInterface& parent,
@@ -105,7 +105,7 @@ public:
     ~BlockchainStatisticsItem() final;
 
 private:
-    const std::string name_;
+    const UnallocatedCString name_;
     std::atomic<blockchain::block::Height> header_;
     std::atomic<blockchain::block::Height> filter_;
     std::atomic<std::size_t> connected_peers_;

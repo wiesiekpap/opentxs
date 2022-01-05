@@ -7,10 +7,7 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <map>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
@@ -18,6 +15,7 @@
 #include "internal/serialization/protobuf/verify/InstrumentRevision.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/PaymentEvent.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyWorkflows.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/PaymentEvent.pb.h"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
@@ -130,7 +128,7 @@ auto CheckProto_3(const PaymentWorkflow& input, const bool silent) -> bool
 
     CHECK_SUBOBJECTS(source, PaymentWorkflowAllowedInstrumentRevision())
     CHECK_IDENTIFIERS(party)
-    std::map<PaymentEventType, std::size_t> events{};
+    UnallocatedMap<PaymentEventType, std::size_t> events{};
 
     for (const auto& it : input.event()) {
         try {
@@ -144,11 +142,11 @@ auto CheckProto_3(const PaymentWorkflow& input, const bool silent) -> bool
                 events);
 
             if (false == validevent) {
-                const auto fail = std::string("invalid ") + "event";
+                const auto fail = UnallocatedCString("invalid ") + "event";
                 FAIL_1(fail)
             }
         } catch (const std::out_of_range&) {
-            const auto fail = std::string("allowed ") + "event" +
+            const auto fail = UnallocatedCString("allowed ") + "event" +
                               " version not defined for version";
             FAIL_2(fail.c_str(), input.version())
         }

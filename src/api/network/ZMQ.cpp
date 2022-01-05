@@ -9,7 +9,6 @@
 
 #include <atomic>
 #include <cstdint>
-#include <map>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -179,7 +179,7 @@ auto ZMQ::SendTimeout() const -> std::chrono::seconds
     return send_timeout_.load();
 }
 
-auto ZMQ::Server(const std::string& id) const noexcept(false)
+auto ZMQ::Server(const UnallocatedCString& id) const noexcept(false)
     -> opentxs::network::ServerConnection&
 {
     Lock lock(lock_);
@@ -201,7 +201,7 @@ auto ZMQ::Server(const std::string& id) const noexcept(false)
     return connection;
 }
 
-auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
+auto ZMQ::SetSocksProxy(const UnallocatedCString& proxy) const -> bool
 {
     bool notUsed{false};
     bool set = api_.Config().Set_str(
@@ -242,7 +242,7 @@ auto ZMQ::SetSocksProxy(const std::string& proxy) const -> bool
     return set;
 }
 
-auto ZMQ::SocksProxy(std::string& proxy) const -> bool
+auto ZMQ::SocksProxy(UnallocatedCString& proxy) const -> bool
 {
     Lock lock(lock_);
     proxy = socks_proxy_;
@@ -250,15 +250,15 @@ auto ZMQ::SocksProxy(std::string& proxy) const -> bool
     return (!socks_proxy_.empty());
 }
 
-auto ZMQ::SocksProxy() const -> std::string
+auto ZMQ::SocksProxy() const -> UnallocatedCString
 {
-    std::string output{};
+    UnallocatedCString output{};
     SocksProxy(output);
 
     return output;
 }
 
-auto ZMQ::Status(const std::string& server) const -> ConnectionState
+auto ZMQ::Status(const UnallocatedCString& server) const -> ConnectionState
 {
     Lock lock(lock_);
     const auto it = server_connections_.find(server);

@@ -6,9 +6,9 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -21,7 +21,7 @@ class OTVariable
 {
 public:
     enum OTVariable_Type {
-        Var_String,   // std::string
+        Var_String,   // UnallocatedCString
         Var_Integer,  // Integer. (For std::int64_t std::int32_t: use strings.)
         Var_Bool,     // Boolean. (True / False)
         Var_Error_Type  // should never happen.
@@ -37,13 +37,13 @@ public:
     };
 
 private:
-    OTString m_strName;             // Name of this variable.
-    std::string m_str_Value;        // If a string, the value is stored here.
-    std::int32_t m_nValue{};        // If an integer, the value is stored here.
-    bool m_bValue{false};           // If a bool, the value is stored here.
-    std::string m_str_ValueBackup;  // If a string, the value backup is stored
-                                    // here. (So we can see if it has changed
-                                    // since execution)
+    OTString m_strName;              // Name of this variable.
+    UnallocatedCString m_str_Value;  // If a string, the value is stored here.
+    std::int32_t m_nValue{};         // If an integer, the value is stored here.
+    bool m_bValue{false};            // If a bool, the value is stored here.
+    UnallocatedCString m_str_ValueBackup;  // If a string, the value backup is
+                                           // stored here. (So we can see if it
+                                           // has changed since execution)
     std::int32_t m_nValueBackup{};  // If an integer, the value backup is stored
                                     // here.
     // (So we can see if it has changed since execution)
@@ -91,7 +91,7 @@ public:
     void SetBylaw(OTBylaw& theBylaw) { m_pBylaw = &theBylaw; }
     auto SetValue(const std::int32_t& nValue) -> bool;
     auto SetValue(bool bValue) -> bool;
-    auto SetValue(const std::string& str_Value) -> bool;
+    auto SetValue(const UnallocatedCString& str_Value) -> bool;
 
     auto GetName() const -> const String&
     {
@@ -106,26 +106,26 @@ public:
 
     auto CopyValueInteger() const -> std::int32_t { return m_nValue; }
     auto CopyValueBool() const -> bool { return m_bValue; }
-    auto CopyValueString() const -> std::string { return m_str_Value; }
+    auto CopyValueString() const -> UnallocatedCString { return m_str_Value; }
 
     auto GetValueInteger() -> std::int32_t& { return m_nValue; }
     auto GetValueBool() -> bool& { return m_bValue; }
-    auto GetValueString() -> std::string& { return m_str_Value; }
+    auto GetValueString() -> UnallocatedCString& { return m_str_Value; }
 
     auto Compare(OTVariable& rhs) -> bool;
 
     OTVariable();
     OTVariable(
-        const std::string& str_Name,
+        const UnallocatedCString& str_Name,
         const std::int32_t nValue,
         const OTVariable_Access theAccess = Var_Persistent);
     OTVariable(
-        const std::string& str_Name,
+        const UnallocatedCString& str_Name,
         const bool bValue,
         const OTVariable_Access theAccess = Var_Persistent);
     OTVariable(
-        const std::string& str_Name,
-        const std::string& str_Value,
+        const UnallocatedCString& str_Name,
+        const UnallocatedCString& str_Value,
         const OTVariable_Access theAccess = Var_Persistent);
     virtual ~OTVariable();
 

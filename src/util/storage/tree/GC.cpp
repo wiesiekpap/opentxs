@@ -42,7 +42,7 @@ Root::GC::GC(
 
 auto Root::GC::Cleanup() noexcept -> void { future_.get(); }
 
-auto Root::GC::Check(const std::string root) noexcept -> CheckState
+auto Root::GC::Check(const UnallocatedCString root) noexcept -> CheckState
 {
     if (0 == interval_) {
         LogVerbose()(OT_PRETTY_CLASS())("Garbage collection disabled").Flush();
@@ -117,7 +117,7 @@ auto Root::GC::collect_garbage(
 }
 
 auto Root::GC::Init(
-    const std::string& root,
+    const UnallocatedCString& root,
     bool resume,
     std::uint64_t last) noexcept -> void
 {

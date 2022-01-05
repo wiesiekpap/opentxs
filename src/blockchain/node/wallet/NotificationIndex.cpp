@@ -10,14 +10,13 @@
 #include <array>
 #include <cstddef>
 #include <iterator>
-#include <map>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/wallet/Progress.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/ScopeGuard.hpp"
 

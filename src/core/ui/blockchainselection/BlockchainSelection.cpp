@@ -9,10 +9,7 @@
 
 #include <future>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "core/ui/base/List.hpp"
 #include "internal/api/network/Blockchain.hpp"
@@ -30,6 +27,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -59,7 +57,7 @@ BlockchainSelection::BlockchainSelection(
     , Worker(api, {})
     , filter_(filter(type))
     , chain_state_([&] {
-        auto out = std::map<blockchain::Type, bool>{};
+        auto out = UnallocatedMap<blockchain::Type, bool>{};
 
         for (const auto chain : filter_) { out[chain] = false; }
 
@@ -135,7 +133,7 @@ auto BlockchainSelection::EnabledCount() const noexcept -> std::size_t
 }
 
 auto BlockchainSelection::filter(const ui::Blockchains type) noexcept
-    -> std::set<blockchain::Type>
+    -> UnallocatedSet<blockchain::Type>
 {
     auto complete = blockchain::SupportedChains();
 

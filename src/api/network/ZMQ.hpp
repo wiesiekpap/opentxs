@@ -8,9 +8,7 @@
 #include <atomic>
 #include <chrono>
 #include <functional>
-#include <map>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
@@ -21,6 +19,7 @@
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -48,12 +47,13 @@ public:
     auto Running() const -> const Flag& final;
     auto SendTimeout() const -> std::chrono::seconds final;
 
-    auto Server(const std::string& id) const
+    auto Server(const UnallocatedCString& id) const
         -> opentxs::network::ServerConnection& final;
-    auto SetSocksProxy(const std::string& proxy) const -> bool final;
-    auto SocksProxy() const -> std::string final;
-    auto SocksProxy(std::string& proxy) const -> bool final;
-    auto Status(const std::string& server) const -> ConnectionState final;
+    auto SetSocksProxy(const UnallocatedCString& proxy) const -> bool final;
+    auto SocksProxy() const -> UnallocatedCString final;
+    auto SocksProxy(UnallocatedCString& proxy) const -> bool final;
+    auto Status(const UnallocatedCString& server) const
+        -> ConnectionState final;
 
     ~ZMQ() final;
 
@@ -67,8 +67,9 @@ private:
     mutable std::atomic<std::chrono::seconds> send_timeout_;
     mutable std::atomic<std::chrono::seconds> keep_alive_;
     mutable std::mutex lock_;
-    mutable std::string socks_proxy_;
-    mutable std::map<std::string, OTServerConnection> server_connections_;
+    mutable UnallocatedCString socks_proxy_;
+    mutable UnallocatedMap<UnallocatedCString, OTServerConnection>
+        server_connections_;
     OTZMQPublishSocket status_publisher_;
 
     auto verify_lock(const Lock& lock) const -> bool;

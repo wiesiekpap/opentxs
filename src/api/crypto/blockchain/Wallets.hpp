@@ -7,13 +7,9 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "blockchain/crypto/AccountIndex.hpp"
 #include "opentxs/Types.hpp"
@@ -32,6 +28,7 @@
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -72,10 +69,10 @@ public:
     using AccountData = crypto::Blockchain::AccountData;
 
     auto AccountList(const identifier::Nym& nymID) const noexcept
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto AccountList(const opentxs::blockchain::Type chain) const noexcept
-        -> std::set<OTIdentifier>;
-    auto AccountList() const noexcept -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
+    auto AccountList() const noexcept -> UnallocatedSet<OTIdentifier>;
     auto Get(const opentxs::blockchain::Type chain) noexcept
         -> opentxs::blockchain::crypto::Wallet&;
     auto LookupAccount(const Identifier& id) const noexcept -> AccountData;
@@ -92,7 +89,7 @@ private:
     opentxs::blockchain::crypto::AccountIndex index_;
     mutable std::mutex lock_;
     mutable bool populated_;
-    mutable std::map<
+    mutable UnallocatedMap<
         opentxs::blockchain::Type,
         std::unique_ptr<opentxs::blockchain::crypto::Wallet>>
         lists_;

@@ -5,18 +5,19 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
+#include "opentxs/util/Container.hpp"
+
+namespace ot = opentxs;
 
 namespace ottest
 {
 struct VectorV1 {
-    std::string words_{};
-    std::string payment_code_{};
-    std::vector<std::string> receiving_address_{};
-    std::string private_key_{};
-    std::string outpoint_{};
-    std::string blinded_{};
+    ot::UnallocatedCString words_{};
+    ot::UnallocatedCString payment_code_{};
+    ot::UnallocatedVector<ot::UnallocatedCString> receiving_address_{};
+    ot::UnallocatedCString private_key_{};
+    ot::UnallocatedCString outpoint_{};
+    ot::UnallocatedCString blinded_{};
 };
 
 struct VectorsV1 {

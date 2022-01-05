@@ -76,7 +76,8 @@ auto BitcoinP2PReject(
 
         return nullptr;
     }
-    const std::string message{reinterpret_cast<const char*>(it), messageSize};
+    const UnallocatedCString message{
+        reinterpret_cast<const char*>(it), messageSize};
     it += messageSize;
     // -----------------------------------------------
     expectedSize += sizeof(std::uint8_t);
@@ -123,7 +124,8 @@ auto BitcoinP2PReject(
 
         return nullptr;
     }
-    const std::string reason{reinterpret_cast<const char*>(it), reasonSize};
+    const UnallocatedCString reason{
+        reinterpret_cast<const char*>(it), reasonSize};
     it += reasonSize;
     // -----------------------------------------------
     // This next field is "sometimes there".
@@ -160,9 +162,9 @@ auto BitcoinP2PReject(
 auto BitcoinP2PReject(
     const api::Session& api,
     const blockchain::Type network,
-    const std::string& message,
+    const UnallocatedCString& message,
     const std::uint8_t code,
-    const std::string& reason,
+    const UnallocatedCString& reason,
     const Data& extra) -> blockchain::p2p::bitcoin::message::Reject*
 {
     namespace bitcoin = blockchain::p2p::bitcoin;
@@ -184,9 +186,9 @@ namespace opentxs::blockchain::p2p::bitcoin::message
 Reject::Reject(
     const api::Session& api,
     const blockchain::Type network,
-    const std::string& message,
+    const UnallocatedCString& message,
     const bitcoin::RejectCode code,
-    const std::string& reason,
+    const UnallocatedCString& reason,
     const Data& extra) noexcept
     : Message(api, network, bitcoin::Command::reject)
     , message_(message)
@@ -200,9 +202,9 @@ Reject::Reject(
 Reject::Reject(
     const api::Session& api,
     std::unique_ptr<Header> header,
-    const std::string& message,
+    const UnallocatedCString& message,
     const bitcoin::RejectCode code,
-    const std::string& reason,
+    const UnallocatedCString& reason,
     const Data& extra) noexcept(false)
     : Message(api, std::move(header))
     , message_(message)

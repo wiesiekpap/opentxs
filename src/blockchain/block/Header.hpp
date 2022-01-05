@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 
 #include "opentxs/Types.hpp"
@@ -17,6 +16,7 @@
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs

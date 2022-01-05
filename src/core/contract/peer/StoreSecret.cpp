@@ -30,8 +30,8 @@ auto Factory::StoreSecret(
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const contract::peer::SecretType type,
-    const std::string& primary,
-    const std::string& secondary,
+    const UnallocatedCString& primary,
+    const UnallocatedCString& secondary,
     const identifier::Notary& server,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::request::StoreSecret>
@@ -104,8 +104,8 @@ StoreSecret::StoreSecret(
     const Nym_p& nym,
     const identifier::Nym& recipientID,
     const SecretType type,
-    const std::string& primary,
-    const std::string& secondary,
+    const UnallocatedCString& primary,
+    const UnallocatedCString& secondary,
     const identifier::Notary& serverID)
     : Request(
           api,

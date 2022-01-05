@@ -14,12 +14,10 @@
 #include <atomic>
 #include <chrono>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <random>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "IncomingConnectionManager.hpp"
 #include "internal/api/network/Blockchain.hpp"
@@ -38,6 +36,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -56,9 +55,9 @@ PeerManager::Peers::Peers(
     const internal::PeerManager& parent,
     const database::BlockStorage policy,
     const std::atomic<bool>& running,
-    const std::string& shutdown,
+    const UnallocatedCString& shutdown,
     const Type chain,
-    const std::string& seednode,
+    const UnallocatedCString& seednode,
     const std::size_t peerTarget) noexcept
     : chain_(chain)
     , api_(api)
@@ -295,7 +294,7 @@ auto PeerManager::Peers::get_dns_peer() const noexcept -> Endpoint
             return {};
         }
 
-        auto seeds = std::vector<std::string>{};
+        auto seeds = UnallocatedVector<UnallocatedCString>{};
         const auto count = std::size_t{1};
         std::sample(
             std::begin(dns),
@@ -472,7 +471,7 @@ auto PeerManager::Peers::get_preferred_peer(
 }
 
 auto PeerManager::Peers::get_preferred_services(
-    const internal::Config& config) noexcept -> std::set<p2p::Service>
+    const internal::Config& config) noexcept -> UnallocatedSet<p2p::Service>
 {
     if (config.download_cfilters_) {
 
@@ -483,11 +482,12 @@ auto PeerManager::Peers::get_preferred_services(
     }
 }
 
-auto PeerManager::Peers::get_types() const noexcept -> std::set<p2p::Network>
+auto PeerManager::Peers::get_types() const noexcept
+    -> UnallocatedSet<p2p::Network>
 {
     using Type = blockchain::p2p::Network;
     using Mode = Options::ConnectionMode;
-    auto output = std::set<p2p::Network>{};
+    auto output = UnallocatedSet<p2p::Network>{};
 
     switch (api_.GetOptions().Ipv4ConnectionMode()) {
         case Mode::off: {
@@ -590,7 +590,7 @@ auto PeerManager::Peers::previous_failure_timeout(
 }
 
 auto PeerManager::Peers::set_default_peer(
-    const std::string node,
+    const UnallocatedCString node,
     const Data& localhost,
     bool& invalidPeer) noexcept -> OTData
 {

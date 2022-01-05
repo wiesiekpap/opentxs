@@ -7,21 +7,23 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "internal/otx/common/util/Common.hpp"  // IWYU pragma: associated
 
-#include <string>
+#include "opentxs/util/Container.hpp"
 
-auto formatBool(bool in) -> std::string { return in ? "true" : "false"; }
+namespace opentxs
+{
+auto formatBool(bool in) -> UnallocatedCString { return in ? "true" : "false"; }
 
-auto formatTimestamp(const opentxs::Time in) -> std::string
+auto formatTimestamp(const opentxs::Time in) -> UnallocatedCString
 {
     return std::to_string(opentxs::Clock::to_time_t(in));
 }
 
-auto getTimestamp() -> std::string
+auto getTimestamp() -> UnallocatedCString
 {
     return formatTimestamp(opentxs::Clock::now());
 }
 
-auto parseTimestamp(std::string in) -> opentxs::Time
+auto parseTimestamp(UnallocatedCString in) -> opentxs::Time
 {
     try {
         return opentxs::Clock::from_time_t(std::stoull(in));
@@ -30,3 +32,4 @@ auto parseTimestamp(std::string in) -> opentxs::Time
         return {};
     }
 }
+}  // namespace opentxs

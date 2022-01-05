@@ -7,7 +7,6 @@
 
 #include <robin_hood.h>
 #include <memory>
-#include <string>
 
 #include "Proto.hpp"
 #include "identity/credential/Base.hpp"
@@ -18,6 +17,7 @@
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/SourceProofType.hpp"
 #include "opentxs/identity/credential/Base.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 #include "serialization/protobuf/SourceProof.pb.h"
@@ -64,7 +64,7 @@ class Primary final : virtual public credential::internal::Primary,
 public:
     auto hasCapability(const NymCapability& capability) const -> bool final;
     auto Path(proto::HDPath& output) const -> bool final;
-    auto Path() const -> std::string final;
+    auto Path() const -> UnallocatedCString final;
     using Base::Verify;
     auto Verify(
         const proto::Credential& credential,

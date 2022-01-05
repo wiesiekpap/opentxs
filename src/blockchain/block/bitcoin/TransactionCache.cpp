@@ -18,8 +18,8 @@
 namespace opentxs::blockchain::block::bitcoin::implementation
 {
 Transaction::Cache::Cache(
-    const std::string& memo,
-    std::vector<blockchain::Type>&& chains,
+    const UnallocatedCString& memo,
+    UnallocatedVector<blockchain::Type>&& chains,
     block::Position&& minedPosition) noexcept(false)
     : lock_()
     , normalized_id_()
@@ -59,7 +59,7 @@ auto Transaction::Cache::add(blockchain::Type chain) noexcept -> void
 }
 
 auto Transaction::Cache::chains() const noexcept
-    -> std::vector<blockchain::Type>
+    -> UnallocatedVector<blockchain::Type>
 {
     auto lock = rLock{lock_};
 
@@ -73,7 +73,7 @@ auto Transaction::Cache::height() const noexcept -> block::Height
     return mined_position_.first;
 }
 
-auto Transaction::Cache::memo() const noexcept -> std::string
+auto Transaction::Cache::memo() const noexcept -> UnallocatedCString
 {
     auto lock = rLock{lock_};
 
@@ -111,12 +111,13 @@ auto Transaction::Cache::reset_size() noexcept -> void
     normalized_size_ = std::nullopt;
 }
 
-auto Transaction::Cache::set_memo(const std::string& memo) noexcept -> void
+auto Transaction::Cache::set_memo(const UnallocatedCString& memo) noexcept
+    -> void
 {
-    set_memo(std::string{memo});
+    set_memo(UnallocatedCString{memo});
 }
 
-auto Transaction::Cache::set_memo(std::string&& memo) noexcept -> void
+auto Transaction::Cache::set_memo(UnallocatedCString&& memo) noexcept -> void
 {
     auto lock = rLock{lock_};
     memo_ = std::move(memo);

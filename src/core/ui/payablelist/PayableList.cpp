@@ -9,9 +9,7 @@
 
 #include <atomic>
 #include <future>
-#include <list>
 #include <memory>
-#include <string>
 
 #include "core/ui/base/List.hpp"
 #include "internal/core/identifier/Identifier.hpp"  // IWYU pragma: keep
@@ -26,6 +24,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -71,7 +70,7 @@ auto PayableList::construct_row(
         Widget::api_,
         id,
         index,
-        extract_custom<const std::string>(custom, 0),
+        extract_custom<const UnallocatedCString>(custom, 0),
         currency_);
 }
 
@@ -142,7 +141,7 @@ auto PayableList::process_contact(
     OT_ASSERT(contact);
 
     auto paymentCode =
-        std::make_unique<std::string>(contact->PaymentCode(currency_));
+        std::make_unique<UnallocatedCString>(contact->PaymentCode(currency_));
 
     OT_ASSERT(paymentCode);
 

@@ -10,9 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <future>
-#include <map>
 #include <memory>
-#include <string>
 #include <tuple>
 #include <utility>
 
@@ -31,6 +29,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/server/MainFile.hpp"
 #include "otx/server/Notary.hpp"
@@ -70,7 +69,7 @@ public:
     auto API() const -> const api::session::Notary& { return manager_; }
     auto GetConnectInfo(
         core::AddressType& type,
-        std::string& hostname,
+        UnallocatedCString& hostname,
         std::uint32_t& port) const -> bool;
     auto GetServerID() const noexcept -> const identifier::Notary&;
     auto GetServerNym() const -> const identity::Nym&;
@@ -116,9 +115,9 @@ public:
 private:
     friend MainFile;
 
-    const std::string DEFAULT_EXTERNAL_IP = "127.0.0.1";
-    const std::string DEFAULT_BIND_IP = "127.0.0.1";
-    const std::string DEFAULT_NAME = "localhost";
+    const UnallocatedCString DEFAULT_EXTERNAL_IP = "127.0.0.1";
+    const UnallocatedCString DEFAULT_BIND_IP = "127.0.0.1";
+    const UnallocatedCString DEFAULT_NAME = "localhost";
     const std::uint32_t DEFAULT_PORT = 7085;
     const std::uint32_t MIN_TCP_PORT = 1024;
     const std::uint32_t MAX_TCP_PORT = 63356;
@@ -141,7 +140,7 @@ private:
     // A hash of the server contract
     OTNotaryID m_notaryID;
     // A hash of the public key that signed the server contract
-    std::string m_strServerNymID;
+    UnallocatedCString m_strServerNymID;
     // This is the server's own contract, containing its public key and
     // connect info.
     Nym_p m_nymServer;
@@ -163,9 +162,12 @@ private:
         const Message* msg = nullptr,
         const String& messageString = String::Factory(),
         const char* command = nullptr) -> bool;
-    auto parse_seed_backup(const std::string& input) const
-        -> std::pair<std::string, std::string>;
-    auto ServerNymID() const -> const std::string& { return m_strServerNymID; }
+    auto parse_seed_backup(const UnallocatedCString& input) const
+        -> std::pair<UnallocatedCString, UnallocatedCString>;
+    auto ServerNymID() const -> const UnallocatedCString&
+    {
+        return m_strServerNymID;
+    }
     auto SetNotaryID(const identifier::Notary& notaryID) noexcept -> void;
     void SetServerNymID(const char* strNymID) { m_strServerNymID = strNymID; }
 

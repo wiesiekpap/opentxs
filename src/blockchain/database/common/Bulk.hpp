@@ -9,10 +9,10 @@
 #include <functional>
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
@@ -56,7 +56,8 @@ public:
         UpdateCallback&& cb,
         std::size_t size) const noexcept -> WritableView;
 
-    Bulk(storage::lmdb::LMDB& lmdb, const std::string& path) noexcept(false);
+    Bulk(storage::lmdb::LMDB& lmdb, const UnallocatedCString& path) noexcept(
+        false);
 
     ~Bulk();
 

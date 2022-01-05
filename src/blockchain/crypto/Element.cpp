@@ -11,10 +11,8 @@
 #include <algorithm>
 #include <chrono>
 #include <iterator>
-#include <map>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/api/crypto/Asymmetric.hpp"
@@ -30,6 +28,7 @@
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
@@ -45,7 +44,7 @@ Element::Element(
     const VersionNumber version,
     const crypto::Subchain subchain,
     const Bip32Index index,
-    const std::string label,
+    const UnallocatedCString label,
     OTIdentifier&& contact,
     const opentxs::crypto::key::EllipticCurve& key,
     const Time time,
@@ -167,8 +166,8 @@ Element::Element(
 {
 }
 
-auto Element::Address(
-    const blockchain::crypto::AddressStyle format) const noexcept -> std::string
+auto Element::Address(const blockchain::crypto::AddressStyle format)
+    const noexcept -> UnallocatedCString
 {
     auto lock = rLock{lock_};
 
@@ -205,16 +204,16 @@ auto Element::Contact() const noexcept -> OTIdentifier
     return contact_;
 }
 
-auto Element::Elements() const noexcept -> std::set<OTData>
+auto Element::Elements() const noexcept -> UnallocatedSet<OTData>
 {
     auto lock = rLock{lock_};
 
     return elements(lock);
 }
 
-auto Element::elements(const rLock&) const noexcept -> std::set<OTData>
+auto Element::elements(const rLock&) const noexcept -> UnallocatedSet<OTData>
 {
-    auto output = std::set<OTData>{};
+    auto output = UnallocatedSet<OTData>{};
     auto pubkey = api_.Factory().Data(pkey_->PublicKey());
 
     try {
@@ -226,7 +225,8 @@ auto Element::elements(const rLock&) const noexcept -> std::set<OTData>
     return output;
 }
 
-auto Element::IncomingTransactions() const noexcept -> std::set<std::string>
+auto Element::IncomingTransactions() const noexcept
+    -> UnallocatedSet<UnallocatedCString>
 {
     return parent_.Internal().IncomingTransactions(KeyID());
 }
@@ -248,8 +248,9 @@ auto Element::instantiate(
     return output;
 }
 
-auto Element::IsAvailable(const Identifier& contact, const std::string& memo)
-    const noexcept -> Availability
+auto Element::IsAvailable(
+    const Identifier& contact,
+    const UnallocatedCString& memo) const noexcept -> Availability
 {
     if (0 < confirmed_.size()) { return Availability::Used; }
 
@@ -303,7 +304,7 @@ auto Element::Key() const noexcept -> ECKey
     return pkey_;
 }
 
-auto Element::Label() const noexcept -> std::string
+auto Element::Label() const noexcept -> UnallocatedCString
 {
     auto lock = rLock{lock_};
 
@@ -406,7 +407,7 @@ void Element::SetContact(const Identifier& contact) noexcept
     update_element(lock);
 }
 
-void Element::SetLabel(const std::string& label) noexcept
+void Element::SetLabel(const UnallocatedCString& label) noexcept
 {
     auto lock = rLock{lock_};
     label_ = label;
@@ -416,7 +417,7 @@ void Element::SetLabel(const std::string& label) noexcept
 
 void Element::SetMetadata(
     const Identifier& contact,
-    const std::string& label) noexcept
+    const UnallocatedCString& label) noexcept
 {
     const auto pc =
         (Subchain::Incoming == subchain_) || (Subchain::Outgoing == subchain_);
@@ -476,7 +477,7 @@ auto Element::Unreserve() noexcept -> bool
 auto Element::update_element(rLock& lock) const noexcept -> void
 {
     const auto elements = this->elements(lock);
-    auto hashes = std::vector<ReadView>{};
+    auto hashes = UnallocatedVector<ReadView>{};
     std::transform(
         std::begin(elements), std::end(elements), std::back_inserter(hashes), [
         ](const auto& in) -> auto { return in->Bytes(); });

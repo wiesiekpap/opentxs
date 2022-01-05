@@ -10,7 +10,6 @@
 
 #include <QObject>
 #include <QVariant>
-#include <string>
 #include <utility>
 
 #include "core/ui/base/Widget.hpp"
@@ -23,14 +22,15 @@
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/ui/AccountActivity.hpp"
 #include "opentxs/core/ui/qt/AccountList.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/Polarity.hpp"
 
 namespace opentxs::ui::implementation
 {
 auto BlockchainAccountActivity::Send(
-    const std::string& address,
-    const std::string& input,
-    const std::string& memo,
+    const UnallocatedCString& address,
+    const UnallocatedCString& input,
+    const UnallocatedCString& memo,
     Scale scale,
     SendMonitor::Callback cb) const noexcept -> int
 {

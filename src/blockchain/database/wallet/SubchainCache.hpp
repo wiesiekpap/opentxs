@@ -7,10 +7,8 @@
 
 #include <robin_hood.h>
 #include <cstddef>
-#include <map>
 #include <mutex>
 #include <optional>
-#include <set>
 
 #include "blockchain/database/wallet/Pattern.hpp"
 #include "blockchain/database/wallet/Position.hpp"
@@ -24,6 +22,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "util/LMDB.hpp"
 
@@ -67,7 +66,7 @@ class SubchainCache
 {
 public:
     using dbPatterns = robin_hood::unordered_node_set<db::Pattern>;
-    using dbPatternIndex = std::set<pPatternID>;
+    using dbPatternIndex = UnallocatedSet<pPatternID>;
 
     auto AddMatch(
         const eLock&,

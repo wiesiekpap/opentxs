@@ -9,9 +9,7 @@
 #include <functional>
 #include <future>
 #include <iosfwd>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/network/zeromq/Batch.hpp"
@@ -36,6 +34,7 @@
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -71,7 +70,7 @@ public:
         const ListenCallback& callback,
         const socket::Socket::Direction direction) const noexcept
         -> OTZMQDealerSocket final;
-    auto MakeBatch(std::vector<socket::Type>&& types) const noexcept
+    auto MakeBatch(UnallocatedVector<socket::Type>&& types) const noexcept
         -> internal::Batch& final;
     auto Modify(SocketID id, ModifyCallback cb) const noexcept
         -> AsyncResult final;
@@ -85,7 +84,8 @@ public:
         const socket::Pair& peer) const noexcept -> OTZMQPairSocket final;
     auto PairSocket(
         const zeromq::ListenCallback& callback,
-        const std::string& endpoint) const noexcept -> OTZMQPairSocket final;
+        const UnallocatedCString& endpoint) const noexcept
+        -> OTZMQPairSocket final;
     auto Pipeline(
         const api::Session& api,
         std::function<void(zeromq::Message&&)> callback) const noexcept

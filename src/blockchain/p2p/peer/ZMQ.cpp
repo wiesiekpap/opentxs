@@ -30,12 +30,15 @@ struct ZMQConnectionManager : virtual public ConnectionManager {
     network::zeromq::Pipeline& pipeline_;
     const std::atomic<bool>& running_;
     EndpointData endpoint_;
-    const std::string zmq_;
+    const UnallocatedCString zmq_;
     const std::size_t header_bytes_;
     std::promise<void> init_promise_;
     std::shared_future<void> init_future_;
 
-    auto address() const noexcept -> std::string final { return "::1/128"; }
+    auto address() const noexcept -> UnallocatedCString final
+    {
+        return "::1/128";
+    }
     auto endpoint_data() const noexcept -> EndpointData final
     {
         return endpoint_;
@@ -44,7 +47,10 @@ struct ZMQConnectionManager : virtual public ConnectionManager {
     {
         return Task::P2P == type;
     }
-    auto host() const noexcept -> std::string final { return endpoint_.first; }
+    auto host() const noexcept -> UnallocatedCString final
+    {
+        return endpoint_.first;
+    }
     auto port() const noexcept -> std::uint16_t final
     {
         return endpoint_.second;

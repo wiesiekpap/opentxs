@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "internal/otx/blind/Purse.hpp"
 #include "internal/otx/blind/Token.hpp"
@@ -16,6 +15,7 @@
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Token.hpp"
 #include "opentxs/otx/blind/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -61,7 +61,10 @@ public:
     {
         return std::make_unique<Imp>(*this).release();
     }
-    auto ID(const PasswordPrompt&) const -> std::string override { return {}; }
+    auto ID(const PasswordPrompt&) const -> UnallocatedCString override
+    {
+        return {};
+    }
     auto IsSpent(const PasswordPrompt&) const -> bool override { return {}; }
     virtual auto IsValid() const noexcept -> bool { return false; }
     auto Notary() const -> const identifier::Notary& override;

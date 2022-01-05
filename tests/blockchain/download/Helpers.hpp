@@ -6,10 +6,10 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <string>
 
 #include "blockchain/DownloadManager.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 namespace b = ot::blockchain;
@@ -21,11 +21,11 @@ namespace
 struct DownloadManager;
 
 using DownloadType = int;
-using FinishedType = std::string;
+using FinishedType = ot::UnallocatedCString;
 using ManagerType = d::Manager<DownloadManager, DownloadType, FinishedType>;
 
 struct DownloadManager : public ManagerType {
-    using FinishedMap = std::map<Position, Finished>;
+    using FinishedMap = ot::UnallocatedMap<Position, Finished>;
 
     static const bb::Position genesis_;
 
@@ -61,7 +61,7 @@ struct DownloadManager : public ManagerType {
     }
     [[maybe_unused]] auto MakePositions(
         bb::Height start,
-        std::vector<std::string> hashes) noexcept
+        ot::UnallocatedVector<ot::UnallocatedCString> hashes) noexcept
     {
         auto output = ManagerType::Positions{};
         output.reserve(hashes.size());

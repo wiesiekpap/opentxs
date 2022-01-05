@@ -7,8 +7,6 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <map>
-#include <string>
 
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/cron/OTCron.hpp"
@@ -20,6 +18,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -65,9 +64,9 @@ class PasswordPrompt;
 // Using multi-map since there will be more than one offer for each single
 // price.
 // (Map would only allow a single item on the map for each price.)
-using mapOfOffers = std::multimap<Amount, OTOffer*>;
+using mapOfOffers = UnallocatedMultimap<Amount, OTOffer*>;
 // The same offers are also mapped (uniquely) to transaction number.
-using mapOfOffersTrnsNum = std::map<Amount, OTOffer*>;
+using mapOfOffersTrnsNum = UnallocatedMap<Amount, OTOffer*>;
 
 // A market has a list of OTOffers for all the bids, and another list of
 // OTOffers for all the asks.
@@ -172,7 +171,10 @@ public:
         if (m_lLastSalePrice < 1) m_lLastSalePrice = 1;
     }
 
-    auto GetLastSaleDate() -> const std::string& { return m_strLastSaleDate; }
+    auto GetLastSaleDate() -> const UnallocatedCString&
+    {
+        return m_strLastSaleDate;
+    }
     auto GetTotalAvailableAssets() -> Amount;
 
     void GetIdentifier(Identifier& theIdentifier) const override;
@@ -231,7 +233,7 @@ private:
     Amount m_lScale{0};
 
     Amount m_lLastSalePrice{0};
-    std::string m_strLastSaleDate;
+    UnallocatedCString m_strLastSaleDate;
 
     // The server stores a map of markets, one for each unique combination of
     // instrument definitions. That's what this market class represents: one

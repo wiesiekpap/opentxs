@@ -14,10 +14,8 @@
 #include <functional>
 #include <iterator>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "Proto.tpp"
@@ -52,6 +50,7 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/identity/credential/Base.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Credential.pb.h"
@@ -123,7 +122,7 @@ auto PaymentCode::operator==(const proto::PaymentCode& rhs) const noexcept
 }
 
 auto PaymentCode::AddPrivateKeys(
-    std::string& seed,
+    UnallocatedCString& seed,
     const Bip32Index index,
     const PasswordPrompt& reason) noexcept -> bool
 {
@@ -194,7 +193,7 @@ auto PaymentCode::apply_mask(
     }
 }
 
-auto PaymentCode::asBase58() const noexcept -> std::string
+auto PaymentCode::asBase58() const noexcept -> UnallocatedCString
 {
     switch (version_) {
         case 1:
@@ -425,7 +424,7 @@ auto PaymentCode::calculate_mask_v3(
 
 auto PaymentCode::DecodeNotificationElements(
     const std::uint8_t version,
-    const std::vector<Space>& in,
+    const UnallocatedVector<Space>& in,
     const PasswordPrompt& reason) const noexcept -> opentxs::PaymentCode
 {
     try {
@@ -443,7 +442,7 @@ auto PaymentCode::DecodeNotificationElements(
 
         if (33 != A.size()) {
             throw std::runtime_error{
-                std::string{"Invalid A ("} + std::to_string(A.size()) +
+                UnallocatedCString{"Invalid A ("} + std::to_string(A.size()) +
                 ") bytes"};
         }
 
@@ -455,21 +454,21 @@ auto PaymentCode::DecodeNotificationElements(
             if (2 < version) {
                 if (33 != G.size()) {
                     throw std::runtime_error{
-                        std::string{"Invalid G ("} + std::to_string(G.size()) +
-                        ") bytes"};
+                        UnallocatedCString{"Invalid G ("} +
+                        std::to_string(G.size()) + ") bytes"};
                 }
 
                 return G;
             } else {
                 if (65 != F.size()) {
                     throw std::runtime_error{
-                        std::string{"Invalid F ("} + std::to_string(F.size()) +
-                        ") bytes"};
+                        UnallocatedCString{"Invalid F ("} +
+                        std::to_string(F.size()) + ") bytes"};
                 }
                 if (65 != G.size()) {
                     throw std::runtime_error{
-                        std::string{"Invalid G ("} + std::to_string(G.size()) +
-                        ") bytes"};
+                        UnallocatedCString{"Invalid G ("} +
+                        std::to_string(G.size()) + ") bytes"};
                 }
 
                 auto out = space(sizeof(paymentcode::BinaryPreimage));
@@ -551,9 +550,10 @@ auto PaymentCode::effective_version(
     auto version = (0 == requested) ? actual : requested;
 
     if (version > actual) {
-        const auto error =
-            std::string{"Requested version ("} + std::to_string(version) +
-            ") is higher than allowed (" + std::to_string(actual) + ")";
+        const auto error = UnallocatedCString{"Requested version ("} +
+                           std::to_string(version) +
+                           ") is higher than allowed (" +
+                           std::to_string(actual) + ")";
 
         throw std::runtime_error(error);
     }
@@ -564,7 +564,7 @@ auto PaymentCode::effective_version(
 auto PaymentCode::GenerateNotificationElements(
     const opentxs::PaymentCode& recipient,
     const crypto::key::EllipticCurve& privateKey,
-    const PasswordPrompt& reason) const noexcept -> std::vector<Space>
+    const PasswordPrompt& reason) const noexcept -> UnallocatedVector<Space>
 {
     try {
         if (3 > recipient.Version()) {
@@ -582,7 +582,7 @@ auto PaymentCode::GenerateNotificationElements(
             return out;
         }();
 
-        auto output = std::vector<Space>{};
+        auto output = UnallocatedVector<Space>{};
         constexpr auto size = sizeof(paymentcode::BinaryPreimage_3::key_);
         {
             auto& A = output.emplace_back(space(size));
@@ -616,7 +616,7 @@ auto PaymentCode::GenerateNotificationElements(
 auto PaymentCode::generate_elements_v1(
     const opentxs::PaymentCode& recipient,
     const Space& blind,
-    std::vector<Space>& output) const noexcept(false) -> void
+    UnallocatedVector<Space>& output) const noexcept(false) -> void
 {
     constexpr auto size = std::size_t{65};
 
@@ -649,7 +649,7 @@ auto PaymentCode::generate_elements_v1(
 auto PaymentCode::generate_elements_v3(
     const opentxs::PaymentCode& recipient,
     const Space& blind,
-    std::vector<Space>& output) const noexcept(false) -> void
+    UnallocatedVector<Space>& output) const noexcept(false) -> void
 {
     constexpr auto size = sizeof(paymentcode::BinaryPreimage_3::key_);
 
@@ -698,7 +698,7 @@ auto PaymentCode::Incoming(
                 return localPrivate.IncrementPrivate(secret, reason);
             }
             default: {
-                const auto error = std::string{"Unsupported version "} +
+                const auto error = UnallocatedCString{"Unsupported version "} +
                                    std::to_string(effective);
 
                 throw std::runtime_error{error};
@@ -720,7 +720,7 @@ auto PaymentCode::Locator(const AllocateOutput dest, const std::uint8_t version)
         switch (version_) {
             case 1: {
                 const auto error =
-                    std::string{"Locator not defined for version "} +
+                    UnallocatedCString{"Locator not defined for version "} +
                     std::to_string(version_);
 
                 throw std::runtime_error(error);
@@ -841,7 +841,7 @@ auto PaymentCode::Outgoing(
                 return remotePublic.IncrementPublic(secret);
             }
             default: {
-                const auto error = std::string{"Unsupported version "} +
+                const auto error = UnallocatedCString{"Unsupported version "} +
                                    std::to_string(effective);
 
                 throw std::runtime_error{error};
@@ -958,7 +958,7 @@ auto PaymentCode::Sign(
 
     auto& signature = *serialized.add_signature();
     const bool output = key_->Sign(
-        [&]() -> std::string { return proto::ToString(serialized); },
+        [&]() -> UnallocatedCString { return proto::ToString(serialized); },
         crypto::SignatureRole::NymIDSource,
         signature,
         ID(),

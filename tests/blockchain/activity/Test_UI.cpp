@@ -17,8 +17,6 @@
 #include <atomic>
 #include <memory>
 #include <optional>
-#include <string>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "internal/api/crypto/Blockchain.hpp"
@@ -58,6 +56,7 @@
 #endif  // OT_BLOCKCHAIN
 #endif  // OT_QT
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -71,10 +70,10 @@ const auto time_1_ = ot::Clock::from_time_t(1592661306);
 const auto time_2_ = ot::Clock::from_time_t(1592663862);
 const auto time_3_ = ot::Clock::from_time_t(1592664462);
 const auto time_4_ = ot::Clock::from_time_t(1592675062);
-std::string txid_1_{};
-std::string txid_2_{};
-std::string txid_3_{};
-std::string txid_4_{};
+ot::UnallocatedCString txid_1_{};
+ot::UnallocatedCString txid_2_{};
+ot::UnallocatedCString txid_3_{};
+ot::UnallocatedCString txid_4_{};
 ot::Bip32Index first_index_{};
 ot::Bip32Index second_index_{};
 ot::Bip32Index third_index_{};
@@ -453,7 +452,7 @@ TEST_F(Test_BlockchainActivity, setup_ui)
     activity_thread_3_.expected_ += 2;
     api_.UI().AccountActivity(
         nym_1_id(),
-        api_.Factory().Identifier(std::string{btc_account_id_}),
+        api_.Factory().Identifier(ot::UnallocatedCString{btc_account_id_}),
         make_cb(account_activity_, u8"account_activity_"));
     api_.UI().AccountSummary(
         nym_1_id(),
@@ -556,7 +555,8 @@ TEST_F(Test_BlockchainActivity, initial_state_account_activity)
     ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto& widget = api_.UI().AccountActivity(
-        nym_1_id(), api_.Factory().Identifier(std::string{btc_account_id_}));
+        nym_1_id(),
+        api_.Factory().Identifier(ot::UnallocatedCString{btc_account_id_}));
 
     EXPECT_EQ(widget.AccountID(), btc_account_id_);
     EXPECT_EQ(widget.Balance(), 0);
@@ -586,7 +586,8 @@ TEST_F(Test_BlockchainActivity, initial_state_account_activity_qt)
     ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto* pWidget = api_.UI().AccountActivityQt(
-        nym_1_id(), api_.Factory().Identifier(std::string{btc_account_id_}));
+        nym_1_id(),
+        api_.Factory().Identifier(ot::UnallocatedCString{btc_account_id_}));
 
     ASSERT_NE(pWidget, nullptr);
 
@@ -715,7 +716,8 @@ TEST_F(Test_BlockchainActivity, receive_assigned_account_activity)
     ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto& widget = api_.UI().AccountActivity(
-        nym_1_id(), api_.Factory().Identifier(std::string{btc_account_id_}));
+        nym_1_id(),
+        api_.Factory().Identifier(ot::UnallocatedCString{btc_account_id_}));
 
     EXPECT_EQ(widget.AccountID(), btc_account_id_);
     EXPECT_EQ(widget.Balance(), 0);          // FIXME
@@ -776,7 +778,8 @@ TEST_F(Test_BlockchainActivity, receive_assigned_account_activity_qt)
     ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto* pWidget = api_.UI().AccountActivityQt(
-        nym_1_id(), api_.Factory().Identifier(std::string{btc_account_id_}));
+        nym_1_id(),
+        api_.Factory().Identifier(ot::UnallocatedCString{btc_account_id_}));
 
     ASSERT_NE(pWidget, nullptr);
 
@@ -1033,7 +1036,8 @@ TEST_F(Test_BlockchainActivity, send_account_activity)
     ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto& widget = api_.UI().AccountActivity(
-        nym_1_id(), api_.Factory().Identifier(std::string{btc_account_id_}));
+        nym_1_id(),
+        api_.Factory().Identifier(ot::UnallocatedCString{btc_account_id_}));
 
     EXPECT_EQ(widget.AccountID(), btc_account_id_);
     EXPECT_EQ(widget.Balance(), 0);          // FIXME
@@ -1111,7 +1115,8 @@ TEST_F(Test_BlockchainActivity, send_account_activity_qt)
     ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto* pWidget = api_.UI().AccountActivityQt(
-        nym_1_id(), api_.Factory().Identifier(std::string{btc_account_id_}));
+        nym_1_id(),
+        api_.Factory().Identifier(ot::UnallocatedCString{btc_account_id_}));
 
     ASSERT_NE(pWidget, nullptr);
 
@@ -1361,7 +1366,8 @@ TEST_F(Test_BlockchainActivity, receive_unassigned_account_activity)
     ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto& widget = api_.UI().AccountActivity(
-        nym_1_id(), api_.Factory().Identifier(std::string{btc_account_id_}));
+        nym_1_id(),
+        api_.Factory().Identifier(ot::UnallocatedCString{btc_account_id_}));
 
     EXPECT_EQ(widget.AccountID(), btc_account_id_);
     EXPECT_EQ(widget.Balance(), 0);          // FIXME
@@ -1455,7 +1461,8 @@ TEST_F(Test_BlockchainActivity, receive_unassigned_account_activity_qt)
     ASSERT_TRUE(wait_for_counter(account_activity_));
 
     const auto* pWidget = api_.UI().AccountActivityQt(
-        nym_1_id(), api_.Factory().Identifier(std::string{btc_account_id_}));
+        nym_1_id(),
+        api_.Factory().Identifier(ot::UnallocatedCString{btc_account_id_}));
 
     ASSERT_NE(pWidget, nullptr);
 

@@ -10,10 +10,9 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <set>
-#include <string>
 
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 class QObject;
 
@@ -28,13 +27,16 @@ public:
         on = 1,
     };
 
-    auto BlockchainBindIpv4() const noexcept -> const std::set<std::string>&;
-    auto BlockchainBindIpv6() const noexcept -> const std::set<std::string>&;
+    auto BlockchainBindIpv4() const noexcept
+        -> const UnallocatedSet<UnallocatedCString>&;
+    auto BlockchainBindIpv6() const noexcept
+        -> const UnallocatedSet<UnallocatedCString>&;
     auto BlockchainStorageLevel() const noexcept -> int;
     auto BlockchainWalletEnabled() const noexcept -> bool;
     auto DefaultMintKeyBytes() const noexcept -> std::size_t;
-    auto DisabledBlockchains() const noexcept -> std::set<blockchain::Type>;
-    auto HelpText() const noexcept -> const std::string&;
+    auto DisabledBlockchains() const noexcept
+        -> UnallocatedSet<blockchain::Type>;
+    auto HelpText() const noexcept -> const UnallocatedCString&;
     auto Home() const noexcept -> const char*;
     auto Ipv4ConnectionMode() const noexcept -> ConnectionMode;
     auto Ipv6ConnectionMode() const noexcept -> ConnectionMode;
@@ -43,16 +45,20 @@ public:
     auto NotaryBindPort() const noexcept -> std::uint16_t;
     auto NotaryInproc() const noexcept -> bool;
     auto NotaryName() const noexcept -> const char*;
-    auto NotaryPublicEEP() const noexcept -> const std::set<std::string>&;
-    auto NotaryPublicIPv4() const noexcept -> const std::set<std::string>&;
-    auto NotaryPublicIPv6() const noexcept -> const std::set<std::string>&;
-    auto NotaryPublicOnion() const noexcept -> const std::set<std::string>&;
+    auto NotaryPublicEEP() const noexcept
+        -> const UnallocatedSet<UnallocatedCString>&;
+    auto NotaryPublicIPv4() const noexcept
+        -> const UnallocatedSet<UnallocatedCString>&;
+    auto NotaryPublicIPv6() const noexcept
+        -> const UnallocatedSet<UnallocatedCString>&;
+    auto NotaryPublicOnion() const noexcept
+        -> const UnallocatedSet<UnallocatedCString>&;
     auto NotaryPublicPort() const noexcept -> std::uint16_t;
     auto NotaryTerms() const noexcept -> const char*;
     auto ProvideBlockchainSyncServer() const noexcept -> bool;
     auto QtRootObject() const noexcept -> QObject*;
     auto RemoteBlockchainSyncServers() const noexcept
-        -> const std::set<std::string>&;
+        -> const UnallocatedSet<UnallocatedCString>&;
     auto RemoteLogEndpoint() const noexcept -> const char*;
     auto StoragePrimaryPlugin() const noexcept -> const char*;
     auto TestMode() const noexcept -> bool;

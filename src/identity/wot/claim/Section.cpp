@@ -26,7 +26,7 @@
 namespace opentxs::identity::wot::claim
 {
 static auto create_group(
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const claim::SectionType section,
     const std::shared_ptr<Item>& item) -> Section::GroupMap
 {
@@ -42,12 +42,12 @@ static auto create_group(
 
 static auto extract_groups(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber parentVersion,
     const proto::ContactSection& serialized) -> Section::GroupMap
 {
     Section::GroupMap groupMap{};
-    std::map<claim::ClaimType, Group::ItemMap> itemMaps{};
+    UnallocatedMap<claim::ClaimType, Group::ItemMap> itemMaps{};
     const auto& section = serialized.name();
 
     for (const auto& item : serialized.item()) {
@@ -79,7 +79,7 @@ static auto extract_groups(
 struct Section::Imp {
     const api::Session& api_;
     const VersionNumber version_;
-    const std::string nym_;
+    const UnallocatedCString nym_;
     const claim::SectionType section_;
     const GroupMap groups_;
 
@@ -114,7 +114,7 @@ struct Section::Imp {
     }
 
     Imp(const api::Session& api,
-        const std::string& nym,
+        const UnallocatedCString& nym,
         const VersionNumber version,
         const VersionNumber parentVersion,
         const claim::SectionType section,
@@ -139,7 +139,7 @@ struct Section::Imp {
     Imp(Imp&& rhs) noexcept
         : api_(rhs.api_)
         , version_(rhs.version_)
-        , nym_(std::move(const_cast<std::string&>(rhs.nym_)))
+        , nym_(std::move(const_cast<UnallocatedCString&>(rhs.nym_)))
         , section_(rhs.section_)
         , groups_(std::move(const_cast<GroupMap&>(rhs.groups_)))
     {
@@ -148,7 +148,7 @@ struct Section::Imp {
 
 Section::Section(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
     const claim::SectionType section,
@@ -172,7 +172,7 @@ Section::Section(Section&& rhs) noexcept
 
 Section::Section(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber version,
     const VersionNumber parentVersion,
     const claim::SectionType section,
@@ -194,7 +194,7 @@ Section::Section(
 
 Section::Section(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber parentVersion,
     const proto::ContactSection& serialized)
     : Section(
@@ -209,7 +209,7 @@ Section::Section(
 
 Section::Section(
     const api::Session& api,
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const VersionNumber parentVersion,
     const ReadView& serialized)
     : Section(

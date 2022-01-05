@@ -10,7 +10,6 @@
 #include <robin_hood.h>
 #include <atomic>
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <sstream>
@@ -48,6 +47,7 @@
 #include "opentxs/identity/wot/claim/Section.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -61,7 +61,7 @@
 namespace opentxs
 {
 const robin_hood::
-    unordered_flat_map<blockchain::crypto::AddressStyle, std::string>
+    unordered_flat_map<blockchain::crypto::AddressStyle, UnallocatedCString>
         address_style_map_{
             {blockchain::crypto::AddressStyle::P2PKH,
              std::to_string(
@@ -74,12 +74,12 @@ const robin_hood::
                  static_cast<int>(blockchain::crypto::AddressStyle::P2WPKH))},
         };
 const robin_hood::
-    unordered_flat_map<std::string, blockchain::crypto::AddressStyle>
+    unordered_flat_map<UnallocatedCString, blockchain::crypto::AddressStyle>
         address_style_reverse_map_{opentxs::reverse_map(address_style_map_)};
 
-auto translate_style(const std::string& in) noexcept
+auto translate_style(const UnallocatedCString& in) noexcept
     -> blockchain::crypto::AddressStyle;
-auto translate_style(const std::string& in) noexcept
+auto translate_style(const UnallocatedCString& in) noexcept
     -> blockchain::crypto::AddressStyle
 {
     try {
@@ -92,9 +92,9 @@ auto translate_style(const std::string& in) noexcept
 }
 
 auto translate_style(const blockchain::crypto::AddressStyle& in) noexcept
-    -> std::string;
+    -> UnallocatedCString;
 auto translate_style(const blockchain::crypto::AddressStyle& in) noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     try {
 
@@ -109,13 +109,13 @@ auto translate_style(const blockchain::crypto::AddressStyle& in) noexcept
 struct Contact::Imp {
     const api::session::Client& api_;
     VersionNumber version_{0};
-    std::string label_{""};
+    UnallocatedCString label_{""};
     mutable std::mutex lock_{};
     const OTIdentifier id_;
     OTIdentifier parent_;
     OTNymID primary_nym_;
-    std::map<OTNymID, Nym_p> nyms_;
-    std::set<OTIdentifier> merged_children_;
+    UnallocatedMap<OTNymID, Nym_p> nyms_;
+    UnallocatedSet<OTIdentifier> merged_children_;
     std::unique_ptr<identity::wot::claim::Data> contact_data_{};
     mutable std::shared_ptr<identity::wot::claim::Data> cached_contact_data_{};
     std::atomic<std::uint64_t> revision_{0};
@@ -142,8 +142,8 @@ struct Contact::Imp {
     static auto translate(
         const api::session::Client& api,
         const core::UnitType chain,
-        const std::string& value,
-        const std::string& subtype) noexcept(false) -> std::
+        const UnallocatedCString& value,
+        const UnallocatedCString& subtype) noexcept(false) -> std::
         tuple<OTData, blockchain::crypto::AddressStyle, blockchain::Type>
     {
         auto output = std::
@@ -198,7 +198,7 @@ struct Contact::Imp {
         init_nyms();
     }
 
-    Imp(const api::session::Client& api, const std::string& label)
+    Imp(const api::session::Client& api, const UnallocatedCString& label)
         : api_(api)
         , version_(OT_CONTACT_VERSION)
         , label_(label)
@@ -300,7 +300,7 @@ struct Contact::Imp {
     {
         OT_ASSERT(verify_write_lock(lock));
 
-        std::set<identity::wot::claim::Attribute> attr{
+        UnallocatedSet<identity::wot::claim::Attribute> attr{
             identity::wot::claim::Attribute::Local,
             identity::wot::claim::Attribute::Active};
 
@@ -471,7 +471,9 @@ Contact::Contact(
     OT_ASSERT(imp_);
 }
 
-Contact::Contact(const api::session::Client& api, const std::string& label)
+Contact::Contact(
+    const api::session::Client& api,
+    const UnallocatedCString& label)
     : imp_(std::make_unique<Imp>(api, label))
 {
     OT_ASSERT(imp_);
@@ -528,7 +530,7 @@ auto Contact::operator+=(Contact& rhs) -> Contact&
 }
 
 auto Contact::AddBlockchainAddress(
-    const std::string& address,
+    const UnallocatedCString& address,
     const blockchain::Type type) -> bool
 {
     const auto& api = imp_->api_;
@@ -581,7 +583,7 @@ auto Contact::AddBlockchainAddress(
 }
 
 auto Contact::AddEmail(
-    const std::string& value,
+    const UnallocatedCString& value,
     const bool primary,
     const bool active) -> bool
 {
@@ -630,14 +632,14 @@ auto Contact::AddPaymentCode(
     const core::UnitType currency,
     const bool active) -> bool
 {
-    std::set<identity::wot::claim::Attribute> attr{
+    UnallocatedSet<identity::wot::claim::Attribute> attr{
         identity::wot::claim::Attribute::Local};
 
     if (active) { attr.emplace(identity::wot::claim::Attribute::Active); }
 
     if (primary) { attr.emplace(identity::wot::claim::Attribute::Primary); }
 
-    const std::string value = code.asBase58();
+    const UnallocatedCString value = code.asBase58();
     std::shared_ptr<identity::wot::claim::Item> claim{nullptr};
     claim.reset(new identity::wot::claim::Item(
         imp_->api_,
@@ -662,7 +664,7 @@ auto Contact::AddPaymentCode(
 }
 
 auto Contact::AddPhoneNumber(
-    const std::string& value,
+    const UnallocatedCString& value,
     const bool primary,
     const bool active) -> bool
 {
@@ -683,7 +685,7 @@ auto Contact::AddPhoneNumber(
 }
 
 auto Contact::AddSocialMediaProfile(
-    const std::string& value,
+    const UnallocatedCString& value,
     const identity::wot::claim::ClaimType type,
     const bool primary,
     const bool active) -> bool
@@ -723,7 +725,7 @@ auto Contact::Best(const identity::wot::claim::Group& group)
     return group.begin()->second;
 }
 
-auto Contact::BestEmail() const -> std::string
+auto Contact::BestEmail() const -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -734,7 +736,7 @@ auto Contact::BestEmail() const -> std::string
     return data->BestEmail();
 }
 
-auto Contact::BestPhoneNumber() const -> std::string
+auto Contact::BestPhoneNumber() const -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -746,7 +748,7 @@ auto Contact::BestPhoneNumber() const -> std::string
 }
 
 auto Contact::BestSocialMediaProfile(
-    const identity::wot::claim::ClaimType type) const -> std::string
+    const identity::wot::claim::ClaimType type) const -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -757,10 +759,10 @@ auto Contact::BestSocialMediaProfile(
     return data->BestSocialMediaProfile(type);
 }
 
-auto Contact::BlockchainAddresses() const -> std::vector<
+auto Contact::BlockchainAddresses() const -> UnallocatedVector<
     std::tuple<OTData, blockchain::crypto::AddressStyle, blockchain::Type>>
 {
-    auto output = std::vector<std::tuple<
+    auto output = UnallocatedVector<std::tuple<
         OTData,
         blockchain::crypto::AddressStyle,
         blockchain::Type>>{};
@@ -815,7 +817,7 @@ auto Contact::Data() const -> std::shared_ptr<identity::wot::claim::Data>
     return imp_->merged_data(lock);
 }
 
-auto Contact::EmailAddresses(bool active) const -> std::string
+auto Contact::EmailAddresses(bool active) const -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -826,7 +828,7 @@ auto Contact::EmailAddresses(bool active) const -> std::string
     return data->EmailAddresses(active);
 }
 
-auto Contact::ExtractLabel(const identity::Nym& nym) -> std::string
+auto Contact::ExtractLabel(const identity::Nym& nym) -> UnallocatedCString
 {
     return nym.Claims().Name();
 }
@@ -839,7 +841,10 @@ auto Contact::ExtractType(const identity::Nym& nym)
 
 auto Contact::ID() const -> const Identifier& { return imp_->id_; }
 
-auto Contact::Label() const -> const std::string& { return imp_->label_; }
+auto Contact::Label() const -> const UnallocatedCString&
+{
+    return imp_->label_;
+}
 
 auto Contact::LastUpdated() const -> std::time_t
 {
@@ -879,7 +884,7 @@ auto Contact::LastUpdated() const -> std::time_t
 }
 
 auto Contact::Nyms(const bool includeInactive) const
-    -> std::vector<opentxs::OTNymID>
+    -> UnallocatedVector<opentxs::OTNymID>
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -893,7 +898,7 @@ auto Contact::Nyms(const bool includeInactive) const
 
     if (false == bool(group)) { return {}; }
 
-    std::vector<OTNymID> output{};
+    UnallocatedVector<OTNymID> output{};
     const auto& primaryID = group->Primary();
 
     for (const auto& it : *group) {
@@ -919,7 +924,7 @@ auto Contact::Nyms(const bool includeInactive) const
 
 auto Contact::PaymentCode(
     const identity::wot::claim::Data& data,
-    const core::UnitType currency) -> std::string
+    const core::UnitType currency) -> UnallocatedCString
 {
     auto group = data.Group(
         identity::wot::claim::SectionType::Procedure, UnitToClaim(currency));
@@ -933,7 +938,8 @@ auto Contact::PaymentCode(
     return item->Value();
 }
 
-auto Contact::PaymentCode(const core::UnitType currency) const -> std::string
+auto Contact::PaymentCode(const core::UnitType currency) const
+    -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -945,7 +951,7 @@ auto Contact::PaymentCode(const core::UnitType currency) const -> std::string
 }
 
 auto Contact::PaymentCodes(const core::UnitType currency) const
-    -> std::vector<std::string>
+    -> UnallocatedVector<UnallocatedCString>
 {
     auto lock = Lock{imp_->lock_};
     const auto group = imp_->payment_codes(lock, currency);
@@ -953,7 +959,7 @@ auto Contact::PaymentCodes(const core::UnitType currency) const
 
     if (false == bool(group)) { return {}; }
 
-    std::vector<std::string> output{};
+    UnallocatedVector<UnallocatedCString> output{};
 
     for (const auto& it : *group) {
         OT_ASSERT(it.second);
@@ -965,7 +971,7 @@ auto Contact::PaymentCodes(const core::UnitType currency) const
     return output;
 }
 
-auto Contact::PhoneNumbers(bool active) const -> std::string
+auto Contact::PhoneNumbers(bool active) const -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -976,7 +982,7 @@ auto Contact::PhoneNumbers(bool active) const -> std::string
     return data->PhoneNumbers(active);
 }
 
-auto Contact::Print() const -> std::string
+auto Contact::Print() const -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};
     std::stringstream out{};
@@ -1011,7 +1017,7 @@ auto Contact::Print() const -> std::string
 
     auto data = imp_->merged_data(lock);
 
-    if (data) { out << std::string(*data); }
+    if (data) { out << UnallocatedCString(*data); }
 
     out << std::endl;
 
@@ -1052,7 +1058,7 @@ auto Contact::Serialize(proto::Contact& output) const -> bool
     return true;
 }
 
-void Contact::SetLabel(const std::string& label)
+void Contact::SetLabel(const UnallocatedCString& label)
 {
     auto lock = Lock{imp_->lock_};
     imp_->label_ = label;
@@ -1066,7 +1072,7 @@ void Contact::SetLabel(const std::string& label)
 
 auto Contact::SocialMediaProfiles(
     const identity::wot::claim::ClaimType type,
-    bool active) const -> std::string
+    bool active) const -> UnallocatedCString
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);
@@ -1078,7 +1084,7 @@ auto Contact::SocialMediaProfiles(
 }
 
 auto Contact::SocialMediaProfileTypes() const
-    -> const std::set<identity::wot::claim::ClaimType>
+    -> const UnallocatedSet<identity::wot::claim::ClaimType>
 {
     auto lock = Lock{imp_->lock_};
     const auto data = imp_->merged_data(lock);

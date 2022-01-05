@@ -9,14 +9,11 @@
 #include <boost/container/vector.hpp>
 #include <chrono>
 #include <cstddef>
-#include <deque>
 #include <functional>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <string_view>
 #include <tuple>
 #include <utility>
@@ -30,6 +27,7 @@
 #include "opentxs/blockchain/node/BlockOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "util/Work.hpp"
@@ -116,7 +114,7 @@ public:
         const HeaderOracle& header,
         const internal::BlockDatabase& db,
         const blockchain::Type chain,
-        const std::string& shutdown) noexcept;
+        const UnallocatedCString& shutdown) noexcept;
 
     ~BlockOracle() final;
 
@@ -125,7 +123,7 @@ private:
 
     using Promise = std::promise<BitcoinBlock_p>;
     using PendingData = std::tuple<Time, Promise, BitcoinBlockFuture, bool>;
-    using Pending = std::map<block::pHash, PendingData>;
+    using Pending = UnallocatedMap<block::pHash, PendingData>;
 
     struct Cache {
         auto DownloadQueue() const noexcept -> std::size_t;
@@ -163,7 +161,7 @@ private:
 
         private:
             using CachedBlock = std::pair<block::pHash, BitcoinBlockFuture>;
-            using Completed = std::deque<CachedBlock>;
+            using Completed = UnallocatedDeque<CachedBlock>;
             using Index =
                 boost::container::flat_map<ReadView, const CachedBlock*>;
 

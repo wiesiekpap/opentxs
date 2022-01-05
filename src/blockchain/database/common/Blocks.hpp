@@ -7,12 +7,9 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
-#include <string>
-#include <vector>
 
 #include "internal/blockchain/database/Database.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -20,6 +17,7 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 #include "util/MappedFileStorage.hpp"
 

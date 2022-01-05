@@ -7,10 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <map>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/Types.hpp"
@@ -19,6 +16,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -49,7 +47,7 @@ public:
     virtual auto ID() const noexcept -> const block::Hash& = 0;
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Block& = 0;
-    virtual auto Print() const noexcept -> std::string = 0;
+    virtual auto Print() const noexcept -> UnallocatedCString = 0;
     virtual auto Serialize(AllocateOutput bytes) const noexcept -> bool = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept -> internal::Block& = 0;

@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <map>
 #include <mutex>
 
 #include "core/StateMachine.hpp"
@@ -14,7 +13,22 @@
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "otx/client/DepositPayment.hpp"
+
+namespace opentxs
+{
+namespace otx
+{
+namespace client
+{
+namespace implementation
+{
+class DepositPayment;
+}  // namespace implementation
+}  // namespace client
+}  // namespace otx
+}  // namespace opentxs
 
 namespace opentxs::otx::client::implementation
 {
@@ -31,14 +45,15 @@ public:
 
 private:
     using Future = api::session::OTX::Future;
-    using TaskMap = std::map<OTIdentifier, implementation::DepositPayment>;
+    using TaskMap =
+        UnallocatedMap<OTIdentifier, implementation::DepositPayment>;
 
     static auto error_task() -> BackgroundTask;
 
     client::internal::StateMachine& parent_;
     TaskMap tasks_;
     std::mutex unit_lock_;
-    std::map<OTUnitID, std::mutex> account_lock_;
+    UnallocatedMap<OTUnitID, std::mutex> account_lock_;
 
     auto cleanup() -> bool;
     auto get_payment_id(const OTPayment& payment) const -> OTIdentifier;

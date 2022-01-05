@@ -15,10 +15,10 @@
 #include <iterator>
 #include <limits>
 #include <stdexcept>
-#include <string>
 
 #include "internal/util/LogMacros.hpp"
 #include "network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace be = boost::endian;
@@ -164,7 +164,7 @@ auto CompactSize::CalculateSize(const std::byte first) noexcept -> std::uint64_t
 
 template <typename SizeType>
 void CompactSize::Imp::convert_from_raw(
-    const std::vector<std::byte>& bytes) noexcept
+    const UnallocatedVector<std::byte>& bytes) noexcept
 {
     SizeType value{0};
     std::memcpy(&value, bytes.data(), sizeof(value));
@@ -199,7 +199,8 @@ auto CompactSize::Imp::convert_to_raw(AllocateOutput output) const noexcept
     return true;
 }
 
-auto CompactSize::Decode(const std::vector<std::byte>& bytes) noexcept -> bool
+auto CompactSize::Decode(const UnallocatedVector<std::byte>& bytes) noexcept
+    -> bool
 {
     bool output{true};
 
@@ -220,7 +221,7 @@ auto CompactSize::Decode(const std::vector<std::byte>& bytes) noexcept -> bool
     return output;
 }
 
-auto CompactSize::Encode() const noexcept -> std::vector<std::byte>
+auto CompactSize::Encode() const noexcept -> UnallocatedVector<std::byte>
 {
     auto output = Space{};
     Encode(writer(output));

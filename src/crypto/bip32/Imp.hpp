@@ -8,7 +8,6 @@
 #include <boost/endian/buffers.hpp>
 #include <boost/endian/conversion.hpp>
 #include <optional>
-#include <string>
 
 #include "crypto/HDNode.hpp"
 #include "internal/crypto/Crypto.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/crypto/Bip32.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -61,7 +61,7 @@ public:
         const Path& pathAppend,
         const PasswordPrompt& reason) const noexcept(false) -> Key;
     auto DeserializePrivate(
-        const std::string& serialized,
+        const UnallocatedCString& serialized,
         Bip32Network& network,
         Bip32Depth& depth,
         Bip32Fingerprint& parent,
@@ -69,7 +69,7 @@ public:
         Data& chainCode,
         Secret& key) const -> bool;
     auto DeserializePublic(
-        const std::string& serialized,
+        const UnallocatedCString& serialized,
         Bip32Network& network,
         Bip32Depth& depth,
         Bip32Fingerprint& parent,
@@ -84,14 +84,14 @@ public:
         const Bip32Fingerprint parent,
         const Bip32Index index,
         const Data& chainCode,
-        const Secret& key) const -> std::string;
+        const Secret& key) const -> UnallocatedCString;
     auto SerializePublic(
         const Bip32Network network,
         const Bip32Depth depth,
         const Bip32Fingerprint parent,
         const Bip32Index index,
         const Data& chainCode,
-        const Data& key) const -> std::string;
+        const Data& key) const -> UnallocatedCString;
 
     Imp(const api::Crypto& crypto) noexcept;
 
@@ -113,7 +113,7 @@ private:
         const HDNode& node,
         const be::big_uint32_buf_t i,
         const WritableView& data) const noexcept -> void;
-    auto decode(const std::string& serialized) const noexcept -> OTData;
+    auto decode(const UnallocatedCString& serialized) const noexcept -> OTData;
     auto derive_private(
         HDNode& node,
         Bip32Fingerprint& parent,

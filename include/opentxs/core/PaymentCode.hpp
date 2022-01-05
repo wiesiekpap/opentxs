@@ -10,12 +10,11 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -65,7 +64,7 @@ public:
 
     operator const crypto::key::Asymmetric&() const noexcept;
 
-    auto asBase58() const noexcept -> std::string;
+    auto asBase58() const noexcept -> UnallocatedCString;
     auto Blind(
         const PaymentCode& recipient,
         const crypto::key::EllipticCurve& privateKey,
@@ -79,12 +78,13 @@ public:
         const PasswordPrompt& reason) const noexcept -> bool;
     auto DecodeNotificationElements(
         const std::uint8_t version,
-        const std::vector<Space>& elements,
+        const UnallocatedVector<Space>& elements,
         const PasswordPrompt& reason) const noexcept -> opentxs::PaymentCode;
     auto GenerateNotificationElements(
         const PaymentCode& recipient,
         const crypto::key::EllipticCurve& privateKey,
-        const PasswordPrompt& reason) const noexcept -> std::vector<Space>;
+        const PasswordPrompt& reason) const noexcept
+        -> UnallocatedVector<Space>;
     auto ID() const noexcept -> const identifier::Nym&;
     OPENTXS_NO_EXPORT auto Internal() const noexcept
         -> const internal::PaymentCode&;

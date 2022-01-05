@@ -19,7 +19,6 @@ extern "C" {
 #include <limits>
 #include <memory>
 #include <stdexcept>
-#include <string>
 
 #include "crypto/library/AsymmetricProvider.hpp"
 #include "crypto/library/EcdsaProvider.hpp"
@@ -31,6 +30,7 @@ extern "C" {
 #include "opentxs/crypto/key/symmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/symmetric/Source.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
@@ -144,7 +144,7 @@ auto Sodium::Derive(
         const auto requiredSize = SaltSize(type);
 
         if (requiredSize != saltSize) {
-            const auto error = std::string{"Incorrect salt size ("} +
+            const auto error = UnallocatedCString{"Incorrect salt size ("} +
                                std::to_string(saltSize) + "). Required: (" +
                                std::to_string(requiredSize);
 

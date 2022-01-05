@@ -33,8 +33,8 @@ ActivityThreadItem::ActivityThreadItem(
     , item_id_(std::get<0>(row_id_))
     , box_(std::get<1>(row_id_))
     , account_id_(std::get<2>(row_id_))
-    , from_(extract_custom<std::string>(custom, 0))
-    , text_(extract_custom<std::string>(custom, 1))
+    , from_(extract_custom<UnallocatedCString>(custom, 0))
+    , text_(extract_custom<UnallocatedCString>(custom, 1))
     , loading_(Flag::Factory(extract_custom<bool>(custom, 2)))
     , pending_(Flag::Factory(extract_custom<bool>(custom, 3)))
     , outgoing_(Flag::Factory(extract_custom<bool>(custom, 4)))
@@ -42,7 +42,7 @@ ActivityThreadItem::ActivityThreadItem(
     OT_ASSERT(verify_empty(custom));
 }
 
-auto ActivityThreadItem::From() const noexcept -> std::string
+auto ActivityThreadItem::From() const noexcept -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 
@@ -59,8 +59,8 @@ auto ActivityThreadItem::reindex(
     const ActivityThreadSortKey&,
     CustomData& custom) noexcept -> bool
 {
-    const auto from = extract_custom<std::string>(custom, 0);
-    const auto text = extract_custom<std::string>(custom, 1);
+    const auto from = extract_custom<UnallocatedCString>(custom, 0);
+    const auto text = extract_custom<UnallocatedCString>(custom, 1);
     auto changed{false};
 
     {
@@ -96,7 +96,7 @@ auto ActivityThreadItem::reindex(
     return changed;
 }
 
-auto ActivityThreadItem::Text() const noexcept -> std::string
+auto ActivityThreadItem::Text() const noexcept -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 

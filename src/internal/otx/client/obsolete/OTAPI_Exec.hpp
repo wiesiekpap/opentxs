@@ -8,8 +8,6 @@
 #include <chrono>
 #include <cstdint>
 #include <mutex>
-#include <set>
-#include <string>
 
 #include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/util/Lockable.hpp"
@@ -17,6 +15,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -120,23 +119,25 @@ public:
     ----------------------------------------------------------------------------------------
     */
     auto ProposePaymentPlan(
-        const std::string& NOTARY_ID,
+        const UnallocatedCString& NOTARY_ID,
         const Time& VALID_FROM,  // Default (0 or nullptr) == current time
                                  // measured in seconds since Jan 1970.
         const Time& VALID_TO,    // Default (0 or nullptr) == no expiry /
                                  // cancel
                                  // anytime. Otherwise this is ADDED to
                                  // VALID_FROM (it's a length.)
-        const std::string& SENDER_ACCT_ID,  // Mandatory parameters.
-        const std::string& SENDER_NYM_ID,   // Both sender and recipient must
-                                            // sign before submitting.
-        const std::string& PLAN_CONSIDERATION,  // Like a memo.
-        const std::string& RECIPIENT_ACCT_ID,   // NOT optional.
-        const std::string& RECIPIENT_NYM_ID,  // Both sender and recipient must
-                                              // sign before submitting.
-        const std::int64_t& INITIAL_PAYMENT_AMOUNT,  // zero or nullptr == no
-                                                     // initial
-                                                     // payment.
+        const UnallocatedCString& SENDER_ACCT_ID,  // Mandatory parameters.
+        const UnallocatedCString& SENDER_NYM_ID,   // Both sender and recipient
+                                                   // must sign before
+                                                   // submitting.
+        const UnallocatedCString& PLAN_CONSIDERATION,  // Like a memo.
+        const UnallocatedCString& RECIPIENT_ACCT_ID,   // NOT optional.
+        const UnallocatedCString& RECIPIENT_NYM_ID,    // Both sender and
+                                                       // recipient must sign
+                                                       // before submitting.
+        const std::int64_t& INITIAL_PAYMENT_AMOUNT,    // zero or nullptr == no
+                                                       // initial
+                                                       // payment.
         const std::chrono::seconds& INITIAL_PAYMENT_DELAY,  // seconds from
                                                             // creation date.
                                                             // Default is zero
@@ -160,7 +161,7 @@ public:
         const std::int32_t& PAYMENT_PLAN_MAX_PAYMENTS  // integer. Defaults to 0
                                                        // or
         // nullptr (no maximum payments.)
-    ) const -> std::string;
+    ) const -> UnallocatedCString;
 
     // The above version has too many arguments for boost::function apparently
     // (for Chaiscript.)
@@ -173,73 +174,80 @@ public:
     // a single parameter, as a comma-separated list in string form.
     //
     auto EasyProposePlan(
-        const std::string& NOTARY_ID,
-        const std::string& DATE_RANGE,  // "from,to"  Default 'from' (0 or "")
-                                        // ==
-                                        // NOW, and default 'to' (0 or "") == no
-                                        // expiry / cancel anytime
-        const std::string& SENDER_ACCT_ID,  // Mandatory parameters.
-        const std::string& SENDER_NYM_ID,   // Both sender and recipient must
-                                            // sign before submitting.
-        const std::string& PLAN_CONSIDERATION,  // Like a memo.
-        const std::string& RECIPIENT_ACCT_ID,   // NOT optional.
-        const std::string& RECIPIENT_NYM_ID,  // Both sender and recipient must
-                                              // sign before submitting.
-        const std::string& INITIAL_PAYMENT,  // "amount,delay"  Default 'amount'
-                                             // (0 or "") == no initial payment.
+        const UnallocatedCString& NOTARY_ID,
+        const UnallocatedCString& DATE_RANGE,  // "from,to"  Default 'from' (0
+                                               // or "")
+                                               // ==
+                                               // NOW, and default 'to' (0 or
+                                               // "") == no expiry / cancel
+                                               // anytime
+        const UnallocatedCString& SENDER_ACCT_ID,  // Mandatory parameters.
+        const UnallocatedCString& SENDER_NYM_ID,   // Both sender and recipient
+                                                   // must sign before
+                                                   // submitting.
+        const UnallocatedCString& PLAN_CONSIDERATION,  // Like a memo.
+        const UnallocatedCString& RECIPIENT_ACCT_ID,   // NOT optional.
+        const UnallocatedCString& RECIPIENT_NYM_ID,    // Both sender and
+                                                       // recipient must sign
+                                                       // before submitting.
+        const UnallocatedCString& INITIAL_PAYMENT,  // "amount,delay"  Default
+                                                    // 'amount' (0 or "") == no
+                                                    // initial payment.
         // Default 'delay' (0 or nullptr) is
         // seconds from creation date.
-        const std::string& PAYMENT_PLAN,  // "amount,delay,period" 'amount' is a
-                                          // recurring payment. 'delay' and
+        const UnallocatedCString& PAYMENT_PLAN,  // "amount,delay,period"
+                                                 // 'amount' is a recurring
+                                                 // payment. 'delay' and
         // 'period' cause 30 days if you pass 0
         // or "".
-        const std::string& PLAN_EXPIRY  // "length,number" 'length' is maximum
-                                        // lifetime in seconds. 'number' is
+        const UnallocatedCString& PLAN_EXPIRY  // "length,number" 'length' is
+                                               // maximum lifetime in seconds.
+                                               // 'number' is
         // maximum number of payments in seconds.
         // 0 or "" is unlimited (for both.)
-    ) const -> std::string;
+    ) const -> UnallocatedCString;
 
     // Called by Customer. Pass in the plan obtained in the above call.
     //
     auto ConfirmPaymentPlan(
-        const std::string& NOTARY_ID,
-        const std::string& SENDER_NYM_ID,
-        const std::string& SENDER_ACCT_ID,
-        const std::string& RECIPIENT_NYM_ID,
-        const std::string& PAYMENT_PLAN) const -> std::string;
+        const UnallocatedCString& NOTARY_ID,
+        const UnallocatedCString& SENDER_NYM_ID,
+        const UnallocatedCString& SENDER_ACCT_ID,
+        const UnallocatedCString& RECIPIENT_NYM_ID,
+        const UnallocatedCString& PAYMENT_PLAN) const -> UnallocatedCString;
 
     // SMART CONTRACTS
 
     // RETURNS: the Smart Contract itself. (Or nullptr.)
     //
     auto Create_SmartContract(
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const Time& VALID_FROM,            // Default (0 or nullptr) == NOW
-        const Time& VALID_TO,  // Default (0 or nullptr) == no expiry /
-                               // cancel anytime
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const Time& VALID_FROM,  // Default (0 or nullptr) == NOW
+        const Time& VALID_TO,    // Default (0 or nullptr) == no expiry /
+                                 // cancel anytime
         bool SPECIFY_ASSETS,  // Asset type IDs must be provided for every named
                               // account.
         bool SPECIFY_PARTIES  // Nym IDs must be provided for every party.
-    ) const -> std::string;
+    ) const -> UnallocatedCString;
 
     auto SmartContract_SetDates(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // dates changed on it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const Time& VALID_FROM,            // Default (0 or nullptr) == NOW
-        const Time& VALID_TO  // Default (0 or nullptr) == no expiry /
-                              // cancel
-                              // anytime
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the dates changed on it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const Time& VALID_FROM,  // Default (0 or nullptr) == NOW
+        const Time& VALID_TO     // Default (0 or nullptr) == no expiry /
+                                 // cancel
+                                 // anytime
+    ) const -> UnallocatedCString;
 
-    auto Smart_ArePartiesSpecified(const std::string& THE_CONTRACT) const
+    auto Smart_ArePartiesSpecified(const UnallocatedCString& THE_CONTRACT) const
         -> bool;
-    auto Smart_AreAssetTypesSpecified(const std::string& THE_CONTRACT) const
-        -> bool;
+    auto Smart_AreAssetTypesSpecified(
+        const UnallocatedCString& THE_CONTRACT) const -> bool;
 
     //
     // todo: Someday add a parameter here BYLAW_LANGUAGE so that people can use
@@ -249,201 +257,227 @@ public:
     //
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_AddBylaw(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // bylaw added to it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME  // The Bylaw's NAME as referenced in the
-                                       // smart contract. (And the scripts...)
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the bylaw added to it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME  // The Bylaw's NAME as referenced
+                                              // in the smart contract. (And the
+                                              // scripts...)
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_RemoveBylaw(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // bylaw removed from it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME  // The Bylaw's NAME as referenced in the
-                                       // smart contract. (And the scripts...)
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the bylaw removed from it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME  // The Bylaw's NAME as referenced
+                                              // in the smart contract. (And the
+                                              // scripts...)
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_AddClause(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // clause added to it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& CLAUSE_NAME,    // The Clause's name as referenced in
-                                           // the smart contract. (And the
-                                           // scripts...)
-        const std::string& SOURCE_CODE     // The actual source code for the
-                                           // clause.
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the clause added to it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& CLAUSE_NAME,    // The Clause's name as
+                                                  // referenced in the smart
+                                                  // contract. (And the
+                                                  // scripts...)
+        const UnallocatedCString& SOURCE_CODE  // The actual source code for the
+                                               // clause.
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_UpdateClause(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // clause updated on it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& CLAUSE_NAME,    // The Clause's name as referenced in
-                                           // the smart contract. (And the
-                                           // scripts...)
-        const std::string& SOURCE_CODE     // The actual source code for the
-                                           // clause.
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the clause updated on it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& CLAUSE_NAME,    // The Clause's name as
+                                                  // referenced in the smart
+                                                  // contract. (And the
+                                                  // scripts...)
+        const UnallocatedCString& SOURCE_CODE  // The actual source code for the
+                                               // clause.
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_RemoveClause(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // clause removed from it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& CLAUSE_NAME     // The Clause's name as referenced in
-                                           // the smart contract. (And the
-                                           // scripts...)
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the clause removed from it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& CLAUSE_NAME     // The Clause's name as
+                                                  // referenced in the smart
+        // contract. (And the scripts...)
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_AddVariable(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // variable added to it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& VAR_NAME,    // The Variable's name as referenced in
-                                        // the
-                                        // smart contract. (And the scripts...)
-        const std::string& VAR_ACCESS,  // "constant", "persistent", or
-                                        // "important".
-        const std::string& VAR_TYPE,    // "string", "std::int64_t", or "bool"
-        const std::string& VAR_VALUE    // Contains a string. If type is
-                                        // std::int64_t,
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the variable added to it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& VAR_NAME,       // The Variable's name as
+                                                  // referenced in the smart
+        // contract. (And the scripts...)
+        const UnallocatedCString& VAR_ACCESS,  // "constant", "persistent", or
+                                               // "important".
+        const UnallocatedCString& VAR_TYPE,    // "string", "std::int64_t", or
+                                               // "bool"
+        const UnallocatedCString& VAR_VALUE    // Contains a string. If type is
+                                               // std::int64_t,
         // atol() will be used to convert value to
         // a std::int64_t. If type is bool, the strings
         // "true" or "false" are expected here in
         // order to convert to a bool.
-    ) const -> std::string;
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_RemoveVariable(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // variable removed from it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& VAR_NAME  // The Variable's name as referenced in the
-                                     // smart contract. (And the scripts...)
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the variable removed from
+                                                  // it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& VAR_NAME  // The Variable's name as referenced
+                                            // in the smart contract. (And the
+                                            // scripts...)
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_AddCallback(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // callback added to it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& CALLBACK_NAME,  // The Callback's name as referenced
-                                           // in the smart contract. (And the
-                                           // scripts...)
-        const std::string& CLAUSE_NAME     // The actual clause that will be
-                                           // triggered by the callback. (Must
-                                           // exist.)
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the callback added to it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& CALLBACK_NAME,  // The Callback's name as
+                                                  // referenced in the smart
+                                                  // contract. (And the
+                                                  // scripts...)
+        const UnallocatedCString& CLAUSE_NAME  // The actual clause that will be
+                                               // triggered by the callback.
+                                               // (Must exist.)
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_RemoveCallback(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // callback removed from it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& CALLBACK_NAME   // The Callback's name as referenced
-                                           // in the smart contract. (And the
-                                           // scripts...)
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the callback removed from
+                                                  // it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& CALLBACK_NAME   // The Callback's name as
+                                                  // referenced in the smart
+                                                  // contract. (And the
+                                                  // scripts...)
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_AddHook(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // hook
-                                           // added to it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& HOOK_NAME,   // The Hook's name as referenced in the
-                                        // smart contract. (And the scripts...)
-        const std::string& CLAUSE_NAME  // The actual clause that will be
-                                        // triggered by the hook. (You can call
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the hook added to it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& HOOK_NAME,  // The Hook's name as referenced
+                                              // in the smart contract. (And the
+                                              // scripts...)
+        const UnallocatedCString& CLAUSE_NAME  // The actual clause that will be
+                                               // triggered by the hook. (You
+                                               // can call
         // this multiple times, and have multiple
         // clauses trigger on the same hook.)
-    ) const -> std::string;
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_RemoveHook(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // hook
-                                           // removed from it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& BYLAW_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& HOOK_NAME,   // The Hook's name as referenced in the
-                                        // smart contract. (And the scripts...)
-        const std::string& CLAUSE_NAME  // The actual clause that will be
-                                        // triggered by the hook. (You can call
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the hook removed from it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& BYLAW_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& HOOK_NAME,  // The Hook's name as referenced
+                                              // in the smart contract. (And the
+                                              // scripts...)
+        const UnallocatedCString& CLAUSE_NAME  // The actual clause that will be
+                                               // triggered by the hook. (You
+                                               // can call
         // this multiple times, and have multiple
         // clauses trigger on the same hook.)
-    ) const -> std::string;
+    ) const -> UnallocatedCString;
 
     // RETURNS: Updated version of THE_CONTRACT. (Or nullptr.)
     auto SmartContract_AddParty(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // party added to it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& PARTY_NYM_ID,  // Required when the smart contract is
-                                          // configured to require parties to be
-                                          // specified. Otherwise must be empty.
-        const std::string& PARTY_NAME,  // The Party's NAME as referenced in the
-                                        // smart contract. (And the scripts...)
-        const std::string& AGENT_NAME   // An AGENT will be added by default for
-                                        // this party. Need Agent NAME.
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the party added to it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& PARTY_NYM_ID,   // Required when the smart
+                                                  // contract is configured to
+                                                  // require parties to be
+        // specified. Otherwise must be
+        // empty.
+        const UnallocatedCString& PARTY_NAME,  // The Party's NAME as referenced
+                                               // in the smart contract. (And
+                                               // the scripts...)
+        const UnallocatedCString& AGENT_NAME   // An AGENT will be added by
+                                               // default for this party. Need
+                                               // Agent NAME.
+    ) const -> UnallocatedCString;
 
     // RETURNS: Updated version of THE_CONTRACT. (Or nullptr.)
     auto SmartContract_RemoveParty(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // party removed from it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& PARTY_NAME  // The Party's NAME as referenced in the
-                                       // smart contract. (And the scripts...)
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the party removed from it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& PARTY_NAME  // The Party's NAME as referenced
+                                              // in the smart contract. (And the
+                                              // scripts...)
+    ) const -> UnallocatedCString;
 
     // (FYI, that is basically the only option, until I code Entities and Roles.
     // Until then, a party can ONLY be
@@ -455,33 +489,35 @@ public:
     //
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_AddAccount(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // account added to it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& PARTY_NAME,  // The Party's NAME as referenced in the
-                                        // smart contract. (And the scripts...)
-        const std::string& ACCT_NAME,   // The Account's name as referenced in
-                                        // the
-                                        // smart contract
-        const std::string& INSTRUMENT_DEFINITION_ID  // Instrument Definition ID
-                                                     // for the
-                                                     // Account.
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,   // The contract, about to have
+                                                  // the account added to it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& PARTY_NAME,  // The Party's NAME as referenced
+                                               // in the smart contract. (And
+                                               // the scripts...)
+        const UnallocatedCString& ACCT_NAME,   // The Account's name as
+                                               // referenced in the smart
+                                               // contract
+        const UnallocatedCString& INSTRUMENT_DEFINITION_ID  // Instrument
+                                                            // Definition ID for
+                                                            // the Account.
+    ) const -> UnallocatedCString;
 
     // returns: the updated smart contract (or nullptr)
     auto SmartContract_RemoveAccount(
-        const std::string& THE_CONTRACT,   // The contract, about to have the
-                                           // account removed from it.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& PARTY_NAME,  // The Party's NAME as referenced in the
-                                        // smart contract. (And the scripts...)
-        const std::string& ACCT_NAME  // The Account's name as referenced in the
-                                      // smart contract
-    ) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,  // The contract, about to have
+                                                 // the account removed from it.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& PARTY_NAME,  // The Party's NAME as referenced
+                                               // in the smart contract. (And
+                                               // the scripts...)
+        const UnallocatedCString& ACCT_NAME  // The Account's name as referenced
+                                             // in the smart contract
+    ) const -> UnallocatedCString;
 
     /** This function returns the count of how many trans#s a Nym needs in order
     to confirm as
@@ -492,9 +528,9 @@ public:
     // authorized agent.)
     */
     auto SmartContract_CountNumsNeeded(
-        const std::string& THE_CONTRACT,  // The smart contract, about to be
-                                          // queried by this function.
-        const std::string& AGENT_NAME) const -> std::int32_t;
+        const UnallocatedCString& THE_CONTRACT,  // The smart contract, about to
+                                                 // be queried by this function.
+        const UnallocatedCString& AGENT_NAME) const -> std::int32_t;
 
     /** ----------------------------------------
     // Used when taking a theoretical smart contract, and setting it up to use
@@ -503,20 +539,22 @@ public:
     // Returns the updated smart contract (or nullptr.)
     */
     auto SmartContract_ConfirmAccount(
-        const std::string& THE_CONTRACT,   // The smart contract, about to be
-                                           // changed by this function.
-        const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                           // signing at this point is only to
-                                           // cause a save.)
-        const std::string& PARTY_NAME,     // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& ACCT_NAME,      // Should already be on the contract.
-                                           // (This way we can find it.)
-        const std::string& AGENT_NAME,     // The agent name for this asset
-                                           // account.
-        const std::string& ACCT_ID         // AcctID for the asset account. (For
+        const UnallocatedCString& THE_CONTRACT,  // The smart contract, about to
+                                                 // be changed by this function.
+        const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here.
+                                                  // (The signing at this point
+                                                  // is only to cause a save.)
+        const UnallocatedCString& PARTY_NAME,     // Should already be on the
+                                                  // contract. (This way we can
+                                                  // find it.)
+        const UnallocatedCString& ACCT_NAME,      // Should already be on the
+                                              // contract. (This way we can find
+                                              // it.)
+        const UnallocatedCString& AGENT_NAME,  // The agent name for this asset
+                                               // account.
+        const UnallocatedCString& ACCT_ID  // AcctID for the asset account. (For
                                            // acct_name).
-    ) const -> std::string;
+    ) const -> UnallocatedCString;
 
     /** ----------------------------------------
     // Called by each Party. Pass in the smart contract obtained in the above
@@ -525,165 +563,167 @@ public:
     // Returns the updated smart contract (or nullptr.)
     */
     auto SmartContract_ConfirmParty(
-        const std::string& THE_CONTRACT,  // The smart contract, about to be
-                                          // changed by this function.
-        const std::string& PARTY_NAME,    // Should already be on the contract.
-                                          // This way we can find it.
-        const std::string& NYM_ID,  // Nym ID for the party, the actual owner,
-        const std::string& NOTARY_ID) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,  // The smart contract, about to
+                                                 // be changed by this function.
+        const UnallocatedCString& PARTY_NAME,    // Should already be on the
+                                               // contract. This way we can find
+                                               // it.
+        const UnallocatedCString& NYM_ID,  // Nym ID for the party, the actual
+                                           // owner,
+        const UnallocatedCString& NOTARY_ID) const -> UnallocatedCString;
     // ===> AS WELL AS for the default AGENT of that party.
 
     /* ----------------------------------------
     Various informational functions for the Smart Contracts.
     */
 
-    auto Smart_AreAllPartiesConfirmed(const std::string& THE_CONTRACT) const
-        -> bool;  // true or false?
-    auto Smart_GetBylawCount(const std::string& THE_CONTRACT) const
+    auto Smart_AreAllPartiesConfirmed(const UnallocatedCString& THE_CONTRACT)
+        const -> bool;  // true or false?
+    auto Smart_GetBylawCount(const UnallocatedCString& THE_CONTRACT) const
         -> std::int32_t;
     auto Smart_GetBylawByIndex(
-        const std::string& THE_CONTRACT,
+        const UnallocatedCString& THE_CONTRACT,
         const std::int32_t& nIndex) const
-        -> std::string;  // returns the name of the bylaw.
+        -> UnallocatedCString;  // returns the name of the bylaw.
     auto Bylaw_GetLanguage(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME) const -> UnallocatedCString;
     auto Bylaw_GetClauseCount(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME) const -> std::int32_t;
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME) const -> std::int32_t;
     auto Clause_GetNameByIndex(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
         const std::int32_t& nIndex) const
-        -> std::string;  // returns the name of the clause.
+        -> UnallocatedCString;  // returns the name of the clause.
     auto Clause_GetContents(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
-        const std::string& CLAUSE_NAME) const
-        -> std::string;  // returns the contents of the
-                         // clause.
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
+        const UnallocatedCString& CLAUSE_NAME) const
+        -> UnallocatedCString;  // returns the contents of the
+                                // clause.
     auto Bylaw_GetVariableCount(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME) const -> std::int32_t;
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME) const -> std::int32_t;
     auto Variable_GetNameByIndex(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
         const std::int32_t& nIndex) const
-        -> std::string;  // returns the name of the variable.
+        -> UnallocatedCString;  // returns the name of the variable.
     auto Variable_GetType(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
-        const std::string& VARIABLE_NAME) const
-        -> std::string;  // returns the type of the
-                         // variable.
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
+        const UnallocatedCString& VARIABLE_NAME) const
+        -> UnallocatedCString;  // returns the type of the
+                                // variable.
     auto Variable_GetAccess(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
-        const std::string& VARIABLE_NAME) const
-        -> std::string;  // returns the access level of
-                         // the
-                         // variable.
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
+        const UnallocatedCString& VARIABLE_NAME) const
+        -> UnallocatedCString;  // returns the access level of
+                                // the
+                                // variable.
     auto Variable_GetContents(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
-        const std::string& VARIABLE_NAME) const
-        -> std::string;  // returns the contents of the
-                         // variable.
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
+        const UnallocatedCString& VARIABLE_NAME) const
+        -> UnallocatedCString;  // returns the contents of the
+                                // variable.
     auto Bylaw_GetHookCount(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME) const -> std::int32_t;
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME) const -> std::int32_t;
     auto Hook_GetNameByIndex(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
         const std::int32_t& nIndex) const
-        -> std::string;  // returns the name of the hook.
+        -> UnallocatedCString;  // returns the name of the hook.
     auto Hook_GetClauseCount(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
-        const std::string& HOOK_NAME) const
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
+        const UnallocatedCString& HOOK_NAME) const
         -> std::int32_t;  // for iterating clauses on a
                           // hook.
     auto Hook_GetClauseAtIndex(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
-        const std::string& HOOK_NAME,
-        const std::int32_t& nIndex) const -> std::string;
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
+        const UnallocatedCString& HOOK_NAME,
+        const std::int32_t& nIndex) const -> UnallocatedCString;
     auto Bylaw_GetCallbackCount(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME) const -> std::int32_t;
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME) const -> std::int32_t;
     auto Callback_GetNameByIndex(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
         const std::int32_t& nIndex) const
-        -> std::string;  // returns the name of the callback.
+        -> UnallocatedCString;  // returns the name of the callback.
     auto Callback_GetClause(
-        const std::string& THE_CONTRACT,
-        const std::string& BYLAW_NAME,
-        const std::string& CALLBACK_NAME) const
-        -> std::string;  // returns name of clause
-                         // attached to
-                         // callback.
-    auto Smart_GetPartyCount(const std::string& THE_CONTRACT) const
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& BYLAW_NAME,
+        const UnallocatedCString& CALLBACK_NAME) const
+        -> UnallocatedCString;  // returns name of clause
+                                // attached to
+                                // callback.
+    auto Smart_GetPartyCount(const UnallocatedCString& THE_CONTRACT) const
         -> std::int32_t;
     auto Smart_GetPartyByIndex(
-        const std::string& THE_CONTRACT,
+        const UnallocatedCString& THE_CONTRACT,
         const std::int32_t& nIndex) const
-        -> std::string;  // returns the name of the party.
+        -> UnallocatedCString;  // returns the name of the party.
     auto Smart_IsPartyConfirmed(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME) const -> bool;  // true or false?
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME) const -> bool;  // true or false?
     auto Party_GetID(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME) const
-        -> std::string;  // returns either NymID or Entity
-                         // ID.
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME) const
+        -> UnallocatedCString;  // returns either NymID or Entity
+                                // ID.
     auto Party_GetAcctCount(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME) const -> std::int32_t;
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME) const -> std::int32_t;
     auto Party_GetAcctNameByIndex(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME,
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME,
         const std::int32_t& nIndex) const
-        -> std::string;  // returns the name of the clause.
+        -> UnallocatedCString;  // returns the name of the clause.
     auto Party_GetAcctID(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME,
-        const std::string& ACCT_NAME) const
-        -> std::string;  // returns account ID for a given
-                         // acct
-                         // name.
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME,
+        const UnallocatedCString& ACCT_NAME) const
+        -> UnallocatedCString;  // returns account ID for a given
+                                // acct
+                                // name.
     auto Party_GetAcctInstrumentDefinitionID(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME,
-        const std::string& ACCT_NAME) const
-        -> std::string;  // returns instrument definition
-                         // ID
-                         // for a
-                         // given acct
-                         // name.
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME,
+        const UnallocatedCString& ACCT_NAME) const
+        -> UnallocatedCString;  // returns instrument definition
+                                // ID
+                                // for a
+                                // given acct
+                                // name.
     auto Party_GetAcctAgentName(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME,
-        const std::string& ACCT_NAME) const
-        -> std::string;  // returns agent name authorized
-                         // to
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME,
+        const UnallocatedCString& ACCT_NAME) const
+        -> UnallocatedCString;  // returns agent name authorized
+                                // to
     // administer a given named acct. (If
     // it's set...)
     auto Party_GetAgentCount(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME) const -> std::int32_t;
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME) const -> std::int32_t;
     auto Party_GetAgentNameByIndex(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME,
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME,
         const std::int32_t& nIndex) const
-        -> std::string;  // returns the name of the agent.
+        -> UnallocatedCString;  // returns the name of the agent.
     auto Party_GetAgentID(
-        const std::string& THE_CONTRACT,
-        const std::string& PARTY_NAME,
-        const std::string& AGENT_NAME) const
-        -> std::string;  // returns ID of the agent. (If
-                         // there is
-                         // one...)
+        const UnallocatedCString& THE_CONTRACT,
+        const UnallocatedCString& PARTY_NAME,
+        const UnallocatedCString& AGENT_NAME) const
+        -> UnallocatedCString;  // returns ID of the agent. (If
+                                // there is
+                                // one...)
 
     /** --------------------------------------------------------------
     // IS BASKET CURRENCY ?
@@ -692,11 +732,11 @@ public:
     basket
     currency.
     */
-    auto IsBasketCurrency(const std::string& INSTRUMENT_DEFINITION_ID) const
-        -> bool;  // returns OT_BOOL
-                  // (OT_TRUE or
-                  // OT_FALSE aka 1
-                  // or 0.)
+    auto IsBasketCurrency(const UnallocatedCString& INSTRUMENT_DEFINITION_ID)
+        const -> bool;  // returns OT_BOOL
+                        // (OT_TRUE or
+                        // OT_FALSE aka 1
+                        // or 0.)
 
     /** --------------------------------------------------------------------
     // Get Basket Count (of backing instrument definitions.)
@@ -705,7 +745,7 @@ public:
     // (Or zero.)
     */
     auto Basket_GetMemberCount(
-        const std::string& BASKET_INSTRUMENT_DEFINITION_ID) const
+        const UnallocatedCString& BASKET_INSTRUMENT_DEFINITION_ID) const
         -> std::int32_t;
 
     /** --------------------------------------------------------------------
@@ -714,8 +754,8 @@ public:
     // (Returns a string containing Instrument Definition ID, or nullptr).
     */
     auto Basket_GetMemberType(
-        const std::string& BASKET_INSTRUMENT_DEFINITION_ID,
-        const std::int32_t& nIndex) const -> std::string;
+        const UnallocatedCString& BASKET_INSTRUMENT_DEFINITION_ID,
+        const std::int32_t& nIndex) const -> UnallocatedCString;
 
     /** ----------------------------------------------------
     // GET BASKET MINIMUM TRANSFER AMOUNT
@@ -729,7 +769,8 @@ public:
     // would return a string containing "10", in that example.
     */
     auto Basket_GetMinimumTransferAmount(
-        const std::string& BASKET_INSTRUMENT_DEFINITION_ID) const -> Amount;
+        const UnallocatedCString& BASKET_INSTRUMENT_DEFINITION_ID) const
+        -> Amount;
 
     /** ----------------------------------------------------
     // GET BASKET MEMBER's MINIMUM TRANSFER AMOUNT
@@ -745,7 +786,7 @@ public:
     // currency at index 2 is 8.
     */
     auto Basket_GetMemberMinimumTransferAmount(
-        const std::string& BASKET_INSTRUMENT_DEFINITION_ID,
+        const UnallocatedCString& BASKET_INSTRUMENT_DEFINITION_ID,
         const std::int32_t& nIndex) const -> Amount;
 
     /** ----------------------------------------------------
@@ -758,14 +799,14 @@ public:
     // issueBasket to send the request to the server.
     */
     auto GenerateBasketCreation(
-        const std::string& nymID,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymID,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const std::uint64_t weight,
         const display::Definition& displayDefinition,
         const Amount& redemptionIncrement,
         const VersionNumber version = contract::Unit::DefaultVersion) const
-        -> std::string;
+        -> UnallocatedCString;
 
     /** ----------------------------------------------------
     // ADD BASKET CREATION ITEM
@@ -778,9 +819,9 @@ public:
     // to send the request to the server.
     */
     auto AddBasketCreationItem(
-        const std::string& basketTemplate,
-        const std::string& currencyID,
-        const std::uint64_t& weight) const -> std::string;
+        const UnallocatedCString& basketTemplate,
+        const UnallocatedCString& currencyID,
+        const std::uint64_t& weight) const -> UnallocatedCString;
 
     /** ----------------------------------------------------
     // GENERATE BASKET EXCHANGE REQUEST
@@ -792,11 +833,11 @@ public:
     // send the request to the server.
     */
     auto GenerateBasketExchange(
-        const std::string& NOTARY_ID,
-        const std::string& NYM_ID,
-        const std::string& BASKET_INSTRUMENT_DEFINITION_ID,
-        const std::string& BASKET_ASSET_ACCT_ID,
-        const std::int32_t& TRANSFER_MULTIPLE) const -> std::string;
+        const UnallocatedCString& NOTARY_ID,
+        const UnallocatedCString& NYM_ID,
+        const UnallocatedCString& BASKET_INSTRUMENT_DEFINITION_ID,
+        const UnallocatedCString& BASKET_ASSET_ACCT_ID,
+        const std::int32_t& TRANSFER_MULTIPLE) const -> UnallocatedCString;
 
     //! 1    2    3
     //! 5=2,3,4 OR 10=4,6,8 OR 15=6,9,12 Etc. (The MULTIPLE.)
@@ -812,11 +853,11 @@ public:
     // the request to the server.
     */
     auto AddBasketExchangeItem(
-        const std::string& NOTARY_ID,
-        const std::string& NYM_ID,
-        const std::string& THE_BASKET,
-        const std::string& INSTRUMENT_DEFINITION_ID,
-        const std::string& ASSET_ACCT_ID) const -> std::string;
+        const UnallocatedCString& NOTARY_ID,
+        const UnallocatedCString& NYM_ID,
+        const UnallocatedCString& THE_BASKET,
+        const UnallocatedCString& INSTRUMENT_DEFINITION_ID,
+        const UnallocatedCString& ASSET_ACCT_ID) const -> UnallocatedCString;
 
     /** Import a BIP39 seed into the wallet.
      *
@@ -824,8 +865,8 @@ public:
      *  already exist.
      */
     auto Wallet_ImportSeed(
-        const std::string& words,
-        const std::string& passphrase) const -> std::string;
+        const UnallocatedCString& words,
+        const UnallocatedCString& passphrase) const -> UnallocatedCString;
 
     ~OTAPI_Exec() override = default;
 

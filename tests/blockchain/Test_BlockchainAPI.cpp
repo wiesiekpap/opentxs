@@ -7,16 +7,12 @@
 #include <chrono>
 #include <cstdint>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <optional>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "crypto/Bip32Vectors.hpp"
 #include "internal/api/session/Client.hpp"
@@ -51,6 +47,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -58,11 +55,11 @@
 
 namespace ot = opentxs;
 
-namespace
+namespace ottest
 {
 struct AddressData {
-    std::vector<ot::Time> times_{};
-    std::vector<ot::OTIdentifier> txids_{};
+    ot::UnallocatedVector<ot::Time> times_{};
+    ot::UnallocatedVector<ot::OTIdentifier> txids_{};
 };
 
 bool init_{false};
@@ -94,22 +91,22 @@ std::unique_ptr<ot::OTIdentifier> account_7_id_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> account_8_id_p_{nullptr};
 std::unique_ptr<ot::OTIdentifier> account_9_id_p_{nullptr};
 AddressData address_data_{};
-const std::string fingerprint_a_{};
-const std::string fingerprint_b_{};
-const std::string fingerprint_c_{};
-const std::string dummy_script_{"00000000000000000000000000000000"};
-const std::string txid_0_{"00000000000000000000000000000000"};
-const std::string txid_1_{"11111111111111111111111111111111"};
-const std::string txid_2_{"22222222222222222222222222222222"};
-const std::string txid_3_{"33333333333333333333333333333333"};
-const std::string txid_4_{"44444444444444444444444444444444"};
-const std::string memo_1_{"memo 1"};
-const std::string memo_2_{"memo 2"};
-const std::string memo_3_{"memo 3"};
-const std::string memo_4_{"memo 4"};
-const std::string empty_string_{};
+const ot::UnallocatedCString fingerprint_a_{};
+const ot::UnallocatedCString fingerprint_b_{};
+const ot::UnallocatedCString fingerprint_c_{};
+const ot::UnallocatedCString dummy_script_{"00000000000000000000000000000000"};
+const ot::UnallocatedCString txid_0_{"00000000000000000000000000000000"};
+const ot::UnallocatedCString txid_1_{"11111111111111111111111111111111"};
+const ot::UnallocatedCString txid_2_{"22222222222222222222222222222222"};
+const ot::UnallocatedCString txid_3_{"33333333333333333333333333333333"};
+const ot::UnallocatedCString txid_4_{"44444444444444444444444444444444"};
+const ot::UnallocatedCString memo_1_{"memo 1"};
+const ot::UnallocatedCString memo_2_{"memo 2"};
+const ot::UnallocatedCString memo_3_{"memo 3"};
+const ot::UnallocatedCString memo_4_{"memo 4"};
+const ot::UnallocatedCString empty_string_{};
 constexpr auto zero_time_ = ot::Time{};
-const std::vector<std::string> alex_external_{
+const ot::UnallocatedVector<ot::UnallocatedCString> alex_external_{
     "1K9teXNg8iKYwUPregT8QTmMepb376oTuX",
     "1GgpoMuPBfaa4ZT6ZeKaTY8NH9Ldx4Q89t",
     "1FXb97adaza32zYQ5U29nxHZS4FmiCfXAJ",
@@ -121,7 +118,7 @@ const std::vector<std::string> alex_external_{
     "19w4gVEse89JjE7TroavXZ9pyfJ78h4arG",
     "1DVYvYAmTNtvML7vBrhBBhyePaEDVCCNaw",
 };
-const std::vector<std::string> alex_internal_{
+const ot::UnallocatedVector<ot::UnallocatedCString> alex_internal_{
     "179XLYWcaHiPMnPUsSdrPiAwNcybx2vpaa",
     "1FPoX1BUe9a6ugobnQkzFyn1Uycyns4Ejp",
     "17jfyBx8ZHJ3DT9G2WehYEPKwT7Zv3kcLs",
@@ -133,7 +130,7 @@ const std::vector<std::string> alex_internal_{
     "197TU7ptMMnhufMLFrY1o2Sgi5zcw2e3qv",
     "176aRLv3W94vyWPZDPY9csUrLNrqDFrzCs",
 };
-const std::vector<std::string> bob_external_{
+const ot::UnallocatedVector<ot::UnallocatedCString> bob_external_{
     "1AngXb5xQoQ4nT8Bn6dDdr6AFS4yMZU2y",
     "1FQMy3HkD5C3gGZZHeeH9rjHgyqurxC44q",
     "1APXZ5bCTbj2ZRV3ZHyAa59CmsXRP4HkTh",
@@ -145,7 +142,7 @@ const std::vector<std::string> bob_external_{
     "12hwhKpxTyfiSGDdQw63SWVzefRuRxrFqb",
     "18SRAzD6bZ2GsTK4J4RohhYneEyZAUvyqp",
 };
-const std::vector<std::string> bob_internal_{
+const ot::UnallocatedVector<ot::UnallocatedCString> bob_internal_{
     "1GXj4LrpYKugu4ps7BvYHkUgJLErjBcZc",
     "18yFFsUUe7ATjku2NfKizdnNfZGx99LmLJ",
     "19hDov3sMJdXkgrinhfD2seaKhcb6FiDKL",
@@ -157,27 +154,27 @@ const std::vector<std::string> bob_internal_{
     "16SdtUXrRey55j49Ae84YwVVNZXwGL2tLU",
     "1N2Y3mM828N4JQGLzDfxNjU2WK9CMMekVg",
 };
-const std::vector<std::string> chris_btc_external_{
+const ot::UnallocatedVector<ot::UnallocatedCString> chris_btc_external_{
     "1MWZN5PtYjfHA7WC1czB43HK9NjTKig1rA",
     "16Ach28pUQbWDpVhe75AjwoCJws144Nd25",
 };
-const std::vector<std::string> chris_btc_internal_{
+const ot::UnallocatedVector<ot::UnallocatedCString> chris_btc_internal_{
     "1PsjtCRUQ32t5F18W2K8Zzpn1aVmuRmTdB",
     "15xi7Z3kVPg88ZYA82V8zPyodnQnamSZvN",
 };
-const std::vector<std::string> chris_bch_external_{
+const ot::UnallocatedVector<ot::UnallocatedCString> chris_bch_external_{
     "14Et9A6QnwpnUH2Ym9kZ4Zz1FN2GixG9qS",
     "17u11yKTfr13Xkm4k7h4bx3o3ssz4HSwGJ",
 };
-const std::vector<std::string> chris_bch_internal_{
+const ot::UnallocatedVector<ot::UnallocatedCString> chris_bch_internal_{
     "1FkAAgJWW1YWSqa5ByvHFe8dQvfNLT2rQN",
     "1HyweNdaw2QoRU1YfuJQWcZKUAVqMXyJsj",
 };
-const std::vector<std::string> chris_ltc_external_{
+const ot::UnallocatedVector<ot::UnallocatedCString> chris_ltc_external_{
     "LWDn8duKKwbP9hhCWpmX9o8BxywgCSTg41",
     "LSyrWGpCUm457F9TaXWAhvZs7Vu5g7a4Do",
 };
-const std::vector<std::string> chris_ltc_internal_{
+const ot::UnallocatedVector<ot::UnallocatedCString> chris_ltc_internal_{
     "LX3FAVopX2moW5h2ZwAKcrCKTChTyWqWze",
     "LMoZuWNnoTEJ1FjxQ4NXTcNbMK3croGpaF",
 };
@@ -187,8 +184,10 @@ class Test_BlockchainAPI : public ::testing::Test
 public:
     using AddressStyle = ot::blockchain::crypto::AddressStyle;
     using Subchain = ot::blockchain::crypto::Subchain;
-    using ThreadData = std::tuple<std::string, std::uint64_t, std::string>;
-    using ThreadVectors = std::map<int, std::vector<ThreadData>>;
+    using ThreadData = std::
+        tuple<ot::UnallocatedCString, std::uint64_t, ot::UnallocatedCString>;
+    using ThreadVectors =
+        ot::UnallocatedMap<int, ot::UnallocatedVector<ThreadData>>;
 
     const ot::api::session::Client& api_;
     ot::PasswordPrompt& reason_;
@@ -225,17 +224,17 @@ public:
             invalid_nym_p_.reset(new ot::OTNymID{api.Factory().NymID("junk")});
             nym_not_in_wallet_p_.reset(new ot::OTNymID{api.Factory().NymID(
                 "ot2xuVYn8io5LpjK7itnUT7ujx8n5Rt3GKs5xXeh9nfZja2SwB5jEq6")});
-            const_cast<std::string&>(fingerprint_a_) =
+            const_cast<ot::UnallocatedCString&>(fingerprint_a_) =
                 api.InternalClient().Exec().Wallet_ImportSeed(
                     "response seminar brave tip suit recall often sound stick "
                     "owner lottery motion",
                     "");
-            const_cast<std::string&>(fingerprint_b_) =
+            const_cast<ot::UnallocatedCString&>(fingerprint_b_) =
                 api.InternalClient().Exec().Wallet_ImportSeed(
                     "reward upper indicate eight swift arch injury crystal "
                     "super wrestle already dentist",
                     "");
-            const_cast<std::string&>(fingerprint_c_) =
+            const_cast<ot::UnallocatedCString&>(fingerprint_c_) =
                 api.InternalClient().Exec().Wallet_ImportSeed(
                     "predict cinnamon gauge spoon media food nurse improve "
                     "employ similar own kid genius seed ghost",
@@ -298,12 +297,12 @@ public:
         const ot::blockchain::Type chain,
         const ot::Identifier& accountID,
         const ot::Identifier& contactID,
-        const std::vector<std::string>& external,
-        const std::vector<std::string>& internal,
+        const ot::UnallocatedVector<ot::UnallocatedCString>& external,
+        const ot::UnallocatedVector<ot::UnallocatedCString>& internal,
         const Subchain subchain1,
         const Subchain subchain2,
-        const std::string label1,
-        const std::string label2) const noexcept -> bool
+        const ot::UnallocatedCString label1,
+        const ot::UnallocatedCString label2) const noexcept -> bool
     {
         auto output = true;
         const auto& account = api_.Crypto()
@@ -349,8 +348,9 @@ public:
         const ot::blockchain::Type chain,
         const ot::Identifier& accountID,
         const ot::Identifier& contactID,
-        const std::vector<std::string>& external,
-        const std::vector<std::string>& internal) const noexcept -> bool
+        const ot::UnallocatedVector<ot::UnallocatedCString>& external,
+        const ot::UnallocatedVector<ot::UnallocatedCString>& internal)
+        const noexcept -> bool
     {
         return check_deterministic_account(
             nym,
@@ -367,11 +367,11 @@ public:
     auto check_hd_index(
         const ot::Identifier& accountID,
         const ot::Identifier& contactID,
-        const std::vector<std::string>& expected,
+        const ot::UnallocatedVector<ot::UnallocatedCString>& expected,
         const ot::blockchain::crypto::HD& account,
         const Subchain subchain,
         const ot::Bip32Index i,
-        const std::string& label) const noexcept -> bool
+        const ot::UnallocatedCString& label) const noexcept -> bool
     {
         auto output = true;
         auto index = account.Reserve(subchain, reason_, contactID, label);
@@ -734,7 +734,7 @@ TEST_F(Test_BlockchainAPI, TestChainDiff)
 TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
 {
     const auto& test = bip32_test_cases_.at(0);
-    const std::string empty{};
+    const ot::UnallocatedCString empty{};
     auto bytes = api_.Factory().Data(test.seed_, ot::StringStyle::Hex);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
     const auto fingerprint = api_.Crypto().Seed().ImportRaw(seed, reason_);
@@ -773,7 +773,7 @@ TEST_F(Test_BlockchainAPI, TestBip32_standard_1)
 TEST_F(Test_BlockchainAPI, TestBip32_standard_3)
 {
     const auto& test = bip32_test_cases_.at(2);
-    const std::string empty{};
+    const ot::UnallocatedCString empty{};
     auto bytes = api_.Factory().Data(test.seed_, ot::StringStyle::Hex);
     auto seed = api_.Factory().SecretFromBytes(bytes->Bytes());
     const auto fingerprint = api_.Crypto().Seed().ImportRaw(seed, reason_);
@@ -1008,10 +1008,11 @@ TEST_F(Test_BlockchainAPI, set_metadata)
         api_.Crypto().Blockchain().Account(nym, chain).GetHD().at(accountID);
     const auto subchain = Subchain::External;
     const auto setContact =
-        std::vector<ot::Bip32Index>{0, 1, 6, 8, 9, 14, 16, 17, 22};
-    const auto clearContact = std::vector<ot::Bip32Index>{3, 4, 11, 12, 19, 20};
+        ot::UnallocatedVector<ot::Bip32Index>{0, 1, 6, 8, 9, 14, 16, 17, 22};
+    const auto clearContact =
+        ot::UnallocatedVector<ot::Bip32Index>{3, 4, 11, 12, 19, 20};
     const auto unconfirmed =
-        std::vector<std::pair<ot::Bip32Index, ot::Bip32Index>>{
+        ot::UnallocatedVector<std::pair<ot::Bip32Index, ot::Bip32Index>>{
             {4, 0},
             {5, 0},
             {6, 0},
@@ -1022,7 +1023,7 @@ TEST_F(Test_BlockchainAPI, set_metadata)
             {21, 2},
             {22, 2},
         };
-    const auto confirmed = std::vector<ot::Bip32Index>{7, 15, 23};
+    const auto confirmed = ot::UnallocatedVector<ot::Bip32Index>{7, 15, 23};
 
     for (const auto& index : setContact) {
         EXPECT_TRUE(api_.Crypto().Blockchain().AssignContact(
@@ -1316,7 +1317,7 @@ TEST_F(Test_BlockchainAPI, paymentcode)
     const auto accountID = api_.Crypto().Blockchain().NewPaymentCodeSubaccount(
         nym,
         api_.Factory().PaymentCode(pNym->PaymentCode()),
-        api_.Factory().PaymentCode(std::string{
+        api_.Factory().PaymentCode(ot::UnallocatedCString{
             "PD1jTsa1rjnbMMLVbj5cg2c8KkFY32KWtPRqVVpSBkv1jf8zjHJVu"}),
         [&] {
             pNym->PaymentCodePath(ot::writer(bytes));
@@ -1385,4 +1386,4 @@ TEST_F(Test_BlockchainAPI, batch)
         }
     }
 }
-}  // namespace
+}  // namespace ottest

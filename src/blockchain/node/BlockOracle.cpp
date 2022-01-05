@@ -9,7 +9,6 @@
 
 #include <atomic>
 #include <memory>
-#include <vector>
 
 #include "blockchain/node/blockoracle/BlockDownloader.hpp"
 #include "core/Worker.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory
@@ -36,7 +36,7 @@ auto BlockOracle(
     const blockchain::node::HeaderOracle& header,
     const blockchain::node::internal::BlockDatabase& db,
     const blockchain::Type chain,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::BlockOracle>
 {
     using ReturnType = blockchain::node::implementation::BlockOracle;
@@ -53,7 +53,7 @@ BlockOracle::BlockOracle(
     const HeaderOracle& header,
     const internal::BlockDatabase& db,
     const blockchain::Type chain,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& shutdown) noexcept
     : Worker(api, std::chrono::milliseconds{500})
     , node_(node)
     , db_(db)

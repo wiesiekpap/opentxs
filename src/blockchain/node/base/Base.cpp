@@ -15,12 +15,10 @@
 #include <iosfwd>
 #include <iterator>
 #include <optional>
-#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/base/SyncClient.hpp"
 #include "blockchain/node/base/SyncServer.hpp"
@@ -74,6 +72,7 @@
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Options.hpp"
@@ -114,38 +113,41 @@ struct NullWallet final : public node::internal::Wallet {
     {
         return {};
     }
-    auto GetOutputs() const noexcept -> std::vector<UTXO> final { return {}; }
-    auto GetOutputs(TxoState) const noexcept -> std::vector<UTXO> final
+    auto GetOutputs() const noexcept -> UnallocatedVector<UTXO> final
+    {
+        return {};
+    }
+    auto GetOutputs(TxoState) const noexcept -> UnallocatedVector<UTXO> final
     {
         return {};
     }
     auto GetOutputs(const identifier::Nym&) const noexcept
-        -> std::vector<UTXO> final
+        -> UnallocatedVector<UTXO> final
     {
         return {};
     }
     auto GetOutputs(const identifier::Nym&, TxoState) const noexcept
-        -> std::vector<UTXO> final
+        -> UnallocatedVector<UTXO> final
     {
         return {};
     }
     auto GetOutputs(const identifier::Nym&, const Identifier&) const noexcept
-        -> std::vector<UTXO> final
+        -> UnallocatedVector<UTXO> final
     {
         return {};
     }
     auto GetOutputs(const identifier::Nym&, const Identifier&, TxoState)
-        const noexcept -> std::vector<UTXO> final
+        const noexcept -> UnallocatedVector<UTXO> final
     {
         return {};
     }
     auto GetOutputs(const crypto::Key&, TxoState) const noexcept
-        -> std::vector<UTXO> final
+        -> UnallocatedVector<UTXO> final
     {
         return {};
     }
     auto GetTags(const block::Outpoint& output) const noexcept
-        -> std::set<TxoTag> final
+        -> UnallocatedSet<TxoTag> final
     {
         return {};
     }
@@ -175,8 +177,8 @@ Base::Base(
     const api::Session& api,
     const Type type,
     const node::internal::Config& config,
-    const std::string& seednode,
-    const std::string& syncEndpoint) noexcept
+    const UnallocatedCString& seednode,
+    const UnallocatedCString& syncEndpoint) noexcept
     : Worker(api, std::chrono::seconds(0))
     , chain_(type)
     , filter_type_([&] {
@@ -498,7 +500,7 @@ auto Base::FeeRate() const noexcept -> Amount
     return params::Data::Chains().at(chain_).default_fee_rate_;
 }
 
-auto Base::GetConfirmations(const std::string& txid) const noexcept
+auto Base::GetConfirmations(const UnallocatedCString& txid) const noexcept
     -> ChainHeight
 {
     // TODO
@@ -513,13 +515,13 @@ auto Base::GetPeerCount() const noexcept -> std::size_t
     return peer_.GetPeerCount();
 }
 
-auto Base::GetTransactions() const noexcept -> std::vector<block::pTxid>
+auto Base::GetTransactions() const noexcept -> UnallocatedVector<block::pTxid>
 {
     return database_.GetTransactions();
 }
 
 auto Base::GetTransactions(const identifier::Nym& account) const noexcept
-    -> std::vector<block::pTxid>
+    -> UnallocatedVector<block::pTxid>
 {
     return database_.GetTransactions(account);
 }
@@ -723,7 +725,7 @@ auto Base::process_header(network::zeromq::Message&& in) noexcept -> void
     waiting_for_headers_->Off();
     headers_received_ = Clock::now();
     auto promise = int{};
-    auto input = std::vector<ReadView>{};
+    auto input = UnallocatedVector<ReadView>{};
 
     {
         const auto body = in.Body();
@@ -745,7 +747,7 @@ auto Base::process_header(network::zeromq::Message&& in) noexcept -> void
         promise = promiseFrame.as<int>();
     }
 
-    auto headers = std::vector<std::unique_ptr<block::Header>>{};
+    auto headers = UnallocatedVector<std::unique_ptr<block::Header>>{};
 
     for (const auto& header : input) {
         headers.emplace_back(instantiate_header(header));
@@ -766,9 +768,9 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
     OT_ASSERT(4 < body.size());
 
     const auto sender = api_.Factory().NymID(body.at(1));
-    const auto address = std::string{body.at(2).Bytes()};
+    const auto address = UnallocatedCString{body.at(2).Bytes()};
     const auto amount = Amount{body.at(3)};
-    const auto memo = std::string{body.at(4).Bytes()};
+    const auto memo = UnallocatedCString{body.at(4).Bytes()};
     const auto promise = body.at(5).as<int>();
     auto rc = SendResult::UnspecifiedError;
 
@@ -776,7 +778,8 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
         const auto pNym = api_.Wallet().Nym(sender);
 
         if (!pNym) {
-            const auto error = std::string{"Invalid sender "} + sender->str();
+            const auto error =
+                UnallocatedCString{"Invalid sender "} + sender->str();
             rc = SendResult::InvalidSenderNym;
 
             throw std::runtime_error{error};
@@ -786,7 +789,7 @@ auto Base::process_send_to_address(network::zeromq::Message&& in) noexcept
             api_.Crypto().Blockchain().DecodeAddress(address);
 
         if ((0 == chains.count(chain_)) || (!supported)) {
-            const auto error = std::string{"Address "} + address +
+            const auto error = UnallocatedCString{"Address "} + address +
                                " not valid for " + DisplayString(chain_);
             rc = SendResult::AddressNotValidforChain;
 
@@ -848,12 +851,12 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
 
     const auto nymID = api_.Factory().NymID(body.at(1));
     const auto recipient =
-        api_.Factory().PaymentCode(std::string{body.at(2).Bytes()});
+        api_.Factory().PaymentCode(UnallocatedCString{body.at(2).Bytes()});
     const auto contact =
         api_.Crypto().Blockchain().Internal().Contacts().PaymentCodeToContact(
             recipient, chain_);
     const auto amount = Amount{body.at(3)};
-    const auto memo = std::string{body.at(4).Bytes()};
+    const auto memo = UnallocatedCString{body.at(4).Bytes()};
     const auto promise = body.at(5).as<int>();
     auto rc = SendResult::UnspecifiedError;
 
@@ -864,7 +867,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
             rc = SendResult::InvalidSenderNym;
 
             throw std::runtime_error{
-                std::string{"Invalid nym "} + nymID->str()};
+                UnallocatedCString{"Invalid nym "} + nymID->str()};
         }
 
         const auto& nym = *pNym;
@@ -896,7 +899,8 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
             return out;
         }();
         const auto reason = api_.Factory().PasswordPrompt(
-            std::string{"Sending a transaction to "} + recipient.asBase58());
+            UnallocatedCString{"Sending a transaction to "} +
+            recipient.asBase58());
         const auto& account =
             api_.Crypto().Blockchain().Internal().PaymentCodeSubaccount(
                 nymID, sender, recipient, path, chain_, reason);
@@ -950,7 +954,7 @@ auto Base::process_send_to_payment_code(network::zeromq::Message&& in) noexcept
                 " ")(index.value())(" for outgoing transaction")
                 .Flush();
             txout.set_pubkey(pubkey->str());
-            txout.set_contact(std::string{contact->Bytes()});
+            txout.set_contact(UnallocatedCString{contact->Bytes()});
 
             if (account.IsNotified()) {
                 // TODO preemptive notifications go here
@@ -999,7 +1003,7 @@ auto Base::process_sync_data(network::zeromq::Message&& in) noexcept -> void
     }
 
     auto prior = block::BlankHash();
-    auto hashes = std::vector<block::pHash>{};
+    auto hashes = UnallocatedVector<block::pHash>{};
     const auto accepted =
         header_.Internal().ProcessSyncData(prior, hashes, data);
 
@@ -1036,8 +1040,8 @@ auto Base::RequestBlock(const block::Hash& block) const noexcept -> bool
     return peer_.RequestBlock(block);
 }
 
-auto Base::RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
-    -> bool
+auto Base::RequestBlocks(
+    const UnallocatedVector<ReadView>& hashes) const noexcept -> bool
 {
     if (false == running_.load()) { return false; }
 
@@ -1046,9 +1050,9 @@ auto Base::RequestBlocks(const std::vector<ReadView>& hashes) const noexcept
 
 auto Base::SendToAddress(
     const opentxs::identifier::Nym& sender,
-    const std::string& address,
+    const UnallocatedCString& address,
     const Amount amount,
-    const std::string& memo) const noexcept -> PendingOutgoing
+    const UnallocatedCString& memo) const noexcept -> PendingOutgoing
 {
     auto [index, future] = send_promises_.get();
     auto work = MakeWork(Task::SendToAddress);
@@ -1064,9 +1068,9 @@ auto Base::SendToAddress(
 
 auto Base::SendToPaymentCode(
     const opentxs::identifier::Nym& nymID,
-    const std::string& recipient,
+    const UnallocatedCString& recipient,
     const Amount amount,
-    const std::string& memo) const noexcept -> PendingOutgoing
+    const UnallocatedCString& memo) const noexcept -> PendingOutgoing
 {
     auto [index, future] = send_promises_.get();
     auto work = MakeWork(Task::SendToPaymentCode);
@@ -1084,7 +1088,7 @@ auto Base::SendToPaymentCode(
     const opentxs::identifier::Nym& nymID,
     const PaymentCode& recipient,
     const Amount amount,
-    const std::string& memo) const noexcept -> PendingOutgoing
+    const UnallocatedCString& memo) const noexcept -> PendingOutgoing
 {
     return SendToPaymentCode(nymID, recipient.asBase58(), amount, memo);
 }

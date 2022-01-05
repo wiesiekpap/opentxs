@@ -9,14 +9,13 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <set>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -48,7 +47,8 @@ class OPENTXS_EXPORT Subaccount
 public:
     using Txid = opentxs::blockchain::block::Txid;
 
-    virtual auto AllowedSubchains() const noexcept -> std::set<Subchain> = 0;
+    virtual auto AllowedSubchains() const noexcept
+        -> UnallocatedSet<Subchain> = 0;
     /// Throws std::out_of_range for invalid index
     virtual auto BalanceElement(const Subchain type, const Bip32Index index)
         const noexcept(false) -> const crypto::Element& = 0;

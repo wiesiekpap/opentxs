@@ -5,9 +5,6 @@
 
 #pragma once
 
-#include <list>
-#include <map>
-#include <string>
 #include <utility>
 
 #include "1_Internal.hpp"
@@ -23,6 +20,7 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #endif  // OT_BLOCKCHAIN
 #include "opentxs/core/ui/UnitList.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs

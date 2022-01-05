@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
-#include <vector>
 
 #include "blockchain/bitcoin/Inventory.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
@@ -18,6 +17,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -63,16 +63,16 @@ public:
     Getdata(
         const api::Session& api,
         const blockchain::Type network,
-        std::vector<value_type>&& payload) noexcept;
+        UnallocatedVector<value_type>&& payload) noexcept;
     Getdata(
         const api::Session& api,
         std::unique_ptr<Header> header,
-        std::vector<value_type>&& payload) noexcept;
+        UnallocatedVector<value_type>&& payload) noexcept;
 
     ~Getdata() final = default;
 
 private:
-    const std::vector<value_type> payload_;
+    const UnallocatedVector<value_type> payload_;
 
     Getdata(const Getdata&) = delete;
     Getdata(Getdata&&) = delete;

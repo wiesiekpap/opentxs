@@ -10,12 +10,7 @@
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
-#include <list>
-#include <map>
 #include <optional>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "Proto.hpp"
 #include "blockchain/crypto/Deterministic.hpp"
@@ -37,6 +32,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/Bip47Channel.pb.h"
@@ -111,7 +107,7 @@ public:
         const std::size_t batch,
         const PasswordPrompt& reason,
         const Identifier& contact,
-        const std::string& label,
+        const UnallocatedCString& label,
         const Time time) const noexcept -> Batch final;
     auto RootNode(const PasswordPrompt& reason) const noexcept
         -> blockchain::crypto::HDKey final
@@ -155,8 +151,10 @@ private:
         LatestVersion<opentxs::PaymentCode, opentxs::PaymentCode, Compare>;
 
     VersionNumber version_;
-    mutable std::set<opentxs::blockchain::block::pTxid> outgoing_notifications_;
-    mutable std::set<opentxs::blockchain::block::pTxid> incoming_notifications_;
+    mutable UnallocatedSet<opentxs::blockchain::block::pTxid>
+        outgoing_notifications_;
+    mutable UnallocatedSet<opentxs::blockchain::block::pTxid>
+        incoming_notifications_;
     mutable Latest local_;
     Latest remote_;
     const OTIdentifier contact_id_;
@@ -169,7 +167,7 @@ private:
     auto has_private(const PasswordPrompt& reason) const noexcept -> bool;
     auto save(const rLock& lock) const noexcept -> bool final;
     auto set_deterministic_contact(
-        std::set<OTIdentifier>& contacts) const noexcept -> void final
+        UnallocatedSet<OTIdentifier>& contacts) const noexcept -> void final
     {
         contacts.emplace(get_contact());
     }

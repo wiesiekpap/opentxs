@@ -40,18 +40,18 @@ BlockchainSubchain::BlockchainSubchain(
     CustomData& custom) noexcept
     : BlockchainSubchainRow(parent, api, rowID, true)
     , name_(sortKey)
-    , progress_(extract_custom<std::string>(custom, 0))
+    , progress_(extract_custom<UnallocatedCString>(custom, 0))
 {
 }
 
-auto BlockchainSubchain::Name() const noexcept -> std::string
+auto BlockchainSubchain::Name() const noexcept -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 
     return name_;
 }
 
-auto BlockchainSubchain::Progress() const noexcept -> std::string
+auto BlockchainSubchain::Progress() const noexcept -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 
@@ -62,7 +62,7 @@ auto BlockchainSubchain::reindex(
     const BlockchainSubaccountSortKey& key,
     CustomData& custom) noexcept -> bool
 {
-    auto progress = extract_custom<std::string>(custom, 0);
+    auto progress = extract_custom<UnallocatedCString>(custom, 0);
     eLock lock{shared_lock_};
     auto changed{false};
 

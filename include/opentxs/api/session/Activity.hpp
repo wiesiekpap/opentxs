@@ -11,13 +11,13 @@
 #include <cstddef>
 #include <future>
 #include <memory>
-#include <string>
 #include <tuple>
 #include <utility>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -111,7 +111,7 @@ public:
         const Identifier& id,
         const StorageBox& box,
         const PasswordPrompt& reason) const noexcept
-        -> std::shared_future<std::string> = 0;
+        -> std::shared_future<UnallocatedCString> = 0;
     /**   Mark a thread item as read
      *
      *    \param[in] nymId the identifier of the nym who owns the thread
@@ -144,9 +144,9 @@ public:
      */
     virtual auto PaymentText(
         const identifier::Nym& nym,
-        const std::string& id,
-        const std::string& workflow) const noexcept
-        -> std::shared_ptr<const std::string> = 0;
+        const UnallocatedCString& id,
+        const UnallocatedCString& workflow) const noexcept
+        -> std::shared_ptr<const UnallocatedCString> = 0;
     /**   Asynchronously cache the most recent items in each of a nym's threads
      *
      *    \param[in] nymID the identifier of the nym who owns the thread
@@ -199,7 +199,7 @@ public:
      *  See opentxs/util/WorkTypes.hpp for message format documentation
      */
     virtual auto ThreadPublisher(const identifier::Nym& nym) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
 
     OPENTXS_NO_EXPORT virtual auto Internal() noexcept
         -> internal::Activity& = 0;

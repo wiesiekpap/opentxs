@@ -6,7 +6,8 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 class QCoreApplication;
 

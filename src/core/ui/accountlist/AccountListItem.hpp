@@ -8,7 +8,6 @@
 #pragma once
 
 #include <iosfwd>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -23,6 +22,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/AccountListItem.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -71,23 +71,23 @@ using AccountListItemRow =
 class AccountListItem final : public AccountListItemRow
 {
 public:
-    auto AccountID() const noexcept -> std::string final
+    auto AccountID() const noexcept -> UnallocatedCString final
     {
         return row_id_->str();
     }
     auto Balance() const noexcept -> Amount final;
-    auto ContractID() const noexcept -> std::string final
+    auto ContractID() const noexcept -> UnallocatedCString final
     {
         return contract_->ID()->str();
     }
-    auto DisplayBalance() const noexcept -> std::string final;
-    auto DisplayUnit() const noexcept -> std::string final;
-    auto Name() const noexcept -> std::string final;
-    auto NotaryID() const noexcept -> std::string final
+    auto DisplayBalance() const noexcept -> UnallocatedCString final;
+    auto DisplayUnit() const noexcept -> UnallocatedCString final;
+    auto Name() const noexcept -> UnallocatedCString final;
+    auto NotaryID() const noexcept -> UnallocatedCString final
     {
         return notary_->ID()->str();
     }
-    auto NotaryName() const noexcept -> std::string final
+    auto NotaryName() const noexcept -> UnallocatedCString final
     {
         return notary_->EffectiveName();
     }
@@ -109,7 +109,7 @@ private:
     const OTUnitDefinition contract_;
     const OTServerContract notary_;
     Amount balance_;
-    std::string name_;
+    UnallocatedCString name_;
 
     static auto load_server(
         const api::Session& api,

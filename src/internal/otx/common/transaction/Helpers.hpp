@@ -8,13 +8,13 @@
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/OTTransaction.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -61,7 +61,7 @@ auto LoadAbbreviatedRecord(
 
 auto VerifyBoxReceiptExists(
     const api::Session& api,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const identifier::Notary& NOTARY_ID,
     const identifier::Nym& NYM_ID,
     const Identifier& ACCOUNT_ID,  // If for Nymbox (vs inbox/outbox) then

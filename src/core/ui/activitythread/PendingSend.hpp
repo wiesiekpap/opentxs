@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <string>
 #include <tuple>
 
 #include "1_Internal.hpp"
@@ -13,6 +12,7 @@
 #include "internal/core/ui/UI.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -47,12 +47,12 @@ class PendingSend final : public ActivityThreadItem
 {
 public:
     static auto extract(CustomData& custom) noexcept
-        -> std::tuple<opentxs::Amount, std::string, std::string>;
+        -> std::tuple<opentxs::Amount, UnallocatedCString, UnallocatedCString>;
 
     auto Amount() const noexcept -> opentxs::Amount final;
     auto Deposit() const noexcept -> bool final { return false; }
-    auto DisplayAmount() const noexcept -> std::string final;
-    auto Memo() const noexcept -> std::string final;
+    auto DisplayAmount() const noexcept -> UnallocatedCString final;
+    auto Memo() const noexcept -> UnallocatedCString final;
 
     PendingSend(
         const ActivityThreadInternalInterface& parent,
@@ -62,14 +62,14 @@ public:
         const ActivityThreadSortKey& sortKey,
         CustomData& custom,
         opentxs::Amount amount,
-        std::string&& display,
-        std::string&& memo) noexcept;
+        UnallocatedCString&& display,
+        UnallocatedCString&& memo) noexcept;
     ~PendingSend() final = default;
 
 private:
     opentxs::Amount amount_;
-    std::string display_amount_;
-    std::string memo_;
+    UnallocatedCString display_amount_;
+    UnallocatedCString memo_;
 
     auto reindex(const ActivityThreadSortKey& key, CustomData& custom) noexcept
         -> bool final;

@@ -7,7 +7,6 @@
 #include <chrono>
 #include <future>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "Basic.hpp"
@@ -22,13 +21,14 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace ottest
 {
-std::string nym_id_{};
-std::string server_id_{};
+ot::UnallocatedCString nym_id_{};
+ot::UnallocatedCString server_id_{};
 
 TEST(ClientSession, create)
 {

@@ -13,10 +13,8 @@
 #include <functional>
 #include <iosfwd>
 #include <memory>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -29,6 +27,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/GCS.pb.h"
 
 namespace opentxs
@@ -71,10 +70,10 @@ namespace opentxs::gcs
 auto GolombDecode(
     const std::uint32_t N,
     const std::uint8_t P,
-    const Space& encoded) noexcept(false) -> std::vector<std::uint64_t>;
+    const Space& encoded) noexcept(false) -> UnallocatedVector<std::uint64_t>;
 auto GolombEncode(
     const std::uint8_t P,
-    const std::vector<std::uint64_t>& hashedSet) noexcept(false) -> Space;
+    const UnallocatedVector<std::uint64_t>& hashedSet) noexcept(false) -> Space;
 auto HashToRange(
     const api::Session& api,
     const ReadView key,
@@ -85,8 +84,8 @@ auto HashedSetConstruct(
     const ReadView key,
     const std::uint32_t N,
     const std::uint32_t M,
-    const std::vector<ReadView> items) noexcept(false)
-    -> std::vector<std::uint64_t>;
+    const UnallocatedVector<ReadView> items) noexcept(false)
+    -> UnallocatedVector<std::uint64_t>;
 }  // namespace opentxs::gcs
 
 namespace opentxs::blockchain
@@ -189,13 +188,14 @@ auto FilterToHeader(
     const api::Session& api,
     const ReadView filter,
     const ReadView previous = {}) noexcept -> OTData;
-auto Format(const Type chain, const opentxs::Amount&) noexcept -> std::string;
+auto Format(const Type chain, const opentxs::Amount&) noexcept
+    -> UnallocatedCString;
 auto GetFilterParams(const filter::Type type) noexcept(false) -> FilterParams;
 auto Grind(const std::function<void()> function) noexcept -> void;
 auto Serialize(const Type chain, const filter::Type type) noexcept(false)
     -> std::uint8_t;
 auto Serialize(const block::Position& position) noexcept -> Space;
-auto Ticker(const Type chain) noexcept -> std::string;
+auto Ticker(const Type chain) noexcept -> UnallocatedCString;
 }  // namespace opentxs::blockchain::internal
 
 namespace opentxs::blockchain::script
@@ -218,7 +218,7 @@ auto GCS(
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
-    const std::vector<OTData>& elements) noexcept
+    const UnallocatedVector<OTData>& elements) noexcept
     -> std::unique_ptr<blockchain::GCS>;
 auto GCS(
     const api::Session& api,
@@ -247,7 +247,7 @@ auto NumericHash(const blockchain::block::Hash& hash) noexcept
 auto NumericHashNBits(const std::uint32_t nBits) noexcept
     -> std::unique_ptr<blockchain::NumericHash>;
 #if OT_BLOCKCHAIN
-auto Work(const std::string& hex) -> blockchain::Work*;
+auto Work(const UnallocatedCString& hex) -> blockchain::Work*;
 auto Work(const blockchain::Type chain, const blockchain::NumericHash& target)
     -> blockchain::Work*;
 #endif  // OT_BLOCKCHAIN

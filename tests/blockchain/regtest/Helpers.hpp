@@ -23,22 +23,17 @@
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
-#include <deque>
 #include <functional>
 #include <future>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Basic.hpp"
 #include "integration/Helpers.hpp"
@@ -63,6 +58,7 @@
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
 #include "ui/Helpers.hpp"
 
@@ -313,9 +309,9 @@ private:
 struct TXOState {
     struct Data {
         ot::blockchain::Balance balance_;
-        std::map<
+        ot::UnallocatedMap<
             ot::blockchain::node::TxoState,
-            std::set<ot::blockchain::block::Outpoint>>
+            ot::UnallocatedSet<ot::blockchain::block::Outpoint>>
             data_;
 
         Data() noexcept;
@@ -323,13 +319,13 @@ struct TXOState {
 
     struct NymData {
         Data nym_;
-        std::map<ot::OTIdentifier, Data> accounts_;
+        ot::UnallocatedMap<ot::OTIdentifier, Data> accounts_;
 
         NymData() noexcept;
     };
 
     Data wallet_;
-    std::map<ot::OTNymID, NymData> nyms_;
+    ot::UnallocatedMap<ot::OTNymID, NymData> nyms_;
 
     TXOState() noexcept;
 };
@@ -386,7 +382,7 @@ public:
 protected:
     using Height = b::block::Height;
     using Transaction = ot::api::session::Factory::Transaction_p;
-    using Transactions = std::deque<ot::blockchain::block::pTxid>;
+    using Transactions = ot::UnallocatedDeque<ot::blockchain::block::pTxid>;
     using Generator = std::function<Transaction(Height)>;
     using Outpoint = ot::blockchain::block::Outpoint;
     using Script = ot::blockchain::block::bitcoin::Script;
@@ -394,7 +390,7 @@ protected:
     using Key = ot::OTData;
     using Amount = ot::Amount;
     using OutpointMetadata = std::tuple<Key, Amount, Pattern>;
-    using Expected = std::map<Outpoint, OutpointMetadata>;
+    using Expected = ot::UnallocatedMap<Outpoint, OutpointMetadata>;
     using Subchain = bca::Subchain;
 
     static bool init_;
@@ -424,9 +420,10 @@ protected:
         const Height ancestor,
         const std::size_t count,
         const Generator& gen,
-        const std::vector<Transaction>& extra = {}) noexcept -> bool;
-    auto TestUTXOs(const Expected& expected, const std::vector<UTXO>& utxos)
-        const noexcept -> bool;
+        const ot::UnallocatedVector<Transaction>& extra = {}) noexcept -> bool;
+    auto TestUTXOs(
+        const Expected& expected,
+        const ot::UnallocatedVector<UTXO>& utxos) const noexcept -> bool;
     auto TestWallet(const ot::api::session::Client& api, const TXOState& state)
         const noexcept -> bool;
 
@@ -444,10 +441,11 @@ protected:
         const ot::Options& clientArgs);
 
 private:
-    using BlockListen = std::map<int, std::unique_ptr<BlockListener>>;
-    using WalletListen = std::map<int, std::unique_ptr<WalletListener>>;
+    using BlockListen = ot::UnallocatedMap<int, std::unique_ptr<BlockListener>>;
+    using WalletListen =
+        ot::UnallocatedMap<int, std::unique_ptr<WalletListener>>;
 
-    static const std::set<ot::blockchain::node::TxoState> states_;
+    static const ot::UnallocatedSet<ot::blockchain::node::TxoState> states_;
     static std::unique_ptr<const ot::OTBlockchainAddress> listen_address_;
     static std::unique_ptr<const PeerListener> peer_listener_;
     static std::unique_ptr<MinedBlocks> mined_block_cache_;
@@ -488,7 +486,7 @@ private:
     auto compare_outpoints(
         const ot::blockchain::node::TxoState type,
         const TXOState::Data& expected,
-        const std::vector<UTXO>& got) const noexcept -> bool;
+        const ot::UnallocatedVector<UTXO>& got) const noexcept -> bool;
 };
 
 class Regtest_fixture_normal : public Regtest_fixture_base
@@ -506,10 +504,10 @@ protected:
 
     const ot::identifier::Notary& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
-    const std::string expected_display_unit_;
-    const std::string expected_account_name_;
-    const std::string expected_notary_name_;
-    const std::string memo_outgoing_;
+    const ot::UnallocatedCString expected_display_unit_;
+    const ot::UnallocatedCString expected_account_name_;
+    const ot::UnallocatedCString expected_notary_name_;
+    const ot::UnallocatedCString memo_outgoing_;
     const ot::AccountType expected_account_type_;
     const ot::core::UnitType expected_unit_type_;
     const Generator hd_generator_;
@@ -541,10 +539,10 @@ protected:
     const ot::api::session::Notary& api_server_1_;
     const ot::identifier::Notary& expected_notary_;
     const ot::identifier::UnitDefinition& expected_unit_;
-    const std::string expected_display_unit_;
-    const std::string expected_account_name_;
-    const std::string expected_notary_name_;
-    const std::string memo_outgoing_;
+    const ot::UnallocatedCString expected_display_unit_;
+    const ot::UnallocatedCString expected_account_name_;
+    const ot::UnallocatedCString expected_notary_name_;
+    const ot::UnallocatedCString memo_outgoing_;
     const ot::AccountType expected_account_type_;
     const ot::core::UnitType expected_unit_type_;
     const Generator mine_to_alice_;
@@ -554,7 +552,7 @@ protected:
     auto CheckContactID(
         const User& local,
         const User& remote,
-        const std::string& paymentcode) const noexcept -> bool;
+        const ot::UnallocatedCString& paymentcode) const noexcept -> bool;
     auto CheckTXODBAlice() const noexcept -> bool;
     auto CheckTXODBBob() const noexcept -> bool;
 

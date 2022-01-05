@@ -45,7 +45,7 @@ auto ServerAction::ActivateSmartContract(
     const identifier::Nym& localNymID,
     const identifier::Notary& serverID,
     const Identifier& accountID,
-    const std::string& agentName,
+    const UnallocatedCString& agentName,
     std::unique_ptr<OTSmartContract>& contract) const -> ServerAction::Action
 {
     return Action(new OTAPI_Func(reason,
@@ -111,7 +111,7 @@ auto ServerAction::CreateMarketOffer(
     const Amount& price,
     const bool selling,
     const std::chrono::seconds lifetime,
-    const std::string& stopSign,
+    const UnallocatedCString& stopSign,
     const Amount activationPrice) const -> ServerAction::Action
 {
     auto notaryID = identifier::Notary::Factory();
@@ -244,7 +244,7 @@ auto ServerAction::IssueBasketCurrency(
     const identifier::Nym& localNymID,
     const identifier::Notary& serverID,
     const proto::UnitDefinition& basket,
-    const std::string& label) const -> ServerAction::Action
+    const UnallocatedCString& label) const -> ServerAction::Action
 {
     return Action(new OTAPI_Func(reason,
         ISSUE_BASKET,
@@ -296,7 +296,7 @@ auto ServerAction::PayDividend(
     const identifier::Notary& serverID,
     const identifier::UnitDefinition& instrumentDefinitionID,
     const Identifier& accountID,
-    const std::string& memo,
+    const UnallocatedCString& memo,
     const Amount amountPerShare) const -> ServerAction::Action
 {
     return Action(new OTAPI_Func(reason,
@@ -316,8 +316,8 @@ auto ServerAction::TriggerClause(
     const identifier::Nym& localNymID,
     const identifier::Notary& serverID,
     const TransactionNumber transactionNumber,
-    const std::string& clause,
-    const std::string& parameter) const -> ServerAction::Action
+    const UnallocatedCString& clause,
+    const UnallocatedCString& parameter) const -> ServerAction::Action
 {
     return Action(new OTAPI_Func(reason,
         TRIGGER_CLAUSE,
@@ -366,7 +366,7 @@ auto ServerAction::WithdrawVoucher(
     const Identifier& accountID,
     const identifier::Nym& recipientNymID,
     const Amount amount,
-    const std::string& memo) const -> ServerAction::Action
+    const UnallocatedCString& memo) const -> ServerAction::Action
 {
     return Action(new OTAPI_Func(reason,
         WITHDRAW_VOUCHER,

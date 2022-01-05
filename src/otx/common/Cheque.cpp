@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <cstring>
-#include <string>
 
 #include "internal/otx/common/StringXML.hpp"
 #include "internal/otx/common/XML.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -70,8 +70,8 @@ void Cheque::UpdateContents([[maybe_unused]] const PasswordPrompt& reason)
          REMITTER_NYM_ID = String::Factory(GetRemitterNymID()),
          REMITTER_ACCT_ID = String::Factory(GetRemitterAcctID());
 
-    std::string from = formatTimestamp(GetValidFrom());
-    std::string to = formatTimestamp(GetValidTo());
+    UnallocatedCString from = formatTimestamp(GetValidFrom());
+    UnallocatedCString to = formatTimestamp(GetValidTo());
 
     // I release this because I'm about to repopulate it.
     m_xmlUnsigned->Release();
@@ -80,7 +80,7 @@ void Cheque::UpdateContents([[maybe_unused]] const PasswordPrompt& reason)
 
     tag.add_attribute("version", m_strVersion->Get());
     tag.add_attribute("amount", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         m_lAmount.Serialize(writer(buf));
         return buf;
     }());
@@ -107,7 +107,7 @@ void Cheque::UpdateContents([[maybe_unused]] const PasswordPrompt& reason)
         tag.add_tag("memo", ascMemo->Get());
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());
@@ -144,8 +144,10 @@ auto Cheque::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetTransactionNum(
             String::StringToLong(xml->getAttributeValue("transactionNum")));
 
-        const std::string str_valid_from = xml->getAttributeValue("validFrom");
-        const std::string str_valid_to = xml->getAttributeValue("validTo");
+        const UnallocatedCString str_valid_from =
+            xml->getAttributeValue("validFrom");
+        const UnallocatedCString str_valid_to =
+            xml->getAttributeValue("validTo");
 
         SetValidFrom(parseTimestamp(str_valid_from));
         SetValidTo(parseTimestamp(str_valid_to));

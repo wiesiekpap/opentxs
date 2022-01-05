@@ -6,10 +6,10 @@
 #pragma once
 
 #include <cstddef>
-#include <string>
 
 #include "internal/otx/smartcontract/OTScript.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace chaiscript
 {
@@ -33,7 +33,7 @@ public:
     OTScriptChai(const String& strValue);
     OTScriptChai(const char* new_string);
     OTScriptChai(const char* new_string, size_t sizeLength);
-    OTScriptChai(const std::string& new_string);
+    OTScriptChai(const UnallocatedCString& new_string);
 
     ~OTScriptChai() final;
 

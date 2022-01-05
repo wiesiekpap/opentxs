@@ -9,13 +9,12 @@
 #include <limits>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "core/Amount.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 namespace bmp = boost::multiprecision;

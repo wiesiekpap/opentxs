@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <memory>
-#include <vector>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
@@ -18,6 +17,7 @@
 #include "opentxs/blockchain/block/bitcoin/Header.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -62,16 +62,16 @@ public:
     Headers(
         const api::Session& api,
         const blockchain::Type network,
-        std::vector<std::unique_ptr<value_type>>&& headers) noexcept;
+        UnallocatedVector<std::unique_ptr<value_type>>&& headers) noexcept;
     Headers(
         const api::Session& api,
         std::unique_ptr<Header> header,
-        std::vector<std::unique_ptr<value_type>>&& headers) noexcept;
+        UnallocatedVector<std::unique_ptr<value_type>>&& headers) noexcept;
 
     ~Headers() final = default;
 
 private:
-    const std::vector<std::unique_ptr<value_type>> payload_;
+    const UnallocatedVector<std::unique_ptr<value_type>> payload_;
 
     using implementation::Message::payload;
     auto payload(AllocateOutput out) const noexcept -> bool final;

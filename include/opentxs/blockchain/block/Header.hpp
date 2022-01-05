@@ -8,12 +8,12 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/blockchain/Work.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -69,7 +69,7 @@ public:
     virtual auto ParentHash() const noexcept -> const block::Hash& = 0;
     virtual auto ParentWork() const noexcept -> OTWork = 0;
     virtual auto Position() const noexcept -> block::Position = 0;
-    virtual auto Print() const noexcept -> std::string = 0;
+    virtual auto Print() const noexcept -> UnallocatedCString = 0;
     OPENTXS_NO_EXPORT virtual auto Serialize(SerializedType& out) const noexcept
         -> bool = 0;
     virtual auto Serialize(

@@ -5,11 +5,10 @@
 
 #pragma once
 
-#include <map>
-
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
-using VersionConversionMap = std::map<VersionNumber, VersionNumber>;
+using VersionConversionMap = UnallocatedMap<VersionNumber, VersionNumber>;
 }  // namespace opentxs

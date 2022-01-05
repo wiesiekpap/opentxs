@@ -8,10 +8,10 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -32,27 +32,32 @@ namespace opentxs::api::crypto
 class Encode
 {
 public:
-    virtual auto DataEncode(const std::string& input) const -> std::string = 0;
-    virtual auto DataEncode(const Data& input) const -> std::string = 0;
-    virtual auto DataDecode(const std::string& input) const -> std::string = 0;
-    virtual auto IdentifierEncode(const Data& input) const -> std::string = 0;
-    virtual auto IdentifierDecode(const std::string& input) const
-        -> std::string = 0;
+    virtual auto DataEncode(const UnallocatedCString& input) const
+        -> UnallocatedCString = 0;
+    virtual auto DataEncode(const Data& input) const -> UnallocatedCString = 0;
+    virtual auto DataDecode(const UnallocatedCString& input) const
+        -> UnallocatedCString = 0;
+    virtual auto IdentifierEncode(const Data& input) const
+        -> UnallocatedCString = 0;
+    virtual auto IdentifierDecode(const UnallocatedCString& input) const
+        -> UnallocatedCString = 0;
     OPENTXS_NO_EXPORT virtual auto InternalEncode() const noexcept
         -> const internal::Encode& = 0;
-    virtual auto IsBase62(const std::string& str) const -> bool = 0;
+    virtual auto IsBase62(const UnallocatedCString& str) const -> bool = 0;
     virtual auto Nonce(const std::uint32_t size) const -> OTString = 0;
     virtual auto Nonce(const std::uint32_t size, Data& rawOutput) const
         -> OTString = 0;
-    virtual auto RandomFilename() const -> std::string = 0;
-    virtual auto SanatizeBase58(const std::string& input) const
-        -> std::string = 0;
-    virtual auto SanatizeBase64(const std::string& input) const
-        -> std::string = 0;
-    virtual auto Z85Encode(const Data& input) const -> std::string = 0;
-    virtual auto Z85Encode(const std::string& input) const -> std::string = 0;
+    virtual auto RandomFilename() const -> UnallocatedCString = 0;
+    virtual auto SanatizeBase58(const UnallocatedCString& input) const
+        -> UnallocatedCString = 0;
+    virtual auto SanatizeBase64(const UnallocatedCString& input) const
+        -> UnallocatedCString = 0;
+    virtual auto Z85Encode(const Data& input) const -> UnallocatedCString = 0;
+    virtual auto Z85Encode(const UnallocatedCString& input) const
+        -> UnallocatedCString = 0;
     virtual auto Z85Decode(const Data& input) const -> OTData = 0;
-    virtual auto Z85Decode(const std::string& input) const -> std::string = 0;
+    virtual auto Z85Decode(const UnallocatedCString& input) const
+        -> UnallocatedCString = 0;
 
     OPENTXS_NO_EXPORT virtual auto InternalEncode() noexcept
         -> internal::Encode& = 0;

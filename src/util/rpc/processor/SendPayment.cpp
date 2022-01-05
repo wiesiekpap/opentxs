@@ -9,10 +9,8 @@
 
 #include <chrono>
 #include <future>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -30,6 +28,7 @@
 #include "opentxs/core/PaymentCode.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "opentxs/util/rpc/PaymentType.hpp"

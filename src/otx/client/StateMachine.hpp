@@ -10,13 +10,10 @@
 #include <cstring>
 #include <functional>
 #include <future>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "core/StateMachine.hpp"
 #include "internal/api/session/OTX.hpp"
@@ -35,6 +32,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -296,11 +294,11 @@ private:
     std::atomic<int> counter_;
     mutable std::atomic<int> task_count_;
     mutable std::mutex lock_;
-    std::vector<RefreshTask> tasks_;
+    UnallocatedVector<RefreshTask> tasks_;
     mutable State state_;
-    mutable std::map<OTNymID, int> unknown_nyms_;
-    mutable std::map<OTNotaryID, int> unknown_servers_;
-    mutable std::map<OTUnitID, int> unknown_units_;
+    mutable UnallocatedMap<OTNymID, int> unknown_nyms_;
+    mutable UnallocatedMap<OTNotaryID, int> unknown_servers_;
+    mutable UnallocatedMap<OTUnitID, int> unknown_units_;
 
     static auto task_done(bool done) -> TaskDone
     {

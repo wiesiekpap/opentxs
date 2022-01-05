@@ -86,9 +86,9 @@ auto BalanceItem::qt_data(const int, const int, QVariant&) const noexcept
 }
 
 auto BlockchainAccountActivity::Send(
-    const std::string&,
-    const std::string&,
-    const std::string&,
+    const UnallocatedCString&,
+    const UnallocatedCString&,
+    const UnallocatedCString&,
     Scale,
     SendMonitor::Callback) const noexcept -> int
 {

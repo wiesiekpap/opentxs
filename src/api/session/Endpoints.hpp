@@ -6,12 +6,12 @@
 #pragma once
 
 #include <robin_hood.h>
-#include <string>
 
 #include "internal/api/session/Endpoints.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Endpoints.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -42,57 +42,59 @@ namespace opentxs::api::session::imp
 class Endpoints final : public internal::Endpoints
 {
 public:
-    auto AccountUpdate() const noexcept -> std::string final;
-    auto BlockchainAccountCreated() const noexcept -> std::string final;
-    auto BlockchainBalance() const noexcept -> std::string final;
-    auto BlockchainBlockAvailable() const noexcept -> std::string final;
-    auto BlockchainBlockDownloadQueue() const noexcept -> std::string final;
+    auto AccountUpdate() const noexcept -> UnallocatedCString final;
+    auto BlockchainAccountCreated() const noexcept -> UnallocatedCString final;
+    auto BlockchainBalance() const noexcept -> UnallocatedCString final;
+    auto BlockchainBlockAvailable() const noexcept -> UnallocatedCString final;
+    auto BlockchainBlockDownloadQueue() const noexcept
+        -> UnallocatedCString final;
     auto BlockchainBlockUpdated(const opentxs::blockchain::Type chain)
-        const noexcept -> std::string final;
+        const noexcept -> UnallocatedCString final;
     auto BlockchainFilterUpdated(const opentxs::blockchain::Type chain)
-        const noexcept -> std::string final;
-    auto BlockchainMempool() const noexcept -> std::string final;
-    auto BlockchainNewFilter() const noexcept -> std::string final;
-    auto BlockchainPeer() const noexcept -> std::string final;
-    auto BlockchainPeerConnection() const noexcept -> std::string final;
-    auto BlockchainReorg() const noexcept -> std::string final;
-    auto BlockchainScanProgress() const noexcept -> std::string final;
-    auto BlockchainStateChange() const noexcept -> std::string final;
-    auto BlockchainSyncProgress() const noexcept -> std::string final;
-    auto BlockchainSyncServerUpdated() const noexcept -> std::string final;
-    auto BlockchainTransactions() const noexcept -> std::string final;
+        const noexcept -> UnallocatedCString final;
+    auto BlockchainMempool() const noexcept -> UnallocatedCString final;
+    auto BlockchainNewFilter() const noexcept -> UnallocatedCString final;
+    auto BlockchainPeer() const noexcept -> UnallocatedCString final;
+    auto BlockchainPeerConnection() const noexcept -> UnallocatedCString final;
+    auto BlockchainReorg() const noexcept -> UnallocatedCString final;
+    auto BlockchainScanProgress() const noexcept -> UnallocatedCString final;
+    auto BlockchainStateChange() const noexcept -> UnallocatedCString final;
+    auto BlockchainSyncProgress() const noexcept -> UnallocatedCString final;
+    auto BlockchainSyncServerUpdated() const noexcept
+        -> UnallocatedCString final;
+    auto BlockchainTransactions() const noexcept -> UnallocatedCString final;
     auto BlockchainTransactions(const identifier::Nym& nym) const noexcept
-        -> std::string final;
-    auto BlockchainWalletUpdated() const noexcept -> std::string final;
-    auto ConnectionStatus() const noexcept -> std::string final;
-    auto ContactUpdate() const noexcept -> std::string final;
-    auto DhtRequestNym() const noexcept -> std::string final;
-    auto DhtRequestServer() const noexcept -> std::string final;
-    auto DhtRequestUnit() const noexcept -> std::string final;
-    auto FindNym() const noexcept -> std::string final;
-    auto FindServer() const noexcept -> std::string final;
-    auto FindUnitDefinition() const noexcept -> std::string final;
-    auto IssuerUpdate() const noexcept -> std::string final;
-    auto Messagability() const noexcept -> std::string final;
-    auto MessageLoaded() const noexcept -> std::string final;
-    auto NymCreated() const noexcept -> std::string final;
-    auto NymDownload() const noexcept -> std::string final;
-    auto PairEvent() const noexcept -> std::string final;
-    auto PeerReplyUpdate() const noexcept -> std::string final;
-    auto PeerRequestUpdate() const noexcept -> std::string final;
-    auto PendingBailment() const noexcept -> std::string final;
-    auto ProcessPushNotification() const noexcept -> std::string final;
-    auto PushNotification() const noexcept -> std::string final;
-    auto ServerReplyReceived() const noexcept -> std::string final;
-    auto ServerRequestSent() const noexcept -> std::string final;
-    auto ServerUpdate() const noexcept -> std::string final;
-    auto Shutdown() const noexcept -> std::string final;
-    auto TaskComplete() const noexcept -> std::string final;
-    auto ThreadUpdate(const std::string& thread) const noexcept
-        -> std::string final;
-    auto UnitUpdate() const noexcept -> std::string final;
-    auto WidgetUpdate() const noexcept -> std::string final;
-    auto WorkflowAccountUpdate() const noexcept -> std::string final;
+        -> UnallocatedCString final;
+    auto BlockchainWalletUpdated() const noexcept -> UnallocatedCString final;
+    auto ConnectionStatus() const noexcept -> UnallocatedCString final;
+    auto ContactUpdate() const noexcept -> UnallocatedCString final;
+    auto DhtRequestNym() const noexcept -> UnallocatedCString final;
+    auto DhtRequestServer() const noexcept -> UnallocatedCString final;
+    auto DhtRequestUnit() const noexcept -> UnallocatedCString final;
+    auto FindNym() const noexcept -> UnallocatedCString final;
+    auto FindServer() const noexcept -> UnallocatedCString final;
+    auto FindUnitDefinition() const noexcept -> UnallocatedCString final;
+    auto IssuerUpdate() const noexcept -> UnallocatedCString final;
+    auto Messagability() const noexcept -> UnallocatedCString final;
+    auto MessageLoaded() const noexcept -> UnallocatedCString final;
+    auto NymCreated() const noexcept -> UnallocatedCString final;
+    auto NymDownload() const noexcept -> UnallocatedCString final;
+    auto PairEvent() const noexcept -> UnallocatedCString final;
+    auto PeerReplyUpdate() const noexcept -> UnallocatedCString final;
+    auto PeerRequestUpdate() const noexcept -> UnallocatedCString final;
+    auto PendingBailment() const noexcept -> UnallocatedCString final;
+    auto ProcessPushNotification() const noexcept -> UnallocatedCString final;
+    auto PushNotification() const noexcept -> UnallocatedCString final;
+    auto ServerReplyReceived() const noexcept -> UnallocatedCString final;
+    auto ServerRequestSent() const noexcept -> UnallocatedCString final;
+    auto ServerUpdate() const noexcept -> UnallocatedCString final;
+    auto Shutdown() const noexcept -> UnallocatedCString final;
+    auto TaskComplete() const noexcept -> UnallocatedCString final;
+    auto ThreadUpdate(const UnallocatedCString& thread) const noexcept
+        -> UnallocatedCString final;
+    auto UnitUpdate() const noexcept -> UnallocatedCString final;
+    auto WidgetUpdate() const noexcept -> UnallocatedCString final;
+    auto WorkflowAccountUpdate() const noexcept -> UnallocatedCString final;
 
     Endpoints(const int instance) noexcept;
 
@@ -101,20 +103,20 @@ public:
 private:
     static constexpr auto version_1_{1};
 
-    using BlockchainMap =
-        robin_hood::unordered_flat_map<opentxs::blockchain::Type, std::string>;
+    using BlockchainMap = robin_hood::
+        unordered_flat_map<opentxs::blockchain::Type, UnallocatedCString>;
     const int instance_;
     const BlockchainMap blockchain_block_updated_;
     const BlockchainMap blockchain_filter_updated_;
-    const std::string process_push_notification_;
-    const std::string push_notification_;
+    const UnallocatedCString process_push_notification_;
+    const UnallocatedCString push_notification_;
 
-    auto build_inproc_path(const std::string& path, const int version)
-        const noexcept -> std::string;
+    auto build_inproc_path(const UnallocatedCString& path, const int version)
+        const noexcept -> UnallocatedCString;
     auto build_inproc_path(
-        const std::string& path,
+        const UnallocatedCString& path,
         const int version,
-        const std::string& suffix) const noexcept -> std::string;
+        const UnallocatedCString& suffix) const noexcept -> UnallocatedCString;
 
     Endpoints() = delete;
     Endpoints(const Endpoints&) = delete;

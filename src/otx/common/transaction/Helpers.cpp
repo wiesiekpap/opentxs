@@ -9,7 +9,6 @@
 
 #include <cinttypes>
 #include <cstdint>
-#include <string>
 
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
@@ -27,6 +26,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -292,7 +292,7 @@ auto LoadAbbreviatedRecord(
 
 auto VerifyBoxReceiptExists(
     const api::Session& api,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const identifier::Notary& NOTARY_ID,
     const identifier::Nym& NYM_ID,  // Unused here for now, but still
                                     // convention.
@@ -413,7 +413,7 @@ auto LoadBoxReceipt(
 
     // Try to load the box receipt from local storage.
     //
-    std::string strFileContents(OTDB::QueryPlainString(
+    UnallocatedCString strFileContents(OTDB::QueryPlainString(
         api,
         api.DataFolder(),
         strFolder1name->Get(),  // <=== LOADING FROM DATA STORE.

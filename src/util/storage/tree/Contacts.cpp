@@ -8,8 +8,6 @@
 #include "util/storage/tree/Contacts.hpp"  // IWYU pragma: associated
 
 #include <cstdlib>
-#include <list>
-#include <set>
 #include <tuple>
 
 #include "Proto.hpp"
@@ -20,6 +18,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/Contact.pb.h"
@@ -35,7 +34,7 @@
 
 namespace opentxs::storage
 {
-Contacts::Contacts(const Driver& storage, const std::string& hash)
+Contacts::Contacts(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
     , merge_()
     , merged_()
@@ -48,12 +47,15 @@ Contacts::Contacts(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Contacts::Alias(const std::string& id) const -> std::string
+auto Contacts::Alias(const UnallocatedCString& id) const -> UnallocatedCString
 {
     return get_alias(id);
 }
 
-auto Contacts::Delete(const std::string& id) -> bool { return delete_item(id); }
+auto Contacts::Delete(const UnallocatedCString& id) -> bool
+{
+    return delete_item(id);
+}
 
 void Contacts::extract_nyms(const Lock& lock, const proto::Contact& data) const
 {
@@ -83,7 +85,7 @@ void Contacts::extract_nyms(const Lock& lock, const proto::Contact& data) const
     }
 }
 
-void Contacts::init(const std::string& hash)
+void Contacts::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageContacts> serialized{nullptr};
     driver_.LoadProto(hash, serialized);
@@ -134,9 +136,9 @@ auto Contacts::List() const -> ObjectList
 }
 
 auto Contacts::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::Contact>& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     const auto& normalized = nomalize_id(id);
@@ -144,7 +146,8 @@ auto Contacts::Load(
     return load_proto<proto::Contact>(normalized, output, alias, checking);
 }
 
-auto Contacts::nomalize_id(const std::string& input) const -> const std::string&
+auto Contacts::nomalize_id(const UnallocatedCString& input) const
+    -> const UnallocatedCString&
 {
     Lock lock(write_lock_);
 
@@ -155,7 +158,7 @@ auto Contacts::nomalize_id(const std::string& input) const -> const std::string&
     return it->second;
 }
 
-auto Contacts::NymOwner(std::string nym) const -> std::string
+auto Contacts::NymOwner(UnallocatedCString nym) const -> UnallocatedCString
 {
     Lock lock(write_lock_);
 
@@ -185,7 +188,7 @@ void Contacts::reconcile_maps(const Lock& lock, const proto::Contact& data)
     const auto& newParent = data.mergedto();
 
     if (false == newParent.empty()) {
-        std::string oldParent{};
+        UnallocatedCString oldParent{};
         const auto it = merged_.find(contactID);
 
         if (merged_.end() != it) { oldParent = it->second; }
@@ -256,7 +259,7 @@ auto Contacts::serialize() const -> proto::StorageContacts
         }
     }
 
-    std::map<std::string, std::set<std::string>> nyms;
+    UnallocatedMap<UnallocatedCString, UnallocatedSet<UnallocatedCString>> nyms;
 
     for (const auto& it : nym_contact_index_) {
         const auto& nym = it.first;
@@ -278,21 +281,24 @@ auto Contacts::serialize() const -> proto::StorageContacts
     return serialized;
 }
 
-auto Contacts::SetAlias(const std::string& id, const std::string& alias) -> bool
+auto Contacts::SetAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) -> bool
 {
     const auto& normalized = nomalize_id(id);
 
     return set_alias(normalized, alias);
 }
 
-auto Contacts::Store(const proto::Contact& data, const std::string& alias)
-    -> bool
+auto Contacts::Store(
+    const proto::Contact& data,
+    const UnallocatedCString& alias) -> bool
 {
     if (false == proto::Validate(data, VERBOSE)) { return false; }
 
     Lock lock(write_lock_);
 
-    const std::string id = data.id();
+    const UnallocatedCString id = data.id();
     const auto incomingRevision = data.revision();
     const bool existingKey = (item_map_.end() != item_map_.find(id));
     auto& metadata = item_map_[id];

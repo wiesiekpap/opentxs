@@ -46,13 +46,13 @@ public:
     enum class Policy : bool { Accept = true, Reject = false };
 
     static auto Factory(
-        const std::string& domain,
+        const UnallocatedCString& domain,
         const ReceiveCallback& callback) -> OTZMQZAPCallback;
     static auto Factory() -> OTZMQZAPCallback;
 
     virtual auto Process(const Request& request) const -> Reply = 0;
     virtual auto SetDomain(
-        const std::string& domain,
+        const UnallocatedCString& domain,
         const ReceiveCallback& callback) const -> bool = 0;
     virtual auto SetPolicy(const Policy policy) const -> bool = 0;
 

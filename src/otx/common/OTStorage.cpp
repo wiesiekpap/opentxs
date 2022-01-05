@@ -7,6 +7,7 @@
 #include "1_Internal.hpp"            // IWYU pragma: associated
 #include "otx/common/OTStorage.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <sstream>  // IWYU pragma: keep
@@ -436,11 +437,11 @@ auto CreateObject(StoredObjectType eType) -> Storable*
 // Check that if oneStr is "", then twoStr and threeStr are "" also... and so
 // on...
 auto CheckStringsExistInOrder(
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr,
     const char* szFuncName) -> bool
 {
     if (nullptr == szFuncName) szFuncName = __func__;
@@ -481,11 +482,11 @@ auto CheckStringsExistInOrder(
 // See if the file is there.
 auto Exists(
     const api::Session& api,
-    const std::string& dataFolder,
-    std::string strFolder,
-    std::string oneStr,
-    std::string twoStr,
-    std::string threeStr) -> bool
+    const UnallocatedCString& dataFolder,
+    UnallocatedCString strFolder,
+    UnallocatedCString oneStr,
+    UnallocatedCString twoStr,
+    UnallocatedCString threeStr) -> bool
 {
     {
         auto ot_strFolder = String::Factory(strFolder),
@@ -519,12 +520,12 @@ auto Exists(
 
 auto FormPathString(
     const api::Session& api,
-    std::string& strOutput,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> std::int64_t
+    UnallocatedCString& strOutput,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> std::int64_t
 {
     auto ot_strFolder = String::Factory(strFolder),
          ot_oneStr = String::Factory(oneStr),
@@ -563,12 +564,12 @@ auto FormPathString(
 
 auto StoreString(
     const api::Session& api,
-    const std::string& strContents,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& strContents,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
     auto ot_strFolder = String::Factory(strFolder),
          ot_oneStr = String::Factory(oneStr),
@@ -601,11 +602,11 @@ auto StoreString(
 
 auto QueryString(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> std::string
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> UnallocatedCString
 {
     auto ot_strFolder = String::Factory(strFolder),
          ot_oneStr = String::Factory(oneStr),
@@ -614,7 +615,7 @@ auto QueryString(
 
     if (!CheckStringsExistInOrder(
             dataFolder, strFolder, oneStr, twoStr, threeStr))
-        return std::string("");
+        return UnallocatedCString("");
 
     if (!ot_oneStr->Exists()) {
         OT_ASSERT_MSG(
@@ -626,7 +627,7 @@ auto QueryString(
 
     Storage* pStorage = details::s_pStorage;
 
-    if (nullptr == pStorage) return std::string("");
+    if (nullptr == pStorage) return UnallocatedCString("");
 
     return pStorage->QueryString(
         api,
@@ -641,12 +642,12 @@ auto QueryString(
 
 auto StorePlainString(
     const api::Session& api,
-    const std::string& strContents,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& strContents,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
     auto ot_strFolder = String::Factory(strFolder),
          ot_oneStr = String::Factory(oneStr),
@@ -681,11 +682,11 @@ auto StorePlainString(
 
 auto QueryPlainString(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> std::string
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> UnallocatedCString
 {
     auto ot_strFolder = String::Factory(strFolder),
          ot_oneStr = String::Factory(oneStr),
@@ -707,7 +708,7 @@ auto QueryPlainString(
     OT_ASSERT((strFolder.length() > 3) || (0 == strFolder.compare(0, 1, ".")));
     OT_ASSERT((oneStr.length() < 1) || (oneStr.length() > 3));
 
-    if (nullptr == pStorage) { return std::string(""); }
+    if (nullptr == pStorage) { return UnallocatedCString(""); }
 
     return pStorage->QueryPlainString(
         api,
@@ -723,11 +724,11 @@ auto QueryPlainString(
 auto StoreObject(
     const api::Session& api,
     Storable& theContents,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
     auto ot_strFolder = String::Factory(strFolder),
          ot_oneStr = String::Factory(oneStr),
@@ -765,11 +766,11 @@ auto StoreObject(
 auto QueryObject(
     const api::Session& api,
     const StoredObjectType theObjectType,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> Storable*
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> Storable*
 {
     auto ot_strFolder = String::Factory(strFolder),
          ot_oneStr = String::Factory(oneStr),
@@ -802,7 +803,8 @@ auto QueryObject(
 
 // Store/Retrieve a Storable object to/from an Armored object.
 
-auto EncodeObject(const api::Session& api, Storable& theContents) -> std::string
+auto EncodeObject(const api::Session& api, Storable& theContents)
+    -> UnallocatedCString
 {
     Storage* pStorage = details::s_pStorage;
 
@@ -816,7 +818,7 @@ auto EncodeObject(const api::Session& api, Storable& theContents) -> std::string
 // Use %newobject Storage::DecodeObject();
 auto DecodeObject(
     const StoredObjectType theObjectType,
-    const std::string& strInput) -> Storable*
+    const UnallocatedCString& strInput) -> Storable*
 {
     Storage* pStorage = details::s_pStorage;
 
@@ -829,11 +831,11 @@ auto DecodeObject(
 
 auto EraseValueByKey(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
     Storage* pStorage = details::s_pStorage;
 
@@ -978,7 +980,7 @@ auto OTPacker::Unpack(PackedBuffer& inBuf, Storable& outObj) -> bool
     return true;
 }
 
-auto OTPacker::Pack(const std::string& inObj) -> PackedBuffer*
+auto OTPacker::Pack(const UnallocatedCString& inObj) -> PackedBuffer*
 {
     // This is polymorphic, so we get the right kind of buffer for the packer.
     //
@@ -995,7 +997,7 @@ auto OTPacker::Pack(const std::string& inObj) -> PackedBuffer*
     return pBuffer;
 }
 
-auto OTPacker::Unpack(PackedBuffer& inBuf, std::string& outObj) -> bool
+auto OTPacker::Unpack(PackedBuffer& inBuf, UnallocatedCString& outObj) -> bool
 {
 
     // outObj is the OUTPUT OBJECT.
@@ -1015,7 +1017,7 @@ auto OTPacker::Unpack(PackedBuffer& inBuf, std::string& outObj) -> bool
                                                                                \
     using PointerTo##name = std::shared_ptr<name>;                             \
                                                                                \
-    using listOf##name##s = std::deque<PointerTo##name>;                       \
+    using listOf##name##s = UnallocatedDeque<PointerTo##name>;                 \
                                                                                \
     size_t scope Get##name##Count() { return list_##name##s.size(); }          \
                                                                                \
@@ -1121,34 +1123,34 @@ AddressBook::~AddressBook()
  inline bool has_bitcoin_id() const;
  inline void clear_bitcoin_id();
  static const std::int32_t kBitcoinIdFieldNumber = 1;
- inline const ::std::string& bitcoin_id() const;
- inline void set_bitcoin_id(const ::std::string& value);
+ inline const ::UnallocatedCString& bitcoin_id() const;
+ inline void set_bitcoin_id(const ::UnallocatedCString& value);
  inline void set_bitcoin_id(const char* value);
  inline void set_bitcoin_id(const char* value, size_t size);
- inline ::std::string* mutable_bitcoin_id();
- inline ::std::string* release_bitcoin_id();
+ inline ::UnallocatedCString* mutable_bitcoin_id();
+ inline ::UnallocatedCString* release_bitcoin_id();
 
  // optional string bitcoin_name = 2;
  inline bool has_bitcoin_name() const;
  inline void clear_bitcoin_name();
  static const std::int32_t kBitcoinNameFieldNumber = 2;
- inline const ::std::string& bitcoin_name() const;
- inline void set_bitcoin_name(const ::std::string& value);
+ inline const ::UnallocatedCString& bitcoin_name() const;
+ inline void set_bitcoin_name(const ::UnallocatedCString& value);
  inline void set_bitcoin_name(const char* value);
  inline void set_bitcoin_name(const char* value, size_t size);
- inline ::std::string* mutable_bitcoin_name();
- inline ::std::string* release_bitcoin_name();
+ inline ::UnallocatedCString* mutable_bitcoin_name();
+ inline ::UnallocatedCString* release_bitcoin_name();
 
  // optional string gui_label = 3;
  inline bool has_gui_label() const;
  inline void clear_gui_label();
  static const std::int32_t kGuiLabelFieldNumber = 3;
- inline const ::std::string& gui_label() const;
- inline void set_gui_label(const ::std::string& value);
+ inline const ::UnallocatedCString& gui_label() const;
+ inline void set_gui_label(const ::UnallocatedCString& value);
  inline void set_gui_label(const char* value);
  inline void set_gui_label(const char* value, size_t size);
- inline ::std::string* mutable_gui_label();
- inline ::std::string* release_gui_label();
+ inline ::UnallocatedCString* mutable_gui_label();
+ inline ::UnallocatedCString* release_gui_label();
  */
 /*
  bool SerializeToString(string* output) const; serializes the message and stores
@@ -1402,7 +1404,7 @@ auto IStorablePB::onUnpack(
  bool ParseFromString(const string& data);:
  parses a message from the given string.
  */
-auto BufferPB::PackString(const std::string& theString) -> bool
+auto BufferPB::PackString(const UnallocatedCString& theString) -> bool
 {
     StringPB theWrapper;
 
@@ -1422,7 +1424,7 @@ auto BufferPB::PackString(const std::string& theString) -> bool
     return true;
 }
 
-auto BufferPB::UnpackString(std::string& theString) -> bool
+auto BufferPB::UnpackString(UnallocatedCString& theString) -> bool
 {
     StringPB theWrapper;
 
@@ -1594,7 +1596,7 @@ void StringMapPB::hookAfterUnpack()
     for (std::int32_t i = 0; i < __pb_obj.node_size(); i++) {
         const KeyValue_InternalPB& theNode = __pb_obj.node(i);
 
-        the_map.insert(std::pair<std::string, std::string>(
+        the_map.insert(std::pair<UnallocatedCString, UnallocatedCString>(
             theNode.key(), theNode.value()));
     }
 }
@@ -1626,7 +1628,7 @@ template <>
 void BlobPB::hookAfterUnpack()
 {
     if (__pb_obj.has_value()) {
-        std::string strTemp = __pb_obj.value();
+        UnallocatedCString strTemp = __pb_obj.value();
         m_memBuffer.assign(strTemp.begin(), strTemp.end());
     }
 }
@@ -2209,12 +2211,12 @@ auto Storage::GetType() const -> StorageType
 
 auto Storage::StoreString(
     const api::Session& api,
-    const std::string& strContents,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& strContents,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
     auto ot_strFolder = String::Factory(strFolder),
          ot_oneStr = String::Factory(oneStr),
@@ -2257,13 +2259,13 @@ auto Storage::StoreString(
 
 auto Storage::QueryString(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> std::string
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> UnallocatedCString
 {
-    std::string theString("");
+    UnallocatedCString theString("");
 
     OTPacker* pPacker = GetPacker();
 
@@ -2308,12 +2310,12 @@ auto Storage::QueryString(
 
 auto Storage::StorePlainString(
     const api::Session& api,
-    const std::string& strContents,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& strContents,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
     return onStorePlainString(
         api, strContents, dataFolder, strFolder, oneStr, twoStr, threeStr);
@@ -2321,13 +2323,13 @@ auto Storage::StorePlainString(
 
 auto Storage::QueryPlainString(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> std::string
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> UnallocatedCString
 {
-    std::string theString("");
+    UnallocatedCString theString("");
 
     if (!onQueryPlainString(
             api, theString, dataFolder, strFolder, oneStr, twoStr, threeStr))
@@ -2339,11 +2341,11 @@ auto Storage::QueryPlainString(
 auto Storage::StoreObject(
     const api::Session& api,
     Storable& theContents,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
     OTPacker* pPacker = GetPacker();
 
@@ -2382,11 +2384,11 @@ auto Storage::StoreObject(
 auto Storage::QueryObject(
     const api::Session& api,
     const StoredObjectType& theObjectType,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> Storable*
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> Storable*
 {
     OTPacker* pPacker = GetPacker();
 
@@ -2438,9 +2440,9 @@ auto Storage::QueryObject(
 }
 
 auto Storage::EncodeObject(const api::Session& api, Storable& theContents)
-    -> std::string
+    -> UnallocatedCString
 {
-    std::string strReturnValue("");
+    UnallocatedCString strReturnValue("");
 
     OTPacker* pPacker = GetPacker();
 
@@ -2486,7 +2488,7 @@ auto Storage::EncodeObject(const api::Session& api, Storable& theContents)
 //
 auto Storage::DecodeObject(
     const StoredObjectType& theObjectType,
-    const std::string& strInput) -> Storable*
+    const UnallocatedCString& strInput) -> Storable*
 {
     if (strInput.size() < 1) return nullptr;
 
@@ -2541,11 +2543,11 @@ auto Storage::DecodeObject(
 
 auto Storage::EraseValueByKey(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
     bool bSuccess =
         onEraseValueByKey(api, dataFolder, strFolder, oneStr, twoStr, threeStr);
@@ -2577,12 +2579,12 @@ auto Storage::EraseValueByKey(
  */
 auto StorageFS::ConstructAndCreatePath(
     const api::Session& api,
-    std::string& strOutput,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> std::int64_t
+    UnallocatedCString& strOutput,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> std::int64_t
 {
     return ConstructAndConfirmPathImp(
         api, true, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr);
@@ -2590,12 +2592,12 @@ auto StorageFS::ConstructAndCreatePath(
 
 auto StorageFS::ConstructAndConfirmPath(
     const api::Session& api,
-    std::string& strOutput,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> std::int64_t
+    UnallocatedCString& strOutput,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> std::int64_t
 {
     return ConstructAndConfirmPathImp(
         api, false, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr);
@@ -2604,18 +2606,18 @@ auto StorageFS::ConstructAndConfirmPath(
 auto StorageFS::ConstructAndConfirmPathImp(
     const api::Session& api,
     const bool bMakePath,
-    std::string& strOutput,
-    const std::string& dataFolder,
-    const std::string& zeroStr,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> std::int64_t
+    UnallocatedCString& strOutput,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& zeroStr,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> std::int64_t
 {
-    const std::string strRoot(dataFolder.c_str());
-    const std::string strZero(3 > zeroStr.length() ? "" : zeroStr);
-    const std::string strOne(3 > oneStr.length() ? "" : oneStr);
-    const std::string strTwo(3 > twoStr.length() ? "" : twoStr);
-    const std::string strThree(3 > threeStr.length() ? "" : threeStr);
+    const UnallocatedCString strRoot(dataFolder.c_str());
+    const UnallocatedCString strZero(3 > zeroStr.length() ? "" : zeroStr);
+    const UnallocatedCString strOne(3 > oneStr.length() ? "" : oneStr);
+    const UnallocatedCString strTwo(3 > twoStr.length() ? "" : twoStr);
+    const UnallocatedCString strThree(3 > threeStr.length() ? "" : threeStr);
 
     // must be 3chars in length, or equal to "."
     if (strZero.empty() && (0 != zeroStr.compare("."))) {
@@ -2646,8 +2648,8 @@ auto StorageFS::ConstructAndConfirmPathImp(
     const bool bThreeIsLast = !bOneIsLast && !bTwoIsLast;
 
     // main vairables;
-    std::string strBufFolder("");
-    std::string strBufPath("");
+    UnallocatedCString strBufFolder("");
+    UnallocatedCString strBufPath("");
 
     // main block
     {
@@ -2692,8 +2694,8 @@ auto StorageFS::ConstructAndConfirmPathImp(
 ot_exit_block:
 
     // set as constants. (no more changing).
-    const std::string strFolder(strBufFolder);
-    const std::string strPath(strBufPath);
+    const UnallocatedCString strFolder(strBufFolder);
+    const UnallocatedCString strPath(strBufPath);
     strOutput = strPath;
 
     if (bMakePath) {
@@ -2735,13 +2737,13 @@ ot_exit_block:
 auto StorageFS::onStorePackedBuffer(
     const api::Session& api,
     PackedBuffer& theBuffer,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
-    std::string strOutput;
+    UnallocatedCString strOutput;
 
     if (0 >
         ConstructAndCreatePath(
@@ -2777,13 +2779,13 @@ auto StorageFS::onStorePackedBuffer(
 auto StorageFS::onQueryPackedBuffer(
     const api::Session& api,
     PackedBuffer& theBuffer,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
-    std::string strOutput;
+    UnallocatedCString strOutput;
 
     std::int64_t lRet = ConstructAndConfirmPath(
         api, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr);
@@ -2819,14 +2821,14 @@ auto StorageFS::onQueryPackedBuffer(
 
 auto StorageFS::onStorePlainString(
     const api::Session& api,
-    const std::string& theBuffer,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& theBuffer,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
-    std::string strOutput;
+    UnallocatedCString strOutput;
 
     if (0 >
         ConstructAndCreatePath(
@@ -2868,14 +2870,14 @@ auto StorageFS::onStorePlainString(
 
 auto StorageFS::onQueryPlainString(
     const api::Session& api,
-    std::string& theBuffer,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    UnallocatedCString& theBuffer,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
-    std::string strOutput;
+    UnallocatedCString strOutput;
 
     std::int64_t lRet = ConstructAndConfirmPath(
         api, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr);
@@ -2925,13 +2927,13 @@ auto StorageFS::onQueryPlainString(
 //
 auto StorageFS::onEraseValueByKey(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
-    std::string strOutput;
+    UnallocatedCString strOutput;
 
     if (0 >
         ConstructAndConfirmPath(
@@ -3006,13 +3008,13 @@ StorageFS::~StorageFS() {}
 
 auto StorageFS::Exists(
     const api::Session& api,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> bool
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> bool
 {
-    std::string strOutput;
+    UnallocatedCString strOutput;
 
     return (
         0 <
@@ -3024,12 +3026,12 @@ auto StorageFS::Exists(
 //
 auto StorageFS::FormPathString(
     const api::Session& api,
-    std::string& strOutput,
-    const std::string& dataFolder,
-    const std::string& strFolder,
-    const std::string& oneStr,
-    const std::string& twoStr,
-    const std::string& threeStr) -> std::int64_t
+    UnallocatedCString& strOutput,
+    const UnallocatedCString& dataFolder,
+    const UnallocatedCString& strFolder,
+    const UnallocatedCString& oneStr,
+    const UnallocatedCString& twoStr,
+    const UnallocatedCString& threeStr) -> std::int64_t
 {
     return ConstructAndConfirmPath(
         api, strOutput, dataFolder, strFolder, oneStr, twoStr, threeStr);

@@ -8,20 +8,19 @@
 #include "opentxs/core/display/Scale.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "core/display/Scale_imp.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/Amount.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::display
 {
 Scale::Scale(
-    const std::string& prefix,
-    const std::string& suffix,
-    const std::vector<Ratio>& ratios,
+    const UnallocatedCString& prefix,
+    const UnallocatedCString& suffix,
+    const UnallocatedVector<Ratio>& ratios,
     const OptionalInt defaultMinDecimals,
     const OptionalInt defaultMaxDecimals) noexcept
     : imp_(std::make_unique<Imp>(
@@ -71,24 +70,31 @@ auto Scale::DefaultMaxDecimals() const noexcept -> OptionalInt
 auto Scale::Format(
     const Amount& amount,
     const OptionalInt minDecimals,
-    const OptionalInt maxDecimals) const noexcept(false) -> std::string
+    const OptionalInt maxDecimals) const noexcept(false) -> UnallocatedCString
 {
     return imp_->format(amount, minDecimals, maxDecimals);
 }
 
-auto Scale::Import(const std::string& formatted) const noexcept(false) -> Amount
+auto Scale::Import(const UnallocatedCString& formatted) const noexcept(false)
+    -> Amount
 {
     return imp_->Import(formatted);
 }
 
-auto Scale::Prefix() const noexcept -> std::string { return imp_->prefix_; }
+auto Scale::Prefix() const noexcept -> UnallocatedCString
+{
+    return imp_->prefix_;
+}
 
-auto Scale::Ratios() const noexcept -> const std::vector<Ratio>&
+auto Scale::Ratios() const noexcept -> const UnallocatedVector<Ratio>&
 {
     return imp_->ratios_;
 }
 
-auto Scale::Suffix() const noexcept -> std::string { return imp_->suffix_; }
+auto Scale::Suffix() const noexcept -> UnallocatedCString
+{
+    return imp_->suffix_;
+}
 
 auto Scale::swap(Scale& rhs) noexcept -> void { std::swap(imp_, rhs.imp_); }
 

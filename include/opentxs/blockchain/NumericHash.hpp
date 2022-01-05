@@ -7,10 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -55,8 +54,8 @@ public:
         -> bool = 0;
 
     virtual auto asHex(const std::size_t minimumBytes = 32) const noexcept
-        -> std::string = 0;
-    virtual auto Decimal() const noexcept -> std::string = 0;
+        -> UnallocatedCString = 0;
+    virtual auto Decimal() const noexcept -> UnallocatedCString = 0;
 
     virtual ~NumericHash() = default;
 

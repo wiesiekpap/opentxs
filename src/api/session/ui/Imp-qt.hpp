@@ -10,7 +10,6 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 
@@ -41,6 +40,7 @@
 #include "opentxs/core/ui/qt/UnitList.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 
 class QAbstractItemModel;
 
@@ -64,7 +64,13 @@ namespace identifier
 class Nym;
 }  // namespace identifier
 
+namespace ui
+{
+struct BlankModel;
+}  // namespace ui
+
 class Flag;
+class Identifier;
 }  // namespace opentxs
 
 namespace opentxs::api::session::ui
@@ -160,28 +166,32 @@ private:
     using UnitListQtPointer = std::unique_ptr<opentxs::ui::UnitListQt>;
 
     using AccountActivityQtMap =
-        std::map<AccountActivityKey, AccountActivityQtPointer>;
-    using AccountListQtMap = std::map<AccountListKey, AccountListQtPointer>;
+        UnallocatedMap<AccountActivityKey, AccountActivityQtPointer>;
+    using AccountListQtMap =
+        UnallocatedMap<AccountListKey, AccountListQtPointer>;
     using AccountSummaryQtMap =
-        std::map<AccountSummaryKey, AccountSummaryQtPointer>;
+        UnallocatedMap<AccountSummaryKey, AccountSummaryQtPointer>;
     using ActivitySummaryQtMap =
-        std::map<ActivitySummaryKey, ActivitySummaryQtPointer>;
+        UnallocatedMap<ActivitySummaryKey, ActivitySummaryQtPointer>;
     using ActivityThreadQtMap =
-        std::map<ActivityThreadKey, ActivityThreadQtPointer>;
-    using BlockchainAccountStatusQtMap =
-        std::map<BlockchainAccountStatusKey, BlockchainAccountStatusQtPointer>;
+        UnallocatedMap<ActivityThreadKey, ActivityThreadQtPointer>;
+    using BlockchainAccountStatusQtMap = UnallocatedMap<
+        BlockchainAccountStatusKey,
+        BlockchainAccountStatusQtPointer>;
     using BlockchainSelectionQtMap =
-        std::map<opentxs::ui::Blockchains, BlockchainSelectionQtPointer>;
-    using ContactListQtMap = std::map<ContactListKey, ContactListQtPointer>;
-    using ContactQtMap = std::map<ContactKey, ContactQtPointer>;
+        UnallocatedMap<opentxs::ui::Blockchains, BlockchainSelectionQtPointer>;
+    using ContactListQtMap =
+        UnallocatedMap<ContactListKey, ContactListQtPointer>;
+    using ContactQtMap = UnallocatedMap<ContactKey, ContactQtPointer>;
     using MessagableListQtMap =
-        std::map<MessagableListKey, MessagableListQtPointer>;
-    using PayableListQtMap = std::map<PayableListKey, PayableListQtPointer>;
-    using ProfileQtMap = std::map<ProfileKey, ProfileQtPointer>;
-    using SeedValidatorMap = std::map<
+        UnallocatedMap<MessagableListKey, MessagableListQtPointer>;
+    using PayableListQtMap =
+        UnallocatedMap<PayableListKey, PayableListQtPointer>;
+    using ProfileQtMap = UnallocatedMap<ProfileKey, ProfileQtPointer>;
+    using SeedValidatorMap = UnallocatedMap<
         opentxs::crypto::SeedStyle,
-        std::map<opentxs::crypto::Language, opentxs::ui::SeedValidator>>;
-    using UnitListQtMap = std::map<UnitListKey, UnitListQtPointer>;
+        UnallocatedMap<opentxs::crypto::Language, opentxs::ui::SeedValidator>>;
+    using UnitListQtMap = UnallocatedMap<UnitListKey, UnitListQtPointer>;
 
     struct Blank {
         auto get(const std::size_t columns) noexcept
@@ -189,7 +199,7 @@ private:
 
     private:
         std::mutex lock_{};
-        std::map<std::size_t, opentxs::ui::BlankModel> map_{};
+        UnallocatedMap<std::size_t, opentxs::ui::BlankModel> map_{};
     };
 
     mutable Blank blank_;

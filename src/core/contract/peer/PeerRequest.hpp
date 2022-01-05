@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <string>
-
 #include "core/contract/Signable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
@@ -21,6 +19,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -73,12 +72,15 @@ public:
     auto asOutbailment() const noexcept -> const request::Outbailment& override;
     auto asStoreSecret() const noexcept -> const request::StoreSecret& override;
 
-    auto Alias() const noexcept -> std::string final { return Name(); }
+    auto Alias() const noexcept -> UnallocatedCString final { return Name(); }
     auto Initiator() const -> const identifier::Nym& final
     {
         return initiator_;
     }
-    auto Name() const noexcept -> std::string final { return id_->str(); }
+    auto Name() const noexcept -> UnallocatedCString final
+    {
+        return id_->str();
+    }
     auto Recipient() const -> const identifier::Nym& final
     {
         return recipient_;
@@ -87,7 +89,10 @@ public:
     auto Serialize(SerializedType&) const -> bool final;
     auto Server() const -> const identifier::Notary& final { return server_; }
     auto Type() const -> PeerRequestType final { return type_; }
-    auto SetAlias(const std::string&) noexcept -> bool final { return false; }
+    auto SetAlias(const UnallocatedCString&) noexcept -> bool final
+    {
+        return false;
+    }
 
     ~Request() override = default;
 
@@ -104,12 +109,12 @@ protected:
         const identifier::Nym& recipient,
         const identifier::Notary& serverID,
         const PeerRequestType& type,
-        const std::string& conditions = {});
+        const UnallocatedCString& conditions = {});
     Request(
         const api::Session& api,
         const Nym_p& nym,
         const SerializedType& serialized,
-        const std::string& conditions = {});
+        const UnallocatedCString& conditions = {});
     Request(const Request&) noexcept;
 
 private:

@@ -8,10 +8,10 @@
 #pragma once
 
 #include <functional>
-#include <map>
 
 #include "opentxs/api/network/Dht.hpp"
 #include "opentxs/core/contract/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -33,8 +33,8 @@ namespace opentxs::api::network::internal
 class Dht : virtual public network::Dht
 {
 public:
-    using NotifyCB = std::function<void(const std::string)>;
-    using CallbackMap = std::map<contract::Type, NotifyCB>;
+    using NotifyCB = std::function<void(const UnallocatedCString)>;
+    using CallbackMap = UnallocatedMap<contract::Type, NotifyCB>;
 
     auto Internal() const noexcept -> const internal::Dht& final
     {

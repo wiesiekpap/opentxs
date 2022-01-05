@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <memory>
 #include <numeric>
-#include <string>
 #include <utility>
 
 #include "internal/network/zeromq/message/Factory.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::zeromq
 {
@@ -134,7 +134,7 @@ auto Message::Imp::AddFrame(Frame&& frame) noexcept -> Frame&
 
 auto Message::Imp::AddFrame(const char* in) noexcept -> Frame&
 {
-    const auto string = std::string{in};
+    const auto string = UnallocatedCString{in};
 
     return AddFrame(string.data(), string.size());
 }

@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <chrono>
 #include <queue>
-#include <set>
 #include <shared_mutex>
 #include <string_view>
 #include <utility>
@@ -25,6 +24,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -34,9 +34,9 @@ namespace opentxs::blockchain::node
 {
 struct Mempool::Imp {
     using Transactions =
-        std::vector<std::unique_ptr<const block::bitcoin::Transaction>>;
+        UnallocatedVector<std::unique_ptr<const block::bitcoin::Transaction>>;
 
-    auto Dump() const noexcept -> std::set<std::string>
+    auto Dump() const noexcept -> UnallocatedSet<UnallocatedCString>
     {
         auto lock = sLock{lock_};
 
@@ -57,15 +57,15 @@ struct Mempool::Imp {
     }
     auto Submit(ReadView txid) const noexcept -> bool
     {
-        const auto input = std::vector<ReadView>{txid};
+        const auto input = UnallocatedVector<ReadView>{txid};
         const auto output = Submit(input);
 
         return output.front();
     }
-    auto Submit(const std::vector<ReadView>& txids) const noexcept
-        -> std::vector<bool>
+    auto Submit(const UnallocatedVector<ReadView>& txids) const noexcept
+        -> UnallocatedVector<bool>
     {
-        auto output = std::vector<bool>{};
+        auto output = UnallocatedVector<bool>{};
         output.reserve(txids.size());
         auto lock = eLock{lock_};
 
@@ -170,7 +170,7 @@ struct Mempool::Imp {
     }
 
 private:
-    using Hash = std::string;
+    using Hash = UnallocatedCString;
     using TransactionMap = robin_hood::unordered_flat_map<
         Hash,
         std::shared_ptr<const block::bitcoin::Transaction>>;
@@ -185,7 +185,7 @@ private:
     const Type chain_;
     mutable std::shared_mutex lock_;
     mutable TransactionMap transactions_;
-    mutable std::set<Hash> active_;
+    mutable UnallocatedSet<Hash> active_;
     mutable Cache unexpired_txid_;
     mutable Cache unexpired_tx_;
     const network::zeromq::socket::Publish& socket_;
@@ -233,7 +233,7 @@ Mempool::Mempool(
 {
 }
 
-auto Mempool::Dump() const noexcept -> std::set<std::string>
+auto Mempool::Dump() const noexcept -> UnallocatedSet<UnallocatedCString>
 {
     return imp_->Dump();
 }
@@ -251,8 +251,8 @@ auto Mempool::Submit(ReadView txid) const noexcept -> bool
     return imp_->Submit(txid);
 }
 
-auto Mempool::Submit(const std::vector<ReadView>& txids) const noexcept
-    -> std::vector<bool>
+auto Mempool::Submit(const UnallocatedVector<ReadView>& txids) const noexcept
+    -> UnallocatedVector<bool>
 {
     return imp_->Submit(txids);
 }

@@ -7,11 +7,11 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <map>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/verify/BlockchainP2PChainState.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyBlockchain.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainP2PChainState.pb.h"
 #include "serialization/protobuf/BlockchainP2PHello.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/verify/Check.hpp"
@@ -25,7 +25,7 @@ auto CheckProto_1(const BlockchainP2PHello& input, const bool silent) -> bool
     OPTIONAL_SUBOBJECTS(
         state, BlockchainP2PHelloAllowedBlockchainP2PChainState())
 
-    auto map = std::map<std::uint32_t, std::size_t>{};
+    auto map = UnallocatedMap<std::uint32_t, std::size_t>{};
 
     for (const auto& state : input.state()) {
         const auto& count = ++map[state.chain()];

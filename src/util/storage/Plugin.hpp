@@ -8,7 +8,6 @@
 #include <atomic>
 #include <future>
 #include <memory>
-#include <string>
 
 #include "Proto.hpp"
 #include "Proto.tpp"
@@ -17,6 +16,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "opentxs/util/storage/Plugin.hpp"
@@ -53,33 +53,35 @@ class Plugin : virtual public storage::Plugin
 public:
     auto EmptyBucket(const bool bucket) const -> bool override = 0;
 
-    auto Load(const std::string& key, const bool checking, std::string& value)
-        const -> bool override;
+    auto Load(
+        const UnallocatedCString& key,
+        const bool checking,
+        UnallocatedCString& value) const -> bool override;
     auto LoadFromBucket(
-        const std::string& key,
-        std::string& value,
+        const UnallocatedCString& key,
+        UnallocatedCString& value,
         const bool bucket) const -> bool override = 0;
     auto Store(
         const bool isTransaction,
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket) const -> bool override;
     void Store(
         const bool isTransaction,
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket,
         std::promise<bool>& promise) const override;
     auto Store(
         const bool isTransaction,
-        const std::string& value,
-        std::string& key) const -> bool override;
+        const UnallocatedCString& value,
+        UnallocatedCString& key) const -> bool override;
 
-    auto Migrate(const std::string& key, const storage::Driver& to) const
+    auto Migrate(const UnallocatedCString& key, const storage::Driver& to) const
         -> bool override;
 
-    auto LoadRoot() const -> std::string override = 0;
-    auto StoreRoot(const bool commit, const std::string& hash) const
+    auto LoadRoot() const -> UnallocatedCString override = 0;
+    auto StoreRoot(const bool commit, const UnallocatedCString& hash) const
         -> bool override = 0;
 
     virtual void Cleanup() = 0;
@@ -101,8 +103,8 @@ protected:
 
     virtual void store(
         const bool isTransaction,
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket,
         std::promise<bool>* promise) const = 0;
 
@@ -121,11 +123,11 @@ namespace opentxs::storage
 {
 template <class T>
 auto Driver::LoadProto(
-    const std::string& hash,
+    const UnallocatedCString& hash,
     std::shared_ptr<T>& serialized,
     const bool checking) const -> bool
 {
-    auto raw = std::string{};
+    auto raw = UnallocatedCString{};
     const auto loaded = Load(hash, checking, raw);
     auto valid{false};
 
@@ -161,8 +163,10 @@ auto Driver::LoadProto(
 }
 
 template <class T>
-auto Driver::StoreProto(const T& data, std::string& key, std::string& plaintext)
-    const -> bool
+auto Driver::StoreProto(
+    const T& data,
+    UnallocatedCString& key,
+    UnallocatedCString& plaintext) const -> bool
 {
     if (!proto::Validate<T>(data, VERBOSE)) { return false; }
 
@@ -172,9 +176,9 @@ auto Driver::StoreProto(const T& data, std::string& key, std::string& plaintext)
 }
 
 template <class T>
-auto Driver::StoreProto(const T& data, std::string& key) const -> bool
+auto Driver::StoreProto(const T& data, UnallocatedCString& key) const -> bool
 {
-    std::string notUsed;
+    UnallocatedCString notUsed;
 
     return StoreProto<T>(data, key, notUsed);
 }
@@ -182,7 +186,7 @@ auto Driver::StoreProto(const T& data, std::string& key) const -> bool
 template <class T>
 auto Driver::StoreProto(const T& data) const -> bool
 {
-    std::string notUsed;
+    UnallocatedCString notUsed;
 
     return StoreProto<T>(data, notUsed);
 }

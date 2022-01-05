@@ -76,7 +76,7 @@ auto reader(const WritableView& in) noexcept -> ReadView
 {
     return {in.as<const char>(), in.size()};
 }
-auto reader(const std::vector<std::uint8_t>& in) noexcept -> ReadView
+auto reader(const UnallocatedVector<std::uint8_t>& in) noexcept -> ReadView
 {
     return {reinterpret_cast<const char*>(in.data()), in.size()};
 }
@@ -99,7 +99,7 @@ auto valid(const ReadView view) noexcept -> bool
 {
     return (nullptr != view.data()) && (0 < view.size());
 }
-auto writer(std::string& in) noexcept -> AllocateOutput
+auto writer(UnallocatedCString& in) noexcept -> AllocateOutput
 {
     return [&in](const auto size) -> WritableView {
         in.resize(size, 51);
@@ -107,7 +107,7 @@ auto writer(std::string& in) noexcept -> AllocateOutput
         return {in.data(), in.size()};
     };
 }
-auto writer(std::string* protobuf) noexcept -> AllocateOutput
+auto writer(UnallocatedCString* protobuf) noexcept -> AllocateOutput
 {
     if (nullptr == protobuf) { return {}; }
 

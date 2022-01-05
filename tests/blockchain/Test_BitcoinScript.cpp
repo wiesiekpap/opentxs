@@ -10,10 +10,8 @@
 #include <cstring>
 #include <memory>
 #include <optional>
-#include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "Basic.hpp"       // IWYU pragma: keep
@@ -23,6 +21,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace b = ot::blockchain::block::bitcoin;
 
@@ -30,7 +29,7 @@ namespace
 {
 using Script = b::Script;
 
-const std::vector<std::byte> expected_1_{
+const ot::UnallocatedVector<std::byte> expected_1_{
     std::byte{0},   std::byte{79},  std::byte{80},  std::byte{81},
     std::byte{82},  std::byte{83},  std::byte{84},  std::byte{85},
     std::byte{86},  std::byte{87},  std::byte{88},  std::byte{89},
@@ -60,7 +59,7 @@ const std::vector<std::byte> expected_1_{
     std::byte{182}, std::byte{183}, std::byte{184}, std::byte{185},
     std::byte{253}, std::byte{254}, std::byte{255},
 };
-const std::vector<b::OP> vector_1_{
+const ot::UnallocatedVector<b::OP> vector_1_{
     b::OP::ZERO,
     b::OP::ONE_NEGATE,
     b::OP::RESERVED,
@@ -173,7 +172,7 @@ const std::vector<b::OP> vector_1_{
     b::OP::PUBKEY,
     b::OP::INVALIDOPCODE,
 };
-const std::vector<b::OP> vector_2_{
+const ot::UnallocatedVector<b::OP> vector_2_{
     b::OP::False,
     b::OP::ONE_NEGATE,
     b::OP::RESERVED,
@@ -287,7 +286,7 @@ const std::vector<b::OP> vector_2_{
     b::OP::INVALIDOPCODE,
 };
 
-const std::vector<std::byte> uncompressed_pubkey_1_{
+const ot::UnallocatedVector<std::byte> uncompressed_pubkey_1_{
     std::byte{0x04}, std::byte{0xae}, std::byte{0x1a}, std::byte{0x62},
     std::byte{0xfe}, std::byte{0x09}, std::byte{0xc5}, std::byte{0xf5},
     std::byte{0x1b}, std::byte{0x13}, std::byte{0x90}, std::byte{0x5f},
@@ -307,7 +306,7 @@ const std::vector<std::byte> uncompressed_pubkey_1_{
     std::byte{0x4c},
 };
 
-const std::vector<std::byte> compressed_pubkey_1_{
+const ot::UnallocatedVector<std::byte> compressed_pubkey_1_{
     std::byte{0x03}, std::byte{0xdf}, std::byte{0x51}, std::byte{0x98},
     std::byte{0x4d}, std::byte{0x6b}, std::byte{0x8b}, std::byte{0x8b},
     std::byte{0x1c}, std::byte{0xc6}, std::byte{0x93}, std::byte{0xe2},
@@ -319,7 +318,7 @@ const std::vector<std::byte> compressed_pubkey_1_{
     std::byte{0x22},
 };
 
-const std::vector<std::byte> compressed_pubkey_2_{
+const ot::UnallocatedVector<std::byte> compressed_pubkey_2_{
     std::byte{0x02}, std::byte{0x4f}, std::byte{0x35}, std::byte{0x5b},
     std::byte{0xdc}, std::byte{0xb7}, std::byte{0xcc}, std::byte{0x0a},
     std::byte{0xf7}, std::byte{0x28}, std::byte{0xef}, std::byte{0x3c},
@@ -331,7 +330,7 @@ const std::vector<std::byte> compressed_pubkey_2_{
     std::byte{0xaa},
 };
 
-const std::vector<std::byte> hash_160_{
+const ot::UnallocatedVector<std::byte> hash_160_{
     std::byte{0x12}, std::byte{0xab}, std::byte{0x8d}, std::byte{0xc5},
     std::byte{0x88}, std::byte{0xca}, std::byte{0x9d}, std::byte{0x57},
     std::byte{0x87}, std::byte{0xdd}, std::byte{0xe7}, std::byte{0xeb},
@@ -339,7 +338,7 @@ const std::vector<std::byte> hash_160_{
     std::byte{0x3c}, std::byte{0x3a}, std::byte{0x23}, std::byte{0x8c},
 };
 
-const std::vector<std::vector<std::byte>> p2pk_good_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> p2pk_good_{
     {
         std::byte{65},   std::byte{0x04}, std::byte{0xae}, std::byte{0x1a},
         std::byte{0x62}, std::byte{0xfe}, std::byte{0x09}, std::byte{0xc5},
@@ -430,7 +429,7 @@ const std::vector<std::vector<std::byte>> p2pk_good_{
         std::byte{0x0d}, std::byte{0x22}, std::byte{172},
     },
 };
-const std::vector<std::vector<std::byte>> p2pk_bad_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> p2pk_bad_{
     {
         std::byte{32},   std::byte{0xdf}, std::byte{0x51}, std::byte{0x98},
         std::byte{0x4d}, std::byte{0x6b}, std::byte{0x8b}, std::byte{0x8b},
@@ -443,7 +442,7 @@ const std::vector<std::vector<std::byte>> p2pk_bad_{
         std::byte{0x22}, std::byte{172},
     },
 };
-const std::vector<std::vector<std::byte>> p2pkh_good_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> p2pkh_good_{
     {
         std::byte{118},  std::byte{169},  std::byte{20},   std::byte{0x12},
         std::byte{0xab}, std::byte{0x8d}, std::byte{0xc5}, std::byte{0x88},
@@ -482,7 +481,7 @@ const std::vector<std::vector<std::byte>> p2pkh_good_{
         std::byte{172},
     },
 };
-const std::vector<std::vector<std::byte>> p2pkh_bad_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> p2pkh_bad_{
     {
         std::byte{0},    std::byte{169},  std::byte{20},   std::byte{0x12},
         std::byte{0xab}, std::byte{0x8d}, std::byte{0xc5}, std::byte{0x88},
@@ -519,7 +518,7 @@ const std::vector<std::vector<std::byte>> p2pkh_bad_{
         std::byte{172},
     },
 };
-const std::vector<std::vector<std::byte>> p2sh_good_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> p2sh_good_{
     {
         std::byte{169},  std::byte{20},   std::byte{0x12}, std::byte{0xab},
         std::byte{0x8d}, std::byte{0xc5}, std::byte{0x88}, std::byte{0xca},
@@ -529,7 +528,7 @@ const std::vector<std::vector<std::byte>> p2sh_good_{
         std::byte{0x23}, std::byte{0x8c}, std::byte{135},
     },
 };
-const std::vector<std::vector<std::byte>> p2sh_bad_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> p2sh_bad_{
     {
         std::byte{169},  std::byte{76},   std::byte{20},   std::byte{0x12},
         std::byte{0xab}, std::byte{0x8d}, std::byte{0xc5}, std::byte{0x88},
@@ -558,7 +557,7 @@ const std::vector<std::vector<std::byte>> p2sh_bad_{
     },
 
 };
-const std::vector<std::vector<std::byte>> data_good_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> data_good_{
     {
         std::byte{106},
         std::byte{5},
@@ -576,7 +575,7 @@ const std::vector<std::vector<std::byte>> data_good_{
         std::byte{'!'},
     },
 };
-const std::vector<std::vector<std::byte>> data_bad_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> data_bad_{
     {
         std::byte{106},
         std::byte{11},
@@ -594,7 +593,7 @@ const std::vector<std::vector<std::byte>> data_bad_{
         std::byte{172},
     },
 };
-const std::vector<std::vector<std::byte>> multisig_good_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> multisig_good_{
     {
         std::byte{82},   std::byte{65},   std::byte{0x04}, std::byte{0xae},
         std::byte{0x1a}, std::byte{0x62}, std::byte{0xfe}, std::byte{0x09},
@@ -671,7 +670,7 @@ const std::vector<std::vector<std::byte>> multisig_good_{
         std::byte{0x71}, std::byte{0xaa}, std::byte{83},   std::byte{174},
     },
 };
-const std::vector<std::vector<std::byte>> multisig_bad_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> multisig_bad_{
     {
         std::byte{172},  std::byte{82},   std::byte{65},   std::byte{0x04},
         std::byte{0xae}, std::byte{0x1a}, std::byte{0x62}, std::byte{0xfe},
@@ -710,84 +709,85 @@ const std::vector<std::vector<std::byte>> multisig_bad_{
         std::byte{83},   std::byte{174},
     },
 };
-const std::vector<std::vector<std::byte>> multisig_malformed_{
-    {
-        std::byte{82},   std::byte{65},   std::byte{0x04}, std::byte{0xae},
-        std::byte{0x1a}, std::byte{0x62}, std::byte{0xfe}, std::byte{0x09},
-        std::byte{0xc5}, std::byte{0xf5}, std::byte{0x1b}, std::byte{0x13},
-        std::byte{0x90}, std::byte{0x5f}, std::byte{0x07}, std::byte{0xf0},
-        std::byte{0x6b}, std::byte{0x99}, std::byte{0xa2}, std::byte{0xf7},
-        std::byte{0x15}, std::byte{0x9b}, std::byte{0x22}, std::byte{0x25},
-        std::byte{0xf3}, std::byte{0x74}, std::byte{0xcd}, std::byte{0x37},
-        std::byte{0x8d}, std::byte{0x71}, std::byte{0x30}, std::byte{0x2f},
-        std::byte{0xa2}, std::byte{0x84}, std::byte{0x14}, std::byte{0xe7},
-        std::byte{0xaa}, std::byte{0xb3}, std::byte{0x73}, std::byte{0x97},
-        std::byte{0xf5}, std::byte{0x54}, std::byte{0xa7}, std::byte{0xdf},
-        std::byte{0x5f}, std::byte{0x14}, std::byte{0x2c}, std::byte{0x21},
-        std::byte{0xc1}, std::byte{0xb7}, std::byte{0x30}, std::byte{0x3b},
-        std::byte{0x8a}, std::byte{0x06}, std::byte{0x26}, std::byte{0xf1},
-        std::byte{0xba}, std::byte{0xde}, std::byte{0xd5}, std::byte{0xc7},
-        std::byte{0x2a}, std::byte{0x70}, std::byte{0x4f}, std::byte{0x7e},
-        std::byte{0x6c}, std::byte{0xd8}, std::byte{0x4c}, std::byte{33},
-        std::byte{0x03}, std::byte{0xdf}, std::byte{0x51}, std::byte{0x98},
-        std::byte{0x4d}, std::byte{0x6b}, std::byte{0x8b}, std::byte{0x8b},
-        std::byte{0x1c}, std::byte{0xc6}, std::byte{0x93}, std::byte{0xe2},
-        std::byte{0x39}, std::byte{0x49}, std::byte{0x1f}, std::byte{0x77},
-        std::byte{0xa3}, std::byte{0x6c}, std::byte{0x9e}, std::byte{0x9d},
-        std::byte{0xfe}, std::byte{0x4a}, std::byte{0x48}, std::byte{0x6e},
-        std::byte{0x99}, std::byte{0x72}, std::byte{0xa1}, std::byte{0x8e},
-        std::byte{0x03}, std::byte{0x61}, std::byte{0x0a}, std::byte{0x0d},
-        std::byte{0x22}, std::byte{33},   std::byte{0x02}, std::byte{0x4f},
-        std::byte{0x35}, std::byte{0x5b}, std::byte{0xdc}, std::byte{0xb7},
-        std::byte{0xcc}, std::byte{0x0a}, std::byte{0xf7}, std::byte{0x28},
-        std::byte{0xef}, std::byte{0x3c}, std::byte{0xce}, std::byte{0xb9},
-        std::byte{0x61}, std::byte{0x5d}, std::byte{0x90}, std::byte{0x68},
-        std::byte{0x4b}, std::byte{0xb5}, std::byte{0xb2}, std::byte{0xca},
-        std::byte{0x5f}, std::byte{0x85}, std::byte{0x9a}, std::byte{0xb0},
-        std::byte{0xf0}, std::byte{0xb7}, std::byte{0x04}, std::byte{0x07},
-        std::byte{0x58}, std::byte{0x71}, std::byte{0xaa}, std::byte{81},
-        std::byte{174},
-    },
-    {
-        std::byte{84},   std::byte{65},   std::byte{0x04}, std::byte{0xae},
-        std::byte{0x1a}, std::byte{0x62}, std::byte{0xfe}, std::byte{0x09},
-        std::byte{0xc5}, std::byte{0xf5}, std::byte{0x1b}, std::byte{0x13},
-        std::byte{0x90}, std::byte{0x5f}, std::byte{0x07}, std::byte{0xf0},
-        std::byte{0x6b}, std::byte{0x99}, std::byte{0xa2}, std::byte{0xf7},
-        std::byte{0x15}, std::byte{0x9b}, std::byte{0x22}, std::byte{0x25},
-        std::byte{0xf3}, std::byte{0x74}, std::byte{0xcd}, std::byte{0x37},
-        std::byte{0x8d}, std::byte{0x71}, std::byte{0x30}, std::byte{0x2f},
-        std::byte{0xa2}, std::byte{0x84}, std::byte{0x14}, std::byte{0xe7},
-        std::byte{0xaa}, std::byte{0xb3}, std::byte{0x73}, std::byte{0x97},
-        std::byte{0xf5}, std::byte{0x54}, std::byte{0xa7}, std::byte{0xdf},
-        std::byte{0x5f}, std::byte{0x14}, std::byte{0x2c}, std::byte{0x21},
-        std::byte{0xc1}, std::byte{0xb7}, std::byte{0x30}, std::byte{0x3b},
-        std::byte{0x8a}, std::byte{0x06}, std::byte{0x26}, std::byte{0xf1},
-        std::byte{0xba}, std::byte{0xde}, std::byte{0xd5}, std::byte{0xc7},
-        std::byte{0x2a}, std::byte{0x70}, std::byte{0x4f}, std::byte{0x7e},
-        std::byte{0x6c}, std::byte{0xd8}, std::byte{0x4c}, std::byte{33},
-        std::byte{0x03}, std::byte{0xdf}, std::byte{0x51}, std::byte{0x98},
-        std::byte{0x4d}, std::byte{0x6b}, std::byte{0x8b}, std::byte{0x8b},
-        std::byte{0x1c}, std::byte{0xc6}, std::byte{0x93}, std::byte{0xe2},
-        std::byte{0x39}, std::byte{0x49}, std::byte{0x1f}, std::byte{0x77},
-        std::byte{0xa3}, std::byte{0x6c}, std::byte{0x9e}, std::byte{0x9d},
-        std::byte{0xfe}, std::byte{0x4a}, std::byte{0x48}, std::byte{0x6e},
-        std::byte{0x99}, std::byte{0x72}, std::byte{0xa1}, std::byte{0x8e},
-        std::byte{0x03}, std::byte{0x61}, std::byte{0x0a}, std::byte{0x0d},
-        std::byte{0x22}, std::byte{33},   std::byte{0x02}, std::byte{0x4f},
-        std::byte{0x35}, std::byte{0x5b}, std::byte{0xdc}, std::byte{0xb7},
-        std::byte{0xcc}, std::byte{0x0a}, std::byte{0xf7}, std::byte{0x28},
-        std::byte{0xef}, std::byte{0x3c}, std::byte{0xce}, std::byte{0xb9},
-        std::byte{0x61}, std::byte{0x5d}, std::byte{0x90}, std::byte{0x68},
-        std::byte{0x4b}, std::byte{0xb5}, std::byte{0xb2}, std::byte{0xca},
-        std::byte{0x5f}, std::byte{0x85}, std::byte{0x9a}, std::byte{0xb0},
-        std::byte{0xf0}, std::byte{0xb7}, std::byte{0x04}, std::byte{0x07},
-        std::byte{0x58}, std::byte{0x71}, std::byte{0xaa}, std::byte{83},
-        std::byte{174},
-    },
-};
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>>
+    multisig_malformed_{
+        {
+            std::byte{82},   std::byte{65},   std::byte{0x04}, std::byte{0xae},
+            std::byte{0x1a}, std::byte{0x62}, std::byte{0xfe}, std::byte{0x09},
+            std::byte{0xc5}, std::byte{0xf5}, std::byte{0x1b}, std::byte{0x13},
+            std::byte{0x90}, std::byte{0x5f}, std::byte{0x07}, std::byte{0xf0},
+            std::byte{0x6b}, std::byte{0x99}, std::byte{0xa2}, std::byte{0xf7},
+            std::byte{0x15}, std::byte{0x9b}, std::byte{0x22}, std::byte{0x25},
+            std::byte{0xf3}, std::byte{0x74}, std::byte{0xcd}, std::byte{0x37},
+            std::byte{0x8d}, std::byte{0x71}, std::byte{0x30}, std::byte{0x2f},
+            std::byte{0xa2}, std::byte{0x84}, std::byte{0x14}, std::byte{0xe7},
+            std::byte{0xaa}, std::byte{0xb3}, std::byte{0x73}, std::byte{0x97},
+            std::byte{0xf5}, std::byte{0x54}, std::byte{0xa7}, std::byte{0xdf},
+            std::byte{0x5f}, std::byte{0x14}, std::byte{0x2c}, std::byte{0x21},
+            std::byte{0xc1}, std::byte{0xb7}, std::byte{0x30}, std::byte{0x3b},
+            std::byte{0x8a}, std::byte{0x06}, std::byte{0x26}, std::byte{0xf1},
+            std::byte{0xba}, std::byte{0xde}, std::byte{0xd5}, std::byte{0xc7},
+            std::byte{0x2a}, std::byte{0x70}, std::byte{0x4f}, std::byte{0x7e},
+            std::byte{0x6c}, std::byte{0xd8}, std::byte{0x4c}, std::byte{33},
+            std::byte{0x03}, std::byte{0xdf}, std::byte{0x51}, std::byte{0x98},
+            std::byte{0x4d}, std::byte{0x6b}, std::byte{0x8b}, std::byte{0x8b},
+            std::byte{0x1c}, std::byte{0xc6}, std::byte{0x93}, std::byte{0xe2},
+            std::byte{0x39}, std::byte{0x49}, std::byte{0x1f}, std::byte{0x77},
+            std::byte{0xa3}, std::byte{0x6c}, std::byte{0x9e}, std::byte{0x9d},
+            std::byte{0xfe}, std::byte{0x4a}, std::byte{0x48}, std::byte{0x6e},
+            std::byte{0x99}, std::byte{0x72}, std::byte{0xa1}, std::byte{0x8e},
+            std::byte{0x03}, std::byte{0x61}, std::byte{0x0a}, std::byte{0x0d},
+            std::byte{0x22}, std::byte{33},   std::byte{0x02}, std::byte{0x4f},
+            std::byte{0x35}, std::byte{0x5b}, std::byte{0xdc}, std::byte{0xb7},
+            std::byte{0xcc}, std::byte{0x0a}, std::byte{0xf7}, std::byte{0x28},
+            std::byte{0xef}, std::byte{0x3c}, std::byte{0xce}, std::byte{0xb9},
+            std::byte{0x61}, std::byte{0x5d}, std::byte{0x90}, std::byte{0x68},
+            std::byte{0x4b}, std::byte{0xb5}, std::byte{0xb2}, std::byte{0xca},
+            std::byte{0x5f}, std::byte{0x85}, std::byte{0x9a}, std::byte{0xb0},
+            std::byte{0xf0}, std::byte{0xb7}, std::byte{0x04}, std::byte{0x07},
+            std::byte{0x58}, std::byte{0x71}, std::byte{0xaa}, std::byte{81},
+            std::byte{174},
+        },
+        {
+            std::byte{84},   std::byte{65},   std::byte{0x04}, std::byte{0xae},
+            std::byte{0x1a}, std::byte{0x62}, std::byte{0xfe}, std::byte{0x09},
+            std::byte{0xc5}, std::byte{0xf5}, std::byte{0x1b}, std::byte{0x13},
+            std::byte{0x90}, std::byte{0x5f}, std::byte{0x07}, std::byte{0xf0},
+            std::byte{0x6b}, std::byte{0x99}, std::byte{0xa2}, std::byte{0xf7},
+            std::byte{0x15}, std::byte{0x9b}, std::byte{0x22}, std::byte{0x25},
+            std::byte{0xf3}, std::byte{0x74}, std::byte{0xcd}, std::byte{0x37},
+            std::byte{0x8d}, std::byte{0x71}, std::byte{0x30}, std::byte{0x2f},
+            std::byte{0xa2}, std::byte{0x84}, std::byte{0x14}, std::byte{0xe7},
+            std::byte{0xaa}, std::byte{0xb3}, std::byte{0x73}, std::byte{0x97},
+            std::byte{0xf5}, std::byte{0x54}, std::byte{0xa7}, std::byte{0xdf},
+            std::byte{0x5f}, std::byte{0x14}, std::byte{0x2c}, std::byte{0x21},
+            std::byte{0xc1}, std::byte{0xb7}, std::byte{0x30}, std::byte{0x3b},
+            std::byte{0x8a}, std::byte{0x06}, std::byte{0x26}, std::byte{0xf1},
+            std::byte{0xba}, std::byte{0xde}, std::byte{0xd5}, std::byte{0xc7},
+            std::byte{0x2a}, std::byte{0x70}, std::byte{0x4f}, std::byte{0x7e},
+            std::byte{0x6c}, std::byte{0xd8}, std::byte{0x4c}, std::byte{33},
+            std::byte{0x03}, std::byte{0xdf}, std::byte{0x51}, std::byte{0x98},
+            std::byte{0x4d}, std::byte{0x6b}, std::byte{0x8b}, std::byte{0x8b},
+            std::byte{0x1c}, std::byte{0xc6}, std::byte{0x93}, std::byte{0xe2},
+            std::byte{0x39}, std::byte{0x49}, std::byte{0x1f}, std::byte{0x77},
+            std::byte{0xa3}, std::byte{0x6c}, std::byte{0x9e}, std::byte{0x9d},
+            std::byte{0xfe}, std::byte{0x4a}, std::byte{0x48}, std::byte{0x6e},
+            std::byte{0x99}, std::byte{0x72}, std::byte{0xa1}, std::byte{0x8e},
+            std::byte{0x03}, std::byte{0x61}, std::byte{0x0a}, std::byte{0x0d},
+            std::byte{0x22}, std::byte{33},   std::byte{0x02}, std::byte{0x4f},
+            std::byte{0x35}, std::byte{0x5b}, std::byte{0xdc}, std::byte{0xb7},
+            std::byte{0xcc}, std::byte{0x0a}, std::byte{0xf7}, std::byte{0x28},
+            std::byte{0xef}, std::byte{0x3c}, std::byte{0xce}, std::byte{0xb9},
+            std::byte{0x61}, std::byte{0x5d}, std::byte{0x90}, std::byte{0x68},
+            std::byte{0x4b}, std::byte{0xb5}, std::byte{0xb2}, std::byte{0xca},
+            std::byte{0x5f}, std::byte{0x85}, std::byte{0x9a}, std::byte{0xb0},
+            std::byte{0xf0}, std::byte{0xb7}, std::byte{0x04}, std::byte{0x07},
+            std::byte{0x58}, std::byte{0x71}, std::byte{0xaa}, std::byte{83},
+            std::byte{174},
+        },
+    };
 
-const std::vector<std::vector<std::byte>> input_good_{
+const ot::UnallocatedVector<ot::UnallocatedVector<std::byte>> input_good_{
     {
         std::byte{0x47}, std::byte{0x30}, std::byte{0x44}, std::byte{0x02},
         std::byte{0x20}, std::byte{0x25}, std::byte{0xbc}, std::byte{0xa5},
@@ -827,7 +827,7 @@ const std::vector<std::vector<std::byte>> input_good_{
     },
 };
 
-const std::vector<std::byte> sig_1_{
+const ot::UnallocatedVector<std::byte> sig_1_{
     std::byte{0x30}, std::byte{0x44}, std::byte{0x02}, std::byte{0x20},
     std::byte{0x25}, std::byte{0xbc}, std::byte{0xa5}, std::byte{0xdc},
     std::byte{0x0f}, std::byte{0xe4}, std::byte{0x2a}, std::byte{0xca},
@@ -848,7 +848,7 @@ const std::vector<std::byte> sig_1_{
     std::byte{0x65}, std::byte{0x3b}, std::byte{0x01},
 };
 
-const std::vector<std::byte> key_1_{
+const ot::UnallocatedVector<std::byte> key_1_{
     std::byte{0x04}, std::byte{0x46}, std::byte{0x9f}, std::byte{0x7e},
     std::byte{0xb5}, std::byte{0x4b}, std::byte{0x90}, std::byte{0xd9},
     std::byte{0x01}, std::byte{0x06}, std::byte{0xb1}, std::byte{0xa5},
@@ -1707,8 +1707,12 @@ TEST(Test_BitcoinScript, null_data)
         ASSERT_EQ(3, script->size());
         ASSERT_TRUE(script->Value(0));
         ASSERT_TRUE(script->Value(1));
-        EXPECT_EQ(std::string{"hello"}, std::string{script->Value(0).value()});
-        EXPECT_EQ(std::string{"world!"}, std::string{script->Value(1).value()});
+        EXPECT_EQ(
+            ot::UnallocatedCString{"hello"},
+            ot::UnallocatedCString{script->Value(0).value()});
+        EXPECT_EQ(
+            ot::UnallocatedCString{"world!"},
+            ot::UnallocatedCString{script->Value(1).value()});
 
         {
             const auto& [opcode, invalid, bytes, data] = script->at(0);

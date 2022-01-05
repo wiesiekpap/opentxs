@@ -121,7 +121,7 @@ public:
      *  Child classes should implement this functionality via any method which
      *  achieves the required behavior.
      */
-    std::string LoadRoot() const override;
+    UnallocatedCString LoadRoot() const override;
 
     /** Record a new value for the root hash
      *  \param[in] hash the new root hash
@@ -134,7 +134,7 @@ public:
      *  Child classes should implement this functionality via any method which
      *  achieves the required behavior.
      */
-    bool StoreRoot(const std::string& hash) const override;
+    bool StoreRoot(const UnallocatedCString& hash) const override;
 
     /** Retrieve a previously-stored value
      *
@@ -147,8 +147,8 @@ public:
      *  \warning This method is required to be thread safe
      */
     bool LoadFromBucket(
-        const std::string& key,
-        std::string& value,
+        const UnallocatedCString& key,
+        UnallocatedCString& value,
         const bool bucket) const override;
 
     using ot_super::Store;  // Needed for overload resolution
@@ -163,8 +163,8 @@ public:
      *  \warning This method is required to be thread safe
      */
     bool Store(
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket) const override;
 
     /** Asynchronously record a new value in the backend
@@ -178,8 +178,8 @@ public:
      *  \warning This method is required to be thread safe
      */
     void Store(
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         const bool bucket,
         std::promise<bool>& promise) const override;
 

@@ -8,10 +8,7 @@
 #include "internal/otx/smartcontract/OTParty.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "internal/otx/common/Account.hpp"
@@ -29,6 +26,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -36,7 +34,7 @@ namespace opentxs
 {
 OTParty::OTParty(
     const api::session::Wallet& wallet,
-    const std::string& dataFolder)
+    const UnallocatedCString& dataFolder)
     : wallet_{wallet}
     , data_folder_{dataFolder}
     , m_pstr_party_name(nullptr)
@@ -53,7 +51,7 @@ OTParty::OTParty(
 
 OTParty::OTParty(
     const api::session::Wallet& wallet,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const char* szName,
     bool bIsOwnerNym,
     const char* szOwnerID,
@@ -71,7 +69,7 @@ OTParty::OTParty(
     , m_strMySignedCopy(String::Factory())
     , m_pOwnerAgreement(nullptr)
 {
-    m_pstr_party_name = new std::string(szName != nullptr ? szName : "");
+    m_pstr_party_name = new UnallocatedCString(szName != nullptr ? szName : "");
 
     if (bCreateAgent) {
         const auto strName = String::Factory(m_str_authorizing_agent.c_str()),
@@ -101,17 +99,17 @@ OTParty::OTParty(
 
 OTParty::OTParty(
     const api::session::Wallet& wallet,
-    const std::string& dataFolder,
-    std::string str_PartyName,
+    const UnallocatedCString& dataFolder,
+    UnallocatedCString str_PartyName,
     const identity::Nym& theNym,  // Nym is BOTH owner AND agent, when using
                                   // this constructor.
-    const std::string str_agent_name,
+    const UnallocatedCString str_agent_name,
     Account* pAccount,
-    const std::string* pstr_account_name,
+    const UnallocatedCString* pstr_account_name,
     std::int64_t lClosingTransNo)
     : wallet_{wallet}
     , data_folder_{dataFolder}
-    , m_pstr_party_name(new std::string(str_PartyName))
+    , m_pstr_party_name(new UnallocatedCString(str_PartyName))
     , m_bPartyIsNym(true)
     , m_str_owner_id()
     , m_str_authorizing_agent()
@@ -121,7 +119,7 @@ OTParty::OTParty(
     , m_strMySignedCopy(String::Factory())
     , m_pOwnerAgreement(nullptr)
 {
-    //  m_pstr_party_name = new std::string(str_PartyName);
+    //  m_pstr_party_name = new UnallocatedCString(str_PartyName);
     OT_ASSERT(nullptr != m_pstr_party_name);
 
     // theNym is owner, therefore save his ID information, and create the agent
@@ -202,7 +200,8 @@ void OTParty::GetAllTransactionNumbers(NumList& numlistOutput) const
 
 // Only counts accounts authorized for str_agent_name.
 //
-auto OTParty::GetAccountCount(std::string str_agent_name) const -> std::int32_t
+auto OTParty::GetAccountCount(UnallocatedCString str_agent_name) const
+    -> std::int32_t
 {
     std::int32_t nCount = 0;
 
@@ -222,7 +221,7 @@ auto OTParty::GetAccountCount(std::string str_agent_name) const -> std::int32_t
 
 auto OTParty::AddAgent(OTAgent& theAgent) -> bool
 {
-    const std::string str_agent_name = theAgent.GetName().Get();
+    const UnallocatedCString str_agent_name = theAgent.GetName().Get();
 
     if (!OTScriptable::ValidateName(str_agent_name)) {
         LogError()(OT_PRETTY_CLASS())("Failed validating Agent name.").Flush();
@@ -241,7 +240,7 @@ auto OTParty::AddAgent(OTAgent& theAgent) -> bool
 
         // Then insert it...
         m_mapAgents.insert(
-            std::pair<std::string, OTAgent*>(str_agent_name, &theAgent));
+            std::pair<UnallocatedCString, OTAgent*>(str_agent_name, &theAgent));
 
         // Make sure it has a pointer back to me.
         theAgent.SetParty(*this);
@@ -303,14 +302,14 @@ auto OTParty::AddAccount(
     return true;
 }
 
-auto OTParty::RemoveAccount(const std::string str_Name) -> bool
+auto OTParty::RemoveAccount(const UnallocatedCString str_Name) -> bool
 {
     for (auto it = m_mapPartyAccounts.begin(); it != m_mapPartyAccounts.end();
          ++it) {
         OTPartyAccount* pAcct = it->second;
         OT_ASSERT(nullptr != pAcct);
 
-        const std::string str_acct_name = pAcct->GetName().Get();
+        const UnallocatedCString str_acct_name = pAcct->GetName().Get();
 
         if (0 == str_acct_name.compare(str_Name)) {
             m_mapPartyAccounts.erase(it);
@@ -325,7 +324,7 @@ auto OTParty::RemoveAccount(const std::string str_Name) -> bool
 
 auto OTParty::AddAccount(OTPartyAccount& thePartyAcct) -> bool
 {
-    const std::string str_acct_name = thePartyAcct.GetName().Get();
+    const UnallocatedCString str_acct_name = thePartyAcct.GetName().Get();
 
     if (!OTScriptable::ValidateName(str_acct_name)) {
         LogError()(OT_PRETTY_CLASS())("Failed validating Account name.")
@@ -351,8 +350,9 @@ auto OTParty::AddAccount(OTPartyAccount& thePartyAcct) -> bool
         //
 
         // Then insert it...
-        m_mapPartyAccounts.insert(std::pair<std::string, OTPartyAccount*>(
-            str_acct_name, &thePartyAcct));
+        m_mapPartyAccounts.insert(
+            std::pair<UnallocatedCString, OTPartyAccount*>(
+                str_acct_name, &thePartyAcct));
 
         // Make sure it has a pointer back to me.
         thePartyAcct.SetParty(*this);
@@ -367,7 +367,7 @@ auto OTParty::AddAccount(OTPartyAccount& thePartyAcct) -> bool
     return false;
 }
 
-auto OTParty::GetClosingTransNo(std::string str_for_acct_name) const
+auto OTParty::GetClosingTransNo(UnallocatedCString str_for_acct_name) const
     -> std::int64_t
 {
     auto it = m_mapPartyAccounts.find(str_for_acct_name);
@@ -422,9 +422,9 @@ void OTParty::ClearTemporaryPointers()
 
 // as used "IN THE SCRIPT."
 //
-auto OTParty::GetPartyName(bool* pBoolSuccess) const -> std::string
+auto OTParty::GetPartyName(bool* pBoolSuccess) const -> UnallocatedCString
 {
-    std::string retVal("");
+    UnallocatedCString retVal("");
 
     // "sales_director", "marketer", etc
     if (nullptr == m_pstr_party_name) {
@@ -440,7 +440,8 @@ auto OTParty::GetPartyName(bool* pBoolSuccess) const -> std::string
     return retVal;
 }
 
-auto OTParty::SetPartyName(const std::string& str_party_name_input) -> bool
+auto OTParty::SetPartyName(const UnallocatedCString& str_party_name_input)
+    -> bool
 {
     if (!OTScriptable::ValidateName(str_party_name_input)) {
         LogError()(OT_PRETTY_CLASS())("Failed: Invalid name was passed in.")
@@ -449,7 +450,7 @@ auto OTParty::SetPartyName(const std::string& str_party_name_input) -> bool
     }
 
     if (nullptr == m_pstr_party_name)
-        OT_ASSERT(nullptr != (m_pstr_party_name = new std::string));
+        OT_ASSERT(nullptr != (m_pstr_party_name = new UnallocatedCString));
 
     *m_pstr_party_name = str_party_name_input;
 
@@ -475,7 +476,7 @@ auto OTParty::IsEntity() const -> bool
 
 // ACTUAL PARTY OWNER
 //
-auto OTParty::GetNymID(bool* pBoolSuccess) const -> std::string
+auto OTParty::GetNymID(bool* pBoolSuccess) const -> UnallocatedCString
 {
     if (IsNym() && (m_str_owner_id.size() > 0)) {
         if (nullptr != pBoolSuccess) *pBoolSuccess = true;
@@ -485,12 +486,12 @@ auto OTParty::GetNymID(bool* pBoolSuccess) const -> std::string
 
     if (nullptr != pBoolSuccess) *pBoolSuccess = false;
 
-    std::string retVal("");
+    UnallocatedCString retVal("");
 
     return retVal;  // empty ID on failure.
 }
 
-auto OTParty::GetEntityID(bool* pBoolSuccess) const -> std::string
+auto OTParty::GetEntityID(bool* pBoolSuccess) const -> UnallocatedCString
 {
     if (IsEntity() && (m_str_owner_id.size() > 0)) {
         if (nullptr != pBoolSuccess) *pBoolSuccess = true;
@@ -500,12 +501,12 @@ auto OTParty::GetEntityID(bool* pBoolSuccess) const -> std::string
 
     if (nullptr != pBoolSuccess) *pBoolSuccess = false;
 
-    std::string retVal("");
+    UnallocatedCString retVal("");
 
     return retVal;
 }
 
-auto OTParty::GetPartyID(bool* pBoolSuccess) const -> std::string
+auto OTParty::GetPartyID(bool* pBoolSuccess) const -> UnallocatedCString
 {
     // If party is a Nym, this is the NymID. Else return EntityID().
     // if error, return false.
@@ -543,7 +544,8 @@ auto OTParty::HasActiveAgent() const -> bool
 
 /// Get Agent pointer by Name. Returns nullptr on failure.
 ///
-auto OTParty::GetAgent(const std::string& str_agent_name) const -> OTAgent*
+auto OTParty::GetAgent(const UnallocatedCString& str_agent_name) const
+    -> OTAgent*
 {
     if (OTScriptable::ValidateName(str_agent_name)) {
         auto it = m_mapAgents.find(str_agent_name);
@@ -587,7 +589,7 @@ auto OTParty::GetAgentByIndex(std::int32_t nIndex) const -> OTAgent*
 
 // Get PartyAccount pointer by Name. Returns nullptr on failure.
 //
-auto OTParty::GetAccount(const std::string& str_acct_name) const
+auto OTParty::GetAccount(const UnallocatedCString& str_acct_name) const
     -> OTPartyAccount*
 {
     //    otErr << "DEBUGGING OTParty::GetAccount: above find. str_acct_name: %s
@@ -636,7 +638,7 @@ auto OTParty::GetAccountByIndex(std::int32_t nIndex) -> OTPartyAccount*
 // Get PartyAccount pointer by Agent Name. (It just grabs the first one.)
 //
 // Returns nullptr on failure.
-auto OTParty::GetAccountByAgent(const std::string& str_agent_name)
+auto OTParty::GetAccountByAgent(const UnallocatedCString& str_agent_name)
     -> OTPartyAccount*
 {
     if (OTScriptable::ValidateName(str_agent_name)) {
@@ -870,7 +872,7 @@ auto OTParty::VerifyOwnershipOfAccount(const Account& theAccount) const -> bool
                   // solitary Nym (not an entity.)
     {
         bool bNymID = false;
-        std::string str_nym_id =
+        UnallocatedCString str_nym_id =
             GetNymID(&bNymID);  // If the party is a Nym, this is the Nym's
                                 // ID. Otherwise this is false.
 
@@ -1061,11 +1063,11 @@ auto OTParty::LoadAndVerifyAssetAccounts(
     mapOfAccounts& map_Accts_Already_Loaded,
     mapOfAccounts& map_NewlyLoaded) -> bool
 {
-    std::set<std::string> theAcctIDSet;  // Make sure all the acct IDs are
-                                         // unique.
+    UnallocatedSet<UnallocatedCString> theAcctIDSet;  // Make sure all the acct
+                                                      // IDs are unique.
 
     for (auto& it_acct : m_mapPartyAccounts) {
-        const std::string str_acct_name = it_acct.first;
+        const UnallocatedCString str_acct_name = it_acct.first;
         OTPartyAccount* pPartyAcct = it_acct.second;
         OT_ASSERT(pPartyAcct != nullptr);
 
@@ -1170,7 +1172,7 @@ auto OTParty::VerifyAccountsWithTheirAgents(
     // be loaded up in memory!
     //
     for (auto& it : m_mapPartyAccounts) {
-        const std::string str_acct_name = it.first;
+        const UnallocatedCString str_acct_name = it.first;
         OTPartyAccount* pAcct = it.second;
         OT_ASSERT_MSG(
             nullptr != pAcct,
@@ -1251,7 +1253,7 @@ void OTParty::HarvestClosingNumbers(
 
         if (pAcct->GetClosingTransNo() <= 0) { continue; }
 
-        const std::string str_agent_name(pAcct->GetAgentName().Get());
+        const UnallocatedCString str_agent_name(pAcct->GetAgentName().Get());
 
         if (str_agent_name.size() <= 0) {
             LogError()(OT_PRETTY_CLASS())(
@@ -1292,7 +1294,7 @@ void OTParty::recover_closing_numbers(
 
         if (pAcct->GetClosingTransNo() <= 0) { continue; }
 
-        const std::string str_agent_name(pAcct->GetAgentName().Get());
+        const UnallocatedCString str_agent_name(pAcct->GetAgentName().Get());
 
         if (str_agent_name.size() <= 0) { continue; }
 
@@ -1557,7 +1559,7 @@ void OTParty::Serialize(
 void OTParty::RegisterAccountsForExecution(OTScript& theScript)
 {
     for (auto& it : m_mapPartyAccounts) {
-        const std::string str_acct_name = it.first;
+        const UnallocatedCString str_acct_name = it.first;
         OTPartyAccount* pAccount = it.second;
         OT_ASSERT((nullptr != pAccount) && (str_acct_name.size() > 0));
 
@@ -1568,7 +1570,7 @@ void OTParty::RegisterAccountsForExecution(OTScript& theScript)
 // Done.
 auto OTParty::Compare(const OTParty& rhs) const -> bool
 {
-    const std::string str_party_name(rhs.GetPartyName());
+    const UnallocatedCString str_party_name(rhs.GetPartyName());
 
     if (!(str_party_name.compare(GetPartyName()) == 0)) {
         LogConsole()(OT_PRETTY_CLASS())("Names don't match. ")(GetPartyName())(
@@ -1631,7 +1633,7 @@ auto OTParty::Compare(const OTParty& rhs) const -> bool
     }
 
     for (const auto& it : m_mapPartyAccounts) {
-        const std::string str_acct_name = it.first;
+        const UnallocatedCString str_acct_name = it.first;
         OTPartyAccount* pAcct = it.second;
         OT_ASSERT(nullptr != pAcct);
 
@@ -1666,7 +1668,7 @@ auto OTParty::CopyAcctsToConfirmingParty(OTParty& theParty) const -> bool
                                  // theParty.)
 
     for (const auto& it : m_mapPartyAccounts) {
-        const std::string str_acct_name = it.first;
+        const UnallocatedCString str_acct_name = it.first;
         OTPartyAccount* pAcct = it.second;
         OT_ASSERT(nullptr != pAcct);
 

@@ -27,9 +27,10 @@ class OPENTXS_EXPORT ContactList : virtual public List
 {
 public:
     virtual auto AddContact(
-        const std::string& label,
-        const std::string& paymentCode = "",
-        const std::string& nymID = "") const noexcept -> std::string = 0;
+        const UnallocatedCString& label,
+        const UnallocatedCString& paymentCode = "",
+        const UnallocatedCString& nymID = "") const noexcept
+        -> UnallocatedCString = 0;
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactListItem> = 0;
     virtual auto Next() const noexcept

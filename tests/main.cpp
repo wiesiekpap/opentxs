@@ -5,11 +5,11 @@
 
 #include <gtest/gtest.h>
 #include <iostream>
-#include <string>
 
 #include "Basic.hpp"
 #include "Cli.hpp"
 #include "OTTestEnvironment.hpp"
+#include "opentxs/util/Container.hpp"
 
 int main(int argc, char** argv)
 {

@@ -9,7 +9,6 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -17,10 +16,11 @@
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
-using OutstandingMap = std::map<int, std::atomic_int>;
+using OutstandingMap = UnallocatedMap<int, std::atomic_int>;
 
 struct Outstanding::Imp {
     auto operator++() noexcept -> Imp&

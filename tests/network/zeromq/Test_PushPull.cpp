@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <ctime>
-#include <string>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -20,7 +19,7 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -34,11 +33,12 @@ class Test_PushPull : public ::testing::Test
 public:
     const zmq::Context& context_;
 
-    const std::string testMessage_{"zeromq test message"};
-    const std::string testMessage2_{"zeromq test message 2"};
-    const std::string testMessage3_{"zeromq test message 3"};
+    const ot::UnallocatedCString testMessage_{"zeromq test message"};
+    const ot::UnallocatedCString testMessage2_{"zeromq test message 2"};
+    const ot::UnallocatedCString testMessage3_{"zeromq test message 3"};
 
-    const std::string endpoint_{"inproc://opentxs/test/push_pull_test"};
+    const ot::UnallocatedCString endpoint_{
+        "inproc://opentxs/test/push_pull_test"};
 
     Test_PushPull()
         : context_(ot::Context().ZMQ())
@@ -53,7 +53,8 @@ TEST_F(Test_PushPull, Push_Pull)
     auto pullCallback = zmq::ListenCallback::Factory(
         [this, &callbackFinished](auto&& input) -> void {
             EXPECT_EQ(1, input.size());
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 

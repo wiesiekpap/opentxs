@@ -9,12 +9,7 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <deque>
-#include <list>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -35,6 +30,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Source.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "otx/common/OTStorage.hpp"
 
@@ -330,7 +326,7 @@ void NymFile::DisplayStatistics(opentxs::String& strOutput) const
 
 auto NymFile::GetHash(
     const mapOfIdentifiers& the_map,
-    const std::string& str_id,
+    const UnallocatedCString& str_id,
     opentxs::Identifier& theOutput) const -> bool  // client-side
 {
     sLock lock(shared_lock_);
@@ -363,14 +359,14 @@ auto NymFile::GetHash(
 }
 
 auto NymFile::GetInboxHash(
-    const std::string& acct_id,
+    const UnallocatedCString& acct_id,
     opentxs::Identifier& theOutput) const -> bool  // client-side
 {
     return GetHash(m_mapInboxHash, acct_id, theOutput);
 }
 
 auto NymFile::GetOutboxHash(
-    const std::string& acct_id,
+    const UnallocatedCString& acct_id,
     opentxs::Identifier& theOutput) const -> bool  // client-side
 {
     return GetHash(m_mapOutboxHash, acct_id, theOutput);
@@ -530,8 +526,8 @@ auto NymFile::load_signed_nymfile(const T& lock, const PasswordPrompt& reason)
 // nym. So I added this method to make such a thing easy to do.
 void NymFile::RemoveAllNumbers(const opentxs::String& pstrNotaryID)
 {
-    std::list<mapOfIdentifiers::iterator> listOfInboxHash;
-    std::list<mapOfIdentifiers::iterator> listOfOutboxHash;
+    UnallocatedList<mapOfIdentifiers::iterator> listOfInboxHash;
+    UnallocatedList<mapOfIdentifiers::iterator> listOfOutboxHash;
 
     // This is mapped to acct_id, not notary_id.
     // (So we just wipe them all.)
@@ -656,7 +652,7 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
     //
     if (!(m_setAccounts.empty())) {
         for (auto& it : m_setAccounts) {
-            std::string strID(it);
+            UnallocatedCString strID(it);
             TagPtr pTag(new Tag("ownsAssetAcct"));
             pTag->add_attribute("ID", strID);
             tag.add_tag(pTag);
@@ -665,7 +661,7 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
 
     // client-side
     for (auto& it : m_mapInboxHash) {
-        std::string strAcctID = it.first;
+        UnallocatedCString strAcctID = it.first;
         const opentxs::Identifier& theID = it.second;
 
         if ((strAcctID.size() > 0) && !theID.empty()) {
@@ -679,7 +675,7 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
 
     // client-side
     for (auto& it : m_mapOutboxHash) {
-        std::string strAcctID = it.first;
+        UnallocatedCString strAcctID = it.first;
         const opentxs::Identifier& theID = it.second;
 
         if ((strAcctID.size() > 0) && !theID.empty()) {
@@ -691,7 +687,7 @@ auto NymFile::serialize_nymfile(const T& lock, opentxs::String& strNym) const
         }
     }  // for
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     strNym.Concatenate("%s", str_result.c_str());
@@ -784,7 +780,7 @@ auto NymFile::save_signed_nymfile(const T& lock, const PasswordPrompt& reason)
 
 auto NymFile::SetHash(
     mapOfIdentifiers& the_map,
-    const std::string& str_id,
+    const UnallocatedCString& str_id,
     const opentxs::Identifier& theInput) -> bool  // client-side
 {
     the_map.emplace(str_id, theInput);
@@ -793,7 +789,7 @@ auto NymFile::SetHash(
 }
 
 auto NymFile::SetInboxHash(
-    const std::string& acct_id,
+    const UnallocatedCString& acct_id,
     const opentxs::Identifier& theInput) -> bool  // client-side
 {
     eLock lock(shared_lock_);
@@ -802,7 +798,7 @@ auto NymFile::SetInboxHash(
 }
 
 auto NymFile::SetOutboxHash(
-    const std::string& acct_id,
+    const UnallocatedCString& acct_id,
     const opentxs::Identifier& theInput) -> bool  // client-side
 {
     eLock lock(shared_lock_);

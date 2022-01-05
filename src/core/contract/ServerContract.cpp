@@ -51,9 +51,9 @@ auto Factory::ServerContract(const api::Session& api) noexcept
 auto Factory::ServerContract(
     const api::Session& api,
     const Nym_p& nym,
-    const std::list<Endpoint>& endpoints,
-    const std::string& terms,
-    const std::string& name,
+    const UnallocatedList<Endpoint>& endpoints,
+    const UnallocatedCString& terms,
+    const UnallocatedCString& name,
     const VersionNumber version,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::unique_ptr<contract::Server>
@@ -65,7 +65,7 @@ auto Factory::ServerContract(
         return {};
     }
 
-    auto list = std::list<contract::Server::Endpoint>{};
+    auto list = UnallocatedList<contract::Server::Endpoint>{};
     std::transform(
         std::begin(endpoints),
         std::end(endpoints),
@@ -150,9 +150,9 @@ Server::Server(
     const api::Session& api,
     const Nym_p& nym,
     const VersionNumber version,
-    const std::string& terms,
-    const std::string& name,
-    std::list<contract::Server::Endpoint>&& endpoints,
+    const UnallocatedCString& terms,
+    const UnallocatedCString& name,
+    UnallocatedList<contract::Server::Endpoint>&& endpoints,
     OTData&& key,
     OTNotaryID&& id,
     Signatures&& signatures)
@@ -201,7 +201,7 @@ Server::Server(const Server& rhs)
     , transport_key_(rhs.transport_key_)
 {
 }
-auto Server::EffectiveName() const -> std::string
+auto Server::EffectiveName() const -> UnallocatedCString
 {
     OT_ASSERT(nym_)
 
@@ -217,9 +217,9 @@ auto Server::EffectiveName() const -> std::string
 }
 
 auto Server::extract_endpoints(const proto::ServerContract& serialized) noexcept
-    -> std::list<contract::Server::Endpoint>
+    -> UnallocatedList<contract::Server::Endpoint>
 {
-    auto output = std::list<contract::Server::Endpoint>{};
+    auto output = UnallocatedList<contract::Server::Endpoint>{};
 
     for (auto& listen : serialized.address()) {
         // WARNING: preserve the order of this list, or signature verfication
@@ -241,7 +241,7 @@ auto Server::GetID(const Lock& lock) const -> OTIdentifier
 }
 
 auto Server::ConnectInfo(
-    std::string& strHostname,
+    UnallocatedCString& strHostname,
     std::uint32_t& nPort,
     core::AddressType& actual,
     const core::AddressType& preferred) const -> bool
@@ -324,7 +324,7 @@ auto Server::IDVersion(const Lock& lock) const -> proto::ServerContract
     return contract;
 }
 
-auto Server::SetAlias(const std::string& alias) noexcept -> bool
+auto Server::SetAlias(const UnallocatedCString& alias) noexcept -> bool
 {
     InitAlias(alias);
     api_.Wallet().SetServerAlias(

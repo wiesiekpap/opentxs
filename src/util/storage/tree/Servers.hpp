@@ -7,11 +7,11 @@
 
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageServers.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -36,11 +36,11 @@ class Servers final : public Node
 private:
     friend Tree;
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageServers;
 
-    Servers(const Driver& storage, const std::string& hash);
+    Servers(const Driver& storage, const UnallocatedCString& hash);
     Servers() = delete;
     Servers(const Servers&) = delete;
     Servers(Servers&&) = delete;
@@ -48,20 +48,21 @@ private:
     auto operator=(Servers&&) -> Servers = delete;
 
 public:
-    auto Alias(const std::string& id) const -> std::string;
+    auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto Load(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<proto::ServerContract>& output,
-        std::string& alias,
+        UnallocatedCString& alias,
         const bool checking) const -> bool;
     void Map(ServerLambda lambda) const;
 
-    auto Delete(const std::string& id) -> bool;
-    auto SetAlias(const std::string& id, const std::string& alias) -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
+    auto SetAlias(const UnallocatedCString& id, const UnallocatedCString& alias)
+        -> bool;
     auto Store(
         const proto::ServerContract& data,
-        const std::string& alias,
-        std::string& plaintext) -> bool;
+        const UnallocatedCString& alias,
+        UnallocatedCString& plaintext) -> bool;
 
     ~Servers() final = default;
 };

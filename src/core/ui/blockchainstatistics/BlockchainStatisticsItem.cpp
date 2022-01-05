@@ -50,7 +50,7 @@ BlockchainStatisticsItem::BlockchainStatisticsItem(
 {
 }
 
-auto BlockchainStatisticsItem::Balance() const noexcept -> std::string
+auto BlockchainStatisticsItem::Balance() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 

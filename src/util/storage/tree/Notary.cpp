@@ -37,8 +37,8 @@ namespace opentxs::storage
 {
 Notary::Notary(
     const Driver& storage,
-    const std::string& hash,
-    const std::string& id)
+    const UnallocatedCString& hash,
+    const UnallocatedCString& id)
     : Node(storage, hash)
     , id_(id)
     , mint_map_()
@@ -53,7 +53,7 @@ Notary::Notary(
 auto Notary::CheckSpent(
     const identifier::UnitDefinition& unit,
     const MintSeries series,
-    const std::string& key) const -> bool
+    const UnallocatedCString& key) const -> bool
 {
     if (key.empty()) { throw std::runtime_error("Invalid token key"); }
 
@@ -76,11 +76,11 @@ auto Notary::CheckSpent(
 }
 
 auto Notary::create_list(
-    const std::string& unitID,
+    const UnallocatedCString& unitID,
     const MintSeries series,
-    std::shared_ptr<proto::SpentTokenList>& output) const -> std::string
+    std::shared_ptr<proto::SpentTokenList>& output) const -> UnallocatedCString
 {
-    std::string hash{};
+    UnallocatedCString hash{};
     output.reset(new proto::SpentTokenList);
 
     OT_ASSERT(output);
@@ -102,7 +102,7 @@ auto Notary::create_list(
 
 auto Notary::get_or_create_list(
     const Lock& lock,
-    const std::string& unitID,
+    const UnallocatedCString& unitID,
     const MintSeries series) const -> proto::SpentTokenList
 {
     OT_ASSERT(verify_write_lock(lock));
@@ -123,7 +123,7 @@ auto Notary::get_or_create_list(
     return *output;
 }
 
-void Notary::init(const std::string& hash)
+void Notary::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageNotary> serialized;
     driver_.LoadProto(hash, serialized);
@@ -150,7 +150,7 @@ void Notary::init(const std::string& hash)
 auto Notary::MarkSpent(
     const identifier::UnitDefinition& unit,
     const MintSeries series,
-    const std::string& key) -> bool
+    const UnallocatedCString& key) -> bool
 {
     if (key.empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid key ").Flush();

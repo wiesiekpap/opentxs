@@ -7,10 +7,8 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -24,6 +22,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -73,23 +72,24 @@ public:
         -> std::shared_ptr<const opentxs::Contact> final;
     auto ContactID(const identifier::Nym& nymID) const -> OTIdentifier final;
     auto ContactList() const -> ObjectList final;
-    auto ContactName(const Identifier& contactID) const -> std::string final;
+    auto ContactName(const Identifier& contactID) const
+        -> UnallocatedCString final;
     auto ContactName(const Identifier& contactID, core::UnitType currencyHint)
-        const -> std::string final;
+        const -> UnallocatedCString final;
     auto Merge(const Identifier& parent, const Identifier& child) const
         -> std::shared_ptr<const opentxs::Contact> final;
     auto mutable_Contact(const Identifier& id) const
         -> std::unique_ptr<Editor<opentxs::Contact>> final;
-    auto NewContact(const std::string& label) const
+    auto NewContact(const UnallocatedCString& label) const
         -> std::shared_ptr<const opentxs::Contact> final;
     auto NewContact(
-        const std::string& label,
+        const UnallocatedCString& label,
         const identifier::Nym& nymID,
         const PaymentCode& paymentCode) const
         -> std::shared_ptr<const opentxs::Contact> final;
     auto NewContactFromAddress(
-        const std::string& address,
-        const std::string& label,
+        const UnallocatedCString& address,
+        const UnallocatedCString& label,
         const opentxs::blockchain::Type currency) const
         -> std::shared_ptr<const opentxs::Contact> final;
     auto NymToContact(const identifier::Nym& nymID) const -> OTIdentifier final;
@@ -97,7 +97,7 @@ public:
         const PaymentCode& code,
         const opentxs::blockchain::Type currency) const -> OTIdentifier final;
     auto PaymentCodeToContact(
-        const std::string& code,
+        const UnallocatedCString& code,
         const opentxs::blockchain::Type currency) const -> OTIdentifier final;
     auto Update(const identity::Nym& nym) const
         -> std::shared_ptr<const opentxs::Contact> final;
@@ -109,9 +109,10 @@ public:
 private:
     using ContactLock =
         std::pair<std::mutex, std::shared_ptr<opentxs::Contact>>;
-    using Address = std::pair<identity::wot::claim::ClaimType, std::string>;
-    using ContactMap = std::map<OTIdentifier, ContactLock>;
-    using ContactNameMap = std::map<OTIdentifier, std::string>;
+    using Address =
+        std::pair<identity::wot::claim::ClaimType, UnallocatedCString>;
+    using ContactMap = UnallocatedMap<OTIdentifier, ContactLock>;
+    using ContactNameMap = UnallocatedMap<OTIdentifier, UnallocatedCString>;
 
     const api::session::Client& api_;
     mutable std::recursive_mutex lock_{};
@@ -131,7 +132,7 @@ private:
     // takes ownership
     auto add_contact(const rLock& lock, opentxs::Contact* contact) const
         -> ContactMap::iterator;
-    auto contact(const rLock& lock, const std::string& label) const
+    auto contact(const rLock& lock, const UnallocatedCString& label) const
         -> std::shared_ptr<const opentxs::Contact>;
     auto contact(const rLock& lock, const Identifier& id) const
         -> std::shared_ptr<const opentxs::Contact>;
@@ -147,7 +148,7 @@ private:
         -> ContactMap::iterator;
     auto new_contact(
         const rLock& lock,
-        const std::string& label,
+        const UnallocatedCString& label,
         const identifier::Nym& nymID,
         const PaymentCode& paymentCode) const
         -> std::shared_ptr<const opentxs::Contact>;
@@ -157,7 +158,7 @@ private:
     void start() final;
     auto update_existing_contact(
         const rLock& lock,
-        const std::string& label,
+        const UnallocatedCString& label,
         const PaymentCode& code,
         const Identifier& contactID) const
         -> std::shared_ptr<const opentxs::Contact>;

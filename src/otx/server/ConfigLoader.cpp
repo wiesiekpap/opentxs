@@ -9,13 +9,13 @@
 
 #include <chrono>
 #include <cstdint>
-#include <string>
 
 #include "internal/otx/common/cron/OTCron.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/server/ServerSettings.hpp"
@@ -192,7 +192,7 @@ auto ConfigLoader::load(
         auto strValue = String::Factory();
         const char* szValue = nullptr;
 
-        std::string stdstrValue = ServerSettings::GetOverrideNymID();
+        UnallocatedCString stdstrValue = ServerSettings::GetOverrideNymID();
         szValue = stdstrValue.c_str();
 
         bool bIsNewKey = false;

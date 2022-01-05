@@ -4,9 +4,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
-#include <list>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -34,6 +32,7 @@
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
@@ -67,7 +66,7 @@ public:
         const ot::crypto::ParameterType type,
         const ot::identity::CredentialType cred,
         const ot::identity::SourceType source,
-        const std::string& name = "Nym")
+        const ot::UnallocatedCString& name = "Nym")
     {
         const auto params = ot::crypto::Parameters{type, cred, source};
         const auto pNym = client_.Wallet().Nym(params, reason_, name);
@@ -126,7 +125,7 @@ public:
     bool test_storage(const ot::api::session::Client& api)
     {
         const auto reason = api.Factory().PasswordPrompt(__func__);
-        const auto alias = std::string{"alias"};
+        const auto alias = ot::UnallocatedCString{"alias"};
         std::unique_ptr<ot::identity::internal::Nym> pNym(ot::Factory::Nym(
             api,
             {},

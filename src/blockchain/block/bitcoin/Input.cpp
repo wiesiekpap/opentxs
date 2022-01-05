@@ -16,10 +16,8 @@
 #include <iosfwd>
 #include <iterator>
 #include <optional>
-#include <set>
 #include <sstream>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <utility>
 
@@ -41,6 +39,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainInputWitness.pb.h"
@@ -87,7 +86,7 @@ auto BitcoinTransactionInput(
 
     // TODO if this is input spends a segwit script then make a dummy witness
     auto elements = bb::ScriptElements{};
-    auto witness = std::vector<Space>{};
+    auto witness = UnallocatedVector<Space>{};
 
     switch (prevOut.Script().Type()) {
         case bb::Script::Pattern::PayToWitnessPubkeyHash: {
@@ -149,7 +148,7 @@ auto BitcoinTransactionInput(
     const ReadView script,
     const ReadView sequence,
     const bool coinbase,
-    std::vector<Space>&& witness) noexcept
+    UnallocatedVector<Space>&& witness) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Input>
 {
     using ReturnType = blockchain::block::bitcoin::implementation::Input;
@@ -203,7 +202,7 @@ auto BitcoinTransactionInput(
     using ReturnType = blockchain::block::bitcoin::implementation::Input;
     using Position = blockchain::block::bitcoin::Script::Position;
     const auto& outpoint = in.previous();
-    auto witness = std::vector<Space>{};
+    auto witness = UnallocatedVector<Space>{};
 
     for (const auto& bytes : in.witness().item()) {
         const auto it = reinterpret_cast<const std::byte*>(bytes.data());
@@ -289,7 +288,7 @@ Input::Input(
     const blockchain::Type chain,
     const std::uint32_t sequence,
     Outpoint&& previous,
-    std::vector<Space>&& witness,
+    UnallocatedVector<Space>&& witness,
     std::unique_ptr<const internal::Script> script,
     Space&& coinbase,
     const VersionNumber version,
@@ -327,7 +326,7 @@ Input::Input(
     const blockchain::Type chain,
     const std::uint32_t sequence,
     Outpoint&& previous,
-    std::vector<Space>&& witness,
+    UnallocatedVector<Space>&& witness,
     std::unique_ptr<const internal::Script> script,
     const VersionNumber version,
     std::optional<std::size_t> size) noexcept(false)
@@ -354,7 +353,7 @@ Input::Input(
     const blockchain::Type chain,
     const std::uint32_t sequence,
     Outpoint&& previous,
-    std::vector<Space>&& witness,
+    UnallocatedVector<Space>&& witness,
     std::unique_ptr<const internal::Script> script,
     const VersionNumber version,
     std::unique_ptr<const internal::Output> output,
@@ -382,7 +381,7 @@ Input::Input(
     const blockchain::Type chain,
     const std::uint32_t sequence,
     Outpoint&& previous,
-    std::vector<Space>&& witness,
+    UnallocatedVector<Space>&& witness,
     const ReadView coinbase,
     const VersionNumber version,
     std::unique_ptr<const internal::Output> output,
@@ -475,7 +474,7 @@ auto Input::AddSignatures(const Signatures& signatures) noexcept -> bool
         return bool(script);
     } else {
         // TODO this only works for P2WPKH
-        auto& witness = const_cast<std::vector<Space>&>(witness_);
+        auto& witness = const_cast<UnallocatedVector<Space>&>(witness_);
         witness.clear();
 
         for (const auto& [sig, key] : signatures) {
@@ -492,8 +491,8 @@ auto Input::AddSignatures(const Signatures& signatures) noexcept -> bool
     }
 }
 
-auto Input::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
-    -> void
+auto Input::AssociatedLocalNyms(
+    UnallocatedVector<OTNymID>& output) const noexcept -> void
 {
     cache_.for_each_key([&](const auto& key) {
         const auto& owner = api_.Crypto().Blockchain().Owner(key);
@@ -503,7 +502,7 @@ auto Input::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
 }
 
 auto Input::AssociatedRemoteContacts(
-    std::vector<OTIdentifier>& output) const noexcept -> void
+    UnallocatedVector<OTIdentifier>& output) const noexcept -> void
 {
     const auto hashes = script_->LikelyPubkeyHashes(api_);
     std::for_each(std::begin(hashes), std::end(hashes), [&](const auto& hash) {
@@ -577,7 +576,7 @@ auto Input::classify() const noexcept -> Redeem
     }
 }
 
-auto Input::decode_coinbase() const noexcept -> std::string
+auto Input::decode_coinbase() const noexcept -> UnallocatedCString
 {
     const auto size = coinbase_.size();
 
@@ -648,9 +647,9 @@ auto Input::decode_coinbase() const noexcept -> std::string
 }
 
 auto Input::ExtractElements(const filter::Type style) const noexcept
-    -> std::vector<Space>
+    -> UnallocatedVector<Space>
 {
-    auto output = std::vector<Space>{};
+    auto output = UnallocatedVector<Space>{};
 
     if (Script::Position::Coinbase == script_->Role()) { return output; }
 
@@ -743,7 +742,7 @@ auto Input::FindMatches(
     return matches;
 }
 
-auto Input::GetPatterns() const noexcept -> std::vector<PatternID>
+auto Input::GetPatterns() const noexcept -> UnallocatedVector<PatternID>
 {
     return {std::begin(pubkey_hashes_), std::end(pubkey_hashes_)};
 }
@@ -775,7 +774,7 @@ auto Input::MergeMetadata(const internal::Input& rhs) noexcept -> bool
     return cache_.merge(rhs);
 }
 
-auto Input::Print() const noexcept -> std::string
+auto Input::Print() const noexcept -> UnallocatedCString
 {
     auto out = std::stringstream{};
     out << "    outpoint: " << previous_.str() << '\n';
@@ -898,7 +897,7 @@ auto Input::Serialize(const std::uint32_t index, SerializeType& out)
     out.set_sequence(sequence_);
     auto& outpoint = *out.mutable_previous();
     outpoint.set_version(outpoint_version_);
-    outpoint.set_txid(std::string{previous_.Txid()});
+    outpoint.set_txid(UnallocatedCString{previous_.Txid()});
     outpoint.set_index(previous_.Index());
     cache_.for_each_key([&](const auto& key) {
         const auto& [accountID, subchain, index] = key;

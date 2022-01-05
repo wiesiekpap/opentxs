@@ -19,15 +19,15 @@
 namespace opentxs::display
 {
 struct Definition::Imp {
-    using Scales = std::vector<NamedScale>;
+    using Scales = UnallocatedVector<NamedScale>;
 
-    const std::string short_name_;
+    const UnallocatedCString short_name_;
     const Scales scales_;
     mutable std::mutex lock_;
     mutable std::optional<Map> cached_;
 
-    auto Import(const std::string& in, const Index index) const noexcept(false)
-        -> Amount
+    auto Import(const UnallocatedCString& in, const Index index) const
+        noexcept(false) -> Amount
     {
         try {
             const auto& scale = scales_.at(static_cast<std::size_t>(index));
@@ -56,7 +56,7 @@ struct Definition::Imp {
         }
     }
 
-    Imp(std::string&& shortname, Scales&& scales) noexcept
+    Imp(UnallocatedCString&& shortname, Scales&& scales) noexcept
         : short_name_(std::move(shortname))
         , scales_(std::move(scales))
         , lock_()

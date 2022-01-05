@@ -7,12 +7,9 @@
 #include "1_Internal.hpp"                 // IWYU pragma: associated
 #include "core/ui/unitlist/UnitList.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <memory>
-#include <set>
 #include <thread>
 #include <utility>
-#include <vector>
 
 #include "internal/identity/wot/claim/Types.hpp"
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
@@ -37,6 +34,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"

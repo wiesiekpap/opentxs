@@ -6,7 +6,8 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::network
 {
@@ -22,7 +23,7 @@ public:
     std::int64_t server_refresh_interval_ = 60 * 60 * 1;
     std::int64_t unit_publish_interval_ = 60 * 5;
     std::int64_t unit_refresh_interval_ = 60 * 60 * 1;
-    std::string bootstrap_url_ = "bootstrap.ring.cx";
-    std::string bootstrap_port_ = "4222";
+    UnallocatedCString bootstrap_url_ = "bootstrap.ring.cx";
+    UnallocatedCString bootstrap_port_ = "4222";
 };
 }  // namespace opentxs::network

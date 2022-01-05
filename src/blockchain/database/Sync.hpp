@@ -9,14 +9,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
@@ -33,6 +29,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
@@ -77,7 +74,7 @@ namespace opentxs::blockchain::database
 class Sync
 {
 public:
-    using Items = std::vector<network::p2p::Block>;
+    using Items = UnallocatedVector<network::p2p::Block>;
     using Message = network::p2p::Data;
 
     auto Load(const block::Height height, Message& output) const noexcept

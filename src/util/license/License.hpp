@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include <string>
 #include <string_view>
 
 #include "opentxs/OT.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

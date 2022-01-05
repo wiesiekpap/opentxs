@@ -9,7 +9,8 @@
 #include <lucre/bank.h>
 // IWYU pragma: end_exports
 #include <memory>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::otx::blind
 {

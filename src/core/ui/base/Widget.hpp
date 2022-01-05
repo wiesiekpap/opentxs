@@ -9,9 +9,7 @@
 #include <iosfwd>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "internal/core/ui/UI.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -22,6 +20,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
@@ -143,8 +142,8 @@ public:
     ~Widget() override;
 
 protected:
-    using ListenerDefinition = std::pair<std::string, MessageFunctor*>;
-    using ListenerDefinitions = std::vector<ListenerDefinition>;
+    using ListenerDefinition = std::pair<UnallocatedCString, MessageFunctor*>;
+    using ListenerDefinitions = UnallocatedVector<ListenerDefinition>;
 
     const OTIdentifier widget_id_;
 
@@ -159,8 +158,8 @@ protected:
 
 private:
     const api::session::UI& ui_;
-    std::vector<OTZMQListenCallback> callbacks_;
-    std::vector<OTZMQSubscribeSocket> listeners_;
+    UnallocatedVector<OTZMQListenCallback> callbacks_;
+    UnallocatedVector<OTZMQSubscribeSocket> listeners_;
 
     Widget() = delete;
     Widget(const Widget&) = delete;

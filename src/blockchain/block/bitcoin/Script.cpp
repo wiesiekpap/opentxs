@@ -18,7 +18,6 @@
 #include <stdexcept>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -625,7 +625,7 @@ auto Script::evaluate_segwit(const ScriptElements& script) noexcept -> Pattern
 }
 
 auto Script::ExtractElements(const filter::Type style) const noexcept
-    -> std::vector<Space>
+    -> UnallocatedVector<Space>
 {
     if (0 == elements_.size()) {
         LogTrace()(OT_PRETTY_CLASS())("skipping empty script").Flush();
@@ -633,7 +633,7 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
         return {};
     }
 
-    auto output = std::vector<Space>{};
+    auto output = UnallocatedVector<Space>{};
 
     switch (style) {
         case filter::Type::ES: {
@@ -699,9 +699,9 @@ auto Script::ExtractElements(const filter::Type style) const noexcept
 }
 
 auto Script::ExtractPatterns(const api::Session& api) const noexcept
-    -> std::vector<PatternID>
+    -> UnallocatedVector<PatternID>
 {
-    auto output = std::vector<PatternID>{};
+    auto output = UnallocatedVector<PatternID>{};
     const auto hashes = LikelyPubkeyHashes(api);
     std::transform(
         std::begin(hashes),
@@ -857,9 +857,9 @@ auto Script::last_opcode(const ScriptElements& script) noexcept -> OP
 }
 
 auto Script::LikelyPubkeyHashes(const api::Session& api) const noexcept
-    -> std::vector<OTData>
+    -> UnallocatedVector<OTData>
 {
-    auto output = std::vector<OTData>{};
+    auto output = UnallocatedVector<OTData>{};
 
     switch (type_) {
         case Pattern::PayToPubkeyHash: {
@@ -1015,7 +1015,7 @@ auto Script::potential_segwit(const ScriptElements& script) noexcept -> bool
     return (1u < program.size()) && (41u > program.size());
 }
 
-auto Script::Print() const noexcept -> std::string
+auto Script::Print() const noexcept -> UnallocatedCString
 {
     auto output = std::stringstream{};
 

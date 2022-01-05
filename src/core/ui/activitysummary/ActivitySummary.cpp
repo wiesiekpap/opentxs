@@ -8,15 +8,10 @@
 #include "core/ui/activitysummary/ActivitySummary.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <sstream>
-#include <string>
 #include <thread>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "core/ui/base/List.hpp"
@@ -29,6 +24,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -80,9 +76,9 @@ auto ActivitySummary::construct_row(
 }
 
 auto ActivitySummary::display_name(
-    const proto::StorageThread& thread) const noexcept -> std::string
+    const proto::StorageThread& thread) const noexcept -> UnallocatedCString
 {
-    auto names = std::set<std::string>{};
+    auto names = UnallocatedSet<UnallocatedCString>{};
 
     for (const auto& id : thread.participant()) {
         names.emplace(
@@ -95,7 +91,7 @@ auto ActivitySummary::display_name(
 
     for (const auto& name : names) { stream << name << ", "; }
 
-    std::string output = stream.str();
+    UnallocatedCString output = stream.str();
 
     if (0 < output.size()) { output.erase(output.size() - 2, 2); }
 
@@ -130,16 +126,16 @@ auto ActivitySummary::newest_item(
 
     OT_ASSERT(nullptr != output);
 
-    custom.emplace_back(new std::string(output->id()));
+    custom.emplace_back(new UnallocatedCString(output->id()));
     custom.emplace_back(new StorageBox(static_cast<StorageBox>(output->box())));
-    custom.emplace_back(new std::string(output->account()));
+    custom.emplace_back(new UnallocatedCString(output->account()));
     custom.emplace_back(time);
     custom.emplace_back(new OTIdentifier{id});
 
     return *output;
 }
 
-void ActivitySummary::process_thread(const std::string& id) noexcept
+void ActivitySummary::process_thread(const UnallocatedCString& id) noexcept
 {
     const auto threadID = Identifier::Factory(id);
     auto thread = proto::StorageThread{};

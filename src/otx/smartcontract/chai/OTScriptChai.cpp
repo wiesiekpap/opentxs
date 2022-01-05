@@ -27,12 +27,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "internal/otx/common/script/OTScriptable.hpp"
 #include "internal/otx/smartcontract/Factory.hpp"
@@ -43,6 +40,7 @@
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"  // IWYU pragma: keep
 
@@ -53,7 +51,7 @@ auto OTScriptChai() -> std::shared_ptr<opentxs::OTScript>
     return std::make_shared<opentxs::OTScriptChai>();
 }
 
-auto OTScriptChai(const std::string& script_contents)
+auto OTScriptChai(const UnallocatedCString& script_contents)
     -> std::shared_ptr<opentxs::OTScript>
 {
     return std::make_shared<opentxs::OTScriptChai>(script_contents);
@@ -93,7 +91,7 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
             OTParty* pParty = it.second;
             OT_ASSERT(nullptr != pParty);
 
-            std::string party_name = pParty->GetPartyName();
+            UnallocatedCString party_name = pParty->GetPartyName();
 
             //          std::cerr << " TESTING PARTY: " << party_name <<
             //            std::endl;
@@ -131,7 +129,7 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
             OTPartyAccount* pAcct = it.second;
             OT_ASSERT(nullptr != pAcct);
 
-            std::string acct_name = pAcct->GetName().Get();
+            UnallocatedCString acct_name = pAcct->GetName().Get();
 
             //          std::cerr << " TESTING ACCOUNT: " << acct_name <<
             //            std::endl;
@@ -162,11 +160,11 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
 
          std::int64_t& GetValueLong() { return m_lValue; }
          bool& GetValueBool() { return m_bValue; }
-         std::string& GetValueString() { return m_str_Value; }
+         UnallocatedCString& GetValueString() { return m_str_Value; }
          */
 
         for (auto& it : m_mapVariables) {
-            const std::string var_name = it.first;
+            const UnallocatedCString var_name = it.first;
             OTVariable* pVar = it.second;
             OT_ASSERT((nullptr != pVar) && (var_name.size() > 0));
 
@@ -205,7 +203,7 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
                 } break;
 
                 case OTVariable::Var_String: {
-                    std::string& str_Value = pVar->GetValueString();
+                    UnallocatedCString& str_Value = pVar->GetValueString();
 
                     if (OTVariable::Var_Constant ==
                         pVar->GetAccess())  // no pointer here, since it's
@@ -276,7 +274,7 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
                     } break;
 
                     case OTVariable::Var_String: {
-                        auto str_Result = chai_->eval<std::string>(
+                        auto str_Result = chai_->eval<UnallocatedCString>(
                             m_str_script.c_str(),
                             exception_specification<const std::exception&>(),
                             m_str_display_filename);
@@ -322,8 +320,9 @@ auto OTScriptChai::ExecuteScript(OTVariable* pReturnVar) -> bool
                 // ee.call_stack[0]->start().line << ", " <<
                 // ee.call_stack[0]->start().column << ")";
 
-                //                const std::string text;
-                //                boost::shared_ptr<const std::string> filename;
+                //                const UnallocatedCString text;
+                //                boost::shared_ptr<const UnallocatedCString>
+                //                filename;
 
                 for (size_t j = 1; j < ee.call_stack.size(); ++j) {
                     if (ee.call_stack[j].identifier !=
@@ -387,8 +386,8 @@ auto OTScriptChai::RegisterNativeScriptableCalls(OTScriptable& parent) noexcept
 auto OTScriptChai::RegisterNativeSmartContractCalls(
     OTSmartContract& parent) noexcept -> void
 {
-    using OT_SM_RetBool_ThrStr =
-        bool (OTSmartContract::*)(std::string, std::string, std::string);
+    using OT_SM_RetBool_ThrStr = bool (OTSmartContract::*)(
+        UnallocatedCString, UnallocatedCString, UnallocatedCString);
 
     using namespace chaiscript;
 
@@ -513,7 +512,7 @@ OTScriptChai::OTScriptChai(const char* new_string, size_t sizeLength)
 {
 }
 
-OTScriptChai::OTScriptChai(const std::string& new_string)
+OTScriptChai::OTScriptChai(const UnallocatedCString& new_string)
     : OTScript(new_string)
     , chai_(new chaiscript::ChaiScript)
 {

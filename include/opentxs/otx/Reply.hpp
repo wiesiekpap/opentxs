@@ -66,7 +66,7 @@ public:
         const bool success,
         const PasswordPrompt& reason,
         opentxs::otx::OTXPushType pushtype,
-        const std::string& payload) -> Pimpl<opentxs::otx::Reply>;
+        const UnallocatedCString& payload) -> Pimpl<opentxs::otx::Reply>;
     OPENTXS_NO_EXPORT static auto Factory(
         const api::Session& api,
         const proto::ServerReply serialized) -> Pimpl<opentxs::otx::Reply>;

@@ -11,10 +11,7 @@
 #include <functional>
 #include <future>
 #include <limits>
-#include <list>
 #include <memory>
-#include <set>
-#include <string>
 #include <type_traits>
 
 #include "core/ui/base/List.hpp"
@@ -49,6 +46,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentEvent.pb.h"
@@ -118,7 +116,7 @@ BlockchainAccountActivity::BlockchainAccountActivity(
 }
 
 auto BlockchainAccountActivity::DepositAddress(
-    const blockchain::Type chain) const noexcept -> std::string
+    const blockchain::Type chain) const noexcept -> UnallocatedCString
 {
     if ((blockchain::Type::Unknown != chain) && (chain_ != chain)) {
         return {};
@@ -136,14 +134,15 @@ auto BlockchainAccountActivity::DepositAddress(
 }
 
 auto BlockchainAccountActivity::display_balance(
-    opentxs::Amount value) const noexcept -> std::string
+    opentxs::Amount value) const noexcept -> UnallocatedCString
 {
     return blockchain::internal::Format(chain_, value);
 }
 
 auto BlockchainAccountActivity::load_thread() noexcept -> void
 {
-    const auto transactions = [&]() -> std::vector<blockchain::block::pTxid> {
+    const auto transactions =
+        [&]() -> UnallocatedVector<blockchain::block::pTxid> {
         try {
             const auto& chain =
                 Widget::api_.Network().Blockchain().GetChain(chain_);
@@ -155,7 +154,7 @@ auto BlockchainAccountActivity::load_thread() noexcept -> void
             return {};
         }
     }();
-    auto active = std::set<AccountActivityRowID>{};
+    auto active = UnallocatedSet<AccountActivityRowID>{};
 
     for (const auto& txid : transactions) {
         if (const auto id = process_txid(txid); id.has_value()) {
@@ -294,7 +293,7 @@ auto BlockchainAccountActivity::process_contact(const Message& in) noexcept
 
     const auto contactID = Widget::api_.Factory().Identifier(body.at(1))->str();
     const auto txids = [&] {
-        auto out = std::set<OTData>{};
+        auto out = UnallocatedSet<OTData>{};
         for_each_row([&](const auto& row) {
             for (const auto& id : row.Contacts()) {
                 if (contactID == id) {
@@ -433,8 +432,9 @@ auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
         new proto::PaymentEvent(),
         const_cast<void*>(static_cast<const void*>(pTX.release())),
         new blockchain::Type{chain_},
-        new std::string{Widget::api_.Crypto().Blockchain().ActivityDescription(
-            primary_id_, chain_, tx)},
+        new UnallocatedCString{
+            Widget::api_.Crypto().Blockchain().ActivityDescription(
+                primary_id_, chain_, tx)},
         new OTData{tx.ID()},
         new int{conf},
     };
@@ -444,9 +444,9 @@ auto BlockchainAccountActivity::process_txid(const Data& txid) noexcept
 }
 
 auto BlockchainAccountActivity::Send(
-    const std::string& address,
+    const UnallocatedCString& address,
     const Amount& amount,
-    const std::string& memo) const noexcept -> bool
+    const UnallocatedCString& memo) const noexcept -> bool
 {
     try {
         const auto& network =
@@ -467,9 +467,9 @@ auto BlockchainAccountActivity::Send(
 }
 
 auto BlockchainAccountActivity::Send(
-    const std::string& address,
-    const std::string& amount,
-    const std::string& memo,
+    const UnallocatedCString& address,
+    const UnallocatedCString& amount,
+    const UnallocatedCString& memo,
     Scale scale) const noexcept -> bool
 {
     try {
@@ -486,7 +486,7 @@ auto BlockchainAccountActivity::Send(
 auto BlockchainAccountActivity::startup() noexcept -> void { load_thread(); }
 
 auto BlockchainAccountActivity::ValidateAddress(
-    const std::string& in) const noexcept -> bool
+    const UnallocatedCString& in) const noexcept -> bool
 {
     {
         const auto code = Widget::api_.Factory().PaymentCode(in);
@@ -507,7 +507,7 @@ auto BlockchainAccountActivity::ValidateAddress(
 }
 
 auto BlockchainAccountActivity::ValidateAmount(
-    const std::string& text) const noexcept -> std::string
+    const UnallocatedCString& text) const noexcept -> UnallocatedCString
 {
     try {
 

@@ -12,10 +12,7 @@
 #include <future>
 #include <iosfwd>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
@@ -51,6 +48,7 @@
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -120,7 +118,7 @@ protected:
     static ot::OTNotaryID intro_server_id_;
     static ot::OTNotaryID server_id_;
 
-    static bool check_push_results(const std::vector<bool>& results)
+    static bool check_push_results(const ot::UnallocatedVector<bool>& results)
     {
         return std::all_of(results.cbegin(), results.cend(), [](bool result) {
             return result;
@@ -146,7 +144,7 @@ protected:
         return command;
     }
 
-    std::future<std::vector<bool>> set_push_checker(
+    std::future<ot::UnallocatedVector<bool>> set_push_checker(
         PushChecker func,
         std::size_t count = 1)
     {
@@ -159,8 +157,8 @@ protected:
 
 private:
     static PushChecker push_checker_;
-    static std::promise<std::vector<bool>> push_received_;
-    static std::vector<bool> push_results_;
+    static std::promise<ot::UnallocatedVector<bool>> push_received_;
+    static ot::UnallocatedVector<bool> push_results_;
     static std::size_t push_results_count_;
 };
 
@@ -181,8 +179,8 @@ OTIdentifier Test_Rpc_Async::workflow_id_{ot::Identifier::Factory()};
 OTNotaryID Test_Rpc_Async::intro_server_id_{ot::identifier::Notary::Factory()};
 OTNotaryID Test_Rpc_Async::server_id_{ot::identifier::Notary::Factory()};
 Test_Rpc_Async::PushChecker Test_Rpc_Async::push_checker_{};
-std::promise<std::vector<bool>> Test_Rpc_Async::push_received_{};
-std::vector<bool> Test_Rpc_Async::push_results_{};
+std::promise<ot::UnallocatedVector<bool>> Test_Rpc_Async::push_received_{};
+UnallocatedVector<bool> Test_Rpc_Async::push_results_{};
 std::size_t Test_Rpc_Async::push_results_count_{0};
 
 void Test_Rpc_Async::cleanup()
@@ -227,7 +225,7 @@ void Test_Rpc_Async::process_notification(
         }
     } else {
         try {
-            push_received_.set_value(std::vector<bool>{false});
+            push_received_.set_value(ot::UnallocatedVector<bool>{false});
         } catch (...) {
         }
 
@@ -455,7 +453,7 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Account_Owner)
     const auto contact = client_a.Contacts().NewContact(
         "label_only_contact",
         ot::identifier::Nym::Factory(),
-        client_a.Factory().PaymentCode(std::string{}));
+        client_a.Factory().PaymentCode(ot::UnallocatedCString{}));
 
     auto sendpayment = command.mutable_sendpayment();
 
@@ -496,7 +494,7 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque_No_Path)
     const auto contact = client_a.Contacts().NewContact(
         "label_only_contact",
         ot::identifier::Nym::Factory(),
-        client_a.Factory().PaymentCode(std::string{}));
+        client_a.Factory().PaymentCode(ot::UnallocatedCString{}));
 
     auto sendpayment = command.mutable_sendpayment();
 
@@ -536,7 +534,7 @@ TEST_F(Test_Rpc_Async, Send_Payment_Cheque)
 
     auto& contacts = client_a.Contacts();
     const auto contact = contacts.NewContact(
-        std::string(TEST_NYM_5),
+        ot::UnallocatedCString(TEST_NYM_5),
         receiver_nym_id_,
         client_a.Factory().PaymentCode(nym5->PaymentCode()));
 
@@ -602,7 +600,7 @@ TEST_F(Test_Rpc_Async, Get_Pending_Payments)
     future1.get();
     future2.get();
     const auto& workflow = client_b.Workflow();
-    std::set<OTIdentifier> workflows;
+    ot::UnallocatedSet<OTIdentifier> workflows;
     auto end = std::time(nullptr) + 60;
     do {
         workflows = workflow.List(
@@ -772,7 +770,7 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
         ot_.ClientSession(static_cast<int>(get_index(sender_session_)));
 
     const auto& workflow = client_a.Workflow();
-    std::set<OTIdentifier> workflows;
+    ot::UnallocatedSet<OTIdentifier> workflows;
     auto end = std::time(nullptr) + 60;
     do {
         workflows = workflow.List(
@@ -839,7 +837,7 @@ TEST_F(Test_Rpc_Async, Get_Account_Activity)
     client_b.OTX().ContextIdle(receiver_nym_id_, server_id_).get();
 
     const auto& receiverworkflow = client_b.Workflow();
-    std::set<OTIdentifier> receiverworkflows;
+    ot::UnallocatedSet<OTIdentifier> receiverworkflows;
     end = std::time(nullptr) + 60;
     do {
         receiverworkflows = receiverworkflow.List(
@@ -915,7 +913,7 @@ TEST_F(Test_Rpc_Async, Accept_2_Pending_Payments)
 
     auto& contacts = client_a.Contacts();
     const auto contact = contacts.NewContact(
-        std::string(TEST_NYM_5),
+        ot::UnallocatedCString(TEST_NYM_5),
         receiver_nym_id_,
         client_a.Factory().PaymentCode(nym5->PaymentCode()));
 
@@ -1011,7 +1009,7 @@ TEST_F(Test_Rpc_Async, Accept_2_Pending_Payments)
     future1.get();
     future2.get();
     const auto& workflow = client_b.Workflow();
-    std::set<OTIdentifier> workflows;
+    ot::UnallocatedSet<OTIdentifier> workflows;
     auto end = std::time(nullptr) + 60;
 
     do {

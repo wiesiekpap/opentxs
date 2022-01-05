@@ -117,7 +117,7 @@ public:
         return crypto::key::asymmetric::Algorithm::Null;
     }
     auto Params() const noexcept -> ReadView final { return {}; }
-    auto Path() const noexcept -> const std::string final { return {}; }
+    auto Path() const noexcept -> const UnallocatedCString final { return {}; }
     auto Path(proto::HDPath&) const noexcept -> bool final { return false; }
     auto PrivateKey(const PasswordPrompt&) const noexcept -> ReadView final
     {
@@ -242,11 +242,11 @@ public:
     auto Depth() const noexcept -> int final { return {}; }
     auto Fingerprint() const noexcept -> Bip32Fingerprint final { return {}; }
     auto Parent() const noexcept -> Bip32Fingerprint final { return {}; }
-    auto Xprv(const PasswordPrompt&) const noexcept -> std::string final
+    auto Xprv(const PasswordPrompt&) const noexcept -> UnallocatedCString final
     {
         return {};
     }
-    auto Xpub(const PasswordPrompt&) const noexcept -> std::string final
+    auto Xpub(const PasswordPrompt&) const noexcept -> UnallocatedCString final
     {
         return {};
     }

@@ -8,9 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 #include <mutex>
-#include <string>
 #include <tuple>
 
 #include "internal/blockchain/p2p/bitcoin/Bitcoin.hpp"
@@ -24,6 +22,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs

@@ -9,9 +9,7 @@
 
 #include <cstdint>
 #include <memory>
-#include <set>
 #include <stdexcept>
-#include <string>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
@@ -30,6 +28,7 @@
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/credential/Contact.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Claim.pb.h"
@@ -93,9 +92,9 @@ namespace opentxs::identity::credential
 // static
 auto Contact::ClaimID(
     const api::Session& api,
-    const std::string& nymid,
+    const UnallocatedCString& nymid,
     const std::uint32_t section,
-    const proto::ContactItem& item) -> std::string
+    const proto::ContactItem& item) -> UnallocatedCString
 {
     proto::Claim preimage;
     preimage.set_version(1);
@@ -113,13 +112,13 @@ auto Contact::ClaimID(
 // static
 auto Contact::ClaimID(
     const api::Session& api,
-    const std::string& nymid,
+    const UnallocatedCString& nymid,
     const wot::claim::SectionType section,
     const wot::claim::ClaimType type,
     const std::int64_t start,
     const std::int64_t end,
-    const std::string& value,
-    const std::string& subtype) -> std::string
+    const UnallocatedCString& value,
+    const UnallocatedCString& subtype) -> UnallocatedCString
 {
     proto::Claim preimage;
     preimage.set_version(1);
@@ -148,7 +147,7 @@ auto Contact::asClaim(
     const std::uint32_t section,
     const proto::ContactItem& item) -> Claim
 {
-    std::set<std::uint32_t> attributes;
+    UnallocatedSet<std::uint32_t> attributes;
 
     for (auto& attrib : item.attribute()) { attributes.insert(attrib); }
 

@@ -10,8 +10,6 @@
 #include <chrono>
 #include <cstdint>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/otx/Types.hpp"
@@ -35,6 +33,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -495,7 +494,7 @@ void OTPayment::lowLevelSetTempValuesFromSmartContract(
     // inside OTScriptable! This way I can see exactly which opening number came
     // first, and I can use that for the display transaction num.
 
-    const std::vector<std::int64_t>& openingNumsInOrderOfSigning =
+    const UnallocatedVector<std::int64_t>& openingNumsInOrderOfSigning =
         theInput.openingNumsInOrderOfSigning();
 
     m_lTransNumDisplay = openingNumsInOrderOfSigning.size() > 0
@@ -1921,7 +1920,7 @@ void OTPayment::UpdateContents(const PasswordPrompt& reason)
         }
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());

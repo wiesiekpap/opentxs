@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <string>
-
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Enums.pb.h"
 
 namespace opentxs
@@ -25,140 +24,140 @@ namespace proto
 auto CheckProto_1(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_2(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_3(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_4(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_5(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_6(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_7(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_8(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_9(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_10(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_11(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_12(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_13(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_14(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_15(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_16(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_17(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_18(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_19(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;
 auto CheckProto_20(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode = AUTHORITYMODE_ERROR) -> bool;

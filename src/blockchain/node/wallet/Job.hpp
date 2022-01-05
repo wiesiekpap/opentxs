@@ -8,11 +8,11 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
-#include <string>
 
 #include "internal/api/network/Asio.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

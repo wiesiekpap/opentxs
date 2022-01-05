@@ -7,10 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/core/ui/ListRow.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -30,7 +29,7 @@ namespace ui
 class OPENTXS_EXPORT BlockchainSelectionItem : virtual public ListRow
 {
 public:
-    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> UnallocatedCString = 0;
     virtual auto IsEnabled() const noexcept -> bool = 0;
     virtual auto IsTestnet() const noexcept -> bool = 0;
     virtual auto Type() const noexcept -> blockchain::Type = 0;

@@ -7,14 +7,13 @@
 
 #include <zmq.h>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "internal/network/zeromq/Types.hpp"
 #include "internal/network/zeromq/socket/Raw.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -103,7 +102,7 @@ public:
 
 private:
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
-    using Endpoints = std::set<std::string>;
+    using Endpoints = UnallocatedSet<UnallocatedCString>;
 
     const socket::Type type_;
     Socket socket_;

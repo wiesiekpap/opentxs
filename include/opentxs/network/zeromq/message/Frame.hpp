@@ -9,10 +9,10 @@
 
 #include <cstring>  // IWYU pragma: keep
 #include <functional>
-#include <string>
 #include <type_traits>
 
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 struct zmq_msg_t;
 
@@ -60,7 +60,7 @@ public:
     auto as() const noexcept(false) -> Output
     {
         if (sizeof(Output) != size()) {
-            auto error = std::string{"Invalid frame size: "} +
+            auto error = UnallocatedCString{"Invalid frame size: "} +
                          std::to_string(size()) +
                          " expected: " + std::to_string(sizeof(Output));
 

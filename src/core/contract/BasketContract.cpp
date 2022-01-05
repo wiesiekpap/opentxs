@@ -8,10 +8,8 @@
 #include "core/contract/BasketContract.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -23,6 +21,7 @@
 #include "opentxs/core/contract/BasketContract.hpp"
 #include "opentxs/core/contract/UnitDefinition.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BasketItem.pb.h"
 #include "serialization/protobuf/BasketParams.pb.h"
@@ -37,8 +36,8 @@ namespace opentxs
 auto Factory::BasketContract(
     const api::Session& api,
     const Nym_p& nym,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const std::uint64_t weight,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
@@ -153,8 +152,8 @@ namespace opentxs::contract::unit::implementation
 Basket::Basket(
     const api::Session& api,
     const Nym_p& nym,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const std::uint64_t weight,
     const core::UnitType unitOfAccount,
     const VersionNumber version,
@@ -217,7 +216,7 @@ auto Basket::IDVersion(const Lock& lock) const -> SerializedType
     basket->set_version(1);
     basket->set_weight(weight_);
 
-    // determinism here depends on the defined ordering of std::map
+    // determinism here depends on the defined ordering of UnallocatedMap
     for (auto& item : subcontracts_) {
         auto serialized = basket->add_item();
         serialized->set_version(1);

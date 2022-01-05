@@ -11,11 +11,11 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "internal/api/network/Asio.hpp"
 #include "network/asio/Socket.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::asio
 {

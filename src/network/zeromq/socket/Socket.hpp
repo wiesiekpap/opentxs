@@ -11,12 +11,8 @@
 #include <chrono>
 #include <cstddef>
 #include <functional>
-#include <map>
 #include <mutex>
 #include <queue>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "internal/network/zeromq/socket/Socket.hpp"
 #include "internal/util/Flag.hpp"
@@ -25,6 +21,7 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -77,8 +74,10 @@ public:
         const std::chrono::milliseconds& linger,
         const std::chrono::milliseconds& send,
         const std::chrono::milliseconds& receive) const noexcept -> bool final;
-    auto Start(const std::string& endpoint) const noexcept -> bool override;
-    auto StartAsync(const std::string& endpoint) const noexcept -> void final;
+    auto Start(const UnallocatedCString& endpoint) const noexcept
+        -> bool override;
+    auto StartAsync(const UnallocatedCString& endpoint) const noexcept
+        -> void final;
 
     auto get() -> Socket& { return *this; }
 
@@ -87,11 +86,11 @@ public:
 protected:
     struct Endpoints {
         std::mutex lock_{};
-        std::queue<std::string> queue_{};
+        std::queue<UnallocatedCString> queue_{};
 
-        auto pop() noexcept -> std::vector<std::string>
+        auto pop() noexcept -> UnallocatedVector<UnallocatedCString>
         {
-            auto output = std::vector<std::string>{};
+            auto output = UnallocatedVector<UnallocatedCString>{};
 
             Lock lock{lock_};
             output.reserve(queue_.size());
@@ -113,23 +112,25 @@ protected:
     mutable std::atomic<int> send_timeout_;
     mutable std::atomic<int> receive_timeout_;
     mutable std::mutex endpoint_lock_;
-    mutable std::set<std::string> endpoints_;
+    mutable UnallocatedSet<UnallocatedCString> endpoints_;
     mutable OTFlag running_;
     mutable Endpoints endpoint_queue_;
 
-    auto add_endpoint(const std::string& endpoint) const noexcept -> void;
+    auto add_endpoint(const UnallocatedCString& endpoint) const noexcept
+        -> void;
     auto apply_timeouts(const Lock& lock) const noexcept -> bool;
-    auto bind(const Lock& lock, const std::string& endpoint) const noexcept
-        -> bool;
-    auto connect(const Lock& lock, const std::string& endpoint) const noexcept
-        -> bool;
+    auto bind(const Lock& lock, const UnallocatedCString& endpoint)
+        const noexcept -> bool;
+    auto connect(const Lock& lock, const UnallocatedCString& endpoint)
+        const noexcept -> bool;
     auto receive_message(const Lock& lock, zeromq::Message& message)
         const noexcept -> bool;
     auto send_message(const Lock& lock, zeromq::Message&& message)
         const noexcept -> bool;
-    auto set_socks_proxy(const std::string& proxy) const noexcept -> bool;
-    auto start(const Lock& lock, const std::string& endpoint) const noexcept
+    auto set_socks_proxy(const UnallocatedCString& proxy) const noexcept
         -> bool;
+    auto start(const Lock& lock, const UnallocatedCString& endpoint)
+        const noexcept -> bool;
 
     virtual void init() noexcept {}
     virtual void shutdown(const Lock& lock) noexcept;

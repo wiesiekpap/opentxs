@@ -10,8 +10,6 @@
 #include <boost/cstdint.hpp>
 #include <cstdint>
 #include <exception>
-#include <map>
-#include <string>
 
 #include "core/Amount.hpp"
 #include "internal/api/session/Client.hpp"
@@ -32,39 +30,41 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/UnitDefinition.pb.h"
 
-auto VerifyStringVal(const std::string& nValue) -> bool
+namespace opentxs
+{
+auto VerifyStringVal(const UnallocatedCString& nValue) -> bool
 {
     return 0 < nValue.length();
 }
 
-namespace opentxs
-{
-const std::map<OTAPI_Func_Type, std::string> OTAPI_Func::type_name_{
-    {NO_FUNC, "NO_FUNC"},
-    {DELETE_NYM, "DELETE_NYM"},
-    {ISSUE_BASKET, "ISSUE_BASKET"},
-    {DELETE_ASSET_ACCT, "DELETE_ASSET_ACCT"},
-    {ACTIVATE_SMART_CONTRACT, "ACTIVATE_SMART_CONTRACT"},
-    {TRIGGER_CLAUSE, "TRIGGER_CLAUSE"},
-    {EXCHANGE_BASKET, "EXCHANGE_BASKET"},
-    {WITHDRAW_VOUCHER, "WITHDRAW_VOUCHER"},
-    {PAY_DIVIDEND, "PAY_DIVIDEND"},
-    {GET_MARKET_LIST, "GET_MARKET_LIST"},
-    {CREATE_MARKET_OFFER, "CREATE_MARKET_OFFER"},
-    {KILL_MARKET_OFFER, "KILL_MARKET_OFFER"},
-    {KILL_PAYMENT_PLAN, "KILL_PAYMENT_PLAN"},
-    {DEPOSIT_PAYMENT_PLAN, "DEPOSIT_PAYMENT_PLAN"},
-    {GET_NYM_MARKET_OFFERS, "GET_NYM_MARKET_OFFERS"},
-    {GET_MARKET_OFFERS, "GET_MARKET_OFFERS"},
-    {GET_MARKET_RECENT_TRADES, "GET_MARKET_RECENT_TRADES"},
-    {ADJUST_USAGE_CREDITS, "ADJUST_USAGE_CREDITS"},
-};
+const UnallocatedMap<OTAPI_Func_Type, UnallocatedCString>
+    OTAPI_Func::type_name_{
+        {NO_FUNC, "NO_FUNC"},
+        {DELETE_NYM, "DELETE_NYM"},
+        {ISSUE_BASKET, "ISSUE_BASKET"},
+        {DELETE_ASSET_ACCT, "DELETE_ASSET_ACCT"},
+        {ACTIVATE_SMART_CONTRACT, "ACTIVATE_SMART_CONTRACT"},
+        {TRIGGER_CLAUSE, "TRIGGER_CLAUSE"},
+        {EXCHANGE_BASKET, "EXCHANGE_BASKET"},
+        {WITHDRAW_VOUCHER, "WITHDRAW_VOUCHER"},
+        {PAY_DIVIDEND, "PAY_DIVIDEND"},
+        {GET_MARKET_LIST, "GET_MARKET_LIST"},
+        {CREATE_MARKET_OFFER, "CREATE_MARKET_OFFER"},
+        {KILL_MARKET_OFFER, "KILL_MARKET_OFFER"},
+        {KILL_PAYMENT_PLAN, "KILL_PAYMENT_PLAN"},
+        {DEPOSIT_PAYMENT_PLAN, "DEPOSIT_PAYMENT_PLAN"},
+        {GET_NYM_MARKET_OFFERS, "GET_NYM_MARKET_OFFERS"},
+        {GET_MARKET_OFFERS, "GET_MARKET_OFFERS"},
+        {GET_MARKET_RECENT_TRADES, "GET_MARKET_RECENT_TRADES"},
+        {ADJUST_USAGE_CREDITS, "ADJUST_USAGE_CREDITS"},
+    };
 
-const std::map<OTAPI_Func_Type, bool> OTAPI_Func::type_type_{
+const UnallocatedMap<OTAPI_Func_Type, bool> OTAPI_Func::type_type_{
     {DELETE_NYM, false},
     {ISSUE_BASKET, false},
     {DELETE_ASSET_ACCT, false},
@@ -175,7 +175,7 @@ OTAPI_Func::OTAPI_Func(
     const identifier::Nym& nymID,
     const identifier::Notary& serverID,
     const proto::UnitDefinition& unitDefinition,
-    const std::string& label)
+    const UnallocatedCString& label)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
     switch (theType) {
@@ -229,8 +229,8 @@ OTAPI_Func::OTAPI_Func(
     std::unique_ptr<OTPaymentPlan>& paymentPlan)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
-    std::string strError =
-        "Warning: Empty std::string passed to OTAPI_Func.OTAPI_Func() as: ";
+    UnallocatedCString strError = "Warning: Empty UnallocatedCString passed to "
+                                  "OTAPI_Func.OTAPI_Func() as: ";
 
     switch (theType) {
         case DEPOSIT_PAYMENT_PLAN: {
@@ -298,12 +298,12 @@ OTAPI_Func::OTAPI_Func(
     const identifier::Nym& nymID,
     const identifier::Notary& serverID,
     const TransactionNumber& transactionNumber,
-    const std::string& clause,
-    const std::string& parameter)
+    const UnallocatedCString& clause,
+    const UnallocatedCString& parameter)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
-    std::string strError =
-        "Warning: Empty std::string passed to OTAPI_Func.OTAPI_Func() as: ";
+    UnallocatedCString strError = "Warning: Empty UnallocatedCString passed to "
+                                  "OTAPI_Func.OTAPI_Func() as: ";
 
     if (!VerifyStringVal(clause)) {
         LogError()(OT_PRETTY_CLASS())("clause.").Flush();
@@ -336,12 +336,12 @@ OTAPI_Func::OTAPI_Func(
     const identifier::Nym& nymID,
     const identifier::Notary& serverID,
     const Identifier& accountID,
-    const std::string& agentName,
+    const UnallocatedCString& agentName,
     std::unique_ptr<OTSmartContract>& contract)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
-    std::string strError =
-        "Warning: Empty std::string passed to OTAPI_Func.OTAPI_Func() as: ";
+    UnallocatedCString strError = "Warning: Empty UnallocatedCString passed to "
+                                  "OTAPI_Func.OTAPI_Func() as: ";
 
     if (!VerifyStringVal(agentName)) {
         LogError()(OT_PRETTY_CLASS())("agentName.").Flush();
@@ -381,7 +381,7 @@ OTAPI_Func::OTAPI_Func(
     const identifier::Nym& nymID2,
     const Identifier& targetID,
     const Amount& amount,
-    const std::string& message)
+    const UnallocatedCString& message)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
     amount_ = amount;
@@ -449,7 +449,7 @@ OTAPI_Func::OTAPI_Func(
     const bool selling,
     const Time lifetime,
     const Amount& activationPrice,
-    const std::string& stopSign)
+    const UnallocatedCString& stopSign)
     : OTAPI_Func(reason, apilock, api, nymID, serverID, theType)
 {
     if (VerifyStringVal(stopSign)) { stopSign_ = stopSign; }
@@ -476,7 +476,7 @@ OTAPI_Func::OTAPI_Func(
     }
 }
 
-auto OTAPI_Func::Run(const std::size_t) -> std::string
+auto OTAPI_Func::Run(const std::size_t) -> UnallocatedCString
 {
     LogConsole()(OT_PRETTY_CLASS())("Not implemented").Flush();
 

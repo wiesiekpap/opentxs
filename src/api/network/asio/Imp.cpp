@@ -27,12 +27,10 @@
 #include <functional>
 #include <future>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <thread>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "api/network/asio/Acceptors.hpp"
 #include "core/StateMachine.hpp"
@@ -53,6 +51,7 @@
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -75,7 +74,7 @@ using Type = opentxs::network::asio::Endpoint::Type;
 
 namespace opentxs::api::network
 {
-const std::vector<Asio::Imp::Site> Asio::Imp::sites{
+const UnallocatedVector<Asio::Imp::Site> Asio::Imp::sites{
     {
         "ip4only.me",
         "http",
@@ -124,7 +123,7 @@ Asio::Imp::Imp(const zmq::Context& zmq) noexcept
     , lock_()
     , io_context_()
     , thread_pools_([] {
-        auto out = std::map<ThreadPool, asio::Context>{};
+        auto out = UnallocatedMap<ThreadPool, asio::Context>{};
         out[ThreadPool::General];
         out[ThreadPool::Storage];
         out[ThreadPool::Blockchain];
@@ -290,7 +289,7 @@ auto Asio::Imp::load_root_certificates(
     boost::system::error_code& ec) noexcept -> void
 {
     // This is the root certificate for seeip.org.
-    static const std::string cert =
+    static const UnallocatedCString cert =
         "# ISRG Root X1\n"
         "-----BEGIN CERTIFICATE-----\n"
         "MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\n"
@@ -568,10 +567,10 @@ auto Asio::Imp::retrieve_address_async(
 
     auto response_string = response.body();
 
-    std::string address_string{};
+    UnallocatedCString address_string{};
     switch (site.response_type) {
         case ResponseType::IPvonly: {
-            auto parts = std::vector<std::string>{};
+            auto parts = UnallocatedVector<UnallocatedCString>{};
             algo::split(parts, response_string, algo::is_any_of(","));
 
             if (parts.size() > 1) { address_string = parts[1]; }
@@ -792,10 +791,10 @@ auto Asio::Imp::retrieve_address_async_ssl(
 
     auto response_string = response.body();
 
-    std::string address_string{};
+    UnallocatedCString address_string{};
     switch (site.response_type) {
         case ResponseType::IPvonly: {
-            auto parts = std::vector<std::string>{};
+            auto parts = UnallocatedVector<UnallocatedCString>{};
             algo::split(parts, response_string, algo::is_any_of(","));
 
             if (parts.size() > 1) { address_string = parts[1]; }
@@ -890,11 +889,11 @@ auto Asio::Imp::state_machine() noexcept -> bool
         ipv6_future_ = ipv6_promise_.get_future();
     }
 
-    auto promises4 = std::vector<std::promise<OTData>>{};
-    auto futures4 = std::vector<std::future<OTData>>{};
+    auto promises4 = UnallocatedVector<std::promise<OTData>>{};
+    auto futures4 = UnallocatedVector<std::future<OTData>>{};
 
-    auto promises6 = std::vector<std::promise<OTData>>{};
-    auto futures6 = std::vector<std::future<OTData>>{};
+    auto promises6 = UnallocatedVector<std::promise<OTData>>{};
+    auto futures6 = UnallocatedVector<std::future<OTData>>{};
 
     for (const auto& site : sites) {
         if (IPversion::IPV4 == site.protocol) {

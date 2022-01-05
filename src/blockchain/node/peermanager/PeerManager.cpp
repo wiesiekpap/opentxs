@@ -48,8 +48,8 @@ auto BlockchainPeerManager(
     const blockchain::node::internal::PeerDatabase& database,
     const blockchain::Type type,
     const blockchain::database::BlockStorage policy,
-    const std::string& seednode,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& seednode,
+    const UnallocatedCString& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::PeerManager>
 {
     using ReturnType = blockchain::node::implementation::PeerManager;
@@ -83,8 +83,8 @@ PeerManager::PeerManager(
     const internal::PeerDatabase& database,
     const Type chain,
     const database::BlockStorage policy,
-    const std::string& seednode,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& seednode,
+    const UnallocatedCString& shutdown) noexcept
     : internal::PeerManager()
     , Worker(api, std::chrono::milliseconds(100))
     , node_(node)
@@ -398,7 +398,7 @@ auto PeerManager::RequestBlock(const block::Hash& block) const noexcept -> bool
 }
 
 auto PeerManager::RequestBlocks(
-    const std::vector<ReadView>& hashes) const noexcept -> bool
+    const UnallocatedVector<ReadView>& hashes) const noexcept -> bool
 {
     if (false == running_.load()) { return false; }
 
@@ -455,7 +455,7 @@ auto PeerManager::state_machine() noexcept -> bool
     return peers_.Run();
 }
 
-auto PeerManager::VerifyPeer(const int id, const std::string& address)
+auto PeerManager::VerifyPeer(const int id, const UnallocatedCString& address)
     const noexcept -> void
 {
     {

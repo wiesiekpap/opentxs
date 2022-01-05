@@ -16,7 +16,7 @@ Blockchain::Blockchain(
     const api::session::Activity&,
     const api::session::Contacts& contacts,
     const api::Legacy&,
-    const std::string&,
+    const UnallocatedCString&,
     const Options& args) noexcept
     : imp_(std::make_unique<Imp>(api, contacts, *this))
 {

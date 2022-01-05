@@ -8,13 +8,13 @@
 #include "core/ui/accountlist/BlockchainAccountListItem.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 
 #include "core/ui/base/Widget.hpp"
 #include "internal/core/Core.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
 {
@@ -47,7 +47,7 @@ BlockchainAccountListItem::BlockchainAccountListItem(
     , contract_(UnitID(api_, chain_).str())
     , notary_(sortKey.second)
     , balance_(extract_custom<Amount>(custom, 1))
-    , name_(extract_custom<std::string>(custom, 3))
+    , name_(extract_custom<UnallocatedCString>(custom, 3))
 {
 }
 
@@ -58,7 +58,7 @@ auto BlockchainAccountListItem::Balance() const noexcept -> Amount
     return balance_;
 }
 
-auto BlockchainAccountListItem::Name() const noexcept -> std::string
+auto BlockchainAccountListItem::Name() const noexcept -> UnallocatedCString
 {
     Lock lock{lock_};
 
@@ -72,7 +72,7 @@ auto BlockchainAccountListItem::reindex(
     const auto blockchain = extract_custom<bool>(custom, 0);
     const auto balance = extract_custom<Amount>(custom, 1);
     const auto chain = extract_custom<blockchain::Type>(custom, 2);
-    const auto name = extract_custom<std::string>(custom, 3);
+    const auto name = extract_custom<UnallocatedCString>(custom, 3);
 
     OT_ASSERT(blockchain);
     OT_ASSERT(chain_ == chain);

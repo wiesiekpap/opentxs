@@ -36,9 +36,9 @@ struct ListAccounts final : public Base::Imp {
         const request::ListAccounts* parent,
         VersionNumber version,
         Base::SessionIndex session,
-        const std::string& filterNym,
-        const std::string& filterNotary,
-        const std::string& filterUnit,
+        const UnallocatedCString& filterNym,
+        const UnallocatedCString& filterNotary,
+        const UnallocatedCString& filterUnit,
         const Base::AssociateNyms& nyms) noexcept(false)
         : Imp(parent,
               CommandType::list_accounts,
@@ -74,9 +74,9 @@ namespace opentxs::rpc::request
 {
 ListAccounts::ListAccounts(
     SessionIndex session,
-    const std::string& filterNym,
-    const std::string& filterNotary,
-    const std::string& filterUnit,
+    const UnallocatedCString& filterNym,
+    const UnallocatedCString& filterNotary,
+    const UnallocatedCString& filterUnit,
     const AssociateNyms& nyms)
     : Base(std::make_unique<implementation::ListAccounts>(
           this,
@@ -101,17 +101,17 @@ ListAccounts::ListAccounts() noexcept
 
 auto ListAccounts::DefaultVersion() noexcept -> VersionNumber { return 3u; }
 
-auto ListAccounts::FilterNotary() const noexcept -> const std::string&
+auto ListAccounts::FilterNotary() const noexcept -> const UnallocatedCString&
 {
     return imp_->notary_;
 }
 
-auto ListAccounts::FilterNym() const noexcept -> const std::string&
+auto ListAccounts::FilterNym() const noexcept -> const UnallocatedCString&
 {
     return imp_->owner_;
 }
 
-auto ListAccounts::FilterUnit() const noexcept -> const std::string&
+auto ListAccounts::FilterUnit() const noexcept -> const UnallocatedCString&
 {
     return imp_->unit_;
 }

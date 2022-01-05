@@ -10,11 +10,8 @@
 #include <atomic>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -42,6 +39,7 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
@@ -90,51 +88,52 @@ namespace opentxs::ui::implementation
 class BlockchainAccountActivity final : public AccountActivity
 {
 public:
-    auto ContractID() const noexcept -> std::string final
+    auto ContractID() const noexcept -> UnallocatedCString final
     {
         return opentxs::blockchain::UnitID(Widget::api_, chain_).str();
     }
     using AccountActivity::DepositAddress;
-    auto DepositAddress() const noexcept -> std::string final
+    auto DepositAddress() const noexcept -> UnallocatedCString final
     {
         return DepositAddress(chain_);
     }
     auto DepositAddress(const blockchain::Type) const noexcept
-        -> std::string final;
-    auto DepositChains() const noexcept -> std::vector<blockchain::Type> final
+        -> UnallocatedCString final;
+    auto DepositChains() const noexcept
+        -> UnallocatedVector<blockchain::Type> final
     {
         return {chain_};
     }
-    auto DisplayUnit() const noexcept -> std::string final
+    auto DisplayUnit() const noexcept -> UnallocatedCString final
     {
         return blockchain::internal::Ticker(chain_);
     }
-    auto Name() const noexcept -> std::string final
+    auto Name() const noexcept -> UnallocatedCString final
     {
         return opentxs::blockchain::AccountName(chain_);
     }
-    auto NotaryID() const noexcept -> std::string final
+    auto NotaryID() const noexcept -> UnallocatedCString final
     {
         return opentxs::blockchain::NotaryID(Widget::api_, chain_).str();
     }
-    auto NotaryName() const noexcept -> std::string final
+    auto NotaryName() const noexcept -> UnallocatedCString final
     {
         return blockchain::DisplayString(chain_);
     }
     using AccountActivity::Send;
     auto Send(
-        const std::string& address,
+        const UnallocatedCString& address,
         const Amount& amount,
-        const std::string& memo) const noexcept -> bool final;
+        const UnallocatedCString& memo) const noexcept -> bool final;
     auto Send(
-        const std::string& address,
-        const std::string& amount,
-        const std::string& memo,
+        const UnallocatedCString& address,
+        const UnallocatedCString& amount,
+        const UnallocatedCString& memo,
         Scale scale) const noexcept -> bool final;
     auto Send(
-        const std::string& address,
-        const std::string& amount,
-        const std::string& memo,
+        const UnallocatedCString& address,
+        const UnallocatedCString& amount,
+        const UnallocatedCString& memo,
         Scale scale,
         SendMonitor::Callback cb) const noexcept -> int final;
     auto SyncPercentage() const noexcept -> double final
@@ -149,9 +148,10 @@ public:
     {
         return BlockchainToUnit(chain_);
     }
-    auto ValidateAddress(const std::string& text) const noexcept -> bool final;
-    auto ValidateAmount(const std::string& text) const noexcept
-        -> std::string final;
+    auto ValidateAddress(const UnallocatedCString& text) const noexcept
+        -> bool final;
+    auto ValidateAmount(const UnallocatedCString& text) const noexcept
+        -> UnallocatedCString final;
 
     BlockchainAccountActivity(
         const api::session::Client& api,
@@ -217,7 +217,7 @@ private:
     blockchain::block::Height height_;
 
     auto display_balance(opentxs::Amount value) const noexcept
-        -> std::string final;
+        -> UnallocatedCString final;
 
     auto load_thread() noexcept -> void;
     auto pipeline(const Message& in) noexcept -> void final;

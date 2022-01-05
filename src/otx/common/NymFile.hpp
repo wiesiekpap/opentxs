@@ -7,11 +7,7 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <deque>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "internal/core/Core.hpp"
 #include "internal/util/Lockable.hpp"
@@ -20,6 +16,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -43,8 +40,8 @@ class PasswordPrompt;
 
 namespace opentxs::implementation
 {
-using dequeOfMail = std::deque<std::shared_ptr<Message>>;
-using mapOfIdentifiers = std::map<std::string, OTIdentifier>;
+using dequeOfMail = UnallocatedDeque<std::shared_ptr<Message>>;
+using mapOfIdentifiers = UnallocatedMap<UnallocatedCString, OTIdentifier>;
 
 class NymFile final : public opentxs::internal::NymFile, Lockable
 {
@@ -52,10 +49,10 @@ public:
     auto CompareID(const identifier::Nym& rhs) const -> bool final;
     void DisplayStatistics(opentxs::String& strOutput) const final;
     auto GetInboxHash(
-        const std::string& acct_id,
+        const UnallocatedCString& acct_id,
         opentxs::Identifier& theOutput) const -> bool final;  // client-side
     auto GetOutboxHash(
-        const std::string& acct_id,
+        const UnallocatedCString& acct_id,
         opentxs::Identifier& theOutput) const -> bool final;  // client-side
     auto GetOutpaymentsByIndex(const std::int32_t nIndex) const
         -> std::shared_ptr<Message> final;
@@ -76,14 +73,14 @@ public:
     {
         return target_nym_->ID();
     }
-    auto PaymentCode() const -> std::string final
+    auto PaymentCode() const -> UnallocatedCString final
     {
         return target_nym_->PaymentCode();
     }
     auto SerializeNymFile(opentxs::String& output) const -> bool final;
 
     void AddOutpayments(std::shared_ptr<Message> theMessage) final;
-    auto GetSetAssetAccounts() -> std::set<std::string>& final
+    auto GetSetAssetAccounts() -> UnallocatedSet<UnallocatedCString>& final
     {
         sLock lock(shared_lock_);
 
@@ -95,10 +92,10 @@ public:
         const PasswordPrompt& reason) -> bool final;
     auto SaveSignedNymFile(const identity::Nym& SIGNER_NYM) -> bool;
     auto SetInboxHash(
-        const std::string& acct_id,
+        const UnallocatedCString& acct_id,
         const opentxs::Identifier& theInput) -> bool final;  // client-side
     auto SetOutboxHash(
-        const std::string& acct_id,
+        const UnallocatedCString& acct_id,
         const opentxs::Identifier& theInput) -> bool final;  // client-side
     void SetUsageCredits(const std::int64_t& lUsage) final
     {
@@ -135,11 +132,11 @@ private:
     // (SERVER side)
     // A list of asset account IDs. Server side only (client side uses wallet;
     // has multiple servers.)
-    std::set<std::string> m_setAccounts;
+    UnallocatedSet<UnallocatedCString> m_setAccounts;
 
     auto GetHash(
         const mapOfIdentifiers& the_map,
-        const std::string& str_id,
+        const UnallocatedCString& str_id,
         opentxs::Identifier& theOutput) const -> bool;
 
     void ClearAll();
@@ -172,7 +169,7 @@ private:
         -> bool;
     auto SetHash(
         mapOfIdentifiers& the_map,
-        const std::string& str_id,
+        const UnallocatedCString& str_id,
         const opentxs::Identifier& theInput) -> bool;
 
     NymFile(const api::Session& api, Nym_p targetNym, Nym_p signerNym);

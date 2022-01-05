@@ -51,7 +51,7 @@ public:
         const HeaderOracle& header,
         const internal::Network& node,
         const blockchain::Type chain,
-        const std::string& shutdown) noexcept
+        const UnallocatedCString& shutdown) noexcept
         : BlockDMBlock(
               [&] { return db.BlockTip(); }(),
               [&] {

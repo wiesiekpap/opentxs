@@ -10,7 +10,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <string>
 
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
@@ -40,6 +39,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -311,7 +311,7 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
         tagInitial->add_attribute(
             "date", formatTimestamp(GetInitialPaymentDate()));
         tagInitial->add_attribute("amount", [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             GetInitialPaymentAmount().Serialize(writer(buf));
             return buf;
         }());
@@ -336,7 +336,7 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
         TagPtr tagPlan(new Tag("paymentPlan"));
 
         tagPlan->add_attribute("amountPerPayment", [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             GetPaymentPlanAmount().Serialize(writer(buf));
             return buf;
         }());
@@ -373,7 +373,7 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
         tag.add_tag("merchantSignedCopy", ascTemp->Get());
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());

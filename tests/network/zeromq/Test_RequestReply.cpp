@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <ctime>
-#include <string>
 #include <string_view>
 #include <thread>
 #include <utility>
@@ -25,7 +24,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -39,15 +38,17 @@ class Test_RequestReply : public ::testing::Test
 public:
     const zmq::Context& context_;
 
-    const std::string testMessage_{"zeromq test message"};
-    const std::string testMessage2_{"zeromq test message 2"};
-    const std::string testMessage3_{"zeromq test message 3"};
+    const ot::UnallocatedCString testMessage_{"zeromq test message"};
+    const ot::UnallocatedCString testMessage2_{"zeromq test message 2"};
+    const ot::UnallocatedCString testMessage3_{"zeromq test message 3"};
 
-    const std::string endpoint_{"inproc://opentxs/test/request_reply_test"};
-    const std::string endpoint2_{"inproc://opentxs/test/request_reply_test2"};
+    const ot::UnallocatedCString endpoint_{
+        "inproc://opentxs/test/request_reply_test"};
+    const ot::UnallocatedCString endpoint2_{
+        "inproc://opentxs/test/request_reply_test2"};
 
-    void requestSocketThread(const std::string& msg);
-    void replySocketThread(const std::string& endpoint);
+    void requestSocketThread(const ot::UnallocatedCString& msg);
+    void replySocketThread(const ot::UnallocatedCString& endpoint);
 
     Test_RequestReply()
         : context_(ot::Context().ZMQ())
@@ -55,7 +56,7 @@ public:
     }
 };
 
-void Test_RequestReply::requestSocketThread(const std::string& msg)
+void Test_RequestReply::requestSocketThread(const ot::UnallocatedCString& msg)
 {
     auto requestSocket = context_.RequestSocket();
 
@@ -77,18 +78,21 @@ void Test_RequestReply::requestSocketThread(const std::string& msg)
 
     ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
 
-    const auto messageString = std::string{message.Body().begin()->Bytes()};
+    const auto messageString =
+        ot::UnallocatedCString{message.Body().begin()->Bytes()};
     ASSERT_EQ(msg, messageString);
 }
 
-void Test_RequestReply::replySocketThread(const std::string& endpoint)
+void Test_RequestReply::replySocketThread(
+    const ot::UnallocatedCString& endpoint)
 {
     bool replyReturned{false};
 
     auto replyCallback = zmq::ReplyCallback::Factory(
         [this,
          &replyReturned](zmq::Message&& input) -> ot::network::zeromq::Message {
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage2_ || inputString == testMessage3_;
             EXPECT_TRUE(match);
@@ -125,7 +129,8 @@ TEST_F(Test_RequestReply, Request_Reply)
 {
     auto replyCallback = zmq::ReplyCallback::Factory(
         [this](zmq::Message&& input) -> ot::network::zeromq::Message {
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
             EXPECT_EQ(testMessage_, inputString);
 
             auto reply = ot::network::zeromq::reply_to_message(input);
@@ -167,7 +172,8 @@ TEST_F(Test_RequestReply, Request_Reply)
 
     ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
 
-    const auto messageString = std::string{message.Body().begin()->Bytes()};
+    const auto messageString =
+        ot::UnallocatedCString{message.Body().begin()->Bytes()};
     ASSERT_EQ(testMessage_, messageString);
 }
 
@@ -175,7 +181,8 @@ TEST_F(Test_RequestReply, Request_2_Reply_1)
 {
     auto replyCallback = zmq::ReplyCallback::Factory(
         [this](zmq::Message&& input) -> ot::network::zeromq::Message {
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage2_ || inputString == testMessage3_;
             EXPECT_TRUE(match);
@@ -236,7 +243,8 @@ TEST_F(Test_RequestReply, Request_1_Reply_2)
 
     ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
 
-    auto messageString = std::string{message.Body().begin()->Bytes()};
+    auto messageString =
+        ot::UnallocatedCString{message.Body().begin()->Bytes()};
     ASSERT_EQ(testMessage2_, messageString);
 
     auto [result2, message2] = requestSocket->Send([&] {
@@ -264,11 +272,11 @@ TEST_F(Test_RequestReply, Request_Reply_Multipart)
             EXPECT_EQ(2, input.Body().size());
 
             for (const auto& frame : input.Header()) {
-                EXPECT_EQ(testMessage_, std::string{frame.Bytes()});
+                EXPECT_EQ(testMessage_, ot::UnallocatedCString{frame.Bytes()});
             }
 
             for (const auto& frame : input.Body()) {
-                const auto str = std::string{frame.Bytes()};
+                const auto str = ot::UnallocatedCString{frame.Bytes()};
                 bool match = (str == testMessage2_) || (str == testMessage3_);
 
                 EXPECT_TRUE(match);
@@ -314,7 +322,8 @@ TEST_F(Test_RequestReply, Request_Reply_Multipart)
 
     ASSERT_EQ(result, ot::SendResult::VALID_REPLY);
 
-    const auto messageHeader = std::string{message.Header().begin()->Bytes()};
+    const auto messageHeader =
+        ot::UnallocatedCString{message.Header().begin()->Bytes()};
 
     ASSERT_EQ(testMessage_, messageHeader);
 

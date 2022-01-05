@@ -13,6 +13,6 @@ auto license_trezor(LicenseMap& out) noexcept -> void
 {
     out.emplace(
         "ripemd160 and pbkdf2 (via Trezor)",
-        std::string{R"~!~(@TREZOR_LICENSE_TEXT@)~!~"});
+        UnallocatedCString{R"~!~(@TREZOR_LICENSE_TEXT@)~!~"});
 }
 }  // namespace opentxs

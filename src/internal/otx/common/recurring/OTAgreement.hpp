@@ -9,7 +9,6 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <deque>
 
 #include "internal/otx/Types.hpp"
 #include "internal/otx/common/Account.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -112,7 +112,7 @@ protected:
     void onRemovalFromCron(const PasswordPrompt& reason) override;
 
     // Numbers used for CLOSING a transaction. (finalReceipt.)
-    std::deque<TransactionNumber> m_dequeRecipientClosingNumbers;
+    UnallocatedDeque<TransactionNumber> m_dequeRecipientClosingNumbers;
 
 public:
     auto GetOriginType() const -> originType override
@@ -318,7 +318,7 @@ public:
      inline const Time& GetCreationDate() const { return m_CREATION_DATE; }
 
      // These are for:
-     // std::deque<std::int64_t> m_dequeClosingNumbers;
+     // UnallocatedDeque<std::int64_t> m_dequeClosingNumbers;
      //
      // They are numbers used for CLOSING a transaction. (finalReceipt, someday
      more.)

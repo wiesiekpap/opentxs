@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <tuple>
 #include <utility>
 
@@ -18,6 +17,7 @@
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/PeerRequest.pb.h"
 #include "serialization/protobuf/StorageItemHash.pb.h"
@@ -29,7 +29,9 @@ namespace opentxs
 {
 namespace storage
 {
-PeerRequests::PeerRequests(const Driver& storage, const std::string& hash)
+PeerRequests::PeerRequests(
+    const Driver& storage,
+    const UnallocatedCString& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {
@@ -39,12 +41,12 @@ PeerRequests::PeerRequests(const Driver& storage, const std::string& hash)
     }
 }
 
-auto PeerRequests::Delete(const std::string& id) -> bool
+auto PeerRequests::Delete(const UnallocatedCString& id) -> bool
 {
     return delete_item(id);
 }
 
-void PeerRequests::init(const std::string& hash)
+void PeerRequests::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageNymList> serialized;
     driver_.LoadProto(hash, serialized);
@@ -64,9 +66,9 @@ void PeerRequests::init(const std::string& hash)
 }
 
 auto PeerRequests::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::PeerRequest>& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     return load_proto<proto::PeerRequest>(id, output, alias, checking);
@@ -105,15 +107,16 @@ auto PeerRequests::serialize() const -> proto::StorageNymList
     return serialized;
 }
 
-auto PeerRequests::SetAlias(const std::string& id, const std::string& alias)
-    -> bool
+auto PeerRequests::SetAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) -> bool
 {
     return set_alias(id, alias);
 }
 
 auto PeerRequests::Store(
     const proto::PeerRequest& data,
-    const std::string& alias) -> bool
+    const UnallocatedCString& alias) -> bool
 {
     return store_proto(data, data.id(), alias);
 }

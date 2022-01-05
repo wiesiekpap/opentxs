@@ -11,9 +11,7 @@
 #include <cstddef>
 #include <iosfwd>
 #include <iterator>
-#include <map>
 #include <mutex>
-#include <set>
 #include <sstream>
 #include <string_view>
 #include <utility>
@@ -48,6 +46,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Sender.hpp"  // IWYU pragma: keep
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -63,7 +62,7 @@ BlockchainImp::BlockchainImp(
     const api::session::Activity& activity,
     const api::session::Contacts& contacts,
     const api::Legacy& legacy,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const Options& args,
     api::crypto::Blockchain& parent) noexcept
     : Imp(api, contacts, parent)
@@ -111,7 +110,7 @@ BlockchainImp::BlockchainImp(
 auto BlockchainImp::ActivityDescription(
     const identifier::Nym& nym,
     const Identifier& thread,
-    const std::string& itemID) const noexcept -> std::string
+    const UnallocatedCString& itemID) const noexcept -> UnallocatedCString
 {
     auto data = proto::StorageThread{};
 
@@ -152,13 +151,13 @@ auto BlockchainImp::ActivityDescription(
     const identifier::Nym& nym,
     const opentxs::blockchain::Type chain,
     const opentxs::blockchain::block::bitcoin::Transaction& tx) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     auto output = std::stringstream{};
     const auto amount = tx.NetBalanceChange(nym);
     const auto memo = tx.Memo();
     const auto names = [&] {
-        auto out = std::set<std::string>{};
+        auto out = UnallocatedSet<UnallocatedCString>{};
         const auto contacts = tx.AssociatedRemoteContacts(contacts_, nym);
 
         for (const auto& id : contacts) {
@@ -209,7 +208,7 @@ auto BlockchainImp::ActivityDescription(
 
 auto BlockchainImp::AssignTransactionMemo(
     const TxidHex& id,
-    const std::string& label) const noexcept -> bool
+    const UnallocatedCString& label) const noexcept -> bool
 {
     auto lock = Lock{lock_};
     auto pTransaction = load_transaction(lock, id);
@@ -238,7 +237,7 @@ auto BlockchainImp::AssignTransactionMemo(
 }
 
 auto BlockchainImp::broadcast_update_signal(
-    const std::vector<pTxid>& transactions) const noexcept -> void
+    const UnallocatedVector<pTxid>& transactions) const noexcept -> void
 {
     const auto& db = api_.Network().Blockchain().Internal().Database();
     std::for_each(
@@ -284,7 +283,7 @@ auto BlockchainImp::IndexItem(const ReadView bytes) const noexcept -> PatternID
     return output;
 }
 
-auto BlockchainImp::KeyEndpoint() const noexcept -> const std::string&
+auto BlockchainImp::KeyEndpoint() const noexcept -> const UnallocatedCString&
 {
     return key_generated_endpoint_;
 }
@@ -515,17 +514,17 @@ auto BlockchainImp::UpdateBalance(
     balances_.UpdateBalance(owner, chain, balance);
 }
 
-auto BlockchainImp::UpdateElement(std::vector<ReadView>& hashes) const noexcept
-    -> void
+auto BlockchainImp::UpdateElement(
+    UnallocatedVector<ReadView>& hashes) const noexcept -> void
 {
-    auto patterns = std::vector<PatternID>{};
+    auto patterns = UnallocatedVector<PatternID>{};
     std::for_each(std::begin(hashes), std::end(hashes), [&](const auto& bytes) {
         patterns.emplace_back(IndexItem(bytes));
     });
     LogTrace()(OT_PRETTY_CLASS())(patterns.size())(
         " pubkey hashes have changed:")
         .Flush();
-    auto transactions = std::vector<pTxid>{};
+    auto transactions = UnallocatedVector<pTxid>{};
     std::for_each(
         std::begin(patterns), std::end(patterns), [&](const auto& pattern) {
             LogTrace()("    * ")(pattern).Flush();

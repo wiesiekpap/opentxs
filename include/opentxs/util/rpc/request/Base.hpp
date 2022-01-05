@@ -10,11 +10,10 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/rpc/Types.hpp"
 
@@ -53,7 +52,7 @@ class OPENTXS_EXPORT Base
 {
 public:
     using SessionIndex = int;
-    using Identifiers = std::vector<std::string>;
+    using Identifiers = UnallocatedVector<UnallocatedCString>;
     using AssociateNyms = Identifiers;
 
     struct Imp;
@@ -65,7 +64,7 @@ public:
     auto asSendPayment() const noexcept -> const SendPayment&;
 
     auto AssociatedNyms() const noexcept -> const AssociateNyms&;
-    auto Cookie() const noexcept -> const std::string&;
+    auto Cookie() const noexcept -> const UnallocatedCString&;
     auto Serialize(AllocateOutput dest) const noexcept -> bool;
     OPENTXS_NO_EXPORT auto Serialize(proto::RPCCommand& dest) const noexcept
         -> bool;

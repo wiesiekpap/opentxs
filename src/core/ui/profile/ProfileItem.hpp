@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "core/ui/base/Row.hpp"
@@ -15,6 +14,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/ui/ProfileItem.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -57,7 +57,7 @@ using ProfileItemRow =
 class ProfileItem final : public ProfileItemRow
 {
 public:
-    auto ClaimID() const noexcept -> std::string final
+    auto ClaimID() const noexcept -> UnallocatedCString final
     {
         sLock lock(shared_lock_);
 
@@ -78,8 +78,8 @@ public:
     }
     auto SetActive(const bool& active) const noexcept -> bool final;
     auto SetPrimary(const bool& primary) const noexcept -> bool final;
-    auto SetValue(const std::string& value) const noexcept -> bool final;
-    auto Value() const noexcept -> std::string final
+    auto SetValue(const UnallocatedCString& value) const noexcept -> bool final;
+    auto Value() const noexcept -> UnallocatedCString final
     {
         sLock lock(shared_lock_);
 

@@ -12,6 +12,6 @@ namespace opentxs
 auto license_protobuf(LicenseMap& out) noexcept -> void
 {
     out.emplace(
-        "Protocol Buffers", std::string{R"~!~(@PROTOBUF_LICENSE_TEXT@)~!~"});
+        "Protocol Buffers", UnallocatedCString{R"~!~(@PROTOBUF_LICENSE_TEXT@)~!~"});
 }
 }  // namespace opentxs

@@ -20,7 +20,7 @@ PasswordCaller::PasswordCaller()
 void PasswordCaller::AskOnce(
     const PasswordPrompt& prompt,
     Secret& output,
-    const std::string& key)
+    const UnallocatedCString& key)
 {
     OT_ASSERT(callback_);
 
@@ -30,7 +30,7 @@ void PasswordCaller::AskOnce(
 void PasswordCaller::AskTwice(
     const PasswordPrompt& prompt,
     Secret& output,
-    const std::string& key)
+    const UnallocatedCString& key)
 {
     OT_ASSERT(callback_);
 

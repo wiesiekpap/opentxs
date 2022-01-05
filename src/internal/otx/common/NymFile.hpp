@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <set>
-
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -32,10 +31,10 @@ public:
         -> bool = 0;
     virtual void DisplayStatistics(String& strOutput) const = 0;
     virtual auto GetInboxHash(
-        const std::string& acct_id,
+        const UnallocatedCString& acct_id,
         Identifier& theOutput) const -> bool = 0;  // client-side
     virtual auto GetOutboxHash(
-        const std::string& acct_id,
+        const UnallocatedCString& acct_id,
         Identifier& theOutput) const -> bool = 0;  // client-side
     virtual auto GetOutpaymentsByIndex(const std::int32_t nIndex) const
         -> std::shared_ptr<Message> = 0;
@@ -48,7 +47,7 @@ public:
     virtual auto GetOutpaymentsCount() const -> std::int32_t = 0;
     virtual auto GetUsageCredits() const -> const std::int64_t& = 0;
     virtual auto ID() const -> const identifier::Nym& = 0;
-    virtual auto PaymentCode() const -> std::string = 0;
+    virtual auto PaymentCode() const -> UnallocatedCString = 0;
     virtual auto SerializeNymFile(String& output) const -> bool = 0;
 
     // Whenever a Nym sends a payment, a copy is dropped std::into his
@@ -61,17 +60,18 @@ public:
     // deposit will have a transNum, but the purse itself does NOT.
     // That's okay in your outpayments box since it's like an outmail
     // box. It's not a ledger, so the items inside don't need a txn#.
-    virtual auto GetSetAssetAccounts() -> std::set<std::string>& = 0;
+    virtual auto GetSetAssetAccounts()
+        -> UnallocatedSet<UnallocatedCString>& = 0;
     virtual auto RemoveOutpaymentsByIndex(const std::int32_t nIndex)
         -> bool = 0;
     virtual auto RemoveOutpaymentsByTransNum(
         const std::int64_t lTransNum,
         const PasswordPrompt& reason) -> bool = 0;
     virtual auto SetInboxHash(
-        const std::string& acct_id,
+        const UnallocatedCString& acct_id,
         const Identifier& theInput) -> bool = 0;  // client-side
     virtual auto SetOutboxHash(
-        const std::string& acct_id,
+        const UnallocatedCString& acct_id,
         const Identifier& theInput) -> bool = 0;  // client-side
     virtual void SetUsageCredits(const std::int64_t& lUsage) = 0;
 

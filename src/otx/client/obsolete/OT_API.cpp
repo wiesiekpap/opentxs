@@ -10,10 +10,8 @@
 #include <cstdlib>
 #include <iterator>
 #include <limits>
-#include <list>
 #include <memory>
 #include <ratio>
-#include <string>
 #include <tuple>
 
 #include "internal/api/Legacy.hpp"
@@ -66,6 +64,7 @@
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -118,7 +117,7 @@ auto VerifyBalanceReceipt(
         return false;
     }
 
-    std::string strFileContents(OTDB::QueryPlainString(
+    UnallocatedCString strFileContents(OTDB::QueryPlainString(
         api,
         context.LegacyDataFolder(),
         szFolder1name,
@@ -546,7 +545,7 @@ auto OT_API::SmartContract_AddParty(
             .Flush();
         return false;
     }
-    const std::string str_party_name(PARTY_NAME.Get()),
+    const UnallocatedCString str_party_name(PARTY_NAME.Get()),
         str_agent_name(AGENT_NAME.Get());
 
     OTParty* party = contract->GetParty(str_party_name);
@@ -639,7 +638,7 @@ auto OT_API::SmartContract_RemoveParty(
             .Flush();
         return false;
     }
-    const std::string str_party_name(PARTY_NAME.Get());
+    const UnallocatedCString str_party_name(PARTY_NAME.Get());
 
     if (contract->RemoveParty(str_party_name)) {
         // Success!
@@ -685,7 +684,7 @@ auto OT_API::SmartContract_AddAccount(
             .Flush();
         return false;
     }
-    const std::string str_party_name(PARTY_NAME.Get());
+    const UnallocatedCString str_party_name(PARTY_NAME.Get());
 
     OTParty* party = contract->GetParty(str_party_name);
 
@@ -695,7 +694,7 @@ auto OT_API::SmartContract_AddAccount(
             .Flush();
         return false;
     }
-    const std::string str_name(ACCT_NAME.Get()),
+    const UnallocatedCString str_name(ACCT_NAME.Get()),
         str_instrument_definition_id(INSTRUMENT_DEFINITION_ID.Get());
 
     if (nullptr != party->GetAccount(str_name)) {
@@ -794,7 +793,7 @@ auto OT_API::SmartContract_RemoveAccount(
             .Flush();
         return false;
     }
-    const std::string str_party_name(PARTY_NAME.Get());
+    const UnallocatedCString str_party_name(PARTY_NAME.Get());
 
     OTParty* party = contract->GetParty(str_party_name);
 
@@ -803,7 +802,7 @@ auto OT_API::SmartContract_RemoveAccount(
         return false;
     }
 
-    const std::string str_name(ACCT_NAME.Get());
+    const UnallocatedCString str_name(ACCT_NAME.Get());
 
     if (party->RemoveAccount(str_name)) {
         // Success!
@@ -829,7 +828,7 @@ auto OT_API::SmartContract_CountNumsNeeded(
     auto reason = api_.Factory().PasswordPrompt(__func__);
 
     std::int32_t nReturnValue = 0;
-    const std::string str_agent_name(AGENT_NAME.Get());
+    const UnallocatedCString str_agent_name(AGENT_NAME.Get());
     auto contract{api_.Factory().InternalSession().Scriptable(THE_CONTRACT)};
 
     if (false == bool(contract)) {
@@ -888,7 +887,7 @@ auto OT_API::SmartContract_ConfirmAccount(
             .Flush();
         return false;
     }
-    const std::string str_party_name(PARTY_NAME.Get());
+    const UnallocatedCString str_party_name(PARTY_NAME.Get());
     OTParty* party = contract->GetParty(str_party_name);
     if (nullptr == party) {
         LogError()(OT_PRETTY_CLASS())("Failure: Party doesn't exist: ")(
@@ -910,7 +909,7 @@ auto OT_API::SmartContract_ConfirmAccount(
     }
     // Find the account template based on its name, to affix the acct ID to.
     //
-    const std::string str_name(ACCT_NAME.Get());
+    const UnallocatedCString str_name(ACCT_NAME.Get());
 
     OTPartyAccount* partyAcct = party->GetAccount(str_name);
     if (nullptr == partyAcct)  // It's not already there. (Though it should
@@ -1082,7 +1081,7 @@ auto OT_API::SmartContract_ConfirmParty(
             .Flush();
         return false;
     }
-    const std::string str_party_name(PARTY_NAME.Get());
+    const UnallocatedCString str_party_name(PARTY_NAME.Get());
 
     OTParty* party = contract->GetParty(str_party_name);
 
@@ -1095,7 +1094,7 @@ auto OT_API::SmartContract_ConfirmParty(
 
     if (contract->arePartiesSpecified()) {
         bool bSuccessID = false;
-        const std::string partyNymID = party->GetNymID(&bSuccessID);
+        const UnallocatedCString partyNymID = party->GetNymID(&bSuccessID);
 
         if (bSuccessID && !partyNymID.empty()) {
             auto strPartyNymID = String::Factory(partyNymID);
@@ -1203,7 +1202,7 @@ auto OT_API::SmartContract_AddBylaw(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get()),
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get()),
         str_language(BYLAW_LANGUAGE);
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
@@ -1263,7 +1262,7 @@ auto OT_API::SmartContract_RemoveBylaw(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     if (contract->RemoveBylaw(str_bylaw_name)) {
         // Success!
@@ -1311,7 +1310,7 @@ auto OT_API::SmartContract_AddHook(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
 
@@ -1321,7 +1320,8 @@ auto OT_API::SmartContract_AddHook(
             .Flush();
         return false;
     }
-    const std::string str_name(HOOK_NAME.Get()), str_clause(CLAUSE_NAME.Get());
+    const UnallocatedCString str_name(HOOK_NAME.Get()),
+        str_clause(CLAUSE_NAME.Get());
 
     if (!pBylaw->AddHook(str_name, str_clause)) {
         LogError()(OT_PRETTY_CLASS())("Failed trying to add "
@@ -1372,7 +1372,7 @@ auto OT_API::SmartContract_RemoveHook(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
 
@@ -1383,7 +1383,8 @@ auto OT_API::SmartContract_RemoveHook(
         return false;
     }
 
-    const std::string str_name(HOOK_NAME.Get()), str_clause(CLAUSE_NAME.Get());
+    const UnallocatedCString str_name(HOOK_NAME.Get()),
+        str_clause(CLAUSE_NAME.Get());
 
     if (pBylaw->RemoveHook(str_name, str_clause)) {
         // Success!
@@ -1429,7 +1430,7 @@ auto OT_API::SmartContract_AddCallback(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
 
@@ -1439,7 +1440,7 @@ auto OT_API::SmartContract_AddCallback(
             .Flush();
         return false;
     }
-    const std::string str_name(CALLBACK_NAME.Get()),
+    const UnallocatedCString str_name(CALLBACK_NAME.Get()),
         str_clause(CLAUSE_NAME.Get());
 
     if (nullptr != pBylaw->GetCallback(str_name)) {
@@ -1493,7 +1494,7 @@ auto OT_API::SmartContract_RemoveCallback(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
 
@@ -1503,7 +1504,7 @@ auto OT_API::SmartContract_RemoveCallback(
             .Flush();
         return false;
     }
-    const std::string str_name(CALLBACK_NAME.Get());
+    const UnallocatedCString str_name(CALLBACK_NAME.Get());
 
     if (pBylaw->RemoveCallback(str_name)) {
         // Success!
@@ -1547,7 +1548,7 @@ auto OT_API::SmartContract_AddClause(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
 
@@ -1558,7 +1559,8 @@ auto OT_API::SmartContract_AddClause(
             .Flush();
         return false;
     }
-    const std::string str_name(CLAUSE_NAME.Get()), str_code(SOURCE_CODE.Get());
+    const UnallocatedCString str_name(CLAUSE_NAME.Get()),
+        str_code(SOURCE_CODE.Get());
 
     if (nullptr != pBylaw->GetClause(str_name)) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1615,7 +1617,7 @@ auto OT_API::SmartContract_UpdateClause(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
 
@@ -1626,7 +1628,8 @@ auto OT_API::SmartContract_UpdateClause(
             .Flush();
         return false;
     }
-    const std::string str_name(CLAUSE_NAME.Get()), str_code(SOURCE_CODE.Get());
+    const UnallocatedCString str_name(CLAUSE_NAME.Get()),
+        str_code(SOURCE_CODE.Get());
 
     if (pBylaw->UpdateClause(str_name, str_code)) {
         // Success!
@@ -1669,7 +1672,7 @@ auto OT_API::SmartContract_RemoveClause(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
 
@@ -1680,7 +1683,7 @@ auto OT_API::SmartContract_RemoveClause(
             .Flush();
         return false;
     }
-    const std::string str_name(CLAUSE_NAME.Get());
+    const UnallocatedCString str_name(CLAUSE_NAME.Get());
 
     if (pBylaw->RemoveClause(str_name)) {
         // Success!
@@ -1731,7 +1734,7 @@ auto OT_API::SmartContract_AddVariable(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
 
@@ -1741,8 +1744,9 @@ auto OT_API::SmartContract_AddVariable(
             .Flush();
         return false;
     }
-    const std::string str_name(VAR_NAME.Get()), str_access(VAR_ACCESS.Get()),
-        str_type(VAR_TYPE.Get()), str_value(VAR_VALUE.Get());
+    const UnallocatedCString str_name(VAR_NAME.Get()),
+        str_access(VAR_ACCESS.Get()), str_type(VAR_TYPE.Get()),
+        str_value(VAR_VALUE.Get());
 
     if (nullptr != pBylaw->GetVariable(str_name)) {
         LogError()(OT_PRETTY_CLASS())("Failure: "
@@ -1839,7 +1843,7 @@ auto OT_API::SmartContract_RemoveVariable(
             .Flush();
         return false;
     }
-    const std::string str_bylaw_name(BYLAW_NAME.Get());
+    const UnallocatedCString str_bylaw_name(BYLAW_NAME.Get());
 
     OTBylaw* pBylaw = contract->GetBylaw(str_bylaw_name);
 
@@ -1849,7 +1853,7 @@ auto OT_API::SmartContract_RemoveVariable(
             .Flush();
         return false;
     }
-    const std::string str_name(VAR_NAME.Get());
+    const UnallocatedCString str_name(VAR_NAME.Get());
 
     if (pBylaw->RemoveVariable(str_name)) {
         // Success!
@@ -2482,7 +2486,7 @@ auto OT_API::AddBasketCreationItem(
 auto OT_API::issueBasket(
     otx::context::Server& context,
     const proto::UnitDefinition& basket,
-    const std::string& label) const -> CommandResult
+    const UnallocatedCString& label) const -> CommandResult
 {
     rLock lock(
         lock_callback_({context.Nym()->ID().str(), context.Notary().str()}));
@@ -2899,7 +2903,7 @@ auto OT_API::exchangeBasket(
         return output;
     }
 
-    std::set<OTManagedNumber> managed{};
+    UnallocatedSet<OTManagedNumber> managed{};
     managed.emplace(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
     auto& managedNumber = *managed.rbegin();
@@ -3157,7 +3161,7 @@ auto OT_API::payDividend(
         return output;
     }
 
-    std::set<OTManagedNumber> managed{};
+    UnallocatedSet<OTManagedNumber> managed{};
     managed.insert(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
     auto& managedNumber = *managed.rbegin();
@@ -4096,7 +4100,7 @@ auto OT_API::cancelCronItem(
         return output;
     }
 
-    std::set<OTManagedNumber> managed{};
+    UnallocatedSet<OTManagedNumber> managed{};
     managed.insert(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
     auto& managedNumber = *managed.rbegin();
@@ -4262,7 +4266,7 @@ auto OT_API::issueMarketOffer(
         return output;
     }
 
-    std::set<OTManagedNumber> managed{};
+    UnallocatedSet<OTManagedNumber> managed{};
     managed.insert(context.InternalServer().NextTransactionNumber(
         MessageType::notarizeTransaction));
     auto& openingNumber = *managed.rbegin();
@@ -4890,7 +4894,7 @@ auto OT_API::CreateProcessInbox(
     otx::context::Server& context,
     [[maybe_unused]] Ledger& inbox) const -> OT_API::ProcessInboxOnly
 {
-    const std::string account = accountID.str();
+    const UnallocatedCString account = accountID.str();
     const auto& serverID = context.Notary();
     const auto& nym = *context.Nym();
     const auto& nymID = nym.ID();
@@ -5076,8 +5080,8 @@ auto OT_API::FinalizeProcessInbox(
 
     bool allFound{true};
     Amount totalAccepted{0};
-    std::set<TransactionNumber> issuedClosing{};
-    std::set<TransactionNumber> inboxRemoving{};
+    UnallocatedSet<TransactionNumber> issuedClosing{};
+    UnallocatedSet<TransactionNumber> inboxRemoving{};
 
     for (auto& acceptItem : processInbox->GetItemList()) {
         OT_ASSERT(acceptItem);
@@ -5198,7 +5202,7 @@ auto OT_API::find_cron(
     OTTransaction& serverTransaction,
     Ledger& inbox,
     Amount& amount,
-    std::set<TransactionNumber>& closing) const -> bool
+    UnallocatedSet<TransactionNumber>& closing) const -> bool
 {
     const auto type = item.GetType();
 
@@ -5209,7 +5213,7 @@ auto OT_API::find_cron(
             const auto openingNumber = serverTransaction.GetReferenceToNum();
             const auto inboxCount = static_cast<std::size_t>(
                 inbox.GetTransactionCountInRefTo(openingNumber));
-            std::set<TransactionNumber> referenceNumbers;
+            UnallocatedSet<TransactionNumber> referenceNumbers;
 
             for (const auto& acceptItem : processInbox.GetItemList()) {
                 OT_ASSERT(nullptr != acceptItem);
@@ -5270,7 +5274,7 @@ auto OT_API::find_standard(
     OTTransaction& serverTransaction,
     Ledger& inbox,
     Amount& amount,
-    std::set<TransactionNumber>& closing) const -> bool
+    UnallocatedSet<TransactionNumber>& closing) const -> bool
 {
     auto reason = api_.Factory().PasswordPrompt(__func__);
     const auto& notaryID = context.Notary();

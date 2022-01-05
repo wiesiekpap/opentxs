@@ -7,10 +7,9 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -55,9 +54,9 @@ public:
     virtual auto Fingerprint() const noexcept -> Bip32Fingerprint = 0;
     virtual auto Parent() const noexcept -> Bip32Fingerprint = 0;
     virtual auto Xprv(const PasswordPrompt& reason) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto Xpub(const PasswordPrompt& reason) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
 
     ~HD() override = default;
 

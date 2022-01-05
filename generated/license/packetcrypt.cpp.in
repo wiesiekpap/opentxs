@@ -11,6 +11,6 @@ namespace opentxs
 {
 auto license_packetcrypt(LicenseMap& out) noexcept -> void
 {
-    out.emplace("packetcrypt", std::string{text_lgpl_v2_1()});
+    out.emplace("packetcrypt", UnallocatedCString{text_lgpl_v2_1()});
 }
 }  // namespace opentxs

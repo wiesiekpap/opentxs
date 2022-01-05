@@ -8,13 +8,11 @@
 #include <atomic>
 #include <functional>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/wallet/Index.hpp"
 #include "blockchain/node/wallet/SubchainStateData.hpp"
@@ -32,6 +30,7 @@
 #include "opentxs/blockchain/node/FilterOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -109,8 +108,8 @@ public:
     ~DeterministicStateData() final = default;
 
 private:
-    using MatchedTransaction =
-        std::pair<std::vector<Bip32Index>, const block::bitcoin::Transaction*>;
+    using MatchedTransaction = std::
+        pair<UnallocatedVector<Bip32Index>, const block::bitcoin::Transaction*>;
 
     class Index final : public wallet::Index
     {

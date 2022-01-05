@@ -9,10 +9,9 @@
 
 #include <cstdint>
 #include <optional>
-#include <string>
-#include <vector>
 
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -53,11 +52,11 @@ public:
 
     OPENTXS_NO_EXPORT virtual auto Internal() const noexcept
         -> const internal::Output& = 0;
-    virtual auto Note() const noexcept -> std::string = 0;
-    virtual auto Keys() const noexcept -> std::vector<crypto::Key> = 0;
+    virtual auto Note() const noexcept -> UnallocatedCString = 0;
+    virtual auto Keys() const noexcept -> UnallocatedVector<crypto::Key> = 0;
     virtual auto Payee() const noexcept -> ContactID = 0;
     virtual auto Payer() const noexcept -> ContactID = 0;
-    virtual auto Print() const noexcept -> std::string = 0;
+    virtual auto Print() const noexcept -> UnallocatedCString = 0;
     virtual auto Script() const noexcept -> const bitcoin::Script& = 0;
     virtual auto Value() const noexcept -> blockchain::Amount = 0;
 

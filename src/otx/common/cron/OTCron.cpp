@@ -9,9 +9,7 @@
 
 #include <cstdint>
 #include <cstring>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/api/Legacy.hpp"
@@ -34,6 +32,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -229,7 +228,7 @@ auto OTCron::GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount)
         // --------------------------------------------
         const Amount& lScale = pMarket->GetScale();
         pMarketData->scale = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lScale.Serialize(writer(buf));
             return buf;
         }();
@@ -238,12 +237,12 @@ auto OTCron::GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount)
         const Amount theCurrentAsk = pMarket->GetLowestAskPrice();
 
         pMarketData->current_bid = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             theCurrentBid.Serialize(writer(buf));
             return buf;
         }();
         pMarketData->current_ask = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             theCurrentAsk.Serialize(writer(buf));
             return buf;
         }();
@@ -253,12 +252,12 @@ auto OTCron::GetMarketList(Armored& ascOutput, std::int32_t& nMarketCount)
             pMarket->GetTotalAvailableAssets();
 
         pMarketData->total_assets = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lTotalAvailableAssets.Serialize(writer(buf));
             return buf;
         }();
         pMarketData->last_sale_price = [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             lLastSalePrice.Serialize(writer(buf));
             return buf;
         }();
@@ -568,7 +567,7 @@ void OTCron::UpdateContents(const PasswordPrompt& reason)
             "instrumentDefinitionID", str_INSTRUMENT_DEFINITION_ID->Get());
         tagMarket->add_attribute("currencyID", str_CURRENCY_ID->Get());
         tagMarket->add_attribute("marketScale", [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             pMarket->GetScale().Serialize(writer(buf));
             return buf;
         }());
@@ -599,7 +598,7 @@ void OTCron::UpdateContents(const PasswordPrompt& reason)
         tag.add_tag(tagNumber);
     }  // for
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());
@@ -998,7 +997,7 @@ auto OTCron::AddMarket(
 
     auto MARKET_ID = Identifier::Factory(*theMarket);
     auto str_MARKET_ID = String::Factory(MARKET_ID);
-    std::string std_MARKET_ID = str_MARKET_ID->Get();
+    UnallocatedCString std_MARKET_ID = str_MARKET_ID->Get();
 
     // See if there's something else already there with the same market ID.
     auto it = m_mapMarkets.find(std_MARKET_ID);
@@ -1100,7 +1099,7 @@ auto OTCron::GetOrCreateMarket(
 auto OTCron::GetMarket(const Identifier& MARKET_ID) -> std::shared_ptr<OTMarket>
 {
     auto str_MARKET_ID = String::Factory(MARKET_ID);
-    std::string std_MARKET_ID = str_MARKET_ID->Get();
+    UnallocatedCString std_MARKET_ID = str_MARKET_ID->Get();
 
     // See if there's something there with that transaction number.
     auto it = m_mapMarkets.find(std_MARKET_ID);

@@ -8,9 +8,7 @@
 #include "core/ui/profile/ProfileSection.hpp"  // IWYU pragma: associated
 
 #include <algorithm>
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
 #include <thread>
 #include <type_traits>
@@ -28,6 +26,7 @@
 #include "opentxs/identity/wot/claim/Group.hpp"
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 
 template class opentxs::SharedPimpl<opentxs::ui::ProfileSection>;
@@ -50,43 +49,44 @@ auto ProfileSectionWidget(
 
 namespace opentxs::ui
 {
-static const std::
-    map<identity::wot::claim::SectionType, std::set<proto::ContactItemType>>
-        allowed_types_{
-            {identity::wot::claim::SectionType::Communication,
-             {
-                 proto::CITEMTYPE_PHONE,
-                 proto::CITEMTYPE_EMAIL,
-                 proto::CITEMTYPE_SKYPE,
-                 proto::CITEMTYPE_WIRE,
-                 proto::CITEMTYPE_QQ,
-                 proto::CITEMTYPE_BITMESSAGE,
-                 proto::CITEMTYPE_WHATSAPP,
-                 proto::CITEMTYPE_TELEGRAM,
-                 proto::CITEMTYPE_KIK,
-                 proto::CITEMTYPE_BBM,
-                 proto::CITEMTYPE_WECHAT,
-                 proto::CITEMTYPE_KAKAOTALK,
-             }},
-            {identity::wot::claim::SectionType::Profile,
-             {
-                 proto::CITEMTYPE_FACEBOOK,  proto::CITEMTYPE_GOOGLE,
-                 proto::CITEMTYPE_LINKEDIN,  proto::CITEMTYPE_VK,
-                 proto::CITEMTYPE_ABOUTME,   proto::CITEMTYPE_ONENAME,
-                 proto::CITEMTYPE_TWITTER,   proto::CITEMTYPE_MEDIUM,
-                 proto::CITEMTYPE_TUMBLR,    proto::CITEMTYPE_YAHOO,
-                 proto::CITEMTYPE_MYSPACE,   proto::CITEMTYPE_MEETUP,
-                 proto::CITEMTYPE_REDDIT,    proto::CITEMTYPE_HACKERNEWS,
-                 proto::CITEMTYPE_WIKIPEDIA, proto::CITEMTYPE_ANGELLIST,
-                 proto::CITEMTYPE_GITHUB,    proto::CITEMTYPE_BITBUCKET,
-                 proto::CITEMTYPE_YOUTUBE,   proto::CITEMTYPE_VIMEO,
-                 proto::CITEMTYPE_TWITCH,    proto::CITEMTYPE_SNAPCHAT,
-             }},
-        };
-
 static const std::map<
     identity::wot::claim::SectionType,
-    std::map<proto::ContactItemType, int>>
+    UnallocatedSet<proto::ContactItemType>>
+    allowed_types_{
+        {identity::wot::claim::SectionType::Communication,
+         {
+             proto::CITEMTYPE_PHONE,
+             proto::CITEMTYPE_EMAIL,
+             proto::CITEMTYPE_SKYPE,
+             proto::CITEMTYPE_WIRE,
+             proto::CITEMTYPE_QQ,
+             proto::CITEMTYPE_BITMESSAGE,
+             proto::CITEMTYPE_WHATSAPP,
+             proto::CITEMTYPE_TELEGRAM,
+             proto::CITEMTYPE_KIK,
+             proto::CITEMTYPE_BBM,
+             proto::CITEMTYPE_WECHAT,
+             proto::CITEMTYPE_KAKAOTALK,
+         }},
+        {identity::wot::claim::SectionType::Profile,
+         {
+             proto::CITEMTYPE_FACEBOOK,  proto::CITEMTYPE_GOOGLE,
+             proto::CITEMTYPE_LINKEDIN,  proto::CITEMTYPE_VK,
+             proto::CITEMTYPE_ABOUTME,   proto::CITEMTYPE_ONENAME,
+             proto::CITEMTYPE_TWITTER,   proto::CITEMTYPE_MEDIUM,
+             proto::CITEMTYPE_TUMBLR,    proto::CITEMTYPE_YAHOO,
+             proto::CITEMTYPE_MYSPACE,   proto::CITEMTYPE_MEETUP,
+             proto::CITEMTYPE_REDDIT,    proto::CITEMTYPE_HACKERNEWS,
+             proto::CITEMTYPE_WIKIPEDIA, proto::CITEMTYPE_ANGELLIST,
+             proto::CITEMTYPE_GITHUB,    proto::CITEMTYPE_BITBUCKET,
+             proto::CITEMTYPE_YOUTUBE,   proto::CITEMTYPE_VIMEO,
+             proto::CITEMTYPE_TWITCH,    proto::CITEMTYPE_SNAPCHAT,
+         }},
+    };
+
+static const UnallocatedMap<
+    identity::wot::claim::SectionType,
+    UnallocatedMap<proto::ContactItemType, int>>
     sort_keys_{
         {identity::wot::claim::SectionType::Communication,
          {
@@ -132,7 +132,7 @@ static const std::map<
 
 auto ProfileSection::AllowedItems(
     const identity::wot::claim::SectionType section,
-    const std::string& lang) noexcept -> ProfileSection::ItemTypeList
+    const UnallocatedCString& lang) noexcept -> ProfileSection::ItemTypeList
 {
     ItemTypeList output{};
 
@@ -168,7 +168,7 @@ ProfileSection::ProfileSection(
 
 auto ProfileSection::AddClaim(
     const identity::wot::claim::ClaimType type,
-    const std::string& value,
+    const UnallocatedCString& value,
     const bool primary,
     const bool active) const noexcept -> bool
 {
@@ -193,7 +193,7 @@ auto ProfileSection::construct_row(
     return factory::ProfileSubsectionWidget(*this, api_, id, index, custom);
 }
 
-auto ProfileSection::Delete(const int type, const std::string& claimID)
+auto ProfileSection::Delete(const int type, const UnallocatedCString& claimID)
     const noexcept -> bool
 {
     rLock lock{recursive_lock_};
@@ -206,24 +206,25 @@ auto ProfileSection::Delete(const int type, const std::string& claimID)
     return group.Delete(claimID);
 }
 
-auto ProfileSection::Items(const std::string& lang) const noexcept
+auto ProfileSection::Items(const UnallocatedCString& lang) const noexcept
     -> ProfileSection::ItemTypeList
 {
     return AllowedItems(row_id_, lang);
 }
 
-auto ProfileSection::Name(const std::string& lang) const noexcept -> std::string
+auto ProfileSection::Name(const UnallocatedCString& lang) const noexcept
+    -> UnallocatedCString
 {
     return proto::TranslateSectionName(translate(row_id_), lang);
 }
 
 auto ProfileSection::process_section(
     const identity::wot::claim::Section& section) noexcept
-    -> std::set<ProfileSectionRowID>
+    -> UnallocatedSet<ProfileSectionRowID>
 {
     OT_ASSERT(row_id_ == section.Type())
 
-    std::set<ProfileSectionRowID> active{};
+    UnallocatedSet<ProfileSectionRowID> active{};
 
     for (const auto& [type, group] : section) {
         OT_ASSERT(group)
@@ -251,7 +252,7 @@ auto ProfileSection::reindex(const ProfileSortKey&, CustomData& custom) noexcept
 
 auto ProfileSection::SetActive(
     const int type,
-    const std::string& claimID,
+    const UnallocatedCString& claimID,
     const bool active) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
@@ -266,7 +267,7 @@ auto ProfileSection::SetActive(
 
 auto ProfileSection::SetPrimary(
     const int type,
-    const std::string& claimID,
+    const UnallocatedCString& claimID,
     const bool primary) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
@@ -281,8 +282,8 @@ auto ProfileSection::SetPrimary(
 
 auto ProfileSection::SetValue(
     const int type,
-    const std::string& claimID,
-    const std::string& value) const noexcept -> bool
+    const UnallocatedCString& claimID,
+    const UnallocatedCString& value) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
     const ProfileSectionRowID key{

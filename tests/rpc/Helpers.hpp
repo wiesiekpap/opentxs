@@ -13,11 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "integration/Helpers.hpp"
 #include "opentxs/Version.hpp"
@@ -25,6 +21,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -112,12 +109,16 @@ private:
 class RPC_fixture : virtual public ::testing::Test
 {
 protected:
-    using AccountMap = std::map<std::string, std::vector<std::string>>;
+    using AccountMap = ot::UnallocatedMap<
+        ot::UnallocatedCString,
+        ot::UnallocatedVector<ot::UnallocatedCString>>;
     using Amount = ot::Amount;
-    using IssuedUnits = std::vector<std::string>;
-    using LocalNymMap = std::map<int, std::set<std::string>>;
-    using SeedMap = std::map<int, std::set<std::string>>;
-    using UserIndex = std::map<int, User>;
+    using IssuedUnits = ot::UnallocatedVector<ot::UnallocatedCString>;
+    using LocalNymMap =
+        ot::UnallocatedMap<int, ot::UnallocatedSet<ot::UnallocatedCString>>;
+    using SeedMap =
+        ot::UnallocatedMap<int, ot::UnallocatedSet<ot::UnallocatedCString>>;
+    using UserIndex = ot::UnallocatedMap<int, User>;
 
     static SeedMap seed_map_;
     static LocalNymMap local_nym_map_;
@@ -130,97 +131,102 @@ protected:
 
     auto CreateNym(
         const ot::api::session::Client& api,
-        const std::string& name,
-        const std::string& seed,
+        const ot::UnallocatedCString& name,
+        const ot::UnallocatedCString& seed,
         int index) const noexcept -> const User&;
     auto DepositCheques(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
-        const std::string& nym) const noexcept -> std::size_t;
+        const ot::UnallocatedCString& nym) const noexcept -> std::size_t;
     auto DepositCheques(const ot::api::session::Notary& server, const User& nym)
         const noexcept -> std::size_t;
     auto DepositCheques(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const ot::identifier::Nym& nym) const noexcept -> std::size_t;
-    auto ImportBip39(const ot::api::Session& api, const std::string& words)
-        const noexcept -> std::string;
+    auto ImportBip39(
+        const ot::api::Session& api,
+        const ot::UnallocatedCString& words) const noexcept
+        -> ot::UnallocatedCString;
     auto ImportServerContract(
         const ot::api::session::Notary& from,
         const ot::api::session::Client& to) const noexcept -> bool;
     auto InitAccountActivityCounter(
         const ot::api::session::Client& api,
-        const std::string& nym,
-        const std::string& account,
+        const ot::UnallocatedCString& nym,
+        const ot::UnallocatedCString& account,
         Counter& counter) const noexcept -> void;
     auto InitAccountActivityCounter(
         const User& nym,
-        const std::string& account,
+        const ot::UnallocatedCString& account,
         Counter& counter) const noexcept -> void;
     auto InitAccountActivityCounter(
         const ot::api::session::Client& api,
         const ot::identifier::Nym& nym,
-        const std::string& account,
+        const ot::UnallocatedCString& account,
         Counter& counter) const noexcept -> void;
     auto IssueUnit(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
-        const std::string& issuer,
-        const std::string& shortname,
-        const std::string& terms,
+        const ot::UnallocatedCString& issuer,
+        const ot::UnallocatedCString& shortname,
+        const ot::UnallocatedCString& terms,
         ot::core::UnitType unitOfAccount,
         const ot::display::Definition& displayDefinition) const noexcept
-        -> std::string;
+        -> ot::UnallocatedCString;
     auto IssueUnit(
         const ot::api::session::Notary& server,
         const User& issuer,
-        const std::string& shortname,
-        const std::string& terms,
+        const ot::UnallocatedCString& shortname,
+        const ot::UnallocatedCString& terms,
         ot::core::UnitType unitOfAccount,
         const ot::display::Definition& displayDefinition) const noexcept
-        -> std::string;
+        -> ot::UnallocatedCString;
     auto IssueUnit(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const ot::identifier::Nym& issuer,
-        const std::string& shortname,
-        const std::string& terms,
+        const ot::UnallocatedCString& shortname,
+        const ot::UnallocatedCString& terms,
         ot::core::UnitType unitOfAccount,
         const ot::display::Definition& displayDefinition) const noexcept
-        -> std::string;
+        -> ot::UnallocatedCString;
     auto RefreshAccount(
         const ot::api::session::Client& api,
         const ot::identifier::Nym& nym,
         const ot::identifier::Notary& server) const noexcept -> void;
     auto RefreshAccount(
         const ot::api::session::Client& api,
-        const std::vector<std::string> nyms,
+        const ot::UnallocatedVector<ot::UnallocatedCString> nyms,
         const ot::identifier::Notary& server) const noexcept -> void;
     auto RefreshAccount(
         const ot::api::session::Client& api,
-        const std::vector<const User*> nyms,
+        const ot::UnallocatedVector<const User*> nyms,
         const ot::identifier::Notary& server) const noexcept -> void;
     auto RegisterAccount(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
-        const std::string& nym,
-        const std::string& unit,
-        const std::string& label) const noexcept -> std::string;
+        const ot::UnallocatedCString& nym,
+        const ot::UnallocatedCString& unit,
+        const ot::UnallocatedCString& label) const noexcept
+        -> ot::UnallocatedCString;
     auto RegisterAccount(
         const ot::api::session::Notary& server,
         const User& nym,
-        const std::string& unit,
-        const std::string& label) const noexcept -> std::string;
+        const ot::UnallocatedCString& unit,
+        const ot::UnallocatedCString& label) const noexcept
+        -> ot::UnallocatedCString;
     auto RegisterAccount(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const ot::identifier::Nym& nym,
-        const std::string& unit,
-        const std::string& label) const noexcept -> std::string;
+        const ot::UnallocatedCString& unit,
+        const ot::UnallocatedCString& label) const noexcept
+        -> ot::UnallocatedCString;
     auto RegisterNym(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
-        const std::string& nymID) const noexcept -> bool;
+        const ot::UnallocatedCString& nymID) const noexcept -> bool;
     auto RegisterNym(const ot::api::session::Notary& server, const User& nym)
         const noexcept -> bool;
     auto RegisterNym(
@@ -230,48 +236,48 @@ protected:
     auto SendCheque(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
-        const std::string& nym,
-        const std::string& account,
-        const std::string& contact,
-        const std::string& memo,
+        const ot::UnallocatedCString& nym,
+        const ot::UnallocatedCString& account,
+        const ot::UnallocatedCString& contact,
+        const ot::UnallocatedCString& memo,
         Amount amount) const noexcept -> bool;
     auto SendCheque(
         const ot::api::session::Notary& server,
         const User& nym,
-        const std::string& account,
-        const std::string& contact,
-        const std::string& memo,
+        const ot::UnallocatedCString& account,
+        const ot::UnallocatedCString& contact,
+        const ot::UnallocatedCString& memo,
         Amount amount) const noexcept -> bool;
     auto SendCheque(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const ot::identifier::Nym& nym,
-        const std::string& account,
-        const std::string& contact,
-        const std::string& memo,
+        const ot::UnallocatedCString& account,
+        const ot::UnallocatedCString& contact,
+        const ot::UnallocatedCString& memo,
         Amount amount) const noexcept -> bool;
     auto SendTransfer(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
-        const std::string& sender,
-        const std::string& fromAccount,
-        const std::string& toAccount,
-        const std::string& memo,
+        const ot::UnallocatedCString& sender,
+        const ot::UnallocatedCString& fromAccount,
+        const ot::UnallocatedCString& toAccount,
+        const ot::UnallocatedCString& memo,
         Amount amount) const noexcept -> bool;
     auto SendTransfer(
         const ot::api::session::Notary& server,
         const User& sender,
-        const std::string& fromAccount,
-        const std::string& toAccount,
-        const std::string& memo,
+        const ot::UnallocatedCString& fromAccount,
+        const ot::UnallocatedCString& toAccount,
+        const ot::UnallocatedCString& memo,
         Amount amount) const noexcept -> bool;
     auto SendTransfer(
         const ot::api::session::Client& api,
         const ot::api::session::Notary& server,
         const ot::identifier::Nym& sender,
-        const std::string& fromAccount,
-        const std::string& toAccount,
-        const std::string& memo,
+        const ot::UnallocatedCString& fromAccount,
+        const ot::UnallocatedCString& toAccount,
+        const ot::UnallocatedCString& memo,
         Amount amount) const noexcept -> bool;
     auto SetIntroductionServer(
         const ot::api::session::Client& on,

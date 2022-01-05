@@ -17,10 +17,8 @@
 #include <iosfwd>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "core/ui/qt/SendMonitor.hpp"
 #include "opentxs/Types.hpp"
@@ -72,6 +70,7 @@
 #include "opentxs/core/ui/UnitListItem.hpp"
 #include "opentxs/core/ui/Widget.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
@@ -224,7 +223,7 @@ auto claim_ownership(QObject* object) noexcept -> void;
 
 namespace opentxs::ui::implementation
 {
-using CustomData = std::vector<void*>;
+using CustomData = UnallocatedVector<void*>;
 
 template <typename RowID, typename SortKey>
 struct ChildObjectData {
@@ -290,7 +289,7 @@ using AccountListRowInterface = ui::AccountListItem;
 using AccountListRowInternal = ui::internal::AccountListItem;
 using AccountListRowBlank = ui::internal::blank::AccountListItem;
 // type, notary ID
-using AccountListSortKey = std::pair<core::UnitType, std::string>;
+using AccountListSortKey = std::pair<core::UnitType, UnallocatedCString>;
 
 // Account summary
 using AccountSummaryPrimaryID = OTNymID;
@@ -300,7 +299,7 @@ using AccountSummaryRowID = OTNymID;
 using AccountSummaryRowInterface = ui::IssuerItem;
 using AccountSummaryRowInternal = ui::internal::IssuerItem;
 using AccountSummaryRowBlank = ui::internal::blank::IssuerItem;
-using AccountSummarySortKey = std::pair<bool, std::string>;
+using AccountSummarySortKey = std::pair<bool, UnallocatedCString>;
 
 using IssuerItemPrimaryID = OTNymID;
 using IssuerItemExternalInterface = AccountSummaryRowInterface;
@@ -309,7 +308,7 @@ using IssuerItemRowID = std::pair<OTIdentifier, core::UnitType>;
 using IssuerItemRowInterface = ui::AccountSummaryItem;
 using IssuerItemRowInternal = ui::internal::AccountSummaryItem;
 using IssuerItemRowBlank = ui::internal::blank::AccountSummaryItem;
-using IssuerItemSortKey = std::string;
+using IssuerItemSortKey = UnallocatedCString;
 
 // Activity summary
 using ActivitySummaryPrimaryID = OTNymID;
@@ -319,7 +318,7 @@ using ActivitySummaryRowID = OTIdentifier;
 using ActivitySummaryRowInterface = ui::ActivitySummaryItem;
 using ActivitySummaryRowInternal = ui::internal::ActivitySummaryItem;
 using ActivitySummaryRowBlank = ui::internal::blank::ActivitySummaryItem;
-using ActivitySummarySortKey = std::pair<Time, std::string>;
+using ActivitySummarySortKey = std::pair<Time, UnallocatedCString>;
 
 // Activity thread
 using ActivityThreadPrimaryID = OTNymID;
@@ -347,7 +346,7 @@ using BlockchainAccountStatusRowInternal =
 using BlockchainAccountStatusRowBlank =
     ui::internal::blank::BlockchainSubaccountSource;
 using BlockchainAccountStatusSortKey =
-    std::pair<blockchain::crypto::SubaccountType, std::string>;
+    std::pair<blockchain::crypto::SubaccountType, UnallocatedCString>;
 
 using BlockchainSubaccountSourcePrimaryID = BlockchainAccountStatusPrimaryID;
 using BlockchainSubaccountSourceExternalInterface =
@@ -361,7 +360,7 @@ using BlockchainSubaccountSourceRowInternal =
     ui::internal::BlockchainSubaccount;
 using BlockchainSubaccountSourceRowBlank =
     ui::internal::blank::BlockchainSubaccount;
-using BlockchainSubaccountSourceSortKey = std::string;
+using BlockchainSubaccountSourceSortKey = UnallocatedCString;
 using BlockchainSubaccountSourceRowData = ChildObjectData<
     BlockchainSubaccountSourceRowID,
     BlockchainSubaccountSourceSortKey>;
@@ -374,7 +373,7 @@ using BlockchainSubaccountRowID = blockchain::crypto::Subchain;
 using BlockchainSubaccountRowInterface = ui::BlockchainSubchain;
 using BlockchainSubaccountRowInternal = ui::internal::BlockchainSubchain;
 using BlockchainSubaccountRowBlank = ui::internal::blank::BlockchainSubchain;
-using BlockchainSubaccountSortKey = std::string;
+using BlockchainSubaccountSortKey = UnallocatedCString;
 using BlockchainSubaccountRowData =
     ChildObjectData<BlockchainSubaccountRowID, BlockchainSubaccountSortKey>;
 
@@ -387,7 +386,7 @@ using BlockchainSelectionRowInterface = ui::BlockchainSelectionItem;
 using BlockchainSelectionRowInternal = ui::internal::BlockchainSelectionItem;
 using BlockchainSelectionRowBlank =
     ui::internal::blank::BlockchainSelectionItem;
-using BlockchainSelectionSortKey = std::pair<std::string, bool>;
+using BlockchainSelectionSortKey = std::pair<UnallocatedCString, bool>;
 
 // Blockchain statistics
 using BlockchainStatisticsPrimaryID = OTIdentifier;
@@ -399,7 +398,7 @@ using BlockchainStatisticsRowInterface = ui::BlockchainStatisticsItem;
 using BlockchainStatisticsRowInternal = ui::internal::BlockchainStatisticsItem;
 using BlockchainStatisticsRowBlank =
     ui::internal::blank::BlockchainStatisticsItem;
-using BlockchainStatisticsSortKey = std::string;
+using BlockchainStatisticsSortKey = UnallocatedCString;
 
 // Contact
 using ContactPrimaryID = OTIdentifier;
@@ -439,7 +438,7 @@ using ContactListRowInterface = ui::ContactListItem;
 using ContactListRowInternal = ui::internal::ContactListItem;
 using ContactListRowBlank = ui::internal::blank::ContactListItem;
 // Items with the first value set to true will be sorted first
-using ContactListSortKey = std::pair<bool, std::string>;
+using ContactListSortKey = std::pair<bool, UnallocatedCString>;
 
 // Messagable list
 using MessagableListPrimaryID = OTNymID;
@@ -498,7 +497,7 @@ using UnitListRowID = core::UnitType;
 using UnitListRowInterface = ui::UnitListItem;
 using UnitListRowInternal = ui::internal::UnitListItem;
 using UnitListRowBlank = ui::internal::blank::UnitListItem;
-using UnitListSortKey = std::string;
+using UnitListSortKey = UnallocatedCString;
 }  // namespace opentxs::ui::implementation
 
 namespace opentxs::ui::internal
@@ -535,7 +534,7 @@ struct AccountActivity : virtual public List,
                          virtual public ui::AccountActivity {
     struct Callbacks {
         using SyncCallback = std::function<void(int, int, double)>;
-        using BalanceCallback = std::function<void(std::string)>;
+        using BalanceCallback = std::function<void(UnallocatedCString)>;
         using PolarityCallback = std::function<void(int)>;
 
         SyncCallback sync_{};
@@ -553,15 +552,15 @@ struct AccountActivity : virtual public List,
     virtual auto Notary() const noexcept -> const contract::Server& = 0;
     using ui::AccountActivity::Send;
     virtual auto Send(
-        const std::string& address,
-        const std::string& amount,
-        const std::string& memo,
+        const UnallocatedCString& address,
+        const UnallocatedCString& amount,
+        const UnallocatedCString& memo,
         Scale scale,
         implementation::SendMonitor::Callback cb) const noexcept -> int = 0;
     virtual auto Send(
         const Identifier& contact,
-        const std::string& amount,
-        const std::string& memo,
+        const UnallocatedCString& amount,
+        const UnallocatedCString& memo,
         Scale scale,
         implementation::SendMonitor::Callback cb) const noexcept -> int = 0;
     virtual auto SendMonitor() const noexcept
@@ -732,7 +731,7 @@ struct BlockchainSubchain : virtual public Row,
 };
 struct Contact : virtual public List, virtual public ui::Contact {
     struct Callbacks {
-        using Callback = std::function<void(std::string)>;
+        using Callback = std::function<void(UnallocatedCString)>;
 
         Callback name_{};
         Callback payment_code_{};
@@ -774,7 +773,7 @@ struct ContactListItem : virtual public Row,
 struct ContactSection : virtual public List,
                         virtual public Row,
                         virtual public ui::ContactSection {
-    virtual auto ContactID() const noexcept -> std::string = 0;
+    virtual auto ContactID() const noexcept -> UnallocatedCString = 0;
     virtual auto last(const implementation::ContactSectionRowID& id)
         const noexcept -> bool = 0;
 
@@ -827,7 +826,7 @@ struct PayableListItem : virtual public Row,
 };
 struct Profile : virtual public List, virtual public ui::Profile {
     struct Callbacks {
-        using Callback = std::function<void(std::string)>;
+        using Callback = std::function<void(UnallocatedCString)>;
 
         Callback name_{};
         Callback payment_code_{};
@@ -933,14 +932,17 @@ struct List : virtual public ListType, public Row {
 };
 struct AccountListItem final : virtual public Row,
                                virtual public internal::AccountListItem {
-    auto AccountID() const noexcept -> std::string final { return {}; }
+    auto AccountID() const noexcept -> UnallocatedCString final { return {}; }
     auto Balance() const noexcept -> Amount final { return {}; }
-    auto ContractID() const noexcept -> std::string final { return {}; }
-    auto DisplayBalance() const noexcept -> std::string final { return {}; }
-    auto DisplayUnit() const noexcept -> std::string final { return {}; }
-    auto Name() const noexcept -> std::string final { return {}; }
-    auto NotaryID() const noexcept -> std::string final { return {}; }
-    auto NotaryName() const noexcept -> std::string final { return {}; }
+    auto ContractID() const noexcept -> UnallocatedCString final { return {}; }
+    auto DisplayBalance() const noexcept -> UnallocatedCString final
+    {
+        return {};
+    }
+    auto DisplayUnit() const noexcept -> UnallocatedCString final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
+    auto NotaryID() const noexcept -> UnallocatedCString final { return {}; }
+    auto NotaryName() const noexcept -> UnallocatedCString final { return {}; }
     auto Type() const noexcept -> AccountType final { return {}; }
     auto Unit() const noexcept -> core::UnitType final { return {}; }
 
@@ -953,10 +955,13 @@ struct AccountListItem final : virtual public Row,
 };
 struct AccountSummaryItem final : public Row,
                                   public internal::AccountSummaryItem {
-    auto AccountID() const noexcept -> std::string final { return {}; }
+    auto AccountID() const noexcept -> UnallocatedCString final { return {}; }
     auto Balance() const noexcept -> Amount final { return {}; }
-    auto DisplayBalance() const noexcept -> std::string final { return {}; }
-    auto Name() const noexcept -> std::string final { return {}; }
+    auto DisplayBalance() const noexcept -> UnallocatedCString final
+    {
+        return {};
+    }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
 
     auto reindex(
         const implementation::IssuerItemSortKey&,
@@ -968,10 +973,10 @@ struct AccountSummaryItem final : public Row,
 struct ActivitySummaryItem final
     : virtual public Row,
       virtual public internal::ActivitySummaryItem {
-    auto DisplayName() const noexcept -> std::string final { return {}; }
-    auto ImageURI() const noexcept -> std::string final { return {}; }
-    auto Text() const noexcept -> std::string final { return {}; }
-    auto ThreadID() const noexcept -> std::string final { return {}; }
+    auto DisplayName() const noexcept -> UnallocatedCString final { return {}; }
+    auto ImageURI() const noexcept -> UnallocatedCString final { return {}; }
+    auto Text() const noexcept -> UnallocatedCString final { return {}; }
+    auto ThreadID() const noexcept -> UnallocatedCString final { return {}; }
     auto Timestamp() const noexcept -> Time final { return {}; }
     auto Type() const noexcept -> StorageBox final
     {
@@ -989,14 +994,17 @@ struct ActivityThreadItem final : public Row,
                                   public internal::ActivityThreadItem {
     auto Amount() const noexcept -> opentxs::Amount final { return 0; }
     auto Deposit() const noexcept -> bool final { return false; }
-    auto DisplayAmount() const noexcept -> std::string final { return {}; }
-    auto From() const noexcept -> std::string final { return {}; }
+    auto DisplayAmount() const noexcept -> UnallocatedCString final
+    {
+        return {};
+    }
+    auto From() const noexcept -> UnallocatedCString final { return {}; }
     auto Loading() const noexcept -> bool final { return false; }
     auto MarkRead() const noexcept -> bool final { return false; }
-    auto Memo() const noexcept -> std::string final { return {}; }
+    auto Memo() const noexcept -> UnallocatedCString final { return {}; }
     auto Outgoing() const noexcept -> bool final { return false; }
     auto Pending() const noexcept -> bool final { return false; }
-    auto Text() const noexcept -> std::string final { return {}; }
+    auto Text() const noexcept -> UnallocatedCString final { return {}; }
     auto Timestamp() const noexcept -> Time final { return {}; }
     auto Type() const noexcept -> StorageBox final
     {
@@ -1013,20 +1021,24 @@ struct ActivityThreadItem final : public Row,
 struct BalanceItem final : public Row, public internal::BalanceItem {
     auto Amount() const noexcept -> opentxs::Amount final { return {}; }
     auto Confirmations() const noexcept -> int override { return -1; }
-    auto Contacts() const noexcept -> std::vector<std::string> final
+    auto Contacts() const noexcept
+        -> UnallocatedVector<UnallocatedCString> final
     {
         return {};
     }
-    auto DisplayAmount() const noexcept -> std::string final { return {}; }
-    auto Memo() const noexcept -> std::string final { return {}; }
-    auto Workflow() const noexcept -> std::string final { return {}; }
-    auto Text() const noexcept -> std::string final { return {}; }
+    auto DisplayAmount() const noexcept -> UnallocatedCString final
+    {
+        return {};
+    }
+    auto Memo() const noexcept -> UnallocatedCString final { return {}; }
+    auto Workflow() const noexcept -> UnallocatedCString final { return {}; }
+    auto Text() const noexcept -> UnallocatedCString final { return {}; }
     auto Timestamp() const noexcept -> Time final { return {}; }
     auto Type() const noexcept -> StorageBox final
     {
         return StorageBox::UNKNOWN;
     }
-    auto UUID() const noexcept -> std::string final { return {}; }
+    auto UUID() const noexcept -> UnallocatedCString final { return {}; }
 
     auto reindex(
         const implementation::AccountActivitySortKey&,
@@ -1039,7 +1051,7 @@ struct BlockchainSelectionItem final
     : virtual public Row,
       virtual public internal::BlockchainSelectionItem {
 
-    auto Name() const noexcept -> std::string final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto IsEnabled() const noexcept -> bool final { return {}; }
     auto IsTestnet() const noexcept -> bool final { return {}; }
     auto Type() const noexcept -> blockchain::Type final { return {}; }
@@ -1056,13 +1068,13 @@ struct BlockchainStatisticsItem final
       virtual public internal::BlockchainStatisticsItem {
 
     auto ActivePeers() const noexcept -> std::size_t final { return {}; }
-    auto Balance() const noexcept -> std::string final { return {}; }
+    auto Balance() const noexcept -> UnallocatedCString final { return {}; }
     auto BlockDownloadQueue() const noexcept -> std::size_t final { return {}; }
     auto Chain() const noexcept -> blockchain::Type final { return {}; }
     auto ConnectedPeers() const noexcept -> std::size_t final { return {}; }
     auto Filters() const noexcept -> Position final { return {}; }
     auto Headers() const noexcept -> Position final { return {}; }
-    auto Name() const noexcept -> std::string final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
 
     auto reindex(
         const implementation::BlockchainStatisticsSortKey&,
@@ -1076,7 +1088,7 @@ struct BlockchainSubaccount final
           internal::BlockchainSubaccount,
           SharedPimpl<ui::BlockchainSubchain>,
           implementation::BlockchainSubaccountRowID> {
-    auto Name() const noexcept -> std::string final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto NymID() const noexcept -> const identifier::Nym& final;
     auto SubaccountID() const noexcept -> const Identifier& final;
 
@@ -1092,7 +1104,7 @@ struct BlockchainSubaccountSource final
           internal::BlockchainSubaccountSource,
           SharedPimpl<ui::BlockchainSubaccount>,
           implementation::BlockchainSubaccountSourceRowID> {
-    auto Name() const noexcept -> std::string final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto NymID() const noexcept -> const identifier::Nym& final;
     auto SourceID() const noexcept -> const Identifier& final;
     auto Type() const noexcept -> blockchain::crypto::SubaccountType final;
@@ -1106,8 +1118,8 @@ struct BlockchainSubaccountSource final
 };
 struct BlockchainSubchain final : public Row,
                                   public internal::BlockchainSubchain {
-    auto Name() const noexcept -> std::string final { return {}; }
-    auto Progress() const noexcept -> std::string final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
+    auto Progress() const noexcept -> UnallocatedCString final { return {}; }
     auto Type() const noexcept -> blockchain::crypto::Subchain final;
 
     auto reindex(
@@ -1118,10 +1130,10 @@ struct BlockchainSubchain final : public Row,
     }
 };
 struct ContactItem final : public Row, public internal::ContactItem {
-    auto ClaimID() const noexcept -> std::string final { return {}; }
+    auto ClaimID() const noexcept -> UnallocatedCString final { return {}; }
     auto IsActive() const noexcept -> bool final { return false; }
     auto IsPrimary() const noexcept -> bool final { return false; }
-    auto Value() const noexcept -> std::string final { return {}; }
+    auto Value() const noexcept -> UnallocatedCString final { return {}; }
 
     auto reindex(
         const implementation::ContactSubsectionSortKey&,
@@ -1132,10 +1144,10 @@ struct ContactItem final : public Row, public internal::ContactItem {
 };
 struct ContactListItem : virtual public Row,
                          virtual public internal::ContactListItem {
-    auto ContactID() const noexcept -> std::string final { return {}; }
-    auto DisplayName() const noexcept -> std::string final { return {}; }
-    auto ImageURI() const noexcept -> std::string final { return {}; }
-    auto Section() const noexcept -> std::string final { return {}; }
+    auto ContactID() const noexcept -> UnallocatedCString final { return {}; }
+    auto DisplayName() const noexcept -> UnallocatedCString final { return {}; }
+    auto ImageURI() const noexcept -> UnallocatedCString final { return {}; }
+    auto Section() const noexcept -> UnallocatedCString final { return {}; }
 
     auto reindex(
         const implementation::ContactListSortKey&,
@@ -1148,8 +1160,9 @@ struct ContactSection final : public List<
                                   internal::ContactSection,
                                   OTUIContactSubsection,
                                   implementation::ContactSectionRowID> {
-    auto ContactID() const noexcept -> std::string final { return {}; }
-    auto Name(const std::string& lang) const noexcept -> std::string final
+    auto ContactID() const noexcept -> UnallocatedCString final { return {}; }
+    auto Name(const UnallocatedCString& lang) const noexcept
+        -> UnallocatedCString final
     {
         return {};
     }
@@ -1169,7 +1182,8 @@ struct ContactSubsection final : public List<
                                      internal::ContactSubsection,
                                      OTUIContactItem,
                                      implementation::ContactSubsectionRowID> {
-    auto Name(const std::string& lang) const noexcept -> std::string final
+    auto Name(const UnallocatedCString& lang) const noexcept
+        -> UnallocatedCString final
     {
         return {};
     }
@@ -1190,8 +1204,8 @@ struct IssuerItem final : public List<
                               OTUIAccountSummaryItem,
                               implementation::IssuerItemRowID> {
     auto ConnectionState() const noexcept -> bool final { return {}; }
-    auto Debug() const noexcept -> std::string final { return {}; }
-    auto Name() const noexcept -> std::string final { return {}; }
+    auto Debug() const noexcept -> UnallocatedCString final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto Trusted() const noexcept -> bool final { return {}; }
 
     auto reindex(
@@ -1203,7 +1217,7 @@ struct IssuerItem final : public List<
 };
 struct PayableListItem final : virtual public ContactListItem,
                                virtual public internal::PayableListItem {
-    auto PaymentCode() const noexcept -> std::string final { return {}; }
+    auto PaymentCode() const noexcept -> UnallocatedCString final { return {}; }
 
     auto reindex(
         const implementation::PayableListSortKey&,
@@ -1213,11 +1227,11 @@ struct PayableListItem final : virtual public ContactListItem,
     }
 };
 struct ProfileItem : virtual public Row, virtual public internal::ProfileItem {
-    auto ClaimID() const noexcept -> std::string final { return {}; }
+    auto ClaimID() const noexcept -> UnallocatedCString final { return {}; }
     auto Delete() const noexcept -> bool final { return false; }
     auto IsActive() const noexcept -> bool final { return false; }
     auto IsPrimary() const noexcept -> bool final { return false; }
-    auto Value() const noexcept -> std::string final { return {}; }
+    auto Value() const noexcept -> UnallocatedCString final { return {}; }
     auto SetActive(const bool& active) const noexcept -> bool final
     {
         return false;
@@ -1226,7 +1240,7 @@ struct ProfileItem : virtual public Row, virtual public internal::ProfileItem {
     {
         return false;
     }
-    auto SetValue(const std::string& value) const noexcept -> bool final
+    auto SetValue(const UnallocatedCString& value) const noexcept -> bool final
     {
         return false;
     }
@@ -1244,21 +1258,23 @@ struct ProfileSection : public List<
                             implementation::ProfileSectionRowID> {
     auto AddClaim(
         const identity::wot::claim::ClaimType type,
-        const std::string& value,
+        const UnallocatedCString& value,
         const bool primary,
         const bool active) const noexcept -> bool final
     {
         return false;
     }
-    auto Delete(const int, const std::string&) const noexcept -> bool final
+    auto Delete(const int, const UnallocatedCString&) const noexcept
+        -> bool final
     {
         return false;
     }
-    auto Items(const std::string&) const noexcept -> ItemTypeList final
+    auto Items(const UnallocatedCString&) const noexcept -> ItemTypeList final
     {
         return {};
     }
-    auto Name(const std::string& lang) const noexcept -> std::string final
+    auto Name(const UnallocatedCString& lang) const noexcept
+        -> UnallocatedCString final
     {
         return {};
     }
@@ -1266,18 +1282,20 @@ struct ProfileSection : public List<
     {
         return nym_id_;
     }
-    auto SetActive(const int, const std::string&, const bool) const noexcept
-        -> bool final
-    {
-        return false;
-    }
-    auto SetPrimary(const int, const std::string&, const bool) const noexcept
-        -> bool final
-    {
-        return false;
-    }
-    auto SetValue(const int, const std::string&, const std::string&)
+    auto SetActive(const int, const UnallocatedCString&, const bool)
         const noexcept -> bool final
+    {
+        return false;
+    }
+    auto SetPrimary(const int, const UnallocatedCString&, const bool)
+        const noexcept -> bool final
+    {
+        return false;
+    }
+    auto SetValue(
+        const int,
+        const UnallocatedCString&,
+        const UnallocatedCString&) const noexcept -> bool final
     {
         return false;
     }
@@ -1300,16 +1318,17 @@ struct ProfileSubsection : public List<
                                internal::ProfileSubsection,
                                OTUIProfileItem,
                                implementation::ProfileSubsectionRowID> {
-    auto AddItem(const std::string&, const bool, const bool) const noexcept
-        -> bool final
+    auto AddItem(const UnallocatedCString&, const bool, const bool)
+        const noexcept -> bool final
     {
         return false;
     }
-    auto Delete(const std::string&) const noexcept -> bool final
+    auto Delete(const UnallocatedCString&) const noexcept -> bool final
     {
         return false;
     }
-    auto Name(const std::string&) const noexcept -> std::string final
+    auto Name(const UnallocatedCString&) const noexcept
+        -> UnallocatedCString final
     {
         return {};
     }
@@ -1325,16 +1344,18 @@ struct ProfileSubsection : public List<
     {
         return {};
     }
-    auto SetActive(const std::string&, const bool) const noexcept -> bool final
-    {
-        return false;
-    }
-    auto SetPrimary(const std::string&, const bool) const noexcept -> bool final
-    {
-        return false;
-    }
-    auto SetValue(const std::string&, const std::string&) const noexcept
+    auto SetActive(const UnallocatedCString&, const bool) const noexcept
         -> bool final
+    {
+        return false;
+    }
+    auto SetPrimary(const UnallocatedCString&, const bool) const noexcept
+        -> bool final
+    {
+        return false;
+    }
+    auto SetValue(const UnallocatedCString&, const UnallocatedCString&)
+        const noexcept -> bool final
     {
         return false;
     }
@@ -1351,7 +1372,7 @@ private:
 };
 struct UnitListItem final : virtual public Row,
                             virtual public internal::UnitListItem {
-    auto Name() const noexcept -> std::string final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto Unit() const noexcept -> core::UnitType final { return {}; }
 
     auto reindex(
@@ -1379,7 +1400,7 @@ struct Index {
 
 struct Model {
     using Row = ui::internal::Row;
-    using RoleData = std::vector<std::pair<int, std::string>>;
+    using RoleData = UnallocatedVector<std::pair<int, UnallocatedCString>>;
 
     static auto GetID(const ui::internal::Row* ptr) noexcept -> std::ptrdiff_t;
 
@@ -1669,7 +1690,7 @@ auto PayableListItem(
     const api::session::Client& api,
     const ui::implementation::PayableListRowID& rowID,
     const ui::implementation::PayableListSortKey& key,
-    const std::string& paymentcode,
+    const UnallocatedCString& paymentcode,
     const core::UnitType& currency) noexcept
     -> std::shared_ptr<ui::implementation::PayableListRowInternal>;
 auto PaymentItem(

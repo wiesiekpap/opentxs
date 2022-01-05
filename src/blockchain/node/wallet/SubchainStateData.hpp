@@ -8,16 +8,13 @@
 #include <atomic>
 #include <condition_variable>
 #include <functional>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
 #include <sstream>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/wallet/Actor.hpp"
 #include "blockchain/node/wallet/BlockIndex.hpp"
@@ -45,6 +42,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
@@ -116,7 +114,7 @@ public:
     Accounts& parent_;
     const WalletDatabase& db_;
     const std::function<void(const Identifier&, const char*)>& task_finished_;
-    const std::string name_;
+    const UnallocatedCString name_;
     const OTNymID owner_;
     const crypto::SubaccountType account_type_;
     const OTIdentifier id_;
@@ -148,10 +146,10 @@ public:
 
 protected:
     using Transactions =
-        std::vector<std::shared_ptr<const block::bitcoin::Transaction>>;
+        UnallocatedVector<std::shared_ptr<const block::bitcoin::Transaction>>;
     using Task = node::internal::Wallet::Task;
     using Patterns = WalletDatabase::Patterns;
-    using UTXOs = std::vector<WalletDatabase::UTXO>;
+    using UTXOs = UnallocatedVector<WalletDatabase::UTXO>;
     using Targets = GCS::Targets;
     using Tested = WalletDatabase::MatchingIndices;
 
@@ -162,7 +160,7 @@ protected:
     Rescan rescan_;
     Scan scan_;
 
-    auto describe() const noexcept -> std::string;
+    auto describe() const noexcept -> UnallocatedCString;
     auto get_account_targets() const noexcept
         -> std::tuple<Patterns, UTXOs, Targets>;
     auto get_block_targets(const block::Hash& id, const UTXOs& utxos)
@@ -177,9 +175,9 @@ protected:
     virtual auto report_scan(const block::Position& pos) const noexcept -> void;
     auto set_key_data(block::bitcoin::Transaction& tx) const noexcept -> void;
     auto supported_scripts(const crypto::Element& element) const noexcept
-        -> std::vector<ScriptForm>;
+        -> UnallocatedVector<ScriptForm>;
     auto translate(
-        const std::vector<WalletDatabase::UTXO>& utxos,
+        const UnallocatedVector<WalletDatabase::UTXO>& utxos,
         Patterns& outpoints) const noexcept -> void;
     virtual auto type() const noexcept -> std::stringstream = 0;
     auto update_scan(const block::Position& pos, bool reorg) const noexcept
@@ -219,11 +217,11 @@ private:
 
     auto get_targets(
         const Patterns& elements,
-        const std::vector<WalletDatabase::UTXO>& utxos,
+        const UnallocatedVector<WalletDatabase::UTXO>& utxos,
         Targets& targets) const noexcept -> void;
     auto get_targets(
         const Patterns& elements,
-        const std::vector<WalletDatabase::UTXO>& utxos,
+        const UnallocatedVector<WalletDatabase::UTXO>& utxos,
         Targets& targets,
         Patterns& outpoints,
         Tested& tested) const noexcept -> void;

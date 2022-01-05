@@ -15,7 +15,8 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace be = boost::endian;
 
@@ -143,7 +144,7 @@ auto Outpoint::Index() const noexcept -> std::uint32_t
     return buf.value();
 }
 
-auto Outpoint::str() const noexcept -> std::string
+auto Outpoint::str() const noexcept -> UnallocatedCString
 {
     auto out = std::stringstream{};
 

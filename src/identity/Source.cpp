@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <stdexcept>
-#include <string>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
@@ -34,6 +33,7 @@
 #include "opentxs/identity/CredentialType.hpp"
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/identity/credential/Primary.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
@@ -162,7 +162,7 @@ Source::Source(
     : factory_{factory}
     , type_(nymParameters.SourceType())
     , pubkey_(nymParameters.Keypair().GetPublicKey())
-    , payment_code_(factory_.PaymentCode(std::string{}))
+    , payment_code_(factory_.PaymentCode(UnallocatedCString{}))
     , version_(key_to_source_version_.at(pubkey_->Version()))
 
 {
@@ -209,7 +209,7 @@ auto Source::deserialize_paymentcode(
         return factory.InternalSession().PaymentCode(serialized.paymentcode());
     } else {
 
-        return factory.PaymentCode(std::string{});
+        return factory.PaymentCode(UnallocatedCString{});
     }
 }
 

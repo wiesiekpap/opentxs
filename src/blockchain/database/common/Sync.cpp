@@ -14,12 +14,12 @@
 #include <cstdint>
 #include <cstring>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
 #include <string_view>
 #include <utility>
+
+#include "opentxs/util/Container.hpp"
 
 extern "C" {
 #include <sodium.h>
@@ -243,7 +243,7 @@ struct Sync::Imp final : private util::MappedFileStorage {
     }
     Imp(const api::Session& api,
         storage::lmdb::LMDB& lmdb,
-        const std::string& path) noexcept(false)
+        const UnallocatedCString& path) noexcept(false)
         : MappedFileStorage(
               lmdb,
               path,
@@ -296,7 +296,7 @@ private:
     using Mutex = boost::upgrade_mutex;
     using SharedLock = boost::upgrade_lock<Mutex>;
     using ExclusiveLock = boost::unique_lock<Mutex>;
-    using Tips = std::map<Chain, Height>;
+    using Tips = UnallocatedMap<Chain, Height>;
 
     static const std::array<unsigned char, 16> checksum_key_;
 
@@ -429,7 +429,7 @@ const std::array<unsigned char, 16> Sync::Imp::checksum_key_{};
 Sync::Sync(
     const api::Session& api,
     storage::lmdb::LMDB& lmdb,
-    const std::string& path) noexcept(false)
+    const UnallocatedCString& path) noexcept(false)
     : imp_(std::make_unique<Imp>(api, lmdb, path))
 {
 }

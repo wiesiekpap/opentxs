@@ -13,13 +13,9 @@
 #include <ctime>
 #include <functional>
 #include <iosfwd>
-#include <list>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
 #include <shared_mutex>
-#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -50,6 +46,7 @@
 #include "opentxs/otx/blind/CashType.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
@@ -131,7 +128,7 @@ class Wallet : virtual public internal::Wallet, public Lockable
 {
 public:
     auto Account(const Identifier& accountID) const -> SharedAccount final;
-    auto AccountPartialMatch(const std::string& hint) const
+    auto AccountPartialMatch(const UnallocatedCString& hint) const
         -> OTIdentifier final;
     auto CreateAccount(
         const identifier::Nym& ownerNymID,
@@ -157,7 +154,7 @@ public:
         const Identifier& accountID,
         const otx::context::Server&,
         const String& serialized,
-        const std::string& label,
+        const UnallocatedCString& label,
         const PasswordPrompt& reason) const -> bool final;
     auto ImportAccount(std::unique_ptr<opentxs::Account>& imported) const
         -> bool final;
@@ -177,16 +174,16 @@ public:
         const PasswordPrompt& reason) const
         -> Editor<otx::context::Server> override;
     auto IssuerList(const identifier::Nym& nymID) const
-        -> std::set<OTNymID> final;
+        -> UnallocatedSet<OTNymID> final;
     auto Issuer(const identifier::Nym& nymID, const identifier::Nym& issuerID)
         const -> std::shared_ptr<const otx::client::Issuer> final;
     auto mutable_Issuer(
         const identifier::Nym& nymID,
         const identifier::Nym& issuerID) const
         -> Editor<otx::client::Issuer> final;
-    auto IsLocalNym(const std::string& id) const -> bool final;
+    auto IsLocalNym(const UnallocatedCString& id) const -> bool final;
     auto LocalNymCount() const -> std::size_t final;
-    auto LocalNyms() const -> std::set<OTNymID> final;
+    auto LocalNyms() const -> UnallocatedSet<OTNymID> final;
     auto Nym(
         const identifier::Nym& id,
         const std::chrono::milliseconds& timeout =
@@ -196,18 +193,18 @@ public:
     auto Nym(
         const identity::wot::claim::ClaimType type,
         const PasswordPrompt& reason,
-        const std::string& name) const -> Nym_p final;
+        const UnallocatedCString& name) const -> Nym_p final;
     auto Nym(
         const opentxs::crypto::Parameters& parameters,
         const PasswordPrompt& reason,
-        const std::string& name) const -> Nym_p final;
-    auto Nym(const PasswordPrompt& reason, const std::string& name) const
+        const UnallocatedCString& name) const -> Nym_p final;
+    auto Nym(const PasswordPrompt& reason, const UnallocatedCString& name) const
         -> Nym_p final;
     auto Nym(
         const opentxs::crypto::Parameters& parameters,
         const identity::wot::claim::ClaimType type,
         const PasswordPrompt& reason,
-        const std::string& name) const -> Nym_p final;
+        const UnallocatedCString& name) const -> Nym_p final;
     auto mutable_Nym(const identifier::Nym& id, const PasswordPrompt& reason)
         const -> NymData final;
     auto Nymfile(const identifier::Nym& id, const PasswordPrompt& reason) const
@@ -215,7 +212,8 @@ public:
     auto mutable_Nymfile(
         const identifier::Nym& id,
         const PasswordPrompt& reason) const -> Editor<opentxs::NymFile> final;
-    auto NymByIDPartialMatch(const std::string& partialId) const -> Nym_p final;
+    auto NymByIDPartialMatch(const UnallocatedCString& partialId) const
+        -> Nym_p final;
     auto NymList() const -> ObjectList final;
     auto NymNameByIndex(const std::size_t index, String& name) const
         -> bool final;
@@ -311,20 +309,21 @@ public:
         -> OTServerContract final;
     auto Server(const ReadView& contract) const -> OTServerContract final;
     auto Server(
-        const std::string& nymid,
-        const std::string& name,
-        const std::string& terms,
-        const std::list<contract::Server::Endpoint>& endpoints,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& name,
+        const UnallocatedCString& terms,
+        const UnallocatedList<contract::Server::Endpoint>& endpoints,
         const PasswordPrompt& reason,
         const VersionNumber version) const -> OTServerContract final;
     auto ServerList() const -> ObjectList final;
-    auto SetNymAlias(const identifier::Nym& id, const std::string& alias) const
-        -> bool final;
-    auto SetServerAlias(const identifier::Notary& id, const std::string& alias)
+    auto SetNymAlias(const identifier::Nym& id, const UnallocatedCString& alias)
         const -> bool final;
+    auto SetServerAlias(
+        const identifier::Notary& id,
+        const UnallocatedCString& alias) const -> bool final;
     auto SetUnitDefinitionAlias(
         const identifier::UnitDefinition& id,
-        const std::string& alias) const -> bool final;
+        const UnallocatedCString& alias) const -> bool final;
     auto UnitDefinitionList() const -> ObjectList final;
     auto UnitDefinition(
         const identifier::UnitDefinition& id,
@@ -339,41 +338,41 @@ public:
     auto UnitDefinition(const ReadView contract) const
         -> OTUnitDefinition final;
     auto CurrencyContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const PasswordPrompt& reason) const -> OTUnitDefinition final;
     auto CurrencyContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const display::Definition& displayDefinition,
         const PasswordPrompt& reason) const -> OTUnitDefinition final;
     auto CurrencyContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const VersionNumber version,
         const PasswordPrompt& reason) const -> OTUnitDefinition final;
     auto CurrencyContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const Amount& redemptionIncrement,
         const display::Definition& displayDefinition,
         const VersionNumber version,
         const PasswordPrompt& reason) const -> OTUnitDefinition final;
     auto SecurityContract(
-        const std::string& nymid,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& nymid,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const PasswordPrompt& reason,
         const display::Definition& displayDefinition,
@@ -385,7 +384,7 @@ public:
         -> core::UnitType final;
 
     auto LoadCredential(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<proto::Credential>& credential) const -> bool final;
     auto SaveCredential(const proto::Credential& credential) const
         -> bool final;
@@ -395,9 +394,10 @@ public:
 protected:
     using AccountLock =
         std::pair<std::shared_mutex, std::unique_ptr<opentxs::Account>>;
-    using ContextID = std::pair<std::string, std::string>;
-    using ContextMap =
-        std::map<ContextID, std::shared_ptr<otx::context::internal::Base>>;
+    using ContextID = std::pair<UnallocatedCString, UnallocatedCString>;
+    using ContextMap = UnallocatedMap<
+        ContextID,
+        std::shared_ptr<otx::context::internal::Base>>;
 
     const api::Session& api_;
     mutable ContextMap context_map_;
@@ -418,21 +418,25 @@ protected:
     Wallet(const api::Session& api);
 
 private:
-    using AccountMap = std::map<OTIdentifier, AccountLock>;
+    using AccountMap = UnallocatedMap<OTIdentifier, AccountLock>;
     using NymLock =
         std::pair<std::mutex, std::shared_ptr<identity::internal::Nym>>;
-    using NymMap = std::map<OTNymID, NymLock>;
-    using ServerMap = std::map<OTNotaryID, std::shared_ptr<contract::Server>>;
-    using UnitMap = std::map<OTUnitID, std::shared_ptr<contract::Unit>>;
+    using NymMap = UnallocatedMap<OTNymID, NymLock>;
+    using ServerMap =
+        UnallocatedMap<OTNotaryID, std::shared_ptr<contract::Server>>;
+    using UnitMap = UnallocatedMap<OTUnitID, std::shared_ptr<contract::Unit>>;
     using IssuerID = std::pair<OTIdentifier, OTIdentifier>;
     using IssuerLock =
         std::pair<std::mutex, std::shared_ptr<otx::client::Issuer>>;
-    using IssuerMap = std::map<IssuerID, IssuerLock>;
+    using IssuerMap = UnallocatedMap<IssuerID, IssuerLock>;
     using PurseID = std::tuple<OTNymID, OTNotaryID, OTUnitID>;
-    using PurseMap =
-        std::map<PurseID, std::pair<std::shared_mutex, otx::blind::Purse>>;
-    using UnitNameMap = std::map<std::string, proto::ContactItemType>;
-    using UnitNameReverse = std::map<proto::ContactItemType, std::string>;
+    using PurseMap = UnallocatedMap<
+        PurseID,
+        std::pair<std::shared_mutex, otx::blind::Purse>>;
+    using UnitNameMap =
+        UnallocatedMap<UnallocatedCString, proto::ContactItemType>;
+    using UnitNameReverse =
+        UnallocatedMap<proto::ContactItemType, UnallocatedCString>;
 
     mutable AccountMap account_map_;
     mutable NymMap nym_map_;
@@ -445,9 +449,9 @@ private:
     mutable std::mutex unit_map_lock_;
     mutable std::mutex issuer_map_lock_;
     mutable std::mutex peer_map_lock_;
-    mutable std::map<std::string, std::mutex> peer_lock_;
+    mutable UnallocatedMap<UnallocatedCString, std::mutex> peer_lock_;
     mutable std::mutex nymfile_map_lock_;
-    mutable std::map<OTIdentifier, std::mutex> nymfile_lock_;
+    mutable UnallocatedMap<OTIdentifier, std::mutex> nymfile_lock_;
     mutable std::mutex purse_lock_;
     mutable PurseMap purse_map_;
     OTZMQPublishSocket account_publisher_;
@@ -465,12 +469,13 @@ private:
 
     static auto reverse_unit_map(const UnitNameMap& map) -> UnitNameReverse;
 
-    auto account_alias(const std::string& accountID, const std::string& hint)
-        const -> std::string;
+    auto account_alias(
+        const UnallocatedCString& accountID,
+        const UnallocatedCString& hint) const -> UnallocatedCString;
     auto account_factory(
         const Identifier& accountID,
-        const std::string& alias,
-        const std::string& serialized) const -> opentxs::Account*;
+        const UnallocatedCString& alias,
+        const UnallocatedCString& serialized) const -> opentxs::Account*;
     virtual void instantiate_client_context(
         const proto::Context& serialized,
         const Nym_p& localNym,
@@ -500,11 +505,11 @@ private:
     auto notify(const identifier::Nym& id) const noexcept -> void;
     virtual void nym_to_contact(
         [[maybe_unused]] const identity::Nym& nym,
-        [[maybe_unused]] const std::string& name) const noexcept
+        [[maybe_unused]] const UnallocatedCString& name) const noexcept
     {
     }
     auto nymfile_lock(const identifier::Nym& nymID) const -> std::mutex&;
-    auto peer_lock(const std::string& nymID) const -> std::mutex&;
+    auto peer_lock(const UnallocatedCString& nymID) const -> std::mutex&;
     auto publish_server(const identifier::Notary& id) const noexcept -> void;
     auto publish_unit(const identifier::UnitDefinition& id) const noexcept
         -> void;
@@ -515,7 +520,7 @@ private:
         const bool checking) const -> PurseMap::mapped_type&;
     void save(
         const PasswordPrompt& reason,
-        const std::string id,
+        const UnallocatedCString id,
         std::unique_ptr<opentxs::Account>& in,
         eLock& lock,
         bool success) const;

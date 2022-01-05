@@ -10,8 +10,6 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <string>
 
 #include "Proto.hpp"
 #include "Proto.tpp"
@@ -44,6 +42,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/ContractEnums.pb.h"
 #include "serialization/protobuf/PeerReply.pb.h"
@@ -91,16 +90,22 @@ class String;
 namespace opentxs::contract::blank
 {
 struct Signable : virtual public opentxs::contract::Signable {
-    auto Alias() const noexcept -> std::string final { return {}; }
+    auto Alias() const noexcept -> UnallocatedCString final { return {}; }
     auto ID() const noexcept -> OTIdentifier final { return id_; }
-    auto Name() const noexcept -> std::string final { return {}; }
+    auto Name() const noexcept -> UnallocatedCString final { return {}; }
     auto Nym() const noexcept -> Nym_p final { return {}; }
-    auto Terms() const noexcept -> const std::string& final { return terms_; }
+    auto Terms() const noexcept -> const UnallocatedCString& final
+    {
+        return terms_;
+    }
     auto Serialize() const noexcept -> OTData final { return OTData{id_}; }
     auto Validate() const noexcept -> bool final { return {}; }
     auto Version() const noexcept -> VersionNumber final { return 0; }
 
-    auto SetAlias(const std::string&) noexcept -> bool final { return {}; }
+    auto SetAlias(const UnallocatedCString&) noexcept -> bool final
+    {
+        return {};
+    }
 
     Signable(const api::Session& api)
         : api_(api)
@@ -114,7 +119,7 @@ struct Signable : virtual public opentxs::contract::Signable {
 protected:
     const api::Session& api_;
     const OTIdentifier id_;
-    const std::string terms_;
+    const UnallocatedCString terms_;
 
     Signable(const Signable& rhs)
         : api_(rhs.api_)
@@ -125,13 +130,13 @@ protected:
 };
 
 struct Unit final : virtual public opentxs::contract::Unit, public Signable {
-    auto AddAccountRecord(const std::string&, const Account&) const
+    auto AddAccountRecord(const UnallocatedCString&, const Account&) const
         -> bool final
     {
         return {};
     }
     auto DisplayStatistics(String&) const -> bool final { return {}; }
-    auto EraseAccountRecord(const std::string&, const Identifier&) const
+    auto EraseAccountRecord(const UnallocatedCString&, const Identifier&) const
         -> bool final
     {
         return {};
@@ -147,14 +152,14 @@ struct Unit final : virtual public opentxs::contract::Unit, public Signable {
     auto Type() const -> contract::UnitType final { return {}; }
     auto UnitOfAccount() const -> core::UnitType final { return {}; }
     auto VisitAccountRecords(
-        const std::string&,
+        const UnallocatedCString&,
         AccountVisitor&,
         const PasswordPrompt&) const -> bool final
     {
         return {};
     }
 
-    void InitAlias(const std::string&) final {}
+    void InitAlias(const UnallocatedCString&) final {}
 
     Unit(const api::Session& api)
         : Signable(api)
@@ -175,14 +180,14 @@ private:
 struct Server final : virtual public opentxs::contract::Server,
                       public blank::Signable {
     auto ConnectInfo(
-        std::string&,
+        UnallocatedCString&,
         std::uint32_t&,
         core::AddressType&,
         const core::AddressType&) const -> bool final
     {
         return {};
     }
-    auto EffectiveName() const -> std::string final { return {}; }
+    auto EffectiveName() const -> UnallocatedCString final { return {}; }
     using Signable::Serialize;
     auto Serialize(AllocateOutput destination, bool includeNym = false) const
         -> bool final
@@ -198,7 +203,7 @@ struct Server final : virtual public opentxs::contract::Server,
         return api_.Factory().Secret(0);
     }
 
-    void InitAlias(const std::string&) final {}
+    void InitAlias(const UnallocatedCString&) final {}
 
     Server(const api::Session& api)
         : Signable(api)

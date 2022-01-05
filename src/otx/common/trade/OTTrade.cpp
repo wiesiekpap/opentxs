@@ -11,7 +11,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <string>
 
 #include "internal/api/session/FactoryAPI.hpp"
 #include "internal/api/session/Wallet.hpp"
@@ -37,6 +36,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -135,9 +135,11 @@ auto OTTrade::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         SetTransactionNum(
             String::StringToLong(xml->getAttributeValue("transactionNum")));
 
-        const std::string creationStr = xml->getAttributeValue("creationDate");
-        const std::string validFromStr = xml->getAttributeValue("validFrom");
-        const std::string validToStr = xml->getAttributeValue("validTo");
+        const UnallocatedCString creationStr =
+            xml->getAttributeValue("creationDate");
+        const UnallocatedCString validFromStr =
+            xml->getAttributeValue("validFrom");
+        const UnallocatedCString validToStr = xml->getAttributeValue("validTo");
 
         const auto creation = parseTimestamp(creationStr);
         const auto validFrom = parseTimestamp(validFromStr);
@@ -309,7 +311,7 @@ void OTTrade::UpdateContents(const PasswordPrompt& reason)
         tagStopOrder->add_attribute("hasActivated", formatBool(stopActivated_));
         tagStopOrder->add_attribute("sign", std::to_string(stopSign_));
         tagStopOrder->add_attribute("price", [&] {
-            auto buf = std::string{};
+            auto buf = UnallocatedCString{};
             stopPrice_.Serialize(writer(buf));
             return buf;
         }());
@@ -321,7 +323,7 @@ void OTTrade::UpdateContents(const PasswordPrompt& reason)
         tag.add_tag("offer", ascOffer->Get());
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());

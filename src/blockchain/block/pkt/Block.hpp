@@ -10,12 +10,12 @@
 #include <optional>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -52,7 +52,7 @@ class Block final : public bitcoin::implementation::Block
 {
 public:
     using Proof = std::pair<std::byte, Space>;
-    using Proofs = std::vector<Proof>;
+    using Proofs = UnallocatedVector<Proof>;
 
     auto GetProofs() const noexcept -> const Proofs& { return proofs_; }
 

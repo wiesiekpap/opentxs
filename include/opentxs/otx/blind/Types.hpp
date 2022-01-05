@@ -11,8 +11,8 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <set>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -31,6 +31,7 @@ using MintSeries = std::uint64_t;
 
 namespace opentxs
 {
-auto print(otx::blind::CashType) noexcept -> std::string;
-auto supported_otx_token_types() noexcept -> std::set<otx::blind::CashType>;
+auto print(otx::blind::CashType) noexcept -> UnallocatedCString;
+auto supported_otx_token_types() noexcept
+    -> UnallocatedSet<otx::blind::CashType>;
 }  // namespace opentxs

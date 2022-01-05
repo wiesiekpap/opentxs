@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <set>
 
 #include "blockchain/p2p/bitcoin/Message.hpp"
 #include "blockchain/p2p/bitcoin/Message.hpp"
@@ -17,6 +16,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

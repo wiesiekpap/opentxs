@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "core/ui/accountactivity/BalanceItem.hpp"
 #include "core/ui/base/Widget.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentEvent.pb.h"
@@ -93,7 +93,7 @@ auto TransferBalanceItem::effective_amount() const noexcept -> opentxs::Amount
     return amount * sign;
 }
 
-auto TransferBalanceItem::Memo() const noexcept -> std::string
+auto TransferBalanceItem::Memo() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
@@ -133,7 +133,7 @@ auto TransferBalanceItem::startup(
     OT_ASSERT(transfer_)
 
     lock.unlock();
-    auto text = std::string{};
+    auto text = UnallocatedCString{};
     const auto number = std::to_string(transfer_->GetTransactionNum());
 
     switch (type_) {
@@ -244,7 +244,7 @@ auto TransferBalanceItem::startup(
     return output;
 }
 
-auto TransferBalanceItem::UUID() const noexcept -> std::string
+auto TransferBalanceItem::UUID() const noexcept -> UnallocatedCString
 {
     if (transfer_) {
 

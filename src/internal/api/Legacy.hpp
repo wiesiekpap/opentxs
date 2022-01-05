@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <string>
-
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -22,7 +21,8 @@ class Legacy
 {
 public:
     static auto PathSeparator() noexcept -> const char*;
-    static auto SuggestFolder(const std::string& app) noexcept -> std::string;
+    static auto SuggestFolder(const UnallocatedCString& app) noexcept
+        -> UnallocatedCString;
 
     virtual auto Account() const noexcept -> const char* = 0;
     virtual auto AppendFile(String& out, const String& base, const String& file)
@@ -34,9 +34,9 @@ public:
     virtual auto BuildFolderPath(const String& path) const noexcept -> bool = 0;
     virtual auto BuildFilePath(const String& path) const noexcept -> bool = 0;
     virtual auto ClientConfigFilePath(const int instance) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto ClientDataFolder(const int instance) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto Common() const noexcept -> const char* = 0;
     virtual auto ConfirmCreateFolder(const String& path) const noexcept
         -> bool = 0;
@@ -50,17 +50,18 @@ public:
     virtual auto Mint() const noexcept -> const char* = 0;
     virtual auto Nym() const noexcept -> const char* = 0;
     virtual auto Nymbox() const noexcept -> const char* = 0;
-    virtual auto OpentxsConfigFilePath() const noexcept -> std::string = 0;
+    virtual auto OpentxsConfigFilePath() const noexcept
+        -> UnallocatedCString = 0;
     virtual auto Outbox() const noexcept -> const char* = 0;
     virtual auto PathExists(const String& path) const noexcept -> bool = 0;
-    virtual auto PIDFilePath() const noexcept -> std::string = 0;
+    virtual auto PIDFilePath() const noexcept -> UnallocatedCString = 0;
     virtual auto PaymentInbox() const noexcept -> const char* = 0;
     virtual auto Receipt() const noexcept -> const char* = 0;
     virtual auto RecordBox() const noexcept -> const char* = 0;
     virtual auto ServerConfigFilePath(const int instance) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto ServerDataFolder(const int instance) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
 
     virtual ~Legacy() = default;
 

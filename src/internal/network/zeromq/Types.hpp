@@ -9,7 +9,8 @@
 #include <functional>
 #include <future>
 #include <tuple>
-#include <vector>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -33,9 +34,10 @@ using BatchID = std::size_t;
 using SocketID = std::size_t;
 using ReceiveCallback = std::function<void(Message&&)>;
 using ModifyCallback = std::function<void(socket::Raw&)>;
-using ThreadStartArgs = std::vector<std::pair<socket::Raw*, ReceiveCallback>>;
+using ThreadStartArgs =
+    UnallocatedVector<std::pair<socket::Raw*, ReceiveCallback>>;
 using StartArgs =
-    std::vector<std::tuple<SocketID, socket::Raw*, ReceiveCallback>>;
+    UnallocatedVector<std::tuple<SocketID, socket::Raw*, ReceiveCallback>>;
 using AsyncResult = std::pair<bool, std::future<bool>>;
 
 auto GetBatchID() noexcept -> BatchID;

@@ -9,11 +9,8 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <vector>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Types.hpp"
@@ -25,6 +22,7 @@
 #include "opentxs/blockchain/crypto/Wallet.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -111,7 +109,7 @@ public:
     ~Wallet() final = default;
 
 private:
-    using Accounts = std::set<OTIdentifier>;
+    using Accounts = UnallocatedSet<OTIdentifier>;
 
     const api::crypto::Blockchain& parent_;
     const AccountIndex& account_index_;
@@ -119,8 +117,8 @@ private:
     const api::session::Contacts& contacts_;
     const opentxs::blockchain::Type chain_;
     mutable std::mutex lock_;
-    std::vector<std::unique_ptr<crypto::Account>> trees_;
-    std::map<OTNymID, std::size_t> index_;
+    UnallocatedVector<std::unique_ptr<crypto::Account>> trees_;
+    UnallocatedMap<OTNymID, std::size_t> index_;
 
     using crypto::Wallet::at;
     auto at(const Lock& lock, const std::size_t index) const noexcept(false)

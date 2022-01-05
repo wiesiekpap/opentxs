@@ -36,7 +36,7 @@ auto BlockchainAddress(
     const std::uint16_t port,
     const blockchain::Type chain,
     const Time lastConnected,
-    const std::set<blockchain::p2p::Service>& services,
+    const UnallocatedSet<blockchain::p2p::Service>& services,
     const bool incoming) noexcept
     -> std::unique_ptr<blockchain::p2p::internal::Address>
 {
@@ -97,7 +97,7 @@ Address::Address(
     const std::uint16_t port,
     const blockchain::Type chain,
     const Time lastConnected,
-    const std::set<Service>& services,
+    const UnallocatedSet<Service>& services,
     const bool incoming) noexcept(false)
     : api_(api)
     , version_(version)
@@ -189,9 +189,9 @@ auto Address::calculate_id(
     return api.Factory().InternalSession().Identifier(serialized);
 }
 
-auto Address::Display() const noexcept -> std::string
+auto Address::Display() const noexcept -> UnallocatedCString
 {
-    std::string output{};
+    UnallocatedCString output{};
 
     switch (network_) {
         case Network::ipv4: {
@@ -205,12 +205,12 @@ auto Address::Display() const noexcept -> std::string
             ip::address_v6::bytes_type bytes{};
             std::memcpy(bytes.data(), bytes_->data(), bytes.size());
             auto address = ip::make_address_v6(bytes);
-            output = std::string("[") + address.to_string() + "]";
+            output = UnallocatedCString("[") + address.to_string() + "]";
         } break;
         case Network::onion2:
         case Network::onion3: {
             output =
-                std::string(
+                UnallocatedCString(
                     static_cast<const char*>(bytes_->data()), bytes_->size()) +
                 ".onion";
         } break;
@@ -229,9 +229,9 @@ auto Address::Display() const noexcept -> std::string
 }
 
 auto Address::instantiate_services(const SerializedType& serialized) noexcept
-    -> std::set<Service>
+    -> UnallocatedSet<Service>
 {
-    auto output = std::set<Service>{};
+    auto output = UnallocatedSet<Service>{};
 
     for (const auto& service : serialized.service()) {
         output.emplace(static_cast<Service>(service));
@@ -248,7 +248,7 @@ auto Address::serialize(
     const std::uint16_t port,
     const blockchain::Type chain,
     const Time time,
-    const std::set<Service>& services) noexcept -> SerializedType
+    const UnallocatedSet<Service>& services) noexcept -> SerializedType
 {
     auto output = SerializedType{};
     output.set_version(version);

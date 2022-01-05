@@ -11,13 +11,10 @@
 #include <cstring>
 #include <future>
 #include <iterator>
-#include <map>
 #include <mutex>
-#include <set>
 #include <shared_mutex>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "blockchain/database/wallet/SubchainCache.hpp"
 #include "blockchain/database/wallet/SubchainID.hpp"
@@ -35,6 +32,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -87,7 +85,7 @@ struct SubchainData::Imp {
             const auto patterns = [&] {
                 const auto all = cache_.GetPatternIndex(lock, subchain);
                 const auto matches = cache_.GetMatchIndex(lock, blockID);
-                auto out = std::vector<pPatternID>{};
+                auto out = UnallocatedVector<pPatternID>{};
                 out.reserve(std::min(all.size(), matches.size()));
                 std::set_difference(
                     std::begin(all),
@@ -161,7 +159,7 @@ struct SubchainData::Imp {
 
         try {
             auto output{false};
-            auto newIndices = std::vector<pPatternID>{};
+            auto newIndices = UnallocatedVector<pPatternID>{};
             auto highest = Bip32Index{};
             auto tx = lmdb_.TransactionRW();
 
@@ -227,7 +225,7 @@ struct SubchainData::Imp {
     }
     auto SubchainMatchBlock(
         const SubchainIndex& subchain,
-        const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+        const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
         const noexcept -> bool
     {
         auto lock = eLock{lock_};
@@ -454,7 +452,7 @@ auto SubchainData::SubchainLastScanned(
 
 auto SubchainData::SubchainMatchBlock(
     const SubchainIndex& index,
-    const std::vector<std::pair<ReadView, MatchingIndices>>& results)
+    const UnallocatedVector<std::pair<ReadView, MatchingIndices>>& results)
     const noexcept -> bool
 {
     return imp_->SubchainMatchBlock(index, results);

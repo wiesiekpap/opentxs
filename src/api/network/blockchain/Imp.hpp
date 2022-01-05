@@ -8,15 +8,11 @@
 #include <atomic>
 #include <functional>
 #include <future>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <thread>
 #include <thread>
 #include <tuple>
-#include <vector>
 
 #include "api/network/Blockchain.hpp"
 #include "blockchain/database/common/Database.hpp"
@@ -32,6 +28,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -102,7 +99,7 @@ namespace zmq = opentxs::network::zeromq;
 namespace opentxs::api::network
 {
 struct BlockchainImp final : public Blockchain::Imp {
-    auto AddSyncServer(const std::string& endpoint) const noexcept
+    auto AddSyncServer(const UnallocatedCString& endpoint) const noexcept
         -> bool final;
     auto BlockAvailable() const noexcept -> const zmq::socket::Publish& final
     {
@@ -118,12 +115,12 @@ struct BlockchainImp final : public Blockchain::Imp {
     {
         return *db_;
     }
-    auto DeleteSyncServer(const std::string& endpoint) const noexcept
+    auto DeleteSyncServer(const UnallocatedCString& endpoint) const noexcept
         -> bool final;
     auto Disable(const Imp::Chain type) const noexcept -> bool final;
-    auto Enable(const Imp::Chain type, const std::string& seednode)
+    auto Enable(const Imp::Chain type, const UnallocatedCString& seednode)
         const noexcept -> bool final;
-    auto EnabledChains() const noexcept -> std::set<Imp::Chain> final;
+    auto EnabledChains() const noexcept -> UnallocatedSet<Imp::Chain> final;
     auto FilterUpdate() const noexcept -> const zmq::socket::Publish& final
     {
         return new_filters_;
@@ -151,23 +148,24 @@ struct BlockchainImp final : public Blockchain::Imp {
         const opentxs::blockchain::block::Height target) const noexcept
         -> void final;
     auto RestoreNetworks() const noexcept -> void final;
-    auto Start(const Imp::Chain type, const std::string& seednode)
+    auto Start(const Imp::Chain type, const UnallocatedCString& seednode)
         const noexcept -> bool final;
     auto StartSyncServer(
-        const std::string& syncEndpoint,
-        const std::string& publicSyncEndpoint,
-        const std::string& updateEndpoint,
-        const std::string& publicUpdateEndpoint) const noexcept -> bool final;
+        const UnallocatedCString& syncEndpoint,
+        const UnallocatedCString& publicSyncEndpoint,
+        const UnallocatedCString& updateEndpoint,
+        const UnallocatedCString& publicUpdateEndpoint) const noexcept
+        -> bool final;
     auto Stop(const Imp::Chain type) const noexcept -> bool final;
-    auto SyncEndpoint() const noexcept -> const std::string& final;
+    auto SyncEndpoint() const noexcept -> const UnallocatedCString& final;
     auto UpdatePeer(
         const opentxs::blockchain::Type chain,
-        const std::string& address) const noexcept -> void final;
+        const UnallocatedCString& address) const noexcept -> void final;
 
     auto Init(
         const api::crypto::Blockchain& crypto,
         const api::Legacy& legacy,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Options& args) noexcept -> void final;
     auto Shutdown() noexcept -> void final;
 
@@ -181,7 +179,7 @@ struct BlockchainImp final : public Blockchain::Imp {
 private:
     using Config = opentxs::blockchain::node::internal::Config;
     using pNode = std::unique_ptr<opentxs::blockchain::node::internal::Network>;
-    using Chains = std::vector<Chain>;
+    using Chains = UnallocatedVector<Chain>;
 
     const api::Session& api_;
     const api::crypto::Blockchain* crypto_;
@@ -197,8 +195,8 @@ private:
     OTZMQPublishSocket mempool_;
     const std::unique_ptr<Config> base_config_;
     mutable std::mutex lock_;
-    mutable std::map<Chain, Config> config_;
-    mutable std::map<Chain, pNode> networks_;
+    mutable UnallocatedMap<Chain, Config> config_;
+    mutable UnallocatedMap<Chain, pNode> networks_;
     std::unique_ptr<blockchain::SyncClient> sync_client_;
     mutable opentxs::network::p2p::Server sync_server_;
     std::promise<void> init_promise_;
@@ -207,13 +205,17 @@ private:
     std::thread heartbeat_;
 
     auto disable(const Lock& lock, const Chain type) const noexcept -> bool;
-    auto enable(const Lock& lock, const Chain type, const std::string& seednode)
-        const noexcept -> bool;
+    auto enable(
+        const Lock& lock,
+        const Chain type,
+        const UnallocatedCString& seednode) const noexcept -> bool;
     auto heartbeat() const noexcept -> void;
     auto hello(const Lock&, const Chains& chains) const noexcept -> SyncData;
     auto publish_chain_state(Chain type, bool state) const -> void;
-    auto start(const Lock& lock, const Chain type, const std::string& seednode)
-        const noexcept -> bool;
+    auto start(
+        const Lock& lock,
+        const Chain type,
+        const UnallocatedCString& seednode) const noexcept -> bool;
     auto stop(const Lock& lock, const Chain type) const noexcept -> bool;
 
     BlockchainImp() = delete;

@@ -9,14 +9,13 @@
 
 #include <boost/asio.hpp>
 #include <cstddef>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <utility>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::api::network::asio
 {
@@ -39,7 +38,7 @@ struct Buffers::Imp {
 private:
     mutable std::mutex lock_{};
     Index counter_{-1};
-    std::map<Index, Space> buffers_{};
+    UnallocatedMap<Index, Space> buffers_{};
 };
 
 Buffers::Buffers() noexcept

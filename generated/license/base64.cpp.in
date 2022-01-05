@@ -12,6 +12,6 @@ namespace opentxs
 auto license_base64(LicenseMap& out) noexcept -> void
 {
     out.emplace(
-        "base64 (via Apple)", std::string{R"~!~(@BASE64_LICENSE_TEXT@)~!~"});
+        "base64 (via Apple)", UnallocatedCString{R"~!~(@BASE64_LICENSE_TEXT@)~!~"});
 }
 }  // namespace opentxs

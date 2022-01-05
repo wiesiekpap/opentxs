@@ -9,9 +9,7 @@
 #include <chrono>
 #include <cstdint>
 #include <ctime>
-#include <map>
 #include <mutex>
-#include <string>
 #include <thread>
 #include <utility>
 
@@ -29,6 +27,7 @@
 #include "opentxs/network/zeromq/socket/Dealer.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -112,15 +111,15 @@ private:
     OTFlag status_;
     OTFlag use_proxy_;
     mutable std::mutex registration_lock_;
-    std::map<OTNymID, bool> registered_for_push_;
+    UnallocatedMap<OTNymID, bool> registered_for_push_;
 
     auto async_socket(const Lock& lock) const -> OTZMQDealerSocket;
     auto clone() const -> ServerConnection* final { return nullptr; }
-    auto endpoint() const -> std::string;
+    auto endpoint() const -> UnallocatedCString;
     auto form_endpoint(
         core::AddressType type,
-        std::string hostname,
-        std::uint32_t port) const -> std::string;
+        UnallocatedCString hostname,
+        std::uint32_t port) const -> UnallocatedCString;
     auto get_timeout() -> Time;
     auto publish() const -> void;
     auto set_curve(const Lock& lock, zeromq::curve::Client& socket) const

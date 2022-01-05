@@ -28,7 +28,7 @@ Config::Config(
     const api::Settings& config,
     const Options& args,
     const String& dataFolder) noexcept
-    : previous_primary_plugin_([&]() -> std::string {
+    : previous_primary_plugin_([&]() -> UnallocatedCString {
         auto exists{false};
         auto value = String::Factory();
         config.Check_str(
@@ -46,7 +46,7 @@ Config::Config(
         }
     }())
     , primary_plugin_([&] {
-        const auto cli = std::string{args.StoragePrimaryPlugin()};
+        const auto cli = UnallocatedCString{args.StoragePrimaryPlugin()};
         const auto& configFile = previous_primary_plugin_;
 
         if (false == cli.empty()) {
@@ -146,7 +146,7 @@ Config::Config(
 
         return output;
     }())
-    , path_([&]() -> std::string {
+    , path_([&]() -> UnallocatedCString {
         auto output = String::Factory();
         auto notUsed{false};
 
@@ -168,7 +168,7 @@ Config::Config(
 
         if (primary_plugin_ == OT_STORAGE_PRIMARY_PLUGIN_LMDB) {
             auto newPath = String::Factory();
-            const auto subdir = std::string{legacy.Common()} + "_lmdb";
+            const auto subdir = UnallocatedCString{legacy.Common()} + "_lmdb";
 
             if (false ==
                 legacy.AppendFolder(newPath, output, String::Factory(subdir))) {
@@ -201,7 +201,7 @@ Config::Config(
     }())
     , dht_callback_()
     , fs_primary_bucket_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -213,7 +213,7 @@ Config::Config(
         return output;
     }())
     , fs_secondary_bucket_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -225,7 +225,7 @@ Config::Config(
         return output;
     }())
     , fs_root_file_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -237,7 +237,7 @@ Config::Config(
         return output;
     }())
     , fs_backup_directory_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -249,7 +249,7 @@ Config::Config(
         return output;
     }())
     , fs_encrypted_backup_directory_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -261,7 +261,7 @@ Config::Config(
         return output;
     }())
     , sqlite3_primary_bucket_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -273,7 +273,7 @@ Config::Config(
         return output;
     }())
     , sqlite3_secondary_bucket_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -285,7 +285,7 @@ Config::Config(
         return output;
     }())
     , sqlite3_control_table_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -297,7 +297,7 @@ Config::Config(
         return output;
     }())
     , sqlite3_root_key_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -309,7 +309,7 @@ Config::Config(
         return output;
     }())
     , sqlite3_db_file_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -321,7 +321,7 @@ Config::Config(
         return output;
     }())
     , lmdb_primary_bucket_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -333,7 +333,7 @@ Config::Config(
         return output;
     }())
     , lmdb_secondary_bucket_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -345,7 +345,7 @@ Config::Config(
         return output;
     }())
     , lmdb_control_table_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),
@@ -357,7 +357,7 @@ Config::Config(
         return output;
     }())
     , lmdb_root_key_([&] {
-        auto output = std::string{};
+        auto output = UnallocatedCString{};
         auto notUsed{false};
         config.CheckSet_str(
             String::Factory(STORAGE_CONFIG_KEY),

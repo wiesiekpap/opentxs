@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <string>
 #include <type_traits>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
@@ -23,6 +22,7 @@
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace b = ot::blockchain;
@@ -66,11 +66,11 @@ TEST_F(Test_BlockHeader, ltc_genesis_block_hash_oracle)
 
 TEST_F(Test_BlockHeader, btc_genesis_block_header)
 {
-    const auto blankHash =
-        ot::Data::Factory(std::string(blank_hash_), ot::Data::Mode::Hex);
+    const auto blankHash = ot::Data::Factory(
+        ot::UnallocatedCString(blank_hash_), ot::Data::Mode::Hex);
     const auto expectedHash =
         ot::Data::Factory(btc_genesis_hash_, ot::Data::Mode::Hex);
-    const std::string numericHash{btc_genesis_hash_numeric_};
+    const ot::UnallocatedCString numericHash{btc_genesis_hash_numeric_};
     std::unique_ptr<const bb::Header> pHeader{
         ot::factory::GenesisBlockHeader(api_, b::Type::Bitcoin)};
 
@@ -96,11 +96,11 @@ TEST_F(Test_BlockHeader, btc_genesis_block_header)
 
 TEST_F(Test_BlockHeader, ltc_genesis_block_header)
 {
-    const auto blankHash =
-        ot::Data::Factory(std::string(blank_hash_), ot::Data::Mode::Hex);
+    const auto blankHash = ot::Data::Factory(
+        ot::UnallocatedCString(blank_hash_), ot::Data::Mode::Hex);
     const auto expectedHash =
         ot::Data::Factory(ltc_genesis_hash_, ot::Data::Mode::Hex);
-    const std::string numericHash{ltc_genesis_hash_numeric_};
+    const ot::UnallocatedCString numericHash{ltc_genesis_hash_numeric_};
     std::unique_ptr<const bb::Header> pHeader{
         ot::factory::GenesisBlockHeader(api_, b::Type::Litecoin)};
 

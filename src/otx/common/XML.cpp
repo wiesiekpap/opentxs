@@ -9,8 +9,6 @@
 
 #include <array>
 #include <cstring>
-#include <map>
-#include <string>
 #include <utility>
 
 #include "internal/otx/common/crypto/OTSignatureMetadata.hpp"
@@ -18,6 +16,7 @@
 #include "opentxs/OT.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -64,8 +63,8 @@ auto AddBookendsAroundContent(
             "\n-----END %s SIGNATURE-----\n\n", strContractType.Get());
     }
 
-    std::string str_Trim(strTemp->Get());
-    std::string str_Trim2 = String::trim(str_Trim);
+    UnallocatedCString str_Trim(strTemp->Get());
+    UnallocatedCString str_Trim2 = String::trim(str_Trim);
     strOutput.Set(str_Trim2.c_str());
 
     return true;
@@ -246,7 +245,7 @@ auto LoadEncodedTextFieldByName(
         String::Map& mapExtraVars = (*pmapExtraVars);
 
         for (auto& it : mapExtraVars) {
-            std::string first = it.first;
+            UnallocatedCString first = it.first;
             auto strTemp =
                 String::Factory(xml->getAttributeValue(first.c_str()));
 
@@ -424,7 +423,7 @@ auto SkipToTextField(irr::io::IrrXMLReader*& xml) -> bool
 
 auto trim(const String& str) -> OTString
 {
-    std::string s(str.Get(), str.GetLength());
+    UnallocatedCString s(str.Get(), str.GetLength());
     return String::Factory(String::trim(s));
 }
 }  // namespace opentxs

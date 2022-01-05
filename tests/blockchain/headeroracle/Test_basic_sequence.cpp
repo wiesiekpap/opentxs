@@ -5,12 +5,12 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ottest
 {

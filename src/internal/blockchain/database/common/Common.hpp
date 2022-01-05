@@ -10,14 +10,13 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -47,7 +46,7 @@ using Protocol = opentxs::blockchain::p2p::Protocol;
 using Service = opentxs::blockchain::p2p::Service;
 using Type = opentxs::blockchain::p2p::Network;
 using UpdatedHeader = opentxs::blockchain::node::UpdatedHeader;
-using SyncTableData = std::pair<int, std::string>;
+using SyncTableData = std::pair<int, UnallocatedCString>;
 
 enum Table {
     BlockHeadersDeleted = 0,
@@ -77,5 +76,5 @@ enum Table {
 
 auto ChainToSyncTable(const opentxs::blockchain::Type chain) noexcept(false)
     -> int;
-auto SyncTables() noexcept -> const std::vector<SyncTableData>&;
+auto SyncTables() noexcept -> const UnallocatedVector<SyncTableData>&;
 }  // namespace opentxs::blockchain::database::common

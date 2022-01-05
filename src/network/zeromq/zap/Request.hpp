@@ -6,9 +6,6 @@
 #pragma once
 
 #include <cstddef>
-#include <map>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "network/zeromq/message/Message.hpp"
@@ -19,14 +16,16 @@
 #include "opentxs/network/zeromq/zap/Request.hpp"
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::zeromq::zap
 {
 class Request::Imp final : public zeromq::Message::Imp
 {
 public:
-    using MechanismMap = std::map<zap::Mechanism, std::string>;
-    using MechanismReverseMap = std::map<std::string, zap::Mechanism>;
+    using MechanismMap = UnallocatedMap<zap::Mechanism, UnallocatedCString>;
+    using MechanismReverseMap =
+        UnallocatedMap<UnallocatedCString, zap::Mechanism>;
 
     static constexpr auto default_version_{"1.0"};
     static constexpr auto version_position_ = std::size_t{0};
@@ -39,7 +38,7 @@ public:
     static constexpr auto max_string_field_size_ = std::size_t{255};
     static constexpr auto pubkey_size_ = std::size_t{32};
 
-    static const std::set<std::string> accept_versions_;
+    static const UnallocatedSet<UnallocatedCString> accept_versions_;
     static const MechanismMap mechanism_map_;
     static const MechanismReverseMap mechanism_reverse_map_;
 
@@ -57,7 +56,8 @@ public:
     ~Imp() final = default;
 
 private:
-    static auto mechanism_to_string(const zap::Mechanism in) -> std::string;
+    static auto mechanism_to_string(const zap::Mechanism in)
+        -> UnallocatedCString;
 
     Imp(Imp&&) = delete;
     auto operator=(const Imp&) -> Imp& = delete;

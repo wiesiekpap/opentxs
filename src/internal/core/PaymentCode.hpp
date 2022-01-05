@@ -46,7 +46,7 @@ public:
         const proto::Signature& sourceSignature) const noexcept -> bool = 0;
 
     virtual auto AddPrivateKeys(
-        std::string& seed,
+        UnallocatedCString& seed,
         const Bip32Index index,
         const PasswordPrompt& reason) noexcept -> bool = 0;
 

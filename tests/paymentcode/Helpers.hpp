@@ -10,7 +10,6 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 
 #include "Basic.hpp"
@@ -34,6 +33,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 
 namespace opentxs
@@ -63,12 +63,12 @@ struct PaymentCodeFixture {
         -> const ot::crypto::key::EllipticCurve&;
     auto blinding_key_secret(
         const ot::api::session::Client& api,
-        const std::string& privateKey,
+        const ot::UnallocatedCString& privateKey,
         const ot::PasswordPrompt& reason)
         -> const ot::crypto::key::EllipticCurve&;
     auto payment_code_public(
         const ot::api::Session& api,
-        const std::string& base58) -> const ot::PaymentCode&;
+        const ot::UnallocatedCString& base58) -> const ot::PaymentCode&;
     auto payment_code_secret(
         const ot::api::Session& api,
         const std::uint8_t version,
@@ -76,14 +76,14 @@ struct PaymentCodeFixture {
     auto seed(
         const ot::api::Session& api,
         const std::string_view wordList,
-        const ot::PasswordPrompt& reason) -> const std::string&;
+        const ot::PasswordPrompt& reason) -> const ot::UnallocatedCString&;
 
     auto cleanup() -> void;
 
     ~PaymentCodeFixture() { cleanup(); }
 
 private:
-    std::optional<std::string> seed_{};
+    std::optional<ot::UnallocatedCString> seed_{};
     std::optional<ot::PaymentCode> pc_secret_{};
     std::optional<ot::PaymentCode> pc_public_{};
     std::unique_ptr<const ot::crypto::key::EllipticCurve> blind_key_secret_{};
@@ -103,8 +103,8 @@ public:
 
     const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;
-    const std::string& alice_seed_;
-    const std::string& bob_seed_;
+    const ot::UnallocatedCString& alice_seed_;
+    const ot::UnallocatedCString& bob_seed_;
     const ot::PaymentCode& alice_pc_secret_;
     const ot::PaymentCode& alice_pc_public_;
     const ot::PaymentCode& bob_pc_secret_;
@@ -115,9 +115,9 @@ public:
     PC_Fixture_Base(
         const std::uint8_t aliceVersion,
         const std::uint8_t bobVersion,
-        const std::string& aliceBip39,
-        const std::string& bobBip39,
-        const std::string& aliceExpectedPC,
-        const std::string& bobExpectedPC) noexcept;
+        const ot::UnallocatedCString& aliceBip39,
+        const ot::UnallocatedCString& bobBip39,
+        const ot::UnallocatedCString& aliceExpectedPC,
+        const ot::UnallocatedCString& bobExpectedPC) noexcept;
 };
 }  // namespace ottest

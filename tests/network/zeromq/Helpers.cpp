@@ -8,13 +8,13 @@
 #include <chrono>
 #include <future>
 #include <iosfwd>
-#include <map>
 #include <mutex>
 #include <stdexcept>
 #include <utility>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ottest
 {
@@ -85,7 +85,7 @@ private:
 
     private:
         mutable std::mutex lock_{};
-        std::map<std::size_t, Task> map_{};
+        ot::UnallocatedMap<std::size_t, Task> map_{};
     };
 
     mutable std::mutex lock_;

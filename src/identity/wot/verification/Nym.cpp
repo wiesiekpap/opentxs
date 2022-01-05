@@ -11,7 +11,6 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
@@ -23,6 +22,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/Verification.pb.h"
 #include "serialization/protobuf/VerificationIdentity.pb.h"

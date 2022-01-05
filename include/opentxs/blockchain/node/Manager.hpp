@@ -69,7 +69,7 @@ public:
     virtual auto GetBalance() const noexcept -> Balance = 0;
     virtual auto GetBalance(const identifier::Nym& owner) const noexcept
         -> Balance = 0;
-    virtual auto GetConfirmations(const std::string& txid) const noexcept
+    virtual auto GetConfirmations(const UnallocatedCString& txid) const noexcept
         -> ChainHeight = 0;
     virtual auto GetHeight() const noexcept -> ChainHeight = 0;
     virtual auto GetPeerCount() const noexcept -> std::size_t = 0;
@@ -81,19 +81,22 @@ public:
     virtual auto Listen(const p2p::Address& address) const noexcept -> bool = 0;
     virtual auto SendToAddress(
         const identifier::Nym& sender,
-        const std::string& address,
+        const UnallocatedCString& address,
         const Amount amount,
-        const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
+        const UnallocatedCString& memo = {}) const noexcept
+        -> PendingOutgoing = 0;
     virtual auto SendToPaymentCode(
         const identifier::Nym& sender,
-        const std::string& recipient,
+        const UnallocatedCString& recipient,
         const Amount amount,
-        const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
+        const UnallocatedCString& memo = {}) const noexcept
+        -> PendingOutgoing = 0;
     virtual auto SendToPaymentCode(
         const identifier::Nym& sender,
         const PaymentCode& recipient,
         const Amount amount,
-        const std::string& memo = {}) const noexcept -> PendingOutgoing = 0;
+        const UnallocatedCString& memo = {}) const noexcept
+        -> PendingOutgoing = 0;
     virtual auto SyncTip() const noexcept -> block::Position = 0;
     virtual auto Wallet() const noexcept -> const node::Wallet& = 0;
 

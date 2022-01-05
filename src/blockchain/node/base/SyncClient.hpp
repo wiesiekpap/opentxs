@@ -8,9 +8,9 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -25,7 +25,7 @@ namespace opentxs::blockchain::node::base
 class SyncClient
 {
 public:
-    auto Endpoint() const noexcept -> const std::string&;
+    auto Endpoint() const noexcept -> const UnallocatedCString&;
 
     SyncClient(const api::Session& api, const Type chain) noexcept;
 

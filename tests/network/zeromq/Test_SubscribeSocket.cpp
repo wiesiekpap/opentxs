@@ -4,7 +4,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
-#include <string>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -12,7 +11,7 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -25,7 +24,7 @@ class Test_SubscribeSocket : public ::testing::Test
 public:
     const zmq::Context& context_;
 
-    const std::string testMessage_{"zeromq test message"};
+    const ot::UnallocatedCString testMessage_{"zeromq test message"};
 
     Test_SubscribeSocket()
         : context_(ot::Context().ZMQ())

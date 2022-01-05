@@ -11,12 +11,9 @@
 #include <atomic>
 #include <iterator>
 #include <limits>
-#include <list>
-#include <map>
 #include <memory>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "2_Factory.hpp"
 #include "Proto.tpp"
@@ -55,6 +52,7 @@
 #include "opentxs/identity/SourceType.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Authority.pb.h"
@@ -72,7 +70,7 @@ auto Factory::Nym(
     const api::Session& api,
     const crypto::Parameters& params,
     const identity::wot::claim::ClaimType type,
-    const std::string name,
+    const UnallocatedCString name,
     const opentxs::PasswordPrompt& reason) -> identity::internal::Nym*
 {
     using ReturnType = identity::implementation::Nym;
@@ -131,7 +129,7 @@ auto Factory::Nym(
 auto Factory::Nym(
     const api::Session& api,
     const proto::Nym& serialized,
-    const std::string& alias) -> identity::internal::Nym*
+    const UnallocatedCString& alias) -> identity::internal::Nym*
 {
     try {
         return new identity::implementation::Nym(api, serialized, alias);
@@ -147,7 +145,7 @@ auto Factory::Nym(
 auto Factory::Nym(
     const api::Session& api,
     const ReadView& view,
-    const std::string& alias) -> identity::internal::Nym*
+    const UnallocatedCString& alias) -> identity::internal::Nym*
 {
     return Nym(api, proto::Factory<proto::Nym>(view), alias);
 }
@@ -209,7 +207,7 @@ Nym::Nym(
 Nym::Nym(
     const api::Session& api,
     const proto::Nym& serialized,
-    const std::string& alias) noexcept(false)
+    const UnallocatedCString& alias) noexcept(false)
     : api_(api)
     , source_p_(opentxs::Factory::NymIDSource(api, serialized.source()))
     , source_(*source_p_)
@@ -277,11 +275,11 @@ auto Nym::add_verification_credential(
 auto Nym::AddChildKeyCredential(
     const Identifier& masterID,
     const crypto::Parameters& nymParameters,
-    const opentxs::PasswordPrompt& reason) -> std::string
+    const opentxs::PasswordPrompt& reason) -> UnallocatedCString
 {
     eLock lock(shared_lock_);
 
-    std::string output;
+    UnallocatedCString output;
     auto it = active_.find(masterID);
     const bool noMaster = (it == active_.end());
 
@@ -327,7 +325,7 @@ auto Nym::AddContract(
     const bool primary,
     const bool active) -> bool
 {
-    const std::string id(instrumentDefinitionID.str());
+    const UnallocatedCString id(instrumentDefinitionID.str());
 
     if (id.empty()) { return false; }
 
@@ -352,7 +350,7 @@ auto Nym::AddContract(
 }
 
 auto Nym::AddEmail(
-    const std::string& value,
+    const UnallocatedCString& value,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -411,7 +409,7 @@ auto Nym::AddPaymentCode(
 }
 
 auto Nym::AddPhoneNumber(
-    const std::string& value,
+    const UnallocatedCString& value,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
     const bool active) -> bool
@@ -466,7 +464,7 @@ auto Nym::AddPreferredOTServer(
 }
 
 auto Nym::AddSocialMediaProfile(
-    const std::string& value,
+    const UnallocatedCString& value,
     const wot::claim::ClaimType type,
     const opentxs::PasswordPrompt& reason,
     const bool primary,
@@ -494,7 +492,7 @@ auto Nym::AddSocialMediaProfile(
         reason);
 }
 
-auto Nym::Alias() const -> std::string { return alias_; }
+auto Nym::Alias() const -> UnallocatedCString { return alias_; }
 
 auto Nym::Serialize(AllocateOutput destination) const -> bool
 {
@@ -528,7 +526,7 @@ auto Nym::at(const std::size_t& index) const noexcept(false)
     throw std::out_of_range("Invalid authority index");
 }
 
-auto Nym::BestEmail() const -> std::string
+auto Nym::BestEmail() const -> UnallocatedCString
 {
     eLock lock(shared_lock_);
 
@@ -539,7 +537,7 @@ auto Nym::BestEmail() const -> std::string
     return contact_data_->BestEmail();
 }
 
-auto Nym::BestPhoneNumber() const -> std::string
+auto Nym::BestPhoneNumber() const -> UnallocatedCString
 {
     eLock lock(shared_lock_);
 
@@ -551,7 +549,7 @@ auto Nym::BestPhoneNumber() const -> std::string
 }
 
 auto Nym::BestSocialMediaProfile(const wot::claim::ClaimType type) const
-    -> std::string
+    -> UnallocatedCString
 {
     eLock lock(shared_lock_);
 
@@ -596,7 +594,7 @@ auto Nym::ContactCredentialVersion() const -> VersionNumber
 }
 
 auto Nym::Contracts(const core::UnitType currency, const bool onlyActive) const
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     eLock lock(shared_lock_);
 
@@ -654,7 +652,7 @@ auto Nym::DeleteClaim(
         reason);
 }
 
-auto Nym::EmailAddresses(bool active) const -> std::string
+auto Nym::EmailAddresses(bool active) const -> UnallocatedCString
 {
     eLock lock(shared_lock_);
 
@@ -1056,7 +1054,7 @@ auto Nym::load_revoked(
     return output;
 }
 
-auto Nym::Name() const -> std::string
+auto Nym::Name() const -> UnallocatedCString
 {
     eLock lock(shared_lock_);
 
@@ -1064,7 +1062,7 @@ auto Nym::Name() const -> std::string
 
     OT_ASSERT(contact_data_);
 
-    std::string output = contact_data_->Name();
+    UnallocatedCString output = contact_data_->Name();
 
     if (false == output.empty()) { return output; }
 
@@ -1150,7 +1148,7 @@ auto Nym::Path(proto::HDPath& output) const -> bool
     return path(lock, output);
 }
 
-auto Nym::PathRoot() const -> const std::string
+auto Nym::PathRoot() const -> const UnallocatedCString
 {
     sLock lock(shared_lock_);
 
@@ -1177,7 +1175,7 @@ auto Nym::PathChild(int index) const -> std::uint32_t
     return proto.child(index);
 }
 
-auto Nym::PaymentCode() const -> std::string
+auto Nym::PaymentCode() const -> UnallocatedCString
 {
     if (identity::SourceType::Bip47 != source_.Type()) { return ""; }
 
@@ -1228,7 +1226,7 @@ auto Nym::PaymentCodePath(proto::HDPath& output) const -> bool
     return true;
 }
 
-auto Nym::PhoneNumbers(bool active) const -> std::string
+auto Nym::PhoneNumbers(bool active) const -> UnallocatedCString
 {
     eLock lock(shared_lock_);
 
@@ -1245,7 +1243,7 @@ void Nym::revoke_contact_credentials(const eLock& lock)
 {
     OT_ASSERT(verify_lock(lock));
 
-    std::list<std::string> revokedIDs;
+    UnallocatedList<UnallocatedCString> revokedIDs;
 
     for (auto& it : active_) {
         if (nullptr != it.second) {
@@ -1260,7 +1258,7 @@ void Nym::revoke_verification_credentials(const eLock& lock)
 {
     OT_ASSERT(verify_lock(lock));
 
-    std::list<std::string> revokedIDs;
+    UnallocatedList<UnallocatedCString> revokedIDs;
 
     for (auto& it : active_) {
         if (nullptr != it.second) {
@@ -1386,7 +1384,7 @@ auto Nym::set_contact_data(
     return false;
 }
 
-void Nym::SetAlias(const std::string& alias)
+void Nym::SetAlias(const UnallocatedCString& alias)
 {
     eLock lock(shared_lock_);
 
@@ -1395,7 +1393,7 @@ void Nym::SetAlias(const std::string& alias)
 }
 
 auto Nym::SetCommonName(
-    const std::string& name,
+    const UnallocatedCString& name,
     const opentxs::PasswordPrompt& reason) -> bool
 {
     eLock lock(shared_lock_);
@@ -1438,7 +1436,7 @@ auto Nym::SetContactData(
 
 auto Nym::SetScope(
     const wot::claim::ClaimType type,
-    const std::string& name,
+    const UnallocatedCString& name,
     const opentxs::PasswordPrompt& reason,
     const bool primary) -> bool
 {
@@ -1479,7 +1477,7 @@ auto Nym::Sign(
 
     bool haveSig = false;
 
-    auto preimage = [&input]() -> std::string {
+    auto preimage = [&input]() -> UnallocatedCString {
         return proto::ToString(input);
     };
 
@@ -1512,7 +1510,7 @@ auto Nym::Sign(
 }
 
 auto Nym::SocialMediaProfiles(const wot::claim::ClaimType type, bool active)
-    const -> std::string
+    const -> UnallocatedCString
 {
     eLock lock(shared_lock_);
 
@@ -1524,7 +1522,7 @@ auto Nym::SocialMediaProfiles(const wot::claim::ClaimType type, bool active)
 }
 
 auto Nym::SocialMediaProfileTypes() const
-    -> const std::set<wot::claim::ClaimType>
+    -> const UnallocatedSet<wot::claim::ClaimType>
 {
     eLock lock(shared_lock_);
 

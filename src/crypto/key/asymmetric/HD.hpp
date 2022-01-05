@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 #include <tuple>
 
 #include "Proto.hpp"
@@ -20,6 +19,7 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
@@ -64,10 +64,12 @@ public:
     auto Depth() const noexcept -> int final;
     auto Fingerprint() const noexcept -> Bip32Fingerprint final;
     auto Parent() const noexcept -> Bip32Fingerprint final { return parent_; }
-    auto Path() const noexcept -> const std::string final;
+    auto Path() const noexcept -> const UnallocatedCString final;
     auto Path(proto::HDPath& output) const noexcept -> bool final;
-    auto Xprv(const PasswordPrompt& reason) const noexcept -> std::string final;
-    auto Xpub(const PasswordPrompt& reason) const noexcept -> std::string final;
+    auto Xprv(const PasswordPrompt& reason) const noexcept
+        -> UnallocatedCString final;
+    auto Xpub(const PasswordPrompt& reason) const noexcept
+        -> UnallocatedCString final;
 
 protected:
     auto erase_private_data(const Lock& lock) -> void final;

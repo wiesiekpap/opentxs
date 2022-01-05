@@ -8,12 +8,11 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <optional>
-#include <string>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/crypto/Subaccount.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -38,7 +37,7 @@ namespace crypto
 class OPENTXS_EXPORT Deterministic : virtual public Subaccount
 {
 public:
-    using Batch = std::vector<Bip32Index>;
+    using Batch = UnallocatedVector<Bip32Index>;
 
     virtual auto Floor(const Subchain type) const noexcept
         -> std::optional<Bip32Index> = 0;
@@ -52,12 +51,12 @@ public:
         -> std::optional<Bip32Index> = 0;
     virtual auto Lookahead() const noexcept -> std::size_t = 0;
     OPENTXS_NO_EXPORT virtual auto Path() const noexcept -> proto::HDPath = 0;
-    virtual auto PathRoot() const noexcept -> const std::string = 0;
+    virtual auto PathRoot() const noexcept -> const UnallocatedCString = 0;
     virtual auto Reserve(
         const Subchain type,
         const PasswordPrompt& reason,
         const Identifier& contact = Identifier::Factory(),
-        const std::string& label = {},
+        const UnallocatedCString& label = {},
         const Time time = Clock::now()) const noexcept
         -> std::optional<Bip32Index> = 0;
     virtual auto Reserve(
@@ -65,7 +64,7 @@ public:
         const std::size_t batch,
         const PasswordPrompt& reason,
         const Identifier& contact = Identifier::Factory(),
-        const std::string& label = {},
+        const UnallocatedCString& label = {},
         const Time time = Clock::now()) const noexcept -> Batch = 0;
     virtual auto RootNode(const PasswordPrompt& reason) const noexcept
         -> HDKey = 0;

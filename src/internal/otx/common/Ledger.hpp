@@ -7,10 +7,7 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 #include <tuple>
 
 #include "internal/otx/Types.hpp"
@@ -21,6 +18,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -72,7 +70,7 @@ namespace opentxs
 // transaction, we use the blank to do so. If there is no blank available, we
 // message the server and request one.
 using mapOfTransactions =
-    std::map<TransactionNumber, std::shared_ptr<OTTransaction>>;
+    UnallocatedMap<TransactionNumber, std::shared_ptr<OTTransaction>>;
 
 // the "inbox" and "outbox" functionality is implemented in this class
 class Ledger : public OTTransactionType
@@ -109,7 +107,7 @@ public:
         const otx::context::Server& context,
         const Account& theAccount,
         Ledger& theOutbox,
-        const std::set<TransactionNumber>& without,
+        const UnallocatedSet<TransactionNumber>& without,
         const PasswordPrompt& reason) const -> std::unique_ptr<Item>;
 
     void ProduceOutboxReport(
@@ -124,8 +122,8 @@ public:
                   // found.
 
     auto GetTransactionNums(
-        const std::set<std::int32_t>* pOnlyForIndices = nullptr) const
-        -> std::set<std::int64_t>;
+        const UnallocatedSet<std::int32_t>* pOnlyForIndices = nullptr) const
+        -> UnallocatedSet<std::int64_t>;
 
     auto GetTransaction(transactionType theType)
         -> std::shared_ptr<OTTransaction>;
@@ -159,7 +157,7 @@ public:
     //
     auto VerifyAccount(const identity::Nym& theNym) -> bool override;
     // For ALL abbreviated transactions, load the actual box receipt for each.
-    auto LoadBoxReceipts(std::set<std::int64_t>* psetUnloaded = nullptr)
+    auto LoadBoxReceipts(UnallocatedSet<std::int64_t>* psetUnloaded = nullptr)
         -> bool;                     // if psetUnloaded
                                      // passed
                                      // in, then use it to
@@ -275,8 +273,8 @@ private:  // Private prevents erroneous use by other classes.
     mapOfTransactions m_mapTransactions;  // a ledger contains a map of
                                           // transactions.
 
-    auto make_filename(const ledgerType theType)
-        -> std::tuple<bool, std::string, std::string, std::string>;
+    auto make_filename(const ledgerType theType) -> std::
+        tuple<bool, UnallocatedCString, UnallocatedCString, UnallocatedCString>;
 
     auto generate_ledger(
         const identifier::Nym& theNymID,

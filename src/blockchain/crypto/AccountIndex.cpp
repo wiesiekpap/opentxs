@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "blockchain/crypto/AccountIndex.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <memory>
 #include <shared_mutex>
 
@@ -16,11 +15,12 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::crypto
 {
 struct AccountIndex::Imp {
-    using Accounts = std::set<OTIdentifier>;
+    using Accounts = UnallocatedSet<OTIdentifier>;
 
     auto AccountList(const identifier::Nym& nymID) const noexcept -> Accounts
     {
@@ -87,9 +87,9 @@ struct AccountIndex::Imp {
     }
 
 private:
-    using Map = std::map<OTIdentifier, Data>;
-    using ChainIndex = std::map<Chain, Accounts>;
-    using NymIndex = std::map<OTNymID, Accounts>;
+    using Map = UnallocatedMap<OTIdentifier, Data>;
+    using ChainIndex = UnallocatedMap<Chain, Accounts>;
+    using NymIndex = UnallocatedMap<OTNymID, Accounts>;
 
     const Data blank_;
     mutable std::shared_mutex lock_;
@@ -111,18 +111,18 @@ AccountIndex::AccountIndex(const api::Session& api) noexcept
 }
 
 auto AccountIndex::AccountList(const identifier::Nym& nymID) const noexcept
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return imp_->AccountList(nymID);
 }
 
 auto AccountIndex::AccountList(const Chain chain) const noexcept
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return imp_->AccountList(chain);
 }
 
-auto AccountIndex::AccountList() const noexcept -> std::set<OTIdentifier>
+auto AccountIndex::AccountList() const noexcept -> UnallocatedSet<OTIdentifier>
 {
     return imp_->AccountList();
 }

@@ -5,7 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <string>
 
 #include "Basic.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
@@ -18,28 +17,29 @@
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordCallback.hpp"
 #include "opentxs/util/PasswordCaller.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {
-std::string profile_id_{};
-std::string nym_id_{};
-std::string server_id_{};
+ot::UnallocatedCString profile_id_{};
+ot::UnallocatedCString nym_id_{};
+ot::UnallocatedCString server_id_{};
 
 #define TEST_PASSWORD "blah foo blah foo blah"
 #define TEST_DIFF_PASSWORD "time keeps on slippin slippin slippin"
 
 class TestCallback : public opentxs::PasswordCallback
 {
-    std::string password_;
+    ot::UnallocatedCString password_;
 
 public:
     void runOne(
         const char* szDisplay,
         opentxs::Secret& theOutput,
-        const std::string& key) const override
+        const ot::UnallocatedCString& key) const override
     {
         theOutput.AssignText(password_);
     }
@@ -47,12 +47,15 @@ public:
     void runTwo(
         const char* szDisplay,
         opentxs::Secret& theOutput,
-        const std::string& key) const override
+        const ot::UnallocatedCString& key) const override
     {
         theOutput.AssignText(password_);
     }
 
-    void SetPassword(const std::string& password) { password_ = password; }
+    void SetPassword(const ot::UnallocatedCString& password)
+    {
+        password_ = password;
+    }
 
     TestCallback();
 };

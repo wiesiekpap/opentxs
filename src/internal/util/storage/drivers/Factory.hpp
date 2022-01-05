@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "opentxs/util/Container.hpp"  // IWYU pragma: keep
+
 namespace opentxs
 {
 namespace api
@@ -58,7 +60,7 @@ auto StorageFSArchive(
     const api::session::Storage& parent,
     const storage::Config& config,
     const Flag& bucket,
-    const std::string& folder,
+    const UnallocatedCString& folder,
     crypto::key::Symmetric& key) noexcept -> std::unique_ptr<storage::Plugin>;
 auto StorageFSGC(
     const api::Crypto& crypto,

@@ -12,7 +12,6 @@
 #include <robin_hood.h>
 #include <iosfwd>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <type_traits>
 
@@ -32,6 +31,7 @@
 #include "opentxs/crypto/Bip44Type.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -46,7 +46,8 @@ auto BlockchainToUnit(const blockchain::Type type) noexcept -> core::UnitType
 
 auto UnitToBlockchain(const core::UnitType type) noexcept -> blockchain::Type
 {
-    using Map = std::map<opentxs::core::UnitType, opentxs::blockchain::Type>;
+    using Map =
+        UnallocatedMap<opentxs::core::UnitType, opentxs::blockchain::Type>;
 
     static const auto build = []() -> auto
     {
@@ -69,28 +70,29 @@ auto UnitToBlockchain(const core::UnitType type) noexcept -> blockchain::Type
 
 using Code = blockchain::SendResult;
 
-auto print(Code code) noexcept -> std::string
+auto print(Code code) noexcept -> UnallocatedCString
 {
-    static const auto map = robin_hood::unordered_flat_map<Code, std::string>{
-        {Code::InvalidSenderNym, "invalid sender nym"},
-        {Code::AddressNotValidforChain,
-         "provided address is not valid for specified blockchain"},
-        {Code::UnsupportedAddressFormat, "address format is not supported"},
-        {Code::SenderMissingPaymentCode,
-         "sender nym does not contain a valid payment code"},
-        {Code::UnsupportedRecipientPaymentCode,
-         "recipient payment code version is not supported"},
-        {Code::HDDerivationFailure, "key derivation error"},
-        {Code::DatabaseError, "database error"},
-        {Code::DuplicateProposal, "duplicate spend proposal"},
-        {Code::OutputCreationError, "failed to create transaction outputs"},
-        {Code::ChangeError, "failed to create change output"},
-        {Code::InsufficientFunds, "insufficient funds"},
-        {Code::InputCreationError, "failed to create transaction inputs"},
-        {Code::SignatureError, "error signing transaction"},
-        {Code::SendFailed, "failed to broadcast transaction"},
-        {Code::Sent, "successfully broadcast transaction"},
-    };
+    static const auto map =
+        robin_hood::unordered_flat_map<Code, UnallocatedCString>{
+            {Code::InvalidSenderNym, "invalid sender nym"},
+            {Code::AddressNotValidforChain,
+             "provided address is not valid for specified blockchain"},
+            {Code::UnsupportedAddressFormat, "address format is not supported"},
+            {Code::SenderMissingPaymentCode,
+             "sender nym does not contain a valid payment code"},
+            {Code::UnsupportedRecipientPaymentCode,
+             "recipient payment code version is not supported"},
+            {Code::HDDerivationFailure, "key derivation error"},
+            {Code::DatabaseError, "database error"},
+            {Code::DuplicateProposal, "duplicate spend proposal"},
+            {Code::OutputCreationError, "failed to create transaction outputs"},
+            {Code::ChangeError, "failed to create change output"},
+            {Code::InsufficientFunds, "insufficient funds"},
+            {Code::InputCreationError, "failed to create transaction inputs"},
+            {Code::SignatureError, "error signing transaction"},
+            {Code::SendFailed, "failed to broadcast transaction"},
+            {Code::Sent, "successfully broadcast transaction"},
+        };
 
     try {
 
@@ -101,12 +103,12 @@ auto print(Code code) noexcept -> std::string
     }
 }
 
-auto print(blockchain::Type type) noexcept -> std::string
+auto print(blockchain::Type type) noexcept -> UnallocatedCString
 {
     return blockchain::DisplayString(type);
 }
 
-auto print(const blockchain::block::Position& in) noexcept -> std::string
+auto print(const blockchain::block::Position& in) noexcept -> UnallocatedCString
 {
     const auto& [height, hash] = in;
     auto out = std::stringstream{};
@@ -146,10 +148,10 @@ auto BlockHash(
     }
 }
 
-auto DefinedChains() noexcept -> const std::set<Type>&
+auto DefinedChains() noexcept -> const UnallocatedSet<Type>&
 {
     static const auto output = [] {
-        auto output = std::set<Type>{};
+        auto output = UnallocatedSet<Type>{};
 
         for (const auto& [chain, data] : params::Data::Chains()) {
             output.emplace(chain);
@@ -161,7 +163,7 @@ auto DefinedChains() noexcept -> const std::set<Type>&
     return output;
 }
 
-auto DisplayString(const Type type) noexcept -> std::string
+auto DisplayString(const Type type) noexcept -> UnallocatedCString
 {
     try {
 
@@ -374,10 +376,10 @@ auto ScriptHashSegwit(
     }
 }
 
-auto SupportedChains() noexcept -> const std::set<Type>&
+auto SupportedChains() noexcept -> const UnallocatedSet<Type>&
 {
     static const auto output = [] {
-        auto output = std::set<Type>{};
+        auto output = UnallocatedSet<Type>{};
 
         for (const auto& [chain, data] : params::Data::Chains()) {
             if (data.supported_) { output.emplace(chain); }
@@ -389,7 +391,7 @@ auto SupportedChains() noexcept -> const std::set<Type>&
     return output;
 }
 
-auto TickerSymbol(const Type type) noexcept -> std::string
+auto TickerSymbol(const Type type) noexcept -> UnallocatedCString
 {
     try {
 
@@ -438,7 +440,7 @@ auto BlankHash() noexcept -> pHash
 namespace opentxs::blockchain::internal
 {
 auto Format(const Type chain, const opentxs::Amount& amount) noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     try {
         const auto& definition =

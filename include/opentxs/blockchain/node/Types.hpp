@@ -8,7 +8,8 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -21,6 +22,8 @@ enum class TxoTag : std::uint16_t;
 }  // namespace node
 }  // namespace blockchain
 
-OPENTXS_EXPORT auto print(blockchain::node::TxoState) noexcept -> std::string;
-OPENTXS_EXPORT auto print(blockchain::node::TxoTag) noexcept -> std::string;
+OPENTXS_EXPORT auto print(blockchain::node::TxoState) noexcept
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto print(blockchain::node::TxoTag) noexcept
+    -> UnallocatedCString;
 }  // namespace opentxs

@@ -7,9 +7,7 @@
 #include "1_Internal.hpp"    // IWYU pragma: associated
 #include "util/rpc/RPC.hpp"  // IWYU pragma: associated
 
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/crypto/Blockchain.hpp"
@@ -25,6 +23,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/ui/AccountActivity.hpp"
 #include "opentxs/core/ui/BalanceItem.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/rpc/AccountEventType.hpp"
@@ -77,7 +76,7 @@ auto RPC::get_account_activity(const request::Base& base) const
             // TODO check for empty owner and return appropriate error
             const auto& widget = api.UI().AccountActivity(owner, accountID);
             const auto copy = [&](const auto& row) {
-                const auto contact = [&]() -> std::string {
+                const auto contact = [&]() -> UnallocatedCString {
                     const auto& contacts = row.Contacts();
 
                     if (0u < contacts.size()) {

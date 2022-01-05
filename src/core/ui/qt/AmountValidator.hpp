@@ -13,7 +13,6 @@
 #include <atomic>
 #include <optional>
 #include <stdexcept>
-#include <string>
 
 #include "1_Internal.hpp"
 #include "core/ui/accountactivity/AccountActivity.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/ui/AccountActivity.hpp"
 #include "opentxs/core/ui/qt/AmountValidator.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Log.hpp"
 
@@ -114,7 +114,7 @@ private:
     std::atomic_int max_;
 
     auto fix(const QString& input, Index oldScale) const noexcept(false)
-        -> std::string
+        -> UnallocatedCString
     {
         static const auto get =
             [](const auto& val) -> display::Definition::OptionalInt {

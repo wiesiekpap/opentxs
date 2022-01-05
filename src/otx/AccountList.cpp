@@ -11,9 +11,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/api/session/Wallet.hpp"
@@ -27,6 +25,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -58,8 +57,8 @@ void AccountList::Serialize(Tag& parent) const
     pTag->add_attribute("count", std::to_string(sizeMapAcctIDs));
 
     for (auto& it : mapAcctIDs_) {
-        std::string instrumentDefinitionID = it.first;
-        std::string accountId = it.second;
+        UnallocatedCString instrumentDefinitionID = it.first;
+        UnallocatedCString accountId = it.second;
         OT_ASSERT(
             (instrumentDefinitionID.size() > 0) && (accountId.size() > 0));
 

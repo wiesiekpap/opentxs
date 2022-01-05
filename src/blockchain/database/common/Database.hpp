@@ -10,10 +10,7 @@
 #include <iosfwd>
 #include <memory>
 #include <optional>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
@@ -32,6 +29,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
 #include "serialization/protobuf/BlockchainTransaction.pb.h"
 #include "util/LMDB.hpp"
@@ -100,43 +98,45 @@ public:
     using Txid = opentxs::blockchain::block::Txid;
     using pTxid = opentxs::blockchain::block::pTxid;
     using Chain = opentxs::blockchain::Type;
-    using EnabledChain = std::pair<Chain, std::string>;
+    using EnabledChain = std::pair<Chain, UnallocatedCString>;
     using Height = opentxs::blockchain::block::Height;
-    using SyncItems = std::vector<opentxs::network::p2p::Block>;
-    using Endpoints = std::vector<std::string>;
+    using SyncItems = UnallocatedVector<opentxs::network::p2p::Block>;
+    using Endpoints = UnallocatedVector<UnallocatedCString>;
 
     auto AddOrUpdate(Address_p address) const noexcept -> bool;
-    auto AddSyncServer(const std::string& endpoint) const noexcept -> bool;
-    auto AllocateStorageFolder(const std::string& dir) const noexcept
-        -> std::string;
+    auto AddSyncServer(const UnallocatedCString& endpoint) const noexcept
+        -> bool;
+    auto AllocateStorageFolder(const UnallocatedCString& dir) const noexcept
+        -> UnallocatedCString;
     auto AssociateTransaction(
         const Txid& txid,
-        const std::vector<PatternID>& patterns) const noexcept -> bool;
+        const UnallocatedVector<PatternID>& patterns) const noexcept -> bool;
     auto BlockHeaderExists(const BlockHash& hash) const noexcept -> bool;
     auto BlockExists(const BlockHash& block) const noexcept -> bool;
     auto BlockLoad(const BlockHash& block) const noexcept -> BlockReader;
     auto BlockPolicy() const noexcept -> BlockStorage;
     auto BlockStore(const BlockHash& block, const std::size_t bytes)
         const noexcept -> BlockWriter;
-    auto DeleteSyncServer(const std::string& endpoint) const noexcept -> bool;
-    auto Disable(const Chain type) const noexcept -> bool;
-    auto Enable(const Chain type, const std::string& seednode) const noexcept
+    auto DeleteSyncServer(const UnallocatedCString& endpoint) const noexcept
         -> bool;
+    auto Disable(const Chain type) const noexcept -> bool;
+    auto Enable(const Chain type, const UnallocatedCString& seednode)
+        const noexcept -> bool;
     auto Find(
         const Chain chain,
         const Protocol protocol,
-        const std::set<Type> onNetworks,
-        const std::set<Service> withServices) const noexcept -> Address_p;
+        const UnallocatedSet<Type> onNetworks,
+        const UnallocatedSet<Service> withServices) const noexcept -> Address_p;
     auto GetSyncServers() const noexcept -> Endpoints;
     auto HashKey() const noexcept -> ReadView;
     auto HaveFilter(const filter::Type type, const ReadView blockHash)
         const noexcept -> bool;
     auto HaveFilterHeader(const filter::Type type, const ReadView blockHash)
         const noexcept -> bool;
-    auto Import(std::vector<Address_p> peers) const noexcept -> bool;
+    auto Import(UnallocatedVector<Address_p> peers) const noexcept -> bool;
     auto LoadBlockHeader(const BlockHash& hash) const noexcept(false)
         -> proto::BlockchainBlockHeader;
-    auto LoadEnabledChains() const noexcept -> std::vector<EnabledChain>;
+    auto LoadEnabledChains() const noexcept -> UnallocatedVector<EnabledChain>;
     auto LoadFilter(const filter::Type type, const ReadView blockHash)
         const noexcept -> std::unique_ptr<const opentxs::blockchain::GCS>;
     auto LoadFilterHash(
@@ -154,9 +154,9 @@ public:
     auto LoadTransaction(const ReadView txid) const noexcept
         -> std::unique_ptr<block::bitcoin::Transaction>;
     auto LookupContact(const Data& pubkeyHash) const noexcept
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto LookupTransactions(const PatternID pattern) const noexcept
-        -> std::vector<pTxid>;
+        -> UnallocatedVector<pTxid>;
     auto ReorgSync(const Chain chain, const Height height) const noexcept
         -> bool;
     auto StoreBlockHeader(const opentxs::blockchain::block::Header& header)
@@ -164,28 +164,29 @@ public:
     auto StoreBlockHeaders(const UpdatedHeader& headers) const noexcept -> bool;
     auto StoreFilterHeaders(
         const filter::Type type,
-        const std::vector<FilterHeader>& headers) const noexcept -> bool;
-    auto StoreFilters(const filter::Type type, std::vector<FilterData>& filters)
-        const noexcept -> bool;
+        const UnallocatedVector<FilterHeader>& headers) const noexcept -> bool;
     auto StoreFilters(
         const filter::Type type,
-        const std::vector<FilterHeader>& headers,
-        const std::vector<FilterData>& filters) const noexcept -> bool;
+        UnallocatedVector<FilterData>& filters) const noexcept -> bool;
+    auto StoreFilters(
+        const filter::Type type,
+        const UnallocatedVector<FilterHeader>& headers,
+        const UnallocatedVector<FilterData>& filters) const noexcept -> bool;
     auto StoreSync(const Chain chain, const SyncItems& items) const noexcept
         -> bool;
     auto StoreTransaction(const block::bitcoin::Transaction& tx) const noexcept
         -> bool;
     auto SyncTip(const Chain chain) const noexcept -> Height;
     auto UpdateContact(const Contact& contact) const noexcept
-        -> std::vector<pTxid>;
+        -> UnallocatedVector<pTxid>;
     auto UpdateMergedContact(const Contact& parent, const Contact& child)
-        const noexcept -> std::vector<pTxid>;
+        const noexcept -> UnallocatedVector<pTxid>;
 
     Database(
         const api::Session& api,
         const api::crypto::Blockchain& blockchain,
         const api::Legacy& legacy,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Options& args) noexcept(false);
 
     ~Database();

@@ -22,7 +22,7 @@
 namespace opentxs::identity::wot::claim
 {
 struct Group::Imp {
-    const std::string nym_{};
+    const UnallocatedCString nym_{};
     const claim::SectionType section_{claim::SectionType::Error};
     const claim::ClaimType type_{claim::ClaimType::Error};
     const OTIdentifier primary_;
@@ -47,7 +47,7 @@ struct Group::Imp {
         return primary;
     }
 
-    Imp(const std::string& nym,
+    Imp(const UnallocatedCString& nym,
         const claim::SectionType section,
         const claim::ClaimType type,
         const ItemMap& items)
@@ -70,7 +70,7 @@ struct Group::Imp {
     }
 
     Imp(Imp&& rhs)
-        : nym_(std::move(const_cast<std::string&>(rhs.nym_)))
+        : nym_(std::move(const_cast<UnallocatedCString&>(rhs.nym_)))
         , section_(rhs.section_)
         , type_(rhs.type_)
         , primary_(std::move(const_cast<OTIdentifier&>(rhs.primary_)))
@@ -114,7 +114,7 @@ static auto create_item(const std::shared_ptr<Item>& item) -> Group::ItemMap
 }
 
 Group::Group(
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const claim::SectionType section,
     const claim::ClaimType type,
     const ItemMap& items)
@@ -124,7 +124,7 @@ Group::Group(
 }
 
 Group::Group(
-    const std::string& nym,
+    const UnallocatedCString& nym,
     const claim::SectionType section,
     const std::shared_ptr<Item>& item)
     : Group(nym, section, item->Type(), create_item(item))

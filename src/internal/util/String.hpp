@@ -6,7 +6,8 @@
 #pragma once
 
 #include <cstdarg>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 #ifdef __GNUC__
 #define ATTR_PRINTF(a, b) __attribute__((format(printf, a, b)))
@@ -23,5 +24,5 @@
 namespace opentxs
 {
 auto ATTR_PRINTF(1, 0)
-    vformat(const char* fmt, std::va_list* pvl, std::string& s) -> bool;
+    vformat(const char* fmt, std::va_list* pvl, UnallocatedCString& s) -> bool;
 }  // namespace opentxs

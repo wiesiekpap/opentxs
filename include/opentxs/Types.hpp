@@ -10,16 +10,12 @@
 #include <cstdint>
 #include <functional>
 #include <limits>
-#include <list>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
 #include <shared_mutex>
-#include <string>
 #include <tuple>
-#include <vector>
 
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -66,10 +62,10 @@ static const BlockMode NOBLOCK_MODE = false;
 
 enum class StringStyle : bool { Hex = true, Raw = false };
 
-using GetPreimage = std::function<std::string()>;
+using GetPreimage = std::function<UnallocatedCString()>;
 using SimpleCallback = std::function<void()>;
 
-using DhtResults = std::vector<std::shared_ptr<std::string>>;
+using DhtResults = UnallocatedVector<std::shared_ptr<UnallocatedCString>>;
 
 using DhtDoneCallback = std::function<void(bool)>;
 using DhtResultsCallback = std::function<bool(const DhtResults&)>;
@@ -80,32 +76,33 @@ using PeriodicTask = std::function<void()>;
  *  protobuf version, since it contains the claim ID.
  */
 using Claim = std::tuple<
-    std::string,               // claim identifier
-    std::uint32_t,             // section
-    std::uint32_t,             // type
-    std::string,               // value
-    std::int64_t,              // start time
-    std::int64_t,              // end time
-    std::set<std::uint32_t>>;  // attributes
+    UnallocatedCString,              // claim identifier
+    std::uint32_t,                   // section
+    std::uint32_t,                   // type
+    UnallocatedCString,              // value
+    std::int64_t,                    // start time
+    std::int64_t,                    // end time
+    UnallocatedSet<std::uint32_t>>;  // attributes
 using ClaimTuple = Claim;
 
 /** C++11 representation of all contact data associated with a nym, aggregating
  *  each the nym's contact credentials in the event it has more than one.
  */
-using ClaimSet = std::set<Claim>;
+using ClaimSet = UnallocatedSet<Claim>;
 
 /** A list of object IDs and their associated aliases
  *  * string: id of the stored object
  *  * string: alias of the stored object
  */
-using ObjectList = std::list<std::pair<std::string, std::string>>;
+using ObjectList =
+    UnallocatedList<std::pair<UnallocatedCString, UnallocatedCString>>;
 
-using RawData = std::vector<unsigned char>;
+using RawData = UnallocatedVector<unsigned char>;
 
 using Nym_p = std::shared_ptr<const identity::Nym>;
 
 // local ID, remote ID
-using ContextID = std::pair<std::string, std::string>;
+using ContextID = std::pair<UnallocatedCString, UnallocatedCString>;
 using ContextLockCallback =
     std::function<std::recursive_mutex&(const ContextID&)>;
 using SetID = std::function<void(const Identifier&)>;
@@ -176,12 +173,13 @@ enum class ConnectionState : std::uint8_t {
 };
 
 using Endpoint = std::tuple<
-    int,            // address type
-    int,            // protocol version
-    std::string,    // hostname / address
-    std::uint32_t,  // port
+    int,                 // address type
+    int,                 // protocol version
+    UnallocatedCString,  // hostname / address
+    std::uint32_t,       // port
     VersionNumber>;
-using NetworkReplyRaw = std::pair<SendResult, std::shared_ptr<std::string>>;
+using NetworkReplyRaw =
+    std::pair<SendResult, std::shared_ptr<UnallocatedCString>>;
 using NetworkReplyString = std::pair<SendResult, std::shared_ptr<String>>;
 using NetworkReplyMessage = std::pair<SendResult, std::shared_ptr<Message>>;
 

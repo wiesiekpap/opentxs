@@ -6,11 +6,7 @@
 #pragma once
 
 #include <iosfwd>
-#include <list>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -24,6 +20,7 @@
 #include "opentxs/core/ui/ProfileSection.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
@@ -85,29 +82,31 @@ class ProfileSection final
 public:
     auto AddClaim(
         const identity::wot::claim::ClaimType type,
-        const std::string& value,
+        const UnallocatedCString& value,
         const bool primary,
         const bool active) const noexcept -> bool final;
-    auto Delete(const int type, const std::string& claimID) const noexcept
-        -> bool final;
-    auto Items(const std::string& lang) const noexcept -> ItemTypeList final;
-    auto Name(const std::string& lang) const noexcept -> std::string final;
+    auto Delete(const int type, const UnallocatedCString& claimID)
+        const noexcept -> bool final;
+    auto Items(const UnallocatedCString& lang) const noexcept
+        -> ItemTypeList final;
+    auto Name(const UnallocatedCString& lang) const noexcept
+        -> UnallocatedCString final;
     auto NymID() const noexcept -> const identifier::Nym& final
     {
         return primary_id_;
     }
     auto SetActive(
         const int type,
-        const std::string& claimID,
+        const UnallocatedCString& claimID,
         const bool active) const noexcept -> bool final;
     auto SetPrimary(
         const int type,
-        const std::string& claimID,
+        const UnallocatedCString& claimID,
         const bool primary) const noexcept -> bool final;
     auto SetValue(
         const int type,
-        const std::string& claimID,
-        const std::string& value) const noexcept -> bool final;
+        const UnallocatedCString& claimID,
+        const UnallocatedCString& value) const noexcept -> bool final;
     auto Type() const noexcept -> identity::wot::claim::SectionType final
     {
         return row_id_;
@@ -135,7 +134,7 @@ private:
         return ProfileSectionList::last(id);
     }
     auto process_section(const identity::wot::claim::Section& section) noexcept
-        -> std::set<ProfileSectionRowID>;
+        -> UnallocatedSet<ProfileSectionRowID>;
 
     auto reindex(const ProfileSortKey& key, CustomData& custom) noexcept
         -> bool final;

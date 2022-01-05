@@ -7,10 +7,10 @@
 
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/StorageIssuers.pb.h"
 #include "util/storage/tree/Node.hpp"
@@ -35,13 +35,14 @@ class Issuers final : public Node
 {
 public:
     auto Load(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<proto::Issuer>& output,
-        std::string& alias,
+        UnallocatedCString& alias,
         const bool checking) const -> bool;
 
-    auto Delete(const std::string& id) -> bool;
-    auto Store(const proto::Issuer& data, const std::string& alias) -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
+    auto Store(const proto::Issuer& data, const UnallocatedCString& alias)
+        -> bool;
 
     ~Issuers() final = default;
 
@@ -50,11 +51,11 @@ private:
 
     static constexpr auto current_version_ = VersionNumber{1};
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageIssuers;
 
-    Issuers(const Driver& storage, const std::string& hash);
+    Issuers(const Driver& storage, const UnallocatedCString& hash);
     Issuers() = delete;
     Issuers(const Issuers&) = delete;
     Issuers(Issuers&&) = delete;

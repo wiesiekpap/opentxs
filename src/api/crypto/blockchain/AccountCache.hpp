@@ -9,16 +9,15 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <mutex>
 #include <optional>
-#include <set>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -43,7 +42,7 @@ public:
     auto List(
         const identifier::Nym& nymID,
         const opentxs::blockchain::Type chain) const noexcept
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto New(
         const opentxs::blockchain::crypto::SubaccountType type,
         const opentxs::blockchain::Type chain,
@@ -59,13 +58,14 @@ public:
     AccountCache(const api::Session& api) noexcept;
 
 private:
-    using Accounts = std::set<OTIdentifier>;
-    using NymAccountMap = std::map<OTNymID, Accounts>;
+    using Accounts = UnallocatedSet<OTIdentifier>;
+    using NymAccountMap = UnallocatedMap<OTNymID, Accounts>;
     using ChainAccountMap =
-        std::map<opentxs::blockchain::Type, std::optional<NymAccountMap>>;
-    using AccountNymIndex = std::map<OTIdentifier, OTNymID>;
-    using AccountTypeIndex =
-        std::map<OTIdentifier, opentxs::blockchain::crypto::SubaccountType>;
+        UnallocatedMap<opentxs::blockchain::Type, std::optional<NymAccountMap>>;
+    using AccountNymIndex = UnallocatedMap<OTIdentifier, OTNymID>;
+    using AccountTypeIndex = UnallocatedMap<
+        OTIdentifier,
+        opentxs::blockchain::crypto::SubaccountType>;
 
     const api::Session& api_;
     mutable std::mutex lock_;

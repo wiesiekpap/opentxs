@@ -10,9 +10,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <memory>
-#include <set>
 #include <sstream>
-#include <string>
 #include <string_view>
 #include <utility>
 
@@ -26,6 +24,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/zap/Request.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/Container.hpp"
@@ -50,7 +49,8 @@ auto ZAPRequest(
 
 namespace opentxs::network::zeromq::zap
 {
-const std::set<std::string> Request::Imp::accept_versions_{default_version_};
+const UnallocatedSet<UnallocatedCString> Request::Imp::accept_versions_{
+    default_version_};
 const Request::Imp::MechanismMap Request::Imp::mechanism_map_{
     {Mechanism::Null, "NULL"},
     {Mechanism::Plain, "PLAIN"},
@@ -86,7 +86,8 @@ Request::Imp::Imp(const Imp& rhs) noexcept
 {
 }
 
-auto Request::Imp::mechanism_to_string(const zap::Mechanism in) -> std::string
+auto Request::Imp::mechanism_to_string(const zap::Mechanism in)
+    -> UnallocatedCString
 {
     try {
         return mechanism_map_.at(in);
@@ -98,7 +99,7 @@ auto Request::Imp::mechanism_to_string(const zap::Mechanism in) -> std::string
 
 auto Request::Imp::string_to_mechanism(const ReadView in) -> zap::Mechanism
 {
-    const auto key = std::string{in};
+    const auto key = UnallocatedCString{in};
 
     try {
         return mechanism_reverse_map_.at(key);
@@ -186,7 +187,7 @@ auto Request::Credentials() const noexcept -> const FrameSection
         .release();
 }
 
-auto Request::Debug() const noexcept -> std::string
+auto Request::Debug() const noexcept -> UnallocatedCString
 {
     auto output = std::stringstream{};
     const auto req = RequestID();
@@ -283,9 +284,9 @@ auto Request::RequestID() const noexcept -> ReadView
     }
 }
 
-auto Request::Validate() const noexcept -> std::pair<bool, std::string>
+auto Request::Validate() const noexcept -> std::pair<bool, UnallocatedCString>
 {
-    auto output = std::pair<bool, std::string>{false, ""};
+    auto output = std::pair<bool, UnallocatedCString>{false, ""};
     auto& [success, error] = output;
     const auto body = Message::imp_->body_position();
     const auto size = Message::imp_->size();
@@ -297,8 +298,9 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
         return output;
     }
 
-    if (0 == Imp::accept_versions_.count(std::string{Version()})) {
-        error = std::string{"Invalid version ("} + std::string{Version()} + ")";
+    if (0 == Imp::accept_versions_.count(UnallocatedCString{Version()})) {
+        error = UnallocatedCString{"Invalid version ("} +
+                UnallocatedCString{Version()} + ")";
         LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
@@ -314,7 +316,7 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
     const auto requestSize = Body_at(Imp::request_id_position_).size();
 
     if (Imp::max_string_field_size_ < requestSize) {
-        error = std::string("Request ID too long (") +
+        error = UnallocatedCString("Request ID too long (") +
                 std::to_string(requestSize) + ")";
         LogError()(OT_PRETTY_CLASS())(error).Flush();
 
@@ -331,8 +333,8 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
     const auto domainSize = Body_at(Imp::domain_position_).size();
 
     if (Imp::max_string_field_size_ < domainSize) {
-        error =
-            std::string("Domain too long (") + std::to_string(domainSize) + ")";
+        error = UnallocatedCString("Domain too long (") +
+                std::to_string(domainSize) + ")";
         LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
@@ -348,7 +350,7 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
     const auto addressSize = Body_at(Imp::address_position_).size();
 
     if (Imp::max_string_field_size_ < addressSize) {
-        error = std::string("Address too long (") +
+        error = UnallocatedCString("Address too long (") +
                 std::to_string(addressSize) + ")";
         LogError()(OT_PRETTY_CLASS())(error).Flush();
 
@@ -365,7 +367,7 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
     const auto identitySize = Body_at(Imp::identity_position_).size();
 
     if (Imp::max_string_field_size_ < identitySize) {
-        error = std::string("Identity too long (") +
+        error = UnallocatedCString("Identity too long (") +
                 std::to_string(identitySize) + ")";
         LogError()(OT_PRETTY_CLASS())(error).Flush();
 
@@ -379,13 +381,13 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
         return output;
     }
 
-    const std::string mechanism{
+    const UnallocatedCString mechanism{
         Message::imp_->at(Imp::mechanism_position_ + body).Bytes()};
     const bool validMechanism =
         1 == Imp::mechanism_reverse_map_.count(mechanism);
 
     if (false == validMechanism) {
-        error = std::string("Unknown mechanism (") + mechanism + ")";
+        error = UnallocatedCString("Unknown mechanism (") + mechanism + ")";
         LogError()(OT_PRETTY_CLASS())(error).Flush();
 
         return output;
@@ -397,7 +399,7 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
     switch (Mechanism()) {
         case Mechanism::Null: {
             if (0 != count) {
-                error = std::string("Too many credentials (") +
+                error = UnallocatedCString("Too many credentials (") +
                         std::to_string(count) + ")";
                 LogError()(OT_PRETTY_CLASS())(error).Flush();
 
@@ -415,7 +417,7 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
             const auto username = credentials.at(0).size();
 
             if (Imp::max_string_field_size_ < username) {
-                error = std::string("Username too long (") +
+                error = UnallocatedCString("Username too long (") +
                         std::to_string(username) + ")";
                 LogError()(OT_PRETTY_CLASS())(error).Flush();
 
@@ -432,7 +434,7 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
             const auto password = credentials.at(1).size();
 
             if (Imp::max_string_field_size_ < password) {
-                error = std::string("Password too long (") +
+                error = UnallocatedCString("Password too long (") +
                         std::to_string(password) + ")";
                 LogError()(OT_PRETTY_CLASS())(error).Flush();
 
@@ -441,7 +443,7 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
         } break;
         case Mechanism::Curve: {
             if (1 != count) {
-                error = std::string("Wrong number of credentials (") +
+                error = UnallocatedCString("Wrong number of credentials (") +
                         std::to_string(count) + ")";
                 LogError()(OT_PRETTY_CLASS())(error).Flush();
 
@@ -451,7 +453,7 @@ auto Request::Validate() const noexcept -> std::pair<bool, std::string>
             const auto pubkey = credentials.at(0).size();
 
             if (Imp::pubkey_size_ != pubkey) {
-                error = std::string("Wrong pubkey size (") +
+                error = UnallocatedCString("Wrong pubkey size (") +
                         std::to_string(pubkey) + ")";
                 LogError()(OT_PRETTY_CLASS())(error).Flush();
 

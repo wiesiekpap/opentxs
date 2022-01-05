@@ -11,10 +11,10 @@
 
 #include <chrono>
 #include <cstdint>
-#include <string>
 
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/otx/blind/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -53,7 +53,7 @@ public:
 
     operator bool() const noexcept;
 
-    auto ID(const PasswordPrompt& reason) const -> std::string;
+    auto ID(const PasswordPrompt& reason) const -> UnallocatedCString;
     auto Internal() const noexcept -> const internal::Token&;
     auto IsSpent(const PasswordPrompt& reason) const -> bool;
     auto Notary() const -> const identifier::Notary&;

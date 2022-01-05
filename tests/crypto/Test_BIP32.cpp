@@ -5,8 +5,6 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "crypto/Bip32Vectors.hpp"
 #include "opentxs/OT.hpp"
@@ -20,7 +18,7 @@
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/HD.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -31,7 +29,7 @@ namespace ottest
 class Test_BIP32 : public ::testing::Test
 {
 protected:
-    using Path = std::vector<ot::Bip32Index>;
+    using Path = ot::UnallocatedVector<ot::Bip32Index>;
 
     const ot::api::session::Client& api_;
     const ot::OTPasswordPrompt reason_;

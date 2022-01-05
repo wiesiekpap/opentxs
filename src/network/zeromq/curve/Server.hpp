@@ -8,10 +8,10 @@
 #include <cstddef>
 #include <iosfwd>
 #include <mutex>
-#include <string>
 
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/curve/Server.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -38,9 +38,11 @@ namespace opentxs::network::zeromq::curve::implementation
 class Server : virtual public zeromq::curve::Server
 {
 public:
-    auto SetDomain(const std::string& domain) const noexcept -> bool final;
+    auto SetDomain(const UnallocatedCString& domain) const noexcept
+        -> bool final;
     auto SetPrivateKey(const Secret& key) const noexcept -> bool final;
-    auto SetPrivateKey(const std::string& z85) const noexcept -> bool final;
+    auto SetPrivateKey(const UnallocatedCString& z85) const noexcept
+        -> bool final;
 
 protected:
     auto set_private_key(const void* key, const std::size_t keySize)

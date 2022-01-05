@@ -11,8 +11,8 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
-#include <vector>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::p2p
 {
@@ -23,13 +23,14 @@ enum class MessageType : TypeEnum;
 class Block;
 class State;
 
-using StateData = std::vector<p2p::State>;
-using SyncData = std::vector<p2p::Block>;
+using StateData = UnallocatedVector<p2p::State>;
+using SyncData = UnallocatedVector<p2p::Block>;
 }  // namespace opentxs::network::p2p
 
 namespace opentxs
 {
-OPENTXS_EXPORT auto print(network::p2p::MessageType in) noexcept -> std::string;
+OPENTXS_EXPORT auto print(network::p2p::MessageType in) noexcept
+    -> UnallocatedCString;
 
 constexpr auto value(network::p2p::MessageType type) noexcept
 {

@@ -5,13 +5,13 @@
 
 #include "internal/serialization/protobuf/verify/Authority.hpp"  // IWYU pragma: associated
 
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Credential.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyCredentials.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Authority.pb.h"
 #include "serialization/protobuf/Credential.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
@@ -27,7 +27,7 @@ namespace proto
 auto CheckProto_1(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode) -> bool
@@ -188,7 +188,7 @@ auto CheckProto_1(
 auto CheckProto_2(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode) -> bool
@@ -199,7 +199,7 @@ auto CheckProto_2(
 auto CheckProto_3(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode) -> bool
@@ -210,7 +210,7 @@ auto CheckProto_3(
 auto CheckProto_4(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode) -> bool
@@ -221,7 +221,7 @@ auto CheckProto_4(
 auto CheckProto_5(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode) -> bool
@@ -232,7 +232,7 @@ auto CheckProto_5(
 auto CheckProto_6(
     const Authority& input,
     const bool silent,
-    const std::string& nymID,
+    const UnallocatedCString& nymID,
     const KeyMode& key,
     bool& haveHD,
     const AuthorityMode& mode) -> bool
@@ -243,7 +243,7 @@ auto CheckProto_6(
 auto CheckProto_7(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -254,7 +254,7 @@ auto CheckProto_7(
 auto CheckProto_8(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -265,7 +265,7 @@ auto CheckProto_8(
 auto CheckProto_9(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -276,7 +276,7 @@ auto CheckProto_9(
 auto CheckProto_10(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -287,7 +287,7 @@ auto CheckProto_10(
 auto CheckProto_11(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -298,7 +298,7 @@ auto CheckProto_11(
 auto CheckProto_12(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -309,7 +309,7 @@ auto CheckProto_12(
 auto CheckProto_13(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -320,7 +320,7 @@ auto CheckProto_13(
 auto CheckProto_14(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -331,7 +331,7 @@ auto CheckProto_14(
 auto CheckProto_15(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -342,7 +342,7 @@ auto CheckProto_15(
 auto CheckProto_16(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -353,7 +353,7 @@ auto CheckProto_16(
 auto CheckProto_17(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -364,7 +364,7 @@ auto CheckProto_17(
 auto CheckProto_18(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -375,7 +375,7 @@ auto CheckProto_18(
 auto CheckProto_19(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool
@@ -386,7 +386,7 @@ auto CheckProto_19(
 auto CheckProto_20(
     const Authority& input,
     const bool silent,
-    const std::string&,
+    const UnallocatedCString&,
     const KeyMode&,
     bool&,
     const AuthorityMode&) -> bool

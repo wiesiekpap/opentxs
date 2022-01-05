@@ -8,13 +8,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
-#include <string>
 
 #include "internal/blockchain/p2p/bitcoin/message/Message.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::bitcoin
 {
@@ -37,10 +36,10 @@ public:
     const Type type_;
     const pHash hash_;
 
-    static auto DisplayType(const Type type) noexcept -> std::string;
+    static auto DisplayType(const Type type) noexcept -> UnallocatedCString;
     static constexpr auto size() noexcept -> std::size_t { return 36u; }
 
-    auto DisplayType() const noexcept -> std::string
+    auto DisplayType() const noexcept -> UnallocatedCString
     {
         return DisplayType(type_);
     }
@@ -54,8 +53,8 @@ public:
     ~Inventory() = default;
 
 private:
-    using Map = std::map<Type, std::uint32_t>;
-    using ReverseMap = std::map<std::uint32_t, Type>;
+    using Map = UnallocatedMap<Type, std::uint32_t>;
+    using ReverseMap = UnallocatedMap<std::uint32_t, Type>;
 
     struct BitcoinFormat {
         p2p::bitcoin::message::InventoryTypeField type_;

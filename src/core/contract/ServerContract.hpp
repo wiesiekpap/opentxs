@@ -6,9 +6,7 @@
 #pragma once
 
 #include <cstdint>
-#include <list>
 #include <memory>
-#include <string>
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
@@ -20,6 +18,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/ServerContract.pb.h"
 
@@ -48,12 +47,12 @@ class Server final : public contract::Server,
 {
 public:
     auto ConnectInfo(
-        std::string& strHostname,
+        UnallocatedCString& strHostname,
         std::uint32_t& nPort,
         core::AddressType& actual,
         const core::AddressType& preferred) const -> bool final;
-    auto EffectiveName() const -> std::string final;
-    auto Name() const noexcept -> std::string final { return name_; }
+    auto EffectiveName() const -> UnallocatedCString final;
+    auto Name() const noexcept -> UnallocatedCString final { return name_; }
     auto Serialize() const noexcept -> OTData final;
     auto Serialize(AllocateOutput destination, bool includeNym = false) const
         -> bool final;
@@ -64,19 +63,19 @@ public:
     auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
         -> OTSecret final;
 
-    void InitAlias(const std::string& alias) final
+    void InitAlias(const UnallocatedCString& alias) final
     {
         contract::implementation::Signable::SetAlias(alias);
     }
-    auto SetAlias(const std::string& alias) noexcept -> bool final;
+    auto SetAlias(const UnallocatedCString& alias) noexcept -> bool final;
 
     Server(
         const api::Session& api,
         const Nym_p& nym,
         const VersionNumber version,
-        const std::string& terms,
-        const std::string& name,
-        std::list<contract::Server::Endpoint>&& endpoints,
+        const UnallocatedCString& terms,
+        const UnallocatedCString& name,
+        UnallocatedList<contract::Server::Endpoint>&& endpoints,
         OTData&& key,
         OTNotaryID&& id,
         Signatures&& signatures = {});
@@ -90,13 +89,13 @@ public:
 private:
     friend opentxs::Factory;
 
-    const std::list<contract::Server::Endpoint> listen_params_;
-    const std::string name_;
+    const UnallocatedList<contract::Server::Endpoint> listen_params_;
+    const UnallocatedCString name_;
     const OTData transport_key_;
 
     static auto extract_endpoints(
         const proto::ServerContract& serialized) noexcept
-        -> std::list<contract::Server::Endpoint>;
+        -> UnallocatedList<contract::Server::Endpoint>;
 
     auto clone() const noexcept -> Server* final { return new Server(*this); }
     auto contract(const Lock& lock) const -> proto::ServerContract;

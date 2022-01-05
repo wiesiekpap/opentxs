@@ -6,10 +6,10 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -29,14 +29,15 @@ class PaymentCode;
 
 namespace opentxs::factory
 {
-auto PaymentCode(const api::Session& api, const std::string& base58) noexcept
-    -> opentxs::PaymentCode;
+auto PaymentCode(
+    const api::Session& api,
+    const UnallocatedCString& base58) noexcept -> opentxs::PaymentCode;
 auto PaymentCode(
     const api::Session& api,
     const proto::PaymentCode& serialized) noexcept -> opentxs::PaymentCode;
 auto PaymentCode(
     const api::Session& api,
-    const std::string& seed,
+    const UnallocatedCString& seed,
     const Bip32Index nym,
     const std::uint8_t version,
     const bool bitmessage,

@@ -6,7 +6,6 @@
 #include "internal/serialization/protobuf/verify/ContactData.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
 #include <stdexcept>
 #include <utility>
 
@@ -14,6 +13,7 @@
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/ContactSection.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ContactData.pb.h"
 #include "serialization/protobuf/ContactEnums.pb.h"
 #include "serialization/protobuf/ContactSection.pb.h"
@@ -31,7 +31,7 @@ auto CheckProto_1(
     const bool silent,
     const ClaimType indexed) -> bool
 {
-    std::map<ContactSectionName, uint32_t> sectionCount;
+    UnallocatedMap<ContactSectionName, uint32_t> sectionCount;
 
     for (auto& it : input.section()) {
         try {

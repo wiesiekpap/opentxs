@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/core/ui/List.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -29,30 +28,31 @@ class OPENTXS_EXPORT ActivityThread : virtual public List
 {
 public:
     virtual auto CanMessage() const noexcept -> bool = 0;
-    virtual auto DisplayName() const noexcept -> std::string = 0;
+    virtual auto DisplayName() const noexcept -> UnallocatedCString = 0;
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> = 0;
-    virtual auto GetDraft() const noexcept -> std::string = 0;
+    virtual auto GetDraft() const noexcept -> UnallocatedCString = 0;
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ActivityThreadItem> = 0;
-    virtual auto Participants() const noexcept -> std::string = 0;
+    virtual auto Participants() const noexcept -> UnallocatedCString = 0;
     virtual auto Pay(
-        const std::string& amount,
+        const UnallocatedCString& amount,
         const Identifier& sourceAccount,
-        const std::string& memo = "",
+        const UnallocatedCString& memo = "",
         const PaymentType type = PaymentType::Cheque) const noexcept
         -> bool = 0;
     virtual auto Pay(
         const Amount amount,
         const Identifier& sourceAccount,
-        const std::string& memo = "",
+        const UnallocatedCString& memo = "",
         const PaymentType type = PaymentType::Cheque) const noexcept
         -> bool = 0;
     virtual auto PaymentCode(const core::UnitType currency) const noexcept
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto SendDraft() const noexcept -> bool = 0;
-    virtual auto SetDraft(const std::string& draft) const noexcept -> bool = 0;
-    virtual auto ThreadID() const noexcept -> std::string = 0;
+    virtual auto SetDraft(const UnallocatedCString& draft) const noexcept
+        -> bool = 0;
+    virtual auto ThreadID() const noexcept -> UnallocatedCString = 0;
 
     ~ActivityThread() override = default;
 

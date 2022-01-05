@@ -9,9 +9,6 @@
 
 #pragma once
 
-#include <list>
-#include <map>
-#include <string>
 #include <utility>
 
 #include "core/Worker.hpp"
@@ -25,6 +22,7 @@
 #include "opentxs/blockchain/crypto/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -98,10 +96,11 @@ private:
         statemachine = OT_ZMQ_STATE_MACHINE_SIGNAL,
     };
 
-    using SubaccountMap = std::
-        map<BlockchainAccountStatusRowID, std::pair<std::string, CustomData>>;
+    using SubaccountMap = UnallocatedMap<
+        BlockchainAccountStatusRowID,
+        std::pair<UnallocatedCString, CustomData>>;
     using ChildMap =
-        std::map<blockchain::crypto::SubaccountType, SubaccountMap>;
+        UnallocatedMap<blockchain::crypto::SubaccountType, SubaccountMap>;
 
     const blockchain::Type chain_;
 
@@ -123,8 +122,8 @@ private:
     auto populate(
         const blockchain::crypto::Subaccount& node,
         const Identifier& sourceID,
-        const std::string& sourceDescription,
-        const std::string& subaccountName,
+        const UnallocatedCString& sourceDescription,
+        const UnallocatedCString& subaccountName,
         const blockchain::crypto::Subchain subchain,
         SubaccountMap& out) const noexcept -> void;
     auto subchain_display_name(

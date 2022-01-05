@@ -9,7 +9,8 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -19,5 +20,5 @@ enum class AddressType : std::uint8_t;
 enum class UnitType : std::uint32_t;
 }  // namespace core
 
-auto print(core::UnitType) noexcept -> std::string;
+auto print(core::UnitType) noexcept -> UnallocatedCString;
 }  // namespace opentxs

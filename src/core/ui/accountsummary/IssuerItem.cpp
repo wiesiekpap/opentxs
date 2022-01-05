@@ -10,12 +10,9 @@
 #include <algorithm>
 #include <atomic>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <set>
 #include <thread>
 #include <utility>
-#include <vector>
 
 #include "core/ui/base/Combined.hpp"
 #include "internal/api/session/Wallet.hpp"
@@ -35,6 +32,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -90,7 +88,7 @@ IssuerItem::IssuerItem(
     OT_ASSERT(startup_)
 }
 
-auto IssuerItem::Debug() const noexcept -> std::string
+auto IssuerItem::Debug() const noexcept -> UnallocatedCString
 {
     return issuer_->toString();
 }
@@ -103,7 +101,7 @@ auto IssuerItem::construct_row(
     return factory::AccountSummaryItem(*this, api_, id, index, custom);
 }
 
-auto IssuerItem::Name() const noexcept -> std::string
+auto IssuerItem::Name() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
@@ -152,7 +150,7 @@ void IssuerItem::refresh_accounts() noexcept
 
     for (const auto& id : accounts) { process_account(id); }
 
-    std::set<IssuerItemRowID> active{};
+    UnallocatedSet<IssuerItemRowID> active{};
     std::transform(
         accounts.begin(),
         accounts.end(),

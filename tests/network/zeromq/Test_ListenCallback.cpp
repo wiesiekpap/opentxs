@@ -5,12 +5,12 @@
 
 #include <gtest/gtest.h>
 #include <future>
-#include <string>
 #include <utility>
 
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"  // IWYU pragma: keep
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -21,11 +21,11 @@ namespace ottest
 class ListenCallback : public ::testing::Test
 {
 private:
-    std::promise<std::string> promise_;
+    std::promise<ot::UnallocatedCString> promise_;
 
 protected:
-    const std::string testMessage_;
-    std::future<std::string> future_;
+    const ot::UnallocatedCString testMessage_;
+    std::future<ot::UnallocatedCString> future_;
     ot::OTZMQListenCallback callback_;
 
     ListenCallback() noexcept
@@ -33,7 +33,7 @@ protected:
         , testMessage_("zeromq test message")
         , future_(promise_.get_future())
         , callback_(zmq::ListenCallback::Factory([&](auto&& input) -> void {
-            promise_.set_value(std::string{input.at(0).Bytes()});
+            promise_.set_value(ot::UnallocatedCString{input.at(0).Bytes()});
         }))
     {
     }

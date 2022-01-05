@@ -9,8 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <set>
-#include <string>
 #include <tuple>
 
 #include "opentxs/Types.hpp"
@@ -21,6 +19,7 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/key/Keypair.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 
 namespace google
@@ -83,9 +82,9 @@ namespace identity
 class OPENTXS_EXPORT Nym
 {
 public:
-    using KeyTypes = std::vector<crypto::key::asymmetric::Algorithm>;
+    using KeyTypes = UnallocatedVector<crypto::key::asymmetric::Algorithm>;
     using AuthorityKeys = std::pair<OTIdentifier, KeyTypes>;
-    using NymKeys = std::pair<OTNymID, std::vector<AuthorityKeys>>;
+    using NymKeys = std::pair<OTNymID, UnallocatedVector<AuthorityKeys>>;
     using Serialized = proto::Nym;
     using key_type = Identifier;
     using value_type = Authority;
@@ -95,16 +94,16 @@ public:
     static const VersionNumber DefaultVersion;
     static const VersionNumber MaxVersion;
 
-    virtual auto Alias() const -> std::string = 0;
+    virtual auto Alias() const -> UnallocatedCString = 0;
     virtual auto at(const key_type& id) const noexcept(false)
         -> const value_type& = 0;
     virtual auto at(const std::size_t& index) const noexcept(false)
         -> const value_type& = 0;
     virtual auto begin() const noexcept -> const_iterator = 0;
-    virtual auto BestEmail() const -> std::string = 0;
-    virtual auto BestPhoneNumber() const -> std::string = 0;
+    virtual auto BestEmail() const -> UnallocatedCString = 0;
+    virtual auto BestPhoneNumber() const -> UnallocatedCString = 0;
     virtual auto BestSocialMediaProfile(const wot::claim::ClaimType type) const
-        -> std::string = 0;
+        -> UnallocatedCString = 0;
     virtual auto cbegin() const noexcept -> const_iterator = 0;
     virtual auto cend() const noexcept -> const_iterator = 0;
     virtual auto Claims() const -> const wot::claim::Data& = 0;
@@ -113,8 +112,9 @@ public:
     virtual auto ContactCredentialVersion() const -> VersionNumber = 0;
     virtual auto ContactDataVersion() const -> VersionNumber = 0;
     virtual auto Contracts(const core::UnitType currency, const bool onlyActive)
-        const -> std::set<OTIdentifier> = 0;
-    virtual auto EmailAddresses(bool active = true) const -> std::string = 0;
+        const -> UnallocatedSet<OTIdentifier> = 0;
+    virtual auto EmailAddresses(bool active = true) const
+        -> UnallocatedCString = 0;
     virtual auto EncryptionTargets() const noexcept -> NymKeys = 0;
     virtual auto end() const noexcept -> const_iterator = 0;
     virtual void GetIdentifier(identifier::Nym& theIdentifier) const = 0;
@@ -158,16 +158,17 @@ public:
     virtual auto HasPath() const -> bool = 0;
     virtual auto ID() const -> const identifier::Nym& = 0;
 
-    virtual auto Name() const -> std::string = 0;
+    virtual auto Name() const -> UnallocatedCString = 0;
 
     virtual auto Path(proto::HDPath& output) const -> bool = 0;
-    virtual auto PathRoot() const -> const std::string = 0;
+    virtual auto PathRoot() const -> const UnallocatedCString = 0;
     virtual auto PathChildSize() const -> int = 0;
     virtual auto PathChild(int index) const -> std::uint32_t = 0;
-    virtual auto PaymentCode() const -> std::string = 0;
+    virtual auto PaymentCode() const -> UnallocatedCString = 0;
     virtual auto PaymentCodePath(AllocateOutput destination) const -> bool = 0;
     virtual auto PaymentCodePath(proto::HDPath& output) const -> bool = 0;
-    virtual auto PhoneNumbers(bool active = true) const -> std::string = 0;
+    virtual auto PhoneNumbers(bool active = true) const
+        -> UnallocatedCString = 0;
     virtual auto Revision() const -> std::uint64_t = 0;
 
     virtual auto Serialize(AllocateOutput destination) const -> bool = 0;
@@ -184,9 +185,9 @@ public:
     virtual auto size() const noexcept -> std::size_t = 0;
     virtual auto SocialMediaProfiles(
         const wot::claim::ClaimType type,
-        bool active = true) const -> std::string = 0;
+        bool active = true) const -> UnallocatedCString = 0;
     virtual auto SocialMediaProfileTypes() const
-        -> const std::set<wot::claim::ClaimType> = 0;
+        -> const UnallocatedSet<wot::claim::ClaimType> = 0;
     virtual auto Source() const -> const identity::Source& = 0;
     virtual auto TransportKey(Data& pubkey, const PasswordPrompt& reason) const
         -> OTSecret = 0;
@@ -205,7 +206,7 @@ public:
     virtual auto AddChildKeyCredential(
         const Identifier& strMasterID,
         const crypto::Parameters& nymParameters,
-        const PasswordPrompt& reason) -> std::string = 0;
+        const PasswordPrompt& reason) -> UnallocatedCString = 0;
     virtual auto AddClaim(const Claim& claim, const PasswordPrompt& reason)
         -> bool = 0;
     virtual auto AddContract(
@@ -215,7 +216,7 @@ public:
         const bool primary,
         const bool active = true) -> bool = 0;
     virtual auto AddEmail(
-        const std::string& value,
+        const UnallocatedCString& value,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool = 0;
@@ -226,7 +227,7 @@ public:
         const bool primary,
         const bool active = true) -> bool = 0;
     virtual auto AddPhoneNumber(
-        const std::string& value,
+        const UnallocatedCString& value,
         const PasswordPrompt& reason,
         const bool primary,
         const bool active) -> bool = 0;
@@ -235,7 +236,7 @@ public:
         const PasswordPrompt& reason,
         const bool primary) -> bool = 0;
     virtual auto AddSocialMediaProfile(
-        const std::string& value,
+        const UnallocatedCString& value,
         const wot::claim::ClaimType type,
         const PasswordPrompt& reason,
         const bool primary,
@@ -243,7 +244,7 @@ public:
     virtual auto DeleteClaim(const Identifier& id, const PasswordPrompt& reason)
         -> bool = 0;
     virtual auto SetCommonName(
-        const std::string& name,
+        const UnallocatedCString& name,
         const PasswordPrompt& reason) -> bool = 0;
     virtual auto SetContactData(
         const ReadView protobuf,
@@ -253,7 +254,7 @@ public:
         const PasswordPrompt& reason) -> bool = 0;
     virtual auto SetScope(
         const wot::claim::ClaimType type,
-        const std::string& name,
+        const UnallocatedCString& name,
         const PasswordPrompt& reason,
         const bool primary) -> bool = 0;
 

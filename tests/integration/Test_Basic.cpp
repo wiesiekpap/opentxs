@@ -6,12 +6,9 @@
 #include <gtest/gtest.h>
 #include <atomic>
 #include <future>
-#include <map>
 #include <memory>
 #include <sstream>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "integration/Helpers.hpp"
 #include "internal/api/session/Wallet.hpp"
@@ -66,6 +63,7 @@
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -128,7 +126,7 @@ public:
     static const bool have_hd_;
     static Issuer issuer_data_;
     static int msg_count_;
-    static std::map<int, std::string> message_;
+    static ot::UnallocatedMap<int, ot::UnallocatedCString> message_;
     static ot::OTUnitID unit_id_;
 
     const ot::api::session::Client& api_alex_;
@@ -163,7 +161,7 @@ const bool Integration::have_hd_{
 
 };
 int Integration::msg_count_ = 0;
-std::map<int, std::string> Integration::message_{};
+ot::UnallocatedMap<int, ot::UnallocatedCString> Integration::message_{};
 ot::OTUnitID Integration::unit_id_{ot::identifier::UnitDefinition::Factory()};
 Issuer Integration::issuer_data_{};
 
@@ -1520,7 +1518,7 @@ TEST_F(Integration, contact_issuer_alex_0)
     const auto& widget = api_alex_.UI().Contact(alex_.Contact(issuer_.name_));
 
     EXPECT_EQ(alex_.Contact(issuer_.name_).str(), widget.ContactID());
-    EXPECT_EQ(std::string(issuer_.name_), widget.DisplayName());
+    EXPECT_EQ(ot::UnallocatedCString(issuer_.name_), widget.DisplayName());
 
     if (have_hd_) { EXPECT_EQ(issuer_.payment_code_, widget.PaymentCode()); }
 
@@ -1724,7 +1722,7 @@ TEST_F(Integration, contact_issuer_alex_1)
     const auto& widget = api_alex_.UI().Contact(alex_.Contact(issuer_.name_));
 
     EXPECT_EQ(alex_.Contact(issuer_.name_).str(), widget.ContactID());
-    EXPECT_EQ(std::string(issuer_.name_), widget.DisplayName());
+    EXPECT_EQ(ot::UnallocatedCString(issuer_.name_), widget.DisplayName());
 
     if (have_hd_) { EXPECT_EQ(issuer_.payment_code_, widget.PaymentCode()); }
 

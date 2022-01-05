@@ -13,7 +13,6 @@
 #include <regex>
 #include <sstream>
 #include <string_view>
-#include <vector>
 
 #include "base58/base58.h"
 #include "base64/base64.h"
@@ -31,6 +30,7 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -54,9 +54,9 @@ Encode::Encode(const api::Crypto& crypto) noexcept
 
 auto Encode::Base64Encode(
     const std::uint8_t* inputStart,
-    const std::size_t& size) const -> std::string
+    const std::size_t& size) const -> UnallocatedCString
 {
-    auto output = std::string{};
+    auto output = UnallocatedCString{};
 
     if (std::numeric_limits<int>::max() < size) { return {}; }
 
@@ -70,8 +70,8 @@ auto Encode::Base64Encode(
     return BreakLines(output);
 }
 
-auto Encode::Base64Decode(const std::string&& input, RawData& output) const
-    -> bool
+auto Encode::Base64Decode(const UnallocatedCString&& input, RawData& output)
+    const -> bool
 {
     output.resize(::Base64decode_len(input.data()), 0x0);
 
@@ -87,9 +87,10 @@ auto Encode::Base64Decode(const std::string&& input, RawData& output) const
     return true;
 }
 
-auto Encode::BreakLines(const std::string& input) const -> std::string
+auto Encode::BreakLines(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
-    std::string output;
+    UnallocatedCString output;
 
     if (0 == input.size()) { return output; }
 
@@ -109,25 +110,27 @@ auto Encode::BreakLines(const std::string& input) const -> std::string
     return output;
 }
 
-auto Encode::DataEncode(const std::string& input) const -> std::string
+auto Encode::DataEncode(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
     return Base64Encode(
         reinterpret_cast<const std::uint8_t*>(input.data()), input.size());
 }
 
-auto Encode::DataEncode(const Data& input) const -> std::string
+auto Encode::DataEncode(const Data& input) const -> UnallocatedCString
 {
     return Base64Encode(
         static_cast<const std::uint8_t*>(input.data()), input.size());
 }
 
-auto Encode::DataDecode(const std::string& input) const -> std::string
+auto Encode::DataDecode(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
     RawData decoded;
 
     if (Base64Decode(SanatizeBase64(input), decoded)) {
 
-        return std::string(
+        return UnallocatedCString(
             reinterpret_cast<const char*>(decoded.data()), decoded.size());
     }
 
@@ -135,7 +138,7 @@ auto Encode::DataDecode(const std::string& input) const -> std::string
 }
 
 auto Encode::IdentifierEncode(const void* data, const std::size_t size) const
-    -> std::string
+    -> UnallocatedCString
 {
     if (0 == size) { return {}; }
 
@@ -156,12 +159,12 @@ auto Encode::IdentifierEncode(const void* data, const std::size_t size) const
         static_cast<const unsigned char*>(preimage->data()) + preimage->size());
 }
 
-auto Encode::IdentifierEncode(const Data& input) const -> std::string
+auto Encode::IdentifierEncode(const Data& input) const -> UnallocatedCString
 {
     return IdentifierEncode(input.data(), input.size());
 }
 
-auto Encode::IdentifierEncode(const Secret& input) const -> std::string
+auto Encode::IdentifierEncode(const Secret& input) const -> UnallocatedCString
 {
     const auto bytes = input.Bytes();
 
@@ -185,10 +188,11 @@ auto Encode::IdentifierEncode(const Secret& input) const -> std::string
         static_cast<const unsigned char*>(preimage->data()) + preimage->size());
 }
 
-auto Encode::IdentifierDecode(const std::string& input) const -> std::string
+auto Encode::IdentifierDecode(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
     const auto sanitized{SanatizeBase58(input)};
-    auto vector = std::vector<unsigned char>{};
+    auto vector = UnallocatedVector<unsigned char>{};
     const auto decoded =
         bitcoin_base58::DecodeBase58(sanitized.c_str(), vector);
 
@@ -196,7 +200,7 @@ auto Encode::IdentifierDecode(const std::string& input) const -> std::string
 
     if (4 > vector.size()) { return {}; }
 
-    const auto output = std::string{
+    const auto output = UnallocatedCString{
         reinterpret_cast<const char*>(vector.data()), vector.size() - 4};
     auto checksum = Data::Factory();
     const auto incoming = Data::Factory(vector.data() + (vector.size() - 4), 4);
@@ -215,10 +219,11 @@ auto Encode::IdentifierDecode(const std::string& input) const -> std::string
     return output;
 }
 
-auto Encode::IsBase62(const std::string& str) const -> bool
+auto Encode::IsBase62(const UnallocatedCString& str) const -> bool
 {
     return str.find_first_not_of("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHI"
-                                 "JKLMNOPQRSTUVWXYZ") == std::string::npos;
+                                 "JKLMNOPQRSTUVWXYZ") ==
+           UnallocatedCString::npos;
 }
 
 auto Encode::Nonce(const std::uint32_t size) const -> OTString
@@ -240,21 +245,26 @@ auto Encode::Nonce(const std::uint32_t size, Data& rawOutput) const -> OTString
     return nonce;
 }
 
-auto Encode::RandomFilename() const -> std::string { return Nonce(16)->Get(); }
+auto Encode::RandomFilename() const -> UnallocatedCString
+{
+    return Nonce(16)->Get();
+}
 
-auto Encode::SanatizeBase58(const std::string& input) const -> std::string
+auto Encode::SanatizeBase58(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
     return std::regex_replace(input, std::regex("[^1-9A-HJ-NP-Za-km-z]"), "");
 }
 
-auto Encode::SanatizeBase64(const std::string& input) const -> std::string
+auto Encode::SanatizeBase64(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
     return std::regex_replace(input, std::regex("[^0-9A-Za-z+/=]"), "");
 }
 
-auto Encode::Z85Encode(const Data& input) const -> std::string
+auto Encode::Z85Encode(const Data& input) const -> UnallocatedCString
 {
-    auto output = std::string{};
+    auto output = UnallocatedCString{};
 
     if (opentxs::network::zeromq::RawToZ85(input.Bytes(), writer(output))) {
         return output;
@@ -263,9 +273,10 @@ auto Encode::Z85Encode(const Data& input) const -> std::string
     }
 }
 
-auto Encode::Z85Encode(const std::string& input) const -> std::string
+auto Encode::Z85Encode(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
-    auto output = std::string{};
+    auto output = UnallocatedCString{};
 
     if (opentxs::network::zeromq::RawToZ85(input, writer(output))) {
         return output;
@@ -286,9 +297,10 @@ auto Encode::Z85Decode(const Data& input) const -> OTData
     }
 }
 
-auto Encode::Z85Decode(const std::string& input) const -> std::string
+auto Encode::Z85Decode(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
-    auto output = std::string{};
+    auto output = UnallocatedCString{};
 
     if (opentxs::network::zeromq::Z85ToRaw(input, writer(output))) {
         return output;

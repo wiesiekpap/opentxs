@@ -9,11 +9,8 @@
 
 #include <exception>
 #include <functional>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "2_Factory.hpp"
@@ -51,6 +48,7 @@
 #include "opentxs/api/session/Workflow.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 
@@ -63,7 +61,7 @@ auto ClientSession(
     const api::Settings& config,
     const api::Crypto& crypto,
     const network::zeromq::Context& context,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const int instance) noexcept -> std::unique_ptr<api::session::Client>
 {
     using ReturnType = api::session::imp::Client;
@@ -95,7 +93,7 @@ Client::Client(
     const api::Settings& config,
     const api::Crypto& crypto,
     const opentxs::network::zeromq::Context& context,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const int instance)
     : Session(
           parent,
@@ -218,7 +216,7 @@ auto Client::get_lock(const ContextID context) const -> std::recursive_mutex&
     return context_locks_[context];
 }
 
-auto Client::Exec(const std::string&) const -> const OTAPI_Exec&
+auto Client::Exec(const UnallocatedCString&) const -> const OTAPI_Exec&
 {
     OT_ASSERT(otapi_exec_);
 
@@ -254,7 +252,7 @@ auto Client::NewNym(const identifier::Nym& id) const noexcept -> void
     blockchain_->Internal().NewNym(id);
 }
 
-auto Client::OTAPI(const std::string&) const -> const OT_API&
+auto Client::OTAPI(const UnallocatedCString&) const -> const OT_API&
 {
     OT_ASSERT(ot_api_);
 

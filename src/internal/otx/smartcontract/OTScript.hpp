@@ -6,9 +6,9 @@
 #pragma once
 
 #include <cstddef>
-#include <map>
 #include <memory>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -22,9 +22,9 @@ class String;
 
 namespace opentxs
 {
-using mapOfParties = std::map<std::string, OTParty*>;
-using mapOfPartyAccounts = std::map<std::string, OTPartyAccount*>;
-using mapOfVariables = std::map<std::string, OTVariable*>;
+using mapOfParties = UnallocatedMap<UnallocatedCString, OTParty*>;
+using mapOfPartyAccounts = UnallocatedMap<UnallocatedCString, OTPartyAccount*>;
+using mapOfVariables = UnallocatedMap<UnallocatedCString, OTVariable*>;
 
 // A script should be "Dumb", meaning that you just stick it with its
 // parties and other resources, and it EXPECTS them to be the correct
@@ -42,9 +42,10 @@ using mapOfVariables = std::map<std::string, OTVariable*>;
 class OTScript
 {
 protected:
-    std::string m_str_script;            // the script itself.
-    std::string m_str_display_filename;  // for error handling, there is option
-                                         // to set this string for display.
+    UnallocatedCString m_str_script;            // the script itself.
+    UnallocatedCString m_str_display_filename;  // for error handling, there is
+                                                // option to set this string for
+                                                // display.
     mapOfParties m_mapParties;  // no need to clean this up. Script doesn't own
                                 // the parties, just references them.
     mapOfPartyAccounts m_mapAccounts;  // no need to clean this up. Script
@@ -59,7 +60,7 @@ public:
     OTScript();
     explicit OTScript(const String& strValue);
     explicit OTScript(const char* new_string);
-    explicit OTScript(const std::string& new_string);
+    explicit OTScript(const UnallocatedCString& new_string);
     OTScript(const char* new_string, size_t sizeLength);
 
     virtual ~OTScript();
@@ -71,9 +72,9 @@ public:
     void SetScript(const String& strValue);
     void SetScript(const char* new_string);
     void SetScript(const char* new_string, size_t sizeLength);
-    void SetScript(const std::string& new_string);
+    void SetScript(const UnallocatedCString& new_string);
 
-    void SetDisplayFilename(std::string str_display_filename)
+    void SetDisplayFilename(UnallocatedCString str_display_filename)
     {
         m_str_display_filename = str_display_filename;
     }
@@ -91,10 +92,10 @@ public:
     // cleaning up the mess!  theParty is passed as reference to insure it
     // already exists.
     //
-    void AddParty(std::string str_party_name, OTParty& theParty);
-    void AddAccount(std::string str_acct_name, OTPartyAccount& theAcct);
-    void AddVariable(std::string str_var_name, OTVariable& theVar);
-    auto FindVariable(std::string str_var_name) -> OTVariable*;
+    void AddParty(UnallocatedCString str_party_name, OTParty& theParty);
+    void AddAccount(UnallocatedCString str_acct_name, OTPartyAccount& theAcct);
+    void AddVariable(UnallocatedCString str_var_name, OTVariable& theVar);
+    auto FindVariable(UnallocatedCString str_var_name) -> OTVariable*;
     void RemoveVariable(OTVariable& theVar);
 
     // Note: any relevant assets or asset accounts are listed by their owner /

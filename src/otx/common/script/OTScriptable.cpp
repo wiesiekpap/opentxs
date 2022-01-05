@@ -15,7 +15,6 @@
 #include <cstring>
 #include <memory>
 #include <sstream>
-#include <string>
 #include <utility>
 
 #include "internal/api/session/FactoryAPI.hpp"
@@ -39,6 +38,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -71,7 +71,7 @@ OTScriptable::OTScriptable(const api::Session& api)
 }
 
 // virtual
-void OTScriptable::SetDisplayLabel(const std::string* pstrLabel)
+void OTScriptable::SetDisplayLabel(const UnallocatedCString* pstrLabel)
 {
     m_strLabel =
         String::Factory((nullptr != pstrLabel) ? pstrLabel->c_str() : "");
@@ -88,7 +88,7 @@ auto OTScriptable::is_ot_namechar_invalid(char c) -> bool
 }
 
 // static
-auto OTScriptable::ValidateName(const std::string& str_name) -> bool
+auto OTScriptable::ValidateName(const UnallocatedCString& str_name) -> bool
 {
     if (str_name.size() <= 0) {
         LogError()(OT_PRETTY_STATIC(OTScriptable))("Name has zero size.")
@@ -107,7 +107,7 @@ auto OTScriptable::ValidateName(const std::string& str_name) -> bool
 }
 
 // static
-auto OTScriptable::ValidateBylawName(const std::string& str_name) -> bool
+auto OTScriptable::ValidateBylawName(const UnallocatedCString& str_name) -> bool
 {
     if (!ValidateName(str_name)) return false;
 
@@ -115,7 +115,7 @@ auto OTScriptable::ValidateBylawName(const std::string& str_name) -> bool
 }
 
 // static
-auto OTScriptable::ValidatePartyName(const std::string& str_name) -> bool
+auto OTScriptable::ValidatePartyName(const UnallocatedCString& str_name) -> bool
 {
     if (!ValidateName(str_name)) return false;
 
@@ -123,7 +123,7 @@ auto OTScriptable::ValidatePartyName(const std::string& str_name) -> bool
 }
 
 // static
-auto OTScriptable::ValidateAgentName(const std::string& str_name) -> bool
+auto OTScriptable::ValidateAgentName(const UnallocatedCString& str_name) -> bool
 {
     if (!ValidateName(str_name)) return false;
 
@@ -131,7 +131,8 @@ auto OTScriptable::ValidateAgentName(const std::string& str_name) -> bool
 }
 
 // static
-auto OTScriptable::ValidateAccountName(const std::string& str_name) -> bool
+auto OTScriptable::ValidateAccountName(const UnallocatedCString& str_name)
+    -> bool
 {
     if (!ValidateName(str_name)) return false;
 
@@ -139,7 +140,8 @@ auto OTScriptable::ValidateAccountName(const std::string& str_name) -> bool
 }
 
 // static
-auto OTScriptable::ValidateVariableName(const std::string& str_name) -> bool
+auto OTScriptable::ValidateVariableName(const UnallocatedCString& str_name)
+    -> bool
 {
     if (!ValidateName(str_name)) return false;
 
@@ -162,7 +164,8 @@ auto OTScriptable::ValidateVariableName(const std::string& str_name) -> bool
 }
 
 // static
-auto OTScriptable::ValidateClauseName(const std::string& str_name) -> bool
+auto OTScriptable::ValidateClauseName(const UnallocatedCString& str_name)
+    -> bool
 {
     if (!ValidateName(str_name)) return false;
 
@@ -200,7 +203,7 @@ auto OTScriptable::ValidateClauseName(const std::string& str_name) -> bool
 }
 
 // static
-auto OTScriptable::ValidateHookName(const std::string& str_name) -> bool
+auto OTScriptable::ValidateHookName(const UnallocatedCString& str_name) -> bool
 {
     if (!ValidateName(str_name)) return false;
 
@@ -216,7 +219,8 @@ auto OTScriptable::ValidateHookName(const std::string& str_name) -> bool
 }
 
 // static
-auto OTScriptable::ValidateCallbackName(const std::string& str_name) -> bool
+auto OTScriptable::ValidateCallbackName(const UnallocatedCString& str_name)
+    -> bool
 {
     if (!ValidateName(str_name)) return false;
 
@@ -243,8 +247,8 @@ void OTScriptable::RegisterOTNativeCallsWithScript(OTScript& theScript)
 
 // static
 auto OTScriptable::GetTime()
-    -> std::string  // Returns a string, containing seconds as
-                    // std::int32_t. (Time in seconds.)
+    -> UnallocatedCString  // Returns a string, containing seconds as
+                           // std::int32_t. (Time in seconds.)
 {
     const std::int64_t lTime = Clock::to_time_t(Clock::now());
 
@@ -262,8 +266,8 @@ auto OTScriptable::GetTime()
 // which will trigger the script callback_party_may_execute_clause(), etc.
 //
 auto OTScriptable::CanExecuteClause(
-    std::string str_party_name,
-    std::string str_clause_name) -> bool
+    UnallocatedCString str_party_name,
+    UnallocatedCString str_clause_name) -> bool
 {
     OTParty* pParty = GetParty(str_party_name);
     OTClause* pClause = GetClause(str_clause_name);
@@ -381,7 +385,8 @@ auto OTScriptable::CanExecuteClause(
     // which clauses.
 
     //
-    const std::string str_CallbackName(SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE);
+    const UnallocatedCString str_CallbackName(
+        SCRIPTABLE_CALLBACK_PARTY_MAY_EXECUTE);
 
     OTClause* pCallbackClause =
         GetCallback(str_CallbackName);  // See if there is a script clause
@@ -408,10 +413,10 @@ auto OTScriptable::CanExecuteClause(
         OTVariable theReturnVal("return_val", false);
 
         mapOfVariables theParameters;
-        theParameters.insert(
-            std::pair<std::string, OTVariable*>("param_party_name", &param1));
-        theParameters.insert(
-            std::pair<std::string, OTVariable*>("param_clause_name", &param2));
+        theParameters.insert(std::pair<UnallocatedCString, OTVariable*>(
+            "param_party_name", &param1));
+        theParameters.insert(std::pair<UnallocatedCString, OTVariable*>(
+            "param_clause_name", &param2));
 
         if (false ==
             ExecuteCallback(
@@ -480,9 +485,9 @@ auto OTScriptable::ExecuteCallback(
     mapOfVariables& theParameters,
     OTVariable& varReturnVal) -> bool
 {
-    const std::string str_clause_name = theCallbackClause.GetName().Exists()
-                                            ? theCallbackClause.GetName().Get()
-                                            : "";
+    const UnallocatedCString str_clause_name =
+        theCallbackClause.GetName().Exists() ? theCallbackClause.GetName().Get()
+                                             : "";
     OT_ASSERT(OTScriptable::ValidateName(str_clause_name));
 
     OTBylaw* pBylaw = theCallbackClause.GetBylaw();
@@ -491,9 +496,9 @@ auto OTScriptable::ExecuteCallback(
     // By this point, we have the clause we are executing as theCallbackClause,
     // and we have the Bylaw it belongs to, as pBylaw.
 
-    const std::string str_code =
+    const UnallocatedCString str_code =
         theCallbackClause.GetCode();  // source code for the script.
-    const std::string str_language =
+    const UnallocatedCString str_language =
         pBylaw->GetLanguage();  // language it's in. (Default is "chai")
 
     auto pScript = factory::OTScript(str_language, str_code);
@@ -510,7 +515,7 @@ auto OTScriptable::ExecuteCallback(
 
         // Register all the parties with the script.
         for (auto& it : m_mapParties) {
-            const std::string str_party_name = it.first;
+            const UnallocatedCString str_party_name = it.first;
             OTParty* pParty = it.second;
             OT_ASSERT((nullptr != pParty) && (str_party_name.size() > 0));
 
@@ -519,7 +524,7 @@ auto OTScriptable::ExecuteCallback(
 
         // Add the parameters...
         for (auto& it : theParameters) {
-            const std::string str_var_name = it.first;
+            const UnallocatedCString str_var_name = it.first;
             OTVariable* pVar = it.second;
             OT_ASSERT((nullptr != pVar) && (str_var_name.size() > 0));
 
@@ -733,7 +738,7 @@ void OTScriptable::SetAsClean()
 // authorized agent for any party's accounts.
 //
 auto OTScriptable::GetCountTransNumsNeededForAgent(
-    std::string str_agent_name) const -> std::int32_t
+    UnallocatedCString str_agent_name) const -> std::int32_t
 {
     std::int32_t nReturnVal = 0;
 
@@ -761,7 +766,7 @@ auto OTScriptable::GetCountTransNumsNeededForAgent(
     return nReturnVal;
 }
 
-auto OTScriptable::GetPartyAccount(std::string str_acct_name) const
+auto OTScriptable::GetPartyAccount(UnallocatedCString str_acct_name) const
     -> OTPartyAccount*
 {
     if (!OTScriptable::ValidateName(str_acct_name))  // this logs, FYI.
@@ -1503,7 +1508,8 @@ auto OTScriptable::VerifyNymAsAgentForAccount(
         return false;
     }
 
-    const std::string str_acct_agent_name = pPartyAcct->GetAgentName().Get();
+    const UnallocatedCString str_acct_agent_name =
+        pPartyAcct->GetAgentName().Get();
     OTAgent* pAgent = pParty->GetAgent(str_acct_agent_name);
 
     // Make sure they are from the SAME PARTY.
@@ -1687,7 +1693,8 @@ auto OTScriptable::VerifyNymAsAgentForAccount(
 // Find the first (and hopefully the only) clause on this scriptable object,
 // with a given name. (Searches ALL Bylaws on *this.)
 //
-auto OTScriptable::GetClause(std::string str_clause_name) const -> OTClause*
+auto OTScriptable::GetClause(UnallocatedCString str_clause_name) const
+    -> OTClause*
 {
     if (!OTScriptable::ValidateName(str_clause_name))  // this logs, FYI.
     {
@@ -1708,7 +1715,7 @@ auto OTScriptable::GetClause(std::string str_clause_name) const -> OTClause*
     return nullptr;
 }
 
-auto OTScriptable::GetAgent(std::string str_agent_name) const -> OTAgent*
+auto OTScriptable::GetAgent(UnallocatedCString str_agent_name) const -> OTAgent*
 {
     if (!OTScriptable::ValidateName(str_agent_name))  // this logs, FYI.
     {
@@ -1729,7 +1736,7 @@ auto OTScriptable::GetAgent(std::string str_agent_name) const -> OTAgent*
     return nullptr;
 }
 
-auto OTScriptable::GetBylaw(std::string str_bylaw_name) const -> OTBylaw*
+auto OTScriptable::GetBylaw(UnallocatedCString str_bylaw_name) const -> OTBylaw*
 {
     if (!OTScriptable::ValidateName(str_bylaw_name))  // this logs, FYI.
     {
@@ -1750,7 +1757,7 @@ auto OTScriptable::GetBylaw(std::string str_bylaw_name) const -> OTBylaw*
     return pBylaw;
 }
 
-auto OTScriptable::GetParty(std::string str_party_name) const -> OTParty*
+auto OTScriptable::GetParty(UnallocatedCString str_party_name) const -> OTParty*
 {
     if (!OTScriptable::ValidateName(str_party_name))  // this logs, FYI.
     {
@@ -1829,7 +1836,7 @@ auto OTScriptable::VerifyThisAgainstAllPartiesSignedCopies() -> bool
     // everyone else signed, before I actually sign it.
     //
     for (auto& it : m_mapParties) {
-        const std::string current_party_name = it.first;
+        const UnallocatedCString current_party_name = it.first;
         OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
 
@@ -1881,7 +1888,7 @@ auto OTScriptable::ConfirmParty(
     otx::context::Server&,
     const PasswordPrompt& reason) -> bool
 {
-    const std::string str_party_name = theParty.GetPartyName();
+    const UnallocatedCString str_party_name = theParty.GetPartyName();
 
     if (!OTScriptable::ValidateName(str_party_name))  // this logs, FYI.
     {
@@ -1939,7 +1946,7 @@ auto OTScriptable::ConfirmParty(
         // when this OTScriptable instance is.
         //
         m_mapParties.insert(
-            std::pair<std::string, OTParty*>(str_party_name, &theParty));
+            std::pair<UnallocatedCString, OTParty*>(str_party_name, &theParty));
 
         openingNumsInOrderOfSigning_.push_back(theParty.GetOpeningTransNo());
 
@@ -1987,7 +1994,7 @@ auto OTScriptable::ConfirmParty(
 //
 auto OTScriptable::AddParty(OTParty& theParty) -> bool
 {
-    const std::string str_party_name = theParty.GetPartyName();
+    const UnallocatedCString str_party_name = theParty.GetPartyName();
 
     if (!OTScriptable::ValidatePartyName(str_party_name))  // this logs, FYI.
     {
@@ -1999,7 +2006,7 @@ auto OTScriptable::AddParty(OTParty& theParty) -> bool
         // Careful:  This ** DOES ** TAKE OWNERSHIP!  theParty will get deleted
         // when this OTScriptable is.
         m_mapParties.insert(
-            std::pair<std::string, OTParty*>(str_party_name, &theParty));
+            std::pair<UnallocatedCString, OTParty*>(str_party_name, &theParty));
 
         theParty.SetOwnerAgreement(*this);
 
@@ -2012,7 +2019,7 @@ auto OTScriptable::AddParty(OTParty& theParty) -> bool
     return false;
 }
 
-auto OTScriptable::RemoveParty(std::string str_Name) -> bool
+auto OTScriptable::RemoveParty(UnallocatedCString str_Name) -> bool
 {
     if (!OTScriptable::ValidatePartyName(str_Name))  // this logs, FYI.
     {
@@ -2039,7 +2046,7 @@ auto OTScriptable::RemoveParty(std::string str_Name) -> bool
     return false;
 }
 
-auto OTScriptable::RemoveBylaw(std::string str_Name) -> bool
+auto OTScriptable::RemoveBylaw(UnallocatedCString str_Name) -> bool
 {
     if (!OTScriptable::ValidateBylawName(str_Name))  // this logs, FYI.
     {
@@ -2068,7 +2075,7 @@ auto OTScriptable::RemoveBylaw(std::string str_Name) -> bool
 
 auto OTScriptable::AddBylaw(OTBylaw& theBylaw) -> bool
 {
-    const std::string str_name = theBylaw.GetName().Get();
+    const UnallocatedCString str_name = theBylaw.GetName().Get();
 
     if (!OTScriptable::ValidateBylawName(str_name))  // this logs, FYI.
     {
@@ -2080,7 +2087,7 @@ auto OTScriptable::AddBylaw(OTBylaw& theBylaw) -> bool
         // Careful:  This ** DOES ** TAKE OWNERSHIP!  theBylaw will get deleted
         // when this OTScriptable is.
         m_mapBylaws.insert(
-            std::pair<std::string, OTBylaw*>(str_name, &theBylaw));
+            std::pair<UnallocatedCString, OTBylaw*>(str_name, &theBylaw));
 
         theBylaw.SetOwnerAgreement(*this);
 
@@ -2131,7 +2138,7 @@ auto OTScriptable::Compare(OTScriptable& rhs) const -> bool
     }
 
     for (const auto& it : m_mapBylaws) {
-        const std::string str_bylaw_name = it.first;
+        const UnallocatedCString str_bylaw_name = it.first;
         OTBylaw* pBylaw = it.second;
         OT_ASSERT(nullptr != pBylaw);
 
@@ -2151,7 +2158,7 @@ auto OTScriptable::Compare(OTScriptable& rhs) const -> bool
     }
 
     for (const auto& it : m_mapParties) {
-        const std::string str_party_name = it.first;
+        const UnallocatedCString str_party_name = it.first;
         OTParty* pParty = it.second;
         OT_ASSERT(nullptr != pParty);
 
@@ -2187,7 +2194,7 @@ void OTScriptable::CalculateContractID(Identifier& newID) const
 
     UpdateContentsToTag(tag, true);
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     xmlUnsigned->Concatenate("%s", str_result.c_str());
@@ -2195,7 +2202,8 @@ void OTScriptable::CalculateContractID(Identifier& newID) const
     newID.CalculateDigest(xmlUnsigned->Bytes());
 }
 
-auto vectorToString(const std::vector<std::int64_t>& v) -> std::string
+auto vectorToString(const UnallocatedVector<std::int64_t>& v)
+    -> UnallocatedCString
 {
     std::stringstream ss;
 
@@ -2206,11 +2214,12 @@ auto vectorToString(const std::vector<std::int64_t>& v) -> std::string
     return ss.str();
 }
 
-auto stringToVector(const std::string& s) -> std::vector<std::int64_t>
+auto stringToVector(const UnallocatedCString& s)
+    -> UnallocatedVector<std::int64_t>
 {
     std::stringstream stream(s);
 
-    std::vector<std::int64_t> results;
+    UnallocatedVector<std::int64_t> results;
 
     std::int64_t n;
     while (stream >> n) { results.push_back(n); }
@@ -2234,7 +2243,8 @@ void OTScriptable::UpdateContentsToTag(Tag& parent, bool bCalculatingID) const
     pTag->add_attribute("numParties", std::to_string(sizePartyMap));
     pTag->add_attribute("numBylaws", std::to_string(sizeBylawMap));
 
-    const std::string str_vector = vectorToString(openingNumsInOrderOfSigning_);
+    const UnallocatedCString str_vector =
+        vectorToString(openingNumsInOrderOfSigning_);
     pTag->add_attribute("openingNumsInOrderOfSigning", str_vector);
 
     for (auto& it : m_mapParties) {
@@ -2275,7 +2285,7 @@ void OTScriptable::UpdateContents(
 
     UpdateContentsToTag(tag, m_bCalculatingID);
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());
@@ -2324,7 +2334,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             xml->getAttributeValue("openingNumsInOrderOfSigning"));
 
         if (strOpeningNumsOrderSigning->Exists()) {
-            const std::string str_opening_nums(
+            const UnallocatedCString str_opening_nums(
                 strOpeningNumsOrderSigning->Get());
             openingNumsInOrderOfSigning_ = stringToVector(str_opening_nums);
         } else
@@ -2925,7 +2935,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                 }
 
                                 bool bAddedVar = false;
-                                const std::string str_var_name =
+                                const UnallocatedCString str_var_name =
                                     strVarName->Get();
 
                                 switch (theVarType) {
@@ -2999,7 +3009,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                                               // let's make
                                                               // sure.
 
-                                        const std::string str_var_value =
+                                        const UnallocatedCString str_var_value =
                                             strVarValue->Get();
                                         bAddedVar = pBylaw->AddVariable(
                                             str_var_name,
@@ -3061,8 +3071,9 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                             //
                             //
                             temp_MapAttributes.insert(
-                                std::pair<std::string, std::string>(
-                                    "name", ""));
+                                std::pair<
+                                    UnallocatedCString,
+                                    UnallocatedCString>("name", ""));
                             if (!LoadEncodedTextFieldByName(
                                     xml,
                                     strTextExpected,
@@ -3092,7 +3103,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
                                                                    // expected
                                                                    // this much.
                             {
-                                std::string& str_name = it->second;
+                                UnallocatedCString& str_name = it->second;
 
                                 if (str_name.size() > 0)  // SUCCESS
                                 {
@@ -3346,7 +3357,7 @@ auto OTScriptable::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 // Look up the first (and hopefully only) variable registered for a given name.
 // (Across all of my Bylaws)
 //
-auto OTScriptable::GetVariable(std::string str_VarName) -> OTVariable*
+auto OTScriptable::GetVariable(UnallocatedCString str_VarName) -> OTVariable*
 {
     if (!OTScriptable::ValidateName(str_VarName))  // this logs, FYI.
     {
@@ -3370,7 +3381,7 @@ auto OTScriptable::GetVariable(std::string str_VarName) -> OTVariable*
 // Look up the first (and hopefully only) clause registered for a given
 // callback.
 //
-auto OTScriptable::GetCallback(std::string str_CallbackName) -> OTClause*
+auto OTScriptable::GetCallback(UnallocatedCString str_CallbackName) -> OTClause*
 {
     if ((false == OTScriptable::ValidateName(str_CallbackName)) ||
         (str_CallbackName.compare(0, 9, "callback_") != 0))  // this logs, FYI.
@@ -3396,8 +3407,9 @@ auto OTScriptable::GetCallback(std::string str_CallbackName) -> OTClause*
 
 // Look up all clauses matching a specific hook.
 //
-auto OTScriptable::GetHooks(std::string str_HookName, mapOfClauses& theResults)
-    -> bool
+auto OTScriptable::GetHooks(
+    UnallocatedCString str_HookName,
+    mapOfClauses& theResults) -> bool
 {
     if (false == OTScriptable::ValidateHookName(str_HookName))  // this logs,
                                                                 // FYI.

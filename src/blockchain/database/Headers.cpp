@@ -10,11 +10,8 @@
 #include <algorithm>
 #include <cstring>
 #include <iterator>
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <utility>
 
@@ -37,6 +34,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/BlockchainBlockHeader.pb.h"
@@ -549,7 +547,7 @@ auto Headers::push_best(
     return output.first;
 }
 
-auto Headers::RecentHashes() const noexcept -> std::vector<block::pHash>
+auto Headers::RecentHashes() const noexcept -> UnallocatedVector<block::pHash>
 {
     Lock lock(lock_);
 
@@ -557,9 +555,9 @@ auto Headers::RecentHashes() const noexcept -> std::vector<block::pHash>
 }
 
 auto Headers::recent_hashes(const Lock& lock) const noexcept
-    -> std::vector<block::pHash>
+    -> UnallocatedVector<block::pHash>
 {
-    auto output = std::vector<block::pHash>{};
+    auto output = UnallocatedVector<block::pHash>{};
     lmdb_.Read(
         BlockHeaderBest,
         [&](const auto, const auto value) -> bool {

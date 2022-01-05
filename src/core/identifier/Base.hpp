@@ -10,7 +10,6 @@
 
 #include <cstddef>
 #include <iosfwd>
-#include <string>
 #include <tuple>
 
 #include "Proto.hpp"
@@ -25,6 +24,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -94,7 +94,7 @@ public:
         return algorithm_;
     }
     auto GetString(String& theStr) const -> void final;
-    auto str() const -> std::string final;
+    auto str() const -> UnallocatedCString final;
     auto Type() const noexcept -> identifier::Type final { return type_; }
 
     using Data::Assign;
@@ -110,7 +110,7 @@ public:
     auto Randomize() -> bool final;
     auto Serialize(proto::Identifier& out) const noexcept -> bool final;
     using opentxs::Identifier::SetString;
-    auto SetString(const std::string& encoded) -> void final;
+    auto SetString(const UnallocatedCString& encoded) -> void final;
     auto SetString(const String& encoded) -> void final;
     auto SetString(const ReadView encoded) -> void;
     using ot_super::swap;
@@ -171,7 +171,7 @@ private:
     }
 
     auto clone() const -> Identifier* final;
-    auto to_string() const noexcept -> std::string;
+    auto to_string() const noexcept -> UnallocatedCString;
 
     Identifier(Identifier&& rhs) = delete;
     auto operator=(const Identifier& rhs) -> Identifier& = delete;

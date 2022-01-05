@@ -34,7 +34,7 @@ namespace opentxs::api::session::internal
 class Client : virtual public session::Client, virtual public Session
 {
 public:
-    virtual auto Exec(const std::string& wallet = "") const
+    virtual auto Exec(const UnallocatedCString& wallet = "") const
         -> const OTAPI_Exec& = 0;
     auto InternalClient() const noexcept -> const internal::Client& final
     {
@@ -44,7 +44,7 @@ public:
     virtual auto Lock(
         const identifier::Nym& nymID,
         const identifier::Notary& serverID) const -> std::recursive_mutex& = 0;
-    virtual auto OTAPI(const std::string& wallet = "") const
+    virtual auto OTAPI(const UnallocatedCString& wallet = "") const
         -> const OT_API& = 0;
     virtual auto Pair() const -> const otx::client::Pair& = 0;
     virtual auto ServerAction() const -> const otx::client::ServerAction& = 0;

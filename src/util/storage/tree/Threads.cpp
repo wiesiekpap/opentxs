@@ -12,10 +12,8 @@
 #include <functional>
 #include <iostream>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -25,6 +23,7 @@
 #include "internal/serialization/protobuf/verify/StorageBlockchainTransactions.hpp"
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/storage/Driver.hpp"
@@ -49,7 +48,7 @@ namespace storage
 {
 Threads::Threads(
     const Driver& storage,
-    const std::string& hash,
+    const UnallocatedCString& hash,
     Mailbox& mailInbox,
     Mailbox& mailOutbox)
     : Node(storage, hash)
@@ -94,9 +93,9 @@ auto Threads::AddIndex(const Data& txid, const Identifier& thread) noexcept
 }
 
 auto Threads::BlockchainThreadMap(const Data& txid) const noexcept
-    -> std::vector<OTIdentifier>
+    -> UnallocatedVector<OTIdentifier>
 {
-    auto output = std::vector<OTIdentifier>{};
+    auto output = UnallocatedVector<OTIdentifier>{};
     Lock lock(blockchain_.lock_);
 
     try {
@@ -108,9 +107,10 @@ auto Threads::BlockchainThreadMap(const Data& txid) const noexcept
     return output;
 }
 
-auto Threads::BlockchainTransactionList() const noexcept -> std::vector<OTData>
+auto Threads::BlockchainTransactionList() const noexcept
+    -> UnallocatedVector<OTData>
 {
-    auto output = std::vector<OTData>{};
+    auto output = UnallocatedVector<OTData>{};
     Lock lock(blockchain_.lock_);
     std::transform(
         std::begin(blockchain_.map_),
@@ -123,8 +123,9 @@ auto Threads::BlockchainTransactionList() const noexcept -> std::vector<OTData>
 
 auto Threads::create(
     const Lock& lock,
-    const std::string& id,
-    const std::set<std::string>& participants) -> std::string
+    const UnallocatedCString& id,
+    const UnallocatedSet<UnallocatedCString>& participants)
+    -> UnallocatedCString
 {
     OT_ASSERT(verify_write_lock(lock));
 
@@ -154,22 +155,23 @@ auto Threads::create(
 }
 
 auto Threads::Create(
-    const std::string& id,
-    const std::set<std::string>& participants) -> std::string
+    const UnallocatedCString& id,
+    const UnallocatedSet<UnallocatedCString>& participants)
+    -> UnallocatedCString
 {
     Lock lock(write_lock_);
 
     return create(lock, id, participants);
 }
 
-auto Threads::Exists(const std::string& id) const -> bool
+auto Threads::Exists(const UnallocatedCString& id) const -> bool
 {
     std::unique_lock<std::mutex> lock(write_lock_);
 
     return item_map_.find(id) != item_map_.end();
 }
 
-auto Threads::FindAndDeleteItem(const std::string& itemID) -> bool
+auto Threads::FindAndDeleteItem(const UnallocatedCString& itemID) -> bool
 {
     std::unique_lock<std::mutex> lock(write_lock_);
 
@@ -191,7 +193,7 @@ auto Threads::FindAndDeleteItem(const std::string& itemID) -> bool
     return found;
 }
 
-void Threads::init(const std::string& hash)
+void Threads::init(const UnallocatedCString& hash)
 {
     auto input = std::shared_ptr<proto::StorageNymList>{};
     driver_.LoadProto(hash, input);
@@ -274,7 +276,8 @@ auto Threads::Migrate(const Driver& to) const -> bool
     return output;
 }
 
-auto Threads::mutable_Thread(const std::string& id) -> Editor<storage::Thread>
+auto Threads::mutable_Thread(const UnallocatedCString& id)
+    -> Editor<storage::Thread>
 {
     std::function<void(storage::Thread*, std::unique_lock<std::mutex>&)>
         callback = [&](storage::Thread* in,
@@ -285,7 +288,7 @@ auto Threads::mutable_Thread(const std::string& id) -> Editor<storage::Thread>
     return Editor<storage::Thread>(write_lock_, thread(id), callback);
 }
 
-auto Threads::thread(const std::string& id) const -> storage::Thread*
+auto Threads::thread(const UnallocatedCString& id) const -> storage::Thread*
 {
     std::unique_lock<std::mutex> lock(write_lock_);
 
@@ -293,7 +296,7 @@ auto Threads::thread(const std::string& id) const -> storage::Thread*
 }
 
 auto Threads::thread(
-    const std::string& id,
+    const UnallocatedCString& id,
     const std::unique_lock<std::mutex>& lock) const -> storage::Thread*
 {
     if (!verify_write_lock(lock)) {
@@ -320,13 +323,15 @@ auto Threads::thread(
     return node.get();
 }
 
-auto Threads::Thread(const std::string& id) const -> const storage::Thread&
+auto Threads::Thread(const UnallocatedCString& id) const
+    -> const storage::Thread&
 {
     return *thread(id);
 }
 
-auto Threads::Rename(const std::string& existingID, const std::string& newID)
-    -> bool
+auto Threads::Rename(
+    const UnallocatedCString& existingID,
+    const UnallocatedCString& newID) -> bool
 {
     Lock lock(write_lock_);
 
@@ -402,7 +407,7 @@ auto Threads::save(const std::unique_lock<std::mutex>& lock) const -> bool
 void Threads::save(
     storage::Thread* nym,
     const std::unique_lock<std::mutex>& lock,
-    const std::string& id)
+    const UnallocatedCString& id)
 {
     if (!verify_write_lock(lock)) {
         std::cerr << __func__ << ": Lock failure." << std::endl;
@@ -449,11 +454,11 @@ auto Threads::serialize() const -> proto::StorageNymList
 
         auto index = proto::StorageBlockchainTransactions{};
         index.set_version(1);
-        index.set_txid(std::string{txid->Bytes()});
+        index.set_txid(UnallocatedCString{txid->Bytes()});
         std::for_each(std::begin(data), std::end(data), [&](const auto& id) {
             OT_ASSERT(false == id->empty());
 
-            index.add_thread(std::string{id->Bytes()});
+            index.add_thread(UnallocatedCString{id->Bytes()});
         });
 
         OT_ASSERT(static_cast<std::size_t>(index.thread_size()) == data.size());
@@ -462,7 +467,7 @@ auto Threads::serialize() const -> proto::StorageNymList
 
         OT_ASSERT(success);
 
-        auto hash = std::string{};
+        auto hash = UnallocatedCString{};
         success = driver_.StoreProto(index, hash);
 
         OT_ASSERT(success);

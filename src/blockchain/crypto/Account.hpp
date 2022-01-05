@@ -10,15 +10,11 @@
 #include <algorithm>
 #include <cstddef>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "opentxs/Types.hpp"
@@ -39,6 +35,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs
@@ -76,33 +73,35 @@ namespace opentxs::blockchain::crypto::implementation
 class Account final : public internal::Account
 {
 public:
-    using Accounts = std::set<OTIdentifier>;
+    using Accounts = UnallocatedSet<OTIdentifier>;
 
     auto AccountID() const noexcept -> const Identifier& final
     {
         return account_id_;
     }
     auto AssociateTransaction(
-        const std::vector<Activity>& unspent,
-        const std::vector<Activity>& spent,
-        std::set<OTIdentifier>& contacts,
+        const UnallocatedVector<Activity>& unspent,
+        const UnallocatedVector<Activity>& spent,
+        UnallocatedSet<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto Chain() const noexcept -> opentxs::blockchain::Type final
     {
         return chain_;
     }
-    auto ClaimAccountID(const std::string& id, crypto::Subaccount* node)
+    auto ClaimAccountID(const UnallocatedCString& id, crypto::Subaccount* node)
         const noexcept -> void final;
     auto FindNym(const identifier::Nym& id) const noexcept -> void final;
     auto GetDepositAddress(
         const blockchain::crypto::AddressStyle style,
         const PasswordPrompt& reason,
-        const std::string& memo) const noexcept -> std::string final;
+        const UnallocatedCString& memo) const noexcept
+        -> UnallocatedCString final;
     auto GetDepositAddress(
         const blockchain::crypto::AddressStyle style,
         const Identifier& contact,
         const PasswordPrompt& reason,
-        const std::string& memo) const noexcept -> std::string final;
+        const UnallocatedCString& memo) const noexcept
+        -> UnallocatedCString final;
     auto GetHD() const noexcept -> const HDAccounts& final { return hd_; }
     auto GetImported() const noexcept -> const ImportedAccounts& final
     {
@@ -183,9 +182,9 @@ private:
         using const_iterator = typename InterfaceType::const_iterator;
         using value_type = typename InterfaceType::value_type;
 
-        auto all() const noexcept -> std::set<OTIdentifier> final
+        auto all() const noexcept -> UnallocatedSet<OTIdentifier> final
         {
-            auto out = std::set<OTIdentifier>{};
+            auto out = UnallocatedSet<OTIdentifier>{};
             auto lock = Lock{lock_};
 
             for (const auto& [id, count] : index_) { out.emplace(id); }
@@ -264,8 +263,8 @@ private:
         const SubaccountType type_;
         Account& parent_;
         mutable std::mutex lock_;
-        std::vector<std::unique_ptr<PayloadType>> nodes_;
-        std::map<OTIdentifier, std::size_t> index_;
+        UnallocatedVector<std::unique_ptr<PayloadType>> nodes_;
+        UnallocatedMap<OTIdentifier, std::size_t> index_;
 
         auto add(
             const Lock& lock,
@@ -303,9 +302,12 @@ private:
     };
 
     struct NodeIndex {
-        auto Find(const std::string& id) const noexcept -> crypto::Subaccount*;
+        auto Find(const UnallocatedCString& id) const noexcept
+            -> crypto::Subaccount*;
 
-        void Add(const std::string& id, crypto::Subaccount* node) noexcept;
+        void Add(
+            const UnallocatedCString& id,
+            crypto::Subaccount* node) noexcept;
 
         NodeIndex() noexcept
             : lock_()
@@ -315,7 +317,7 @@ private:
 
     private:
         mutable std::mutex lock_;
-        std::map<std::string, crypto::Subaccount*> index_;
+        UnallocatedMap<UnallocatedCString, crypto::Subaccount*> index_;
     };
 
     using HDNodes = NodeGroup<HDAccounts, crypto::HD>;
@@ -345,7 +347,7 @@ private:
     auto find_next_element(
         Subchain subchain,
         const Identifier& contact,
-        const std::string& label,
+        const UnallocatedCString& label,
         const PasswordPrompt& reason) const noexcept(false) -> const Element&;
 
     Account() = delete;

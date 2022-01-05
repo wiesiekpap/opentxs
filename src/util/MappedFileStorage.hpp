@@ -8,10 +8,10 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
-#include <string>
 
 #include "opentxs/Version.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs::util
@@ -60,8 +60,8 @@ protected:
 
     MappedFileStorage(
         opentxs::storage::lmdb::LMDB& lmdb,
-        const std::string& basePath,
-        const std::string filenamePrefix,
+        const UnallocatedCString& basePath,
+        const UnallocatedCString filenamePrefix,
         int table,
         std::size_t key) noexcept(false);
 

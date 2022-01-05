@@ -9,7 +9,6 @@
 
 #include <chrono>
 #include <functional>
-#include <string>
 #include <utility>
 
 #include "blockchain/node/wallet/SubchainStateData.hpp"
@@ -18,6 +17,7 @@
 #include "opentxs/api/network/Network.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "util/JobCounter.hpp"
@@ -80,7 +80,7 @@ auto Job::queue_work(
     const auto& log = LogTrace();
     const auto queued = parent_.api_.Network().Asio().Internal().Post(
         thread_pool_,
-        [this, &log, job = std::move(cb), kind = std::string{msg}] {
+        [this, &log, job = std::move(cb), kind = UnallocatedCString{msg}] {
             auto post = ScopeGuard{[&] {
                 log(OT_PRETTY_CLASS())(parent_.name_)(" ")(kind)(" job for ")(
                     parent_.db_key_->str())(" complete. Sending ")(

@@ -7,13 +7,13 @@
 
 #pragma once
 
-#include <set>
 #include <tuple>
 #include <utility>
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -39,10 +39,10 @@ public:
     using Data = std::pair<Chain, OTNymID>;
 
     auto AccountList(const identifier::Nym& nymID) const noexcept
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto AccountList(const Chain chain) const noexcept
-        -> std::set<OTIdentifier>;
-    auto AccountList() const noexcept -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
+    auto AccountList() const noexcept -> UnallocatedSet<OTIdentifier>;
     auto Query(const Identifier& account) const noexcept -> Data;
     auto Register(
         const Identifier& account,

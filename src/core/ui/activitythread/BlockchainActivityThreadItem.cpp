@@ -61,8 +61,8 @@ BlockchainActivityThreadItem::BlockchainActivityThreadItem(
     CustomData& custom,
     OTData&& txid,
     opentxs::Amount amount,
-    std::string&& displayAmount,
-    std::string&& memo) noexcept
+    UnallocatedCString&& displayAmount,
+    UnallocatedCString&& memo) noexcept
     : ActivityThreadItem(parent, api, nymID, rowID, sortKey, custom)
     , txid_(std::move(txid))
     , display_amount_(std::move(displayAmount))
@@ -81,7 +81,8 @@ auto BlockchainActivityThreadItem::Amount() const noexcept -> opentxs::Amount
     return amount_;
 }
 
-auto BlockchainActivityThreadItem::DisplayAmount() const noexcept -> std::string
+auto BlockchainActivityThreadItem::DisplayAmount() const noexcept
+    -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 
@@ -91,19 +92,21 @@ auto BlockchainActivityThreadItem::DisplayAmount() const noexcept -> std::string
 auto BlockchainActivityThreadItem::extract(
     const api::session::Client& api,
     const identifier::Nym& nymID,
-    CustomData& custom) noexcept
-    -> std::tuple<OTData, opentxs::Amount, std::string, std::string>
+    CustomData& custom) noexcept -> std::
+    tuple<OTData, opentxs::Amount, UnallocatedCString, UnallocatedCString>
 {
-    return std::tuple<OTData, opentxs::Amount, std::string, std::string>{
-        api.Factory().Data(
-            ui::implementation::extract_custom<std::string>(custom, 5),
-            StringStyle::Raw),
-        ui::implementation::extract_custom<opentxs::Amount>(custom, 6),
-        ui::implementation::extract_custom<std::string>(custom, 7),
-        ui::implementation::extract_custom<std::string>(custom, 8)};
+    return std::
+        tuple<OTData, opentxs::Amount, UnallocatedCString, UnallocatedCString>{
+            api.Factory().Data(
+                ui::implementation::extract_custom<UnallocatedCString>(
+                    custom, 5),
+                StringStyle::Raw),
+            ui::implementation::extract_custom<opentxs::Amount>(custom, 6),
+            ui::implementation::extract_custom<UnallocatedCString>(custom, 7),
+            ui::implementation::extract_custom<UnallocatedCString>(custom, 8)};
 }
 
-auto BlockchainActivityThreadItem::Memo() const noexcept -> std::string
+auto BlockchainActivityThreadItem::Memo() const noexcept -> UnallocatedCString
 {
     auto lock = sLock{shared_lock_};
 

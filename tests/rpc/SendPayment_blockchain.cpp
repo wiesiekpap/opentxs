@@ -7,7 +7,6 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
-#include <deque>
 #include <optional>
 
 #include "blockchain/regtest/Helpers.hpp"
@@ -33,6 +32,7 @@
 #include "opentxs/blockchain/node/Manager.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/rpc/CommandType.hpp"
 #include "opentxs/util/rpc/ResponseCode.hpp"
@@ -49,7 +49,7 @@ protected:
     using Subchain = ot::blockchain::crypto::Subchain;
 
     static ot::Nym_p alex_p_;
-    static std::deque<ot::blockchain::block::pTxid> transactions_;
+    static ot::UnallocatedDeque<ot::blockchain::block::pTxid> transactions_;
     static std::unique_ptr<ScanListener> listener_p_;
 
     const ot::identity::Nym& alex_;
@@ -100,10 +100,11 @@ protected:
                 test_chain_,
                 height,
                 [&] {
-                    auto output = std::vector<OutputBuilder>{};
+                    auto output = ot::UnallocatedVector<OutputBuilder>{};
                     const auto reason =
                         client_1_.Factory().PasswordPrompt(__func__);
-                    const auto keys = std::set<ot::blockchain::crypto::Key>{};
+                    const auto keys =
+                        ot::UnallocatedSet<ot::blockchain::crypto::Key>{};
                     const auto index =
                         account_.Reserve(Subchain::External, reason);
 
@@ -144,7 +145,7 @@ protected:
 };
 
 ot::Nym_p RPC_BC::alex_p_{};
-std::deque<ot::blockchain::block::pTxid> RPC_BC::transactions_{};
+ot::UnallocatedDeque<ot::blockchain::block::pTxid> RPC_BC::transactions_{};
 std::unique_ptr<ScanListener> RPC_BC::listener_p_{};
 
 TEST_F(RPC_BC, preconditions)

@@ -6,13 +6,13 @@
 #include "internal/serialization/protobuf/verify/StorageSeeds.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/StorageItemHash.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyStorage.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageItemHash.pb.h"
 #include "serialization/protobuf/StorageSeeds.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

@@ -5,15 +5,12 @@
 
 #pragma once
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Receiver.hpp"
 #include "network/zeromq/socket/Receiver.tpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -39,7 +36,8 @@ class Subscribe : public Receiver<zeromq::socket::Subscribe>,
                   public zeromq::curve::implementation::Client
 {
 public:
-    auto SetSocksProxy(const std::string& proxy) const noexcept -> bool final;
+    auto SetSocksProxy(const UnallocatedCString& proxy) const noexcept
+        -> bool final;
 
     Subscribe(
         const zeromq::Context& context,

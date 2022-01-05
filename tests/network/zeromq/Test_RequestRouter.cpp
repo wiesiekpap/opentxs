@@ -7,8 +7,6 @@
 #include <atomic>
 #include <chrono>
 #include <ctime>
-#include <map>
-#include <string>
 #include <string_view>
 #include <thread>
 #include <utility>
@@ -27,7 +25,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Bytes.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ot = opentxs;
@@ -40,17 +38,18 @@ class Test_RequestRouter : public ::testing::Test
 public:
     const zmq::Context& context_;
 
-    const std::string testMessage_{"zeromq test message"};
-    const std::string testMessage2_{"zeromq test message 2"};
-    const std::string testMessage3_{"zeromq test message 3"};
+    const ot::UnallocatedCString testMessage_{"zeromq test message"};
+    const ot::UnallocatedCString testMessage2_{"zeromq test message 2"};
+    const ot::UnallocatedCString testMessage3_{"zeromq test message 3"};
 
-    const std::string endpoint_{"inproc://opentxs/test/request_router_test"};
+    const ot::UnallocatedCString endpoint_{
+        "inproc://opentxs/test/request_router_test"};
 
     std::atomic_int callbackFinishedCount_{0};
 
     int callbackCount_{0};
 
-    void requestSocketThread(const std::string& msg);
+    void requestSocketThread(const ot::UnallocatedCString& msg);
     void requestSocketThreadMultipart();
 
     Test_RequestRouter()
@@ -59,7 +58,7 @@ public:
     }
 };
 
-void Test_RequestRouter::requestSocketThread(const std::string& msg)
+void Test_RequestRouter::requestSocketThread(const ot::UnallocatedCString& msg)
 {
     auto requestSocket = context_.RequestSocket();
 
@@ -84,7 +83,8 @@ void Test_RequestRouter::requestSocketThread(const std::string& msg)
     // delimiter.
     ASSERT_EQ(1, message.size());
 
-    const auto messageString = std::string{message.Body().begin()->Bytes()};
+    const auto messageString =
+        ot::UnallocatedCString{message.Body().begin()->Bytes()};
     ASSERT_EQ(msg, messageString);
 }
 
@@ -114,7 +114,8 @@ void Test_RequestRouter::requestSocketThreadMultipart()
     // delimiter.
     ASSERT_EQ(4, message.size());
 
-    const auto messageHeader = std::string{message.Header().begin()->Bytes()};
+    const auto messageHeader =
+        ot::UnallocatedCString{message.Header().begin()->Bytes()};
 
     ASSERT_EQ(testMessage_, messageHeader);
 
@@ -137,7 +138,8 @@ TEST_F(Test_RequestRouter, Request_Router)
             EXPECT_EQ(1, input.Header().size());
             EXPECT_EQ(1, input.Body().size());
 
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -183,10 +185,12 @@ TEST_F(Test_RequestRouter, Request_2_Router_1)
 {
     callbackCount_ = 2;
 
-    std::map<std::string, ot::network::zeromq::Message> replyMessages{
-        std::pair<std::string, ot::network::zeromq::Message>(testMessage2_, {}),
-        std::pair<std::string, ot::network::zeromq::Message>(
-            testMessage3_, {})};
+    ot::UnallocatedMap<ot::UnallocatedCString, ot::network::zeromq::Message>
+        replyMessages{
+            std::pair<ot::UnallocatedCString, ot::network::zeromq::Message>(
+                testMessage2_, {}),
+            std::pair<ot::UnallocatedCString, ot::network::zeromq::Message>(
+                testMessage3_, {})};
 
     auto routerCallback = zmq::ListenCallback::Factory(
         [this, &replyMessages](auto&& input) -> void {
@@ -196,7 +200,8 @@ TEST_F(Test_RequestRouter, Request_2_Router_1)
             EXPECT_EQ(1, input.Header().size());
             EXPECT_EQ(1, input.Body().size());
 
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage2_ || inputString == testMessage3_;
             EXPECT_TRUE(match);

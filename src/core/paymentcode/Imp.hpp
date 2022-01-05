@@ -9,9 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "core/paymentcode/PaymentCode.hpp"
 #include "core/paymentcode/Preimage.hpp"
@@ -25,6 +23,7 @@
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -79,7 +78,7 @@ public:
 
     auto operator==(const proto::PaymentCode& rhs) const noexcept -> bool final;
 
-    auto asBase58() const noexcept -> std::string final;
+    auto asBase58() const noexcept -> UnallocatedCString final;
     auto Blind(
         const opentxs::PaymentCode& recipient,
         const crypto::key::EllipticCurve& privateKey,
@@ -97,14 +96,14 @@ public:
     }
     auto DecodeNotificationElements(
         const std::uint8_t version,
-        const std::vector<Space>& elements,
+        const UnallocatedVector<Space>& elements,
         const PasswordPrompt& reason) const noexcept
         -> opentxs::PaymentCode final;
     auto GenerateNotificationElements(
         const opentxs::PaymentCode& recipient,
         const crypto::key::EllipticCurve& privateKey,
         const PasswordPrompt& reason) const noexcept
-        -> std::vector<Space> final;
+        -> UnallocatedVector<Space> final;
     auto ID() const noexcept -> const identifier::Nym& final { return id_; }
     auto Incoming(
         const opentxs::PaymentCode& sender,
@@ -152,7 +151,7 @@ public:
     auto Version() const noexcept -> VersionNumber final { return version_; }
 
     auto AddPrivateKeys(
-        std::string& seed,
+        UnallocatedCString& seed,
         const Bip32Index index,
         const PasswordPrompt& reason) noexcept -> bool final;
 
@@ -224,11 +223,11 @@ private:
     auto generate_elements_v1(
         const opentxs::PaymentCode& recipient,
         const Space& blind,
-        std::vector<Space>& output) const noexcept(false) -> void;
+        UnallocatedVector<Space>& output) const noexcept(false) -> void;
     auto generate_elements_v3(
         const opentxs::PaymentCode& recipient,
         const Space& blind,
-        std::vector<Space>& output) const noexcept(false) -> void;
+        UnallocatedVector<Space>& output) const noexcept(false) -> void;
     auto match_locator(const std::uint8_t version, const Space& element) const
         noexcept(false) -> bool;
     auto postprocess(const Secret& in) const noexcept(false) -> OTSecret;

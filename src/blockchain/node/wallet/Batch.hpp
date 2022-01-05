@@ -7,15 +7,11 @@
 
 #include <atomic>
 #include <cstddef>
-#include <deque>
 #include <functional>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <queue>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/wallet/Job.hpp"
 #include "blockchain/node/wallet/Types.hpp"
@@ -23,6 +19,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -76,7 +73,7 @@ private:
 
     mutable std::atomic_bool reported_;
     std::atomic<std::size_t> running_;
-    std::vector<std::unique_ptr<Work>> jobs_;
+    UnallocatedVector<std::unique_ptr<Work>> jobs_;
 
     static auto NextID() noexcept -> ID;
 };

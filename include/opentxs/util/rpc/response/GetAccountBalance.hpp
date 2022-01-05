@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <vector>
-
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/rpc/AccountData.hpp"
 #include "opentxs/util/rpc/response/Base.hpp"
 
@@ -26,19 +25,17 @@ namespace request
 {
 class GetAccountBalance;
 }  // namespace request
+
+class AccountData;
 }  // namespace rpc
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace rpc
-{
-namespace response
+namespace opentxs::rpc::response
 {
 class OPENTXS_EXPORT GetAccountBalance final : public Base
 {
 public:
-    using Data = std::vector<AccountData>;
+    using Data = UnallocatedVector<AccountData>;
 
     auto Balances() const noexcept -> const Data&;
 
@@ -59,6 +56,4 @@ private:
     auto operator=(const GetAccountBalance&) -> GetAccountBalance& = delete;
     auto operator=(GetAccountBalance&&) -> GetAccountBalance& = delete;
 };
-}  // namespace response
-}  // namespace rpc
-}  // namespace opentxs
+}  // namespace opentxs::rpc::response

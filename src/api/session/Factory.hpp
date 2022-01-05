@@ -11,13 +11,10 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <set>
-#include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/api/FactoryAPI.hpp"
@@ -88,6 +85,7 @@
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Time.hpp"
@@ -221,14 +219,14 @@ class Factory : virtual public internal::Factory
 {
 public:
     auto Armored() const -> OTArmored final;
-    auto Armored(const std::string& input) const -> OTArmored final;
+    auto Armored(const UnallocatedCString& input) const -> OTArmored final;
     auto Armored(const opentxs::Data& input) const -> OTArmored final;
     auto Armored(const opentxs::String& input) const -> OTArmored final;
     auto Armored(const opentxs::crypto::Envelope& input) const
         -> OTArmored final;
     auto Armored(const ProtobufType& input) const -> OTArmored final;
-    auto Armored(const ProtobufType& input, const std::string& header) const
-        -> OTString final;
+    auto Armored(const ProtobufType& input, const UnallocatedCString& header)
+        const -> OTString final;
     auto Asymmetric() const -> const api::crypto::Asymmetric& final
     {
         return asymmetric_;
@@ -246,7 +244,7 @@ public:
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
         const opentxs::Identifier& requestID,
-        const std::string& txid,
+        const UnallocatedCString& txid,
         const Amount& amount,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTBailmentNotice final;
@@ -257,7 +255,7 @@ public:
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
         const identifier::Notary& server,
-        const std::string& terms,
+        const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTBailmentReply final;
     auto BailmentReply(const Nym_p& nym, const proto::PeerReply& serialized)
@@ -278,8 +276,8 @@ public:
         -> std::unique_ptr<opentxs::Basket> final;
     auto BasketContract(
         const Nym_p& nym,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const std::uint64_t weight,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
@@ -303,7 +301,8 @@ public:
         [[maybe_unused]] const opentxs::blockchain::block::Header& previous,
         [[maybe_unused]] const Transaction_p generationTransaction,
         [[maybe_unused]] const std::uint32_t nBits,
-        [[maybe_unused]] const std::vector<Transaction_p>& extraTransactions,
+        [[maybe_unused]] const UnallocatedVector<Transaction_p>&
+            extraTransactions,
         [[maybe_unused]] const std::int32_t version,
         [[maybe_unused]] const AbortFunction abort) const noexcept
         -> std::shared_ptr<
@@ -314,8 +313,8 @@ public:
     auto BitcoinGenerationTransaction(
         [[maybe_unused]] const opentxs::blockchain::Type chain,
         [[maybe_unused]] const opentxs::blockchain::block::Height height,
-        [[maybe_unused]] std::vector<OutputBuilder>&& outputs,
-        [[maybe_unused]] const std::string& coinbase,
+        [[maybe_unused]] UnallocatedVector<OutputBuilder>&& outputs,
+        [[maybe_unused]] const UnallocatedCString& coinbase,
         [[maybe_unused]] const std::int32_t version) const noexcept
         -> Transaction_p override
     {
@@ -323,14 +322,14 @@ public:
     }
     auto BitcoinScriptNullData(
         const opentxs::blockchain::Type chain,
-        const std::vector<ReadView>& data) const noexcept
+        const UnallocatedVector<ReadView>& data) const noexcept
         -> std::unique_ptr<
             const opentxs::blockchain::block::bitcoin::Script> final;
     auto BitcoinScriptP2MS(
         const opentxs::blockchain::Type chain,
         const std::uint8_t M,
         const std::uint8_t N,
-        const std::vector<const opentxs::crypto::key::EllipticCurve*>&
+        const UnallocatedVector<const opentxs::crypto::key::EllipticCurve*>&
             publicKeys) const noexcept
         -> std::unique_ptr<
             const opentxs::blockchain::block::bitcoin::Script> final;
@@ -376,7 +375,7 @@ public:
         const std::uint16_t port,
         const opentxs::blockchain::Type chain,
         const Time lastConnected,
-        const std::set<opentxs::blockchain::p2p::Service>& services,
+        const UnallocatedSet<opentxs::blockchain::p2p::Service>& services,
         const bool incoming) const -> OTBlockchainAddress final;
     auto BlockchainAddress(
         const opentxs::blockchain::p2p::Address::SerializedType& serialized)
@@ -425,10 +424,10 @@ public:
         const opentxs::Identifier& request,
         const identifier::Notary& server,
         const bool ack,
-        const std::string& url,
-        const std::string& login,
-        const std::string& password,
-        const std::string& key,
+        const UnallocatedCString& url,
+        const UnallocatedCString& login,
+        const UnallocatedCString& password,
+        const UnallocatedCString& key,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTConnectionReply final;
     auto ConnectionReply(const Nym_p& nym, const proto::PeerReply& serialized)
@@ -451,8 +450,8 @@ public:
         -> std::unique_ptr<OTCronItem> final;
     auto CurrencyContract(
         const Nym_p& nym,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason,
@@ -470,10 +469,11 @@ public:
         -> OTData final;
     auto Data(const std::uint8_t input) const -> OTData final;
     auto Data(const std::uint32_t input) const -> OTData final;
-    auto Data(const std::string& input, const StringStyle mode) const
+    auto Data(const UnallocatedCString& input, const StringStyle mode) const
         -> OTData final;
-    auto Data(const std::vector<unsigned char>& input) const -> OTData final;
-    auto Data(const std::vector<std::byte>& input) const -> OTData final;
+    auto Data(const UnallocatedVector<unsigned char>& input) const
+        -> OTData final;
+    auto Data(const UnallocatedVector<std::byte>& input) const -> OTData final;
     auto Data(ReadView input) const -> OTData final;
     auto Envelope() const noexcept -> OTEnvelope final;
     auto Envelope(const opentxs::Armored& ciphertext) const noexcept(false)
@@ -483,7 +483,8 @@ public:
     auto Envelope(const opentxs::ReadView& serialized) const noexcept(false)
         -> OTEnvelope final;
     auto Identifier() const -> OTIdentifier final;
-    auto Identifier(const std::string& serialized) const -> OTIdentifier final;
+    auto Identifier(const UnallocatedCString& serialized) const
+        -> OTIdentifier final;
     auto Identifier(const opentxs::String& serialized) const
         -> OTIdentifier final;
     auto Identifier(const opentxs::Contract& contract) const
@@ -497,7 +498,7 @@ public:
         -> OTIdentifier final;
     auto Item(const String& serialized) const
         -> std::unique_ptr<opentxs::Item> final;
-    auto Item(const std::string& serialized) const
+    auto Item(const UnallocatedCString& serialized) const
         -> std::unique_ptr<opentxs::Item> final;
     auto Item(const identifier::Nym& theNymID, const opentxs::Item& theOwner)
         const -> std::unique_ptr<opentxs::Item> final;
@@ -530,7 +531,7 @@ public:
     auto Keypair(const proto::AsymmetricKey& serializedPubkey) const
         -> OTKeypair final;
     auto Keypair(
-        const std::string& fingerprint,
+        const UnallocatedCString& fingerprint,
         const Bip32Index nym,
         const Bip32Index credset,
         const Bip32Index credindex,
@@ -586,13 +587,13 @@ public:
         const identifier::UnitDefinition& unit) const noexcept
         -> otx::blind::Mint final;
     auto NymID() const -> OTNymID final;
-    auto NymID(const std::string& serialized) const -> OTNymID final;
+    auto NymID(const UnallocatedCString& serialized) const -> OTNymID final;
     auto NymID(const opentxs::String& serialized) const -> OTNymID final;
     auto NymID(const opentxs::network::zeromq::Frame& bytes) const
         -> OTNymID final;
     auto NymID(const proto::Identifier& in) const noexcept -> OTNymID final;
     auto NymID(const opentxs::Identifier& in) const noexcept -> OTNymID final;
-    auto NymIDFromPaymentCode(const std::string& serialized) const
+    auto NymIDFromPaymentCode(const UnallocatedCString& serialized) const
         -> OTNymID final;
     auto Offer() const -> std::unique_ptr<OTOffer> final;
     auto Offer(
@@ -605,7 +606,7 @@ public:
         const identifier::Nym& initiator,
         const opentxs::Identifier& request,
         const identifier::Notary& server,
-        const std::string& terms,
+        const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTOutbailmentReply final;
     auto OutbailmentReply(const Nym_p& nym, const proto::PeerReply& serialized)
@@ -616,14 +617,14 @@ public:
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
         const Amount& amount,
-        const std::string& terms,
+        const UnallocatedCString& terms,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTOutbailmentRequest final;
     auto OutbailmentRequest(
         const Nym_p& nym,
         const proto::PeerRequest& serialized) const noexcept(false)
         -> OTOutbailmentRequest final;
-    auto PasswordPrompt(const std::string& text) const
+    auto PasswordPrompt(const UnallocatedCString& text) const
         -> OTPasswordPrompt final;
     auto PasswordPrompt(const opentxs::PasswordPrompt& rhs) const
         -> OTPasswordPrompt final
@@ -637,14 +638,14 @@ public:
         const opentxs::Contract& contract,
         const opentxs::PasswordPrompt& reason) const
         -> std::unique_ptr<OTPayment> final;
-    auto PaymentCode(const std::string& base58) const noexcept
+    auto PaymentCode(const UnallocatedCString& base58) const noexcept
         -> opentxs::PaymentCode final;
     auto PaymentCode(const proto::PaymentCode& serialized) const noexcept
         -> opentxs::PaymentCode final;
     auto PaymentCode(const ReadView& serialized) const noexcept
         -> opentxs::PaymentCode final;
     auto PaymentCode(
-        const std::string& seed,
+        const UnallocatedCString& seed,
         const Bip32Index nym,
         const std::uint8_t version,
         const opentxs::PasswordPrompt& reason,
@@ -665,11 +666,11 @@ public:
         const opentxs::Identifier& RECIPIENT_ACCT_ID,
         const identifier::Nym& RECIPIENT_NYM_ID) const
         -> std::unique_ptr<OTPaymentPlan> final;
-    auto PeerObject(const Nym_p& senderNym, const std::string& message) const
-        -> std::unique_ptr<opentxs::PeerObject> override;
+    auto PeerObject(const Nym_p& senderNym, const UnallocatedCString& message)
+        const -> std::unique_ptr<opentxs::PeerObject> override;
     auto PeerObject(
         const Nym_p& senderNym,
-        const std::string& payment,
+        const UnallocatedCString& payment,
         const bool isPayment) const
         -> std::unique_ptr<opentxs::PeerObject> override;
     auto PeerObject(const Nym_p& senderNym, otx::blind::Purse&& purse) const
@@ -760,8 +761,8 @@ public:
     }
     auto SecurityContract(
         const Nym_p& nym,
-        const std::string& shortname,
-        const std::string& terms,
+        const UnallocatedCString& shortname,
+        const UnallocatedCString& terms,
         const core::UnitType unitOfAccount,
         const VersionNumber version,
         const opentxs::PasswordPrompt& reason,
@@ -774,7 +775,8 @@ public:
         -> OTSecurityContract final;
     auto ServerContract() const noexcept(false) -> OTServerContract final;
     auto ServerID() const -> OTNotaryID final;
-    auto ServerID(const std::string& serialized) const -> OTNotaryID final;
+    auto ServerID(const UnallocatedCString& serialized) const
+        -> OTNotaryID final;
     auto ServerID(const opentxs::String& serialized) const -> OTNotaryID final;
     auto ServerID(const opentxs::network::zeromq::Frame& bytes) const
         -> OTNotaryID final;
@@ -798,8 +800,8 @@ public:
         const Nym_p& nym,
         const identifier::Nym& recipientID,
         const contract::peer::SecretType type,
-        const std::string& primary,
-        const std::string& secondary,
+        const UnallocatedCString& primary,
+        const UnallocatedCString& secondary,
         const identifier::Notary& server,
         const opentxs::PasswordPrompt& reason) const noexcept(false)
         -> OTStoreSecret final;
@@ -900,7 +902,7 @@ public:
         std::int64_t lTransactionNum = 0) const
         -> std::unique_ptr<OTTransaction> final;
     auto UnitID() const -> OTUnitID final;
-    auto UnitID(const std::string& serialized) const -> OTUnitID final;
+    auto UnitID(const UnallocatedCString& serialized) const -> OTUnitID final;
     auto UnitID(const opentxs::String& serialized) const -> OTUnitID final;
     auto UnitID(const opentxs::network::zeromq::Frame& bytes) const
         -> OTUnitID final;

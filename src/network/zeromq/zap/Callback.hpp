@@ -6,13 +6,12 @@
 #pragma once
 
 #include <atomic>
-#include <map>
 #include <mutex>
-#include <string>
 
 #include "opentxs/network/zeromq/zap/Callback.hpp"
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -37,8 +36,9 @@ public:
     using Lambda = zap::Callback::ReceiveCallback;
 
     auto Process(const zap::Request& request) const -> Reply final;
-    auto SetDomain(const std::string& domain, const ReceiveCallback& callback)
-        const -> bool final;
+    auto SetDomain(
+        const UnallocatedCString& domain,
+        const ReceiveCallback& callback) const -> bool final;
     auto SetPolicy(const Policy policy) const -> bool final;
 
     ~Callback() final = default;
@@ -47,7 +47,7 @@ private:
     friend zap::Callback;
 
     const Lambda default_callback_;
-    mutable std::map<std::string, Lambda> domains_;
+    mutable UnallocatedMap<UnallocatedCString, Lambda> domains_;
     mutable std::mutex domain_lock_;
     mutable std::atomic<Policy> policy_;
 

@@ -7,8 +7,8 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <map>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace irr
 {
@@ -29,27 +29,30 @@ class OTStashItem;
 class String;
 class Tag;
 
-using mapOfStashItems = std::map<std::string, OTStashItem*>;
+using mapOfStashItems = UnallocatedMap<UnallocatedCString, OTStashItem*>;
 
 class OTStash
 {
-    std::string m_str_stash_name;
+    UnallocatedCString m_str_stash_name;
 
     mapOfStashItems m_mapStashItems;  // map of stash items by instrument
                                       // definition ID.
                                       // owned.
 public:
-    auto GetName() const -> const std::string { return m_str_stash_name; }
-    auto GetStash(const std::string& str_instrument_definition_id)
+    auto GetName() const -> const UnallocatedCString
+    {
+        return m_str_stash_name;
+    }
+    auto GetStash(const UnallocatedCString& str_instrument_definition_id)
         -> OTStashItem*;
 
-    auto GetAmount(const std::string& str_instrument_definition_id)
+    auto GetAmount(const UnallocatedCString& str_instrument_definition_id)
         -> std::int64_t;
     auto CreditStash(
-        const std::string& str_instrument_definition_id,
+        const UnallocatedCString& str_instrument_definition_id,
         const std::int64_t& lAmount) -> bool;
     auto DebitStash(
-        const std::string& str_instrument_definition_id,
+        const UnallocatedCString& str_instrument_definition_id,
         const std::int64_t& lAmount) -> bool;
 
     void Serialize(Tag& parent) const;
@@ -59,7 +62,7 @@ public:
         const String& strItemCount) -> std::int32_t;
 
     OTStash();
-    OTStash(const std::string& str_stash_name);
+    OTStash(const UnallocatedCString& str_stash_name);
     OTStash(const String& strInstrumentDefinitionID, std::int64_t lAmount = 0);
     OTStash(
         const Identifier& theInstrumentDefinitionID,

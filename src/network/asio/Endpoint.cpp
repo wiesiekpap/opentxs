@@ -131,7 +131,7 @@ auto Endpoint::operator=(Endpoint&& rhs) noexcept -> Endpoint&
     return *this;
 }
 
-auto Endpoint::GetAddress() const noexcept -> std::string
+auto Endpoint::GetAddress() const noexcept -> UnallocatedCString
 {
     return imp_->data_.address().to_string();
 }
@@ -143,7 +143,7 @@ auto Endpoint::GetBytes() const noexcept -> ReadView
 
 auto Endpoint::GetInternal() const noexcept -> const Imp& { return *imp_; }
 
-auto Endpoint::GetMapped() const noexcept -> std::string
+auto Endpoint::GetMapped() const noexcept -> UnallocatedCString
 {
     if (Type::ipv6 == imp_->type_) { return GetAddress(); }
 
@@ -157,7 +157,7 @@ auto Endpoint::GetPort() const noexcept -> Port { return imp_->data_.port(); }
 
 auto Endpoint::GetType() const noexcept -> Type { return imp_->type_; }
 
-auto Endpoint::str() const noexcept -> std::string
+auto Endpoint::str() const noexcept -> UnallocatedCString
 {
     auto output = std::stringstream{};
     output << imp_->data_;

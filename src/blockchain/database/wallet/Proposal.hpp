@@ -8,10 +8,9 @@
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <vector>
 
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -38,19 +37,20 @@ namespace opentxs::blockchain::database::wallet
 class Proposal
 {
 public:
-    auto CompletedProposals() const noexcept -> std::set<OTIdentifier>;
+    auto CompletedProposals() const noexcept -> UnallocatedSet<OTIdentifier>;
     auto Exists(const Identifier& id) const noexcept -> bool;
     auto LoadProposal(const Identifier& id) const noexcept
         -> std::optional<proto::BlockchainTransactionProposal>;
     auto LoadProposals() const noexcept
-        -> std::vector<proto::BlockchainTransactionProposal>;
+        -> UnallocatedVector<proto::BlockchainTransactionProposal>;
 
     auto AddProposal(
         const Identifier& id,
         const proto::BlockchainTransactionProposal& tx) noexcept -> bool;
     auto CancelProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool;
     auto FinishProposal(MDB_txn* tx, const Identifier& id) noexcept -> bool;
-    auto ForgetProposals(const std::set<OTIdentifier>& ids) noexcept -> bool;
+    auto ForgetProposals(const UnallocatedSet<OTIdentifier>& ids) noexcept
+        -> bool;
 
     Proposal(const storage::lmdb::LMDB& lmdb) noexcept;
 

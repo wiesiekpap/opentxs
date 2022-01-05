@@ -28,7 +28,7 @@ class OPENTXS_EXPORT Primary : virtual public identity::credential::Key
 public:
     OPENTXS_NO_EXPORT virtual auto Path(proto::HDPath& output) const
         -> bool = 0;
-    virtual auto Path() const -> std::string = 0;
+    virtual auto Path() const -> UnallocatedCString = 0;
 
     ~Primary() override = default;
 

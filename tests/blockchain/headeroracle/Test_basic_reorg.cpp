@@ -7,11 +7,11 @@
 #include <iostream>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ottest
 {

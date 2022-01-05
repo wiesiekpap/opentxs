@@ -47,7 +47,7 @@ public:
         FilterOracle::FilterDownloader& filter,
         const blockchain::Type chain,
         const filter::Type type,
-        const std::string& shutdown,
+        const UnallocatedCString& shutdown,
         Callback&& cb) noexcept
         : HeaderDM(
               [&] { return db.FilterHeaderTip(type); }(),
@@ -219,8 +219,8 @@ private:
         if (0 == data.size()) { return; }
 
         const auto& previous = data.front()->previous_.get();
-        auto hashes = std::vector<block::pHash>{};
-        auto headers = std::vector<internal::FilterDatabase::Header>{};
+        auto hashes = UnallocatedVector<block::pHash>{};
+        auto headers = UnallocatedVector<internal::FilterDatabase::Header>{};
 
         for (const auto& task : data) {
             const auto& hash = hashes.emplace_back(task->data_.get());

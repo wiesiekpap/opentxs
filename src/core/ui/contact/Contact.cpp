@@ -8,12 +8,9 @@
 #include "core/ui/contact/Contact.hpp"  // IWYU pragma: associated
 
 #include <functional>
-#include <map>
 #include <memory>
-#include <set>
 #include <thread>
 #include <utility>
-#include <vector>
 
 #include "core/ui/base/List.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -28,6 +25,7 @@
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -46,13 +44,14 @@ auto ContactModel(
 
 namespace opentxs::ui::implementation
 {
-const std::set<identity::wot::claim::SectionType> Contact::allowed_types_{
+const UnallocatedSet<identity::wot::claim::SectionType> Contact::allowed_types_{
     identity::wot::claim::SectionType::Communication,
     identity::wot::claim::SectionType::Profile};
 
-const std::map<identity::wot::claim::SectionType, int> Contact::sort_keys_{
-    {identity::wot::claim::SectionType::Communication, 0},
-    {identity::wot::claim::SectionType::Profile, 1}};
+const UnallocatedMap<identity::wot::claim::SectionType, int>
+    Contact::sort_keys_{
+        {identity::wot::claim::SectionType::Communication, 0},
+        {identity::wot::claim::SectionType::Profile, 1}};
 
 Contact::Contact(
     const api::session::Client& api,
@@ -95,19 +94,19 @@ auto Contact::construct_row(
     return factory::ContactSectionWidget(*this, api_, id, index, custom);
 }
 
-auto Contact::ContactID() const noexcept -> std::string
+auto Contact::ContactID() const noexcept -> UnallocatedCString
 {
     return primary_id_->str();
 }
 
-auto Contact::DisplayName() const noexcept -> std::string
+auto Contact::DisplayName() const noexcept -> UnallocatedCString
 {
     auto lock = rLock{recursive_lock_};
 
     return name_;
 }
 
-auto Contact::PaymentCode() const noexcept -> std::string
+auto Contact::PaymentCode() const noexcept -> UnallocatedCString
 {
     auto lock = rLock{recursive_lock_};
 
@@ -149,7 +148,7 @@ auto Contact::process_contact(const opentxs::Contact& contact) noexcept -> void
         if (nameChanged || codeChanged) { UpdateNotify(); }
     }
 
-    auto active = std::set<ContactRowID>{};
+    auto active = UnallocatedSet<ContactRowID>{};
     const auto data = contact.Data();
 
     if (data) {

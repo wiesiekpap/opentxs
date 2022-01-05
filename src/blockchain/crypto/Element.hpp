@@ -8,13 +8,9 @@
 #include <boost/container/flat_set.hpp>
 #include <atomic>
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
@@ -32,6 +28,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/BlockchainAccountData.pb.h"
@@ -78,18 +75,19 @@ class Element final : virtual public internal::Element
 {
 public:
     auto Address(const blockchain::crypto::AddressStyle format) const noexcept
-        -> std::string final;
+        -> UnallocatedCString final;
     auto Confirmed() const noexcept -> Txids final;
     auto Contact() const noexcept -> OTIdentifier final;
-    auto Elements() const noexcept -> std::set<OTData> final;
-    auto elements(const rLock& lock) const noexcept -> std::set<OTData>;
+    auto Elements() const noexcept -> UnallocatedSet<OTData> final;
+    auto elements(const rLock& lock) const noexcept -> UnallocatedSet<OTData>;
     auto ID() const noexcept -> const Identifier& final { return parent_.ID(); }
-    auto IncomingTransactions() const noexcept -> std::set<std::string> final;
+    auto IncomingTransactions() const noexcept
+        -> UnallocatedSet<UnallocatedCString> final;
     auto Internal() const noexcept -> internal::Element& final
     {
         return const_cast<Element&>(*this);
     }
-    auto IsAvailable(const Identifier& contact, const std::string& memo)
+    auto IsAvailable(const Identifier& contact, const UnallocatedCString& memo)
         const noexcept -> Availability final;
     auto Index() const noexcept -> Bip32Index final { return index_; }
     auto Key() const noexcept -> ECKey final;
@@ -97,7 +95,7 @@ public:
     {
         return {ID().str(), subchain_, index_};
     }
-    auto Label() const noexcept -> std::string final;
+    auto Label() const noexcept -> UnallocatedCString final;
     auto LastActivity() const noexcept -> Time final;
     auto NymID() const noexcept -> const identifier::Nym& final
     {
@@ -119,10 +117,10 @@ public:
     auto Confirm(const Txid& tx) noexcept -> bool final;
     auto Reserve(const Time time) noexcept -> bool final;
     auto SetContact(const Identifier& id) noexcept -> void final;
-    auto SetLabel(const std::string& label) noexcept -> void final;
+    auto SetLabel(const UnallocatedCString& label) noexcept -> void final;
     auto SetMetadata(
         const Identifier& contact,
-        const std::string& label) noexcept -> void final;
+        const UnallocatedCString& label) noexcept -> void final;
     auto Unconfirm(const Txid& tx, const Time time) noexcept -> bool final;
     auto Unreserve() noexcept -> bool final;
 
@@ -166,7 +164,7 @@ private:
     const VersionNumber version_;
     const crypto::Subchain subchain_;
     const Bip32Index index_;
-    std::string label_;
+    UnallocatedCString label_;
     OTIdentifier contact_;
     mutable std::shared_ptr<const opentxs::crypto::key::EllipticCurve> pkey_;
     Time timestamp_;
@@ -189,7 +187,7 @@ private:
         const VersionNumber version,
         const crypto::Subchain subchain,
         const Bip32Index index,
-        const std::string label,
+        const UnallocatedCString label,
         OTIdentifier&& contact,
         const opentxs::crypto::key::EllipticCurve& key,
         const Time time,

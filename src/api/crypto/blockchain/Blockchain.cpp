@@ -7,7 +7,6 @@
 #include "1_Internal.hpp"                        // IWYU pragma: associated
 #include "api/crypto/blockchain/Blockchain.hpp"  // IWYU pragma: associated
 
-#include <set>
 #include <type_traits>
 #include <utility>
 
@@ -25,6 +24,7 @@
 #include "opentxs/crypto/Bip32Child.hpp"
 #include "opentxs/crypto/Bip43Purpose.hpp"
 #include "opentxs/crypto/Bip44Type.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/HDPath.pb.h"
 
 namespace zmq = opentxs::network::zeromq;
@@ -36,7 +36,7 @@ auto BlockchainAPI(
     const api::session::Activity& activity,
     const api::session::Contacts& contacts,
     const api::Legacy& legacy,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const Options& args) noexcept -> std::shared_ptr<api::crypto::Blockchain>
 {
     using ReturnType = api::crypto::imp::Blockchain;
@@ -63,7 +63,7 @@ auto Blockchain::Bip44(Chain chain) noexcept(false) -> Bip44Type
 
 auto Blockchain::Bip44Path(
     Chain chain,
-    const std::string& seed,
+    const UnallocatedCString& seed,
     AllocateOutput destination) noexcept(false) -> bool
 {
     constexpr auto hard = static_cast<Bip32Index>(Bip32Child::HARDENED);
@@ -87,24 +87,24 @@ auto Blockchain::Account(const identifier::Nym& nymID, const Chain chain) const
 }
 
 auto Blockchain::SubaccountList(const identifier::Nym& nymID, const Chain chain)
-    const noexcept -> std::set<OTIdentifier>
+    const noexcept -> UnallocatedSet<OTIdentifier>
 {
     return imp_->SubaccountList(nymID, chain);
 }
 
 auto Blockchain::AccountList(const identifier::Nym& nymID) const noexcept
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return imp_->AccountList(nymID);
 }
 
 auto Blockchain::AccountList(const Chain chain) const noexcept
-    -> std::set<OTIdentifier>
+    -> UnallocatedSet<OTIdentifier>
 {
     return imp_->AccountList(chain);
 }
 
-auto Blockchain::AccountList() const noexcept -> std::set<OTIdentifier>
+auto Blockchain::AccountList() const noexcept -> UnallocatedSet<OTIdentifier>
 {
     return imp_->AccountList();
 }
@@ -112,7 +112,7 @@ auto Blockchain::AccountList() const noexcept -> std::set<OTIdentifier>
 auto Blockchain::ActivityDescription(
     const identifier::Nym& nym,
     const Identifier& thread,
-    const std::string& itemID) const noexcept -> std::string
+    const UnallocatedCString& itemID) const noexcept -> UnallocatedCString
 {
     return imp_->ActivityDescription(nym, thread, itemID);
 }
@@ -121,7 +121,7 @@ auto Blockchain::ActivityDescription(
     const identifier::Nym& nym,
     const Chain chain,
     const opentxs::blockchain::block::bitcoin::Transaction& transaction)
-    const noexcept -> std::string
+    const noexcept -> UnallocatedCString
 {
     return imp_->ActivityDescription(nym, chain, transaction);
 }
@@ -141,14 +141,14 @@ auto Blockchain::AssignLabel(
     const Identifier& accountID,
     const Subchain subchain,
     const Bip32Index index,
-    const std::string& label) const noexcept -> bool
+    const UnallocatedCString& label) const noexcept -> bool
 {
     return imp_->AssignLabel(nymID, accountID, subchain, index, label);
 }
 
 auto Blockchain::AssignTransactionMemo(
     const TxidHex& id,
-    const std::string& label) const noexcept -> bool
+    const UnallocatedCString& label) const noexcept -> bool
 {
     return imp_->AssignTransactionMemo(id, label);
 }
@@ -156,7 +156,7 @@ auto Blockchain::AssignTransactionMemo(
 auto Blockchain::CalculateAddress(
     const Chain chain,
     const Style format,
-    const Data& pubkey) const noexcept -> std::string
+    const Data& pubkey) const noexcept -> UnallocatedCString
 {
     return imp_->CalculateAddress(chain, format, pubkey);
 }
@@ -173,7 +173,7 @@ auto Blockchain::Contacts() const noexcept -> const api::session::Contacts&
     return imp_->Contacts();
 }
 
-auto Blockchain::DecodeAddress(const std::string& encoded) const noexcept
+auto Blockchain::DecodeAddress(const UnallocatedCString& encoded) const noexcept
     -> DecodedAddress
 {
     return imp_->DecodeAddress(encoded);
@@ -182,7 +182,7 @@ auto Blockchain::DecodeAddress(const std::string& encoded) const noexcept
 auto Blockchain::EncodeAddress(
     const Style style,
     const Chain chain,
-    const Data& data) const noexcept -> std::string
+    const Data& data) const noexcept -> UnallocatedCString
 {
     return imp_->EncodeAddress(style, chain, data);
 }
@@ -208,7 +208,7 @@ auto Blockchain::IndexItem(const ReadView bytes) const noexcept -> PatternID
 
 auto Blockchain::Init() noexcept -> void { imp_->Init(); }
 
-auto Blockchain::KeyEndpoint() const noexcept -> const std::string&
+auto Blockchain::KeyEndpoint() const noexcept -> const UnallocatedCString&
 {
     return imp_->KeyEndpoint();
 }
@@ -236,8 +236,8 @@ auto Blockchain::LookupAccount(const Identifier& id) const noexcept
     return imp_->LookupAccount(id);
 }
 
-auto Blockchain::LookupContacts(const std::string& address) const noexcept
-    -> ContactList
+auto Blockchain::LookupContacts(
+    const UnallocatedCString& address) const noexcept -> ContactList
 {
     const auto [pubkeyHash, style, chain, supported] =
         imp_->DecodeAddress(address);
@@ -394,8 +394,8 @@ auto Blockchain::Unconfirm(
     return imp_->Unconfirm(key, tx, time);
 }
 
-auto Blockchain::UpdateElement(std::vector<ReadView>& hashes) const noexcept
-    -> void
+auto Blockchain::UpdateElement(
+    UnallocatedVector<ReadView>& hashes) const noexcept -> void
 {
     imp_->UpdateElement(hashes);
 }

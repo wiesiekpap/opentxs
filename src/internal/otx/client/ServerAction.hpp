@@ -6,10 +6,10 @@
 #pragma once
 
 #include <chrono>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -49,7 +49,7 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const Identifier& accountID,
-        const std::string& agentName,
+        const UnallocatedCString& agentName,
         std::unique_ptr<OTSmartContract>& contract) const -> Action = 0;
     virtual auto AdjustUsageCredits(
         const PasswordPrompt& reason,
@@ -72,7 +72,7 @@ public:
         const Amount& price,
         const bool selling,
         const std::chrono::seconds lifetime,
-        const std::string& stopSign,
+        const UnallocatedCString& stopSign,
         const Amount activationPrice) const -> Action = 0;
     virtual auto DepositPaymentPlan(
         const PasswordPrompt& reason,
@@ -111,7 +111,7 @@ public:
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const proto::UnitDefinition& basket,
-        const std::string& label = "") const -> Action = 0;
+        const UnallocatedCString& label = "") const -> Action = 0;
     virtual auto KillMarketOffer(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
@@ -130,15 +130,15 @@ public:
         const identifier::Notary& serverID,
         const identifier::UnitDefinition& instrumentDefinitionID,
         const Identifier& accountID,
-        const std::string& memo,
+        const UnallocatedCString& memo,
         const Amount amountPerShare) const -> Action = 0;
     virtual auto TriggerClause(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
         const identifier::Notary& serverID,
         const TransactionNumber transactionNumber,
-        const std::string& clause,
-        const std::string& parameter) const -> Action = 0;
+        const UnallocatedCString& clause,
+        const UnallocatedCString& parameter) const -> Action = 0;
     virtual auto UnregisterAccount(
         const PasswordPrompt& reason,
         const identifier::Nym& localNymID,
@@ -155,7 +155,7 @@ public:
         const Identifier& accountID,
         const identifier::Nym& recipientNymID,
         const Amount amount,
-        const std::string& memo) const -> Action = 0;
+        const UnallocatedCString& memo) const -> Action = 0;
 
     virtual ~ServerAction() = default;
 

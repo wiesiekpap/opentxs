@@ -3,18 +3,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+// IWYU pragma: no_forward_declare opentxs::blockchain::node::implementation::FilterOracle::BlockIndexer
+// IWYU pragma: no_forward_declare opentxs::blockchain::node::implementation::FilterOracle::BlockIndexerData
+
 #pragma once
 
 #include <cstddef>
-#include <deque>
 #include <exception>
 #include <functional>
 #include <future>
 #include <iosfwd>
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "blockchain/DownloadManager.hpp"
 #include "blockchain/DownloadTask.hpp"
@@ -28,10 +28,8 @@
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/blockchain/block/bitcoin/Block.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/JobCounter.hpp"
-
-// IWYU pragma: no_forward_declare opentxs::blockchain::node::implementation::FilterOracle::BlockIndexer
-// IWYU pragma: no_forward_declare opentxs::blockchain::node::implementation::FilterOracle::BlockIndexerData
 
 namespace opentxs
 {
@@ -99,7 +97,7 @@ public:
         FilterOracle& parent,
         const blockchain::Type chain,
         const filter::Type type,
-        const std::string& shutdown,
+        const UnallocatedCString& shutdown,
         const NotifyCallback& notify) noexcept;
 
     ~BlockIndexer();
@@ -121,7 +119,7 @@ private:
     auto batch_ready() const noexcept -> void { trigger(); }
     auto batch_size(const std::size_t in) const noexcept -> std::size_t;
     auto calculate_cfheaders(
-        std::vector<BlockIndexerData>& cache) const noexcept -> bool;
+        UnallocatedVector<BlockIndexerData>& cache) const noexcept -> bool;
     auto check_task(TaskType&) const noexcept -> void {}
     auto trigger_state_machine() const noexcept -> void { trigger(); }
     auto update_tip(const Position& position, const filter::pHeader&)

@@ -8,7 +8,6 @@
 #include "core/ui/profile/ProfileSubsection.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <set>
 #include <thread>
 #include <type_traits>
 
@@ -23,6 +22,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/Group.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
 {
@@ -60,7 +60,7 @@ ProfileSubsection::ProfileSubsection(
 }
 
 auto ProfileSubsection::AddItem(
-    const std::string& value,
+    const UnallocatedCString& value,
     const bool primary,
     const bool active) const noexcept -> bool
 {
@@ -75,7 +75,7 @@ auto ProfileSubsection::construct_row(
     return factory::ProfileItemWidget(*this, api_, id, index, custom);
 }
 
-auto ProfileSubsection::Delete(const std::string& claimID) const noexcept
+auto ProfileSubsection::Delete(const UnallocatedCString& claimID) const noexcept
     -> bool
 {
     rLock lock{recursive_lock_};
@@ -86,19 +86,19 @@ auto ProfileSubsection::Delete(const std::string& claimID) const noexcept
     return claim.Delete();
 }
 
-auto ProfileSubsection::Name(const std::string& lang) const noexcept
-    -> std::string
+auto ProfileSubsection::Name(const UnallocatedCString& lang) const noexcept
+    -> UnallocatedCString
 {
     return proto::TranslateItemType(translate(row_id_.second), lang);
 }
 
 auto ProfileSubsection::process_group(
     const identity::wot::claim::Group& group) noexcept
-    -> std::set<ProfileSubsectionRowID>
+    -> UnallocatedSet<ProfileSubsectionRowID>
 {
     OT_ASSERT(row_id_.second == group.Type())
 
-    std::set<ProfileSubsectionRowID> active{};
+    UnallocatedSet<ProfileSubsectionRowID> active{};
 
     for (const auto& [id, claim] : group) {
         OT_ASSERT(claim)
@@ -121,8 +121,9 @@ auto ProfileSubsection::reindex(
     return true;
 }
 
-auto ProfileSubsection::SetActive(const std::string& claimID, const bool active)
-    const noexcept -> bool
+auto ProfileSubsection::SetActive(
+    const UnallocatedCString& claimID,
+    const bool active) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
     auto& claim = lookup(lock, Identifier::Factory(claimID));
@@ -133,7 +134,7 @@ auto ProfileSubsection::SetActive(const std::string& claimID, const bool active)
 }
 
 auto ProfileSubsection::SetPrimary(
-    const std::string& claimID,
+    const UnallocatedCString& claimID,
     const bool primary) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
@@ -145,8 +146,8 @@ auto ProfileSubsection::SetPrimary(
 }
 
 auto ProfileSubsection::SetValue(
-    const std::string& claimID,
-    const std::string& value) const noexcept -> bool
+    const UnallocatedCString& claimID,
+    const UnallocatedCString& value) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
     auto& claim = lookup(lock, Identifier::Factory(claimID));

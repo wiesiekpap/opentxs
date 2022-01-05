@@ -8,21 +8,23 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <list>
-#include <map>
-#include <set>
-#include <string>
 #include <tuple>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageThread.pb.h"
 #include "serialization/protobuf/StorageThreadItem.pb.h"
 #include "util/storage/tree/Node.hpp"
 
 namespace opentxs
 {
+namespace proto
+{
+class StorageThreadItem;
+}  // namespace proto
+
 namespace storage
 {
 class Driver;
@@ -37,20 +39,21 @@ class Thread final : public Node
 {
 private:
     friend Threads;
-    using SortKey = std::tuple<std::size_t, std::int64_t, std::string>;
-    using SortedItems = std::map<SortKey, const proto::StorageThreadItem*>;
+    using SortKey = std::tuple<std::size_t, std::int64_t, UnallocatedCString>;
+    using SortedItems =
+        UnallocatedMap<SortKey, const proto::StorageThreadItem*>;
 
-    std::string id_;
-    std::string alias_;
+    UnallocatedCString id_;
+    UnallocatedCString alias_;
     std::size_t index_;
     Mailbox& mail_inbox_;
     Mailbox& mail_outbox_;
-    std::map<std::string, proto::StorageThreadItem> items_;
+    UnallocatedMap<UnallocatedCString, proto::StorageThreadItem> items_;
     // It's important to use a sorted container for this so the thread ID can be
     // calculated deterministically
-    std::set<std::string> participants_;
+    UnallocatedSet<UnallocatedCString> participants_;
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const Lock& lock) const -> bool final;
     auto serialize(const Lock& lock) const -> proto::StorageThread;
     auto sort(const Lock& lock) const -> SortedItems;
@@ -58,15 +61,15 @@ private:
 
     Thread(
         const Driver& storage,
-        const std::string& id,
-        const std::string& hash,
-        const std::string& alias,
+        const UnallocatedCString& id,
+        const UnallocatedCString& hash,
+        const UnallocatedCString& alias,
         Mailbox& mailInbox,
         Mailbox& mailOutbox);
     Thread(
         const Driver& storage,
-        const std::string& id,
-        const std::set<std::string>& participants,
+        const UnallocatedCString& id,
+        const UnallocatedSet<UnallocatedCString>& participants,
         Mailbox& mailInbox,
         Mailbox& mailOutbox);
     Thread() = delete;
@@ -76,26 +79,26 @@ private:
     auto operator=(Thread&&) -> Thread = delete;
 
 public:
-    auto Alias() const -> std::string;
-    auto Check(const std::string& id) const -> bool;
-    auto ID() const -> std::string;
+    auto Alias() const -> UnallocatedCString;
+    auto Check(const UnallocatedCString& id) const -> bool;
+    auto ID() const -> UnallocatedCString;
     auto Items() const -> proto::StorageThread;
     auto Migrate(const Driver& to) const -> bool final;
     auto UnreadCount() const -> std::size_t;
 
     auto Add(
-        const std::string& id,
+        const UnallocatedCString& id,
         const std::uint64_t time,
         const StorageBox& box,
-        const std::string& alias,
-        const std::string& contents,
+        const UnallocatedCString& alias,
+        const UnallocatedCString& contents,
         const std::uint64_t index = 0,
-        const std::string& account = {},
+        const UnallocatedCString& account = {},
         const std::uint32_t chain = {}) -> bool;
-    auto Read(const std::string& id, const bool unread) -> bool;
-    auto Rename(const std::string& newID) -> bool;
-    auto Remove(const std::string& id) -> bool;
-    auto SetAlias(const std::string& alias) -> bool;
+    auto Read(const UnallocatedCString& id, const bool unread) -> bool;
+    auto Rename(const UnallocatedCString& newID) -> bool;
+    auto Remove(const UnallocatedCString& id) -> bool;
+    auto SetAlias(const UnallocatedCString& alias) -> bool;
 
     ~Thread() final = default;
 };

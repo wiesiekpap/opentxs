@@ -88,7 +88,7 @@ public:
         -> OTArmored = 0;
     virtual auto Armored(
         const google::protobuf::MessageLite& input,
-        const std::string& header) const -> OTString = 0;
+        const UnallocatedCString& header) const -> OTString = 0;
     virtual auto Asymmetric() const -> const api::crypto::Asymmetric& = 0;
     using session::Factory::AsymmetricKey;
     virtual auto AsymmetricKey(const proto::AsymmetricKey& serialized) const
@@ -164,7 +164,7 @@ public:
     }
     virtual auto Item(const String& serialized) const
         -> std::unique_ptr<opentxs::Item> = 0;
-    virtual auto Item(const std::string& serialized) const
+    virtual auto Item(const UnallocatedCString& serialized) const
         -> std::unique_ptr<opentxs::Item> = 0;
     virtual auto Item(
         const identifier::Nym& theNymID,

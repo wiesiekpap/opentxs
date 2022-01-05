@@ -1587,10 +1587,10 @@ auto AllowedSectionNames() noexcept -> const ContactSectionMap&
 
     return output;
 }
-auto AllowedSubtypes() noexcept -> const std::set<ContactSectionName>&
+auto AllowedSubtypes() noexcept -> const UnallocatedSet<ContactSectionName>&
 {
     static const auto output =
-        std::set<ContactSectionName>{CONTACTSECTION_PROCEDURE};
+        UnallocatedSet<ContactSectionName>{CONTACTSECTION_PROCEDURE};
 
     return output;
 }

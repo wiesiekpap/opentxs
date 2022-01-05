@@ -7,9 +7,8 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "opentxs/core/ui/qt/DisplayScale.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/core/display/Definition.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::ui
 {

@@ -9,9 +9,7 @@
 
 #include <chrono>  // IWYU pragma: keep
 #include <cstring>
-#include <map>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "blockchain/database/wallet/Pattern.hpp"
@@ -24,6 +22,8 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"  // IWYU pragma: keep
@@ -344,7 +344,7 @@ auto SubchainCache::load_index(const SubchainIndex& key) noexcept(false)
     }
 
     const auto error =
-        std::string{"index "} + key.asHex() + " not found in database";
+        UnallocatedCString{"index "} + key.asHex() + " not found in database";
 
     throw std::out_of_range{error};
 }
@@ -395,7 +395,7 @@ auto SubchainCache::load_last_indexed(const SubchainIndex& key) noexcept(false)
         return it->second;
     }
 
-    const auto error = std::string{"last indexed for "} + key.asHex() +
+    const auto error = UnallocatedCString{"last indexed for "} + key.asHex() +
                        " not found in database";
 
     throw std::out_of_range{error};
@@ -442,7 +442,7 @@ auto SubchainCache::load_last_scanned(const SubchainIndex& key) noexcept(false)
         return it->second;
     }
 
-    const auto error = std::string{"last scanned for "} + key.asHex() +
+    const auto error = UnallocatedCString{"last scanned for "} + key.asHex() +
                        " not found in database";
 
     throw std::out_of_range{error};

@@ -6,11 +6,10 @@
 #include "internal/serialization/protobuf/verify/PaymentEvent.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
-#include <set>
 #include <stdexcept>
 
 #include "internal/serialization/protobuf/verify/VerifyWorkflows.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/PaymentEvent.pb.h"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
@@ -24,7 +23,7 @@ auto CheckProto_2(
     const bool silent,
     const std::uint32_t parentVersion,
     const PaymentWorkflowType parent,
-    std::map<PaymentEventType, std::size_t>& events) -> bool
+    UnallocatedMap<PaymentEventType, std::size_t>& events) -> bool
 {
     try {
         const bool valid =

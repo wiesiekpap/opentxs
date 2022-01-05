@@ -338,6 +338,7 @@
 #include "opentxs/util/rpc/response/ListNyms.hpp"
 #include "opentxs/util/rpc/response/SendPayment.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Numbers.hpp"

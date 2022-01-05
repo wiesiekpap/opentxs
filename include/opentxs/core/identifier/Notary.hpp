@@ -66,7 +66,7 @@ class OPENTXS_EXPORT Notary : virtual public opentxs::Identifier
 {
 public:
     static auto Factory() -> OTNotaryID;
-    static auto Factory(const std::string& rhs) -> OTNotaryID;
+    static auto Factory(const UnallocatedCString& rhs) -> OTNotaryID;
     static auto Factory(const String& rhs) -> OTNotaryID;
 
     ~Notary() override = default;

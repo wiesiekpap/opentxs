@@ -35,8 +35,9 @@
 
 namespace opentxs::factory
 {
-auto PaymentCode(const api::Session& api, const std::string& base58) noexcept
-    -> opentxs::PaymentCode
+auto PaymentCode(
+    const api::Session& api,
+    const UnallocatedCString& base58) noexcept -> opentxs::PaymentCode
 {
     const auto serialized = [&] {
         auto out = opentxs::paymentcode::Base58Preimage{};
@@ -127,7 +128,7 @@ auto PaymentCode(
 
 auto PaymentCode(
     const api::Session& api,
-    const std::string& seed,
+    const UnallocatedCString& seed,
     const Bip32Index nym,
     const std::uint8_t version,
     const bool bitmessage,

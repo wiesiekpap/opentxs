@@ -6,8 +6,6 @@
 #pragma once
 
 #include <cstddef>
-#include <map>
-#include <string>
 
 #include "internal/network/zeromq/message/Factory.hpp"
 #include "network/zeromq/message/Message.hpp"
@@ -18,6 +16,7 @@
 #include "opentxs/network/zeromq/zap/Reply.hpp"
 #include "opentxs/network/zeromq/zap/ZAP.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -60,13 +59,14 @@ public:
     ~Imp() final = default;
 
 private:
-    using CodeMap = std::map<zap::Status, std::string>;
-    using CodeReverseMap = std::map<std::string, zap::Status>;
+    using CodeMap = UnallocatedMap<zap::Status, UnallocatedCString>;
+    using CodeReverseMap = UnallocatedMap<UnallocatedCString, zap::Status>;
 
     static const CodeMap code_map_;
     static const CodeReverseMap code_reverse_map_;
 
-    static auto code_to_string(const zap::Status& code) noexcept -> std::string;
+    static auto code_to_string(const zap::Status& code) noexcept
+        -> UnallocatedCString;
 
     Imp(const SimpleCallback header,
         const ReadView requestID,

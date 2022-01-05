@@ -6,7 +6,6 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "core/contract/peer/PeerRequest.hpp"
 #include "opentxs/Types.hpp"
@@ -15,6 +14,7 @@
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -51,7 +51,7 @@ public:
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
         const Amount& amount,
-        const std::string& terms);
+        const UnallocatedCString& terms);
     Outbailment(
         const api::Session& api,
         const Nym_p& nym,

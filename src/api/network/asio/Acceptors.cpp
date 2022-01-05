@@ -7,17 +7,16 @@
 #include "1_Internal.hpp"                  // IWYU pragma: associated
 #include "api/network/asio/Acceptors.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "api/network/asio/Acceptor.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/asio/Endpoint.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::api::network::asio
@@ -39,7 +38,7 @@ struct Acceptors::Imp {
                     .Flush();
             } else {
                 throw std::runtime_error{
-                    std::string{"Listen socket already open on "} +
+                    UnallocatedCString{"Listen socket already open on "} +
                     endpoint.str()};
             }
 
@@ -86,7 +85,7 @@ private:
     internal::Asio& parent_;
     boost::asio::io_context& context_;
     mutable std::mutex lock_;
-    std::map<std::string, Acceptor> map_;
+    UnallocatedMap<UnallocatedCString, Acceptor> map_;
 
     Imp() = delete;
     Imp(const Imp&) = delete;

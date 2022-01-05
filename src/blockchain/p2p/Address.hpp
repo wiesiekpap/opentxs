@@ -7,8 +7,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "internal/blockchain/p2p/P2P.hpp"
 #include "opentxs/Types.hpp"
@@ -18,6 +16,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -37,11 +36,11 @@ public:
     static const VersionNumber DefaultVersion;
 
     static auto instantiate_services(const SerializedType& serialized) noexcept
-        -> std::set<Service>;
+        -> UnallocatedSet<Service>;
 
     auto Bytes() const noexcept -> OTData final { return bytes_; }
     auto Chain() const noexcept -> blockchain::Type final { return chain_; }
-    auto Display() const noexcept -> std::string final;
+    auto Display() const noexcept -> UnallocatedCString final;
     auto ID() const noexcept -> const Identifier& final { return id_; }
     auto Incoming() const noexcept -> bool final { return incoming_; }
     auto LastConnected() const noexcept -> Time final
@@ -53,12 +52,12 @@ public:
     {
         return previous_last_connected_;
     }
-    auto PreviousServices() const noexcept -> std::set<Service> final
+    auto PreviousServices() const noexcept -> UnallocatedSet<Service> final
     {
         return previous_services_;
     }
     auto Serialize(SerializedType& out) const noexcept -> bool final;
-    auto Services() const noexcept -> std::set<Service> final
+    auto Services() const noexcept -> UnallocatedSet<Service> final
     {
         return services_;
     }
@@ -77,7 +76,7 @@ public:
     {
         last_connected_ = time;
     }
-    void SetServices(const std::set<Service>& services) noexcept final
+    void SetServices(const UnallocatedSet<Service>& services) noexcept final
     {
         services_ = services;
     }
@@ -91,7 +90,7 @@ public:
         const std::uint16_t port,
         const blockchain::Type chain,
         const Time lastConnected,
-        const std::set<Service>& services,
+        const UnallocatedSet<Service>& services,
         const bool incoming) noexcept(false);
     Address(const Address& rhs) noexcept;
 
@@ -107,10 +106,10 @@ private:
     const std::uint16_t port_;
     const blockchain::Type chain_;
     const Time previous_last_connected_;
-    const std::set<Service> previous_services_;
+    const UnallocatedSet<Service> previous_services_;
     const bool incoming_;
     Time last_connected_;
-    std::set<Service> services_;
+    UnallocatedSet<Service> services_;
 
     static auto calculate_id(
         const api::Session& api,
@@ -128,7 +127,7 @@ private:
         const std::uint16_t port,
         const blockchain::Type chain,
         const Time lastConnected,
-        const std::set<Service>& services) noexcept -> SerializedType;
+        const UnallocatedSet<Service>& services) noexcept -> SerializedType;
 
     auto clone() const noexcept -> Address* final { return new Address(*this); }
     auto clone_internal() const noexcept

@@ -11,8 +11,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
-#include <set>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -45,6 +43,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -145,7 +144,7 @@ auto Ledger::VerifyAccount(const identity::Nym& theNym) -> bool
         case ledgerType::paymentInbox:
         case ledgerType::recordBox:
         case ledgerType::expiredBox: {
-            std::set<std::int64_t> setUnloaded;
+            UnallocatedSet<std::int64_t> setUnloaded;
             LoadBoxReceipts(&setUnloaded);  // Note: Also useful for
                                             // suppressing errors here.
         } break;
@@ -242,11 +241,11 @@ auto Ledger::DeleteBoxReceipt(const std::int64_t& lTransactionNum) -> bool
 // then add that transaction# to the set. (psetUnloaded)
 
 // if psetUnloaded passed in, then use it to return the #s that weren't there.
-auto Ledger::LoadBoxReceipts(std::set<std::int64_t>* psetUnloaded) -> bool
+auto Ledger::LoadBoxReceipts(UnallocatedSet<std::int64_t>* psetUnloaded) -> bool
 {
     // Grab a copy of all the transaction #s stored inside this ledger.
     //
-    std::set<std::int64_t> the_set;
+    UnallocatedSet<std::int64_t> the_set;
 
     for (auto& [number, pTransaction] : m_mapTransactions) {
         OT_ASSERT(pTransaction);
@@ -372,10 +371,10 @@ auto Ledger::LoadBoxReceipt(const std::int64_t& lTransactionNum) -> bool
 }
 
 auto Ledger::GetTransactionNums(
-    const std::set<std::int32_t>* pOnlyForIndices /*=nullptr*/) const
-    -> std::set<std::int64_t>
+    const UnallocatedSet<std::int32_t>* pOnlyForIndices /*=nullptr*/) const
+    -> UnallocatedSet<std::int64_t>
 {
-    std::set<std::int64_t> the_set{};
+    UnallocatedSet<std::int64_t> the_set{};
 
     std::int32_t current_index{-1};
 
@@ -498,7 +497,7 @@ auto Ledger::LoadGeneric(ledgerType theType, const String& pString) -> bool
         }
 
         // Try to load the ledger from local storage.
-        std::string strFileContents(OTDB::QueryPlainString(
+        UnallocatedCString strFileContents(OTDB::QueryPlainString(
             api_,
             api_.DataFolder(),
             path1,
@@ -656,11 +655,11 @@ auto Ledger::CalculateNymboxHash(Identifier& theOutput) const -> bool
     return CalculateHash(theOutput);
 }
 
-auto Ledger::make_filename(const ledgerType theType)
-    -> std::tuple<bool, std::string, std::string, std::string>
+auto Ledger::make_filename(const ledgerType theType) -> std::
+    tuple<bool, UnallocatedCString, UnallocatedCString, UnallocatedCString>
 {
-    std::tuple<bool, std::string, std::string, std::string> output{
-        false, "", "", ""};
+    std::tuple<bool, UnallocatedCString, UnallocatedCString, UnallocatedCString>
+        output{false, "", "", ""};
     auto& [valid, one, two, three] = output;
     m_Type = theType;
     const char* pszFolder = nullptr;
@@ -1410,7 +1409,7 @@ auto Ledger::GenerateBalanceStatement(
         context,
         theAccount,
         theOutbox,
-        std::set<TransactionNumber>(),
+        UnallocatedSet<TransactionNumber>(),
         reason);
 }
 
@@ -1420,10 +1419,10 @@ auto Ledger::GenerateBalanceStatement(
     const otx::context::Server& context,
     const Account& theAccount,
     Ledger& theOutbox,
-    const std::set<TransactionNumber>& without,
+    const UnallocatedSet<TransactionNumber>& without,
     const PasswordPrompt& reason) const -> std::unique_ptr<Item>
 {
-    std::set<TransactionNumber> removing = without;
+    UnallocatedSet<TransactionNumber> removing = without;
 
     if (ledgerType::inbox != GetType()) {
         LogError()(OT_PRETTY_CLASS())("Wrong ledger type.").Flush();
@@ -1466,7 +1465,7 @@ auto Ledger::GenerateBalanceStatement(
     // The above has an ASSERT, so this this will never actually happen.
     if (false == bool(pBalanceItem)) return nullptr;
 
-    std::string itemType;
+    UnallocatedCString itemType;
     const auto number = theOwner.GetTransactionNum();
 
     switch (theOwner.GetType()) {
@@ -1537,7 +1536,7 @@ auto Ledger::GenerateBalanceStatement(
         } break;
     }
 
-    std::set<TransactionNumber> adding;
+    UnallocatedSet<TransactionNumber> adding;
     auto statement = context.Statement(adding, removing, reason);
 
     if (!statement) { return nullptr; }
@@ -1792,7 +1791,7 @@ void Ledger::UpdateContents(const PasswordPrompt& reason)  // Before
         }
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());

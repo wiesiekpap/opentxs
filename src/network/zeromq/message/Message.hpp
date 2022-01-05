@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <optional>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/network/Factory.hpp"
@@ -20,6 +19,7 @@
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::zeromq
 {
@@ -67,7 +67,7 @@ public:
     ~Imp() override = default;
 
 protected:
-    std::vector<Frame> frames_;
+    UnallocatedVector<Frame> frames_;
 
     auto set_field(
         const std::size_t position,

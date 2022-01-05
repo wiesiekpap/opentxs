@@ -9,7 +9,6 @@
 
 #include <atomic>
 #include <future>
-#include <list>
 #include <memory>
 
 #include "core/ui/base/List.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

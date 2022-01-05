@@ -5,19 +5,16 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageNymList.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -40,24 +37,28 @@ class Threads final : public Node
 
 public:
     auto BlockchainThreadMap(const Data& txid) const noexcept
-        -> std::vector<OTIdentifier>;
-    auto BlockchainTransactionList() const noexcept -> std::vector<OTData>;
-    auto Exists(const std::string& id) const -> bool;
+        -> UnallocatedVector<OTIdentifier>;
+    auto BlockchainTransactionList() const noexcept
+        -> UnallocatedVector<OTData>;
+    auto Exists(const UnallocatedCString& id) const -> bool;
     using ot_super::List;
     auto List(const bool unreadOnly) const -> ObjectList;
     auto Migrate(const Driver& to) const -> bool final;
-    auto Thread(const std::string& id) const -> const storage::Thread&;
+    auto Thread(const UnallocatedCString& id) const -> const storage::Thread&;
 
     auto AddIndex(const Data& txid, const Identifier& thread) noexcept -> bool;
     auto Create(
-        const std::string& id,
-        const std::set<std::string>& participants) -> std::string;
-    auto FindAndDeleteItem(const std::string& itemID) -> bool;
-    auto mutable_Thread(const std::string& id) -> Editor<storage::Thread>;
+        const UnallocatedCString& id,
+        const UnallocatedSet<UnallocatedCString>& participants)
+        -> UnallocatedCString;
+    auto FindAndDeleteItem(const UnallocatedCString& itemID) -> bool;
+    auto mutable_Thread(const UnallocatedCString& id)
+        -> Editor<storage::Thread>;
     auto RemoveIndex(const Data& txid, const Identifier& thread) noexcept
         -> void;
-    auto Rename(const std::string& existingID, const std::string& newID)
-        -> bool;
+    auto Rename(
+        const UnallocatedCString& existingID,
+        const UnallocatedCString& newID) -> bool;
 
     ~Threads() final = default;
 
@@ -69,33 +70,36 @@ private:
         using ThreadID = OTIdentifier;
 
         mutable std::mutex lock_{};
-        std::map<Txid, std::set<ThreadID>> map_{};
+        UnallocatedMap<Txid, UnallocatedSet<ThreadID>> map_{};
     };
 
-    mutable std::map<std::string, std::unique_ptr<storage::Thread>> threads_;
+    mutable UnallocatedMap<UnallocatedCString, std::unique_ptr<storage::Thread>>
+        threads_;
     Mailbox& mail_inbox_;
     Mailbox& mail_outbox_;
     BlockchainThreadIndex blockchain_;
 
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageNymList;
-    auto thread(const std::string& id) const -> storage::Thread*;
-    auto thread(const std::string& id, const std::unique_lock<std::mutex>& lock)
-        const -> storage::Thread*;
+    auto thread(const UnallocatedCString& id) const -> storage::Thread*;
+    auto thread(
+        const UnallocatedCString& id,
+        const std::unique_lock<std::mutex>& lock) const -> storage::Thread*;
 
     auto create(
         const Lock& lock,
-        const std::string& id,
-        const std::set<std::string>& participants) -> std::string;
-    void init(const std::string& hash) final;
+        const UnallocatedCString& id,
+        const UnallocatedSet<UnallocatedCString>& participants)
+        -> UnallocatedCString;
+    void init(const UnallocatedCString& hash) final;
     void save(
         storage::Thread* thread,
         const std::unique_lock<std::mutex>& lock,
-        const std::string& id);
+        const UnallocatedCString& id);
 
     Threads(
         const Driver& storage,
-        const std::string& hash,
+        const UnallocatedCString& hash,
         Mailbox& mailInbox,
         Mailbox& mailOutbox);
     Threads() = delete;

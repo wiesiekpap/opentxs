@@ -13,13 +13,13 @@
 #include <memory>
 #include <optional>
 #include <tuple>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -96,7 +96,7 @@ struct EncodedWitnessItem {
 
 struct EncodedInputWitness {
     CompactSize cs_{};
-    std::vector<EncodedWitnessItem> items_{};
+    UnallocatedVector<EncodedWitnessItem> items_{};
 
     auto size() const noexcept -> std::size_t;
 };
@@ -105,10 +105,10 @@ struct EncodedTransaction {
     be::little_int32_buf_t version_{};
     std::optional<std::byte> segwit_flag_{};
     CompactSize input_count_{};
-    std::vector<EncodedInput> inputs_{};
+    UnallocatedVector<EncodedInput> inputs_{};
     CompactSize output_count_{};
-    std::vector<EncodedOutput> outputs_{};
-    std::vector<EncodedInputWitness> witnesses_{};
+    UnallocatedVector<EncodedOutput> outputs_{};
+    UnallocatedVector<EncodedInputWitness> witnesses_{};
     be::little_uint32_buf_t lock_time_{};
     Space wtxid_{};
     Space txid_{};

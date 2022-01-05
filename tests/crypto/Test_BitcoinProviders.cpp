@@ -5,13 +5,10 @@
 
 #include <gtest/gtest.h>
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/Types.hpp"
@@ -38,7 +35,7 @@
 #include "opentxs/crypto/key/HD.hpp"
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -54,29 +51,34 @@ public:
     const ot::api::session::Client& client_;
     ot::OTPasswordPrompt reason_;
     const ot::api::Crypto& crypto_;
-    const std::map<std::string, std::string> base_58_{
-        {"", ""},
-        {"00010966776006953D5567439E5E39F86A0D273BEE",
-         "16UwLL9Risc3QfPqBUvKofHmBQ7wMtjvM"},
-    };
-    const std::map<std::string, std::string> ripemd160_{
-        {"", "9c1185a5c5e9fc54612808977ee8f548b2258d31"},
-        {"a", "0bdc9d2d256b3ee9daae347be6f4dc835a467ffe"},
-        {"abc", "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc"},
-        {"message digest", "5d0689ef49d2fae572b881b123a85ffa21595f36"},
-        {"abcdefghijklmnopqrstuvwxyz",
-         "f71c27109c692c1b56bbdceb5b9d2865b3708dbc"},
-        {"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
-         "12a053384a9c0c88e405a06c27dcf49ada62eb2b"},
-        {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-         "b0e20b6e3116640286ed3a87a5713079b21f5189"},
-        {"123456789012345678901234567890123456789012345678901234567890123456789"
-         "01234567890",
-         "9b752e45573d4b39f4dbd3323cab82bf63326bfb"}};
-    using Path = std::vector<std::uint32_t>;
-    using Bip32TestCase = std::tuple<Path, std::string, std::string>;
-    using Bip32TestVector = std::pair<std::string, std::vector<Bip32TestCase>>;
-    const std::vector<Bip32TestVector> bip_32_{
+    const ot::UnallocatedMap<ot::UnallocatedCString, ot::UnallocatedCString>
+        base_58_{
+            {"", ""},
+            {"00010966776006953D5567439E5E39F86A0D273BEE",
+             "16UwLL9Risc3QfPqBUvKofHmBQ7wMtjvM"},
+        };
+    const ot::UnallocatedMap<ot::UnallocatedCString, ot::UnallocatedCString>
+        ripemd160_{
+            {"", "9c1185a5c5e9fc54612808977ee8f548b2258d31"},
+            {"a", "0bdc9d2d256b3ee9daae347be6f4dc835a467ffe"},
+            {"abc", "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc"},
+            {"message digest", "5d0689ef49d2fae572b881b123a85ffa21595f36"},
+            {"abcdefghijklmnopqrstuvwxyz",
+             "f71c27109c692c1b56bbdceb5b9d2865b3708dbc"},
+            {"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
+             "12a053384a9c0c88e405a06c27dcf49ada62eb2b"},
+            {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+             "b0e20b6e3116640286ed3a87a5713079b21f5189"},
+            {"12345678901234567890123456789012345678901234567890123456789012345"
+             "6789"
+             "01234567890",
+             "9b752e45573d4b39f4dbd3323cab82bf63326bfb"}};
+    using Path = ot::UnallocatedVector<std::uint32_t>;
+    using Bip32TestCase =
+        std::tuple<Path, ot::UnallocatedCString, ot::UnallocatedCString>;
+    using Bip32TestVector =
+        std::pair<ot::UnallocatedCString, ot::UnallocatedVector<Bip32TestCase>>;
+    const ot::UnallocatedVector<Bip32TestVector> bip_32_{
         {"0x000102030405060708090a0b0c0d0e0f",
          {
              {{},
@@ -190,9 +192,12 @@ public:
               "PrS7AANYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L"},
          }},
     };
-    const std::map<
-        std::string,
-        std::tuple<std::string, std::string, std::string>>
+    const ot::UnallocatedMap<
+        ot::UnallocatedCString,
+        std::tuple<
+            ot::UnallocatedCString,
+            ot::UnallocatedCString,
+            ot::UnallocatedCString>>
         bip_39_{
             {"00000000000000000000000000000000",
              {"abandon abandon abandon abandon abandon abandon abandon abandon "
@@ -447,7 +452,7 @@ public:
         return true;
     }
 
-    auto get_seed(const std::string& hex) const -> ot::OTSecret
+    auto get_seed(const ot::UnallocatedCString& hex) const -> ot::OTSecret
     {
         auto data = client_.Factory().Data();
         data->DecodeHex(hex);
@@ -495,8 +500,8 @@ public:
 
     bool compare_private(
         const ot::crypto::Bip32& library,
-        const std::string& lhs,
-        const std::string& rhs) const
+        const ot::UnallocatedCString& lhs,
+        const ot::UnallocatedCString& rhs) const
     {
         bool output{true};
         ot::Bip32Network lNetwork{}, rNetwork{};
@@ -537,8 +542,8 @@ public:
 
     bool compare_public(
         const ot::crypto::Bip32& library,
-        const std::string& lhs,
-        const std::string& rhs) const
+        const ot::UnallocatedCString& lhs,
+        const ot::UnallocatedCString& rhs) const
     {
         bool output{true};
         ot::Bip32Network lNetwork{}, rNetwork{};

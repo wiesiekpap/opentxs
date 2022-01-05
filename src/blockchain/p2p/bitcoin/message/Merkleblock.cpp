@@ -82,7 +82,7 @@ auto BitcoinP2PMerkleblock(
         return nullptr;
     }
 
-    std::vector<OTData> hashes;
+    UnallocatedVector<OTData> hashes;
 
     if (hashCount > 0) {
         for (std::size_t ii = 0; ii < hashCount; ii++) {
@@ -122,7 +122,7 @@ auto BitcoinP2PMerkleblock(
         return nullptr;
     }
 
-    std::vector<std::byte> flags;
+    UnallocatedVector<std::byte> flags;
 
     if (flagByteCount > 0) {
         expectedSize += flagByteCount;
@@ -135,7 +135,7 @@ auto BitcoinP2PMerkleblock(
             return nullptr;
         }
 
-        std::vector<std::byte> temp_flags(flagByteCount);
+        UnallocatedVector<std::byte> temp_flags(flagByteCount);
         std::memcpy(temp_flags.data(), it, flagByteCount);
         it += flagByteCount;
         flags = temp_flags;
@@ -158,8 +158,8 @@ auto BitcoinP2PMerkleblock(
     const blockchain::Type network,
     const Data& block_header,
     const std::uint32_t txn_count,
-    const std::vector<OTData>& hashes,
-    const std::vector<std::byte>& flags)
+    const UnallocatedVector<OTData>& hashes,
+    const UnallocatedVector<std::byte>& flags)
     -> blockchain::p2p::bitcoin::message::Merkleblock*
 {
     namespace bitcoin = blockchain::p2p::bitcoin;
@@ -177,8 +177,8 @@ Merkleblock::Merkleblock(
     const blockchain::Type network,
     const Data& block_header,
     const TxnCount txn_count,
-    const std::vector<OTData>& hashes,
-    const std::vector<std::byte>& flags) noexcept
+    const UnallocatedVector<OTData>& hashes,
+    const UnallocatedVector<std::byte>& flags) noexcept
     : Message(api, network, bitcoin::Command::merkleblock)
     , block_header_(Data::Factory(block_header))
     , txn_count_(txn_count)
@@ -195,8 +195,8 @@ Merkleblock::Merkleblock(
     std::unique_ptr<Header> header,
     const Data& block_header,
     const TxnCount txn_count,
-    const std::vector<OTData>& hashes,
-    const std::vector<std::byte>& flags) noexcept(false)
+    const UnallocatedVector<OTData>& hashes,
+    const UnallocatedVector<std::byte>& flags) noexcept(false)
     : Message(api, std::move(header))
     , block_header_(Data::Factory(block_header))
     , txn_count_(txn_count)

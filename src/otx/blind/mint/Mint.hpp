@@ -9,7 +9,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 
 #include "internal/otx/blind/Mint.hpp"
 #include "internal/otx/common/Contract.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs

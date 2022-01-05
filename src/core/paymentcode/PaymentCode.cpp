@@ -7,9 +7,7 @@
 #include "1_Internal.hpp"                    // IWYU pragma: associated
 #include "core/paymentcode/PaymentCode.hpp"  // IWYU pragma: associated
 
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/PaymentCode.hpp"
@@ -17,6 +15,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"  // IWYU pragma: keep
 #include "opentxs/crypto/key/HD.hpp"             // IWYU pragma: keep
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -80,7 +79,7 @@ PaymentCode::operator const crypto::key::Asymmetric&() const noexcept
     return *imp_;
 }
 
-auto PaymentCode::asBase58() const noexcept -> std::string
+auto PaymentCode::asBase58() const noexcept -> UnallocatedCString
 {
     return imp_->asBase58();
 }
@@ -106,7 +105,7 @@ auto PaymentCode::BlindV3(
 
 auto PaymentCode::DecodeNotificationElements(
     const std::uint8_t version,
-    const std::vector<Space>& elements,
+    const UnallocatedVector<Space>& elements,
     const PasswordPrompt& reason) const noexcept -> opentxs::PaymentCode
 {
     return imp_->DecodeNotificationElements(version, elements, reason);
@@ -117,7 +116,7 @@ auto PaymentCode::DefaultVersion() noexcept -> VersionNumber { return 3; }
 auto PaymentCode::GenerateNotificationElements(
     const PaymentCode& recipient,
     const crypto::key::EllipticCurve& privateKey,
-    const PasswordPrompt& reason) const noexcept -> std::vector<Space>
+    const PasswordPrompt& reason) const noexcept -> UnallocatedVector<Space>
 {
     return imp_->GenerateNotificationElements(recipient, privateKey, reason);
 }

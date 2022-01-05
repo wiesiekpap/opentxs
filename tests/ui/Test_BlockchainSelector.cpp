@@ -12,7 +12,6 @@
 #endif  // OT_QT
 #include <gtest/gtest.h>
 #include <atomic>
-#include <string>
 
 #include "opentxs/OT.hpp"
 #include "opentxs/api/Context.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/ui/BlockchainSelection.hpp"
 #include "opentxs/core/ui/Blockchains.hpp"
+#include "opentxs/util/Container.hpp"
 #if OT_QT
 #include "opentxs/core/ui/qt/BlockchainSelection.hpp"
 #endif  // OT_QT

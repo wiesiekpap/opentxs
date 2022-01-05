@@ -9,5 +9,5 @@
 
 namespace opentxs::storage
 {
-const std::string Config::default_plugin_{OT_STORAGE_PRIMARY_PLUGIN_FS};
+const UnallocatedCString Config::default_plugin_{OT_STORAGE_PRIMARY_PLUGIN_FS};
 }  // namespace opentxs::storage

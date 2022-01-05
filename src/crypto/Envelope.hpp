@@ -7,10 +7,8 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <tuple>
-#include <vector>
 
 #include "Proto.hpp"
 #include "opentxs/Types.hpp"
@@ -22,6 +20,7 @@
 #include "opentxs/crypto/key/asymmetric/Algorithm.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Ciphertext.pb.h"
 #include "serialization/protobuf/Enums.pb.h"
@@ -82,21 +81,23 @@ private:
     friend OTEnvelope;
 
     using Ciphertext = std::unique_ptr<proto::Ciphertext>;
-    using DHMap = std::
-        map<crypto::key::asymmetric::Algorithm, std::vector<OTAsymmetricKey>>;
-    using Nyms = std::vector<const identity::Nym*>;
+    using DHMap = std::map<
+        crypto::key::asymmetric::Algorithm,
+        UnallocatedVector<OTAsymmetricKey>>;
+    using Nyms = UnallocatedVector<const identity::Nym*>;
     using Tag = std::uint32_t;
     using SessionKey =
         std::tuple<Tag, crypto::key::asymmetric::Algorithm, OTSymmetricKey>;
-    using SessionKeys = std::vector<SessionKey>;
-    using SupportedKeys = std::vector<crypto::key::asymmetric::Algorithm>;
+    using SessionKeys = UnallocatedVector<SessionKey>;
+    using SupportedKeys = UnallocatedVector<crypto::key::asymmetric::Algorithm>;
     using Weight = unsigned int;
-    using WeightMap = std::map<crypto::key::asymmetric::Algorithm, Weight>;
-    using Solution = std::map<
+    using WeightMap =
+        UnallocatedMap<crypto::key::asymmetric::Algorithm, Weight>;
+    using Solution = UnallocatedMap<
         OTNymID,
-        std::map<OTIdentifier, crypto::key::asymmetric::Algorithm>>;
-    using Solutions = std::map<Weight, SupportedKeys>;
-    using Requirements = std::vector<identity::Nym::NymKeys>;
+        UnallocatedMap<OTIdentifier, crypto::key::asymmetric::Algorithm>>;
+    using Solutions = UnallocatedMap<Weight, SupportedKeys>;
+    using Requirements = UnallocatedVector<identity::Nym::NymKeys>;
 
     static const VersionNumber default_version_;
     static const VersionNumber tagged_key_version_;

@@ -7,12 +7,8 @@
 
 #include <atomic>
 #include <iosfwd>
-#include <list>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "Proto.hpp"
@@ -28,6 +24,7 @@
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 class QVariant;
@@ -100,8 +97,8 @@ public:
     {
         return connection_.load();
     }
-    auto Debug() const noexcept -> std::string final;
-    auto Name() const noexcept -> std::string final;
+    auto Debug() const noexcept -> UnallocatedCString final;
+    auto Name() const noexcept -> UnallocatedCString final;
     auto Trusted() const noexcept -> bool final { return issuer_->Paired(); }
 
     IssuerItem(
@@ -115,7 +112,7 @@ public:
 
 private:
     const ListenerDefinitions listeners_;
-    const std::string& name_;
+    const UnallocatedCString& name_;
     std::atomic<bool> connection_;
     const std::shared_ptr<const otx::client::Issuer> issuer_;
     const core::UnitType currency_;

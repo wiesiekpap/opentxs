@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <tuple>
 #include <utility>
 
@@ -18,6 +17,7 @@
 #include "internal/serialization/protobuf/verify/PeerReply.hpp"
 #include "internal/serialization/protobuf/verify/StorageNymList.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/PeerReply.pb.h"
 #include "serialization/protobuf/StorageItemHash.pb.h"
@@ -29,7 +29,7 @@ namespace opentxs
 {
 namespace storage
 {
-PeerReplies::PeerReplies(const Driver& storage, const std::string& hash)
+PeerReplies::PeerReplies(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {
@@ -39,12 +39,12 @@ PeerReplies::PeerReplies(const Driver& storage, const std::string& hash)
     }
 }
 
-auto PeerReplies::Delete(const std::string& id) -> bool
+auto PeerReplies::Delete(const UnallocatedCString& id) -> bool
 {
     return delete_item(id);
 }
 
-void PeerReplies::init(const std::string& hash)
+void PeerReplies::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageNymList> serialized;
     driver_.LoadProto(hash, serialized);
@@ -64,11 +64,11 @@ void PeerReplies::init(const std::string& hash)
 }
 
 auto PeerReplies::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::PeerReply>& output,
     const bool checking) const -> bool
 {
-    std::string notUsed;
+    UnallocatedCString notUsed;
 
     bool loaded = load_proto<proto::PeerReply>(id, output, notUsed, true);
 
@@ -77,7 +77,7 @@ auto PeerReplies::Load(
     // The provided ID might actually be a request ID instead of a reply ID.
 
     std::unique_lock<std::mutex> lock(write_lock_);
-    std::string realID;
+    UnallocatedCString realID;
 
     for (const auto& it : item_map_) {
         const auto& reply = it.first;

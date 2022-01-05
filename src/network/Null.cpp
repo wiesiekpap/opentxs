@@ -12,12 +12,16 @@
 namespace opentxs::network::implementation
 {
 struct OpenDHT final : public network::OpenDHT {
-    auto Insert(const std::string&, const std::string&, DhtDoneCallback)
-        const noexcept -> void final
+    auto Insert(
+        const UnallocatedCString&,
+        const UnallocatedCString&,
+        DhtDoneCallback) const noexcept -> void final
     {
     }
-    auto Retrieve(const std::string&, DhtResultsCallback, DhtDoneCallback)
-        const noexcept -> void final
+    auto Retrieve(
+        const UnallocatedCString&,
+        DhtResultsCallback,
+        DhtDoneCallback) const noexcept -> void final
     {
     }
 

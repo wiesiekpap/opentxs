@@ -8,10 +8,9 @@
 #include <chrono>
 #include <functional>
 #include <future>
-#include <memory>
 
 #include "core/StateMachine.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace ot = opentxs;

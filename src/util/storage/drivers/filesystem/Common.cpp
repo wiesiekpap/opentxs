@@ -19,9 +19,9 @@ extern "C" {
 #include <boost/system/error_code.hpp>
 #include <fstream>
 #include <ios>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 #define PATH_SEPERATOR "/"
@@ -33,7 +33,7 @@ Common::Common(
     const api::network::Asio& asio,
     const api::session::Storage& storage,
     const storage::Config& config,
-    const std::string& folder,
+    const UnallocatedCString& folder,
     const Flag& bucket)
     : ot_super(crypto, asio, storage, config, bucket)
     , folder_(folder)
@@ -56,12 +56,12 @@ void Common::Init_Common()
 }
 
 auto Common::LoadFromBucket(
-    const std::string& key,
-    std::string& value,
+    const UnallocatedCString& key,
+    UnallocatedCString& value,
     const bool bucket) const -> bool
 {
     value.clear();
-    std::string directory{};
+    UnallocatedCString directory{};
     const auto filename = calculate_path(key, bucket, directory);
     boost::system::error_code ec{};
 
@@ -74,7 +74,7 @@ auto Common::LoadFromBucket(
     return false == value.empty();
 }
 
-auto Common::LoadRoot() const -> std::string
+auto Common::LoadRoot() const -> UnallocatedCString
 {
     if (ready_.get() && false == folder_.empty()) {
 
@@ -84,17 +84,20 @@ auto Common::LoadRoot() const -> std::string
     return "";
 }
 
-auto Common::prepare_read(const std::string& input) const -> std::string
+auto Common::prepare_read(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
     return input;
 }
 
-auto Common::prepare_write(const std::string& input) const -> std::string
+auto Common::prepare_write(const UnallocatedCString& input) const
+    -> UnallocatedCString
 {
     return input;
 }
 
-auto Common::read_file(const std::string& filename) const -> std::string
+auto Common::read_file(const UnallocatedCString& filename) const
+    -> UnallocatedCString
 {
     boost::system::error_code ec{};
 
@@ -110,10 +113,10 @@ auto Common::read_file(const std::string& filename) const -> std::string
 
         auto size(pos);
         file.seekg(0, std::ios::beg);
-        std::vector<char> bytes(size);
+        UnallocatedVector<char> bytes(size);
         file.read(&bytes[0], size);
 
-        return prepare_read(std::string(&bytes[0], size));
+        return prepare_read(UnallocatedCString(&bytes[0], size));
     }
 
     return {};
@@ -121,15 +124,15 @@ auto Common::read_file(const std::string& filename) const -> std::string
 
 void Common::store(
     const bool,
-    const std::string& key,
-    const std::string& value,
+    const UnallocatedCString& key,
+    const UnallocatedCString& value,
     const bool bucket,
     std::promise<bool>* promise) const
 {
     OT_ASSERT(nullptr != promise);
 
     if (ready_.get() && false == folder_.empty()) {
-        std::string directory{};
+        UnallocatedCString directory{};
         const auto filename = calculate_path(key, bucket, directory);
         promise->set_value(write_file(directory, filename, value));
     } else {
@@ -137,7 +140,7 @@ void Common::store(
     }
 }
 
-auto Common::StoreRoot(const bool, const std::string& hash) const -> bool
+auto Common::StoreRoot(const bool, const UnallocatedCString& hash) const -> bool
 {
     if (ready_.get() && false == folder_.empty()) {
 
@@ -147,12 +150,12 @@ auto Common::StoreRoot(const bool, const std::string& hash) const -> bool
     return false;
 }
 
-auto Common::sync(const std::string& path) const -> bool
+auto Common::sync(const UnallocatedCString& path) const -> bool
 {
     class FileDescriptor
     {
     public:
-        FileDescriptor(const std::string& path)
+        FileDescriptor(const UnallocatedCString& path)
             : fd_(::open(path.c_str(), O_DIRECTORY | O_RDONLY))
         {
         }
@@ -202,9 +205,9 @@ auto Common::sync(int fd) const -> bool
 }
 
 auto Common::write_file(
-    const std::string& directory,
-    const std::string& filename,
-    const std::string& contents) const -> bool
+    const UnallocatedCString& directory,
+    const UnallocatedCString& filename,
+    const UnallocatedCString& contents) const -> bool
 {
     if (false == filename.empty()) {
         boost::filesystem::path filePath(filename);

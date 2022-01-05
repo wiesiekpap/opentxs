@@ -6,9 +6,9 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/Version.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -22,7 +22,7 @@ void PrintErrorMessage(
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
-    const std::string& error) noexcept;
+    const UnallocatedCString& error) noexcept;
 void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
@@ -32,7 +32,7 @@ void PrintErrorMessage(
     const char* proto,
     const unsigned int version,
     const char* error,
-    const std::string& value) noexcept;
+    const UnallocatedCString& value) noexcept;
 
 template <typename T, typename... Args>
 auto Check(

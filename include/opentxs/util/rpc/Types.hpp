@@ -8,7 +8,8 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -25,13 +26,19 @@ enum class PushType : TypeEnum;
 enum class ResponseCode : TypeEnum;
 }  // namespace rpc
 
-OPENTXS_EXPORT auto print(rpc::AccountEventType value) noexcept -> std::string;
-OPENTXS_EXPORT auto print(rpc::AccountType value) noexcept -> std::string;
-OPENTXS_EXPORT auto print(rpc::CommandType value) noexcept -> std::string;
-OPENTXS_EXPORT auto print(rpc::ContactEventType value) noexcept -> std::string;
-OPENTXS_EXPORT auto print(rpc::PaymentType value) noexcept -> std::string;
-OPENTXS_EXPORT auto print(rpc::PushType value) noexcept -> std::string;
-OPENTXS_EXPORT auto print(rpc::ResponseCode value) noexcept -> std::string;
+OPENTXS_EXPORT auto print(rpc::AccountEventType value) noexcept
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto print(rpc::AccountType value) noexcept
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto print(rpc::CommandType value) noexcept
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto print(rpc::ContactEventType value) noexcept
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto print(rpc::PaymentType value) noexcept
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto print(rpc::PushType value) noexcept -> UnallocatedCString;
+OPENTXS_EXPORT auto print(rpc::ResponseCode value) noexcept
+    -> UnallocatedCString;
 
 constexpr auto value(rpc::AccountEventType type) noexcept
 {

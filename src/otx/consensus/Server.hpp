@@ -13,11 +13,8 @@
 #include <iosfwd>
 #include <memory>
 #include <mutex>
-#include <set>
 #include <shared_mutex>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "core/StateMachine.hpp"
@@ -44,6 +41,7 @@
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "otx/consensus/Base.hpp"
 #include "serialization/protobuf/ConsensusEnums.pb.h"
@@ -116,8 +114,8 @@ class Server final : virtual public internal::Server,
                      public opentxs::internal::StateMachine
 {
 public:
-    auto Accounts() const -> std::vector<OTIdentifier> final;
-    auto AdminPassword() const -> const std::string& final;
+    auto Accounts() const -> UnallocatedVector<OTIdentifier> final;
+    auto AdminPassword() const -> const UnallocatedCString& final;
     auto AdminAttempted() const -> bool final;
     auto FinalizeServerCommand(Message& command, const PasswordPrompt& reason)
         const -> bool final;
@@ -132,7 +130,8 @@ public:
     auto Purse(const identifier::UnitDefinition& id) const
         -> const otx::blind::Purse& final;
     auto Revision() const -> std::uint64_t final;
-    auto ShouldRename(const std::string& defaultName = "") const -> bool final;
+    auto ShouldRename(const UnallocatedCString& defaultName = "") const
+        -> bool final;
     auto StaleNym() const -> bool final;
     auto Statement(const OTTransaction& owner, const PasswordPrompt& reason)
         const -> std::unique_ptr<Item> final;
@@ -204,7 +203,7 @@ public:
         std::shared_ptr<Message> message,
         std::shared_ptr<Ledger> inbox,
         std::shared_ptr<Ledger> outbox,
-        std::set<OTManagedNumber>* numbers,
+        UnallocatedSet<OTManagedNumber>* numbers,
         const PasswordPrompt& reason,
         const ExtraArgs& args) -> QueueResult final;
     auto RefreshNymbox(
@@ -215,14 +214,14 @@ public:
     auto Resync(const proto::Context& serialized) -> bool final;
     auto SendMessage(
         const api::session::Client& client,
-        const std::set<OTManagedNumber>& pending,
+        const UnallocatedSet<OTManagedNumber>& pending,
         otx::context::Server&,
         const Message& message,
         const PasswordPrompt& reason,
-        const std::string& label,
+        const UnallocatedCString& label,
         const bool resync) -> NetworkReplyMessage final;
     void SetAdminAttempted() final;
-    void SetAdminPassword(const std::string& password) final;
+    void SetAdminPassword(const UnallocatedCString& password) final;
     void SetAdminSuccess() final;
     auto SetHighest(const TransactionNumber& highest) -> bool final;
     void SetPush(const bool on) final { enable_otx_push_.store(on); }
@@ -264,7 +263,7 @@ public:
 
 private:
     using ReplyNoticeOutcome = std::pair<RequestNumber, Server::DeliveryResult>;
-    using ReplyNoticeOutcomes = std::vector<ReplyNoticeOutcome>;
+    using ReplyNoticeOutcomes = UnallocatedVector<ReplyNoticeOutcome>;
 
     enum class Exit : bool { Yes = true, Continue = false };
     enum class UpdateHash : bool { Remote = false, Both = true };
@@ -283,7 +282,7 @@ private:
     static constexpr auto nymbox_box_type_{0};
     static constexpr auto failure_count_limit_{3};
 
-    static const std::set<MessageType> do_not_need_request_number_;
+    static const UnallocatedSet<MessageType> do_not_need_request_number_;
 
     const network::zeromq::socket::Publish& request_sent_;
     const network::zeromq::socket::Publish& reply_received_;
@@ -293,7 +292,7 @@ private:
     std::atomic<const api::session::Client*> client_;
     network::ServerConnection& connection_;
     std::mutex message_lock_{};
-    std::string admin_password_{""};
+    UnallocatedCString admin_password_{""};
     OTFlag admin_attempted_;
     OTFlag admin_success_;
     std::atomic<std::uint64_t> revision_{0};
@@ -310,7 +309,7 @@ private:
     std::atomic<int> failure_counter_;
     std::shared_ptr<Ledger> inbox_;
     std::shared_ptr<Ledger> outbox_;
-    std::set<OTManagedNumber>* numbers_;
+    UnallocatedSet<OTManagedNumber>* numbers_;
     OTZMQPushSocket find_nym_;
     OTZMQPushSocket find_server_;
     OTZMQPushSocket find_unit_definition_;
@@ -321,7 +320,8 @@ private:
     static auto get_type(const std::int64_t depth) -> BoxType;
     static auto instantiate_message(
         const api::Session& api,
-        const std::string& serialized) -> std::unique_ptr<opentxs::Message>;
+        const UnallocatedCString& serialized)
+        -> std::unique_ptr<opentxs::Message>;
     static auto need_request_number(const MessageType type) -> bool;
     static void scan_number_set(
         const TransactionNumbers& input,
@@ -335,13 +335,13 @@ private:
 
     auto add_item_to_payment_inbox(
         const TransactionNumber number,
-        const std::string& payment,
+        const UnallocatedCString& payment,
         const PasswordPrompt& reason) const -> bool;
     auto add_item_to_workflow(
         const Lock& lock,
         const api::session::Client& client,
         const Message& transportItem,
-        const std::string& item,
+        const UnallocatedCString& item,
         const PasswordPrompt& reason) const -> bool;
     auto add_transaction_to_ledger(
         const TransactionNumber number,
@@ -439,7 +439,7 @@ private:
         const api::session::Client& client,
         const OTTransaction& receipt,
         const PasswordPrompt& reason) const;
-    auto type() const -> std::string final { return "server"; }
+    auto type() const -> UnallocatedCString final { return "server"; }
     void verify_blank(
         const Lock& lock,
         OTTransaction& blank,
@@ -635,7 +635,7 @@ private:
     auto process_reply(
         const Lock& lock,
         const api::session::Client& client,
-        const std::set<OTManagedNumber>& managed,
+        const UnallocatedSet<OTManagedNumber>& managed,
         const Message& reply,
         const PasswordPrompt& reason) -> bool;
     void process_response_transaction(
@@ -739,7 +739,7 @@ private:
         const ActionType type = ActionType::Normal,
         std::shared_ptr<Ledger> inbox = {},
         std::shared_ptr<Ledger> outbox = {},
-        std::set<OTManagedNumber>* numbers = nullptr) -> QueueResult;
+        UnallocatedSet<OTManagedNumber>* numbers = nullptr) -> QueueResult;
     auto state_machine() noexcept -> bool;
     auto statement(
         const Lock& lock,

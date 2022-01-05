@@ -6,9 +6,9 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -76,7 +76,7 @@ auto ClientSession(
     const api::Settings& config,
     const api::Crypto& crypto,
     const network::zeromq::Context& context,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const int instance) noexcept -> std::unique_ptr<api::session::Client>;
 auto ContactAPI(const api::session::Client& api) noexcept
     -> std::unique_ptr<api::session::Contacts>;
@@ -89,7 +89,7 @@ auto NotarySession(
     const api::Crypto& crypto,
     const api::Settings& config,
     const network::zeromq::Context& context,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const int instance) -> std::unique_ptr<api::session::Notary>;
 auto OTX(
     const Flag& running,

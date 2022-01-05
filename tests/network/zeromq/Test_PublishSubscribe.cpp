@@ -7,8 +7,6 @@
 #include <atomic>
 #include <chrono>
 #include <ctime>
-#include <set>
-#include <string>
 #include <thread>
 
 #include "opentxs/OT.hpp"
@@ -22,7 +20,7 @@
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
-#include "opentxs/util/Numbers.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -36,11 +34,12 @@ class Test_PublishSubscribe : public ::testing::Test
 public:
     const zmq::Context& context_;
 
-    const std::string testMessage_{"zeromq test message"};
-    const std::string testMessage2_{"zeromq test message 2"};
+    const ot::UnallocatedCString testMessage_{"zeromq test message"};
+    const ot::UnallocatedCString testMessage2_{"zeromq test message 2"};
 
-    const std::string endpoint_{"inproc://opentxs/test/publish_subscribe_test"};
-    const std::string endpoint2_{
+    const ot::UnallocatedCString endpoint_{
+        "inproc://opentxs/test/publish_subscribe_test"};
+    const ot::UnallocatedCString endpoint2_{
         "inproc://opentxs/test/publish_subscribe_test2"};
 
     std::atomic_int callbackFinishedCount_{0};
@@ -51,11 +50,11 @@ public:
     int callbackCount_{0};
 
     void subscribeSocketThread(
-        const std::set<std::string>& endpoints,
-        const std::set<std::string>& msgs);
+        const ot::UnallocatedSet<ot::UnallocatedCString>& endpoints,
+        const ot::UnallocatedSet<ot::UnallocatedCString>& msgs);
     void publishSocketThread(
-        const std::string& endpoint,
-        const std::string& msg);
+        const ot::UnallocatedCString& endpoint,
+        const ot::UnallocatedCString& msg);
 
     Test_PublishSubscribe()
         : context_(ot::Context().ZMQ())
@@ -64,12 +63,13 @@ public:
 };
 
 void Test_PublishSubscribe::subscribeSocketThread(
-    const std::set<std::string>& endpoints,
-    const std::set<std::string>& msgs)
+    const ot::UnallocatedSet<ot::UnallocatedCString>& endpoints,
+    const ot::UnallocatedSet<ot::UnallocatedCString>& msgs)
 {
     auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
         [this, msgs](ot::network::zeromq::Message&& input) -> void {
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
             bool found = msgs.count(inputString);
             EXPECT_TRUE(found);
             ++callbackFinishedCount_;
@@ -98,8 +98,8 @@ void Test_PublishSubscribe::subscribeSocketThread(
 }
 
 void Test_PublishSubscribe::publishSocketThread(
-    const std::string& endpoint,
-    const std::string& msg)
+    const ot::UnallocatedCString& endpoint,
+    const ot::UnallocatedCString& msg)
 {
     auto publishSocket = context_.PublishSocket();
     ;
@@ -157,7 +157,8 @@ TEST_F(Test_PublishSubscribe, Publish_Subscribe)
 
     auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
         [this](ot::network::zeromq::Message&& input) -> void {
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -219,13 +220,13 @@ TEST_F(Test_PublishSubscribe, Publish_1_Subscribe_2)
     std::thread subscribeSocketThread1(
         &Test_PublishSubscribe::subscribeSocketThread,
         this,
-        std::set<std::string>({endpoint_}),
-        std::set<std::string>({testMessage_}));
+        ot::UnallocatedSet<ot::UnallocatedCString>({endpoint_}),
+        ot::UnallocatedSet<ot::UnallocatedCString>({testMessage_}));
     std::thread subscribeSocketThread2(
         &Test_PublishSubscribe::subscribeSocketThread,
         this,
-        std::set<std::string>({endpoint_}),
-        std::set<std::string>({testMessage_}));
+        ot::UnallocatedSet<ot::UnallocatedCString>({endpoint_}),
+        ot::UnallocatedSet<ot::UnallocatedCString>({testMessage_}));
 
     auto end = std::time(nullptr) + 30;
     while (subscribeThreadStartedCount_ < subscribeThreadCount_ &&
@@ -271,7 +272,8 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_1)
 
     auto listenCallback = ot::network::zeromq::ListenCallback::Factory(
         [this](ot::network::zeromq::Message&& input) -> void {
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage_ || inputString == testMessage2_;
             EXPECT_TRUE(match);
@@ -329,13 +331,15 @@ TEST_F(Test_PublishSubscribe, Publish_2_Subscribe_2)
     std::thread subscribeSocketThread1(
         &Test_PublishSubscribe::subscribeSocketThread,
         this,
-        std::set<std::string>({endpoint_, endpoint2_}),
-        std::set<std::string>({testMessage_, testMessage2_}));
+        ot::UnallocatedSet<ot::UnallocatedCString>({endpoint_, endpoint2_}),
+        ot::UnallocatedSet<ot::UnallocatedCString>(
+            {testMessage_, testMessage2_}));
     std::thread subscribeSocketThread2(
         &Test_PublishSubscribe::subscribeSocketThread,
         this,
-        std::set<std::string>({endpoint_, endpoint2_}),
-        std::set<std::string>({testMessage_, testMessage2_}));
+        ot::UnallocatedSet<ot::UnallocatedCString>({endpoint_, endpoint2_}),
+        ot::UnallocatedSet<ot::UnallocatedCString>(
+            {testMessage_, testMessage2_}));
 
     end = std::time(nullptr) + 30;
     while (subscribeThreadStartedCount_ < subscribeThreadCount_ &&

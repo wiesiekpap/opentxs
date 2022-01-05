@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <atomic>
 #include <memory>
-#include <string>
 
 #include "integration/Helpers.hpp"
 #include "opentxs/OT.hpp"
@@ -16,6 +15,7 @@
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/core/PaymentCode.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "ui/Helpers.hpp"
 
@@ -51,10 +51,10 @@ public:
     Test_ContactList()
         : api_(ot::Context().StartClientSession(0))
         , reason_(api_.Factory().PasswordPrompt(__func__))
-        , bob_payment_code_(
-              api_.Factory().PaymentCode(std::string{payment_code_1_}))
-        , chris_payment_code_(
-              api_.Factory().PaymentCode(std::string{payment_code_2_}))
+        , bob_payment_code_(api_.Factory().PaymentCode(
+              ot::UnallocatedCString{payment_code_1_}))
+        , chris_payment_code_(api_.Factory().PaymentCode(
+              ot::UnallocatedCString{payment_code_2_}))
     {
         const_cast<User&>(alice_).init(api_);
     }

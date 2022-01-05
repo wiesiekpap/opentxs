@@ -7,15 +7,12 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "blockchain/node/wallet/DeterministicStateData.hpp"  // IWYU pragma: associated
 
-#include <cstdint>
-#include <map>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <string_view>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/node/Node.hpp"
@@ -41,6 +38,7 @@
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/crypto/key/EllipticCurve.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -82,10 +80,10 @@ auto DeterministicStateData::handle_confirmed_matches(
     const block::Matches& confirmed) noexcept -> void
 {
     const auto& [utxo, general] = confirmed;
-    auto transactions = std::map<
+    auto transactions = UnallocatedMap<
         block::pTxid,
         std::pair<
-            std::vector<Bip32Index>,
+            UnallocatedVector<Bip32Index>,
             const block::bitcoin::Transaction*>>{};
 
     for (const auto& match : general) {

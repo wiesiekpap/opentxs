@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <string>
-
 #include "core/contract/peer/PeerRequest.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/Amount.hpp"
@@ -15,6 +13,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -50,7 +49,7 @@ public:
         const identifier::UnitDefinition& unitID,
         const identifier::Notary& serverID,
         const Identifier& requestID,
-        const std::string& txid,
+        const UnallocatedCString& txid,
         const Amount& amount);
 
     ~BailmentNotice() final = default;
@@ -69,7 +68,7 @@ private:
     const OTUnitID unit_;
     const OTNotaryID server_;
     const OTIdentifier requestID_;
-    const std::string txid_;
+    const UnallocatedCString txid_;
     const Amount amount_;
 
     auto clone() const noexcept -> BailmentNotice* final

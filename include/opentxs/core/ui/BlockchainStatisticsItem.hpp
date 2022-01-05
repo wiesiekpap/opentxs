@@ -7,11 +7,10 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/core/ui/ListRow.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -34,13 +33,13 @@ public:
     using Position = blockchain::block::Height;
 
     virtual auto ActivePeers() const noexcept -> std::size_t = 0;
-    virtual auto Balance() const noexcept -> std::string = 0;
+    virtual auto Balance() const noexcept -> UnallocatedCString = 0;
     virtual auto BlockDownloadQueue() const noexcept -> std::size_t = 0;
     virtual auto Chain() const noexcept -> blockchain::Type = 0;
     virtual auto ConnectedPeers() const noexcept -> std::size_t = 0;
     virtual auto Filters() const noexcept -> Position = 0;
     virtual auto Headers() const noexcept -> Position = 0;
-    virtual auto Name() const noexcept -> std::string = 0;
+    virtual auto Name() const noexcept -> UnallocatedCString = 0;
 
     ~BlockchainStatisticsItem() override = default;
 

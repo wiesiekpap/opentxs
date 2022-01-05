@@ -10,12 +10,9 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
-#include <list>
-#include <map>
 #include <thread>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/api/session/Factory.hpp"
@@ -47,6 +44,7 @@
 #include "opentxs/network/zeromq/message/Message.tpp"
 #include "opentxs/network/zeromq/socket/Publish.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -96,7 +94,7 @@ auto Activity::activity_preload_thread(
     const OTIdentifier nym,
     const std::size_t count) const noexcept -> void
 {
-    const std::string nymID = nym->str();
+    const UnallocatedCString nymID = nym->str();
     auto threads = api_.Storage().ThreadList(nymID, false);
 
     for (const auto& it : threads) {
@@ -118,8 +116,8 @@ auto Activity::add_blockchain_transaction(
         .Flush();
     const auto existing =
         api_.Storage().BlockchainThreadMap(nym, transaction.ID());
-    auto added = std::vector<OTIdentifier>{};
-    auto removed = std::vector<OTIdentifier>{};
+    auto added = UnallocatedVector<OTIdentifier>{};
+    auto removed = UnallocatedVector<OTIdentifier>{};
     std::set_difference(
         std::begin(incoming),
         std::end(incoming),
@@ -227,8 +225,8 @@ auto Activity::AddPaymentEvent(
     Time time) const noexcept -> bool
 {
     auto lock = eLock(shared_lock_);
-    const std::string sNymID = nymID.str();
-    const std::string sthreadID = threadID.str();
+    const UnallocatedCString sNymID = nymID.str();
+    const UnallocatedCString sthreadID = threadID.str();
 
     if (false == verify_thread_exists(sNymID, sthreadID)) { return false; }
 
@@ -249,8 +247,8 @@ auto Activity::AddPaymentEvent(
 
 auto Activity::Cheque(
     const identifier::Nym& nym,
-    [[maybe_unused]] const std::string& id,
-    const std::string& workflowID) const noexcept -> Activity::ChequeData
+    [[maybe_unused]] const UnallocatedCString& id,
+    const UnallocatedCString& workflowID) const noexcept -> Activity::ChequeData
 {
     auto output = ChequeData{nullptr, api_.Factory().UnitDefinition()};
     auto& [cheque, contract] = output;
@@ -306,8 +304,9 @@ auto Activity::Cheque(
 
 auto Activity::Transfer(
     const identifier::Nym& nym,
-    [[maybe_unused]] const std::string& id,
-    const std::string& workflowID) const noexcept -> Activity::TransferData
+    [[maybe_unused]] const UnallocatedCString& id,
+    const UnallocatedCString& workflowID) const noexcept
+    -> Activity::TransferData
 {
     auto output = TransferData{nullptr, api_.Factory().UnitDefinition()};
     auto& [transfer, contract] = output;
@@ -378,7 +377,7 @@ auto Activity::Transfer(
 auto Activity::get_publisher(const identifier::Nym& nymID) const noexcept
     -> const opentxs::network::zeromq::socket::Publish&
 {
-    std::string endpoint{};
+    UnallocatedCString endpoint{};
 
     return get_publisher(nymID, endpoint);
 }
@@ -403,7 +402,7 @@ auto Activity::get_blockchain(const eLock&, const identifier::Nym& nymID)
 
 auto Activity::get_publisher(
     const identifier::Nym& nymID,
-    std::string& endpoint) const noexcept
+    UnallocatedCString& endpoint) const noexcept
     -> const opentxs::network::zeromq::socket::Publish&
 {
     endpoint = api_.Endpoints().ThreadUpdate(nymID.str());
@@ -424,16 +423,16 @@ auto Activity::Mail(
     const identifier::Nym& nym,
     const Message& mail,
     const StorageBox box,
-    const std::string& text) const noexcept -> std::string
+    const UnallocatedCString& text) const noexcept -> UnallocatedCString
 {
     const auto nymID = nym.str();
     auto id = api_.Factory().Identifier();
     mail.CalculateContractID(id);
     const auto itemID = id->str();
     mail_.CacheText(nym, id, box, text);
-    const auto data = std::string{String::Factory(mail)->Get()};
+    const auto data = UnallocatedCString{String::Factory(mail)->Get()};
     const auto localName = String::Factory(nym);
-    const auto participantNymID = [&]() -> std::string {
+    const auto participantNymID = [&]() -> UnallocatedCString {
         if (localName->Compare(mail.m_strNymID2)) {
             // This is an incoming message. The contact id is the sender's id.
 
@@ -478,9 +477,9 @@ auto Activity::Mail(
     const identifier::Nym& nym,
     const Message& mail,
     const StorageBox box,
-    const PeerObject& text) const noexcept -> std::string
+    const PeerObject& text) const noexcept -> UnallocatedCString
 {
-    return Mail(nym, mail, box, [&]() -> std::string {
+    return Mail(nym, mail, box, [&]() -> UnallocatedCString {
         if (auto& out = text.Message(); out) {
 
             return *out;
@@ -496,8 +495,8 @@ auto Activity::MailRemove(
     const Identifier& id,
     const StorageBox box) const noexcept -> bool
 {
-    const std::string nymid = nym.str();
-    const std::string mail = id.str();
+    const UnallocatedCString nymid = nym.str();
+    const UnallocatedCString mail = id.str();
 
     return api_.Storage().RemoveNymBoxItem(nymid, box, mail);
 }
@@ -507,9 +506,9 @@ auto Activity::MarkRead(
     const Identifier& threadId,
     const Identifier& itemId) const noexcept -> bool
 {
-    const std::string nym = nymId.str();
-    const std::string thread = threadId.str();
-    const std::string item = itemId.str();
+    const UnallocatedCString nym = nymId.str();
+    const UnallocatedCString thread = threadId.str();
+    const UnallocatedCString item = itemId.str();
 
     return api_.Storage().SetReadState(nym, thread, item, false);
 }
@@ -519,14 +518,14 @@ auto Activity::MarkUnread(
     const Identifier& threadId,
     const Identifier& itemId) const noexcept -> bool
 {
-    const std::string nym = nymId.str();
-    const std::string thread = threadId.str();
-    const std::string item = itemId.str();
+    const UnallocatedCString nym = nymId.str();
+    const UnallocatedCString thread = threadId.str();
+    const UnallocatedCString item = itemId.str();
 
     return api_.Storage().SetReadState(nym, thread, item, true);
 }
 
-auto Activity::nym_to_contact(const std::string& id) const noexcept
+auto Activity::nym_to_contact(const UnallocatedCString& id) const noexcept
     -> std::shared_ptr<const Contact>
 {
     const auto nymID = identifier::Nym::Factory(id);
@@ -537,30 +536,30 @@ auto Activity::nym_to_contact(const std::string& id) const noexcept
 
 auto Activity::PaymentText(
     const identifier::Nym& nym,
-    const std::string& id,
-    const std::string& workflowID) const noexcept
-    -> std::shared_ptr<const std::string>
+    const UnallocatedCString& id,
+    const UnallocatedCString& workflowID) const noexcept
+    -> std::shared_ptr<const UnallocatedCString>
 {
-    std::shared_ptr<std::string> output;
+    std::shared_ptr<UnallocatedCString> output;
     auto [type, state] =
         api_.Storage().PaymentWorkflowState(nym.str(), workflowID);
     [[maybe_unused]] const auto& notUsed = state;
 
     switch (type) {
         case otx::client::PaymentWorkflowType::OutgoingCheque: {
-            output.reset(new std::string("Sent cheque"));
+            output.reset(new UnallocatedCString("Sent cheque"));
         } break;
         case otx::client::PaymentWorkflowType::IncomingCheque: {
-            output.reset(new std::string("Received cheque"));
+            output.reset(new UnallocatedCString("Received cheque"));
         } break;
         case otx::client::PaymentWorkflowType::OutgoingTransfer: {
-            output.reset(new std::string("Sent transfer"));
+            output.reset(new UnallocatedCString("Sent transfer"));
         } break;
         case otx::client::PaymentWorkflowType::IncomingTransfer: {
-            output.reset(new std::string("Received transfer"));
+            output.reset(new UnallocatedCString("Received transfer"));
         } break;
         case otx::client::PaymentWorkflowType::InternalTransfer: {
-            output.reset(new std::string("Internal transfer"));
+            output.reset(new UnallocatedCString("Internal transfer"));
         } break;
 
         case otx::client::PaymentWorkflowType::Error:
@@ -598,8 +597,8 @@ auto Activity::PaymentText(
                 const auto amount = definition.Format(cheque->GetAmount());
 
                 if (0 < amount.size()) {
-                    const std::string text =
-                        *output + std::string{" for "} + amount;
+                    const UnallocatedCString text =
+                        *output + UnallocatedCString{" for "} + amount;
                     *output = text;
                 }
             }
@@ -619,8 +618,8 @@ auto Activity::PaymentText(
                 const auto amount = definition.Format(transfer->GetAmount());
 
                 if (0 < amount.size()) {
-                    const std::string text =
-                        *output + std::string{" for "} + amount;
+                    const UnallocatedCString text =
+                        *output + UnallocatedCString{" for "} + amount;
                     *output = text;
                 }
             }
@@ -657,8 +656,8 @@ auto Activity::PreloadThread(
     const std::size_t count,
     const PasswordPrompt& reason) const noexcept -> void
 {
-    const std::string nym = nymID.str();
-    const std::string thread = threadID.str();
+    const UnallocatedCString nym = nymID.str();
+    const UnallocatedCString thread = threadID.str();
     std::thread preload(
         &Activity::thread_preload_thread,
         this,
@@ -683,8 +682,8 @@ auto Activity::publish(const identifier::Nym& nymID, const Identifier& threadID)
     }());
 }
 
-auto Activity::start_publisher(const std::string& endpoint) const noexcept
-    -> OTZMQPublishSocket
+auto Activity::start_publisher(
+    const UnallocatedCString& endpoint) const noexcept -> OTZMQPublishSocket
 {
     auto output = api_.Network().ZeroMQ().PublishSocket();
     const auto started = output->Start(endpoint);
@@ -727,8 +726,8 @@ auto Activity::Thread(
 
 auto Activity::thread_preload_thread(
     OTPasswordPrompt reason,
-    const std::string nymID,
-    const std::string threadID,
+    const UnallocatedCString nymID,
+    const UnallocatedCString threadID,
     const std::size_t start,
     const std::size_t count) const noexcept -> void
 {
@@ -780,9 +779,9 @@ auto Activity::thread_preload_thread(
 }
 
 auto Activity::ThreadPublisher(const identifier::Nym& nym) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
-    std::string endpoint{};
+    UnallocatedCString endpoint{};
     get_publisher(nym, endpoint);
 
     return endpoint;
@@ -791,7 +790,7 @@ auto Activity::ThreadPublisher(const identifier::Nym& nym) const noexcept
 auto Activity::Threads(const identifier::Nym& nym, const bool unreadOnly)
     const noexcept -> ObjectList
 {
-    const std::string nymID = nym.str();
+    const UnallocatedCString nymID = nym.str();
     auto output = api_.Storage().ThreadList(nymID, unreadOnly);
 
     for (auto& it : output) {
@@ -818,7 +817,7 @@ auto Activity::Threads(const identifier::Nym& nym, const bool unreadOnly)
 auto Activity::UnreadCount(const identifier::Nym& nymId) const noexcept
     -> std::size_t
 {
-    const std::string nym = nymId.str();
+    const UnallocatedCString nym = nymId.str();
     std::size_t output{0};
 
     const auto& threads = api_.Storage().ThreadList(nym, true);
@@ -832,8 +831,8 @@ auto Activity::UnreadCount(const identifier::Nym& nymId) const noexcept
 }
 
 auto Activity::verify_thread_exists(
-    const std::string& nym,
-    const std::string& thread) const noexcept -> bool
+    const UnallocatedCString& nym,
+    const UnallocatedCString& thread) const noexcept -> bool
 {
     const auto list = api_.Storage().ThreadList(nym, false);
 

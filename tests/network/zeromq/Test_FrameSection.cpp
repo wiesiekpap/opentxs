@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
-#include <string>
 
 #include "internal/network/zeromq/message/FrameSection.hpp"
 #include "network/zeromq/message/FrameSection.hpp"
@@ -15,6 +14,7 @@
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 
@@ -33,8 +33,8 @@ TEST(FrameSection, constructors)
             .release()};
     ASSERT_EQ(frameSection2.size(), 0);
 
-    multipartMessage.AddFrame(std::string("msg1"));
-    multipartMessage.AddFrame(std::string{"msg2"});
+    multipartMessage.AddFrame(ot::UnallocatedCString("msg1"));
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg2"});
 
     ot::network::zeromq::FrameSection frameSection3(multipartMessage.Body());
     ASSERT_EQ(frameSection3.size(), 2);
@@ -46,7 +46,7 @@ TEST(FrameSection, constructors)
     ASSERT_EQ(frameSection4.size(), 2);
 
     multipartMessage.AddFrame();
-    multipartMessage.AddFrame(std::string{"msg3"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg3"});
 
     ot::network::zeromq::FrameSection frameSection5(multipartMessage.Header());
     ASSERT_EQ(frameSection5.size(), 2);
@@ -64,22 +64,22 @@ TEST(FrameSection, constructors)
 TEST(FrameSection, at)
 {
     auto multipartMessage = ot::network::zeromq::Message{};
-    multipartMessage.AddFrame(std::string{"msg1"});
-    multipartMessage.AddFrame(std::string{"msg2"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg2"});
     multipartMessage.AddFrame();
 
     auto header = multipartMessage.Header();
 
     const ot::network::zeromq::Frame& header1 = header.at(0);
-    auto msgString = std::string{header1.Bytes()};
+    auto msgString = ot::UnallocatedCString{header1.Bytes()};
     ASSERT_STREQ("msg1", msgString.c_str());
 
     const ot::network::zeromq::Frame& header2 = header.at(1);
     msgString = header2.Bytes();
     ASSERT_STREQ("msg2", msgString.c_str());
 
-    multipartMessage.AddFrame(std::string{"msg3"});
-    multipartMessage.AddFrame(std::string{"msg4"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg3"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg4"});
 
     auto body = multipartMessage.Body();
 
@@ -103,8 +103,8 @@ TEST(FrameSection, begin)
 
         std::distance(headerIterator, headerSection.end()), 0);
 
-    multipartMessage.AddFrame(std::string{"msg1"});
-    multipartMessage.AddFrame(std::string{"msg2"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg2"});
     multipartMessage.AddFrame();
 
     auto headerSection2 = multipartMessage.Header();
@@ -127,8 +127,8 @@ TEST(FrameSection, begin)
 
         std::distance(bodyIterator, bodySection.end()), 0);
 
-    multipartMessage.AddFrame(std::string{"msg3"});
-    multipartMessage.AddFrame(std::string{"msg4"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg3"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg4"});
 
     auto bodySection2 = multipartMessage.Header();
     ot::network::zeromq::FrameIterator bodyIterator2 = headerSection.begin();
@@ -162,8 +162,8 @@ TEST(FrameSection, end)
 
         std::distance(bodySection.begin(), bodyIterator), 0);
 
-    multipartMessage.AddFrame(std::string{"msg1"});
-    multipartMessage.AddFrame(std::string{"msg2"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg2"});
     multipartMessage.AddFrame();
 
     auto headerSection2 = multipartMessage.Header();
@@ -180,8 +180,8 @@ TEST(FrameSection, end)
 
         std::distance(bodySection2.begin(), bodyIterator2), 0);
 
-    multipartMessage.AddFrame(std::string{"msg3"});
-    multipartMessage.AddFrame(std::string{"msg4"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg3"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg4"});
 
     auto bodySection3 = multipartMessage.Body();
     ot::network::zeromq::FrameIterator bodyIterator3 = bodySection3.end();
@@ -203,8 +203,8 @@ TEST(FrameSection, size)
     size = bodySection.size();
     ASSERT_EQ(size, 0);
 
-    multipartMessage.AddFrame(std::string{"msg1"});
-    multipartMessage.AddFrame(std::string{"msg2"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg2"});
     multipartMessage.AddFrame();
 
     auto headerSection2 = multipartMessage.Header();
@@ -215,8 +215,8 @@ TEST(FrameSection, size)
     size = bodySection2.size();
     ASSERT_EQ(size, 0);
 
-    multipartMessage.AddFrame(std::string{"msg3"});
-    multipartMessage.AddFrame(std::string{"msg4"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg3"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg4"});
 
     auto bodySection3 = multipartMessage.Body();
     size = bodySection3.size();

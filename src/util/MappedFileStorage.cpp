@@ -14,10 +14,10 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/TSV.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/FileSize.hpp"
 
@@ -50,16 +50,16 @@ struct MappedFileStorage::Imp {
     using FileCounter = std::size_t;
 
     LMDB& lmdb_;
-    const std::string path_prefix_;
-    const std::string filename_prefix_;
+    const UnallocatedCString path_prefix_;
+    const UnallocatedCString filename_prefix_;
     const int table_;
     const std::size_t key_;
     mutable IndexData::MemoryPosition next_position_;
-    mutable std::vector<boost::iostreams::mapped_file> files_;
+    mutable UnallocatedVector<boost::iostreams::mapped_file> files_;
 
     auto calculate_file_name(
-        const std::string& prefix,
-        const FileCounter index) noexcept -> std::string
+        const UnallocatedCString& prefix,
+        const FileCounter index) noexcept -> UnallocatedCString
     {
         auto number = std::to_string(index);
 
@@ -78,9 +78,10 @@ struct MappedFileStorage::Imp {
         }
     }
     auto create_or_load(
-        const std::string& prefix,
+        const UnallocatedCString& prefix,
         const FileCounter file,
-        std::vector<boost::iostreams::mapped_file>& output) noexcept -> void
+        UnallocatedVector<boost::iostreams::mapped_file>& output) noexcept
+        -> void
     {
         auto params = boost::iostreams::mapped_file_params{
             calculate_file_name(prefix, file)};
@@ -184,11 +185,11 @@ struct MappedFileStorage::Imp {
         }
     }
     auto init_files(
-        const std::string& prefix,
+        const UnallocatedCString& prefix,
         const IndexData::MemoryPosition position) noexcept
-        -> std::vector<boost::iostreams::mapped_file>
+        -> UnallocatedVector<boost::iostreams::mapped_file>
     {
-        auto output = std::vector<boost::iostreams::mapped_file>{};
+        auto output = UnallocatedVector<boost::iostreams::mapped_file>{};
         const auto target = get_file_count(position);
         output.reserve(target);
 
@@ -238,8 +239,8 @@ struct MappedFileStorage::Imp {
     }
 
     Imp(opentxs::storage::lmdb::LMDB& lmdb,
-        const std::string& basePath,
-        const std::string filenamePrefix,
+        const UnallocatedCString& basePath,
+        const UnallocatedCString filenamePrefix,
         int table,
         std::size_t key) noexcept(false)
         : lmdb_(lmdb)
@@ -279,8 +280,8 @@ struct MappedFileStorage::Imp {
 
 MappedFileStorage::MappedFileStorage(
     opentxs::storage::lmdb::LMDB& lmdb,
-    const std::string& basePath,
-    const std::string filenamePrefix,
+    const UnallocatedCString& basePath,
+    const UnallocatedCString filenamePrefix,
     int table,
     std::size_t key) noexcept(false)
     : lmdb_(lmdb)

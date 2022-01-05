@@ -11,9 +11,7 @@
 #include <cstdint>
 #include <cstring>
 #include <fstream>  // IWYU pragma: keep
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/api/Legacy.hpp"
@@ -36,6 +34,7 @@
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -204,8 +203,8 @@ auto Contract::VerifyContract() const -> bool
 void Contract::CalculateContractID(Identifier& newID) const
 {
     // may be redundant...
-    std::string str_Trim(m_strRawFile->Get());
-    std::string str_Trim2 = String::trim(str_Trim);
+    UnallocatedCString str_Trim(m_strRawFile->Get());
+    UnallocatedCString str_Trim2 = String::trim(str_Trim);
 
     auto strTemp = String::Factory(str_Trim2.c_str());
 
@@ -704,8 +703,8 @@ auto Contract::SaveContract() -> bool
 
         // RewriteContract() already does this.
         //
-        //        std::string str_Trim(strTemp.Get());
-        //        std::string str_Trim2 = OTString::trim(str_Trim);
+        //        UnallocatedCString str_Trim(strTemp.Get());
+        //        UnallocatedCString str_Trim2 = OTString::trim(str_Trim);
         //        m_strRawFile.Set(str_Trim2.c_str());
     }
 
@@ -771,8 +770,8 @@ auto Contract::SaveContract(const char* szFoldername, const char* szFilename)
 }
 
 auto Contract::WriteContract(
-    const std::string& folder,
-    const std::string& filename) const -> bool
+    const UnallocatedCString& folder,
+    const UnallocatedCString& filename) const -> bool
 {
     OT_ASSERT(folder.size() > 2);
     OT_ASSERT(filename.size() > 2);
@@ -957,7 +956,7 @@ auto Contract::ParseRawFile() -> bool
 {
     char buffer1[2100];  // a bit bigger than 2048, just for safety reasons.
     Signature* pSig{nullptr};
-    std::string line;
+    UnallocatedCString line;
     bool bSignatureMode = false;           // "currently in signature mode"
     bool bContentMode = false;             // "currently in content mode"
     bool bHaveEnteredContentMode = false;  // "have yet to enter content mode"
@@ -973,8 +972,8 @@ auto Contract::ParseRawFile() -> bool
 
     // This is redundant (I thought) but the problem hasn't cleared up yet.. so
     // trying to really nail it now.
-    std::string str_Trim(m_strRawFile->Get());
-    std::string str_Trim2 = String::trim(str_Trim);
+    UnallocatedCString str_Trim(m_strRawFile->Get());
+    UnallocatedCString str_Trim2 = String::trim(str_Trim);
     m_strRawFile->Set(str_Trim2.c_str());
 
     bool bIsEOF = false;
@@ -1013,7 +1012,7 @@ auto Contract::ParseRawFile() -> bool
             // entering it for the first time.
             if (!bHaveEnteredContentMode) {
                 if ((line.length() > 3) &&
-                    (line.find("BEGIN") != std::string::npos) &&
+                    (line.find("BEGIN") != UnallocatedCString::npos) &&
                     line.at(1) == '-' && line.at(2) == '-' &&
                     line.at(3) == '-') {
                     bHaveEnteredContentMode = true;
@@ -1028,7 +1027,7 @@ auto Contract::ParseRawFile() -> bool
             // b. I am now entering signature mode!
             else if (
                 line.length() > 3 &&
-                line.find("SIGNATURE") != std::string::npos &&
+                line.find("SIGNATURE") != UnallocatedCString::npos &&
                 line.at(1) == '-' && line.at(2) == '-' && line.at(3) == '-') {
                 bSignatureMode = true;
                 bContentMode = false;
@@ -1178,7 +1177,7 @@ auto Contract::ParseRawFile() -> bool
                             " contract header...")
                             .Flush();
 
-                        std::string strTemp = line.substr(6);
+                        UnallocatedCString strTemp = line.substr(6);
                         auto strHashType = String::Factory(strTemp.c_str());
                         strHashType->ConvertToUpperCase();
 
@@ -1468,8 +1467,8 @@ void Contract::CreateInnerContents(Tag& parent)
     //
     if (!m_mapConditions.empty()) {
         for (auto& it : m_mapConditions) {
-            std::string str_condition_name = it.first;
-            std::string str_condition_value = it.second;
+            UnallocatedCString str_condition_name = it.first;
+            UnallocatedCString str_condition_value = it.second;
 
             TagPtr pTag(new Tag("condition", str_condition_value));
             pTag->add_attribute("name", str_condition_name);
@@ -1481,7 +1480,7 @@ void Contract::CreateInnerContents(Tag& parent)
     if (!m_mapNyms.empty()) {
         // CREDENTIALS, based on NymID and Source, and credential IDs.
         for (auto& it : m_mapNyms) {
-            std::string str_name = it.first;
+            UnallocatedCString str_name = it.first;
             Nym_p pNym = it.second;
             OT_ASSERT_MSG(
                 nullptr != pNym,
@@ -1580,8 +1579,9 @@ auto Contract::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
 
         // Add the conditions to a list in memory on this object.
         //
-        m_mapConditions.insert(std::pair<std::string, std::string>(
-            strConditionName->Get(), strConditionValue->Get()));
+        m_mapConditions.insert(
+            std::pair<UnallocatedCString, UnallocatedCString>(
+                strConditionName->Get(), strConditionValue->Get()));
 
         LogDetail()(OT_PRETTY_CLASS())("---- Loaded condition ")(
             strConditionName)

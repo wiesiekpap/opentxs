@@ -33,7 +33,7 @@ Storage::Storage(
     const api::Settings& config,
     const api::Legacy& legacy,
     const api::network::Asio& asio,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     std::unique_ptr<api::session::Factory> factory)
     : config_(config)
     , args_(std::move(args))

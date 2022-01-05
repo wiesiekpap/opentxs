@@ -5,33 +5,31 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include "opentxs/Version.hpp"
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 
 namespace ottest
 {
 struct VectorV3 {
-    std::string words_{};
-    std::string payment_code_{};
-    std::vector<std::string> locators_{};
+    ot::UnallocatedCString words_{};
+    ot::UnallocatedCString payment_code_{};
+    ot::UnallocatedVector<ot::UnallocatedCString> locators_{};
     ot::blockchain::Type receive_chain_{};
-    std::vector<std::string> receive_keys_{};
-    std::string change_key_secret_{};
-    std::string change_key_public_{};
-    std::string blinded_payment_code_{};
-    std::string F_{};
-    std::string G_{};
+    ot::UnallocatedVector<ot::UnallocatedCString> receive_keys_{};
+    ot::UnallocatedCString change_key_secret_{};
+    ot::UnallocatedCString change_key_public_{};
+    ot::UnallocatedCString blinded_payment_code_{};
+    ot::UnallocatedCString F_{};
+    ot::UnallocatedCString G_{};
 };
 
 struct VectorsV3 {
-    std::string outpoint_{};
+    ot::UnallocatedCString outpoint_{};
     VectorV3 alice_{};
     VectorV3 bob_{};
     VectorV3 chris_{};

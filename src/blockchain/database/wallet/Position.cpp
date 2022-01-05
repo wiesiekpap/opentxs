@@ -12,12 +12,12 @@
 #include <iterator>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/session/Factory.hpp"
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::blockchain::database::wallet::db
 {

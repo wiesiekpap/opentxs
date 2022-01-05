@@ -9,9 +9,7 @@
 
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.tpp"
 #include "internal/network/p2p/Factory.hpp"
@@ -27,6 +25,7 @@
 #include "opentxs/network/p2p/Block.hpp"
 #include "opentxs/network/p2p/MessageType.hpp"
 #include "opentxs/network/p2p/State.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/WorkType.hpp"
 #include "serialization/protobuf/BlockchainP2PSync.pb.h"
@@ -104,7 +103,7 @@ public:
 
                   return out;
               }(),
-              std::string{cfheader},
+              UnallocatedCString{cfheader},
               std::move(blocks))
         , parent_(nullptr)
     {
@@ -143,7 +142,7 @@ auto Data::Add(ReadView data) noexcept -> bool
 
     if (false == proto::Validate(proto, VERBOSE)) { return false; }
 
-    auto& blocks = const_cast<std::vector<Block>&>(imp_->blocks_);
+    auto& blocks = const_cast<UnallocatedVector<Block>&>(imp_->blocks_);
 
     if (0 < blocks.size()) {
         const auto expected = blocks.back().Height() + 1;

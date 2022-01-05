@@ -12,7 +12,6 @@
 #include <QString>
 #include <QVariant>
 #include <memory>
-#include <string>
 
 #include "core/ui/activitythread/ActivityThreadItem.hpp"
 #include "core/ui/qt/DraftValidator.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 #include "util/Polarity.hpp"  // IWYU pragma: keep

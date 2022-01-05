@@ -8,7 +8,6 @@
 #include "core/ui/profile/ProfileItem.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <set>
 #include <tuple>
 #include <utility>
 
@@ -21,6 +20,7 @@
 #include "opentxs/api/session/Wallet.hpp"
 #include "opentxs/identity/wot/claim/Attribute.hpp"
 #include "opentxs/identity/wot/claim/Item.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/NymEditor.hpp"
 
 namespace opentxs::factory
@@ -137,7 +137,8 @@ auto ProfileItem::SetPrimary(const bool& primary) const noexcept -> bool
     return add_claim(claim);
 }
 
-auto ProfileItem::SetValue(const std::string& newValue) const noexcept -> bool
+auto ProfileItem::SetValue(const UnallocatedCString& newValue) const noexcept
+    -> bool
 {
     Claim claim{};
     std::get<3>(claim) = newValue;

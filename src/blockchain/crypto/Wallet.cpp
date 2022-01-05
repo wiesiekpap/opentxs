@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <string>
 #include <utility>
 
 #include "blockchain/crypto/AccountIndex.hpp"
@@ -20,7 +19,7 @@
 #include "opentxs/api/session/Session.hpp"
 #include "opentxs/api/session/Storage.hpp"
 #include "opentxs/blockchain/Types.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 

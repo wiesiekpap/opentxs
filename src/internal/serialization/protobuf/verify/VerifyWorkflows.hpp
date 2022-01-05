@@ -20,10 +20,10 @@
 #pragma GCC diagnostic pop
 
 #include <cstdint>
-#include <map>
-#include <set>
 #include <tuple>
 #include <utility>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -31,13 +31,13 @@ namespace proto
 {
 using PaymentWorkflowVersion = std::pair<std::uint32_t, PaymentWorkflowType>;
 using WorkflowEventMap =
-    std::map<PaymentWorkflowVersion, std::set<PaymentEventType>>;
+    UnallocatedMap<PaymentWorkflowVersion, UnallocatedSet<PaymentEventType>>;
 using PaymentTypeVersion = std::pair<std::uint32_t, PaymentWorkflowType>;
 using WorkflowStateMap =
-    std::map<PaymentTypeVersion, std::set<PaymentWorkflowState>>;
+    UnallocatedMap<PaymentTypeVersion, UnallocatedSet<PaymentWorkflowState>>;
 using PaymentEventVersion = std::pair<std::uint32_t, PaymentEventType>;
 using EventTransportMap =
-    std::map<PaymentEventVersion, std::set<EventTransportMethod>>;
+    UnallocatedMap<PaymentEventVersion, UnallocatedSet<EventTransportMethod>>;
 
 auto PaymentEventAllowedTransportMethod() noexcept -> const EventTransportMap&;
 auto PaymentWorkflowAllowedEventTypes() noexcept -> const WorkflowEventMap&;

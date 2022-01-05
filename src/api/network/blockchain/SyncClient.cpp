@@ -14,15 +14,12 @@
 #include <chrono>
 #include <cstring>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <random>
-#include <set>
 #include <stdexcept>
 #include <thread>
 #include <utility>
-#include <vector>
 
 #include "Proto.tpp"
 #include "internal/network/p2p/Factory.hpp"
@@ -50,6 +47,7 @@
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/BlockchainP2PChainState.pb.h"
@@ -61,7 +59,10 @@ namespace opentxs::api::network::blockchain
 struct SyncClient::Imp {
     using Chain = opentxs::blockchain::Type;
 
-    auto Endpoint() const noexcept -> const std::string& { return endpoint_; }
+    auto Endpoint() const noexcept -> const UnallocatedCString&
+    {
+        return endpoint_;
+    }
 
     auto Init(const Blockchain& parent) noexcept -> void
     {
@@ -196,8 +197,8 @@ private:
         bool active_;
         bool waiting_;
         bool new_local_handler_;
-        std::set<Chain> chains_;
-        std::string publisher_;
+        UnallocatedSet<Chain> chains_;
+        UnallocatedCString publisher_;
 
         auto is_stalled() const noexcept -> bool
         {
@@ -246,10 +247,11 @@ private:
 
     using Socket = std::unique_ptr<void, decltype(&::zmq_close)>;
     using OTSocket = opentxs::network::zeromq::socket::implementation::Socket;
-    using ServerMap = std::map<std::string, Server>;
-    using ChainMap = std::map<Chain, std::string>;
-    using ProviderMap = std::map<Chain, std::set<std::string>>;
-    using ActiveMap = std::map<Chain, std::atomic<std::size_t>>;
+    using ServerMap = UnallocatedMap<UnallocatedCString, Server>;
+    using ChainMap = UnallocatedMap<Chain, UnallocatedCString>;
+    using ProviderMap =
+        UnallocatedMap<Chain, UnallocatedSet<UnallocatedCString>>;
+    using ActiveMap = UnallocatedMap<Chain, std::atomic<std::size_t>>;
     using Message = opentxs::network::zeromq::Message;
 
     static constexpr int linger_{0};
@@ -257,8 +259,8 @@ private:
     static constexpr int handshake_{ZMQ_EVENT_HANDSHAKE_SUCCEEDED};
 
     const api::Session& api_;
-    const std::string endpoint_;
-    const std::string monitor_endpoint_;
+    const UnallocatedCString endpoint_;
+    const UnallocatedCString monitor_endpoint_;
     Socket external_router_;
     Socket monitor_;
     Socket external_sub_;
@@ -268,12 +270,12 @@ private:
     ChainMap clients_;
     ProviderMap providers_;
     ActiveMap active_;
-    std::set<std::string> connected_servers_;
+    UnallocatedSet<UnallocatedCString> connected_servers_;
     std::atomic<std::size_t> connected_count_;
     std::atomic_bool running_;
     std::thread thread_;
 
-    auto get_chain(Chain chain) const noexcept -> std::string
+    auto get_chain(Chain chain) const noexcept -> UnallocatedCString
     {
         try {
 
@@ -283,12 +285,12 @@ private:
             return {};
         }
     }
-    auto get_provider(Chain chain) const noexcept -> std::string
+    auto get_provider(Chain chain) const noexcept -> UnallocatedCString
     {
         try {
             const auto& providers = providers_.at(chain);
             static auto rand = std::mt19937{std::random_device{}()};
-            auto result = std::vector<std::string>{};
+            auto result = UnallocatedVector<UnallocatedCString>{};
             std::sample(
                 providers.begin(),
                 providers.end(),
@@ -361,12 +363,13 @@ private:
                 case Task::Processed:
                 default: {
                     throw std::runtime_error{
-                        std::string{"Unsupported task on external socket: "} +
+                        UnallocatedCString{
+                            "Unsupported task on external socket: "} +
                         std::to_string(static_cast<OTZMQWorkType>(task))};
                 }
             }
 
-            const auto endpoint = std::string{msg.at(0).Bytes()};
+            const auto endpoint = UnallocatedCString{msg.at(0).Bytes()};
             auto& server = [&]() -> auto&
             {
                 static auto blank = Server{};
@@ -462,7 +465,7 @@ private:
 
                     if (identity.empty()) {
                         throw std::runtime_error{
-                            std::string{"No active clients for "} +
+                            UnallocatedCString{"No active clients for "} +
                             DisplayString(chain)};
                     }
 
@@ -477,7 +480,7 @@ private:
                 } break;
                 default: {
                     throw std::runtime_error{
-                        std::string{
+                        UnallocatedCString{
                             "Unsupported message type on external socket: "} +
                         opentxs::print(type)};
                 }
@@ -503,7 +506,7 @@ private:
             case Task::Server: {
                 OT_ASSERT(2 < body.size());
 
-                const auto endpoint = std::string{body.at(1).Bytes()};
+                const auto endpoint = UnallocatedCString{body.at(1).Bytes()};
                 const auto added = body.at(2).as<bool>();
 
                 if (added) {
@@ -608,7 +611,7 @@ private:
 
         switch (event) {
             case handshake_: {
-                const auto endpoint = std::string{msg.at(1).Bytes()};
+                const auto endpoint = UnallocatedCString{msg.at(1).Bytes()};
                 LogDetail()("Connected to sync server at ")(endpoint).Flush();
                 servers_.at(endpoint).connected_ = true;
             } break;
@@ -620,7 +623,7 @@ private:
             }
         }
     }
-    auto process_server(const std::string& ep) noexcept -> void
+    auto process_server(const UnallocatedCString& ep) noexcept -> void
     {
         if (0 != ::zmq_connect(external_router_.get(), ep.c_str())) {
             LogError()(OT_PRETTY_CLASS())("failed to connect router to ")(ep)
@@ -748,7 +751,7 @@ SyncClient::SyncClient(const api::Session& api) noexcept
 {
 }
 
-auto SyncClient::Endpoint() const noexcept -> const std::string&
+auto SyncClient::Endpoint() const noexcept -> const UnallocatedCString&
 {
     return imp_.Endpoint();
 }

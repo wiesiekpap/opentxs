@@ -29,9 +29,9 @@ namespace storage
 {
 Thread::Thread(
     const Driver& storage,
-    const std::string& id,
-    const std::string& hash,
-    const std::string& alias,
+    const UnallocatedCString& id,
+    const UnallocatedCString& hash,
+    const UnallocatedCString& alias,
     Mailbox& mailInbox,
     Mailbox& mailOutbox)
     : Node(storage, hash)
@@ -52,8 +52,8 @@ Thread::Thread(
 
 Thread::Thread(
     const Driver& storage,
-    const std::string& id,
-    const std::set<std::string>& participants,
+    const UnallocatedCString& id,
+    const UnallocatedSet<UnallocatedCString>& participants,
     Mailbox& mailInbox,
     Mailbox& mailOutbox)
     : Node(storage, Node::BLANK_HASH)
@@ -69,13 +69,13 @@ Thread::Thread(
 }
 
 auto Thread::Add(
-    const std::string& id,
+    const UnallocatedCString& id,
     const std::uint64_t time,
     const StorageBox& box,
-    const std::string& alias,
-    const std::string& contents,
+    const UnallocatedCString& alias,
+    const UnallocatedCString& contents,
     const std::uint64_t index,
-    const std::string& account,
+    const UnallocatedCString& account,
     const std::uint32_t chain) -> bool
 {
     Lock lock(write_lock_);
@@ -142,14 +142,14 @@ auto Thread::Add(
     return save(lock);
 }
 
-auto Thread::Alias() const -> std::string
+auto Thread::Alias() const -> UnallocatedCString
 {
     Lock lock(write_lock_);
 
     return alias_;
 }
 
-void Thread::init(const std::string& hash)
+void Thread::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageThread> serialized;
     driver_.LoadProto(hash, serialized);
@@ -177,14 +177,14 @@ void Thread::init(const std::string& hash)
     upgrade(lock);
 }
 
-auto Thread::Check(const std::string& id) const -> bool
+auto Thread::Check(const UnallocatedCString& id) const -> bool
 {
     Lock lock(write_lock_);
 
     return items_.end() != items_.find(id);
 }
 
-auto Thread::ID() const -> std::string { return id_; }
+auto Thread::ID() const -> UnallocatedCString { return id_; }
 
 auto Thread::Items() const -> proto::StorageThread
 {
@@ -198,7 +198,7 @@ auto Thread::Migrate(const Driver& to) const -> bool
     return Node::migrate(root_, to);
 }
 
-auto Thread::Read(const std::string& id, const bool unread) -> bool
+auto Thread::Read(const UnallocatedCString& id, const bool unread) -> bool
 {
     Lock lock(write_lock_);
 
@@ -217,7 +217,7 @@ auto Thread::Read(const std::string& id, const bool unread) -> bool
     return save(lock);
 }
 
-auto Thread::Remove(const std::string& id) -> bool
+auto Thread::Remove(const UnallocatedCString& id) -> bool
 {
     Lock lock(write_lock_);
 
@@ -246,7 +246,7 @@ auto Thread::Remove(const std::string& id) -> bool
     return save(lock);
 }
 
-auto Thread::Rename(const std::string& newID) -> bool
+auto Thread::Rename(const UnallocatedCString& newID) -> bool
 {
     Lock lock(write_lock_);
     const auto oldID = id_;
@@ -295,7 +295,7 @@ auto Thread::serialize(const Lock& lock) const -> proto::StorageThread
     return serialized;
 }
 
-auto Thread::SetAlias(const std::string& alias) -> bool
+auto Thread::SetAlias(const UnallocatedCString& alias) -> bool
 {
     Lock lock(write_lock_);
 

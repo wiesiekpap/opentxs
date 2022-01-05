@@ -11,6 +11,6 @@ namespace opentxs
 {
 auto license_irrxml(LicenseMap& out) noexcept -> void
 {
-    out.emplace("irrXML", std::string{R"~!~(@IRRXML_LICENSE_TEXT@)~!~"});
+    out.emplace("irrXML", UnallocatedCString{R"~!~(@IRRXML_LICENSE_TEXT@)~!~"});
 }
 }  // namespace opentxs

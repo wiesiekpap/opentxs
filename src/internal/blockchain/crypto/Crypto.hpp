@@ -12,14 +12,10 @@
 #include <cstdint>
 #include <functional>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <optional>
-#include <set>
-#include <string>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "internal/blockchain/p2p/P2P.hpp"
@@ -43,12 +39,13 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/BlockchainAddress.pb.h"
 
 namespace std
 {
-using COIN = std::tuple<std::string, std::size_t, std::int64_t>;
+using COIN = std::tuple<opentxs::UnallocatedCString, std::size_t, std::int64_t>;
 
 template <>
 struct less<COIN> {
@@ -135,7 +132,7 @@ using Chain = opentxs::blockchain::Type;
 
 namespace opentxs::blockchain::crypto::internal
 {
-using ActivityMap = std::map<Coin, std::pair<Key, Amount>>;
+using ActivityMap = UnallocatedMap<Coin, std::pair<Key, Amount>>;
 
 struct Wallet : virtual public crypto::Wallet {
     virtual auto AddHDNode(
@@ -150,12 +147,13 @@ struct Wallet : virtual public crypto::Wallet {
 
 struct Account : virtual public crypto::Account {
     virtual auto AssociateTransaction(
-        const std::vector<Activity>& unspent,
-        const std::vector<Activity>& spent,
-        std::set<OTIdentifier>& contacts,
+        const UnallocatedVector<Activity>& unspent,
+        const UnallocatedVector<Activity>& spent,
+        UnallocatedSet<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
-    virtual auto ClaimAccountID(const std::string& id, crypto::Subaccount* node)
-        const noexcept -> void = 0;
+    virtual auto ClaimAccountID(
+        const UnallocatedCString& id,
+        crypto::Subaccount* node) const noexcept -> void = 0;
     virtual auto FindNym(const identifier::Nym& id) const noexcept -> void = 0;
     virtual auto LookupUTXO(const Coin& coin) const noexcept
         -> std::optional<std::pair<Key, Amount>> = 0;
@@ -195,22 +193,23 @@ struct Element : virtual public crypto::Element {
         Used,
     };
 
-    virtual auto Elements() const noexcept -> std::set<OTData> = 0;
+    virtual auto Elements() const noexcept -> UnallocatedSet<OTData> = 0;
     virtual auto ID() const noexcept -> const Identifier& = 0;
     virtual auto IncomingTransactions() const noexcept
-        -> std::set<std::string> = 0;
-    virtual auto IsAvailable(const Identifier& contact, const std::string& memo)
-        const noexcept -> Availability = 0;
+        -> UnallocatedSet<UnallocatedCString> = 0;
+    virtual auto IsAvailable(
+        const Identifier& contact,
+        const UnallocatedCString& memo) const noexcept -> Availability = 0;
     virtual auto NymID() const noexcept -> const identifier::Nym& = 0;
     virtual auto Serialize() const noexcept -> SerializedType = 0;
 
     virtual auto Confirm(const Txid& tx) noexcept -> bool = 0;
     virtual auto Reserve(const Time time) noexcept -> bool = 0;
     virtual auto SetContact(const Identifier& id) noexcept -> void = 0;
-    virtual auto SetLabel(const std::string& label) noexcept -> void = 0;
+    virtual auto SetLabel(const UnallocatedCString& label) noexcept -> void = 0;
     virtual auto SetMetadata(
         const Identifier& contact,
-        const std::string& label) noexcept -> void = 0;
+        const UnallocatedCString& label) noexcept -> void = 0;
     virtual auto Unconfirm(const Txid& tx, const Time time) noexcept
         -> bool = 0;
     virtual auto Unreserve() noexcept -> bool = 0;
@@ -218,12 +217,12 @@ struct Element : virtual public crypto::Element {
 
 struct Subaccount : virtual public crypto::Subaccount {
     virtual auto AssociateTransaction(
-        const std::vector<Activity>& unspent,
-        const std::vector<Activity>& spent,
-        std::set<OTIdentifier>& contacts,
+        const UnallocatedVector<Activity>& unspent,
+        const UnallocatedVector<Activity>& spent,
+        UnallocatedSet<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
     virtual auto IncomingTransactions(const Key& key) const noexcept
-        -> std::set<std::string> = 0;
+        -> UnallocatedSet<UnallocatedCString> = 0;
     virtual auto PrivateKey(
         const Subchain type,
         const Bip32Index index,
@@ -240,12 +239,12 @@ struct Subaccount : virtual public crypto::Subaccount {
     virtual auto SetLabel(
         const Subchain type,
         const Bip32Index index,
-        const std::string& label) noexcept(false) -> bool = 0;
+        const UnallocatedCString& label) noexcept(false) -> bool = 0;
     virtual auto SetScanProgress(
         const block::Position& progress,
         Subchain type) noexcept -> void = 0;
     virtual auto UpdateElement(
-        std::vector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
+        UnallocatedVector<ReadView>& pubkeyHashes) const noexcept -> void = 0;
     virtual auto Unconfirm(
         const Subchain type,
         const Bip32Index index,

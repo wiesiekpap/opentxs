@@ -12,10 +12,8 @@
 #include <functional>
 #include <limits>
 #include <memory>
-#include <string>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 #include "Proto.tpp"
 #include "internal/api/session/Session.hpp"
@@ -33,6 +31,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
 #include "opentxs/crypto/library/SymmetricProvider.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -330,7 +329,7 @@ auto Symmetric::Allocate(const std::size_t size, String& container) -> bool
 {
     if (std::numeric_limits<std::uint32_t>::max() < size) { return false; }
 
-    auto blank = std::vector<char>{};
+    auto blank = UnallocatedVector<char>{};
     blank.assign(size, 0x7f);
 
     OT_ASSERT(blank.size() == size);

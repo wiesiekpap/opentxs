@@ -8,7 +8,6 @@
 #include "api/session/ui/Imp-qt.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <tuple>
 #include <utility>
@@ -19,9 +18,11 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/ui/Blockchains.hpp"
+#include "opentxs/core/ui/qt/BlankModel.hpp"
 #include "opentxs/core/ui/qt/BlockchainSelection.hpp"
 #include "opentxs/core/ui/qt/BlockchainStatistics.hpp"
 #include "opentxs/core/ui/qt/SeedValidator.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::api::session::ui
 {

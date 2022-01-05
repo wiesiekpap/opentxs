@@ -28,7 +28,8 @@
 
 namespace opentxs::factory
 {
-auto Legacy(const std::string& home) noexcept -> std::unique_ptr<api::Legacy>
+auto Legacy(const UnallocatedCString& home) noexcept
+    -> std::unique_ptr<api::Legacy>
 {
     using ReturnType = opentxs::api::imp::Legacy;
 
@@ -40,7 +41,8 @@ namespace opentxs::api
 {
 auto Legacy::PathSeparator() noexcept -> const char* { return "/"; }
 
-auto Legacy::SuggestFolder(const std::string& app) noexcept -> std::string
+auto Legacy::SuggestFolder(const UnallocatedCString& app) noexcept
+    -> UnallocatedCString
 {
     using ReturnType = opentxs::api::imp::Legacy;
     const auto path =
@@ -67,13 +69,18 @@ const char* Legacy::payment_inbox_{"paymentinbox"};
 const char* Legacy::receipt_{"receipt"};
 const char* Legacy::record_box_{"recordbox"};
 
-Legacy::Legacy(const std::string& home) noexcept
+Legacy::Legacy(const UnallocatedCString& home) noexcept
     : app_data_folder_(get_app_data_folder(home))
-    , client_data_folder_(std::string(CLIENT_CONFIG_KEY) + DATA_FOLDER_EXT)
-    , server_data_folder_(std::string(SERVER_CONFIG_KEY) + DATA_FOLDER_EXT)
-    , client_config_file_(std::string(CLIENT_CONFIG_KEY) + CONFIG_FILE_EXT)
-    , opentxs_config_file_(std::string(OPENTXS_CONFIG_KEY) + CONFIG_FILE_EXT)
-    , server_config_file_(std::string(SERVER_CONFIG_KEY) + CONFIG_FILE_EXT)
+    , client_data_folder_(
+          UnallocatedCString(CLIENT_CONFIG_KEY) + DATA_FOLDER_EXT)
+    , server_data_folder_(
+          UnallocatedCString(SERVER_CONFIG_KEY) + DATA_FOLDER_EXT)
+    , client_config_file_(
+          UnallocatedCString(CLIENT_CONFIG_KEY) + CONFIG_FILE_EXT)
+    , opentxs_config_file_(
+          UnallocatedCString(OPENTXS_CONFIG_KEY) + CONFIG_FILE_EXT)
+    , server_config_file_(
+          UnallocatedCString(SERVER_CONFIG_KEY) + CONFIG_FILE_EXT)
     , pid_file_(PID_FILE)
 {
 }
@@ -132,12 +139,13 @@ auto Legacy::BuildFilePath(const String& path) const noexcept -> bool
 }
 
 auto Legacy::ClientConfigFilePath(const int instance) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     return get_file(client_config_file_, instance);
 }
 
-auto Legacy::ClientDataFolder(const int instance) const noexcept -> std::string
+auto Legacy::ClientDataFolder(const int instance) const noexcept
+    -> UnallocatedCString
 {
     return get_path(client_data_folder_, instance);
 }
@@ -177,7 +185,8 @@ auto Legacy::FileExists(const String& path, std::size_t& size) const noexcept
     }
 }
 
-auto Legacy::get_app_data_folder(const std::string& home) noexcept -> fs::path
+auto Legacy::get_app_data_folder(const UnallocatedCString& home) noexcept
+    -> fs::path
 {
     if (false == home.empty()) { return home; }
 
@@ -186,7 +195,7 @@ auto Legacy::get_app_data_folder(const std::string& home) noexcept -> fs::path
 
 auto Legacy::get_home_directory() noexcept -> fs::path
 {
-    auto home = std::string{getenv("HOME")};
+    auto home = UnallocatedCString{getenv("HOME")};
 
     if (false == home.empty()) { return std::move(home); }
 
@@ -211,16 +220,16 @@ auto Legacy::get_suffix(const char* application) noexcept -> fs::path
     return std::move(output);
 }
 
-auto Legacy::get_file(const std::string& fragment, const int instance)
-    const noexcept -> std::string
+auto Legacy::get_file(const UnallocatedCString& fragment, const int instance)
+    const noexcept -> UnallocatedCString
 {
     const auto output = get_path(fragment, instance);
 
     return {output.c_str(), output.size() - 1};
 }
 
-auto Legacy::get_path(const std::string& fragment, const int instance)
-    const noexcept -> std::string
+auto Legacy::get_path(const UnallocatedCString& fragment, const int instance)
+    const noexcept -> UnallocatedCString
 {
     const auto name =
         (0 == instance) ? fragment : fragment + "-" + std::to_string(instance);
@@ -235,7 +244,7 @@ auto Legacy::get_path(const std::string& fragment, const int instance)
     return output->Get();
 }
 
-auto Legacy::OpentxsConfigFilePath() const noexcept -> std::string
+auto Legacy::OpentxsConfigFilePath() const noexcept -> UnallocatedCString
 {
     return get_file(opentxs_config_file_);
 }
@@ -251,18 +260,19 @@ auto Legacy::PathExists(const String& path) const noexcept -> bool
     }
 }
 
-auto Legacy::PIDFilePath() const noexcept -> std::string
+auto Legacy::PIDFilePath() const noexcept -> UnallocatedCString
 {
     return get_file(pid_file_);
 }
 
 auto Legacy::ServerConfigFilePath(const int instance) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     return get_file(server_config_file_, instance);
 }
 
-auto Legacy::ServerDataFolder(const int instance) const noexcept -> std::string
+auto Legacy::ServerDataFolder(const int instance) const noexcept
+    -> UnallocatedCString
 {
     return get_path(server_data_folder_, instance);
 }

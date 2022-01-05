@@ -8,9 +8,9 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <cstddef>
 #include <iosfwd>
-#include <string>
 
 #include "opentxs/blockchain/NumericHash.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace bmp = boost::multiprecision;
 
@@ -31,8 +31,11 @@ public:
         -> bool final;
 
     auto asHex(const std::size_t minimumBytes) const noexcept
-        -> std::string final;
-    auto Decimal() const noexcept -> std::string final { return data_.str(); }
+        -> UnallocatedCString final;
+    auto Decimal() const noexcept -> UnallocatedCString final
+    {
+        return data_.str();
+    }
 
     NumericHash(const Type& data) noexcept;
     NumericHash() noexcept;

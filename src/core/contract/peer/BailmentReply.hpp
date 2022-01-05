@@ -5,12 +5,11 @@
 
 #pragma once
 
-#include <string>
-
 #include "core/contract/peer/PeerReply.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/peer/BailmentReply.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -47,7 +46,7 @@ public:
         const identifier::Nym& initiator,
         const Identifier& request,
         const identifier::Notary& server,
-        const std::string& terms);
+        const UnallocatedCString& terms);
 
     ~Bailment() final = default;
 

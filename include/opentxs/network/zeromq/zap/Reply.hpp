@@ -42,7 +42,7 @@ public:
     class Imp;
 
     auto Code() const noexcept -> zap::Status;
-    auto Debug() const noexcept -> std::string;
+    auto Debug() const noexcept -> UnallocatedCString;
     auto Metadata() const noexcept -> ReadView;
     auto RequestID() const noexcept -> ReadView;
     auto Status() const noexcept -> ReadView;

@@ -83,8 +83,8 @@ ClientContext::ClientContext(
     }
 }
 
-auto ClientContext::AcceptIssuedNumbers(std::set<TransactionNumber>& newNumbers)
-    -> bool
+auto ClientContext::AcceptIssuedNumbers(
+    UnallocatedSet<TransactionNumber>& newNumbers) -> bool
 {
     Lock lock(lock_);
 
@@ -125,7 +125,8 @@ auto ClientContext::CloseCronItem(const TransactionNumber number) -> bool
     return (0 < output);
 }
 
-void ClientContext::FinishAcknowledgements(const std::set<RequestNumber>& req)
+void ClientContext::FinishAcknowledgements(
+    const UnallocatedSet<RequestNumber>& req)
 {
     Lock lock(lock_);
 
@@ -143,7 +144,7 @@ auto ClientContext::hasOpenTransactions() const -> bool
 }
 
 auto ClientContext::IssuedNumbers(
-    const std::set<TransactionNumber>& exclude) const -> std::size_t
+    const UnallocatedSet<TransactionNumber>& exclude) const -> std::size_t
 {
     Lock lock(lock_);
 
@@ -209,12 +210,12 @@ auto ClientContext::Type() const -> otx::ConsensusType
 
 auto ClientContext::Verify(
     const TransactionStatement& statement,
-    const std::set<TransactionNumber>& excluded,
-    const std::set<TransactionNumber>& included) const -> bool
+    const UnallocatedSet<TransactionNumber>& excluded,
+    const UnallocatedSet<TransactionNumber>& included) const -> bool
 {
     Lock lock(lock_);
 
-    std::set<TransactionNumber> effective = issued_transaction_numbers_;
+    UnallocatedSet<TransactionNumber> effective = issued_transaction_numbers_;
 
     for (const auto& number : included) {
         const bool inserted = effective.insert(number).second;
@@ -284,7 +285,7 @@ auto ClientContext::VerifyCronItem(const TransactionNumber number) const -> bool
 
 auto ClientContext::VerifyIssuedNumber(
     const TransactionNumber& number,
-    const std::set<TransactionNumber>& exclude) const -> bool
+    const UnallocatedSet<TransactionNumber>& exclude) const -> bool
 {
     const bool excluded = (1 == exclude.count(number));
 

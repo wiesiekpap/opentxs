@@ -6,7 +6,6 @@
 #pragma once
 
 #include <memory>
-#include <string>
 
 #include "Proto.hpp"
 #include "core/contract/Signable.hpp"
@@ -19,6 +18,7 @@
 #include "opentxs/crypto/key/asymmetric/Role.hpp"
 #include "opentxs/identity/CredentialRole.hpp"
 #include "opentxs/identity/CredentialType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/Credential.pb.h"
 
@@ -64,7 +64,8 @@ class Base : virtual public credential::internal::Base,
 public:
     using SerializedType = proto::Credential;
 
-    auto asString(const bool asPrivate = false) const -> std::string final;
+    auto asString(const bool asPrivate = false) const
+        -> UnallocatedCString final;
     auto CredentialID() const -> const Identifier& final { return id_.get(); }
     auto GetContactData(proto::ContactData& output) const -> bool override
     {
@@ -123,17 +124,17 @@ public:
 protected:
     const identity::internal::Authority& parent_;
     const identity::Source& source_;
-    const std::string nym_id_;
-    const std::string master_id_;
+    const UnallocatedCString nym_id_;
+    const UnallocatedCString master_id_;
     const identity::CredentialType type_;
     const identity::CredentialRole role_;
     const crypto::key::asymmetric::Mode mode_;
 
     static auto get_master_id(const internal::Primary& master) noexcept
-        -> std::string;
+        -> UnallocatedCString;
     static auto get_master_id(
         const proto::Credential& serialized,
-        const internal::Primary& master) noexcept(false) -> std::string;
+        const internal::Primary& master) noexcept(false) -> UnallocatedCString;
 
     virtual auto serialize(
         const Lock& lock,
@@ -158,13 +159,13 @@ protected:
         const VersionNumber version,
         const identity::CredentialRole role,
         const crypto::key::asymmetric::Mode mode,
-        const std::string& masterID) noexcept;
+        const UnallocatedCString& masterID) noexcept;
     Base(
         const api::Session& api,
         const identity::internal::Authority& owner,
         const identity::Source& source,
         const proto::Credential& serialized,
-        const std::string& masterID) noexcept(false);
+        const UnallocatedCString& masterID) noexcept(false);
 
 private:
     static auto extract_signatures(const SerializedType& serialized)
@@ -177,7 +178,10 @@ private:
     // Returns the serialized form to prevent unnecessary serializations
     auto isValid(const Lock& lock, std::shared_ptr<SerializedType>& credential)
         const -> bool;
-    auto Name() const noexcept -> std::string final { return id_->str(); }
+    auto Name() const noexcept -> UnallocatedCString final
+    {
+        return id_->str();
+    }
     auto verify_master_signature(const Lock& lock) const -> bool;
 
     void add_master_signature(

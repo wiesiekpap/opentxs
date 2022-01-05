@@ -7,10 +7,8 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "identity/wot/verification/Group.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <stdexcept>
 #include <utility>
-#include <vector>
 
 #include "2_Factory.hpp"
 #include "Proto.hpp"
@@ -20,6 +18,7 @@
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/wot/verification/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/Verification.pb.h"

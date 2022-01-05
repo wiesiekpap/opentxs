@@ -8,7 +8,6 @@
 #include "core/ui/accountlist/AccountListItem.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 
 #include "core/ui/base/Widget.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
 {
@@ -52,7 +52,7 @@ AccountListItem::AccountListItem(
     , contract_(load_unit(api_, extract_custom<OTUnitID>(custom, 2)))
     , notary_(load_server(api_, api.Factory().ServerID(sortKey.second)))
     , balance_(extract_custom<Amount>(custom, 1))
-    , name_(extract_custom<std::string>(custom, 3))
+    , name_(extract_custom<UnallocatedCString>(custom, 3))
 {
 }
 
@@ -63,9 +63,9 @@ auto AccountListItem::Balance() const noexcept -> Amount
     return balance_;
 }
 
-auto AccountListItem::DisplayBalance() const noexcept -> std::string
+auto AccountListItem::DisplayBalance() const noexcept -> UnallocatedCString
 {
-    auto output = std::string{};
+    auto output = UnallocatedCString{};
     const auto& definition = display::GetDefinition(Unit());
     output = definition.Format(balance_);
 
@@ -75,7 +75,7 @@ auto AccountListItem::DisplayBalance() const noexcept -> std::string
     return output;
 }
 
-auto AccountListItem::DisplayUnit() const noexcept -> std::string
+auto AccountListItem::DisplayUnit() const noexcept -> UnallocatedCString
 {
     const auto& definition = display::GetDefinition(Unit());
     return definition.ShortName();
@@ -107,7 +107,7 @@ auto AccountListItem::load_unit(
     }
 }
 
-auto AccountListItem::Name() const noexcept -> std::string
+auto AccountListItem::Name() const noexcept -> UnallocatedCString
 {
     Lock lock{lock_};
 
@@ -121,7 +121,7 @@ auto AccountListItem::reindex(
     const auto blockchain = extract_custom<bool>(custom, 0);
     const auto balance = extract_custom<Amount>(custom, 1);
     const auto unitID = extract_custom<OTUnitID>(custom, 2);
-    const auto name = extract_custom<std::string>(custom, 3);
+    const auto name = extract_custom<UnallocatedCString>(custom, 3);
 
     OT_ASSERT(false == blockchain);
     OT_ASSERT(contract_->ID() == unitID);

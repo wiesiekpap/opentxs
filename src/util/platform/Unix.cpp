@@ -59,5 +59,5 @@ auto Context::set_desired_files(::rlimit& out) noexcept -> void
 
 auto Legacy::get_suffix() noexcept -> fs::path { return get_suffix("ot"); }
 
-auto Legacy::prepend() noexcept -> std::string { return {}; }
+auto Legacy::prepend() noexcept -> UnallocatedCString { return {}; }
 }  // namespace opentxs::api::imp

@@ -13,7 +13,6 @@
 #include <cstdint>
 #include <iterator>
 #include <memory>
-#include <vector>
 
 #include "internal/blockchain/Blockchain.hpp"
 #include "internal/blockchain/Params.hpp"
@@ -26,6 +25,7 @@
 #include "opentxs/blockchain/NumericHash.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -116,12 +116,14 @@ auto operator<=(
 
 namespace opentxs::blockchain
 {
-auto HashToNumber(const api::Session& api, ReadView hex) noexcept -> std::string
+auto HashToNumber(const api::Session& api, ReadView hex) noexcept
+    -> UnallocatedCString
 {
-    return HashToNumber(api.Factory().Data(std::string{hex}, StringStyle::Hex));
+    return HashToNumber(
+        api.Factory().Data(UnallocatedCString{hex}, StringStyle::Hex));
 }
 
-auto HashToNumber(const Hash& hash) noexcept -> std::string
+auto HashToNumber(const Hash& hash) noexcept -> UnallocatedCString
 {
     const auto number = factory::NumericHash(hash);
 
@@ -142,7 +144,8 @@ auto NumericHash::MaxTarget(const blockchain::Type chain) noexcept
 
 auto NumberToHash(const api::Session& api, ReadView hex) noexcept -> pHash
 {
-    const auto hash = api.Factory().Data(std::string{hex}, StringStyle::Hex);
+    const auto hash =
+        api.Factory().Data(UnallocatedCString{hex}, StringStyle::Hex);
     auto out = api.Factory().Data();
 
     for (auto i{hash->size()}; i > 0u; --i) {
@@ -204,9 +207,9 @@ auto NumericHash::operator<=(const blockchain::NumericHash& rhs) const noexcept
 }
 
 auto NumericHash::asHex(const std::size_t minimumBytes) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
-    std::vector<unsigned char> bytes;
+    UnallocatedVector<unsigned char> bytes;
 
     try {
         // Export as big endian

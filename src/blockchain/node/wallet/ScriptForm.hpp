@@ -6,11 +6,11 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/blockchain/block/bitcoin/Script.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -39,7 +39,7 @@ public:
     bool segwit_;
     Type primary_;
     Type secondary_;
-    std::vector<ReadView> element_;
+    UnallocatedVector<ReadView> element_;
     Script script_;
 
     ScriptForm(

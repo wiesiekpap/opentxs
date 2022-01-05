@@ -11,7 +11,6 @@
 #include <limits>
 #include <memory>
 #include <string_view>
-#include <vector>
 
 #include "internal/api/crypto/Factory.hpp"
 #include "internal/crypto/library/Pbkdf2.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/crypto/library/HashingProvider.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "smhasher/src/MurmurHash3.h"
@@ -329,7 +329,7 @@ auto Hash::PKCS5_PBKDF2_HMAC(
 }
 
 auto Hash::PKCS5_PBKDF2_HMAC(
-    const std::string& input,
+    const UnallocatedCString& input,
     const Data& salt,
     const std::size_t iterations,
     const opentxs::crypto::HashType type,

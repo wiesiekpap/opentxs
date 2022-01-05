@@ -31,7 +31,7 @@ namespace opentxs::rpc::response
 Base::Imp::Imp(
     const Base* parent,
     VersionNumber version,
-    const std::string& cookie,
+    const UnallocatedCString& cookie,
     const CommandType& type,
     const Responses responses,
     SessionIndex session,
@@ -277,7 +277,7 @@ auto Base::asSendPayment() const noexcept -> const SendPayment&
     return imp_->asSendPayment();
 }
 
-auto Base::Cookie() const noexcept -> const std::string&
+auto Base::Cookie() const noexcept -> const UnallocatedCString&
 {
     return imp_->cookie_;
 }

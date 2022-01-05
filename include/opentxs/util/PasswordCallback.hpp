@@ -7,7 +7,7 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -23,14 +23,14 @@ public:
     virtual void runOne(
         const char* szDisplay,
         Secret& theOutput,
-        const std::string& key) const = 0;
+        const UnallocatedCString& key) const = 0;
 
     // Asks for password twice. (For confirmation when changing password or
     // creating nym.)
     virtual void runTwo(
         const char* szDisplay,
         Secret& theOutput,
-        const std::string& key) const = 0;
+        const UnallocatedCString& key) const = 0;
 
     PasswordCallback() = default;
     virtual ~PasswordCallback() = default;

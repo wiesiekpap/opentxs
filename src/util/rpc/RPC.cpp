@@ -12,14 +12,9 @@
 #include <functional>
 #include <future>
 #include <iterator>
-#include <list>
-#include <map>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <tuple>
 #include <type_traits>
-#include <vector>
 
 #include "2_Factory.hpp"
 #include "internal/api/session/Client.hpp"
@@ -88,6 +83,7 @@
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Options.hpp"
@@ -208,7 +204,7 @@ auto Factory::RPC(const api::Context& native) -> rpc::internal::RPC*
 
 namespace opentxs::rpc::implementation
 {
-static const std::map<VersionNumber, VersionNumber> StatusVersionMap{
+static const UnallocatedMap<VersionNumber, VersionNumber> StatusVersionMap{
     {1, 1},
     {2, 2},
     {3, 2},
@@ -264,7 +260,8 @@ auto RPC::accept_pending_payments(const proto::RPCCommand& command) const
                         output, proto::RPCRESPONSE_WORKFLOW_NOT_FOUND);
 
                     throw std::runtime_error{
-                        std::string{"Invalid workflow"} + workflowID->str()};
+                        UnallocatedCString{"Invalid workflow"} +
+                        workflowID->str()};
                 }
 
                 return out;
@@ -355,7 +352,7 @@ auto RPC::add_claim(const proto::RPCCommand& command) const
 
     for (const auto& addclaim : command.claim()) {
         const auto& contactitem = addclaim.item();
-        std::set<std::uint32_t> attributes(
+        UnallocatedSet<std::uint32_t> attributes(
             contactitem.attribute().begin(), contactitem.attribute().end());
         auto claim = Claim(
             contactitem.id(),
@@ -404,14 +401,14 @@ auto RPC::add_contact(const proto::RPCCommand& command) const
 }
 
 void RPC::add_output_identifier(
-    const std::string& id,
+    const UnallocatedCString& id,
     proto::TaskComplete& output)
 {
     output.set_identifier(id);
 }
 
 void RPC::add_output_identifier(
-    const std::string& id,
+    const UnallocatedCString& id,
     proto::RPCResponse& output)
 {
     output.add_identifier(id);
@@ -434,7 +431,9 @@ void RPC::add_output_status(
     output.set_code(code);
 }
 
-void RPC::add_output_task(proto::RPCResponse& output, const std::string& taskid)
+void RPC::add_output_task(
+    proto::RPCResponse& output,
+    const UnallocatedCString& taskid)
 {
     auto& task = *output.add_task();
     task.set_version(RPCTASK_VERSION);
@@ -470,7 +469,7 @@ auto RPC::create_account(const proto::RPCCommand& command) const
 
     const auto notaryID = identifier::Notary::Factory(command.notary());
     const auto unitID = identifier::UnitDefinition::Factory(command.unit());
-    std::string label{};
+    UnallocatedCString label{};
 
     if (0 < command.identifier_size()) { label = command.identifier(0); }
 
@@ -579,7 +578,7 @@ auto RPC::create_issuer_account(const proto::RPCCommand& command) const
     INIT_CLIENT_ONLY();
     CHECK_OWNER();
 
-    std::string label{};
+    UnallocatedCString label{};
     auto notaryID = identifier::Notary::Factory(command.notary());
     auto unitID = identifier::UnitDefinition::Factory(command.unit());
 
@@ -663,7 +662,7 @@ auto RPC::create_nym(const proto::RPCCommand& command) const
 
         for (const auto& addclaim : createnym.claims()) {
             const auto& contactitem = addclaim.item();
-            std::set<std::uint32_t> attributes(
+            UnallocatedSet<std::uint32_t> attributes(
                 contactitem.attribute().begin(), contactitem.attribute().end());
             auto claim = Claim(
                 contactitem.id(),
@@ -955,7 +954,7 @@ auto RPC::get_compatible_accounts(const proto::RPCCommand& command) const
 
     const auto owneraccounts = client.Storage().AccountsByOwner(ownerID);
     const auto unitaccounts = client.Storage().AccountsByContract(unitID);
-    std::vector<OTIdentifier> compatible{};
+    UnallocatedVector<OTIdentifier> compatible{};
     std::set_intersection(
         owneraccounts.begin(),
         owneraccounts.end(),
@@ -1020,7 +1019,7 @@ auto RPC::get_pending_payments(const proto::RPCCommand& command) const
         ownerID,
         otx::client::PaymentWorkflowType::IncomingInvoice,
         otx::client::PaymentWorkflowState::Conveyed);
-    std::set<OTIdentifier> workflows;
+    UnallocatedSet<OTIdentifier> workflows;
     std::set_union(
         checkWorkflows.begin(),
         checkWorkflows.end(),
@@ -1824,7 +1823,7 @@ auto RPC::Process(const request::Base& command) const
 
 auto RPC::queue_task(
     const identifier::Nym& nymID,
-    const std::string taskID,
+    const UnallocatedCString taskID,
     Finish&& finish,
     Future&& future,
     proto::RPCResponse& output) const -> void
@@ -1843,9 +1842,9 @@ auto RPC::queue_task(
 auto RPC::queue_task(
     const api::Session& api,
     const identifier::Nym& nymID,
-    const std::string taskID,
+    const UnallocatedCString taskID,
     Finish&& finish,
-    Future&& future) const noexcept -> std::string
+    Future&& future) const noexcept -> UnallocatedCString
 {
     {
         auto lock = Lock{task_lock_};

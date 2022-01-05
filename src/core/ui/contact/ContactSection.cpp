@@ -7,9 +7,7 @@
 #include "1_Internal.hpp"                      // IWYU pragma: associated
 #include "core/ui/contact/ContactSection.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
 #include <thread>
 #include <type_traits>
@@ -22,6 +20,7 @@
 #include "opentxs/identity/wot/claim/Group.hpp"
 #include "opentxs/identity/wot/claim/Section.hpp"
 #include "opentxs/identity/wot/claim/SectionType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 
 namespace opentxs::factory
@@ -42,43 +41,44 @@ auto ContactSectionWidget(
 
 namespace opentxs::ui::implementation
 {
-const std::
-    map<identity::wot::claim::SectionType, std::set<proto::ContactItemType>>
-        ContactSection::allowed_types_{
-            {identity::wot::claim::SectionType::Communication,
-             {
-                 proto::CITEMTYPE_PHONE,
-                 proto::CITEMTYPE_EMAIL,
-                 proto::CITEMTYPE_SKYPE,
-                 proto::CITEMTYPE_WIRE,
-                 proto::CITEMTYPE_QQ,
-                 proto::CITEMTYPE_BITMESSAGE,
-                 proto::CITEMTYPE_WHATSAPP,
-                 proto::CITEMTYPE_TELEGRAM,
-                 proto::CITEMTYPE_KIK,
-                 proto::CITEMTYPE_BBM,
-                 proto::CITEMTYPE_WECHAT,
-                 proto::CITEMTYPE_KAKAOTALK,
-             }},
-            {identity::wot::claim::SectionType::Profile,
-             {
-                 proto::CITEMTYPE_FACEBOOK,  proto::CITEMTYPE_GOOGLE,
-                 proto::CITEMTYPE_LINKEDIN,  proto::CITEMTYPE_VK,
-                 proto::CITEMTYPE_ABOUTME,   proto::CITEMTYPE_ONENAME,
-                 proto::CITEMTYPE_TWITTER,   proto::CITEMTYPE_MEDIUM,
-                 proto::CITEMTYPE_TUMBLR,    proto::CITEMTYPE_YAHOO,
-                 proto::CITEMTYPE_MYSPACE,   proto::CITEMTYPE_MEETUP,
-                 proto::CITEMTYPE_REDDIT,    proto::CITEMTYPE_HACKERNEWS,
-                 proto::CITEMTYPE_WIKIPEDIA, proto::CITEMTYPE_ANGELLIST,
-                 proto::CITEMTYPE_GITHUB,    proto::CITEMTYPE_BITBUCKET,
-                 proto::CITEMTYPE_YOUTUBE,   proto::CITEMTYPE_VIMEO,
-                 proto::CITEMTYPE_TWITCH,    proto::CITEMTYPE_SNAPCHAT,
-             }},
-        };
-
 const std::map<
     identity::wot::claim::SectionType,
-    std::map<proto::ContactItemType, int>>
+    UnallocatedSet<proto::ContactItemType>>
+    ContactSection::allowed_types_{
+        {identity::wot::claim::SectionType::Communication,
+         {
+             proto::CITEMTYPE_PHONE,
+             proto::CITEMTYPE_EMAIL,
+             proto::CITEMTYPE_SKYPE,
+             proto::CITEMTYPE_WIRE,
+             proto::CITEMTYPE_QQ,
+             proto::CITEMTYPE_BITMESSAGE,
+             proto::CITEMTYPE_WHATSAPP,
+             proto::CITEMTYPE_TELEGRAM,
+             proto::CITEMTYPE_KIK,
+             proto::CITEMTYPE_BBM,
+             proto::CITEMTYPE_WECHAT,
+             proto::CITEMTYPE_KAKAOTALK,
+         }},
+        {identity::wot::claim::SectionType::Profile,
+         {
+             proto::CITEMTYPE_FACEBOOK,  proto::CITEMTYPE_GOOGLE,
+             proto::CITEMTYPE_LINKEDIN,  proto::CITEMTYPE_VK,
+             proto::CITEMTYPE_ABOUTME,   proto::CITEMTYPE_ONENAME,
+             proto::CITEMTYPE_TWITTER,   proto::CITEMTYPE_MEDIUM,
+             proto::CITEMTYPE_TUMBLR,    proto::CITEMTYPE_YAHOO,
+             proto::CITEMTYPE_MYSPACE,   proto::CITEMTYPE_MEETUP,
+             proto::CITEMTYPE_REDDIT,    proto::CITEMTYPE_HACKERNEWS,
+             proto::CITEMTYPE_WIKIPEDIA, proto::CITEMTYPE_ANGELLIST,
+             proto::CITEMTYPE_GITHUB,    proto::CITEMTYPE_BITBUCKET,
+             proto::CITEMTYPE_YOUTUBE,   proto::CITEMTYPE_VIMEO,
+             proto::CITEMTYPE_TWITCH,    proto::CITEMTYPE_SNAPCHAT,
+         }},
+    };
+
+const UnallocatedMap<
+    identity::wot::claim::SectionType,
+    UnallocatedMap<proto::ContactItemType, int>>
     ContactSection::sort_keys_{
         {identity::wot::claim::SectionType::Communication,
          {
@@ -164,11 +164,11 @@ auto ContactSection::construct_row(
 
 auto ContactSection::process_section(
     const identity::wot::claim::Section& section) noexcept
-    -> std::set<ContactSectionRowID>
+    -> UnallocatedSet<ContactSectionRowID>
 {
     OT_ASSERT(row_id_ == section.Type())
 
-    std::set<ContactSectionRowID> active{};
+    UnallocatedSet<ContactSectionRowID> active{};
 
     for (const auto& [type, group] : section) {
         OT_ASSERT(group)

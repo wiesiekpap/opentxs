@@ -7,10 +7,10 @@
 
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageCredentials.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -38,11 +38,11 @@ private:
     friend Tree;
 
     auto check_existing(const bool incoming, Metadata& metadata) const -> bool;
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const std::unique_lock<std::mutex>& lock) const -> bool final;
     auto serialize() const -> proto::StorageCredentials;
 
-    Credentials(const Driver& storage, const std::string& hash);
+    Credentials(const Driver& storage, const UnallocatedCString& hash);
     Credentials() = delete;
     Credentials(const Credentials&) = delete;
     Credentials(Credentials&&) = delete;
@@ -50,15 +50,17 @@ private:
     auto operator=(Credentials&&) -> Credentials = delete;
 
 public:
-    auto Alias(const std::string& id) const -> std::string;
+    auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto Load(
-        const std::string& id,
+        const UnallocatedCString& id,
         std::shared_ptr<proto::Credential>& output,
         const bool checking) const -> bool;
 
-    auto Delete(const std::string& id) -> bool;
-    auto SetAlias(const std::string& id, const std::string& alias) -> bool;
-    auto Store(const proto::Credential& data, const std::string& alias) -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
+    auto SetAlias(const UnallocatedCString& id, const UnallocatedCString& alias)
+        -> bool;
+    auto Store(const proto::Credential& data, const UnallocatedCString& alias)
+        -> bool;
 
     ~Credentials() final = default;
 };

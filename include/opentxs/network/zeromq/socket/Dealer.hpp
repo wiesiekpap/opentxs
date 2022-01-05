@@ -39,7 +39,7 @@ class OPENTXS_EXPORT Dealer : virtual public curve::Client,
                               virtual public Sender
 {
 public:
-    virtual auto SetSocksProxy(const std::string& proxy) const noexcept
+    virtual auto SetSocksProxy(const UnallocatedCString& proxy) const noexcept
         -> bool = 0;
 
     ~Dealer() override = default;

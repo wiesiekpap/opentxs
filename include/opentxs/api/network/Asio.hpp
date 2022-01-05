@@ -14,9 +14,9 @@
 #include <functional>
 #include <future>
 #include <string_view>
-#include <vector>
 
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -53,7 +53,7 @@ class OPENTXS_EXPORT Asio
 public:
     using Endpoint = opentxs::network::asio::Endpoint;
     using Socket = opentxs::network::asio::Socket;
-    using Resolved = std::vector<Endpoint>;
+    using Resolved = UnallocatedVector<Endpoint>;
     using AcceptCallback = std::function<void(Socket&&)>;
 
     // NOTE: endpoint must remain valid until Close is called

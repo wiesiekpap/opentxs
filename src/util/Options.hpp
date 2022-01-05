@@ -7,13 +7,11 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <map>
 #include <optional>
-#include <set>
-#include <string>
 
 #include "opentxs/blockchain/BlockchainType.hpp"
 #include "opentxs/blockchain/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
 
 class QObject;
@@ -21,31 +19,31 @@ class QObject;
 namespace opentxs
 {
 struct Options::Imp final {
-    std::set<blockchain::Type> blockchain_disabled_chains_;
-    std::set<std::string> blockchain_ipv4_bind_;
-    std::set<std::string> blockchain_ipv6_bind_;
+    UnallocatedSet<blockchain::Type> blockchain_disabled_chains_;
+    UnallocatedSet<UnallocatedCString> blockchain_ipv4_bind_;
+    UnallocatedSet<UnallocatedCString> blockchain_ipv6_bind_;
     std::optional<int> blockchain_storage_level_;
     std::optional<bool> blockchain_sync_server_enabled_;
-    std::set<std::string> blockchain_sync_servers_;
+    UnallocatedSet<UnallocatedCString> blockchain_sync_servers_;
     std::optional<bool> blockchain_wallet_enabled_;
     std::optional<std::size_t> default_mint_key_bytes_;
-    std::optional<std::string> home_;
-    std::optional<std::string> log_endpoint_;
+    std::optional<UnallocatedCString> home_;
+    std::optional<UnallocatedCString> log_endpoint_;
     std::optional<ConnectionMode> ipv4_connection_mode_;
     std::optional<ConnectionMode> ipv6_connection_mode_;
     std::optional<int> log_level_;
     std::optional<bool> notary_bind_inproc_;
-    std::optional<std::string> notary_bind_ip_;
+    std::optional<UnallocatedCString> notary_bind_ip_;
     std::optional<std::uint16_t> notary_bind_port_;
-    std::optional<std::string> notary_name_;
-    std::set<std::string> notary_public_eep_;
-    std::set<std::string> notary_public_ipv4_;
-    std::set<std::string> notary_public_ipv6_;
-    std::set<std::string> notary_public_onion_;
+    std::optional<UnallocatedCString> notary_name_;
+    UnallocatedSet<UnallocatedCString> notary_public_eep_;
+    UnallocatedSet<UnallocatedCString> notary_public_ipv4_;
+    UnallocatedSet<UnallocatedCString> notary_public_ipv6_;
+    UnallocatedSet<UnallocatedCString> notary_public_onion_;
     std::optional<std::uint16_t> notary_public_port_;
-    std::optional<std::string> notary_terms_;
+    std::optional<UnallocatedCString> notary_terms_;
     std::optional<QObject*> qt_root_object_;
-    std::optional<std::string> storage_primary_plugin_;
+    std::optional<UnallocatedCString> storage_primary_plugin_;
     std::optional<bool> test_mode_;
 
     template <typename T>
@@ -54,11 +52,11 @@ struct Options::Imp final {
     {
         return data.value_or(defaultValue);
     }
-    static auto get(const std::optional<std::string>& data) noexcept -> const
-        char*;
+    static auto get(const std::optional<UnallocatedCString>& data) noexcept
+        -> const char*;
     static auto to_bool(const char* value) noexcept -> bool;
 
-    auto help() const noexcept -> const std::string&;
+    auto help() const noexcept -> const UnallocatedCString&;
 
     auto import_value(const char* key, const char* value) noexcept -> void;
     auto parse(int argc, char** argv) noexcept(false) -> void;
@@ -71,9 +69,10 @@ struct Options::Imp final {
 private:
     struct Parser;
 
-    static auto lower(const std::string& in) noexcept -> std::string;
+    static auto lower(const UnallocatedCString& in) noexcept
+        -> UnallocatedCString;
 
-    auto convert(const std::string& value) const noexcept(false)
+    auto convert(const UnallocatedCString& value) const noexcept(false)
         -> blockchain::Type;
 
     Imp(Imp&&) = delete;

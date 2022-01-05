@@ -8,13 +8,13 @@
 #include <boost/asio.hpp>
 #include <cstdint>
 #include <future>
-#include <set>
 
 #include "core/StateMachine.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/p2p/Address.hpp"
 #include "opentxs/blockchain/p2p/Peer.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ba = boost::asio;
 namespace ip = ba::ip;
@@ -27,7 +27,8 @@ struct Address : virtual public p2p::Address {
         -> std::unique_ptr<Address> = 0;
     virtual auto Incoming() const noexcept -> bool = 0;
     virtual auto PreviousLastConnected() const noexcept -> Time = 0;
-    virtual auto PreviousServices() const noexcept -> std::set<Service> = 0;
+    virtual auto PreviousServices() const noexcept
+        -> UnallocatedSet<Service> = 0;
 
     ~Address() override = default;
 };
@@ -50,7 +51,7 @@ auto BlockchainAddress(
     const std::uint16_t port,
     const blockchain::Type chain,
     const Time lastConnected,
-    const std::set<blockchain::p2p::Service>& services,
+    const UnallocatedSet<blockchain::p2p::Service>& services,
     const bool incoming) noexcept
     -> std::unique_ptr<blockchain::p2p::internal::Address>;
 auto BlockchainAddress(

@@ -17,7 +17,6 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "blockchain/DownloadTask.hpp"
 #include "blockchain/node/filteroracle/BlockIndexer.hpp"
@@ -50,6 +49,7 @@
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/ScopeGuard.hpp"
@@ -65,7 +65,7 @@ auto BlockchainFilterOracle(
     const blockchain::node::internal::FilterDatabase& database,
     const blockchain::Type chain,
     const blockchain::filter::Type filter,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& shutdown) noexcept
     -> std::unique_ptr<blockchain::node::internal::FilterOracle>
 {
     using ReturnType = opentxs::blockchain::node::implementation::FilterOracle;
@@ -119,7 +119,7 @@ FilterOracle::FilterOracle(
     const internal::FilterDatabase& database,
     const blockchain::Type chain,
     const blockchain::filter::Type filter,
-    const std::string& shutdown) noexcept
+    const UnallocatedCString& shutdown) noexcept
     : internal::FilterOracle()
     , api_(api)
     , node_(node)
@@ -412,8 +412,8 @@ auto FilterOracle::ProcessBlock(
 {
     const auto& id = block.ID();
     const auto& header = block.Header();
-    auto filters = std::vector<internal::FilterDatabase::Filter>{};
-    auto headers = std::vector<internal::FilterDatabase::Header>{};
+    auto filters = UnallocatedVector<internal::FilterDatabase::Filter>{};
+    auto headers = UnallocatedVector<internal::FilterDatabase::Header>{};
     const auto& pGCS =
         filters.emplace_back(id.Bytes(), process_block(default_type_, block))
             .second;
@@ -486,7 +486,8 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
                 .Flush();
 
             throw std::runtime_error(
-                std::string{"failed to load block "} + blockHash->asHex());
+                UnallocatedCString{"failed to load block "} +
+                blockHash->asHex());
         }
 
         pGCS = process_block(data.type_, *pBlock);
@@ -512,12 +513,12 @@ auto FilterOracle::ProcessBlock(BlockIndexerData& data) const noexcept -> void
 
 auto FilterOracle::ProcessSyncData(
     const block::Hash& prior,
-    const std::vector<block::pHash>& hashes,
+    const UnallocatedVector<block::pHash>& hashes,
     const network::p2p::Data& data) const noexcept -> void
 {
-    auto filters = std::vector<internal::FilterDatabase::Filter>{};
-    auto headers = std::vector<internal::FilterDatabase::Header>{};
-    auto cache = std::vector<SyncClientFilterData>{};
+    auto filters = UnallocatedVector<internal::FilterDatabase::Filter>{};
+    auto headers = UnallocatedVector<internal::FilterDatabase::Header>{};
+    auto cache = UnallocatedVector<SyncClientFilterData>{};
     const auto& blocks = data.Blocks();
     const auto incoming = blocks.front().Height();
     const auto filterType = blocks.front().FilterType();
@@ -682,7 +683,7 @@ auto FilterOracle::ProcessSyncData(SyncClientFilterData& data) const noexcept
 }
 
 auto FilterOracle::ProcessSyncData(
-    std::vector<SyncClientFilterData>& cache) const noexcept -> bool
+    UnallocatedVector<SyncClientFilterData>& cache) const noexcept -> bool
 {
     auto failures{0};
 
@@ -738,7 +739,7 @@ auto FilterOracle::process_block(
     const auto params = blockchain::internal::GetFilterParams(filterType);
     const auto elements = [&] {
         const auto input = block.Internal().ExtractElements(filterType);
-        auto output = std::vector<OTData>{};
+        auto output = UnallocatedVector<OTData>{};
         std::transform(
             input.begin(),
             input.end(),

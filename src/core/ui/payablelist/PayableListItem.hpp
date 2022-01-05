@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <string>
-
 #include "1_Internal.hpp"
 #include "Proto.hpp"
 #include "core/ui/contactlist/ContactListItem.hpp"
@@ -18,6 +16,7 @@
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Types.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 class QVariant;
@@ -55,24 +54,25 @@ class PayableListItem final : public PayableListRowInternal,
                               public implementation::ContactListItem
 {
 public:
-    auto PaymentCode() const noexcept -> std::string final;
+    auto PaymentCode() const noexcept -> UnallocatedCString final;
 
     PayableListItem(
         const PayableInternalInterface& parent,
         const api::session::Client& api,
         const PayableListRowID& rowID,
         const PayableListSortKey& key,
-        const std::string& paymentcode,
+        const UnallocatedCString& paymentcode,
         const core::UnitType& currency) noexcept;
     ~PayableListItem() final = default;
 
 private:
     using ot_super = implementation::ContactListItem;
 
-    std::string payment_code_;
+    UnallocatedCString payment_code_;
     const core::UnitType currency_;
 
-    auto calculate_section(const Lock& lock) const noexcept -> std::string final
+    auto calculate_section(const Lock& lock) const noexcept
+        -> UnallocatedCString final
     {
         return translate_section(lock);
     }

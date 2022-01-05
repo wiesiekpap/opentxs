@@ -50,10 +50,11 @@ auto Context(
     const Options& args,
     PasswordCaller* externalPasswordCallback = nullptr) noexcept
     -> std::unique_ptr<api::internal::Context>;
-auto Legacy(const std::string& home) noexcept -> std::unique_ptr<api::Legacy>;
+auto Legacy(const UnallocatedCString& home) noexcept
+    -> std::unique_ptr<api::Legacy>;
 auto Log(
     const network::zeromq::Context& zmq,
-    const std::string& endpoint) noexcept
+    const UnallocatedCString& endpoint) noexcept
     -> std::unique_ptr<api::internal::Log>;
 auto FactoryAPI(const api::Crypto& crypto) noexcept
     -> std::unique_ptr<api::Factory>;

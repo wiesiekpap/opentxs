@@ -33,7 +33,8 @@ struct Bulk::Imp final : private util::MappedFileStorage {
         return get_write_view(tx, index, std::move(cb), size);
     }
 
-    Imp(storage::lmdb::LMDB& lmdb, const std::string& path) noexcept(false)
+    Imp(storage::lmdb::LMDB& lmdb,
+        const UnallocatedCString& path) noexcept(false)
         : MappedFileStorage(
               lmdb,
               path,
@@ -48,7 +49,8 @@ private:
     mutable std::mutex lock_;
 };
 
-Bulk::Bulk(storage::lmdb::LMDB& lmdb, const std::string& path) noexcept(false)
+Bulk::Bulk(storage::lmdb::LMDB& lmdb, const UnallocatedCString& path) noexcept(
+    false)
     : imp_(std::make_unique<Imp>(lmdb, path))
 {
 }

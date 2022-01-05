@@ -10,9 +10,7 @@
 #include <cstdint>
 #include <functional>
 #include <future>
-#include <map>
 #include <mutex>
-#include <string>
 #include <tuple>
 
 #include "Basic.hpp"
@@ -35,6 +33,7 @@
 #include "opentxs/identity/wot/claim/ClaimType.hpp"
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
 
 namespace opentxs
@@ -83,16 +82,17 @@ using WidgetCallback = std::function<bool()>;
 using WidgetCallbackData = std::tuple<int, WidgetCallback, std::promise<bool>>;
 // name, counter
 using WidgetData = std::tuple<Widget, int, WidgetCallbackData>;
-using WidgetMap = std::map<ot::OTIdentifier, WidgetData>;
-using WidgetTypeMap = std::map<Widget, ot::OTIdentifier>;
-using StateMap =
-    std::map<std::string, std::map<Widget, std::map<int, WidgetCallback>>>;
+using WidgetMap = ot::UnallocatedMap<ot::OTIdentifier, WidgetData>;
+using WidgetTypeMap = ot::UnallocatedMap<Widget, ot::OTIdentifier>;
+using StateMap = std::map<
+    ot::UnallocatedCString,
+    ot::UnallocatedMap<Widget, ot::UnallocatedMap<int, WidgetCallback>>>;
 
 struct Server {
     const ot::api::session::Notary* api_{nullptr};
     bool init_{false};
     const ot::OTNotaryID id_{ot::identifier::Notary::Factory()};
-    const std::string password_;
+    const ot::UnallocatedCString password_;
 
     auto Contract() const noexcept -> ot::OTServerContract;
     auto Reason() const noexcept -> ot::OTPasswordPrompt;
@@ -101,32 +101,36 @@ struct Server {
 };
 
 struct User {
-    const std::string words_;
-    const std::string passphrase_;
-    const std::string name_;
-    const std::string name_lower_;
+    const ot::UnallocatedCString words_;
+    const ot::UnallocatedCString passphrase_;
+    const ot::UnallocatedCString name_;
+    const ot::UnallocatedCString name_lower_;
     const ot::api::session::Client* api_;
     bool init_;
-    std::string seed_id_;
+    ot::UnallocatedCString seed_id_;
     std::uint32_t index_;
     ot::Nym_p nym_;
     ot::OTNymID nym_id_;
-    std::string payment_code_;
+    ot::UnallocatedCString payment_code_;
 
-    auto Account(const std::string& type) const noexcept
+    auto Account(const ot::UnallocatedCString& type) const noexcept
         -> const ot::Identifier&;
-    auto Contact(const std::string& contact) const noexcept
+    auto Contact(const ot::UnallocatedCString& contact) const noexcept
         -> const ot::Identifier&;
     auto PaymentCode() const -> ot::PaymentCode;
     auto Reason() const noexcept -> ot::OTPasswordPrompt;
-    auto SetAccount(const std::string& type, const std::string& id)
-        const noexcept -> bool;
-    auto SetAccount(const std::string& type, const ot::Identifier& id)
-        const noexcept -> bool;
-    auto SetContact(const std::string& contact, const std::string& id)
-        const noexcept -> bool;
-    auto SetContact(const std::string& contact, const ot::Identifier& id)
-        const noexcept -> bool;
+    auto SetAccount(
+        const ot::UnallocatedCString& type,
+        const ot::UnallocatedCString& id) const noexcept -> bool;
+    auto SetAccount(
+        const ot::UnallocatedCString& type,
+        const ot::Identifier& id) const noexcept -> bool;
+    auto SetContact(
+        const ot::UnallocatedCString& contact,
+        const ot::UnallocatedCString& id) const noexcept -> bool;
+    auto SetContact(
+        const ot::UnallocatedCString& contact,
+        const ot::Identifier& id) const noexcept -> bool;
 
     auto init(
         const ot::api::session::Client& api,
@@ -162,14 +166,16 @@ struct User {
             ot::crypto::SeedStyle::BIP39) noexcept -> void;
 
     User(
-        const std::string words,
-        const std::string name,
-        const std::string passphrase = "") noexcept;
+        const ot::UnallocatedCString words,
+        const ot::UnallocatedCString name,
+        const ot::UnallocatedCString passphrase = "") noexcept;
 
 private:
     mutable std::mutex lock_;
-    mutable std::map<std::string, ot::OTIdentifier> contacts_;
-    mutable std::map<std::string, ot::OTIdentifier> accounts_;
+    mutable ot::UnallocatedMap<ot::UnallocatedCString, ot::OTIdentifier>
+        contacts_;
+    mutable ot::UnallocatedMap<ot::UnallocatedCString, ot::OTIdentifier>
+        accounts_;
 
     auto init_basic(
         const ot::api::session::Client& api,
@@ -201,11 +207,11 @@ struct Callbacks {
         int limit,
         WidgetCallback callback) noexcept -> std::future<bool>;
 
-    Callbacks(const std::string& name) noexcept;
+    Callbacks(const ot::UnallocatedCString& name) noexcept;
 
 private:
     mutable std::mutex map_lock_;
-    const std::string name_;
+    const ot::UnallocatedCString name_;
     WidgetMap widget_map_;
     WidgetTypeMap ui_names_;
 
@@ -216,7 +222,7 @@ private:
 
 struct Issuer {
     static const int expected_bailments_{3};
-    static const std::string new_notary_name_;
+    static const ot::UnallocatedCString new_notary_name_;
 
     int bailment_counter_;
     std::promise<bool> bailment_promise_;

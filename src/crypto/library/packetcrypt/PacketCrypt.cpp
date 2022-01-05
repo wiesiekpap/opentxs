@@ -22,7 +22,6 @@ extern "C" {
 #include <optional>
 #include <stdexcept>
 #include <type_traits>
-#include <vector>
 
 #include "blockchain/block/pkt/Block.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -37,6 +36,7 @@ extern "C" {
 #include "opentxs/blockchain/block/bitcoin/Transaction.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"

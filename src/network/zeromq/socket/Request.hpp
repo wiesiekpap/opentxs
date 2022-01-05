@@ -5,13 +5,12 @@
 
 #pragma once
 
-#include <string>
-
 #include "network/zeromq/curve/Client.hpp"
 #include "network/zeromq/socket/Socket.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Request.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -33,7 +32,8 @@ class Request final : virtual public zeromq::socket::Request,
 {
 public:
     auto Send(zeromq::Message&& message) const noexcept -> SendResult final;
-    auto SetSocksProxy(const std::string& proxy) const noexcept -> bool final;
+    auto SetSocksProxy(const UnallocatedCString& proxy) const noexcept
+        -> bool final;
 
     Request(const zeromq::Context& context) noexcept;
 

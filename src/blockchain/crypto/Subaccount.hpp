@@ -9,13 +9,8 @@
 #include <robin_hood.h>
 #include <atomic>
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <set>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/blockchain/crypto/Crypto.hpp"
@@ -31,6 +26,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/crypto/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/BlockchainAccountData.pb.h"
@@ -85,9 +81,9 @@ class Subaccount : virtual public internal::Subaccount
 {
 public:
     auto AssociateTransaction(
-        const std::vector<Activity>& unspent,
-        const std::vector<Activity>& outgoing,
-        std::set<OTIdentifier>& contacts,
+        const UnallocatedVector<Activity>& unspent,
+        const UnallocatedVector<Activity>& outgoing,
+        UnallocatedSet<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool final;
     auto ID() const noexcept -> const Identifier& final { return id_; }
     auto Internal() const noexcept -> internal::Subaccount& final
@@ -95,7 +91,7 @@ public:
         return const_cast<Subaccount&>(*this);
     }
     auto IncomingTransactions(const Key& key) const noexcept
-        -> std::set<std::string> final;
+        -> UnallocatedSet<UnallocatedCString> final;
     auto Parent() const noexcept -> const crypto::Account& final
     {
         return parent_;
@@ -120,7 +116,7 @@ public:
     auto SetLabel(
         const Subchain type,
         const Bip32Index index,
-        const std::string& label) noexcept(false) -> bool final;
+        const UnallocatedCString& label) noexcept(false) -> bool final;
     auto SetScanProgress(
         const block::Position& progress,
         Subchain type) noexcept -> void override
@@ -134,7 +130,7 @@ public:
         const Time time) noexcept -> bool final;
     auto Unreserve(const Subchain type, const Bip32Index index) noexcept
         -> bool final;
-    auto UpdateElement(std::vector<ReadView>& pubkeyHashes) const noexcept
+    auto UpdateElement(UnallocatedVector<ReadView>& pubkeyHashes) const noexcept
         -> void final;
 
     ~Subaccount() override = default;
@@ -174,8 +170,8 @@ protected:
     static auto convert(const proto::BlockchainActivity& in) noexcept
         -> Activity;
     static auto convert(const SerializedActivity& in) noexcept
-        -> std::vector<Activity>;
-    static auto convert(const std::vector<Activity>& in) noexcept
+        -> UnallocatedVector<Activity>;
+    static auto convert(const UnallocatedVector<Activity>& in) noexcept
         -> internal::ActivityMap;
 
     virtual auto account_already_exists(const rLock& lock) const noexcept
@@ -220,8 +216,8 @@ private:
 
     virtual auto check_activity(
         const rLock& lock,
-        const std::vector<Activity>& unspent,
-        std::set<OTIdentifier>& contacts,
+        const UnallocatedVector<Activity>& unspent,
+        UnallocatedSet<OTIdentifier>& contacts,
         const PasswordPrompt& reason) const noexcept -> bool = 0;
 
     virtual auto confirm(
@@ -243,8 +239,8 @@ private:
         const SubaccountType type,
         OTIdentifier&& id,
         const Revision revision,
-        const std::vector<Activity>& unspent,
-        const std::vector<Activity>& spent,
+        const UnallocatedVector<Activity>& unspent,
+        const UnallocatedVector<Activity>& spent,
         Identifier& out) noexcept;
     Subaccount() = delete;
     Subaccount(const Subaccount&) = delete;

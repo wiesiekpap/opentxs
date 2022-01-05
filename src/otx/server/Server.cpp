@@ -9,12 +9,7 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <list>
-#include <map>
 #include <regex>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "Proto.tpp"
 #include "internal/api/session/Endpoints.hpp"
@@ -59,6 +54,7 @@
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Options.hpp"
@@ -169,10 +165,10 @@ auto Server::GetServerNym() const -> const identity::Nym&
 
 auto Server::IsFlaggedForShutdown() const -> bool { return m_bShutdownFlag; }
 
-auto Server::parse_seed_backup(const std::string& input) const
-    -> std::pair<std::string, std::string>
+auto Server::parse_seed_backup(const UnallocatedCString& input) const
+    -> std::pair<UnallocatedCString, UnallocatedCString>
 {
-    std::pair<std::string, std::string> output{};
+    std::pair<UnallocatedCString, UnallocatedCString> output{};
     auto& phrase = output.first;
     auto& words = output.second;
 
@@ -189,7 +185,7 @@ auto Server::parse_seed_backup(const std::string& input) const
 
 void Server::CreateMainFile(bool& mainFileExists)
 {
-    std::string seed{};
+    UnallocatedCString seed{};
 
     if (api::crypto::HaveHDKeys()) {
         const auto backup = OTDB::QueryPlainString(
@@ -218,9 +214,9 @@ void Server::CreateMainFile(bool& mainFileExists)
         }
     }
 
-    const std::string defaultName = DEFAULT_NAME;
-    const std::string& userName = manager_.GetUserName();
-    std::string name = userName;
+    const UnallocatedCString defaultName = DEFAULT_NAME;
+    const UnallocatedCString& userName = manager_.GetUserName();
+    UnallocatedCString name = userName;
 
     if (1 > name.size()) { name = defaultName; }
 
@@ -240,15 +236,16 @@ void Server::CreateMainFile(bool& mainFileExists)
     if (!m_nymServer->VerifyPseudonym()) { OT_FAIL; }
 
     const auto& nymID = m_nymServer->ID();
-    const std::string defaultTerms = "This is an example server contract.";
-    const std::string& userTerms = manager_.GetUserTerms();
-    std::string terms = userTerms;
+    const UnallocatedCString defaultTerms =
+        "This is an example server contract.";
+    const UnallocatedCString& userTerms = manager_.GetUserTerms();
+    UnallocatedCString terms = userTerms;
 
     if (1 > userTerms.size()) { terms = defaultTerms; }
 
     const auto& args = manager_.GetOptions();
-    const std::string& userBindIP = args.NotaryBindIP();
-    std::string bindIP = userBindIP;
+    const UnallocatedCString& userBindIP = args.NotaryBindIP();
+    UnallocatedCString bindIP = userBindIP;
 
     if (5 > bindIP.size()) { bindIP = DEFAULT_BIND_IP; }
 
@@ -278,7 +275,7 @@ void Server::CreateMainFile(bool& mainFileExists)
         String::Factory(std::to_string(bindPort)),
         notUsed);
 
-    auto endpoints = std::list<contract::Server::Endpoint>{};
+    auto endpoints = UnallocatedList<contract::Server::Endpoint>{};
     const auto inproc = args.NotaryInproc();
 
     if (inproc) {
@@ -384,8 +381,8 @@ void Server::CreateMainFile(bool& mainFileExists)
             return wallet.Internal().Server(serialized);
         }
     }();
-    std::string strNotaryID{};
-    std::string strHostname{};
+    UnallocatedCString strNotaryID{};
+    UnallocatedCString strHostname{};
     std::uint32_t nPort{0};
     core::AddressType type{};
 
@@ -442,7 +439,7 @@ void Server::CreateMainFile(bool& mainFileExists)
     const auto words = manager_.Crypto().Seed().Words(seedID, reason_);
     const auto passphrase =
         manager_.Crypto().Seed().Passphrase(seedID, reason_);
-    std::string json;
+    UnallocatedCString json;
     json += "{ \"passphrase\": \"";
     json += passphrase;
     json += "\", \"words\": \"";
@@ -880,11 +877,11 @@ auto Server::DropMessageToNymbox(
 
 auto Server::GetConnectInfo(
     core::AddressType& type,
-    std::string& strHostname,
+    UnallocatedCString& strHostname,
     std::uint32_t& nPort) const -> bool
 {
     auto contract = manager_.Wallet().Server(m_notaryID);
-    std::string contractHostname{};
+    UnallocatedCString contractHostname{};
     std::uint32_t contractPort{};
     const auto haveEndpoints =
         contract->ConnectInfo(contractHostname, contractPort, type, type);

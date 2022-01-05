@@ -8,11 +8,11 @@
 #include "util/storage/drivers/memdb/MemDB.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/storage/drivers/Factory.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::factory
 {
@@ -58,8 +58,8 @@ auto MemDB::EmptyBucket(const bool bucket) const -> bool
 }
 
 auto MemDB::LoadFromBucket(
-    const std::string& key,
-    std::string& value,
+    const UnallocatedCString& key,
+    UnallocatedCString& value,
     const bool bucket) const -> bool
 {
     sLock lock(shared_lock_);
@@ -78,7 +78,7 @@ auto MemDB::LoadFromBucket(
     return (false == value.empty());
 }
 
-auto MemDB::LoadRoot() const -> std::string
+auto MemDB::LoadRoot() const -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
@@ -87,8 +87,8 @@ auto MemDB::LoadRoot() const -> std::string
 
 void MemDB::store(
     [[maybe_unused]] const bool isTransaction,
-    const std::string& key,
-    const std::string& value,
+    const UnallocatedCString& key,
+    const UnallocatedCString& value,
     const bool bucket,
     std::promise<bool>* promise) const
 {
@@ -105,7 +105,7 @@ void MemDB::store(
 
 auto MemDB::StoreRoot(
     [[maybe_unused]] const bool commit,
-    const std::string& hash) const -> bool
+    const UnallocatedCString& hash) const -> bool
 {
     eLock lock(shared_lock_);
     root_ = hash;

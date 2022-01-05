@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/Types.hpp"
@@ -35,6 +34,7 @@
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -85,7 +85,7 @@ OTAgent::OTAgent(
 
 OTAgent::OTAgent(
     const api::session::Wallet& wallet,
-    const std::string& str_agent_name,
+    const UnallocatedCString& str_agent_name,
     const identity::Nym& theNym,
     const bool bNymRepresentsSelf)
     /*IF false, then: ROLE parameter goes here.*/
@@ -227,7 +227,7 @@ void OTAgent::SetParty(OTParty& theOwnerParty)  // This happens when the agent
         m_bIsAnIndividual = true;
 
         bool bGetOwnerNymID = false;
-        const std::string str_owner_nym_id =
+        const UnallocatedCString str_owner_nym_id =
             theOwnerParty.GetNymID(&bGetOwnerNymID);
         m_strNymID->Set(bGetOwnerNymID ? str_owner_nym_id.c_str() : "");
 
@@ -472,7 +472,8 @@ auto OTAgent::GetEntityID(Identifier& theOutput) const -> bool
     if (DoesRepresentAnEntity() && (nullptr != m_pForParty) &&
         m_pForParty->IsEntity()) {
         bool bSuccessEntityID = false;
-        std::string str_entity_id = m_pForParty->GetEntityID(&bSuccessEntityID);
+        UnallocatedCString str_entity_id =
+            m_pForParty->GetEntityID(&bSuccessEntityID);
 
         if (bSuccessEntityID && (str_entity_id.size() > 0)) {
             auto strEntityID = String::Factory(str_entity_id.c_str());

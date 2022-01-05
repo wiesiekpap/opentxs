@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -19,11 +18,11 @@ class OPENTXS_EXPORT OpenDHT
 {
 public:
     virtual void Insert(
-        const std::string& key,
-        const std::string& value,
+        const UnallocatedCString& key,
+        const UnallocatedCString& value,
         DhtDoneCallback cb = {}) const noexcept = 0;
     virtual void Retrieve(
-        const std::string& key,
+        const UnallocatedCString& key,
         DhtResultsCallback vcb,
         DhtDoneCallback dcb = {}) const noexcept = 0;
 

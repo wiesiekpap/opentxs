@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <map>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
@@ -27,6 +26,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/key/HD.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/BlockchainAccountData.pb.h"
 #include "serialization/protobuf/BlockchainActivity.pb.h"
 
@@ -38,8 +38,8 @@ Subaccount::Subaccount(
     const SubaccountType type,
     OTIdentifier&& id,
     const Revision revision,
-    const std::vector<Activity>& unspent,
-    const std::vector<Activity>& spent,
+    const UnallocatedVector<Activity>& unspent,
+    const UnallocatedVector<Activity>& spent,
     Identifier& out) noexcept
     : api_(api)
     , parent_(parent)
@@ -98,9 +98,9 @@ Subaccount::AddressData::AddressData(
 }
 
 auto Subaccount::AssociateTransaction(
-    const std::vector<Activity>& unspent,
-    const std::vector<Activity>& spent,
-    std::set<OTIdentifier>& contacts,
+    const UnallocatedVector<Activity>& unspent,
+    const UnallocatedVector<Activity>& spent,
+    UnallocatedSet<OTIdentifier>& contacts,
     const PasswordPrompt& reason) const noexcept -> bool
 {
     auto lock = rLock{lock_};
@@ -179,16 +179,16 @@ auto Subaccount::convert(const proto::BlockchainActivity& in) noexcept
 }
 
 auto Subaccount::convert(const SerializedActivity& in) noexcept
-    -> std::vector<Activity>
+    -> UnallocatedVector<Activity>
 {
-    auto output = std::vector<Activity>{};
+    auto output = UnallocatedVector<Activity>{};
 
     for (const auto& activity : in) { output.emplace_back(convert(activity)); }
 
     return output;
 }
 
-auto Subaccount::convert(const std::vector<Activity>& in) noexcept
+auto Subaccount::convert(const UnallocatedVector<Activity>& in) noexcept
     -> internal::ActivityMap
 {
     auto output = internal::ActivityMap{};
@@ -204,10 +204,10 @@ auto Subaccount::convert(const std::vector<Activity>& in) noexcept
 }
 
 auto Subaccount::IncomingTransactions(const Key& element) const noexcept
-    -> std::set<std::string>
+    -> UnallocatedSet<UnallocatedCString>
 {
     auto lock = rLock{lock_};
-    auto output = std::set<std::string>{};
+    auto output = UnallocatedSet<UnallocatedCString>{};
 
     for (const auto& [coin, data] : unspent_) {
         const auto& [key, amount] = data;
@@ -318,7 +318,7 @@ auto Subaccount::SetContact(
 auto Subaccount::SetLabel(
     const Subchain type,
     const Bip32Index index,
-    const std::string& label) noexcept(false) -> bool
+    const UnallocatedCString& label) noexcept(false) -> bool
 {
     auto lock = rLock{lock_};
 
@@ -377,7 +377,7 @@ auto Subaccount::Unreserve(const Subchain type, const Bip32Index index) noexcept
 }
 
 auto Subaccount::UpdateElement(
-    std::vector<ReadView>& pubkeyHashes) const noexcept -> void
+    UnallocatedVector<ReadView>& pubkeyHashes) const noexcept -> void
 {
     parent_.Parent().Parent().Internal().UpdateElement(pubkeyHashes);
 }

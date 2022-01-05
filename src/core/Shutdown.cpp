@@ -8,12 +8,12 @@
 #include "core/Shutdown.hpp"  // IWYU pragma: associated
 
 #include <chrono>
-#include <string>
 
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
 #include "opentxs/network/zeromq/message/Message.tpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace zmq = opentxs::network::zeromq;
@@ -22,7 +22,7 @@ namespace opentxs::internal
 {
 ShutdownSender::ShutdownSender(
     const network::zeromq::Context& zmq,
-    const std::string endpoint) noexcept
+    const UnallocatedCString endpoint) noexcept
     : endpoint_(endpoint)
     , socket_(zmq.PublishSocket())
 {

@@ -11,14 +11,11 @@
 #include <cstdint>
 #include <functional>
 #include <future>
-#include <map>
 #include <shared_mutex>
-#include <string>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "api/network/asio/Acceptors.hpp"
 #include "api/network/asio/Buffers.hpp"
@@ -32,6 +29,7 @@
 #include "opentxs/network/zeromq/ListenCallback.hpp"
 #include "opentxs/network/zeromq/socket/Router.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/WorkType.hpp"
 
 namespace boost
@@ -106,24 +104,24 @@ private:
     enum class IPversion { IPV4, IPV6 };
 
     struct Site {
-        const std::string host{};
-        const std::string service{};
-        const std::string target{};
+        const UnallocatedCString host{};
+        const UnallocatedCString service{};
+        const UnallocatedCString target{};
         const ResponseType response_type{};
         const IPversion protocol{};
         const unsigned http_version{};
     };
 
-    static const std::vector<Site> sites;
+    static const UnallocatedVector<Site> sites;
 
     const zmq::Context& zmq_;
-    const std::string notification_endpoint_;
+    const UnallocatedCString notification_endpoint_;
     const OTZMQListenCallback data_cb_;
     OTZMQRouterSocket data_socket_;
     asio::Buffers buffers_;
     mutable std::shared_mutex lock_;
     mutable asio::Context io_context_;
-    mutable std::map<ThreadPool, asio::Context> thread_pools_;
+    mutable UnallocatedMap<ThreadPool, asio::Context> thread_pools_;
     mutable asio::Acceptors acceptors_;
     std::promise<OTData> ipv4_promise_;
     std::promise<OTData> ipv6_promise_;

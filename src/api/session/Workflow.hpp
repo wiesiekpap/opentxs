@@ -7,13 +7,9 @@
 
 #include <chrono>
 #include <functional>
-#include <map>
 #include <memory>
-#include <set>
 #include <shared_mutex>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/api/session/Workflow.hpp"
@@ -31,6 +27,7 @@
 #include "opentxs/network/zeromq/socket/Push.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/PaymentWorkflowEnums.pb.h"
@@ -138,7 +135,7 @@ public:
         const identifier::Nym& nymID,
         const otx::client::PaymentWorkflowType type,
         const otx::client::PaymentWorkflowState state) const
-        -> std::set<OTIdentifier> final;
+        -> UnallocatedSet<OTIdentifier> final;
     auto LoadCheque(const identifier::Nym& nymID, const Identifier& chequeID)
         const -> Cheque final;
     auto LoadChequeByWorkflow(
@@ -175,7 +172,7 @@ public:
     auto WorkflowParty(
         const identifier::Nym& nymID,
         const Identifier& workflowID,
-        const int index) const -> const std::string final;
+        const int index) const -> const UnallocatedCString final;
     auto WorkflowPartySize(
         const identifier::Nym& nymID,
         const Identifier& workflowID,
@@ -190,7 +187,8 @@ public:
         -> otx::client::PaymentWorkflowType final;
     auto WorkflowsByAccount(
         const identifier::Nym& nymID,
-        const Identifier& accountID) const -> std::vector<OTIdentifier> final;
+        const Identifier& accountID) const
+        -> UnallocatedVector<OTIdentifier> final;
     auto WriteCheque(const opentxs::Cheque& cheque) const -> OTIdentifier final;
 
     Workflow(
@@ -208,7 +206,7 @@ private:
     };
 
     using VersionMap =
-        std::map<otx::client::PaymentWorkflowType, ProtobufVersions>;
+        UnallocatedMap<otx::client::PaymentWorkflowType, ProtobufVersions>;
 
     static const VersionMap versions_;
 
@@ -217,7 +215,8 @@ private:
     const session::Contacts& contact_;
     const OTZMQPublishSocket account_publisher_;
     const OTZMQPushSocket rpc_publisher_;
-    mutable std::map<std::string, std::shared_mutex> workflow_locks_;
+    mutable UnallocatedMap<UnallocatedCString, std::shared_mutex>
+        workflow_locks_;
 
     static auto can_abort_transfer(const proto::PaymentWorkflow& workflow)
         -> bool;
@@ -256,8 +255,8 @@ private:
 
     auto add_cheque_event(
         const eLock& lock,
-        const std::string& nymID,
-        const std::string& eventNym,
+        const UnallocatedCString& nymID,
+        const UnallocatedCString& eventNym,
         proto::PaymentWorkflow& workflow,
         const otx::client::PaymentWorkflowState newState,
         const proto::PaymentEventType newEventType,
@@ -267,7 +266,7 @@ private:
         const Identifier& account) const -> bool;
     auto add_cheque_event(
         const eLock& lock,
-        const std::string& nymID,
+        const UnallocatedCString& nymID,
         const Identifier& accountID,
         proto::PaymentWorkflow& workflow,
         const otx::client::PaymentWorkflowState newState,
@@ -278,8 +277,8 @@ private:
         const Time time = Clock::now()) const -> bool;
     auto add_transfer_event(
         const eLock& lock,
-        const std::string& nymID,
-        const std::string& eventNym,
+        const UnallocatedCString& nymID,
+        const UnallocatedCString& eventNym,
         proto::PaymentWorkflow& workflow,
         const otx::client::PaymentWorkflowState newState,
         const proto::PaymentEventType newEventType,
@@ -289,9 +288,9 @@ private:
         const bool success) const -> bool;
     auto add_transfer_event(
         const eLock& lock,
-        const std::string& nymID,
-        const std::string& notaryID,
-        const std::string& eventNym,
+        const UnallocatedCString& nymID,
+        const UnallocatedCString& notaryID,
+        const UnallocatedCString& eventNym,
         proto::PaymentWorkflow& workflow,
         const otx::client::PaymentWorkflowState newState,
         const proto::PaymentEventType newEventType,
@@ -303,41 +302,41 @@ private:
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID,
         const OTTransaction& pending,
-        const std::string& senderNymID,
-        const std::string& recipientNymID,
+        const UnallocatedCString& senderNymID,
+        const UnallocatedCString& recipientNymID,
         const Item& transfer) const -> OTIdentifier;
     auto convey_internal_transfer(
         const identifier::Nym& nymID,
         const identifier::Notary& notaryID,
         const OTTransaction& pending,
-        const std::string& senderNymID,
+        const UnallocatedCString& senderNymID,
         const Item& transfer) const -> OTIdentifier;
     auto create_cheque(
         const Lock& global,
-        const std::string& nymID,
+        const UnallocatedCString& nymID,
         const opentxs::Cheque& cheque,
         const otx::client::PaymentWorkflowType workflowType,
         const otx::client::PaymentWorkflowState workflowState,
         const VersionNumber workflowVersion,
         const VersionNumber sourceVersion,
         const VersionNumber eventVersion,
-        const std::string& party,
+        const UnallocatedCString& party,
         const Identifier& account,
         const Message* message = nullptr) const
         -> std::pair<OTIdentifier, proto::PaymentWorkflow>;
     auto create_transfer(
         const Lock& global,
-        const std::string& nymID,
+        const UnallocatedCString& nymID,
         const Item& transfer,
         const otx::client::PaymentWorkflowType workflowType,
         const otx::client::PaymentWorkflowState workflowState,
         const VersionNumber workflowVersion,
         const VersionNumber sourceVersion,
         const VersionNumber eventVersion,
-        const std::string& party,
+        const UnallocatedCString& party,
         const Identifier& account,
-        const std::string& notaryID,
-        const std::string& destinationAccountID) const
+        const UnallocatedCString& notaryID,
+        const UnallocatedCString& destinationAccountID) const
         -> std::pair<OTIdentifier, proto::PaymentWorkflow>;
     auto extract_transfer_from_pending(const OTTransaction& receipt) const
         -> std::unique_ptr<Item>;
@@ -347,43 +346,44 @@ private:
     template <typename T>
     auto get_workflow(
         const Lock& global,
-        const std::set<otx::client::PaymentWorkflowType>& types,
-        const std::string& nymID,
+        const UnallocatedSet<otx::client::PaymentWorkflowType>& types,
+        const UnallocatedCString& nymID,
         const T& source) const -> std::shared_ptr<proto::PaymentWorkflow>;
     auto get_workflow_by_id(
-        const std::set<otx::client::PaymentWorkflowType>& types,
-        const std::string& nymID,
-        const std::string& workflowID) const
+        const UnallocatedSet<otx::client::PaymentWorkflowType>& types,
+        const UnallocatedCString& nymID,
+        const UnallocatedCString& workflowID) const
         -> std::shared_ptr<proto::PaymentWorkflow>;
     auto get_workflow_by_id(
-        const std::string& nymID,
-        const std::string& workflowID) const
+        const UnallocatedCString& nymID,
+        const UnallocatedCString& workflowID) const
         -> std::shared_ptr<proto::PaymentWorkflow>;
     auto get_workflow_by_source(
-        const std::set<otx::client::PaymentWorkflowType>& types,
-        const std::string& nymID,
-        const std::string& sourceID) const
+        const UnallocatedSet<otx::client::PaymentWorkflowType>& types,
+        const UnallocatedCString& nymID,
+        const UnallocatedCString& sourceID) const
         -> std::shared_ptr<proto::PaymentWorkflow>;
     // Unlocks global after successfully locking the workflow-specific mutex
-    auto get_workflow_lock(Lock& global, const std::string& id) const -> eLock;
+    auto get_workflow_lock(Lock& global, const UnallocatedCString& id) const
+        -> eLock;
     auto isInternalTransfer(
         const Identifier& sourceAccount,
         const Identifier& destinationAccount) const -> bool;
     auto save_workflow(
-        const std::string& nymID,
+        const UnallocatedCString& nymID,
         const proto::PaymentWorkflow& workflow) const -> bool;
     auto save_workflow(
-        const std::string& nymID,
+        const UnallocatedCString& nymID,
         const Identifier& accountID,
         const proto::PaymentWorkflow& workflow) const -> bool;
     auto save_workflow(
         OTIdentifier&& workflowID,
-        const std::string& nymID,
+        const UnallocatedCString& nymID,
         const Identifier& accountID,
         const proto::PaymentWorkflow& workflow) const -> OTIdentifier;
     auto save_workflow(
         std::pair<OTIdentifier, proto::PaymentWorkflow>&& workflowID,
-        const std::string& nymID,
+        const UnallocatedCString& nymID,
         const Identifier& accountID,
         const proto::PaymentWorkflow& workflow) const
         -> std::pair<OTIdentifier, proto::PaymentWorkflow>;
@@ -395,15 +395,15 @@ private:
         const StorageBox type,
         Time time) const -> bool;
     void update_rpc(
-        const std::string& localNymID,
-        const std::string& remoteNymID,
-        const std::string& accountID,
+        const UnallocatedCString& localNymID,
+        const UnallocatedCString& remoteNymID,
+        const UnallocatedCString& accountID,
         const proto::AccountEventType type,
-        const std::string& workflowID,
+        const UnallocatedCString& workflowID,
         const Amount amount,
         const Amount pending,
         const Time time,
-        const std::string& memo) const;
+        const UnallocatedCString& memo) const;
 
     Workflow() = delete;
     Workflow(const Workflow&) = delete;

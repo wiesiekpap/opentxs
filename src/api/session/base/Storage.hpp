@@ -7,12 +7,12 @@
 
 #include <chrono>
 #include <memory>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/String.hpp"
 #include "opentxs/crypto/key/Symmetric.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Options.hpp"
 #include "util/storage/Config.hpp"
 
@@ -59,7 +59,7 @@ class Storage
 protected:
     const api::Settings& config_;
     const Options args_;
-    const std::string data_folder_;
+    const UnallocatedCString data_folder_;
     const opentxs::storage::Config storage_config_;
 
 private:
@@ -90,7 +90,7 @@ protected:
         const api::Settings& config,
         const api::Legacy& legacy,
         const api::network::Asio& asio,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         std::unique_ptr<api::session::Factory> factory);
 
     virtual ~Storage();

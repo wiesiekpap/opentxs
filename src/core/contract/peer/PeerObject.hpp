@@ -8,7 +8,6 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
@@ -17,6 +16,7 @@
 #include "opentxs/core/contract/peer/PeerReply.hpp"
 #include "opentxs/core/contract/peer/PeerRequest.hpp"
 #include "opentxs/otx/blind/Purse.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "serialization/protobuf/PeerObject.pb.h"
 
@@ -55,12 +55,14 @@ namespace opentxs::peer::implementation
 class Object final : virtual public opentxs::PeerObject
 {
 public:
-    auto Message() const noexcept -> const std::unique_ptr<std::string>& final
+    auto Message() const noexcept
+        -> const std::unique_ptr<UnallocatedCString>& final
     {
         return message_;
     }
     auto Nym() const noexcept -> const Nym_p& final { return nym_; }
-    auto Payment() const noexcept -> const std::unique_ptr<std::string>& final
+    auto Payment() const noexcept
+        -> const std::unique_ptr<UnallocatedCString>& final
     {
         return payment_;
     }
@@ -80,11 +82,11 @@ public:
     }
     auto Validate() const noexcept -> bool final;
 
-    auto Message() noexcept -> std::unique_ptr<std::string>& final
+    auto Message() noexcept -> std::unique_ptr<UnallocatedCString>& final
     {
         return message_;
     }
-    auto Payment() noexcept -> std::unique_ptr<std::string>& final
+    auto Payment() noexcept -> std::unique_ptr<UnallocatedCString>& final
     {
         return payment_;
     }
@@ -97,14 +99,14 @@ public:
     Object(
         const api::Session& api,
         const Nym_p& senderNym,
-        const std::string& message) noexcept;
+        const UnallocatedCString& message) noexcept;
     Object(
         const api::Session& api,
         const Nym_p& senderNym,
         otx::blind::Purse&& purse) noexcept;
     Object(
         const api::Session& api,
-        const std::string& payment,
+        const UnallocatedCString& payment,
         const Nym_p& senderNym) noexcept;
     Object(
         const api::Session& api,
@@ -118,8 +120,8 @@ public:
     Object(
         const api::Session& api,
         const Nym_p& nym,
-        const std::string& message,
-        const std::string& payment,
+        const UnallocatedCString& message,
+        const UnallocatedCString& payment,
         const OTPeerReply reply,
         const OTPeerRequest request,
         otx::blind::Purse&& purse,
@@ -131,8 +133,8 @@ public:
 private:
     const api::Session& api_;
     Nym_p nym_;
-    std::unique_ptr<std::string> message_;
-    std::unique_ptr<std::string> payment_;
+    std::unique_ptr<UnallocatedCString> message_;
+    std::unique_ptr<UnallocatedCString> payment_;
     OTPeerReply reply_;
     OTPeerRequest request_;
     otx::blind::Purse purse_;

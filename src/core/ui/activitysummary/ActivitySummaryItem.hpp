@@ -9,7 +9,6 @@
 #include <chrono>
 #include <iosfwd>
 #include <memory>
-#include <string>
 #include <thread>
 #include <tuple>
 
@@ -22,6 +21,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/ui/ActivitySummaryItem.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -75,12 +75,12 @@ public:
     static auto LoadItemText(
         const api::session::Client& api,
         const identifier::Nym& nym,
-        const CustomData& custom) noexcept -> std::string;
+        const CustomData& custom) noexcept -> UnallocatedCString;
 
-    auto DisplayName() const noexcept -> std::string final;
-    auto ImageURI() const noexcept -> std::string final;
-    auto Text() const noexcept -> std::string final;
-    auto ThreadID() const noexcept -> std::string final;
+    auto DisplayName() const noexcept -> UnallocatedCString final;
+    auto ImageURI() const noexcept -> UnallocatedCString final;
+    auto Text() const noexcept -> UnallocatedCString final;
+    auto ThreadID() const noexcept -> UnallocatedCString final;
     auto Timestamp() const noexcept -> Time final;
     auto Type() const noexcept -> StorageBox final;
 
@@ -92,20 +92,20 @@ public:
         const ActivitySummarySortKey& sortKey,
         CustomData& custom,
         const Flag& running,
-        std::string text) noexcept;
+        UnallocatedCString text) noexcept;
 
     ~ActivitySummaryItem() final;
 
 private:
     // id, box, account, thread
-    using ItemLocator =
-        std::tuple<std::string, StorageBox, std::string, OTIdentifier>;
+    using ItemLocator = std::
+        tuple<UnallocatedCString, StorageBox, UnallocatedCString, OTIdentifier>;
 
     const Flag& running_;
     const OTNymID nym_id_;
     ActivitySummarySortKey key_;
-    std::string& display_name_;
-    std::string text_;
+    UnallocatedCString& display_name_;
+    UnallocatedCString text_;
     StorageBox type_;
     Time time_;
     std::unique_ptr<std::thread> newest_item_thread_;
@@ -114,7 +114,7 @@ private:
     std::atomic<bool> break_;
 
     auto find_text(const PasswordPrompt& reason, const ItemLocator& locator)
-        const noexcept -> std::string;
+        const noexcept -> UnallocatedCString;
     auto qt_data(const int column, const int role, QVariant& out) const noexcept
         -> void final;
 

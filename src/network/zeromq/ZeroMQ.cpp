@@ -13,9 +13,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <sstream>
-#include <string>
 
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -24,7 +24,7 @@ namespace opentxs::network::zeromq
 constexpr auto inproc_prefix_{"inproc://opentxs/"};
 constexpr auto path_seperator_{"/"};
 
-auto MakeArbitraryInproc() noexcept -> std::string
+auto MakeArbitraryInproc() noexcept -> UnallocatedCString
 {
     static auto counter = std::atomic_int{0};
     auto out = std::stringstream{};
@@ -38,9 +38,9 @@ auto MakeArbitraryInproc() noexcept -> std::string
 }
 
 auto MakeDeterministicInproc(
-    const std::string& path,
+    const UnallocatedCString& path,
     const int instance,
-    const int version) noexcept -> std::string
+    const int version) noexcept -> UnallocatedCString
 {
     auto out = std::stringstream{};
     out << inproc_prefix_;
@@ -54,10 +54,10 @@ auto MakeDeterministicInproc(
 }
 
 auto MakeDeterministicInproc(
-    const std::string& path,
+    const UnallocatedCString& path,
     const int instance,
     const int version,
-    const std::string& suffix) noexcept -> std::string
+    const UnallocatedCString& suffix) noexcept -> UnallocatedCString
 {
     auto out = std::stringstream{};
     out << MakeDeterministicInproc(path, instance, version);

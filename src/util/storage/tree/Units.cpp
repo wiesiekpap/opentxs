@@ -9,7 +9,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <map>
 #include <tuple>
 #include <utility>
 
@@ -18,6 +17,7 @@
 #include "internal/serialization/protobuf/verify/StorageUnits.hpp"
 #include "internal/serialization/protobuf/verify/UnitDefinition.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/storage/Driver.hpp"
 #include "serialization/protobuf/StorageItemHash.pb.h"
 #include "serialization/protobuf/StorageUnits.pb.h"
@@ -29,7 +29,7 @@ namespace opentxs
 {
 namespace storage
 {
-Units::Units(const Driver& storage, const std::string& hash)
+Units::Units(const Driver& storage, const UnallocatedCString& hash)
     : Node(storage, hash)
 {
     if (check_hash(hash)) {
@@ -39,14 +39,17 @@ Units::Units(const Driver& storage, const std::string& hash)
     }
 }
 
-auto Units::Alias(const std::string& id) const -> std::string
+auto Units::Alias(const UnallocatedCString& id) const -> UnallocatedCString
 {
     return get_alias(id);
 }
 
-auto Units::Delete(const std::string& id) -> bool { return delete_item(id); }
+auto Units::Delete(const UnallocatedCString& id) -> bool
+{
+    return delete_item(id);
+}
 
-void Units::init(const std::string& hash)
+void Units::init(const UnallocatedCString& hash)
 {
     std::shared_ptr<proto::StorageUnits> serialized;
     driver_.LoadProto(hash, serialized);
@@ -66,9 +69,9 @@ void Units::init(const std::string& hash)
 }
 
 auto Units::Load(
-    const std::string& id,
+    const UnallocatedCString& id,
     std::shared_ptr<proto::UnitDefinition>& output,
-    std::string& alias,
+    UnallocatedCString& alias,
     const bool checking) const -> bool
 {
     return load_proto<proto::UnitDefinition>(id, output, alias, checking);
@@ -109,15 +112,17 @@ auto Units::serialize() const -> proto::StorageUnits
     return serialized;
 }
 
-auto Units::SetAlias(const std::string& id, const std::string& alias) -> bool
+auto Units::SetAlias(
+    const UnallocatedCString& id,
+    const UnallocatedCString& alias) -> bool
 {
     return set_alias(id, alias);
 }
 
 auto Units::Store(
     const proto::UnitDefinition& data,
-    const std::string& alias,
-    std::string& plaintext) -> bool
+    const UnallocatedCString& alias,
+    UnallocatedCString& plaintext) -> bool
 {
     return store_proto(data, data.id(), alias, plaintext);
 }

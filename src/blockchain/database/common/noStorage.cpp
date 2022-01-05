@@ -38,7 +38,7 @@ struct Sync::Imp {
 Sync::Sync(
     const api::Session&,
     storage::lmdb::LMDB&,
-    const std::string&) noexcept(false)
+    const UnallocatedCString&) noexcept(false)
     : imp_(std::make_unique<Imp>())
 {
 }

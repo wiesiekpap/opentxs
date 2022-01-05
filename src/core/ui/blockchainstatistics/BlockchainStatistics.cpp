@@ -10,10 +10,7 @@
 #include <atomic>
 #include <cstddef>
 #include <future>
-#include <map>
 #include <memory>
-#include <set>
-#include <vector>
 
 #include "core/ui/base/List.hpp"
 #include "internal/util/LogMacros.hpp"
@@ -35,6 +32,7 @@
 #include "opentxs/network/zeromq/Pipeline.hpp"
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace zmq = opentxs::network::zeromq;

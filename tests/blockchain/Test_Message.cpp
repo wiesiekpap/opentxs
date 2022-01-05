@@ -5,9 +5,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <set>
 #include <utility>
-#include <vector>
 
 #include "1_Internal.hpp"  // IWYU pragma: keep
 #include "blockchain/p2p/bitcoin/Header.hpp"
@@ -25,6 +23,7 @@
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace boost
@@ -71,7 +70,7 @@ TEST_F(Test_Message, init_opentxs) {}
 
 TEST_F(Test_Message, service_bits)
 {
-    std::vector<bp::Service> services{
+    ot::UnallocatedVector<bp::Service> services{
         bp::Service::Bit1,  bp::Service::Bit2,  bp::Service::Bit3,
         bp::Service::Bit4,  bp::Service::Bit5,  bp::Service::Bit6,
         bp::Service::Bit7,  bp::Service::Bit8,  bp::Service::Bit9,
@@ -104,7 +103,7 @@ TEST_F(Test_Message, getblocks)
     namespace bitcoin = ot::blockchain::p2p::bitcoin;
 
     bitcoin::ProtocolVersionUnsigned version{2};
-    std::vector<ot::OTData> header_hashes;
+    ot::UnallocatedVector<ot::OTData> header_hashes;
     for (int ii = 0; ii < 10; ii++) {
         ot::OTData header_hash = ot::Data::Factory();
         header_hash->Randomize(32);

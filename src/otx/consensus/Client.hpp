@@ -8,8 +8,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <mutex>
-#include <set>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/otx/consensus/Consensus.hpp"
@@ -19,6 +17,7 @@
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "otx/consensus/Base.hpp"
 #include "serialization/protobuf/ConsensusEnums.pb.h"
@@ -51,7 +50,7 @@ public:
     }
     auto hasOpenTransactions() const -> bool final;
     using Base::IssuedNumbers;
-    auto IssuedNumbers(const std::set<TransactionNumber>& exclude) const
+    auto IssuedNumbers(const UnallocatedSet<TransactionNumber>& exclude) const
         -> std::size_t final;
     auto OpenCronItems() const -> std::size_t final;
     auto Type() const -> otx::ConsensusType final;
@@ -61,18 +60,18 @@ public:
     }
     auto Verify(
         const otx::context::TransactionStatement& statement,
-        const std::set<TransactionNumber>& excluded,
-        const std::set<TransactionNumber>& included) const -> bool final;
+        const UnallocatedSet<TransactionNumber>& excluded,
+        const UnallocatedSet<TransactionNumber>& included) const -> bool final;
     auto VerifyCronItem(const TransactionNumber number) const -> bool final;
     using Base::VerifyIssuedNumber;
     auto VerifyIssuedNumber(
         const TransactionNumber& number,
-        const std::set<TransactionNumber>& exclude) const -> bool final;
+        const UnallocatedSet<TransactionNumber>& exclude) const -> bool final;
 
-    auto AcceptIssuedNumbers(std::set<TransactionNumber>& newNumbers)
+    auto AcceptIssuedNumbers(UnallocatedSet<TransactionNumber>& newNumbers)
         -> bool final;
     auto CloseCronItem(const TransactionNumber number) -> bool final;
-    void FinishAcknowledgements(const std::set<RequestNumber>& req) final;
+    void FinishAcknowledgements(const UnallocatedSet<RequestNumber>& req) final;
     auto GetLock() -> std::mutex& final { return lock_; }
     auto IssueNumber(const TransactionNumber& number) -> bool final;
     auto OpenCronItem(const TransactionNumber number) -> bool final;
@@ -98,13 +97,13 @@ public:
 private:
     static constexpr auto current_version_ = VersionNumber{1};
 
-    std::set<TransactionNumber> open_cron_items_;
+    UnallocatedSet<TransactionNumber> open_cron_items_;
 
     auto client_nym_id(const Lock& lock) const -> const identifier::Nym& final;
     using Base::serialize;
     auto serialize(const Lock& lock) const -> proto::Context final;
     auto server_nym_id(const Lock& lock) const -> const identifier::Nym& final;
-    auto type() const -> std::string final { return "client"; }
+    auto type() const -> UnallocatedCString final { return "client"; }
 
     ClientContext() = delete;
     ClientContext(const otx::context::Client&) = delete;

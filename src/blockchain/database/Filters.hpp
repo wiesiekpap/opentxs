@@ -9,14 +9,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
@@ -32,6 +28,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
@@ -93,15 +90,16 @@ public:
         const noexcept -> bool;
     auto StoreFilters(
         const filter::Type type,
-        const std::vector<Header>& headers,
-        const std::vector<Filter>& filters,
+        const UnallocatedVector<Header>& headers,
+        const UnallocatedVector<Filter>& filters,
         const block::Position& tip) const noexcept -> bool;
-    auto StoreFilters(const filter::Type type, std::vector<Filter> filters)
-        const noexcept -> bool;
+    auto StoreFilters(
+        const filter::Type type,
+        UnallocatedVector<Filter> filters) const noexcept -> bool;
     auto StoreHeaders(
         const filter::Type type,
         const ReadView previous,
-        const std::vector<Header> headers) const noexcept -> bool;
+        const UnallocatedVector<Header> headers) const noexcept -> bool;
 
     Filters(
         const api::Session& api,

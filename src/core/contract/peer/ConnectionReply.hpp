@@ -5,12 +5,11 @@
 
 #pragma once
 
-#include <string>
-
 #include "core/contract/peer/PeerReply.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/contract/peer/ConnectionReply.hpp"
 #include "opentxs/core/contract/peer/PeerReply.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
@@ -48,10 +47,10 @@ public:
         const Identifier& request,
         const identifier::Notary& server,
         const bool ack,
-        const std::string& url,
-        const std::string& login,
-        const std::string& password,
-        const std::string& key);
+        const UnallocatedCString& url,
+        const UnallocatedCString& login,
+        const UnallocatedCString& password,
+        const UnallocatedCString& key);
 
     ~Connection() final = default;
 
@@ -66,10 +65,10 @@ private:
     static constexpr auto current_version_ = VersionNumber{4};
 
     const bool success_;
-    const std::string url_;
-    const std::string login_;
-    const std::string password_;
-    const std::string key_;
+    const UnallocatedCString url_;
+    const UnallocatedCString login_;
+    const UnallocatedCString password_;
+    const UnallocatedCString key_;
 
     auto clone() const noexcept -> Connection* final
     {

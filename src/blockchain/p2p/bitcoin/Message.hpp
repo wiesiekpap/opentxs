@@ -9,7 +9,6 @@
 #include <cstdint>
 #include <iosfwd>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "blockchain/p2p/bitcoin/Header.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/core/Data.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs

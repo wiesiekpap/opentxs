@@ -6,10 +6,8 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <tuple>
 #include <type_traits>
 
@@ -26,6 +24,7 @@
 #include "opentxs/api/session/OTX.hpp"
 #include "opentxs/api/session/UI.hpp"
 #include "opentxs/api/session/Workflow.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -85,12 +84,14 @@ class Client final : public internal::Client, public Session
 public:
     auto Activity() const -> const session::Activity& final;
     auto Contacts() const -> const session::Contacts& final;
-    auto Exec(const std::string& wallet = "") const -> const OTAPI_Exec& final;
+    auto Exec(const UnallocatedCString& wallet = "") const
+        -> const OTAPI_Exec& final;
     using Session::Lock;
     auto Lock(const identifier::Nym& nymID, const identifier::Notary& serverID)
         const -> std::recursive_mutex& final;
     auto NewNym(const identifier::Nym& id) const noexcept -> void final;
-    auto OTAPI(const std::string& wallet = "") const -> const OT_API& final;
+    auto OTAPI(const UnallocatedCString& wallet = "") const
+        -> const OT_API& final;
     auto OTX() const -> const session::OTX& final;
     auto Pair() const -> const otx::client::Pair& final;
     auto ServerAction() const -> const otx::client::ServerAction& final;
@@ -110,7 +111,7 @@ public:
         const api::Settings& config,
         const api::Crypto& crypto,
         const opentxs::network::zeromq::Context& context,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const int instance);
 
     ~Client() final;
@@ -128,7 +129,7 @@ private:
     std::unique_ptr<otx::client::Pair> pair_;
     std::unique_ptr<session::UI> ui_;
     mutable std::mutex map_lock_;
-    mutable std::map<ContextID, std::recursive_mutex> context_locks_;
+    mutable UnallocatedMap<ContextID, std::recursive_mutex> context_locks_;
 
     auto get_lock(const ContextID context) const -> std::recursive_mutex&;
 

@@ -8,33 +8,37 @@
 #include "internal/otx/common/util/Tag.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 #include <utility>
+
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
 void Tag::add_attribute(
-    const std::string& str_att_name,
+    const UnallocatedCString& str_att_name,
     const char* sz_att_value)
 {
-    std::string str_temp(sz_att_value);
+    UnallocatedCString str_temp(sz_att_value);
 
     add_attribute(str_att_name, str_temp);
 }
 
 void Tag::add_attribute(
-    const std::string& str_att_name,
-    const std::string& str_att_value)
+    const UnallocatedCString& str_att_name,
+    const UnallocatedCString& str_att_value)
 {
-    std::pair<std::string, std::string> temp =
+    std::pair<UnallocatedCString, UnallocatedCString> temp =
         std::make_pair(str_att_name, str_att_value);
 
     attributes_.insert(temp);
 }
 
-void Tag::output(std::string& str_output) const { outputXML(str_output); }
+void Tag::output(UnallocatedCString& str_output) const
+{
+    outputXML(str_output);
+}
 
-void Tag::outputXML(std::string& str_output) const
+void Tag::outputXML(UnallocatedCString& str_output) const
 {
     str_output += ("<" + name_);
 
@@ -62,15 +66,15 @@ void Tag::outputXML(std::string& str_output) const
 void Tag::add_tag(TagPtr& tag_input) { tags_.push_back(tag_input); }
 
 void Tag::add_tag(
-    const std::string& str_tag_name,
-    const std::string& str_tag_value)
+    const UnallocatedCString& str_tag_name,
+    const UnallocatedCString& str_tag_value)
 {
     TagPtr p1 = std::make_shared<Tag>(str_tag_name, str_tag_value);
 
     add_tag(p1);
 }
 
-Tag::Tag(const std::string& str_name)
+Tag::Tag(const UnallocatedCString& str_name)
     : name_(str_name)
     , text_()
     , attributes_()
@@ -78,7 +82,7 @@ Tag::Tag(const std::string& str_name)
 {
 }
 
-Tag::Tag(const std::string& str_name, const std::string& str_text)
+Tag::Tag(const UnallocatedCString& str_name, const UnallocatedCString& str_text)
     : name_(str_name)
     , text_(str_text)
     , attributes_()
@@ -86,7 +90,7 @@ Tag::Tag(const std::string& str_name, const std::string& str_text)
 {
 }
 
-Tag::Tag(const std::string& str_name, const char* sztext)
+Tag::Tag(const UnallocatedCString& str_name, const char* sztext)
     : name_(str_name)
     , text_(sztext)
     , attributes_()

@@ -8,10 +8,7 @@
 #include "internal/otx/client/obsolete/OTAPI_Exec.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
 
 #include "Proto.tpp"
@@ -44,6 +41,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/crypto/Language.hpp"
 #include "opentxs/crypto/SeedStyle.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -94,21 +92,22 @@ OTAPI_Exec::OTAPI_Exec(
 //    submit it) so now, both have verified trns#s in this way.
 //
 auto OTAPI_Exec::ProposePaymentPlan(
-    const std::string& NOTARY_ID,
+    const UnallocatedCString& NOTARY_ID,
     const Time& VALID_FROM,  // Default (0 or nullptr) == current time
                              // measured
                              // in seconds since Jan 1970.
     const Time& VALID_TO,    // Default (0 or nullptr) == no expiry / cancel
     // anytime. Otherwise this is ADDED to VALID_FROM
     // (it's a length.)
-    const std::string& SENDER_ACCT_ID,  // Mandatory parameters. UPDATE: Making
-                                        // sender Acct optional here.
-    const std::string& SENDER_NYM_ID,   // Both sender and recipient must sign
-                                        // before submitting.
-    const std::string& PLAN_CONSIDERATION,  // Like a memo.
-    const std::string& RECIPIENT_ACCT_ID,   // NOT optional.
-    const std::string& RECIPIENT_NYM_ID,  // Both sender and recipient must sign
-                                          // before submitting.
+    const UnallocatedCString& SENDER_ACCT_ID,  // Mandatory parameters. UPDATE:
+                                               // Making sender Acct optional
+                                               // here.
+    const UnallocatedCString& SENDER_NYM_ID,   // Both sender and recipient must
+                                               // sign before submitting.
+    const UnallocatedCString& PLAN_CONSIDERATION,  // Like a memo.
+    const UnallocatedCString& RECIPIENT_ACCT_ID,   // NOT optional.
+    const UnallocatedCString& RECIPIENT_NYM_ID,    // Both sender and recipient
+                                                 // must sign before submitting.
     const std::int64_t& INITIAL_PAYMENT_AMOUNT,  // zero or "" is no initial
                                                  // payment.
     const std::chrono::seconds& INITIAL_PAYMENT_DELAY,  // seconds from creation
@@ -129,7 +128,7 @@ auto OTAPI_Exec::ProposePaymentPlan(
                                                    // ""
                                                    // (no
                                                    // maximum payments.)
-) const -> std::string
+) const -> UnallocatedCString
 {
     OT_VERIFY_ID_STR(NOTARY_ID);
     OT_VERIFY_ID_STR(SENDER_NYM_ID);
@@ -196,31 +195,35 @@ auto OTAPI_Exec::ProposePaymentPlan(
 // 5. Finish opentxs basket commands, so opentxs is COMPLETE.
 
 auto OTAPI_Exec::EasyProposePlan(
-    const std::string& NOTARY_ID,
-    const std::string& DATE_RANGE,  // "from,to"  Default 'from' (0 or "") ==
-                                    // NOW, and default 'to' (0 or "") == no
-                                    // expiry / cancel anytime
-    const std::string& SENDER_ACCT_ID,  // Mandatory parameters. UPDATE: Making
-                                        // sender acct optional here since it
-                                        // may not be known at this point.
-    const std::string& SENDER_NYM_ID,   // Both sender and recipient must sign
-                                        // before submitting.
-    const std::string& PLAN_CONSIDERATION,  // Like a memo.
-    const std::string& RECIPIENT_ACCT_ID,   // NOT optional.
-    const std::string& RECIPIENT_NYM_ID,  // Both sender and recipient must sign
-                                          // before submitting.
-    const std::string& INITIAL_PAYMENT,   // "amount,delay"  Default 'amount' (0
+    const UnallocatedCString& NOTARY_ID,
+    const UnallocatedCString& DATE_RANGE,  // "from,to"  Default 'from' (0 or
+                                           // "") == NOW, and default 'to' (0 or
+                                           // "") == no expiry / cancel anytime
+    const UnallocatedCString& SENDER_ACCT_ID,  // Mandatory parameters. UPDATE:
+                                               // Making sender acct optional
+                                               // here since it may not be known
+                                               // at this point.
+    const UnallocatedCString& SENDER_NYM_ID,   // Both sender and recipient must
+                                               // sign before submitting.
+    const UnallocatedCString& PLAN_CONSIDERATION,  // Like a memo.
+    const UnallocatedCString& RECIPIENT_ACCT_ID,   // NOT optional.
+    const UnallocatedCString& RECIPIENT_NYM_ID,    // Both sender and recipient
+                                                 // must sign before submitting.
+    const UnallocatedCString& INITIAL_PAYMENT,  // "amount,delay"  Default
+                                                // 'amount' (0
     // or "") == no initial payment. Default
     // 'delay' (0 or nullptr) is seconds from
     // creation date.
-    const std::string& PAYMENT_PLAN,  // "amount,delay,period" 'amount' is a
-                                      // recurring payment. 'delay' and 'period'
-                                      // cause 30 days if you pass 0 or "".
-    const std::string& PLAN_EXPIRY    // "length,number" 'length' is maximum
+    const UnallocatedCString& PAYMENT_PLAN,  // "amount,delay,period" 'amount'
+                                             // is a recurring payment. 'delay'
+                                             // and 'period' cause 30 days if
+                                             // you pass 0 or "".
+    const UnallocatedCString& PLAN_EXPIRY    // "length,number" 'length' is
+                                             // maximum
     // lifetime in seconds. 'number' is maximum
     // number of payments in seconds. 0 or "" is
     // unlimited.
-) const -> std::string
+) const -> UnallocatedCString
 {
     OT_VERIFY_ID_STR(NOTARY_ID);
     OT_VERIFY_ID_STR(SENDER_NYM_ID);
@@ -340,11 +343,11 @@ auto OTAPI_Exec::EasyProposePlan(
 // Customer should call OTAPI_Exec::depositPaymentPlan after this.
 //
 auto OTAPI_Exec::ConfirmPaymentPlan(
-    const std::string& NOTARY_ID,
-    const std::string& SENDER_NYM_ID,
-    const std::string& SENDER_ACCT_ID,
-    const std::string& RECIPIENT_NYM_ID,
-    const std::string& PAYMENT_PLAN) const -> std::string
+    const UnallocatedCString& NOTARY_ID,
+    const UnallocatedCString& SENDER_NYM_ID,
+    const UnallocatedCString& SENDER_ACCT_ID,
+    const UnallocatedCString& RECIPIENT_NYM_ID,
+    const UnallocatedCString& PAYMENT_PLAN) const -> UnallocatedCString
 {
     OT_VERIFY_ID_STR(NOTARY_ID);
     OT_VERIFY_ID_STR(SENDER_NYM_ID);
@@ -392,8 +395,8 @@ auto OTAPI_Exec::ConfirmPaymentPlan(
 // RETURNS:  the Smart Contract itself. (Or "".)
 //
 auto OTAPI_Exec::Create_SmartContract(
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
     const Time& VALID_FROM,  // Default (0 or "") == NOW
@@ -403,7 +406,7 @@ auto OTAPI_Exec::Create_SmartContract(
                              // every named account.
     bool SPECIFY_PARTIES     // This means Nym IDs must be provided for every
                              // party.
-) const -> std::string
+) const -> UnallocatedCString
 {
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
 
@@ -436,7 +439,7 @@ auto OTAPI_Exec::Create_SmartContract(
 }
 
 auto OTAPI_Exec::Smart_ArePartiesSpecified(
-    const std::string& THE_CONTRACT) const -> bool
+    const UnallocatedCString& THE_CONTRACT) const -> bool
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
 
@@ -446,7 +449,7 @@ auto OTAPI_Exec::Smart_ArePartiesSpecified(
 }
 
 auto OTAPI_Exec::Smart_AreAssetTypesSpecified(
-    const std::string& THE_CONTRACT) const -> bool
+    const UnallocatedCString& THE_CONTRACT) const -> bool
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
 
@@ -458,14 +461,15 @@ auto OTAPI_Exec::Smart_AreAssetTypesSpecified(
 // RETURNS:  the Smart Contract itself. (Or "".)
 //
 auto OTAPI_Exec::SmartContract_SetDates(
-    const std::string& THE_CONTRACT,   // The contract, about to have the
-                                       // dates changed on it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing at this point is only to
-                                       // cause a save.)
-    const Time& VALID_FROM,            // Default (0 or nullptr) == NOW
-    const Time& VALID_TO) const -> std::string  // Default (0 or nullptr) == no
-                                                // expiry / cancel anytime.
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // dates changed on it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing at this point is only
+                                              // to cause a save.)
+    const Time& VALID_FROM,                   // Default (0 or nullptr) == NOW
+    const Time& VALID_TO) const
+    -> UnallocatedCString  // Default (0 or nullptr) == no
+                           // expiry / cancel anytime.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -505,14 +509,15 @@ auto OTAPI_Exec::SmartContract_SetDates(
 //
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_AddBylaw(
-    const std::string& THE_CONTRACT,   // The contract, about to have the bylaw
-                                       // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
-                                       // at this point is only to cause a
-                                       // save.)
-    const std::string& BYLAW_NAME) const -> std::string  // The Bylaw's NAME as
-                                                         // referenced in the
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // bylaw added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
+                                              // at this point is only to cause
+                                              // a save.)
+    const UnallocatedCString& BYLAW_NAME) const
+    -> UnallocatedCString  // The Bylaw's NAME as
+                           // referenced in the
 // smart contract. (And the scripts...)
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
@@ -539,14 +544,15 @@ auto OTAPI_Exec::SmartContract_AddBylaw(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_RemoveBylaw(
-    const std::string& THE_CONTRACT,   // The contract, about to have the bylaw
-                                       // removed from it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // bylaw removed from it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME) const -> std::string  // The Bylaw's NAME as
-                                                         // referenced in the
+    const UnallocatedCString& BYLAW_NAME) const
+    -> UnallocatedCString  // The Bylaw's NAME as
+                           // referenced in the
 // smart contract. (And the scripts...)
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
@@ -573,19 +579,20 @@ auto OTAPI_Exec::SmartContract_RemoveBylaw(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_AddClause(
-    const std::string& THE_CONTRACT,   // The contract, about to have the clause
-                                       // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // clause added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME,   // Should already be on the contract. (This
-                                     // way we can find it.)
-    const std::string& CLAUSE_NAME,  // The Clause's name as referenced in the
-                                     // smart contract. (And the scripts...)
-    const std::string& SOURCE_CODE) const
-    -> std::string  // The actual source code for the
-                    // clause.
+    const UnallocatedCString& BYLAW_NAME,  // Should already be on the contract.
+                                           // (This way we can find it.)
+    const UnallocatedCString& CLAUSE_NAME,  // The Clause's name as referenced
+                                            // in the smart contract. (And the
+                                            // scripts...)
+    const UnallocatedCString& SOURCE_CODE) const
+    -> UnallocatedCString  // The actual source code for the
+                           // clause.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -618,19 +625,20 @@ auto OTAPI_Exec::SmartContract_AddClause(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_UpdateClause(
-    const std::string& THE_CONTRACT,   // The contract, about to have the clause
-                                       // updated on it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // clause updated on it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME,   // Should already be on the contract. (This
-                                     // way we can find it.)
-    const std::string& CLAUSE_NAME,  // The Clause's name as referenced in the
-                                     // smart contract. (And the scripts...)
-    const std::string& SOURCE_CODE) const
-    -> std::string  // The actual source code for the
-                    // clause.
+    const UnallocatedCString& BYLAW_NAME,  // Should already be on the contract.
+                                           // (This way we can find it.)
+    const UnallocatedCString& CLAUSE_NAME,  // The Clause's name as referenced
+                                            // in the smart contract. (And the
+                                            // scripts...)
+    const UnallocatedCString& SOURCE_CODE) const
+    -> UnallocatedCString  // The actual source code for the
+                           // clause.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -664,15 +672,15 @@ auto OTAPI_Exec::SmartContract_UpdateClause(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_RemoveClause(
-    const std::string& THE_CONTRACT,   // The contract, about to have the clause
-                                       // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // clause added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME,  // Should already be on the contract. (This
-                                    // way we can find it.)
-    const std::string& CLAUSE_NAME) const -> std::string
+    const UnallocatedCString& BYLAW_NAME,  // Should already be on the contract.
+                                           // (This way we can find it.)
+    const UnallocatedCString& CLAUSE_NAME) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -703,21 +711,24 @@ auto OTAPI_Exec::SmartContract_RemoveClause(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_AddVariable(
-    const std::string& THE_CONTRACT,   // The contract, about to have the
-                                       // variable
-                                       // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // variable
+                                              // added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME,  // Should already be on the contract. (This
-                                    // way we can find it.)
-    const std::string& VAR_NAME,    // The Variable's name as referenced in the
-                                    // smart contract. (And the scripts...)
-    const std::string& VAR_ACCESS,  // "constant", "persistent", or "important".
-    const std::string& VAR_TYPE,    // "string", "std::int64_t", or "bool"
-    const std::string& VAR_VALUE) const -> std::string  // Contains a string. If
-                                                        // type is std::int64_t,
+    const UnallocatedCString& BYLAW_NAME,  // Should already be on the contract.
+                                           // (This way we can find it.)
+    const UnallocatedCString& VAR_NAME,  // The Variable's name as referenced in
+                                         // the smart contract. (And the
+                                         // scripts...)
+    const UnallocatedCString& VAR_ACCESS,  // "constant", "persistent", or
+                                           // "important".
+    const UnallocatedCString& VAR_TYPE,  // "string", "std::int64_t", or "bool"
+    const UnallocatedCString& VAR_VALUE) const
+    -> UnallocatedCString  // Contains a string. If
+                           // type is std::int64_t,
 // StringToLong() will be used to convert
 // value to a std::int64_t. If type is bool, the
 // strings "true" or "false" are expected here
@@ -763,18 +774,19 @@ auto OTAPI_Exec::SmartContract_AddVariable(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_RemoveVariable(
-    const std::string& THE_CONTRACT,   // The contract, about to have the
-                                       // variable
-                                       // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // variable
+                                              // added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME,  // Should already be on the contract. (This
-                                    // way we can find it.)
-    const std::string& VAR_NAME     // The Variable's name as referenced in the
-                                    // smart contract. (And the scripts...)
-) const -> std::string
+    const UnallocatedCString& BYLAW_NAME,  // Should already be on the contract.
+                                           // (This way we can find it.)
+    const UnallocatedCString& VAR_NAME  // The Variable's name as referenced in
+                                        // the smart contract. (And the
+                                        // scripts...)
+) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -804,22 +816,22 @@ auto OTAPI_Exec::SmartContract_RemoveVariable(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_AddCallback(
-    const std::string& THE_CONTRACT,   // The contract, about to have the
-                                       // callback
-                                       // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // callback
+                                              // added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME,  // Should already be on the contract. (This
-                                    // way we can find it.)
-    const std::string& CALLBACK_NAME,  // The Callback's name as referenced in
-                                       // the smart contract. (And the
-                                       // scripts...)
-    const std::string& CLAUSE_NAME) const
-    -> std::string  // The actual clause that will be
-                    // triggered
-                    // by the callback. (Must exist.)
+    const UnallocatedCString& BYLAW_NAME,  // Should already be on the contract.
+                                           // (This way we can find it.)
+    const UnallocatedCString& CALLBACK_NAME,  // The Callback's name as
+                                              // referenced in the smart
+                                              // contract. (And the scripts...)
+    const UnallocatedCString& CLAUSE_NAME) const
+    -> UnallocatedCString  // The actual clause that will be
+                           // triggered
+                           // by the callback. (Must exist.)
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -853,19 +865,19 @@ auto OTAPI_Exec::SmartContract_AddCallback(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_RemoveCallback(
-    const std::string& THE_CONTRACT,   // The contract, about to have the
-                                       // callback
-                                       // removed from it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // callback
+                                              // removed from it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME,  // Should already be on the contract. (This
-                                    // way we can find it.)
-    const std::string& CALLBACK_NAME  // The Callback's name as referenced in
-                                      // the smart contract. (And the
-                                      // scripts...)
-) const -> std::string
+    const UnallocatedCString& BYLAW_NAME,  // Should already be on the contract.
+                                           // (This way we can find it.)
+    const UnallocatedCString& CALLBACK_NAME  // The Callback's name as
+                                             // referenced in the smart
+                                             // contract. (And the scripts...)
+) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -895,19 +907,20 @@ auto OTAPI_Exec::SmartContract_RemoveCallback(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_AddHook(
-    const std::string& THE_CONTRACT,   // The contract, about to have the hook
-                                       // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // hook added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME,  // Should already be on the contract. (This
-                                    // way we can find it.)
-    const std::string& HOOK_NAME,  // The Hook's name as referenced in the smart
-                                   // contract. (And the scripts...)
-    const std::string& CLAUSE_NAME) const
-    -> std::string  // The actual clause that will be
-                    // triggered
+    const UnallocatedCString& BYLAW_NAME,  // Should already be on the contract.
+                                           // (This way we can find it.)
+    const UnallocatedCString& HOOK_NAME,   // The Hook's name as referenced in
+                                           // the smart contract. (And the
+                                           // scripts...)
+    const UnallocatedCString& CLAUSE_NAME) const
+    -> UnallocatedCString  // The actual clause that will be
+                           // triggered
 // by the hook. (You can call this multiple
 // times, and have multiple clauses trigger
 // on the same hook.)
@@ -945,19 +958,20 @@ auto OTAPI_Exec::SmartContract_AddHook(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_RemoveHook(
-    const std::string& THE_CONTRACT,   // The contract, about to have the hook
-                                       // removed from it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // hook removed from it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& BYLAW_NAME,  // Should already be on the contract. (This
-                                    // way we can find it.)
-    const std::string& HOOK_NAME,  // The Hook's name as referenced in the smart
-                                   // contract. (And the scripts...)
-    const std::string& CLAUSE_NAME) const
-    -> std::string  // The actual clause that will be
-                    // triggered
+    const UnallocatedCString& BYLAW_NAME,  // Should already be on the contract.
+                                           // (This way we can find it.)
+    const UnallocatedCString& HOOK_NAME,   // The Hook's name as referenced in
+                                           // the smart contract. (And the
+                                           // scripts...)
+    const UnallocatedCString& CLAUSE_NAME) const
+    -> UnallocatedCString  // The actual clause that will be
+                           // triggered
 // by the hook. (You can call this multiple
 // times, and have multiple clauses trigger
 // on the same hook.)
@@ -995,21 +1009,23 @@ auto OTAPI_Exec::SmartContract_RemoveHook(
 
 // RETURNS: Updated version of THE_CONTRACT. (Or "".)
 auto OTAPI_Exec::SmartContract_AddParty(
-    const std::string& THE_CONTRACT,   // The contract, about to have the party
-                                       // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // party added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& PARTY_NYM_ID,  // Required when the smart contract is
-                                      // configured to require parties to be
-                                      // specified. Otherwise must be empty.
-    const std::string& PARTY_NAME,    // The Party's NAME as referenced in the
-                                      // smart contract. (And the scripts...)
-    const std::string& AGENT_NAME) const
-    -> std::string  // An AGENT will be added by default
-                    // for this
-                    // party. Need Agent NAME.
+    const UnallocatedCString& PARTY_NYM_ID,  // Required when the smart contract
+                                             // is configured to require parties
+                                             // to be specified. Otherwise must
+                                             // be empty.
+    const UnallocatedCString& PARTY_NAME,  // The Party's NAME as referenced in
+                                           // the smart contract. (And the
+                                           // scripts...)
+    const UnallocatedCString& AGENT_NAME) const
+    -> UnallocatedCString  // An AGENT will be added by default
+                           // for this
+                           // party. Need Agent NAME.
 // (FYI, that is basically the only option, until I code Entities and Roles.
 // Until then, a party can ONLY be
 // a Nym, with himself as the agent representing that same party. Nym ID is
@@ -1045,15 +1061,16 @@ auto OTAPI_Exec::SmartContract_AddParty(
 
 // RETURNS: Updated version of THE_CONTRACT. (Or "".)
 auto OTAPI_Exec::SmartContract_RemoveParty(
-    const std::string& THE_CONTRACT,   // The contract, about to have the party
-                                       // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // party added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& PARTY_NAME  // The Party's NAME as referenced in the
-                                   // smart contract. (And the scripts...)
-) const -> std::string
+    const UnallocatedCString& PARTY_NAME  // The Party's NAME as referenced in
+                                          // the smart contract. (And the
+                                          // scripts...)
+) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -1082,18 +1099,19 @@ auto OTAPI_Exec::SmartContract_RemoveParty(
 //
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_AddAccount(
-    const std::string& THE_CONTRACT,  // The contract, about to have the account
-                                      // added to it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // account added to it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& PARTY_NAME,  // The Party's NAME as referenced in the
-                                    // smart contract. (And the scripts...)
-    const std::string& ACCT_NAME,   // The Account's name as referenced in the
-                                    // smart contract
-    const std::string& INSTRUMENT_DEFINITION_ID) const
-    -> std::string  // Instrument Definition
+    const UnallocatedCString& PARTY_NAME,  // The Party's NAME as referenced in
+                                           // the smart contract. (And the
+                                           // scripts...)
+    const UnallocatedCString& ACCT_NAME,  // The Account's name as referenced in
+                                          // the smart contract
+    const UnallocatedCString& INSTRUMENT_DEFINITION_ID) const
+    -> UnallocatedCString  // Instrument Definition
 // ID for the Account. (Optional.)
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
@@ -1126,17 +1144,18 @@ auto OTAPI_Exec::SmartContract_AddAccount(
 
 // returns: the updated smart contract (or "")
 auto OTAPI_Exec::SmartContract_RemoveAccount(
-    const std::string& THE_CONTRACT,  // The contract, about to have the account
-                                      // removed from it.
-    const std::string& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
-                                       // signing
+    const UnallocatedCString& THE_CONTRACT,   // The contract, about to have the
+                                              // account removed from it.
+    const UnallocatedCString& SIGNER_NYM_ID,  // Use any Nym you wish here. (The
+                                              // signing
     // at this postd::int32_t is only to cause a
     // save.)
-    const std::string& PARTY_NAME,  // The Party's NAME as referenced in the
-                                    // smart contract. (And the scripts...)
-    const std::string& ACCT_NAME    // The Account's name as referenced in the
-                                    // smart contract
-) const -> std::string
+    const UnallocatedCString& PARTY_NAME,  // The Party's NAME as referenced in
+                                           // the smart contract. (And the
+                                           // scripts...)
+    const UnallocatedCString& ACCT_NAME  // The Account's name as referenced in
+                                         // the smart contract
+) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -1180,9 +1199,9 @@ auto OTAPI_Exec::SmartContract_RemoveAccount(
 // many transaction#s he will need in order to confirm this smart contract.
 //
 auto OTAPI_Exec::SmartContract_CountNumsNeeded(
-    const std::string& THE_CONTRACT,  // The smart contract, about to be queried
-                                      // by this function.
-    const std::string& AGENT_NAME) const -> std::int32_t
+    const UnallocatedCString& THE_CONTRACT,  // The smart contract, about to be
+                                             // queried by this function.
+    const UnallocatedCString& AGENT_NAME) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(AGENT_NAME);
@@ -1199,14 +1218,15 @@ auto OTAPI_Exec::SmartContract_CountNumsNeeded(
 // Returns the updated smart contract (or "".)
 //
 auto OTAPI_Exec::SmartContract_ConfirmAccount(
-    const std::string& THE_CONTRACT,
-    const std::string& SIGNER_NYM_ID,
-    const std::string& PARTY_NAME,  // Should already be on the contract.
-    const std::string& ACCT_NAME,   // Should already be on the contract.
-    const std::string& AGENT_NAME,  // The agent name for this asset account.
-    const std::string& ACCT_ID) const
-    -> std::string  // AcctID for the asset account. (For
-                    // acct_name).
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& SIGNER_NYM_ID,
+    const UnallocatedCString& PARTY_NAME,  // Should already be on the contract.
+    const UnallocatedCString& ACCT_NAME,   // Should already be on the contract.
+    const UnallocatedCString& AGENT_NAME,  // The agent name for this asset
+                                           // account.
+    const UnallocatedCString& ACCT_ID) const
+    -> UnallocatedCString  // AcctID for the asset account. (For
+                           // acct_name).
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_ID_STR(SIGNER_NYM_ID);
@@ -1244,12 +1264,12 @@ auto OTAPI_Exec::SmartContract_ConfirmAccount(
 // to confirm, or calling OTAPI_Exec::activateSmartContract().
 // Returns the updated smart contract (or "".)
 auto OTAPI_Exec::SmartContract_ConfirmParty(
-    const std::string& THE_CONTRACT,  // The smart contract, about to be changed
-                                      // by this function.
-    const std::string& PARTY_NAME,    // Should already be on the contract. This
-                                      // way we can find it.
-    const std::string& NYM_ID,
-    const std::string& NOTARY_ID) const -> std::string
+    const UnallocatedCString& THE_CONTRACT,  // The smart contract, about to be
+                                             // changed by this function.
+    const UnallocatedCString& PARTY_NAME,  // Should already be on the contract.
+                                           // This way we can find it.
+    const UnallocatedCString& NYM_ID,
+    const UnallocatedCString& NOTARY_ID) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -1275,7 +1295,7 @@ auto OTAPI_Exec::SmartContract_ConfirmParty(
 }
 
 auto OTAPI_Exec::Smart_AreAllPartiesConfirmed(
-    const std::string& THE_CONTRACT) const -> bool  // true or false?
+    const UnallocatedCString& THE_CONTRACT) const -> bool  // true or false?
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
 
@@ -1319,10 +1339,10 @@ auto OTAPI_Exec::Smart_AreAllPartiesConfirmed(
 }
 
 auto OTAPI_Exec::Smart_IsPartyConfirmed(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME) const -> bool  // true
-                                                  // or
-                                                  // false?
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME) const -> bool  // true
+                                                         // or
+                                                         // false?
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -1364,7 +1384,7 @@ auto OTAPI_Exec::Smart_IsPartyConfirmed(
         api_.Factory().InternalSession().Scriptable(pParty->GetMySignedCopy()));
 
     if (nullptr == pPartySignedCopy) {
-        const std::string current_party_name(pParty->GetPartyName());
+        const UnallocatedCString current_party_name(pParty->GetPartyName());
         LogError()(OT_PRETTY_CLASS())("Error loading party's (")(
             current_party_name)(") signed copy of agreement. Has it been "
                                 "executed?")
@@ -1373,7 +1393,7 @@ auto OTAPI_Exec::Smart_IsPartyConfirmed(
     }
 
     if (!pScriptable->Compare(*pPartySignedCopy)) {
-        const std::string current_party_name(pParty->GetPartyName());
+        const UnallocatedCString current_party_name(pParty->GetPartyName());
         LogError()(OT_PRETTY_CLASS())("Suspicious: Party's (")(
             current_party_name)(") signed copy of agreement doesn't match the "
                                 "contract.")
@@ -1399,8 +1419,8 @@ auto OTAPI_Exec::Smart_IsPartyConfirmed(
     return true;
 }
 
-auto OTAPI_Exec::Smart_GetPartyCount(const std::string& THE_CONTRACT) const
-    -> std::int32_t
+auto OTAPI_Exec::Smart_GetPartyCount(
+    const UnallocatedCString& THE_CONTRACT) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
 
@@ -1417,8 +1437,8 @@ auto OTAPI_Exec::Smart_GetPartyCount(const std::string& THE_CONTRACT) const
     return pScriptable->GetPartyCount();
 }
 
-auto OTAPI_Exec::Smart_GetBylawCount(const std::string& THE_CONTRACT) const
-    -> std::int32_t
+auto OTAPI_Exec::Smart_GetBylawCount(
+    const UnallocatedCString& THE_CONTRACT) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
 
@@ -1437,8 +1457,8 @@ auto OTAPI_Exec::Smart_GetBylawCount(const std::string& THE_CONTRACT) const
 
 /// returns the name of the party.
 auto OTAPI_Exec::Smart_GetPartyByIndex(
-    const std::string& THE_CONTRACT,
-    const std::int32_t& nIndex) const -> std::string
+    const UnallocatedCString& THE_CONTRACT,
+    const std::int32_t& nIndex) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
 
@@ -1468,8 +1488,8 @@ auto OTAPI_Exec::Smart_GetPartyByIndex(
 
 /// returns the name of the bylaw.
 auto OTAPI_Exec::Smart_GetBylawByIndex(
-    const std::string& THE_CONTRACT,
-    const std::int32_t& nIndex) const -> std::string
+    const UnallocatedCString& THE_CONTRACT,
+    const std::int32_t& nIndex) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
 
@@ -1499,8 +1519,8 @@ auto OTAPI_Exec::Smart_GetBylawByIndex(
 }
 
 auto OTAPI_Exec::Bylaw_GetLanguage(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME) const -> std::string
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1529,8 +1549,8 @@ auto OTAPI_Exec::Bylaw_GetLanguage(
 }
 
 auto OTAPI_Exec::Bylaw_GetClauseCount(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME) const -> std::int32_t
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1558,8 +1578,8 @@ auto OTAPI_Exec::Bylaw_GetClauseCount(
 }
 
 auto OTAPI_Exec::Bylaw_GetVariableCount(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME) const -> std::int32_t
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1587,8 +1607,8 @@ auto OTAPI_Exec::Bylaw_GetVariableCount(
 }
 
 auto OTAPI_Exec::Bylaw_GetHookCount(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME) const -> std::int32_t
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1616,8 +1636,8 @@ auto OTAPI_Exec::Bylaw_GetHookCount(
 }
 
 auto OTAPI_Exec::Bylaw_GetCallbackCount(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME) const -> std::int32_t
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1645,10 +1665,10 @@ auto OTAPI_Exec::Bylaw_GetCallbackCount(
 }
 
 auto OTAPI_Exec::Clause_GetNameByIndex(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
     const std::int32_t& nIndex) const
-    -> std::string  // returns the name of the clause.
+    -> UnallocatedCString  // returns the name of the clause.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1688,11 +1708,11 @@ auto OTAPI_Exec::Clause_GetNameByIndex(
 }
 
 auto OTAPI_Exec::Clause_GetContents(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
-    const std::string& CLAUSE_NAME) const
-    -> std::string  // returns the contents of the
-                    // clause.
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
+    const UnallocatedCString& CLAUSE_NAME) const
+    -> UnallocatedCString  // returns the contents of the
+                           // clause.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1732,10 +1752,10 @@ auto OTAPI_Exec::Clause_GetContents(
 }
 
 auto OTAPI_Exec::Variable_GetNameByIndex(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
     const std::int32_t& nIndex) const
-    -> std::string  // returns the name of the variable.
+    -> UnallocatedCString  // returns the name of the variable.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1774,10 +1794,11 @@ auto OTAPI_Exec::Variable_GetNameByIndex(
 }
 
 auto OTAPI_Exec::Variable_GetType(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
-    const std::string& VARIABLE_NAME) const -> std::string  // returns the type
-                                                            // of the variable.
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
+    const UnallocatedCString& VARIABLE_NAME) const
+    -> UnallocatedCString  // returns the type
+                           // of the variable.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1818,11 +1839,11 @@ auto OTAPI_Exec::Variable_GetType(
 }
 
 auto OTAPI_Exec::Variable_GetAccess(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
-    const std::string& VARIABLE_NAME) const
-    -> std::string  // returns the access level of the
-                    // variable.
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
+    const UnallocatedCString& VARIABLE_NAME) const
+    -> UnallocatedCString  // returns the access level of the
+                           // variable.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1863,11 +1884,11 @@ auto OTAPI_Exec::Variable_GetAccess(
 }
 
 auto OTAPI_Exec::Variable_GetContents(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
-    const std::string& VARIABLE_NAME) const
-    -> std::string  // returns the contents of the
-                    // variable.
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
+    const UnallocatedCString& VARIABLE_NAME) const
+    -> UnallocatedCString  // returns the contents of the
+                           // variable.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1917,10 +1938,10 @@ auto OTAPI_Exec::Variable_GetContents(
 }
 
 auto OTAPI_Exec::Hook_GetNameByIndex(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
     const std::int32_t& nIndex) const
-    -> std::string  // returns the name of the hook.
+    -> UnallocatedCString  // returns the name of the hook.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1950,9 +1971,9 @@ auto OTAPI_Exec::Hook_GetNameByIndex(
 
 /// Returns the number of clauses attached to a specific hook.
 auto OTAPI_Exec::Hook_GetClauseCount(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
-    const std::string& HOOK_NAME) const -> std::int32_t
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
+    const UnallocatedCString& HOOK_NAME) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -1990,10 +2011,10 @@ auto OTAPI_Exec::Hook_GetClauseCount(
 /// This function returns the name for the clause at the specified index.
 ///
 auto OTAPI_Exec::Hook_GetClauseAtIndex(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
-    const std::string& HOOK_NAME,
-    const std::int32_t& nIndex) const -> std::string
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
+    const UnallocatedCString& HOOK_NAME,
+    const std::int32_t& nIndex) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -2039,10 +2060,10 @@ auto OTAPI_Exec::Hook_GetClauseAtIndex(
 }
 
 auto OTAPI_Exec::Callback_GetNameByIndex(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
     const std::int32_t& nIndex) const
-    -> std::string  // returns the name of the callback.
+    -> UnallocatedCString  // returns the name of the callback.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -2071,11 +2092,11 @@ auto OTAPI_Exec::Callback_GetNameByIndex(
 }
 
 auto OTAPI_Exec::Callback_GetClause(
-    const std::string& THE_CONTRACT,
-    const std::string& BYLAW_NAME,
-    const std::string& CALLBACK_NAME) const
-    -> std::string  // returns name of clause attached
-                    // to callback.
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& BYLAW_NAME,
+    const UnallocatedCString& CALLBACK_NAME) const
+    -> UnallocatedCString  // returns name of clause attached
+                           // to callback.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(BYLAW_NAME);
@@ -2113,8 +2134,8 @@ auto OTAPI_Exec::Callback_GetClause(
 }
 
 auto OTAPI_Exec::Party_GetAcctCount(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME) const -> std::int32_t
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -2142,8 +2163,8 @@ auto OTAPI_Exec::Party_GetAcctCount(
 }
 
 auto OTAPI_Exec::Party_GetAgentCount(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME) const -> std::int32_t
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME) const -> std::int32_t
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -2175,8 +2196,8 @@ auto OTAPI_Exec::Party_GetAgentCount(
 // (If there is one... Contract might not be
 // signed yet.)
 auto OTAPI_Exec::Party_GetID(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME) const -> std::string
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME) const -> UnallocatedCString
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -2205,10 +2226,10 @@ auto OTAPI_Exec::Party_GetID(
 }
 
 auto OTAPI_Exec::Party_GetAcctNameByIndex(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME,
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME,
     const std::int32_t& nIndex) const
-    -> std::string  // returns the name of the clause.
+    -> UnallocatedCString  // returns the name of the clause.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -2248,12 +2269,12 @@ auto OTAPI_Exec::Party_GetAcctNameByIndex(
 }
 
 auto OTAPI_Exec::Party_GetAcctID(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME,
-    const std::string& ACCT_NAME) const
-    -> std::string  // returns the account ID based on the
-                    // account
-                    // name. (If there is one yet...)
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME,
+    const UnallocatedCString& ACCT_NAME) const
+    -> UnallocatedCString  // returns the account ID based on the
+                           // account
+                           // name. (If there is one yet...)
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -2293,13 +2314,13 @@ auto OTAPI_Exec::Party_GetAcctID(
 }
 
 auto OTAPI_Exec::Party_GetAcctInstrumentDefinitionID(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME,
-    const std::string& ACCT_NAME) const
-    -> std::string  // returns the instrument definition ID
-                    // based on
-                    // the
-                    // account name.
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME,
+    const UnallocatedCString& ACCT_NAME) const
+    -> UnallocatedCString  // returns the instrument definition ID
+                           // based on
+                           // the
+                           // account name.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -2332,7 +2353,7 @@ auto OTAPI_Exec::Party_GetAcctInstrumentDefinitionID(
                     .Flush();
             } else  // We found the account...
             {
-                const std::string str_return(
+                const UnallocatedCString str_return(
                     pAcct->GetInstrumentDefinitionID().Get());  // Success.
                 return str_return;
             }
@@ -2342,12 +2363,12 @@ auto OTAPI_Exec::Party_GetAcctInstrumentDefinitionID(
 }
 
 auto OTAPI_Exec::Party_GetAcctAgentName(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME,
-    const std::string& ACCT_NAME) const
-    -> std::string  // returns the authorized agent for the
-                    // named
-                    // account.
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME,
+    const UnallocatedCString& ACCT_NAME) const
+    -> UnallocatedCString  // returns the authorized agent for the
+                           // named
+                           // account.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -2380,7 +2401,7 @@ auto OTAPI_Exec::Party_GetAcctAgentName(
                     .Flush();
             } else  // We found the account...
             {
-                const std::string str_return(
+                const UnallocatedCString str_return(
                     pAcct->GetAgentName().Get());  // Success.
                 return str_return;
             }
@@ -2390,10 +2411,10 @@ auto OTAPI_Exec::Party_GetAcctAgentName(
 }
 
 auto OTAPI_Exec::Party_GetAgentNameByIndex(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME,
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME,
     const std::int32_t& nIndex) const
-    -> std::string  // returns the name of the agent.
+    -> UnallocatedCString  // returns the name of the agent.
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -2425,7 +2446,7 @@ auto OTAPI_Exec::Party_GetAgentNameByIndex(
                     .Flush();
             } else  // We found the agent...
             {
-                const std::string str_name(
+                const UnallocatedCString str_name(
                     pAgent->GetName().Get());  // Success.
                 return str_name;
             }
@@ -2435,11 +2456,11 @@ auto OTAPI_Exec::Party_GetAgentNameByIndex(
 }
 
 auto OTAPI_Exec::Party_GetAgentID(
-    const std::string& THE_CONTRACT,
-    const std::string& PARTY_NAME,
-    const std::string& AGENT_NAME) const
-    -> std::string  // returns ID of the agent. (If
-                    // there is one...)
+    const UnallocatedCString& THE_CONTRACT,
+    const UnallocatedCString& PARTY_NAME,
+    const UnallocatedCString& AGENT_NAME) const
+    -> UnallocatedCString  // returns ID of the agent. (If
+                           // there is one...)
 {
     OT_VERIFY_STD_STR(THE_CONTRACT);
     OT_VERIFY_STD_STR(PARTY_NAME);
@@ -2490,7 +2511,7 @@ auto OTAPI_Exec::Party_GetAgentID(
 // returns bool (true or false aka 1 or 0.)
 //
 auto OTAPI_Exec::IsBasketCurrency(
-    const std::string& INSTRUMENT_DEFINITION_ID) const -> bool
+    const UnallocatedCString& INSTRUMENT_DEFINITION_ID) const -> bool
 {
     OT_VERIFY_ID_STR(INSTRUMENT_DEFINITION_ID);
 
@@ -2509,7 +2530,7 @@ auto OTAPI_Exec::IsBasketCurrency(
 // (Or zero.)
 //
 auto OTAPI_Exec::Basket_GetMemberCount(
-    const std::string& INSTRUMENT_DEFINITION_ID) const -> std::int32_t
+    const UnallocatedCString& INSTRUMENT_DEFINITION_ID) const -> std::int32_t
 {
     OT_VERIFY_ID_STR(INSTRUMENT_DEFINITION_ID);
 
@@ -2524,8 +2545,8 @@ auto OTAPI_Exec::Basket_GetMemberCount(
 // (Returns a string containing Instrument Definition ID, or "").
 //
 auto OTAPI_Exec::Basket_GetMemberType(
-    const std::string& BASKET_INSTRUMENT_DEFINITION_ID,
-    const std::int32_t& nIndex) const -> std::string
+    const UnallocatedCString& BASKET_INSTRUMENT_DEFINITION_ID,
+    const std::int32_t& nIndex) const -> UnallocatedCString
 {
     OT_VERIFY_ID_STR(BASKET_INSTRUMENT_DEFINITION_ID);
     OT_VERIFY_MIN_BOUND(nIndex, 0);
@@ -2555,7 +2576,7 @@ auto OTAPI_Exec::Basket_GetMemberType(
 // would return a string containing "10", in that example.
 //
 auto OTAPI_Exec::Basket_GetMinimumTransferAmount(
-    const std::string& BASKET_INSTRUMENT_DEFINITION_ID) const -> Amount
+    const UnallocatedCString& BASKET_INSTRUMENT_DEFINITION_ID) const -> Amount
 {
     OT_VERIFY_ID_STR(BASKET_INSTRUMENT_DEFINITION_ID);
 
@@ -2591,7 +2612,7 @@ auto OTAPI_Exec::Basket_GetMinimumTransferAmount(
 // currency at index 2 is 8.
 //
 auto OTAPI_Exec::Basket_GetMemberMinimumTransferAmount(
-    const std::string& BASKET_INSTRUMENT_DEFINITION_ID,
+    const UnallocatedCString& BASKET_INSTRUMENT_DEFINITION_ID,
     const std::int32_t& nIndex) const -> Amount
 {
     OT_VERIFY_ID_STR(BASKET_INSTRUMENT_DEFINITION_ID);
@@ -2623,13 +2644,13 @@ auto OTAPI_Exec::Basket_GetMemberMinimumTransferAmount(
 // OTAPI_Exec::issueBasket to send the request to the server.
 //
 auto OTAPI_Exec::GenerateBasketCreation(
-    const std::string& serverID,
-    const std::string& shortname,
-    const std::string& terms,
+    const UnallocatedCString& serverID,
+    const UnallocatedCString& shortname,
+    const UnallocatedCString& terms,
     const std::uint64_t weight,
     const display::Definition& displayDefinition,
     const Amount& redemptionIncrement,
-    const VersionNumber version) const -> std::string
+    const VersionNumber version) const -> UnallocatedCString
 {
     try {
         const auto serverContract =
@@ -2671,9 +2692,9 @@ auto OTAPI_Exec::GenerateBasketCreation(
 // to send the request to the server.
 //
 auto OTAPI_Exec::AddBasketCreationItem(
-    const std::string& basketTemplate,
-    const std::string& currencyID,
-    const std::uint64_t& weight) const -> std::string
+    const UnallocatedCString& basketTemplate,
+    const UnallocatedCString& currencyID,
+    const std::uint64_t& weight) const -> UnallocatedCString
 {
     OT_ASSERT_MSG(
         !basketTemplate.empty(),
@@ -2707,11 +2728,11 @@ auto OTAPI_Exec::AddBasketCreationItem(
 // send the request to the server.
 //
 auto OTAPI_Exec::GenerateBasketExchange(
-    const std::string& NOTARY_ID,
-    const std::string& NYM_ID,
-    const std::string& BASKET_INSTRUMENT_DEFINITION_ID,
-    const std::string& BASKET_ASSET_ACCT_ID,
-    const std::int32_t& TRANSFER_MULTIPLE) const -> std::string
+    const UnallocatedCString& NOTARY_ID,
+    const UnallocatedCString& NYM_ID,
+    const UnallocatedCString& BASKET_INSTRUMENT_DEFINITION_ID,
+    const UnallocatedCString& BASKET_ASSET_ACCT_ID,
+    const std::int32_t& TRANSFER_MULTIPLE) const -> UnallocatedCString
 // 1            2            3
 // 5=2,3,4  OR  10=4,6,8  OR 15=6,9,12
 {
@@ -2744,7 +2765,7 @@ auto OTAPI_Exec::GenerateBasketExchange(
     // automatically.)
     auto strOutput =
         String::Factory(*pBasket);  // Extract the basket to string form.
-    std::string pBuf = strOutput->Get();
+    UnallocatedCString pBuf = strOutput->Get();
     return pBuf;
 }
 
@@ -2758,11 +2779,11 @@ auto OTAPI_Exec::GenerateBasketExchange(
 // the request to the server.
 //
 auto OTAPI_Exec::AddBasketExchangeItem(
-    const std::string& NOTARY_ID,
-    const std::string& NYM_ID,
-    const std::string& THE_BASKET,
-    const std::string& INSTRUMENT_DEFINITION_ID,
-    const std::string& ASSET_ACCT_ID) const -> std::string
+    const UnallocatedCString& NOTARY_ID,
+    const UnallocatedCString& NYM_ID,
+    const UnallocatedCString& THE_BASKET,
+    const UnallocatedCString& INSTRUMENT_DEFINITION_ID,
+    const UnallocatedCString& ASSET_ACCT_ID) const -> UnallocatedCString
 {
     OT_VERIFY_ID_STR(NOTARY_ID);
     OT_VERIFY_ID_STR(NYM_ID);
@@ -2797,13 +2818,13 @@ auto OTAPI_Exec::AddBasketExchangeItem(
 
     auto strOutput = String::Factory(*theBasket);  // Extract the updated basket
                                                    // to string form.
-    std::string pBuf = strOutput->Get();
+    UnallocatedCString pBuf = strOutput->Get();
     return pBuf;
 }
 
 auto OTAPI_Exec::Wallet_ImportSeed(
-    const std::string& words,
-    const std::string& passphrase) const -> std::string
+    const UnallocatedCString& words,
+    const UnallocatedCString& passphrase) const -> UnallocatedCString
 {
     auto reason = api_.Factory().PasswordPrompt("Importing a BIP-39 seed");
     auto secureWords = api_.Factory().SecretFromText(words);

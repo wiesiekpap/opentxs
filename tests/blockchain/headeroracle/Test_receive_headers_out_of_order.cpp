@@ -5,13 +5,12 @@
 
 #include <gtest/gtest.h>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "Helpers.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/block/Header.hpp"
 #include "opentxs/blockchain/node/HeaderOracle.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ottest
 {
@@ -23,7 +22,7 @@ TEST_F(Test_HeaderOracle, receive_headers_out_of_order)
     EXPECT_TRUE(verify_siblings(siblings_5_));
 
     {
-        const auto expected = std::vector<std::string>{
+        const auto expected = ot::UnallocatedVector<ot::UnallocatedCString>{
             BLOCK_3,
             BLOCK_12,
             BLOCK_4,
@@ -40,7 +39,7 @@ TEST_F(Test_HeaderOracle, receive_headers_out_of_order)
     }
 
     {
-        const auto expected = std::vector<std::string>{
+        const auto expected = ot::UnallocatedVector<ot::UnallocatedCString>{
             BLOCK_12,
             BLOCK_4,
             BLOCK_5,
@@ -50,7 +49,7 @@ TEST_F(Test_HeaderOracle, receive_headers_out_of_order)
     }
 
     {
-        const auto expected = std::vector<std::string>{
+        const auto expected = ot::UnallocatedVector<ot::UnallocatedCString>{
             BLOCK_12,
             BLOCK_5,
             BLOCK_4,

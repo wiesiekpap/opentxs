@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <cstdlib>
 #include <memory>
-#include <string>
 
 #include "internal/otx/common/Contract.hpp"
 #include "internal/otx/common/StringXML.hpp"
@@ -21,6 +20,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -296,7 +296,7 @@ void Basket::GenerateContents(StringXML& xmlUnsigned, bool bHideAccountID) const
 
     tag.add_attribute("contractCount", std::to_string(m_nSubCount));
     tag.add_attribute("minimumTransfer", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         m_lMinimumTransfer.Serialize(writer(buf));
         return buf;
     }());
@@ -347,7 +347,7 @@ void Basket::GenerateContents(StringXML& xmlUnsigned, bool bHideAccountID) const
         tag.add_tag(tagItem);
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     xmlUnsigned.Concatenate("%s", str_result.c_str());

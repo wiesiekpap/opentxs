@@ -7,10 +7,7 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/Types.hpp"
@@ -21,6 +18,7 @@
 #include "internal/otx/common/script/OTScriptable.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -79,15 +77,16 @@ private:  // Private prevents erroneous use by other classes.
     using ot_super = OTCronItem;
 
 public:
-    using mapOfAccounts = std::map<std::string, SharedAccount>;
-    using mapOfStashes = std::map<std::string, OTStash*>;
+    using mapOfAccounts = UnallocatedMap<UnallocatedCString, SharedAccount>;
+    using mapOfStashes = UnallocatedMap<UnallocatedCString, OTStash*>;
 
     auto GetOriginType() const -> originType override
     {
         return originType::origin_smart_contract;
     }
 
-    void SetDisplayLabel(const std::string* pstrLabel = nullptr) override;
+    void SetDisplayLabel(
+        const UnallocatedCString* pstrLabel = nullptr) override;
     // FOR RECEIPTS
     // These IDs are stored for cases where this Cron Item is sitting in a
     // receipt
@@ -155,8 +154,9 @@ public:
     void HarvestClosingNumbers(
         const identity::Nym& pSignerNym,
         const PasswordPrompt& reason,
-        std::set<OTParty*>* pFailedParties = nullptr);  // Used on server-side.
-                                                        // Assumes the
+        UnallocatedSet<OTParty*>* pFailedParties = nullptr);  // Used on
+                                                              // server-side.
+                                                              // Assumes the
     // related Nyms are already loaded and
     // known to *this. Purpose of
     // pSignerNymm is to pass in the
@@ -244,10 +244,10 @@ public:
     // CALLBACKS that OT server uses occasionally. (Smart Contracts can
     // supply a special script that is activated for each callback.)
 
-    //    bool OTScriptable::CanExecuteClause(std::string str_party_name,
-    // std::string str_clause_name); // This calls (if available) the
+    //    bool OTScriptable::CanExecuteClause(UnallocatedCString str_party_name,
+    // UnallocatedCString str_clause_name); // This calls (if available) the
     // scripted clause: bool party_may_execute_clause(party_name, clause_name)
-    auto CanCancelContract(std::string str_party_name)
+    auto CanCancelContract(UnallocatedCString str_party_name)
         -> bool;  // This calls (if
                   // available) the
                   // scripted
@@ -255,46 +255,52 @@ public:
     // bool party_may_cancel_contract(party_name)
     // OT NATIVE FUNCTIONS -- Available for scripts to call:
 
-    void SetRemainingTimer(std::string str_seconds_from_now);  // onProcess
-                                                               // will
-                                                               // trigger X
-                                                               // seconds
-                                                               // from
-                                                               // now...
-                                                               // (And not
-                                                               // until
-                                                               // then,
-                                                               // either.)
+    void SetRemainingTimer(
+        UnallocatedCString str_seconds_from_now);  // onProcess
+                                                   // will
+                                                   // trigger X
+                                                   // seconds
+                                                   // from
+                                                   // now...
+                                                   // (And not
+                                                   // until
+                                                   // then,
+                                                   // either.)
     auto GetRemainingTimer() const
-        -> std::string;  // returns seconds left on the
-                         // timer,
-                         // in string format, or "0".
+        -> UnallocatedCString;  // returns seconds left on the
+                                // timer,
+                                // in string format, or "0".
     // class member, with string parameter
     auto MoveAcctFundsStr(
-        std::string from_acct_name,
-        std::string to_acct_name,
-        std::string str_Amount) -> bool;  // calls OTCronItem::MoveFunds()
+        UnallocatedCString from_acct_name,
+        UnallocatedCString to_acct_name,
+        UnallocatedCString str_Amount)
+        -> bool;  // calls OTCronItem::MoveFunds()
     auto StashAcctFunds(
-        std::string from_acct_name,
-        std::string to_stash_name,
-        std::string str_Amount) -> bool;  // calls StashFunds()
+        UnallocatedCString from_acct_name,
+        UnallocatedCString to_stash_name,
+        UnallocatedCString str_Amount) -> bool;  // calls StashFunds()
     auto UnstashAcctFunds(
-        std::string to_acct_name,
-        std::string from_stash_name,
-        std::string str_Amount) -> bool;  // calls StashFunds(lAmount * (-1) )
-    auto GetAcctBalance(std::string from_acct_name) -> std::string;
+        UnallocatedCString to_acct_name,
+        UnallocatedCString from_stash_name,
+        UnallocatedCString str_Amount)
+        -> bool;  // calls StashFunds(lAmount * (-1) )
+    auto GetAcctBalance(UnallocatedCString from_acct_name)
+        -> UnallocatedCString;
     auto GetStashBalance(
-        std::string stash_name,
-        std::string instrument_definition_id) -> std::string;
+        UnallocatedCString stash_name,
+        UnallocatedCString instrument_definition_id) -> UnallocatedCString;
 
-    auto GetUnitTypeIDofAcct(std::string from_acct_name) -> std::string;
+    auto GetUnitTypeIDofAcct(UnallocatedCString from_acct_name)
+        -> UnallocatedCString;
 
     // Todo: someday add "rejection notice" here too.
     // (Might be a demand for smart contracts to send failure notices.)
     // We already send a failure notice to all parties in the cash where
     // the smart contract fails to activate.
-    auto SendNoticeToParty(std::string party_name, const PasswordPrompt& reason)
-        -> bool;
+    auto SendNoticeToParty(
+        UnallocatedCString party_name,
+        const PasswordPrompt& reason) -> bool;
     auto SendANoticeToAllParties(const PasswordPrompt& reason) -> bool;
 
     void DeactivateSmartContract();
@@ -314,7 +320,7 @@ public:
     // Done: Have a server backing account to double this record (like with cash
     // withdrawals) so it will turn up properly on an audit.
     //
-    auto GetStash(std::string str_stash_name) -> OTStash*;
+    auto GetStash(UnallocatedCString str_stash_name) -> OTStash*;
 
     // Low-level.
     void ExecuteClauses(

@@ -13,10 +13,8 @@
 #include <cstring>
 #include <iosfwd>
 #include <iterator>
-#include <set>
 #include <sstream>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -43,6 +41,7 @@
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/BlockchainTransactionOutput.pb.h"
@@ -56,7 +55,7 @@ auto BitcoinTransactionOutput(
     const std::uint32_t index,
     const blockchain::Amount& value,
     std::unique_ptr<const blockchain::block::bitcoin::internal::Script> script,
-    const std::set<blockchain::crypto::Key>& keys) noexcept
+    const UnallocatedSet<blockchain::crypto::Key>& keys) noexcept
     -> std::unique_ptr<blockchain::block::bitcoin::internal::Output>
 {
     using ReturnType = blockchain::block::bitcoin::implementation::Output;
@@ -114,7 +113,7 @@ auto BitcoinTransactionOutput(
         using Payer = OTIdentifier;
         using Payee = OTIdentifier;
         using Correction = std::pair<Payer, Payee>;
-        auto corrections = std::vector<Correction>{};
+        auto corrections = UnallocatedVector<Correction>{};
         const auto& blockchain = api.Crypto().Blockchain();
 
         for (const auto& key : in.key()) {
@@ -168,7 +167,7 @@ auto BitcoinTransactionOutput(
             }(),
             static_cast<blockchain::node::TxoState>(in.state()),
             [&] {
-                auto out = std::set<blockchain::node::TxoTag>{};
+                auto out = UnallocatedSet<blockchain::node::TxoTag>{};
 
                 for (const auto& tag : in.tag()) {
                     out.emplace(static_cast<blockchain::node::TxoTag>(tag));
@@ -232,7 +231,7 @@ Output::Output(
     bool indexed,
     block::Position minedPosition,
     node::TxoState state,
-    std::set<node::TxoTag> tags) noexcept(false)
+    UnallocatedSet<node::TxoTag> tags) noexcept(false)
     : api_(api)
     , chain_(chain)
     , serialize_version_(version)
@@ -321,8 +320,8 @@ Output::Output(const Output& rhs) noexcept
 {
 }
 
-auto Output::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
-    -> void
+auto Output::AssociatedLocalNyms(
+    UnallocatedVector<OTNymID>& output) const noexcept -> void
 {
     cache_.for_each_key([&](const auto& key) {
         const auto& owner = api_.Crypto().Blockchain().Owner(key);
@@ -332,7 +331,7 @@ auto Output::AssociatedLocalNyms(std::vector<OTNymID>& output) const noexcept
 }
 
 auto Output::AssociatedRemoteContacts(
-    std::vector<OTIdentifier>& output) const noexcept -> void
+    UnallocatedVector<OTIdentifier>& output) const noexcept -> void
 {
     const auto hashes = script_->LikelyPubkeyHashes(api_);
     const auto& api = api_.Crypto().Blockchain();
@@ -362,7 +361,7 @@ auto Output::CalculateSize() const noexcept -> std::size_t
 }
 
 auto Output::ExtractElements(const filter::Type style) const noexcept
-    -> std::vector<Space>
+    -> UnallocatedVector<Space>
 {
     return script_->ExtractElements(style);
 }
@@ -404,7 +403,7 @@ auto Output::FindMatches(
     return output;
 }
 
-auto Output::GetPatterns() const noexcept -> std::vector<PatternID>
+auto Output::GetPatterns() const noexcept -> UnallocatedVector<PatternID>
 {
     return {std::begin(pubkey_hashes_), std::end(pubkey_hashes_)};
 }
@@ -451,10 +450,10 @@ auto Output::NetBalanceChange(const identifier::Nym& nym) const noexcept
     return output;
 }
 
-auto Output::Note() const noexcept -> std::string
+auto Output::Note() const noexcept -> UnallocatedCString
 {
     auto done{false};
-    auto output = std::string{};
+    auto output = UnallocatedCString{};
     const auto& api = api_.Crypto().Blockchain();
     cache_.for_each_key([&](const auto& key) {
         if (done) { return; }
@@ -474,7 +473,7 @@ auto Output::Note() const noexcept -> std::string
     return output;
 }
 
-auto Output::Print() const noexcept -> std::string
+auto Output::Print() const noexcept -> UnallocatedCString
 {
     const auto& definition = blockchain::GetDefinition(chain_);
 
@@ -554,11 +553,11 @@ auto Output::Serialize(SerializeType& out) const noexcept -> bool
     out.set_indexed(true);
 
     if (const auto payer = cache_.payer(); false == payer->empty()) {
-        out.add_payer(std::string{payer->Bytes()});
+        out.add_payer(UnallocatedCString{payer->Bytes()});
     }
 
     if (const auto payee = cache_.payee(); false == payee->empty()) {
-        out.add_payee(std::string{payee->Bytes()});
+        out.add_payee(UnallocatedCString{payee->Bytes()});
     }
 
     if (const auto& [height, hash] = cache_.position(); 0 <= height) {

@@ -7,22 +7,21 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::network::zeromq
 {
-OPENTXS_EXPORT auto MakeArbitraryInproc() noexcept -> std::string;
+OPENTXS_EXPORT auto MakeArbitraryInproc() noexcept -> UnallocatedCString;
 auto MakeDeterministicInproc(
-    const std::string& path,
+    const UnallocatedCString& path,
     const int instance,
-    const int version) noexcept -> std::string;
+    const int version) noexcept -> UnallocatedCString;
 auto MakeDeterministicInproc(
-    const std::string& path,
+    const UnallocatedCString& path,
     const int instance,
     const int version,
-    const std::string& suffix) noexcept -> std::string;
+    const UnallocatedCString& suffix) noexcept -> UnallocatedCString;
 auto RawToZ85(const ReadView input, const AllocateOutput output) noexcept
     -> bool;
 auto Z85ToRaw(const ReadView input, const AllocateOutput output) noexcept

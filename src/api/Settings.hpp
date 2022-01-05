@@ -8,12 +8,12 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
-#include <string>
 #include <tuple>
 
 #include "internal/util/Flag.hpp"
 #include "opentxs/api/Settings.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace opentxs
@@ -111,13 +111,13 @@ public:
         const String& strSection,
         const String& strKey,
         const String& strDefault,
-        std::string& out_strResult,
+        UnallocatedCString& out_strResult,
         bool& out_bIsNew) const -> bool final;
     auto CheckSet_str(
         const String& strSection,
         const String& strKey,
         const String& strDefault,
-        std::string& out_strResult,
+        UnallocatedCString& out_strResult,
         bool& out_bIsNew,
         const String& strComment) const -> bool final;
     auto CheckSet_str(

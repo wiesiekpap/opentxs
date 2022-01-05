@@ -15,15 +15,12 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
-#include <map>
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <string_view>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "Proto.tpp"
@@ -43,6 +40,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/crypto/HashType.hpp"
 #include "opentxs/network/blockchain/bitcoin/CompactSize.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/GCS.pb.h"
@@ -71,13 +69,13 @@ auto GCS(
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
-    const std::vector<OTData>& elements) noexcept
+    const UnallocatedVector<OTData>& elements) noexcept
     -> std::unique_ptr<blockchain::GCS>
 {
     using ReturnType = blockchain::implementation::GCS;
 
     try {
-        auto effective = std::vector<ReadView>{};
+        auto effective = UnallocatedVector<ReadView>{};
 
         for (const auto& element : elements) {
             if (element->empty()) { continue; }
@@ -189,7 +187,7 @@ auto GCS(
     try {
         const auto params = blockchain::internal::GetFilterParams(type);
         const auto input = block.Internal().ExtractElements(type);
-        auto elements = std::vector<ReadView>{};
+        auto elements = UnallocatedVector<ReadView>{};
         std::transform(
             std::begin(input), std::end(input), std::back_inserter(elements), [
             ](const auto& element) -> auto { return reader(element); });
@@ -256,9 +254,9 @@ auto golomb_encode(
 auto GolombDecode(
     const std::uint32_t N,
     const std::uint8_t P,
-    const Space& encoded) noexcept(false) -> std::vector<std::uint64_t>
+    const Space& encoded) noexcept(false) -> UnallocatedVector<std::uint64_t>
 {
-    auto output = std::vector<std::uint64_t>{};
+    auto output = UnallocatedVector<std::uint64_t>{};
     auto stream = BitReader(encoded);
     auto last = std::uint64_t{0};
 
@@ -274,7 +272,7 @@ auto GolombDecode(
 
 auto GolombEncode(
     const std::uint8_t P,
-    const std::vector<std::uint64_t>& hashedSet) noexcept(false) -> Space
+    const UnallocatedVector<std::uint64_t>& hashedSet) noexcept(false) -> Space
 {
     auto output = Space{};
     output.reserve(hashedSet.size() * P * 2u);
@@ -328,10 +326,10 @@ auto HashedSetConstruct(
     const ReadView key,
     const std::uint32_t N,
     const std::uint32_t M,
-    const std::vector<ReadView> items) noexcept(false)
-    -> std::vector<std::uint64_t>
+    const UnallocatedVector<ReadView> items) noexcept(false)
+    -> UnallocatedVector<std::uint64_t>
 {
-    auto output = std::vector<std::uint64_t>{};
+    auto output = UnallocatedVector<std::uint64_t>{};
     std::transform(
         std::begin(items),
         std::end(items),
@@ -374,7 +372,7 @@ GCS::GCS(
     const std::uint8_t bits,
     const std::uint32_t fpRate,
     const ReadView key,
-    const std::vector<ReadView>& elements) noexcept(false)
+    const UnallocatedVector<ReadView>& elements) noexcept(false)
     : version_(1)
     , api_(api)
     , bits_(bits)
@@ -445,20 +443,20 @@ auto GCS::Hash() const noexcept -> OTData
     return internal::FilterToHash(api_, Encode()->Bytes());
 }
 
-auto GCS::hashed_set_construct(const std::vector<OTData>& elements)
-    const noexcept -> std::vector<std::uint64_t>
+auto GCS::hashed_set_construct(const UnallocatedVector<OTData>& elements)
+    const noexcept -> UnallocatedVector<std::uint64_t>
 {
     return hashed_set_construct(transform(elements));
 }
 
-auto GCS::hashed_set_construct(const std::vector<Space>& elements)
-    const noexcept -> std::vector<std::uint64_t>
+auto GCS::hashed_set_construct(const UnallocatedVector<Space>& elements)
+    const noexcept -> UnallocatedVector<std::uint64_t>
 {
     return hashed_set_construct(transform(elements));
 }
 
-auto GCS::hashed_set_construct(const std::vector<ReadView>& elements)
-    const noexcept -> std::vector<std::uint64_t>
+auto GCS::hashed_set_construct(const UnallocatedVector<ReadView>& elements)
+    const noexcept -> UnallocatedVector<std::uint64_t>
 {
     return gcs::HashedSetConstruct(
         api_, key_->Bytes(), count_, false_positive_rate_, elements);
@@ -478,9 +476,9 @@ auto GCS::Header(const ReadView previous) const noexcept -> OTData
 auto GCS::Match(const Targets& targets) const noexcept -> Matches
 {
     auto output = Matches{};
-    auto hashed = std::vector<std::uint64_t>{};
-    auto matches = std::vector<std::uint64_t>{};
-    auto map = std::map<std::uint64_t, Targets::const_iterator>{};
+    auto hashed = UnallocatedVector<std::uint64_t>{};
+    auto matches = UnallocatedVector<std::uint64_t>{};
+    auto map = UnallocatedMap<std::uint64_t, Targets::const_iterator>{};
     const auto& set = decompress();
 
     for (auto i = targets.cbegin(); i != targets.cend(); ++i) {
@@ -552,20 +550,21 @@ auto GCS::Test(const ReadView target) const noexcept -> bool
     return false;
 }
 
-auto GCS::Test(const std::vector<OTData>& targets) const noexcept -> bool
+auto GCS::Test(const UnallocatedVector<OTData>& targets) const noexcept -> bool
 {
     return test(hashed_set_construct(targets));
 }
 
-auto GCS::Test(const std::vector<Space>& targets) const noexcept -> bool
+auto GCS::Test(const UnallocatedVector<Space>& targets) const noexcept -> bool
 {
     return test(hashed_set_construct(targets));
 }
 
-auto GCS::test(const std::vector<std::uint64_t>& targets) const noexcept -> bool
+auto GCS::test(const UnallocatedVector<std::uint64_t>& targets) const noexcept
+    -> bool
 {
     const auto& set = decompress();
-    auto matches = std::vector<std::uint64_t>{};
+    auto matches = UnallocatedVector<std::uint64_t>{};
     std::set_intersection(
         std::begin(targets),
         std::end(targets),
@@ -576,10 +575,10 @@ auto GCS::test(const std::vector<std::uint64_t>& targets) const noexcept -> bool
     return 0 < matches.size();
 }
 
-auto GCS::transform(const std::vector<OTData>& in) noexcept
-    -> std::vector<ReadView>
+auto GCS::transform(const UnallocatedVector<OTData>& in) noexcept
+    -> UnallocatedVector<ReadView>
 {
-    auto output = std::vector<ReadView>{};
+    auto output = UnallocatedVector<ReadView>{};
     std::transform(
         std::begin(in),
         std::end(in),
@@ -589,10 +588,10 @@ auto GCS::transform(const std::vector<OTData>& in) noexcept
     return output;
 }
 
-auto GCS::transform(const std::vector<Space>& in) noexcept
-    -> std::vector<ReadView>
+auto GCS::transform(const UnallocatedVector<Space>& in) noexcept
+    -> UnallocatedVector<ReadView>
 {
-    auto output = std::vector<ReadView>{};
+    auto output = UnallocatedVector<ReadView>{};
     std::transform(
         std::begin(in),
         std::end(in),

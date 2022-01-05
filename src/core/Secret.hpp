@@ -14,10 +14,10 @@ extern "C" {
 #include <limits>
 #include <new>
 #include <optional>
-#include <vector>
 
 #include "opentxs/core/Secret.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "util/Allocator.hpp"
 

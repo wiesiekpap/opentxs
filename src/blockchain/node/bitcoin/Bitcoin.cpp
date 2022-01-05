@@ -19,8 +19,8 @@ auto BlockchainNetworkBitcoin(
     const api::Session& api,
     const blockchain::Type type,
     const blockchain::node::internal::Config& config,
-    const std::string& seednode,
-    const std::string& syncEndpoint) noexcept
+    const UnallocatedCString& seednode,
+    const UnallocatedCString& syncEndpoint) noexcept
     -> std::unique_ptr<blockchain::node::internal::Network>
 {
     using ReturnType = blockchain::node::base::Bitcoin;
@@ -36,8 +36,8 @@ Bitcoin::Bitcoin(
     const api::Session& api,
     const Type type,
     const internal::Config& config,
-    const std::string& seednode,
-    const std::string& syncEndpoint)
+    const UnallocatedCString& seednode,
+    const UnallocatedCString& syncEndpoint)
     : ot_super(api, type, config, seednode, syncEndpoint)
 {
     init();

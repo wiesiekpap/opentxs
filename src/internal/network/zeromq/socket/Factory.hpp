@@ -59,7 +59,7 @@ auto PairSocket(
 auto PairSocket(
     const network::zeromq::Context& context,
     const network::zeromq::ListenCallback& callback,
-    const std::string& endpoint)
+    const UnallocatedCString& endpoint)
     -> std::unique_ptr<network::zeromq::socket::Pair>;
 auto Pipeline(
     const api::Session& api,

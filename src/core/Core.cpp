@@ -8,9 +8,7 @@
 
 #include <robin_hood.h>
 #include <cstdint>
-#include <map>
 #include <mutex>
-#include <set>
 #include <utility>
 
 #include "internal/blockchain/Params.hpp"
@@ -26,6 +24,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/ContractEnums.pb.h"
 #include "util/Container.hpp"
@@ -33,7 +32,7 @@
 namespace opentxs::blockchain
 {
 auto AccountName([[maybe_unused]] const blockchain::Type chain) noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     return "This device";
 }
@@ -42,7 +41,7 @@ auto Chain(const api::Session& api, const identifier::Nym& id) noexcept
     -> blockchain::Type
 {
     static const auto data = [&] {
-        auto out = std::map<OTNymID, blockchain::Type>{};
+        auto out = UnallocatedMap<OTNymID, blockchain::Type>{};
 
         for (const auto& chain : blockchain::DefinedChains()) {
             out.emplace(IssuerID(api, chain), chain);
@@ -64,7 +63,7 @@ auto Chain(const api::Session& api, const identifier::Notary& id) noexcept
     -> blockchain::Type
 {
     static const auto data = [&] {
-        auto out = std::map<OTNotaryID, blockchain::Type>{};
+        auto out = UnallocatedMap<OTNotaryID, blockchain::Type>{};
 
         for (const auto& chain : blockchain::DefinedChains()) {
             out.emplace(NotaryID(api, chain), chain);
@@ -87,7 +86,7 @@ auto Chain(
     const identifier::UnitDefinition& id) noexcept -> blockchain::Type
 {
     static const auto data = [&] {
-        auto out = std::map<OTUnitID, blockchain::Type>{};
+        auto out = UnallocatedMap<OTUnitID, blockchain::Type>{};
 
         for (const auto& chain : blockchain::DefinedChains()) {
             out.emplace(UnitID(api, chain), chain);
@@ -109,7 +108,7 @@ auto IssuerID(const api::Session& api, const blockchain::Type chain) noexcept
     -> const identifier::Nym&
 {
     static auto mutex = std::mutex{};
-    static auto map = std::map<blockchain::Type, OTNymID>{};
+    static auto map = UnallocatedMap<blockchain::Type, OTNymID>{};
 
     auto lock = Lock{mutex};
 
@@ -137,7 +136,7 @@ auto NotaryID(const api::Session& api, const blockchain::Type chain) noexcept
     -> const identifier::Notary&
 {
     static auto mutex = std::mutex{};
-    static auto map = std::map<blockchain::Type, OTNotaryID>{};
+    static auto map = UnallocatedMap<blockchain::Type, OTNotaryID>{};
 
     auto lock = Lock{mutex};
 
@@ -149,7 +148,7 @@ auto NotaryID(const api::Session& api, const blockchain::Type chain) noexcept
 
     auto [it, notUsed] = map.emplace(chain, api.Factory().ServerID());
     auto& output = it->second;
-    const auto preimage = std::string{"blockchain-"} +
+    const auto preimage = UnallocatedCString{"blockchain-"} +
                           std::to_string(static_cast<std::uint32_t>(chain));
     output->CalculateDigest(preimage);
 
@@ -160,7 +159,7 @@ auto UnitID(const api::Session& api, const blockchain::Type chain) noexcept
     -> const identifier::UnitDefinition&
 {
     static auto mutex = std::mutex{};
-    static auto map = std::map<blockchain::Type, OTUnitID>{};
+    static auto map = UnallocatedMap<blockchain::Type, OTUnitID>{};
 
     auto lock = Lock{mutex};
 
@@ -213,7 +212,7 @@ auto addresstype_map() noexcept -> const AddressTypeMap&
 
 namespace opentxs
 {
-auto print(core::UnitType in) noexcept -> std::string
+auto print(core::UnitType in) noexcept -> UnallocatedCString
 {
     return proto::TranslateItemType(static_cast<std::uint32_t>(in));
 }

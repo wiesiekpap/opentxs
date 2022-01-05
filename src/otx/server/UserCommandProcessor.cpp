@@ -7,11 +7,8 @@
 #include "1_Internal.hpp"                       // IWYU pragma: associated
 #include "otx/server/UserCommandProcessor.hpp"  // IWYU pragma: associated
 
-#include <map>
 #include <memory>
-#include <set>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "Proto.hpp"
@@ -65,6 +62,7 @@
 #include "opentxs/identity/wot/claim/Attribute.hpp"
 #include "opentxs/otx/blind/Mint.hpp"  // IWYU pragma: keep
 #include "opentxs/otx/consensus/Client.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
 #include "opentxs/util/Pimpl.hpp"
@@ -510,9 +508,9 @@ auto UserCommandProcessor::cmd_add_claim(ReplyMessage& reply) const -> bool
     const auto requestingNym = String::Factory(nymID);
     const std::uint32_t section = msgIn.m_strNymID2->ToUint();
     const std::uint32_t type = msgIn.m_strInstrumentDefinitionID->ToUint();
-    const std::string value = msgIn.m_strAcctID->Get();
+    const UnallocatedCString value = msgIn.m_strAcctID->Get();
     const bool primary = msgIn.m_bBool;
-    std::set<std::uint32_t> attributes;
+    UnallocatedSet<std::uint32_t> attributes;
 
     if (primary) {
         attributes.insert(translate(identity::wot::claim::Attribute::Primary));
@@ -1874,7 +1872,7 @@ auto UserCommandProcessor::cmd_query_instrument_definitions(
     if (nullptr == inputMap) { return false; }
 
     auto& map = inputMap->the_map;
-    std::map<std::string, std::string> newMap{};
+    UnallocatedMap<UnallocatedCString, UnallocatedCString> newMap{};
 
     for (auto& it : map) {
         const auto& unitID = it.first;
@@ -2240,10 +2238,10 @@ auto UserCommandProcessor::cmd_request_admin(ReplyMessage& reply) const -> bool
     OT_ENFORCE_PERMISSION_MSG(ServerSettings::__cmd_request_admin);
 
     const String& requestingNym = msgIn.m_strNymID;
-    const std::string candidate = requestingNym.Get();
-    const std::string providedPassword = msgIn.m_strAcctID->Get();
+    const UnallocatedCString candidate = requestingNym.Get();
+    const UnallocatedCString providedPassword = msgIn.m_strAcctID->Get();
 
-    std::string overrideNym, password;
+    UnallocatedCString overrideNym, password;
     bool notUsed = false;
     server_.API().Config().CheckSet_str(
         String::Factory("permissions"),
@@ -2394,7 +2392,7 @@ auto UserCommandProcessor::cmd_trigger_clause(ReplyMessage& reply) const -> bool
         return false;
     }
 
-    const std::string clauseID = msgIn.m_strNymID2->Get();
+    const UnallocatedCString clauseID = msgIn.m_strNymID2->Get();
 
     if (smartContract->CanExecuteClause(party->GetPartyName(), clauseID)) {
         // Execute the clause.
@@ -2837,7 +2835,7 @@ auto UserCommandProcessor::ProcessUserCommand(
     const Message& msgIn,
     Message& msgOut) -> bool
 {
-    const std::string command(msgIn.m_strCommand->Get());
+    const UnallocatedCString command(msgIn.m_strCommand->Get());
     const auto type = Message::Type(command);
     ReplyMessage reply(
         *this,

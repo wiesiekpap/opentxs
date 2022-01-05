@@ -8,7 +8,6 @@
 #include "otx/server/ReplyMessage.hpp"  // IWYU pragma: associated
 
 #include <memory>
-#include <string>
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/Types.hpp"
@@ -23,6 +22,7 @@
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/server/UserCommandProcessor.hpp"
@@ -62,9 +62,9 @@ ReplyMessage::ReplyMessage(
     init_ = init();
 }
 
-auto ReplyMessage::Acknowledged() const -> std::set<RequestNumber>
+auto ReplyMessage::Acknowledged() const -> UnallocatedSet<RequestNumber>
 {
-    std::set<RequestNumber> output{};
+    UnallocatedSet<RequestNumber> output{};
     original_.m_AcknowledgedReplies.Output(output);
 
     return output;
@@ -72,7 +72,7 @@ auto ReplyMessage::Acknowledged() const -> std::set<RequestNumber>
 
 void ReplyMessage::attach_request()
 {
-    const std::string command = original_.m_strCommand->Get();
+    const UnallocatedCString command = original_.m_strCommand->Get();
     const auto type = Message::Type(command);
 
     switch (type) {
@@ -117,7 +117,7 @@ void ReplyMessage::attach_request()
 
 void ReplyMessage::clear_request()
 {
-    const std::string command = original_.m_strCommand->Get();
+    const UnallocatedCString command = original_.m_strCommand->Get();
     const auto type = Message::Type(command);
 
     switch (type) {

@@ -9,13 +9,9 @@
 
 #include <atomic>
 #include <chrono>
-#include <deque>
 #include <exception>
-#include <list>
-#include <map>
 #include <mutex>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "api/session/Session.hpp"
@@ -47,6 +43,7 @@
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/ZeroMQ.hpp"
 #include "opentxs/otx/blind/Mint.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Options.hpp"
 #include "opentxs/util/PasswordPrompt.hpp"
@@ -73,7 +70,7 @@ auto NotarySession(
     const api::Crypto& crypto,
     const api::Settings& config,
     const opentxs::network::zeromq::Context& context,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const int instance) -> std::unique_ptr<api::session::Notary>
 {
     using ReturnType = api::session::imp::Notary;
@@ -97,7 +94,7 @@ auto NotarySession(
                     ": There was a problem creating the server. The server "
                     "contract will be deleted. Error: ")(e.what())
                     .Flush();
-                const std::string datafolder = output->DataFolder();
+                const UnallocatedCString datafolder = output->DataFolder();
                 OTDB::EraseValueByKey(
                     *output,
                     datafolder,
@@ -136,7 +133,7 @@ Notary::Notary(
     const api::Crypto& crypto,
     const api::Settings& config,
     const opentxs::network::zeromq::Context& context,
-    const std::string& dataFolder,
+    const UnallocatedCString& dataFolder,
     const int instance)
     : Session(
           parent,
@@ -200,8 +197,8 @@ void Notary::DropOutgoing(const int count) const
 }
 
 void Notary::generate_mint(
-    const std::string& serverID,
-    const std::string& unitID,
+    const UnallocatedCString& serverID,
+    const UnallocatedCString& unitID,
     const std::uint32_t series) const
 {
     const auto unit = Factory().UnitID(unitID);
@@ -215,8 +212,8 @@ void Notary::generate_mint(
         return;
     }
 
-    const std::string seriesID =
-        std::string(SERIES_DIVIDER) + std::to_string(series);
+    const UnallocatedCString seriesID =
+        UnallocatedCString(SERIES_DIVIDER) + std::to_string(series);
     mint = factory_.Mint(server, nym.ID(), unit);
 
     OT_ASSERT(mint)
@@ -276,7 +273,7 @@ void Notary::generate_mint(
     internal.SaveMint();
 }
 
-auto Notary::GetAdminNym() const -> std::string
+auto Notary::GetAdminNym() const -> UnallocatedCString
 {
     auto output = String::Factory();
     bool exists{false};
@@ -291,7 +288,7 @@ auto Notary::GetAdminNym() const -> std::string
     return {};
 }
 
-auto Notary::GetAdminPassword() const -> std::string
+auto Notary::GetAdminPassword() const -> UnallocatedCString
 {
     auto output = String::Factory();
     bool exists{false};
@@ -311,9 +308,9 @@ auto Notary::GetPrivateMint(
     std::uint32_t index) const noexcept -> otx::blind::Mint&
 {
     auto lock = opentxs::Lock{mint_lock_};
-    const std::string id{unitID.str()};
-    const std::string seriesID =
-        std::string(SERIES_DIVIDER) + std::to_string(index);
+    const UnallocatedCString id{unitID.str()};
+    const UnallocatedCString seriesID =
+        UnallocatedCString(SERIES_DIVIDER) + std::to_string(index);
     auto& seriesMap = mints_[id];
     // Modifying the private version may invalidate the public version
     seriesMap.erase(PUBLIC_SERIES);
@@ -342,8 +339,8 @@ auto Notary::GetPublicMint(const identifier::UnitDefinition& unitID)
     const noexcept -> otx::blind::Mint&
 {
     auto lock = opentxs::Lock{mint_lock_};
-    const std::string id{unitID.str()};
-    const std::string seriesID{PUBLIC_SERIES};
+    const UnallocatedCString id{unitID.str()};
+    const UnallocatedCString seriesID{PUBLIC_SERIES};
     auto& output = [&]() -> auto&
     {
         auto& map = mints_[id];
@@ -366,9 +363,15 @@ auto Notary::GetPublicMint(const identifier::UnitDefinition& unitID)
     return output;
 }
 
-auto Notary::GetUserName() const -> std::string { return args_.NotaryName(); }
+auto Notary::GetUserName() const -> UnallocatedCString
+{
+    return args_.NotaryName();
+}
 
-auto Notary::GetUserTerms() const -> std::string { return args_.NotaryTerms(); }
+auto Notary::GetUserTerms() const -> UnallocatedCString
+{
+    return args_.NotaryTerms();
+}
 
 auto Notary::ID() const -> const identifier::Notary&
 {
@@ -384,20 +387,20 @@ void Notary::Init()
     Start();
 }
 
-auto Notary::InprocEndpoint() const -> std::string
+auto Notary::InprocEndpoint() const -> UnallocatedCString
 {
     return opentxs::network::zeromq::MakeDeterministicInproc(
         "notary", instance_, 1);
 }
 
 auto Notary::last_generated_series(
-    const std::string& serverID,
-    const std::string& unitID) const -> std::int32_t
+    const UnallocatedCString& serverID,
+    const UnallocatedCString& unitID) const -> std::int32_t
 {
     std::uint32_t output{0};
 
     for (output = 0; output < MAX_MINT_SERIES; ++output) {
-        const std::string filename =
+        const UnallocatedCString filename =
             unitID + SERIES_DIVIDER + std::to_string(output);
         const auto exists = OTDB::Exists(
             *this,
@@ -415,8 +418,8 @@ auto Notary::last_generated_series(
 
 auto Notary::load_private_mint(
     const opentxs::Lock& lock,
-    const std::string& unitID,
-    const std::string seriesID) const -> otx::blind::Mint
+    const UnallocatedCString& unitID,
+    const UnallocatedCString seriesID) const -> otx::blind::Mint
 {
     return verify_mint(
         lock,
@@ -427,8 +430,8 @@ auto Notary::load_private_mint(
 
 auto Notary::load_public_mint(
     const opentxs::Lock& lock,
-    const std::string& unitID,
-    const std::string seriesID) const -> otx::blind::Mint
+    const UnallocatedCString& unitID,
+    const UnallocatedCString seriesID) const -> otx::blind::Mint
 {
     return verify_mint(
         lock, unitID, seriesID, factory_.Mint(ID(), Factory().UnitID(unitID)));
@@ -438,7 +441,7 @@ void Notary::mint() const
 {
     opentxs::Lock updateLock(mint_update_lock_, std::defer_lock);
 
-    const std::string serverID{server_.GetServerID().str()};
+    const UnallocatedCString serverID{server_.GetServerID().str()};
 
     OT_ASSERT(false == serverID.empty());
 
@@ -449,7 +452,7 @@ void Notary::mint() const
             continue;
         }
 
-        std::string unitID{""};
+        UnallocatedCString unitID{""};
         updateLock.lock();
 
         if (0 < mints_to_check_.size()) {
@@ -518,7 +521,7 @@ void Notary::Start()
 {
     server_.Init();
     server_.ActivateCron();
-    std::string hostname{};
+    UnallocatedCString hostname{};
     std::uint32_t port{0};
     core::AddressType type{core::AddressType::Inproc};
     const auto connectInfo = server_.GetConnectInfo(type, hostname, port);
@@ -559,8 +562,8 @@ auto Notary::verify_lock(const opentxs::Lock& lock, const std::mutex& mutex)
 
 auto Notary::verify_mint(
     const opentxs::Lock& lock,
-    const std::string& unitID,
-    const std::string seriesID,
+    const UnallocatedCString& unitID,
+    const UnallocatedCString seriesID,
     otx::blind::Mint&& mint) const -> otx::blind::Mint
 {
     OT_ASSERT(verify_lock(lock, mint_lock_));
@@ -586,7 +589,8 @@ auto Notary::verify_mint(
     return std::move(mint);
 }
 
-auto Notary::verify_mint_directory(const std::string& serverID) const -> bool
+auto Notary::verify_mint_directory(const UnallocatedCString& serverID) const
+    -> bool
 {
     auto serverDir = String::Factory();
     auto mintDir = String::Factory();

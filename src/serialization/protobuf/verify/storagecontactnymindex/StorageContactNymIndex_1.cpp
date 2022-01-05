@@ -5,8 +5,7 @@
 
 #include "internal/serialization/protobuf/verify/StorageContactNymIndex.hpp"  // IWYU pragma: associated
 
-#include <string>
-
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageContactNymIndex.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"
 

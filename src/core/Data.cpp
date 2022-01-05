@@ -112,12 +112,12 @@ auto Data::Factory(const opentxs::Armored& source) -> OTData
     return OTData(new implementation::Data(source));
 }
 
-auto Data::Factory(const std::vector<unsigned char>& source) -> OTData
+auto Data::Factory(const UnallocatedVector<unsigned char>& source) -> OTData
 {
     return OTData(new implementation::Data(source));
 }
 
-auto Data::Factory(const std::vector<std::byte>& source) -> OTData
+auto Data::Factory(const UnallocatedVector<std::byte>& source) -> OTData
 {
     return OTData(new implementation::Data(source));
 }
@@ -153,7 +153,7 @@ auto Data::Factory(const std::uint64_t in) -> OTData
     return OTData(new implementation::Data(&input, sizeof(input)));
 }
 
-auto Data::Factory(const std::string in, const Mode mode) -> OTData
+auto Data::Factory(const UnallocatedCString in, const Mode mode) -> OTData
 {
     if (Mode::Hex == mode) {
         auto output = OTData(new implementation::Data(in.data(), in.size()));
@@ -196,7 +196,7 @@ Data::Data(Vector&& v) noexcept
 {
 }
 
-Data::Data(const std::vector<std::byte>& v) noexcept
+Data::Data(const UnallocatedVector<std::byte>& v) noexcept
     : data_(
           reinterpret_cast<const std::uint8_t*>(v.data()),
           reinterpret_cast<const std::uint8_t*>(v.data()) + v.size())
@@ -274,7 +274,7 @@ auto Data::operator+=(const std::uint64_t rhs) -> Data&
     return *this;
 }
 
-auto Data::asHex() const -> std::string
+auto Data::asHex() const -> UnallocatedCString
 {
     std::stringstream out{};
 
@@ -339,7 +339,7 @@ auto Data::Concatenate(const void* data, const std::size_t size) noexcept
     return true;
 }
 
-auto Data::DecodeHex(const std::string& hex) -> bool
+auto Data::DecodeHex(const UnallocatedCString& hex) -> bool
 {
     data_.clear();
 
@@ -351,8 +351,9 @@ auto Data::DecodeHex(const std::string& hex) -> bool
     const auto stripped = (prefix == "0x" || prefix == "0X")
                               ? hex.substr(2, hex.size() - 2)
                               : hex;
-    const auto padded =
-        (0 == stripped.size() % 2) ? stripped : std::string("0") + stripped;
+    const auto padded = (0 == stripped.size() % 2)
+                            ? stripped
+                            : UnallocatedCString("0") + stripped;
 
     for (std::size_t i = 0; i < padded.length(); i += 2) {
         data_.emplace_back(static_cast<std::uint8_t>(
@@ -465,11 +466,12 @@ auto Data::spaceship(const opentxs::Data& rhs) const noexcept -> int
     return std::memcmp(data_.data(), rhs.data(), data_.size());
 }
 
-auto Data::str() const -> std::string
+auto Data::str() const -> UnallocatedCString
 {
     if (data_.empty()) { return {}; }
 
-    return std::string{reinterpret_cast<const char*>(&data_[0]), data_.size()};
+    return UnallocatedCString{
+        reinterpret_cast<const char*>(&data_[0]), data_.size()};
 }
 
 void Data::swap(opentxs::Data&& rhs)

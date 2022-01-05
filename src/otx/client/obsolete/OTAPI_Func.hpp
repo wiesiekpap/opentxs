@@ -9,10 +9,8 @@
 #include <cstdint>
 #include <cstdlib>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/otx/client/OTPayment.hpp"
@@ -28,6 +26,7 @@
 #include "opentxs/core/contract/peer/ConnectionInfoType.hpp"
 #include "opentxs/core/contract/peer/SecretType.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 #include "serialization/protobuf/UnitDefinition.pb.h"
@@ -66,10 +65,10 @@ class OTSmartContract;
 class PasswordPrompt;
 }  // namespace opentxs
 
-auto VerifyStringVal(const std::string&) -> bool;
-
 namespace opentxs
 {
+auto VerifyStringVal(const UnallocatedCString&) -> bool;
+
 typedef enum {
     NO_FUNC = 0,
     // TODO
@@ -116,7 +115,7 @@ public:
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
         const proto::UnitDefinition& unitDefinition,
-        const std::string& label);
+        const UnallocatedCString& label);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
@@ -151,8 +150,8 @@ public:
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
         const TransactionNumber& transactionNumber,
-        const std::string& clause,
-        const std::string& parameter);
+        const UnallocatedCString& clause,
+        const UnallocatedCString& parameter);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
@@ -161,7 +160,7 @@ public:
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
         const Identifier& accountID,
-        const std::string& agentName,
+        const UnallocatedCString& agentName,
         std::unique_ptr<OTSmartContract>& contract);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
@@ -183,7 +182,7 @@ public:
         const identifier::Nym& nymID2,
         const Identifier& targetID,
         const Amount& amount,
-        const std::string& message);
+        const UnallocatedCString& message);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
         OTAPI_Func_Type theType,
@@ -192,8 +191,8 @@ public:
         const identifier::Nym& nymID,
         const identifier::Notary& serverID,
         const Identifier& targetID,
-        const std::string& primary,
-        const std::string& secondary,
+        const UnallocatedCString& primary,
+        const UnallocatedCString& secondary,
         const contract::peer::SecretType& secretType);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
@@ -205,7 +204,7 @@ public:
         const Identifier& recipientID,
         const Identifier& requestID,
         const identifier::UnitDefinition& instrumentDefinitionID,
-        const std::string& txid,
+        const UnallocatedCString& txid,
         const Amount& amount);
     explicit OTAPI_Func(
         const PasswordPrompt& reason,
@@ -235,18 +234,18 @@ public:
         const bool selling,
         const Time lifetime,
         const Amount& activationPrice,
-        const std::string& stopSign);
+        const UnallocatedCString& stopSign);
 
     auto LastSendResult() const -> SendResult final { return {}; }
     auto Reply() const -> const std::shared_ptr<Message> final { return {}; }
 
-    auto Run(const std::size_t totalRetries = 2) -> std::string final;
+    auto Run(const std::size_t totalRetries = 2) -> UnallocatedCString final;
 
     ~OTAPI_Func() final;
 
 private:
-    static const std::map<OTAPI_Func_Type, std::string> type_name_;
-    static const std::map<OTAPI_Func_Type, bool> type_type_;
+    static const UnallocatedMap<OTAPI_Func_Type, UnallocatedCString> type_name_;
+    static const UnallocatedMap<OTAPI_Func_Type, bool> type_type_;
 
     OTAPI_Func_Type type_{NO_FUNC};
     rLock api_lock_;
@@ -265,20 +264,20 @@ private:
     std::unique_ptr<Cheque> cheque_;
     std::unique_ptr<Ledger> ledger_;
     std::unique_ptr<const OTPayment> payment_;
-    std::string agentName_;
-    std::string clause_;
-    std::string key_;
-    std::string login_;
-    std::string message_;
-    std::string parameter_;
-    std::string password_;
-    std::string primary_;
-    std::string secondary_;
-    std::string stopSign_;
-    std::string txid_;
-    std::string url_;
-    std::string value_;
-    std::string label_;
+    UnallocatedCString agentName_;
+    UnallocatedCString clause_;
+    UnallocatedCString key_;
+    UnallocatedCString login_;
+    UnallocatedCString message_;
+    UnallocatedCString parameter_;
+    UnallocatedCString password_;
+    UnallocatedCString primary_;
+    UnallocatedCString secondary_;
+    UnallocatedCString stopSign_;
+    UnallocatedCString txid_;
+    UnallocatedCString url_;
+    UnallocatedCString value_;
+    UnallocatedCString label_;
     bool ack_{false};
     bool direction_{false};
     bool selling_{false};
@@ -309,7 +308,7 @@ private:
     auto send_once(
         const bool bIsTransaction,
         const bool bWillRetryAfterThis,
-        bool& bCanRetryAfterThis) -> std::string;
+        bool& bCanRetryAfterThis) -> UnallocatedCString;
 
     explicit OTAPI_Func(
         const PasswordPrompt& reason,

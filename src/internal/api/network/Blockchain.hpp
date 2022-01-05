@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <vector>
-
 #include "opentxs/network/p2p/State.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -59,7 +58,7 @@ public:
         -> const opentxs::blockchain::database::common::Database& = 0;
     virtual auto FilterUpdate() const noexcept
         -> const opentxs::network::zeromq::socket::Publish& = 0;
-    using SyncData = std::vector<opentxs::network::p2p::State>;
+    using SyncData = UnallocatedVector<opentxs::network::p2p::State>;
     virtual auto Hello() const noexcept -> SyncData = 0;
     virtual auto IsEnabled(const opentxs::blockchain::Type chain) const noexcept
         -> bool = 0;
@@ -75,15 +74,15 @@ public:
         const opentxs::blockchain::block::Height target) const noexcept
         -> void = 0;
     virtual auto RestoreNetworks() const noexcept -> void = 0;
-    virtual auto SyncEndpoint() const noexcept -> const std::string& = 0;
+    virtual auto SyncEndpoint() const noexcept -> const UnallocatedCString& = 0;
     virtual auto UpdatePeer(
         const opentxs::blockchain::Type chain,
-        const std::string& address) const noexcept -> void = 0;
+        const UnallocatedCString& address) const noexcept -> void = 0;
 
     virtual auto Init(
         const api::crypto::Blockchain& crypto,
         const api::Legacy& legacy,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const Options& args) noexcept -> void = 0;
     virtual auto Shutdown() noexcept -> void = 0;
 

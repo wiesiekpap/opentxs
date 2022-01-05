@@ -10,13 +10,13 @@
 #include <cstdint>
 #include <future>
 #include <memory>
-#include <string>
 #include <tuple>
 #include <utility>
 
 #include "internal/blockchain/node/Node.hpp"
 #include "opentxs/blockchain/p2p/Types.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -67,7 +67,7 @@ using Task = node::internal::PeerManager::Task;
 class ConnectionManager
 {
 public:
-    using EndpointData = std::pair<std::string, std::uint16_t>;
+    using EndpointData = std::pair<UnallocatedCString, std::uint16_t>;
     using SendPromise = std::promise<bool>;
 
     static auto TCP(
@@ -108,10 +108,10 @@ public:
         const std::size_t headerSize) noexcept
         -> std::unique_ptr<ConnectionManager>;
 
-    virtual auto address() const noexcept -> std::string = 0;
+    virtual auto address() const noexcept -> UnallocatedCString = 0;
     virtual auto endpoint_data() const noexcept -> EndpointData = 0;
     virtual auto filter(const Task type) const noexcept -> bool = 0;
-    virtual auto host() const noexcept -> std::string = 0;
+    virtual auto host() const noexcept -> UnallocatedCString = 0;
     virtual auto is_initialized() const noexcept -> bool = 0;
     virtual auto port() const noexcept -> std::uint16_t = 0;
     virtual auto style() const noexcept -> p2p::Network = 0;

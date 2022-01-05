@@ -23,8 +23,8 @@ Signable::Signable(
     const api::Session& api,
     const Nym_p& nym,
     const VersionNumber version,
-    const std::string& conditions,
-    const std::string& alias,
+    const UnallocatedCString& conditions,
+    const UnallocatedCString& alias,
     OTIdentifier&& id,
     Signatures&& signatures) noexcept
     : api_(api)
@@ -42,8 +42,8 @@ Signable::Signable(
     const api::Session& api,
     const Nym_p& nym,
     const VersionNumber version,
-    const std::string& conditions,
-    const std::string& alias,
+    const UnallocatedCString& conditions,
+    const UnallocatedCString& alias,
     const Identifier& id,
     Signatures&& signatures) noexcept
     : Signable(
@@ -61,8 +61,8 @@ Signable::Signable(
     const api::Session& api,
     const Nym_p& nym,
     const VersionNumber version,
-    const std::string& conditions,
-    const std::string& alias) noexcept
+    const UnallocatedCString& conditions,
+    const UnallocatedCString& alias) noexcept
     : Signable(
           api,
           nym,
@@ -86,7 +86,7 @@ Signable::Signable(const Signable& rhs) noexcept
 {
 }
 
-auto Signable::Alias() const noexcept -> std::string
+auto Signable::Alias() const noexcept -> UnallocatedCString
 {
     auto lock = Lock{lock_};
 
@@ -131,7 +131,7 @@ auto Signable::init_serialized(const Lock& lock) noexcept(false) -> void
     const auto id = GetID(lock);
 
     if (id_.get() != id) {
-        const auto error = std::string{"Calculated id ("} + id->str() +
+        const auto error = UnallocatedCString{"Calculated id ("} + id->str() +
                            ") does not match serialized id (" + id_->str() +
                            ")";
 
@@ -141,7 +141,7 @@ auto Signable::init_serialized(const Lock& lock) noexcept(false) -> void
 
 auto Signable::Nym() const noexcept -> Nym_p { return nym_; }
 
-auto Signable::SetAlias(const std::string& alias) noexcept -> bool
+auto Signable::SetAlias(const UnallocatedCString& alias) noexcept -> bool
 {
     auto lock = Lock{lock_};
     alias_ = alias;
@@ -149,7 +149,7 @@ auto Signable::SetAlias(const std::string& alias) noexcept -> bool
     return true;
 }
 
-auto Signable::Terms() const noexcept -> const std::string&
+auto Signable::Terms() const noexcept -> const UnallocatedCString&
 {
     auto lock = Lock{lock_};
 

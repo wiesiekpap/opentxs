@@ -26,9 +26,9 @@ namespace otx
 namespace context
 {
 TransactionStatement::TransactionStatement(
-    const std::string& notary,
-    const std::set<TransactionNumber>& issued,
-    const std::set<TransactionNumber>& available)
+    const UnallocatedCString& notary,
+    const UnallocatedSet<TransactionNumber>& issued,
+    const UnallocatedSet<TransactionNumber>& available)
     : version_("1.0")
     , nym_id_("")
     , notary_(notary)
@@ -160,18 +160,19 @@ TransactionStatement::operator OTString() const
         serialized.add_tag(availableTag);
     }
 
-    std::string result;
+    UnallocatedCString result;
     serialized.output(result);
 
     return String::Factory(result.c_str());
 }
 
-auto TransactionStatement::Issued() const -> const std::set<TransactionNumber>&
+auto TransactionStatement::Issued() const
+    -> const UnallocatedSet<TransactionNumber>&
 {
     return issued_;
 }
 
-auto TransactionStatement::Notary() const -> const std::string&
+auto TransactionStatement::Notary() const -> const UnallocatedCString&
 {
     return notary_;
 }

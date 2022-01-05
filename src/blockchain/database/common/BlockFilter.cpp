@@ -9,7 +9,6 @@
 
 #include <cstring>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <utility>
 
@@ -21,6 +20,7 @@
 #include "internal/util/TSV.hpp"
 #include "opentxs/blockchain/GCS.hpp"
 #include "opentxs/core/Data.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "serialization/protobuf/BlockchainFilterHeader.pb.h"
 #include "serialization/protobuf/GCS.pb.h"
@@ -216,22 +216,22 @@ auto BlockFilter::store(
 
 auto BlockFilter::StoreFilterHeaders(
     const filter::Type type,
-    const std::vector<FilterHeader>& headers) const noexcept -> bool
+    const UnallocatedVector<FilterHeader>& headers) const noexcept -> bool
 {
     return StoreFilters(type, headers, {});
 }
 
 auto BlockFilter::StoreFilters(
     const filter::Type type,
-    std::vector<FilterData>& filters) const noexcept -> bool
+    UnallocatedVector<FilterData>& filters) const noexcept -> bool
 {
     return StoreFilters(type, {}, filters);
 }
 
 auto BlockFilter::StoreFilters(
     const filter::Type type,
-    const std::vector<FilterHeader>& headers,
-    const std::vector<FilterData>& filters) const noexcept -> bool
+    const UnallocatedVector<FilterHeader>& headers,
+    const UnallocatedVector<FilterData>& filters) const noexcept -> bool
 {
     auto tx = lmdb_.TransactionRW();
     auto lock = Lock{bulk_.Mutex()};
@@ -240,7 +240,7 @@ auto BlockFilter::StoreFilters(
         auto proto = proto::BlockchainFilterHeader();
         proto.set_version(1);
         proto.set_header(header->str());
-        proto.set_hash(std::string{hash});
+        proto.set_hash(UnallocatedCString{hash});
         auto bytes = space(proto.ByteSize());
         proto.SerializeWithCachedSizesToArray(
             reinterpret_cast<std::uint8_t*>(bytes.data()));

@@ -44,7 +44,7 @@ auto Args(bool lowlevel, int argc, char** argv) noexcept -> const ot::Options&
     }
 }
 
-auto Home() noexcept -> const std::string&
+auto Home() noexcept -> const ot::UnallocatedCString&
 {
     static const auto output = [&] {
         const auto path = fs::temp_directory_path() /

@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <vector>
-
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/rpc/AccountEvent.hpp"
 #include "opentxs/util/rpc/response/Base.hpp"
 
@@ -26,19 +25,17 @@ namespace request
 {
 class GetAccountActivity;
 }  // namespace request
+
+class AccountEvent;
 }  // namespace rpc
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace rpc
-{
-namespace response
+namespace opentxs::rpc::response
 {
 class OPENTXS_EXPORT GetAccountActivity final : public Base
 {
 public:
-    using Events = std::vector<AccountEvent>;
+    using Events = UnallocatedVector<AccountEvent>;
 
     auto Activity() const noexcept -> const Events&;
 
@@ -59,6 +56,4 @@ private:
     auto operator=(const GetAccountActivity&) -> GetAccountActivity& = delete;
     auto operator=(GetAccountActivity&&) -> GetAccountActivity& = delete;
 };
-}  // namespace response
-}  // namespace rpc
-}  // namespace opentxs
+}  // namespace opentxs::rpc::response

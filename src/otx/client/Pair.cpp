@@ -11,10 +11,7 @@
 #include <chrono>
 #include <ctime>
 #include <iterator>
-#include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <type_traits>
 
 #include "Proto.tpp"
@@ -65,6 +62,7 @@
 #include "opentxs/network/zeromq/socket/Subscribe.hpp"
 #include "opentxs/otx/LastReplyStatus.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -161,8 +159,8 @@ void Pair::State::Add(
             trusted,
             0,
             0,
-            std::vector<AccountDetails>{},
-            std::vector<api::session::OTX::BackgroundTask>{},
+            UnallocatedVector<AccountDetails>{},
+            UnallocatedVector<api::session::OTX::BackgroundTask>{},
             false));
 }
 
@@ -250,9 +248,9 @@ repeat:
 }
 
 auto Pair::State::count_currencies(
-    const std::vector<AccountDetails>& in) noexcept -> std::size_t
+    const UnallocatedVector<AccountDetails>& in) noexcept -> std::size_t
 {
-    auto unique = std::set<OTUnitID>{};
+    auto unique = UnallocatedSet<OTUnitID>{};
     std::transform(
         std::begin(in),
         std::end(in),
@@ -265,7 +263,7 @@ auto Pair::State::count_currencies(
 auto Pair::State::count_currencies(
     const identity::wot::claim::Section& in) noexcept -> std::size_t
 {
-    auto unique = std::set<OTUnitID>{};
+    auto unique = UnallocatedSet<OTUnitID>{};
 
     for (const auto& [type, pGroup] : in) {
         OT_ASSERT(pGroup);
@@ -286,7 +284,7 @@ auto Pair::State::count_currencies(
 auto Pair::State::get_account(
     const identifier::UnitDefinition& unit,
     const Identifier& account,
-    std::vector<AccountDetails>& details) noexcept -> AccountDetails&
+    UnallocatedVector<AccountDetails>& details) noexcept -> AccountDetails&
 {
     OT_ASSERT(false == unit.empty());
     OT_ASSERT(false == account.empty());
@@ -313,10 +311,10 @@ auto Pair::State::GetDetails(
 
 auto Pair::State::IssuerList(
     const identifier::Nym& localNymID,
-    const bool onlyTrusted) const noexcept -> std::set<OTNymID>
+    const bool onlyTrusted) const noexcept -> UnallocatedSet<OTNymID>
 {
     Lock lock(lock_);
-    std::set<OTNymID> output{};
+    UnallocatedSet<OTNymID> output{};
 
     for (auto& [key, value] : state_) {
         auto& pMutex = std::get<0>(value);
@@ -336,7 +334,7 @@ auto Pair::State::IssuerList(
 auto Pair::State::run(const std::function<void(const IssuerID&)> fn) noexcept
     -> bool
 {
-    auto list = std::set<IssuerID>{};
+    auto list = UnallocatedSet<IssuerID>{};
 
     {
         Lock lock(lock_);
@@ -355,7 +353,7 @@ auto Pair::State::run(const std::function<void(const IssuerID&)> fn) noexcept
 auto Pair::AddIssuer(
     const identifier::Nym& localNymID,
     const identifier::Nym& issuerNymID,
-    const std::string& pairingCode) const noexcept -> bool
+    const UnallocatedCString& pairingCode) const noexcept -> bool
 {
     if (localNymID.empty()) {
         LogError()(OT_PRETTY_CLASS())("Invalid local nym id.").Flush();
@@ -440,7 +438,8 @@ void Pair::callback_peer_reply(const zmq::Message& in) noexcept
 
     OT_ASSERT(2 <= body.size());
 
-    const auto nymID = client_.Factory().NymID(std::string{body.at(0).Bytes()});
+    const auto nymID =
+        client_.Factory().NymID(UnallocatedCString{body.at(0).Bytes()});
     const auto reply = proto::Factory<proto::PeerReply>(body.at(1));
     auto trigger{false};
 
@@ -484,7 +483,8 @@ void Pair::callback_peer_request(const zmq::Message& in) noexcept
 
     OT_ASSERT(2 <= body.size());
 
-    const auto nymID = client_.Factory().NymID(std::string{body.at(0).Bytes()});
+    const auto nymID =
+        client_.Factory().NymID(UnallocatedCString{body.at(0).Bytes()});
     const auto request = proto::Factory<proto::PeerRequest>(body.at(1));
     auto trigger{false};
 
@@ -508,7 +508,8 @@ void Pair::check_accounts(
     const identifier::Notary& serverID,
     std::size_t& offered,
     std::size_t& registeredAccounts,
-    std::vector<Pair::State::AccountDetails>& accountDetails) const noexcept
+    UnallocatedVector<Pair::State::AccountDetails>& accountDetails)
+    const noexcept
 {
     const auto& localNymID = issuer.LocalNymID();
     const auto& issuerNymID = issuer.IssuerID();
@@ -527,7 +528,7 @@ void Pair::check_accounts(
             .Flush();
     }
 
-    auto uniqueRegistered = std::set<OTUnitID>{};
+    auto uniqueRegistered = UnallocatedSet<OTUnitID>{};
 
     if (false == haveAccounts) { return; }
 
@@ -825,7 +826,7 @@ auto Pair::initiate_bailment(
 
 auto Pair::IssuerDetails(
     const identifier::Nym& localNymID,
-    const identifier::Nym& issuerNymID) const noexcept -> std::string
+    const identifier::Nym& issuerNymID) const noexcept -> UnallocatedCString
 {
     auto issuer = client_.Wallet().Internal().Issuer(localNymID, issuerNymID);
 

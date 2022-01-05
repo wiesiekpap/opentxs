@@ -646,12 +646,10 @@ activated with NO stashes. Server creates/maintains stashes AFTER activation.)
 
 DONE get_acct_balance(acct)                        Returns std::int64_t. (Named
 acct must be party to agreement with legitimate authorized agent.)
-DONE get_acct_instrument_definition_id(acct)                Returns std::string.
-(Named
-acct must be party to agreement with legitimate authorized agent.)
-DONE get_stash_balance(stash, instrument_definition_id)    Returns std::int64_t.
-(Named
-stash must exist.)
+DONE get_acct_instrument_definition_id(acct)                Returns
+UnallocatedCString. (Named acct must be party to agreement with legitimate
+authorized agent.) DONE get_stash_balance(stash, instrument_definition_id)
+Returns std::int64_t. (Named stash must exist.)
 
 DONE send_notice(to_party)        (Like sendMessage, except it comes from the
 server, not another user. Drops current state of smart contract to Nymbox of all
@@ -670,9 +668,10 @@ DONE cron_activate        (Triggers when the smart contract is first activated.)
 
 // Global version. (string parameter)
 // typedef bool (*OT_SM_RetBool_ThrStr)(OTSmartContract* pContract,
-//                                       const std::string from_acct_name,
-//                                       const std::string to_acct_name,
-//                                       const std::string str_Amount);
+//                                       const UnallocatedCString
+//                                       from_acct_name, const
+//                                       UnallocatedCString to_acct_name, const
+//                                       UnallocatedCString str_Amount);
 // Test result:  WORKS calling chaiscript
 // Cron: Processing smart contract clauses for hook: cron_process
 // OTSmartContract::MoveAcctFunds: error: from_acct
@@ -683,8 +682,9 @@ DONE cron_activate        (Triggers when the smart contract is first activated.)
 
 // Global version. (std::int64_t parameter)
 // typedef bool (*OT_SM_RetBool_TwoStr_OneL)(OTSmartContract* pContract,
-//                                            const std::string from_acct_name,
-//                                            const std::string to_acct_name,
+//                                            const UnallocatedCString
+//                                            from_acct_name, const
+//                                            UnallocatedCString to_acct_name,
 //                                            const std::int64_t lAmount);
 // TEST Result:  FAILS calling chaiscript: Cannot perform boxed_cast.   (Must be
 // the LONG!!)
@@ -702,9 +702,10 @@ DONE cron_activate        (Triggers when the smart contract is first activated.)
 // process_clause.
 
 // Class member, with std::int64_t parameter.
-// typedef bool (OTSmartContract::*OT_SM_RetBool_TwoStr_OneL)(const std::string
-// from_acct_name,
-//                                                             const std::string
+// typedef bool (OTSmartContract::*OT_SM_RetBool_TwoStr_OneL)(const
+// UnallocatedCString from_acct_name,
+//                                                             const
+//                                                             UnallocatedCString
 // to_acct_name,
 //                                                             std::int64_t
 //                                                             lAmount);
@@ -770,9 +771,9 @@ void OTSmartContract::DeactivateSmartContract()  // Called from within script.
 
 // These are from OTScriptable (super-grandparent-class to *this):
 /* ----------------------------------------------------
-OTParty        * GetParty    (std::string str_party_name);
-OTBylaw        * GetBylaw    (std::string str_bylaw_name);
-OTClause    * GetClause    (std::string str_clause_name);
+OTParty        * GetParty    (UnallocatedCString str_party_name);
+OTBylaw        * GetBylaw    (UnallocatedCString str_bylaw_name);
+OTClause    * GetClause    (UnallocatedCString str_clause_name);
 OTParty * FindPartyBasedOnNymAsAgent(identity::Nym& theNym, OTAgent **
 ppAgent=nullptr);
 OTParty * FindPartyBasedOnNymAsAuthAgent(identity::Nym& theNym, OTAgent **
@@ -785,8 +786,8 @@ OTParty * FindPartyBasedOnNymIDAsAuthAgent(const Identifier& theNymID,
 OTAgent ** ppAgent=nullptr);
 OTParty * FindPartyBasedOnAccountID(const Identifier& theAcctID,
 OTPartyAccount ** ppPartyAccount=nullptr);
-OTAgent            * GetAgent(std::string str_agent_name);
-OTPartyAccount    * GetPartyAccount(std::string str_acct_name);
+OTAgent            * GetAgent(UnallocatedCString str_agent_name);
+OTPartyAccount    * GetPartyAccount(UnallocatedCString str_acct_name);
 OTPartyAccount    * GetPartyAccountByID(const Identifier& theAcctID);
 */
 
@@ -886,8 +887,8 @@ auto OTSmartContract::GetClosingNumber(const Identifier& theAcctID) const
 // onProcess will trigger X seconds from now...
 //
 void OTSmartContract::SetRemainingTimer(
-    std::string str_seconds_from_now)  // if this is <=0, then it sets next
-                                       // process date to 0.
+    UnallocatedCString str_seconds_from_now)  // if this is <=0, then it sets
+                                              // next process date to 0.
 {
     if (str_seconds_from_now.size() <= 0)  // string length...
     {
@@ -908,10 +909,10 @@ void OTSmartContract::SetRemainingTimer(
 }
 
 auto OTSmartContract::GetRemainingTimer() const
-    -> std::string  // returns seconds left
-                    // on the timer, in
-                    // string format, or
-                    // "0".
+    -> UnallocatedCString  // returns seconds left
+                           // on the timer, in
+                           // string format, or
+                           // "0".
 {
     return std::to_string(std::chrono::duration_cast<std::chrono::seconds>(
                               GetNextProcessDate() - Clock::now())
@@ -949,7 +950,7 @@ void OTSmartContract::onActivate(const PasswordPrompt& reason)
 
     // Execute the scripts (clauses) that have registered for this hook.
 
-    const std::string str_HookName(SMARTCONTRACT_HOOK_ON_ACTIVATE);
+    const UnallocatedCString str_HookName(SMARTCONTRACT_HOOK_ON_ACTIVATE);
     mapOfClauses theMatchingClauses;
 
     if (GetHooks(str_HookName, theMatchingClauses)) {
@@ -963,7 +964,8 @@ void OTSmartContract::onActivate(const PasswordPrompt& reason)
     }
 }
 
-auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
+auto OTSmartContract::GetAcctBalance(UnallocatedCString from_acct_name)
+    -> UnallocatedCString
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
@@ -1141,7 +1143,7 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
         api_.Factory().Identifier(pFromAcct->GetAcctID());
     //
     // BELOW THIS POINT, theFromAcctID and theFromAgentID available.
-    const std::string str_party_id = pFromParty->GetPartyID();
+    const UnallocatedCString str_party_id = pFromParty->GetPartyID();
     const auto strPartyID = String::Factory(str_party_id);
     const auto PARTY_NYM_ID = api_.Factory().NymID(strPartyID);
 
@@ -1159,14 +1161,14 @@ auto OTSmartContract::GetAcctBalance(std::string from_acct_name) -> std::string
     }
 
     return [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         account.get().GetBalance().Serialize(writer(buf));
         return buf;
     }();
 }
 
-auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
-    -> std::string
+auto OTSmartContract::GetUnitTypeIDofAcct(UnallocatedCString from_acct_name)
+    -> UnallocatedCString
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
@@ -1179,7 +1181,7 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
     //        pServerNym, pCron.
     //
 
-    std::string str_return_value;
+    UnallocatedCString str_return_value;
 
     if (from_acct_name.size() <= 0) {
         LogError()(OT_PRETTY_CLASS())("Error: "
@@ -1355,7 +1357,7 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
         api_.Factory().Identifier(pFromAcct->GetAcctID());
     //
     // BELOW THIS POINT, theFromAcctID and theFromAgentID available.
-    const std::string str_party_id = pFromParty->GetPartyID();
+    const UnallocatedCString str_party_id = pFromParty->GetPartyID();
     const auto strPartyID = String::Factory(str_party_id);
     const auto PARTY_NYM_ID = api_.Factory().NymID(strPartyID);
 
@@ -1376,8 +1378,8 @@ auto OTSmartContract::GetUnitTypeIDofAcct(std::string from_acct_name)
 }
 
 auto OTSmartContract::GetStashBalance(
-    std::string from_stash_name,
-    std::string instrument_definition_id) -> std::string
+    UnallocatedCString from_stash_name,
+    UnallocatedCString instrument_definition_id) -> UnallocatedCString
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
@@ -1477,7 +1479,7 @@ auto OTSmartContract::SendANoticeToAllParties(const PasswordPrompt& reason)
 }
 
 auto OTSmartContract::SendNoticeToParty(
-    std::string party_name,
+    UnallocatedCString party_name,
     const PasswordPrompt& reason) -> bool
 {
     OTCron* pCron = GetCron();
@@ -1602,9 +1604,9 @@ auto OTSmartContract::SendNoticeToParty(
 // stashed funds will show up properly on an audit.
 //
 auto OTSmartContract::StashAcctFunds(
-    std::string from_acct_name,
-    std::string to_stash_name,
-    std::string str_Amount) -> bool
+    UnallocatedCString from_acct_name,
+    UnallocatedCString to_stash_name,
+    UnallocatedCString str_Amount) -> bool
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
@@ -1867,9 +1869,9 @@ auto OTSmartContract::StashAcctFunds(
 // stashed funds will show up properly on an audit.
 //
 auto OTSmartContract::UnstashAcctFunds(
-    std::string to_acct_name,
-    std::string from_stash_name,
-    std::string str_Amount) -> bool
+    UnallocatedCString to_acct_name,
+    UnallocatedCString from_stash_name,
+    UnallocatedCString str_Amount) -> bool
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
@@ -2144,7 +2146,7 @@ auto OTSmartContract::StashFunds(
     // account.
     const auto strInstrumentDefinitionID =
         String::Factory(account.get().GetInstrumentDefinitionID());
-    const std::string str_instrument_definition_id =
+    const UnallocatedCString str_instrument_definition_id =
         strInstrumentDefinitionID->Get();
 
     OTStashItem* pStashItem = theStash.GetStash(str_instrument_definition_id);
@@ -2340,7 +2342,7 @@ auto OTSmartContract::StashFunds(
     // Find out if party Nym is actually also the server nym.
     const bool bPartyNymIsServerNym = (PARTY_NYM_ID == NOTARY_NYM_ID);
     Nym_p pPartyNym = nullptr;
-    const std::string str_party_id = strPartyNymID->Get();
+    const UnallocatedCString str_party_id = strPartyNymID->Get();
 
     // Figure out if party Nym is also Server Nym.
     if (bPartyNymIsServerNym) {
@@ -2880,9 +2882,9 @@ auto OTSmartContract::StashFunds(
 //
 
 auto OTSmartContract::MoveAcctFundsStr(
-    std::string from_acct_name,
-    std::string to_acct_name,
-    std::string str_Amount) -> bool
+    UnallocatedCString from_acct_name,
+    UnallocatedCString to_acct_name,
+    UnallocatedCString str_Amount) -> bool
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
@@ -3436,7 +3438,7 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
 
     // Execute the scripts (clauses) that have registered for this hook.
 
-    const std::string str_HookName(SMARTCONTRACT_HOOK_ON_PROCESS);
+    const UnallocatedCString str_HookName(SMARTCONTRACT_HOOK_ON_PROCESS);
     mapOfClauses theMatchingClauses;
 
     if (GetHooks(str_HookName, theMatchingClauses)) {
@@ -3459,7 +3461,7 @@ auto OTSmartContract::ProcessCron(const PasswordPrompt& reason) -> bool
 }
 
 // virtual
-void OTSmartContract::SetDisplayLabel(const std::string* pstrLabel)
+void OTSmartContract::SetDisplayLabel(const UnallocatedCString* pstrLabel)
 {
     m_strLabel->Format(
         "smartcontract trans# %" PRId64 ", clause: %s",
@@ -3480,7 +3482,7 @@ void OTSmartContract::ExecuteClauses(
 {
     // Loop through the clauses passed in, and execute them all.
     for (auto& it_clauses : theClauses) {
-        const std::string str_clause_name = it_clauses.first;
+        const UnallocatedCString str_clause_name = it_clauses.first;
         OTClause* pClause = it_clauses.second;
         OT_ASSERT((nullptr != pClause) && (str_clause_name.size() > 0));
         OTBylaw* pBylaw = pClause->GetBylaw();
@@ -3489,9 +3491,9 @@ void OTSmartContract::ExecuteClauses(
         // By this point, we have the clause we are executing as pClause,
         // and we have the Bylaw it belongs to, as pBylaw.
 
-        const std::string str_code =
+        const UnallocatedCString str_code =
             pClause->GetCode();  // source code for the script.
-        const std::string str_language =
+        const UnallocatedCString str_language =
             pBylaw->GetLanguage();  // language it's in. (Default is "chai")
 
         auto pScript = factory::OTScript(str_language, str_code);
@@ -3511,7 +3513,7 @@ void OTSmartContract::ExecuteClauses(
             // Register all the parties with the script.
             //
             for (auto& it : m_mapParties) {
-                const std::string str_party_name = it.first;
+                const UnallocatedCString str_party_name = it.first;
                 OTParty* pParty = it.second;
                 OT_ASSERT((nullptr != pParty) && (str_party_name.size() > 0));
 
@@ -3534,8 +3536,8 @@ void OTSmartContract::ExecuteClauses(
             // and passing
             // a string parameter to that clause as input.)
             //
-            const std::string str_Name("param_string");
-            std::string str_Value("");
+            const UnallocatedCString str_Name("param_string");
+            UnallocatedCString str_Value("");
 
             // See if param_string variable is already found on the bylaw...
             //
@@ -3683,7 +3685,8 @@ void OTSmartContract::ExecuteClauses(
 // callback_party_may_cancel_contract(),
 // etc.
 //
-auto OTSmartContract::CanCancelContract(std::string str_party_name) -> bool
+auto OTSmartContract::CanCancelContract(UnallocatedCString str_party_name)
+    -> bool
 {
     OTCron* pCron = GetCron();
     OT_ASSERT(nullptr != pCron);
@@ -3758,7 +3761,8 @@ auto OTSmartContract::CanCancelContract(std::string str_party_name) -> bool
     // the contract.
 
     //
-    const std::string str_CallbackName(SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL);
+    const UnallocatedCString str_CallbackName(
+        SMARTCONTRACT_CALLBACK_PARTY_MAY_CANCEL);
 
     OTClause* pCallbackClause =
         GetCallback(str_CallbackName);  // See if there is a script clause
@@ -3786,8 +3790,8 @@ auto OTSmartContract::CanCancelContract(std::string str_party_name) -> bool
             OTVariable::Var_Constant);  // script can reference param_party_name
 
         mapOfVariables theParameters;
-        theParameters.insert(
-            std::pair<std::string, OTVariable*>("param_party_name", &param1));
+        theParameters.insert(std::pair<UnallocatedCString, OTVariable*>(
+            "param_party_name", &param1));
 
         if (false ==
             ExecuteCallback(
@@ -3908,7 +3912,8 @@ auto OTSmartContract::CanRemoveItemFromCron(const otx::context::Client& context)
 
     bool bReturnValue = false;
     bool bPartyHasName = false;
-    const std::string str_party_name = pParty->GetPartyName(&bPartyHasName);
+    const UnallocatedCString str_party_name =
+        pParty->GetPartyName(&bPartyHasName);
 
     if (bPartyHasName &&
         CanCancelContract(str_party_name))  // Here is where it calls the
@@ -4139,12 +4144,12 @@ auto OTSmartContract::VerifySmartContract(
                                                       // (and must be deleted.)
 
     bool bAreAnyInvalidParties = false;
-    std::set<OTParty*> theFailedParties;  // A set of pointers to parties who
-                                          // failed verification.
+    UnallocatedSet<OTParty*> theFailedParties;  // A set of pointers to parties
+                                                // who failed verification.
 
     // LOOP THROUGH ALL PARTIES AND VERIFY THEM.
     for (auto& it_party : m_mapParties) {
-        const std::string str_party_name = it_party.first;
+        const UnallocatedCString str_party_name = it_party.first;
         OTParty* pParty = it_party.second;
         OT_ASSERT_MSG(
             nullptr != pParty,
@@ -4441,7 +4446,7 @@ auto OTSmartContract::VerifySmartContract(
      */
 
     for (auto& it_party : m_mapParties) {
-        const std::string str_party_name = it_party.first;
+        const UnallocatedCString str_party_name = it_party.first;
         OTParty* pParty = it_party.second;
         OT_ASSERT_MSG(
             nullptr != pParty, "Unexpected nullptr pointer in party map.");
@@ -4648,12 +4653,12 @@ void OTSmartContract::CloseoutOpeningNumbers(const PasswordPrompt& reason)
 void OTSmartContract::HarvestClosingNumbers(
     const identity::Nym& pSignerNym,
     const PasswordPrompt& reason,
-    std::set<OTParty*>* pFailedParties)
+    UnallocatedSet<OTParty*>* pFailedParties)
 {
     const auto strNotaryID = String::Factory(GetNotaryID());
 
     for (auto& it : m_mapParties) {
-        const std::string str_party_name = it.first;
+        const UnallocatedCString str_party_name = it.first;
         OTParty* pParty = it.second;
         OT_ASSERT_MSG(
             nullptr != pParty,
@@ -4897,7 +4902,7 @@ auto OTSmartContract::ConfirmParty(
 
 // ALWAYS succeeds. (It will OT_ASSERT() otherwise.)
 //
-auto OTSmartContract::GetStash(std::string str_stash_name) -> OTStash*
+auto OTSmartContract::GetStash(UnallocatedCString str_stash_name) -> OTStash*
 {
     auto it = m_mapStashes.find(str_stash_name);
 
@@ -4907,7 +4912,7 @@ auto OTSmartContract::GetStash(std::string str_stash_name) -> OTStash*
         OT_ASSERT(nullptr != pStash);
 
         m_mapStashes.insert(
-            std::pair<std::string, OTStash*>(str_stash_name, pStash));
+            std::pair<UnallocatedCString, OTStash*>(str_stash_name, pStash));
         return pStash;
     }
 
@@ -5133,7 +5138,7 @@ void OTSmartContract::UpdateContents(const PasswordPrompt& reason)
         }
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());
@@ -5320,7 +5325,7 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
         const auto strItemCount =
             String::Factory(xml->getAttributeValue("count"));
 
-        const std::string str_stash_name = strStashName->Get();
+        const UnallocatedCString str_stash_name = strStashName->Get();
         auto* pStash = new OTStash(str_stash_name);
         OT_ASSERT(nullptr != pStash);
 
@@ -5333,8 +5338,8 @@ auto OTSmartContract::ProcessXMLNode(irr::io::IrrXMLReader*& xml)
         } else {
             // Success
             //
-            m_mapStashes.insert(
-                std::pair<std::string, OTStash*>(strStashName->Get(), pStash));
+            m_mapStashes.insert(std::pair<UnallocatedCString, OTStash*>(
+                strStashName->Get(), pStash));
 
             nReturnVal = 1;
         }

@@ -6,13 +6,13 @@
 #include "internal/serialization/protobuf/verify/VerificationIdentity.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
 #include "internal/serialization/protobuf/Check.hpp"
 #include "internal/serialization/protobuf/verify/Verification.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Verification.pb.h"
 #include "serialization/protobuf/VerificationIdentity.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

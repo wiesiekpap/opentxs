@@ -5,9 +5,8 @@
 
 #include "internal/serialization/protobuf/verify/StorageContactAddressIndex.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "internal/serialization/protobuf/verify/VerifyContacts.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/ContactEnums.pb.h"
 #include "serialization/protobuf/StorageContactAddressIndex.pb.h"
 #include "serialization/protobuf/verify/Check.hpp"

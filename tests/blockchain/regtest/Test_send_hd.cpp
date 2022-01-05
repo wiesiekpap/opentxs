@@ -8,7 +8,6 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <chrono>
-#include <string>
 #include <utility>
 
 #include "integration/Helpers.hpp"
@@ -43,6 +42,7 @@
 #include "opentxs/core/identifier/UnitDefinition.hpp"
 #include "opentxs/core/ui/AccountActivity.hpp"
 #include "opentxs/crypto/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Iterator.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
@@ -699,7 +699,7 @@ TEST_F(Regtest_fixture_hd, confirm)
     account_activity_.expected_ += ((3 * count) + 2);
     const auto& txid = transactions_.at(1).get();
     const auto extra = [&] {
-        auto output = std::vector<Transaction>{};
+        auto output = ot::UnallocatedVector<Transaction>{};
         const auto& pTX = output.emplace_back(
             client_1_.Crypto().Blockchain().LoadTransactionBitcoin(txid));
 

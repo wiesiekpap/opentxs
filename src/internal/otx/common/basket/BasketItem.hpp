@@ -5,18 +5,17 @@
 
 #pragma once
 
-#include <deque>
-
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 
 namespace opentxs
 {
 class BasketItem;
 
-using dequeOfBasketItems = std::deque<BasketItem*>;
+using dequeOfBasketItems = UnallocatedDeque<BasketItem*>;
 
 class BasketItem
 {

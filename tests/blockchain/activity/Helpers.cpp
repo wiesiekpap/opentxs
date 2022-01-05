@@ -8,8 +8,6 @@
 #include <iterator>
 #include <regex>
 #include <sstream>
-#include <string>
-#include <vector>
 
 #include "internal/api/session/Client.hpp"
 #include "internal/blockchain/block/bitcoin/Bitcoin.hpp"
@@ -30,13 +28,14 @@
 #include "opentxs/blockchain/crypto/HDProtocol.hpp"
 #include "opentxs/core/Contact.hpp"
 #include "opentxs/core/Data.hpp"
-#include "opentxs/crypto/Parameters.hpp"
+#include "opentxs/crypto/Parameters.hpp"  // IWYU pragma: keep
 #include "opentxs/identity/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
 namespace ottest
 {
-const std::string Test_BlockchainActivity::test_transaction_hex_{
+const ot::UnallocatedCString Test_BlockchainActivity::test_transaction_hex_{
     "020000000001030f40268cb19feef75f1d748a8d0871756d1f1755f2c5820e2f02f9006959"
     "c878010000006a47304402203fff00984b87a0599810b7fbd0cde9d30c146dfa2667f2d9f4"
     "6847157439c22302203b848cd672f2ebe55058bb5cecd81aa7eecb896eedfdf834ad271559"
@@ -52,19 +51,19 @@ const std::string Test_BlockchainActivity::test_transaction_hex_{
     "42e0a29c8a92e1a2df85360251aaa44c073effe4c96acedda605eeca5202206bc72a8a1ced"
     "e2ac16f5b7f5e0c2c9467279eea46fd04de115b4282d974dbd4e0121036963d16ea90bcd4c"
     "491dab7089faa5497c8179102c00750fc6eef40f02605d240000000000"};
-const std::string Test_BlockchainActivity::btc_account_id_{
+const ot::UnallocatedCString Test_BlockchainActivity::btc_account_id_{
     "otw5eixq1554E4CZKgmxHqxusVDDd7m85VN"};
-const std::string Test_BlockchainActivity::btc_unit_id_{
+const ot::UnallocatedCString Test_BlockchainActivity::btc_unit_id_{
     "ot25c4KRyvcd9uiH6dYEsZXyXXbCzEuMcrtz"};
-const std::string Test_BlockchainActivity::btc_notary_id_{
+const ot::UnallocatedCString Test_BlockchainActivity::btc_notary_id_{
     "ot2BFCaEAASfsgspSq2KsZ1rqD5LvEN9BXvt"};
-const std::string Test_BlockchainActivity::nym_1_name_{"Alex"};
-const std::string Test_BlockchainActivity::nym_2_name_{"Bob"};
-const std::string Test_BlockchainActivity::contact_3_name_{"Chris"};
-const std::string Test_BlockchainActivity::contact_4_name_{"Daniel"};
-const std::string Test_BlockchainActivity::contact_5_name_{"Edward"};
-const std::string Test_BlockchainActivity::contact_6_name_{"Frank"};
-const std::string Test_BlockchainActivity::contact_7_name_{"Gabe"};
+const ot::UnallocatedCString Test_BlockchainActivity::nym_1_name_{"Alex"};
+const ot::UnallocatedCString Test_BlockchainActivity::nym_2_name_{"Bob"};
+const ot::UnallocatedCString Test_BlockchainActivity::contact_3_name_{"Chris"};
+const ot::UnallocatedCString Test_BlockchainActivity::contact_4_name_{"Daniel"};
+const ot::UnallocatedCString Test_BlockchainActivity::contact_5_name_{"Edward"};
+const ot::UnallocatedCString Test_BlockchainActivity::contact_6_name_{"Frank"};
+const ot::UnallocatedCString Test_BlockchainActivity::contact_7_name_{"Gabe"};
 
 Test_BlockchainActivity::Test_BlockchainActivity()
     : api_(ot::Context().StartClientSession(0))
@@ -189,27 +188,28 @@ auto Test_BlockchainActivity::get_test_transaction(
 
 auto Test_BlockchainActivity::monkey_patch(
     const Element& first,
-    const Element& second) const noexcept -> std::string
+    const Element& second) const noexcept -> ot::UnallocatedCString
 {
     return monkey_patch(
         first.PubkeyHash()->asHex(), second.PubkeyHash()->asHex());
 }
 
 auto Test_BlockchainActivity::monkey_patch(
-    const std::string& first,
-    const std::string& second) const noexcept -> std::string
+    const ot::UnallocatedCString& first,
+    const ot::UnallocatedCString& second) const noexcept
+    -> ot::UnallocatedCString
 {
     static const auto firstHash =
         std::regex{"4574e19db2911aa078671410f5e3bf502df2ae6f"};
     static const auto secondHash =
         std::regex{"cd6878fd84ce63a88104a1c8343bd63880b2989e"};
-    static const auto input = std::string{test_transaction_hex_};
+    static const auto input = ot::UnallocatedCString{test_transaction_hex_};
 
     OT_ASSERT(40 == first.size());
     OT_ASSERT(40 == second.size());
 
-    auto output = std::string{};
-    auto temp = std::string{};
+    auto output = ot::UnallocatedCString{};
+    auto temp = ot::UnallocatedCString{};
     std::regex_replace(
         std::back_inserter(temp), input.begin(), input.end(), firstHash, first);
     std::regex_replace(
@@ -240,7 +240,8 @@ auto Test_BlockchainActivity::nym_2_id() const noexcept
     return output->ID();
 }
 
-auto Test_BlockchainActivity::seed() const noexcept -> const std::string&
+auto Test_BlockchainActivity::seed() const noexcept
+    -> const ot::UnallocatedCString&
 {
     static const auto output =
         api_.InternalClient().Exec().Wallet_ImportSeed(words(), "");
@@ -248,11 +249,12 @@ auto Test_BlockchainActivity::seed() const noexcept -> const std::string&
     return output;
 }
 
-auto Test_BlockchainActivity::words() const noexcept -> const std::string&
+auto Test_BlockchainActivity::words() const noexcept
+    -> const ot::UnallocatedCString&
 {
-    static const auto output =
-        std::string{"response seminar brave tip suit recall often sound "
-                    "stick owner lottery motion"};
+    static const auto output = ot::UnallocatedCString{
+        "response seminar brave tip suit recall often sound "
+        "stick owner lottery motion"};
 
     return output;
 }

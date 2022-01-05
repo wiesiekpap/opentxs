@@ -8,7 +8,6 @@
 #include <atomic>
 #include <chrono>
 #include <functional>
-#include <map>
 #include <mutex>
 #include <thread>
 #include <thread>
@@ -16,6 +15,7 @@
 
 #include "opentxs/Types.hpp"
 #include "opentxs/api/Periodic.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Time.hpp"
 
 namespace opentxs
@@ -48,7 +48,7 @@ protected:
 private:
     /** Last performed, Interval, Task */
     using TaskItem = std::tuple<Time, std::chrono::seconds, PeriodicTask>;
-    using TaskList = std::map<int, TaskItem>;
+    using TaskList = UnallocatedMap<int, TaskItem>;
 
     mutable std::atomic<int> next_id_;
     mutable std::mutex periodic_lock_;

@@ -8,9 +8,7 @@
 #include "internal/otx/smartcontract/OTScript.hpp"  // IWYU pragma: associated
 
 #include <cstddef>
-#include <map>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "internal/otx/smartcontract/Factory.hpp"
@@ -18,11 +16,12 @@
 #include "internal/otx/smartcontract/OTVariable.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 namespace opentxs::factory
 {
-auto OTScript(const std::string& script_type)
+auto OTScript(const UnallocatedCString& script_type)
     -> std::shared_ptr<opentxs::OTScript>
 {
     if (script_type == "" || script_type == "chai") {
@@ -38,8 +37,9 @@ auto OTScript(const std::string& script_type)
 }
 
 auto OTScript(
-    const std::string& script_type,
-    const std::string& script_contents) -> std::shared_ptr<opentxs::OTScript>
+    const UnallocatedCString& script_type,
+    const UnallocatedCString& script_contents)
+    -> std::shared_ptr<opentxs::OTScript>
 {
     if (script_type == "" || script_type == "chai") {
 
@@ -111,7 +111,7 @@ namespace opentxs
 
  */
 
-OTScript::OTScript(const std::string& new_string)
+OTScript::OTScript(const UnallocatedCString& new_string)
     : m_str_script(new_string)
     , m_str_display_filename()
     , m_mapParties()
@@ -121,22 +121,22 @@ OTScript::OTScript(const std::string& new_string)
 }
 
 OTScript::OTScript()
-    : OTScript(std::string{})
+    : OTScript(UnallocatedCString{})
 {
 }
 
 OTScript::OTScript(const String& strValue)
-    : OTScript(std::string{strValue.Get()})
+    : OTScript(UnallocatedCString{strValue.Get()})
 {
 }
 
 OTScript::OTScript(const char* new_string)
-    : OTScript(std::string{new_string})
+    : OTScript(UnallocatedCString{new_string})
 {
 }
 
 OTScript::OTScript(const char* new_string, std::size_t sizeLength)
-    : OTScript(std::string{new_string, sizeLength})
+    : OTScript(UnallocatedCString{new_string, sizeLength})
 {
 }
 
@@ -174,7 +174,7 @@ void OTScript::SetScript(const char* new_string, size_t sizeLength)
     if (nullptr != new_string) m_str_script.assign(new_string, sizeLength);
 }
 
-void OTScript::SetScript(const std::string& new_string)
+void OTScript::SetScript(const UnallocatedCString& new_string)
 {
     m_str_script = new_string;
 }
@@ -191,12 +191,12 @@ void OTScript::SetScript(const std::string& new_string)
 // cleaning up the mess!  theParty is passed as reference to insure it already
 // exists.
 //
-void OTScript::AddParty(std::string str_party_name, OTParty& theParty)
+void OTScript::AddParty(UnallocatedCString str_party_name, OTParty& theParty)
 {
-    //  typedef std::map<std::string, OTParty *> mapOfParties;
+    //  typedef UnallocatedMap<UnallocatedCString, OTParty *> mapOfParties;
 
     m_mapParties.insert(
-        std::pair<std::string, OTParty*>(str_party_name, &theParty));
+        std::pair<UnallocatedCString, OTParty*>(str_party_name, &theParty));
     // We're just storing these pointers for reference value. Script doesn't
     // actually Own the
     // parties, and isn't responsible to clean them up.
@@ -204,10 +204,12 @@ void OTScript::AddParty(std::string str_party_name, OTParty& theParty)
     theParty.RegisterAccountsForExecution(*this);
 }
 
-void OTScript::AddAccount(std::string str_acct_name, OTPartyAccount& theAcct)
+void OTScript::AddAccount(
+    UnallocatedCString str_acct_name,
+    OTPartyAccount& theAcct)
 {
-    m_mapAccounts.insert(
-        std::pair<std::string, OTPartyAccount*>(str_acct_name, &theAcct));
+    m_mapAccounts.insert(std::pair<UnallocatedCString, OTPartyAccount*>(
+        str_acct_name, &theAcct));
 
     // We're just storing these pointers for reference value. Script doesn't
     // actually Own the
@@ -221,19 +223,19 @@ void OTScript::AddAccount(std::string str_acct_name, OTPartyAccount& theAcct)
 // from the script's list of variables. (Instead of calling this function, which
 // is lower-level.)
 //
-void OTScript::AddVariable(std::string str_var_name, OTVariable& theVar)
+void OTScript::AddVariable(UnallocatedCString str_var_name, OTVariable& theVar)
 {
     //  mapOfVariables  m_mapVariables;
 
     m_mapVariables.insert(
-        std::pair<std::string, OTVariable*>(str_var_name, &theVar));
+        std::pair<UnallocatedCString, OTVariable*>(str_var_name, &theVar));
 
     // We're just storing these pointers for reference value. Script doesn't
     // actually Own the
     // variables, and isn't responsible to clean them up.
 }
 
-auto OTScript::FindVariable(std::string str_var_name) -> OTVariable*
+auto OTScript::FindVariable(UnallocatedCString str_var_name) -> OTVariable*
 {
     auto it_var = m_mapVariables.find(str_var_name);
     return it_var != m_mapVariables.end() ? it_var->second : nullptr;
@@ -248,7 +250,7 @@ auto OTScript::FindVariable(std::string str_var_name) -> OTVariable*
 //
 void OTScript::RemoveVariable(OTVariable& theVar)
 {
-    const std::string str_var_name = theVar.GetName().Get();
+    const UnallocatedCString str_var_name = theVar.GetName().Get();
     auto it_var = m_mapVariables.find(str_var_name);
 
     if (it_var != m_mapVariables.end()) {

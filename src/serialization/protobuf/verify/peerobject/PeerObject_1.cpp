@@ -6,7 +6,6 @@
 #include "internal/serialization/protobuf/verify/PeerObject.hpp"  // IWYU pragma: associated
 
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/serialization/protobuf/Basic.hpp"
@@ -15,6 +14,7 @@
 #include "internal/serialization/protobuf/verify/PeerReply.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/PeerRequest.hpp"  // IWYU pragma: keep
 #include "internal/serialization/protobuf/verify/VerifyPeer.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/Nym.pb.h"  // IWYU pragma: keep
 #include "serialization/protobuf/PeerEnums.pb.h"
 #include "serialization/protobuf/PeerObject.pb.h"

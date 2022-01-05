@@ -7,16 +7,12 @@
 
 #include <atomic>
 #include <cstddef>
-#include <deque>
 #include <functional>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <queue>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "blockchain/node/wallet/Batch.hpp"
 #include "blockchain/node/wallet/Job.hpp"
@@ -25,6 +21,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
 #include "opentxs/blockchain/node/BlockOracle.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -50,9 +47,9 @@ public:
     auto Reorg(const block::Position& parent) noexcept -> void final;
     auto Request(
         const std::optional<block::Position>& highestClean,
-        const std::vector<block::Position>& blocks,
-        std::vector<std::unique_ptr<Batch>>&& batches,
-        std::vector<Work*>&& jobs) noexcept -> void;
+        const UnallocatedVector<block::Position>& blocks,
+        UnallocatedVector<std::unique_ptr<Batch>>&& batches,
+        UnallocatedVector<Work*>&& jobs) noexcept -> void;
     auto Run() noexcept -> bool final;
 
     Process(SubchainStateData& parent, Progress& progress) noexcept;
@@ -63,14 +60,14 @@ private:
     class Cache
     {
     public:
-        using BatchMap = std::map<Batch::ID, std::unique_ptr<Batch>>;
+        using BatchMap = UnallocatedMap<Batch::ID, std::unique_ptr<Batch>>;
 
         auto FinishBatch(BatchMap::iterator batch) noexcept -> void;
-        auto Flush() noexcept -> std::vector<BatchMap::iterator>;
+        auto Flush() noexcept -> UnallocatedVector<BatchMap::iterator>;
         auto Pop(BlockMap& destination) noexcept -> bool;
         auto Push(
-            std::vector<std::unique_ptr<Batch>>&& batches,
-            std::vector<Work*>&& jobs) noexcept -> void;
+            UnallocatedVector<std::unique_ptr<Batch>>&& batches,
+            UnallocatedVector<Work*>&& jobs) noexcept -> void;
         auto Reorg(const block::Position& parent) noexcept -> void;
         auto ReRequest(Work* job) noexcept -> void;
 
@@ -81,7 +78,7 @@ private:
         const std::size_t limit_;
         mutable std::mutex lock_;
         BatchMap batches_;
-        std::deque<Work*> pending_;
+        UnallocatedDeque<Work*> pending_;
         BlockMap downloading_;
 
         auto download(const Lock& lock) noexcept -> void;
@@ -110,7 +107,7 @@ private:
         std::function<bool(std::size_t)> breakCondition,
         std::function<void(BlockMap::iterator)> post) noexcept -> void;
     static auto move_nodes(
-        std::vector<BlockMap::iterator>& items,
+        UnallocatedVector<BlockMap::iterator>& items,
         BlockMap& from,
         BlockMap& to,
         std::function<void(BlockMap::iterator)> cb = {}) noexcept -> void;

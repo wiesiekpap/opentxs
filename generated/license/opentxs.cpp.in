@@ -13,8 +13,8 @@ auto license_opentxs(LicenseMap& out) noexcept -> void
 {
     out.emplace(
         "Open Transactions",
-        std::string{R"~!~(@OPENTXS_LICENSE_TEXT@)~!~"} +
-            std::string{R"~!~(@OPENTXS_CREDITS_TEXT@)~!~"} +
-            std::string{text_mpl_v2()});
+        UnallocatedCString{R"~!~(@OPENTXS_LICENSE_TEXT@)~!~"} +
+            UnallocatedCString{R"~!~(@OPENTXS_CREDITS_TEXT@)~!~"} +
+            UnallocatedCString{text_mpl_v2()});
 }
 }  // namespace opentxs

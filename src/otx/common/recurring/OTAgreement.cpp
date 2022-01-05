@@ -7,10 +7,10 @@
 #include "1_Internal.hpp"  // IWYU pragma: associated
 #include "internal/otx/common/recurring/OTAgreement.hpp"  // IWYU pragma: associated
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <cstring>
-#include <deque>
 #include <memory>
 
 #include "internal/api/session/FactoryAPI.hpp"
@@ -40,6 +40,7 @@
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -1282,8 +1283,8 @@ auto OTAgreement::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
         nReturnVal = 1;
     }
 
-    //  std::deque<std::int64_t>   m_dequeRecipientClosingNumbers; // Numbers
-    //  used
+    //  UnallocatedDeque<std::int64_t>   m_dequeRecipientClosingNumbers; //
+    //  Numbers used
     // for CLOSING a transaction. (finalReceipt.)
     else if (!strcmp("closingRecipientNumber", xml->getNodeName())) {
         auto strClosingNumber =

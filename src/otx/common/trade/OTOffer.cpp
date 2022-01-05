@@ -10,7 +10,6 @@
 #include <chrono>
 #include <cstdint>
 #include <cstring>
-#include <string>
 
 #include "internal/otx/common/Instrument.hpp"
 #include "internal/otx/common/StringXML.hpp"
@@ -24,6 +23,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
@@ -137,7 +137,7 @@ void OTOffer::GetIdentifier(Identifier& theIdentifier) const
          strAsset = String::Factory(GetInstrumentDefinitionID()),
          strCurrency = String::Factory(GetCurrencyID());
 
-    auto lScale = std::string{};
+    auto lScale = UnallocatedCString{};
     GetScale().Serialize(writer(lScale));
 
     // In this way we generate a unique ID that will always be consistent
@@ -356,27 +356,27 @@ void OTOffer::UpdateContents(const PasswordPrompt& reason)
         "instrumentDefinitionID", INSTRUMENT_DEFINITION_ID->Get());
     tag.add_attribute("currencyTypeID", CURRENCY_TYPE_ID->Get());
     tag.add_attribute("priceLimit", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         GetPriceLimit().Serialize(writer(buf));
         return buf;
     }());
     tag.add_attribute("totalAssetsOnOffer", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         GetTotalAssetsOnOffer().Serialize(writer(buf));
         return buf;
     }());
     tag.add_attribute("finishedSoFar", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         GetFinishedSoFar().Serialize(writer(buf));
         return buf;
     }());
     tag.add_attribute("marketScale", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         GetScale().Serialize(writer(buf));
         return buf;
     }());
     tag.add_attribute("minimumIncrement", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         GetMinimumIncrement().Serialize(writer(buf));
         return buf;
     }());
@@ -384,7 +384,7 @@ void OTOffer::UpdateContents(const PasswordPrompt& reason)
     tag.add_attribute("validFrom", formatTimestamp(GetValidFrom()));
     tag.add_attribute("validTo", formatTimestamp(GetValidTo()));
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());

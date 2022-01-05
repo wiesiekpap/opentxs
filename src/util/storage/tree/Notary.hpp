@@ -6,15 +6,14 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/api/session/Storage.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/SpentTokenList.pb.h"
 #include "serialization/protobuf/StorageNotary.pb.h"
 #include "util/storage/tree/Node.hpp"
@@ -43,41 +42,42 @@ public:
     auto CheckSpent(
         const identifier::UnitDefinition& unit,
         const MintSeries series,
-        const std::string& key) const -> bool;
+        const UnallocatedCString& key) const -> bool;
 
     auto MarkSpent(
         const identifier::UnitDefinition& unit,
         const MintSeries series,
-        const std::string& key) -> bool;
+        const UnallocatedCString& key) -> bool;
 
     ~Notary() final = default;
 
 private:
     friend Tree;
-    using SeriesMap = std::map<MintSeries, std::string>;
-    using UnitMap = std::map<std::string, SeriesMap>;
+    using SeriesMap = UnallocatedMap<MintSeries, UnallocatedCString>;
+    using UnitMap = UnallocatedMap<UnallocatedCString, SeriesMap>;
 
-    std::string id_;
+    UnallocatedCString id_;
 
     mutable UnitMap mint_map_;
 
     auto create_list(
-        const std::string& unitID,
+        const UnallocatedCString& unitID,
         const MintSeries series,
-        std::shared_ptr<proto::SpentTokenList>& output) const -> std::string;
+        std::shared_ptr<proto::SpentTokenList>& output) const
+        -> UnallocatedCString;
     auto get_or_create_list(
         const Lock& lock,
-        const std::string& unitID,
+        const UnallocatedCString& unitID,
         const MintSeries series) const -> proto::SpentTokenList;
     auto save(const Lock& lock) const -> bool final;
     auto serialize() const -> proto::StorageNotary;
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
 
     Notary(
         const Driver& storage,
-        const std::string& key,
-        const std::string& id);
+        const UnallocatedCString& key,
+        const UnallocatedCString& id);
     Notary() = delete;
     Notary(const Notary&) = delete;
     Notary(Notary&&) = delete;

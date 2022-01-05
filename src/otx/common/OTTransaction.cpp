@@ -10,11 +10,7 @@
 #include <chrono>
 #include <cstdint>
 #include <cstring>
-#include <list>
 #include <memory>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "internal/api/Legacy.hpp"
 #include "internal/api/session/FactoryAPI.hpp"
@@ -53,6 +49,7 @@
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -1742,7 +1739,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         return false;
     }
 
-    const std::string strFileContents(OTDB::QueryPlainString(
+    const UnallocatedCString strFileContents(OTDB::QueryPlainString(
         api_, api_.DataFolder(), szFolder1name, szFolder2name, szFilename, ""));
 
     if (strFileContents.length() < 2) {
@@ -4080,7 +4077,7 @@ auto OTTransaction::ProcessXMLNode(irr::io::IrrXMLReader*& xml) -> std::int32_t
             if (strTotalList->Exists())
                 m_Numlist.Add(strTotalList);  // (Comma-separated list of
                                               // numbers now becomes
-                                              // std::set<std::int64_t>.)
+                                              // UnallocatedSet<std::int64_t>.)
         }
 
         auto inboxHash = xml->getAttributeValue("inboxHash"),
@@ -4371,7 +4368,7 @@ void OTTransaction::UpdateContents(const PasswordPrompt& reason)
         }
     }  // not abbreviated (full details.)
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());
 }
@@ -4512,7 +4509,7 @@ void OTTransaction::SaveAbbrevPaymentInboxRecord(
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
     pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         lDisplayValue.Serialize(writer(buf));
         return buf;
     }());
@@ -4607,7 +4604,7 @@ void OTTransaction::SaveAbbrevExpiredBoxRecord(
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
     pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         lDisplayValue.Serialize(writer(buf));
         return buf;
     }());
@@ -4823,12 +4820,12 @@ void OTTransaction::SaveAbbrevRecordBoxRecord(
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
     pTag->add_attribute("adjustment", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         lAdjustment.Serialize(writer(buf));
         return buf;
     }());
     pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         lDisplayValue.Serialize(writer(buf));
         return buf;
     }());
@@ -4992,7 +4989,7 @@ void OTTransaction::SaveAbbreviatedNymboxRecord(
             // way to the paymentInbox, it will have a
             // displayValue.
             pTag->add_attribute("displayValue", [&] {
-                auto buf = std::string{};
+                auto buf = UnallocatedCString{};
                 lDisplayValue.Serialize(writer(buf));
                 return buf;
             }());
@@ -5073,12 +5070,12 @@ void OTTransaction::SaveAbbreviatedOutboxRecord(
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
     pTag->add_attribute("adjustment", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         lAdjustment.Serialize(writer(buf));
         return buf;
     }());
     pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         lDisplayValue.Serialize(writer(buf));
         return buf;
     }());
@@ -5238,12 +5235,12 @@ void OTTransaction::SaveAbbreviatedInboxRecord(
     pTag->add_attribute("dateSigned", formatTimestamp(m_DATE_SIGNED));
     pTag->add_attribute("receiptHash", strHash->Get());
     pTag->add_attribute("adjustment", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         lAdjustment.Serialize(writer(buf));
         return buf;
     }());
     pTag->add_attribute("displayValue", [&] {
-        auto buf = std::string{};
+        auto buf = UnallocatedCString{};
         lDisplayValue.Serialize(writer(buf));
         return buf;
     }());
@@ -6002,7 +5999,7 @@ auto OTTransaction::GetReferenceNumForDisplay() -> std::int64_t
                     if (nullptr != pPlan) {
                         lReferenceNum = pPlan->GetRecipientOpeningNum();
                     } else if (nullptr != pSmartContract) {
-                        const std::vector<std::int64_t>&
+                        const UnallocatedVector<std::int64_t>&
                             openingNumsInOrderOfSigning =
                                 pSmartContract->openingNumsInOrderOfSigning();
 

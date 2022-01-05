@@ -8,9 +8,7 @@
 #include <algorithm>
 #include <chrono>
 #include <memory>
-#include <string>
 #include <thread>
-#include <vector>
 
 #include "1_Internal.hpp"
 #include "core/ui/base/Row.hpp"
@@ -22,6 +20,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/ui/BalanceItem.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -74,12 +73,13 @@ public:
         -> const proto::PaymentWorkflow&;
 
     auto Confirmations() const noexcept -> int override { return 1; }
-    auto Contacts() const noexcept -> std::vector<std::string> override
+    auto Contacts() const noexcept
+        -> UnallocatedVector<UnallocatedCString> override
     {
         return contacts_;
     }
-    auto DisplayAmount() const noexcept -> std::string override;
-    auto Text() const noexcept -> std::string override;
+    auto DisplayAmount() const noexcept -> UnallocatedCString override;
+    auto Text() const noexcept -> UnallocatedCString override;
     auto Timestamp() const noexcept -> Time final;
     auto Type() const noexcept -> StorageBox override { return type_; }
 
@@ -87,16 +87,16 @@ public:
 
 protected:
     const OTNymID nym_id_;
-    const std::string workflow_;
+    const UnallocatedCString workflow_;
     const StorageBox type_;
-    std::string text_;
+    UnallocatedCString text_;
     Time time_;
 
     static auto extract_type(const proto::PaymentWorkflow& workflow) noexcept
         -> StorageBox;
 
     auto get_contact_name(const identifier::Nym& nymID) const noexcept
-        -> std::string;
+        -> UnallocatedCString;
 
     auto reindex(
         const implementation::AccountActivitySortKey& key,
@@ -110,16 +110,16 @@ protected:
         CustomData& custom,
         const identifier::Nym& nymID,
         const Identifier& accountID,
-        const std::string& text = {}) noexcept;
+        const UnallocatedCString& text = {}) noexcept;
 
 private:
     const OTIdentifier account_id_;
-    const std::vector<std::string> contacts_;
+    const UnallocatedVector<UnallocatedCString> contacts_;
 
     static auto extract_contacts(
         const api::session::Client& api,
         const proto::PaymentWorkflow& workflow) noexcept
-        -> std::vector<std::string>;
+        -> UnallocatedVector<UnallocatedCString>;
 
     virtual auto effective_amount() const noexcept -> opentxs::Amount = 0;
     auto qt_data(const int column, const int role, QVariant& out) const noexcept

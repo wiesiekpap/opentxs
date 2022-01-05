@@ -9,14 +9,10 @@
 
 #include <algorithm>
 #include <functional>
-#include <list>
-#include <map>
 #include <memory>
-#include <set>
 #include <thread>
 #include <tuple>
 #include <utility>
-#include <vector>
 
 #include "core/ui/base/List.hpp"
 #include "internal/core/ui/UI.hpp"
@@ -37,10 +33,11 @@
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
 #include "opentxs/network/zeromq/message/FrameSection.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/NymEditor.hpp"
 
-template struct std::pair<int, std::string>;
+template struct std::pair<int, opentxs::UnallocatedCString>;
 
 namespace opentxs::factory
 {
@@ -57,13 +54,14 @@ auto ProfileModel(
 
 namespace opentxs::ui::implementation
 {
-const std::set<identity::wot::claim::SectionType> Profile::allowed_types_{
+const UnallocatedSet<identity::wot::claim::SectionType> Profile::allowed_types_{
     identity::wot::claim::SectionType::Communication,
     identity::wot::claim::SectionType::Profile};
 
-const std::map<identity::wot::claim::SectionType, int> Profile::sort_keys_{
-    {identity::wot::claim::SectionType::Communication, 0},
-    {identity::wot::claim::SectionType::Profile, 1}};
+const UnallocatedMap<identity::wot::claim::SectionType, int>
+    Profile::sort_keys_{
+        {identity::wot::claim::SectionType::Communication, 0},
+        {identity::wot::claim::SectionType::Profile, 1}};
 
 Profile::Profile(
     const api::session::Client& api,
@@ -87,7 +85,7 @@ Profile::Profile(
 auto Profile::AddClaim(
     const identity::wot::claim::SectionType section,
     const identity::wot::claim::ClaimType type,
-    const std::string& value,
+    const UnallocatedCString& value,
     const bool primary,
     const bool active) const noexcept -> bool
 {
@@ -158,12 +156,12 @@ auto Profile::AddClaim(
 
 auto Profile::AllowedItems(
     const identity::wot::claim::SectionType section,
-    const std::string& lang) const noexcept -> Profile::ItemTypeList
+    const UnallocatedCString& lang) const noexcept -> Profile::ItemTypeList
 {
     return ui::ProfileSection::AllowedItems(section, lang);
 }
 
-auto Profile::AllowedSections(const std::string& lang) const noexcept
+auto Profile::AllowedSections(const UnallocatedCString& lang) const noexcept
     -> Profile::SectionTypeList
 {
     SectionTypeList output{};
@@ -200,7 +198,7 @@ auto Profile::construct_row(
 auto Profile::Delete(
     const int sectionType,
     const int type,
-    const std::string& claimID) const noexcept -> bool
+    const UnallocatedCString& claimID) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
     auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));
@@ -210,7 +208,7 @@ auto Profile::Delete(
     return section.Delete(type, claimID);
 }
 
-auto Profile::DisplayName() const noexcept -> std::string
+auto Profile::DisplayName() const noexcept -> UnallocatedCString
 {
     rLock lock{recursive_lock_};
 
@@ -219,7 +217,7 @@ auto Profile::DisplayName() const noexcept -> std::string
 
 auto Profile::nym_name(
     const api::session::Wallet& wallet,
-    const identifier::Nym& nymID) noexcept -> std::string
+    const identifier::Nym& nymID) noexcept -> UnallocatedCString
 {
     for (const auto& [id, name] : wallet.NymList()) {
         if (nymID.str() == id) { return name; }
@@ -228,7 +226,7 @@ auto Profile::nym_name(
     return {};
 }
 
-auto Profile::PaymentCode() const noexcept -> std::string
+auto Profile::PaymentCode() const noexcept -> UnallocatedCString
 {
     rLock lock{recursive_lock_};
 
@@ -270,7 +268,7 @@ void Profile::process_nym(const identity::Nym& nym) noexcept
         if (nameChanged || codeChanged) { UpdateNotify(); }
     }
 
-    auto active = std::set<ProfileRowID>{};
+    auto active = UnallocatedSet<ProfileRowID>{};
 
     for (const auto& section : nym.Claims()) {
         auto& type = section.first;
@@ -308,7 +306,7 @@ void Profile::process_nym(const Message& message) noexcept
 auto Profile::SetActive(
     const int sectionType,
     const int type,
-    const std::string& claimID,
+    const UnallocatedCString& claimID,
     const bool active) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
@@ -328,7 +326,7 @@ auto Profile::SetCallbacks(Callbacks&& cb) noexcept -> void
 auto Profile::SetPrimary(
     const int sectionType,
     const int type,
-    const std::string& claimID,
+    const UnallocatedCString& claimID,
     const bool primary) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
@@ -342,8 +340,8 @@ auto Profile::SetPrimary(
 auto Profile::SetValue(
     const int sectionType,
     const int type,
-    const std::string& claimID,
-    const std::string& value) const noexcept -> bool
+    const UnallocatedCString& claimID,
+    const UnallocatedCString& value) const noexcept -> bool
 {
     rLock lock{recursive_lock_};
     auto& section = lookup(lock, static_cast<ProfileRowID>(sectionType));

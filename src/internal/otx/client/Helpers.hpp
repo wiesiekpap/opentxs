@@ -6,14 +6,14 @@
 #pragma once
 
 #include <iostream>
-#include <string>
 
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 // Reads from cin until Newline.
-inline std::string OT_CLI_ReadLine()
+inline UnallocatedCString OT_CLI_ReadLine()
 {
-    std::string line;
+    UnallocatedCString line;
     if (std::getline(std::cin, line)) { return line; }
 
     return "";
@@ -21,12 +21,12 @@ inline std::string OT_CLI_ReadLine()
 
 // Reads from cin until EOF. (Or until the ~ character as the first character on
 // a line.)
-inline std::string OT_CLI_ReadUntilEOF()
+inline UnallocatedCString OT_CLI_ReadUntilEOF()
 {
-    std::string result("");
+    UnallocatedCString result("");
 
     for (;;) {
-        std::string input_line("");
+        UnallocatedCString input_line("");
         if (std::getline(std::cin, input_line, '\n')) {
             input_line += "\n";
 

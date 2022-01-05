@@ -8,11 +8,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <string>
-#include <vector>
 
 #include "opentxs/core/String.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -89,7 +88,7 @@ protected:
     explicit String(const opentxs::Identifier& value);
     explicit String(const opentxs::NymFile& value);
     String(const char* value);
-    explicit String(const std::string& value);
+    explicit String(const UnallocatedCString& value);
     String(const char* value, std::size_t size);
     auto operator=(const String& rhs) -> String&;
     String();
@@ -98,14 +97,14 @@ protected:
 private:
     friend opentxs::String;
 
-    static const std::string empty_;
+    static const UnallocatedCString empty_;
 
     std::uint32_t length_{0};
     std::uint32_t position_{0};
-    std::vector<char> internal_{};
+    UnallocatedVector<char> internal_{};
 
     static auto make_string(const char* str, std::uint32_t length)
-        -> std::vector<char>;
+        -> UnallocatedVector<char>;
 
     auto clone() const -> String* override;
     auto tokenize_basic(Map& map) const -> bool;

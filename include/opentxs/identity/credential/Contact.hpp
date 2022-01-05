@@ -8,11 +8,11 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
 
 #include "opentxs/Types.hpp"
 #include "opentxs/identity/credential/Base.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -39,18 +39,18 @@ class OPENTXS_EXPORT Contact : virtual public Base
 public:
     OPENTXS_NO_EXPORT static auto ClaimID(
         const api::Session& api,
-        const std::string& nymid,
+        const UnallocatedCString& nymid,
         const std::uint32_t section,
-        const proto::ContactItem& item) -> std::string;
+        const proto::ContactItem& item) -> UnallocatedCString;
     static auto ClaimID(
         const api::Session& api,
-        const std::string& nymid,
+        const UnallocatedCString& nymid,
         const wot::claim::SectionType section,
         const wot::claim::ClaimType type,
         const std::int64_t start,
         const std::int64_t end,
-        const std::string& value,
-        const std::string& subtype) -> std::string;
+        const UnallocatedCString& value,
+        const UnallocatedCString& subtype) -> UnallocatedCString;
     OPENTXS_NO_EXPORT static auto ClaimID(
         const api::Session& api,
         const proto::Claim& preimage) -> OTIdentifier;

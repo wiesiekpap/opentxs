@@ -12,6 +12,6 @@ namespace opentxs
 auto license_base58(LicenseMap& out) noexcept -> void
 {
     out.emplace(
-        "base58 (via Bitcoin)", std::string{R"~!~(@BASE58_LICENSE_TEXT@)~!~"});
+        "base58 (via Bitcoin)", UnallocatedCString{R"~!~(@BASE58_LICENSE_TEXT@)~!~"});
 }
 }  // namespace opentxs

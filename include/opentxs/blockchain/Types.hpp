@@ -12,11 +12,11 @@
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
 #include <cstdint>
-#include <string>
 #include <tuple>
 #include <utility>
 
 #include "opentxs/core/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -55,6 +55,7 @@ OPENTXS_EXPORT auto BlockchainToUnit(const blockchain::Type type) noexcept
     -> core::UnitType;
 OPENTXS_EXPORT auto UnitToBlockchain(const core::UnitType type) noexcept
     -> blockchain::Type;
-OPENTXS_EXPORT auto print(blockchain::SendResult) noexcept -> std::string;
-OPENTXS_EXPORT auto print(blockchain::Type) noexcept -> std::string;
+OPENTXS_EXPORT auto print(blockchain::SendResult) noexcept
+    -> UnallocatedCString;
+OPENTXS_EXPORT auto print(blockchain::Type) noexcept -> UnallocatedCString;
 }  // namespace opentxs

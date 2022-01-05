@@ -10,14 +10,10 @@
 #include <cstddef>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/blockchain/Blockchain.hpp"
@@ -33,6 +29,7 @@
 #include "opentxs/core/Data.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "util/LMDB.hpp"
 
@@ -94,7 +91,7 @@ public:
     {
         return load_header(hash);
     }
-    auto RecentHashes() const noexcept -> std::vector<block::pHash>;
+    auto RecentHashes() const noexcept -> UnallocatedVector<block::pHash>;
     auto SiblingHashes() const noexcept -> node::Hashes;
     // Returns null pointer if the header does not exist
     auto TryLoadBitcoinHeader(const block::Hash& hash) const noexcept
@@ -136,6 +133,6 @@ private:
         const bool setTip,
         MDB_txn* parent) const noexcept -> bool;
     auto recent_hashes(const Lock& lock) const noexcept
-        -> std::vector<block::pHash>;
+        -> UnallocatedVector<block::pHash>;
 };
 }  // namespace opentxs::blockchain::database

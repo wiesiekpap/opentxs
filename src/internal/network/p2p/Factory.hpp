@@ -62,10 +62,10 @@ namespace opentxs::factory
 auto BlockchainSyncAcknowledgement() noexcept -> network::p2p::Acknowledgement;
 auto BlockchainSyncAcknowledgement(
     network::p2p::StateData in,
-    std::string endpoint) noexcept -> network::p2p::Acknowledgement;
+    UnallocatedCString endpoint) noexcept -> network::p2p::Acknowledgement;
 auto BlockchainSyncAcknowledgement_p(
     network::p2p::StateData in,
-    std::string endpoint) noexcept
+    UnallocatedCString endpoint) noexcept
     -> std::unique_ptr<network::p2p::Acknowledgement>;
 auto BlockchainSyncData() noexcept -> network::p2p::Data;
 auto BlockchainSyncData(

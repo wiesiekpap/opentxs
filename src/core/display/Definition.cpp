@@ -11,7 +11,6 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "core/display/Definition_imp.hpp"
@@ -20,13 +19,14 @@
 #include "opentxs/core/UnitType.hpp"
 #include "opentxs/core/display/Definition.hpp"
 #include "opentxs/core/display/Scale.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::display
 {
 using DefinitionMap =
     robin_hood::unordered_flat_map<core::UnitType, Definition>;
 
-Definition::Definition(std::string&& shortname, Scales&& scales) noexcept
+Definition::Definition(UnallocatedCString&& shortname, Scales&& scales) noexcept
     : imp_(std::make_unique<Imp>(std::move(shortname), std::move(scales))
                .release())
 {
@@ -73,7 +73,7 @@ auto Definition::Format(
     const Amount amount,
     const Index index,
     const OptionalInt minDecimals,
-    const OptionalInt maxDecimals) const noexcept(false) -> std::string
+    const OptionalInt maxDecimals) const noexcept(false) -> UnallocatedCString
 {
     try {
         const auto& scale = imp_->scales_.at(static_cast<std::size_t>(index));
@@ -91,13 +91,13 @@ auto Definition::GetScales() const noexcept -> const Map&
     return imp_->cached_.value();
 }
 
-auto Definition::Import(const std::string& formatted, const Index scale) const
-    noexcept(false) -> Amount
+auto Definition::Import(const UnallocatedCString& formatted, const Index scale)
+    const noexcept(false) -> Amount
 {
     return imp_->Import(formatted, scale);
 }
 
-auto Definition::ShortName() const noexcept -> std::string
+auto Definition::ShortName() const noexcept -> UnallocatedCString
 {
     return imp_->short_name_;
 }

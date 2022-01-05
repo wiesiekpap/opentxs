@@ -7,9 +7,6 @@
 
 #pragma once
 
-#include <map>
-#include <set>
-#include <string>
 #include <tuple>
 
 #include "Proto.hpp"
@@ -19,6 +16,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageAccounts.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -43,28 +41,29 @@ public:
     auto AccountSigner(const Identifier& accountID) const -> OTNymID;
     auto AccountUnit(const Identifier& accountID) const -> core::UnitType;
     auto AccountsByContract(const identifier::UnitDefinition& unit) const
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto AccountsByIssuer(const identifier::Nym& issuerNym) const
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto AccountsByOwner(const identifier::Nym& ownerNym) const
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto AccountsByServer(const identifier::Notary& server) const
-        -> std::set<OTIdentifier>;
+        -> UnallocatedSet<OTIdentifier>;
     auto AccountsByUnit(const core::UnitType unit) const
-        -> std::set<OTIdentifier>;
-    auto Alias(const std::string& id) const -> std::string;
+        -> UnallocatedSet<OTIdentifier>;
+    auto Alias(const UnallocatedCString& id) const -> UnallocatedCString;
     auto Load(
-        const std::string& id,
-        std::string& output,
-        std::string& alias,
+        const UnallocatedCString& id,
+        UnallocatedCString& output,
+        UnallocatedCString& alias,
         const bool checking) const -> bool;
 
-    auto Delete(const std::string& id) -> bool;
-    auto SetAlias(const std::string& id, const std::string& alias) -> bool;
+    auto Delete(const UnallocatedCString& id) -> bool;
+    auto SetAlias(const UnallocatedCString& id, const UnallocatedCString& alias)
+        -> bool;
     auto Store(
-        const std::string& id,
-        const std::string& data,
-        const std::string& alias,
+        const UnallocatedCString& id,
+        const UnallocatedCString& data,
+        const UnallocatedCString& alias,
         const identifier::Nym& ownerNym,
         const identifier::Nym& signerNym,
         const identifier::Nym& issuerNym,
@@ -77,14 +76,17 @@ public:
 private:
     friend Tree;
 
-    using NymIndex = std::map<OTNymID, std::set<OTIdentifier>>;
-    using ServerIndex = std::map<OTNotaryID, std::set<OTIdentifier>>;
-    using ContractIndex = std::map<OTUnitID, std::set<OTIdentifier>>;
-    using UnitIndex = std::map<core::UnitType, std::set<OTIdentifier>>;
+    using NymIndex = UnallocatedMap<OTNymID, UnallocatedSet<OTIdentifier>>;
+    using ServerIndex =
+        UnallocatedMap<OTNotaryID, UnallocatedSet<OTIdentifier>>;
+    using ContractIndex =
+        UnallocatedMap<OTUnitID, UnallocatedSet<OTIdentifier>>;
+    using UnitIndex =
+        UnallocatedMap<core::UnitType, UnallocatedSet<OTIdentifier>>;
     /** owner, signer, issuer, server, contract, unit */
     using AccountData = std::
         tuple<OTNymID, OTNymID, OTNymID, OTNotaryID, OTUnitID, core::UnitType>;
-    using ReverseIndex = std::map<OTIdentifier, AccountData>;
+    using ReverseIndex = UnallocatedMap<OTIdentifier, AccountData>;
 
     NymIndex owner_index_{};
     NymIndex signer_index_{};
@@ -126,10 +128,10 @@ private:
         const identifier::Notary& server,
         const identifier::UnitDefinition& contract,
         const core::UnitType unit) -> bool;
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const Lock& lock) const -> bool final;
 
-    Accounts(const Driver& storage, const std::string& key);
+    Accounts(const Driver& storage, const UnallocatedCString& key);
     Accounts() = delete;
     Accounts(const Accounts&) = delete;
     Accounts(Accounts&&) = delete;

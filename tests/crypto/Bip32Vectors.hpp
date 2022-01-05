@@ -6,10 +6,12 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
-#include <vector>
 
-namespace
+#include "opentxs/util/Container.hpp"
+
+namespace ot = opentxs;
+
+namespace ottest
 {
 struct PathElement {
     using Index = std::uint32_t;
@@ -19,8 +21,8 @@ struct PathElement {
 };
 
 struct Child {
-    using Path = std::vector<PathElement>;
-    using Base58 = std::string;
+    using Path = ot::UnallocatedVector<PathElement>;
+    using Base58 = ot::UnallocatedCString;
 
     Path path_{};
     Base58 xpub_{};
@@ -28,14 +30,14 @@ struct Child {
 };
 
 struct Bip32TestCase {
-    using Hex = std::string;
-    using Children = std::vector<Child>;
+    using Hex = ot::UnallocatedCString;
+    using Children = ot::UnallocatedVector<Child>;
 
     Hex seed_{};
     Children children_{};
 };
 
-using Bip32TestCases = std::vector<Bip32TestCase>;
+using Bip32TestCases = ot::UnallocatedVector<Bip32TestCase>;
 
 // clang-format off
 // https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
@@ -137,4 +139,4 @@ static const Bip32TestCases bip32_test_cases_{
      }},
 };
 // clang-format on
-}  // namespace
+}  // namespace ottest

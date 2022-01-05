@@ -9,11 +9,11 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
-#include <string>
 
 #include "Proto.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/Types.hpp"
+#include "opentxs/util/Container.hpp"
 #include "serialization/protobuf/StorageItems.pb.h"
 #include "util/storage/tree/Node.hpp"
 
@@ -55,7 +55,7 @@ public:
     auto Accounts() const -> const storage::Accounts&;
     auto Contacts() const -> const storage::Contacts&;
     auto Credentials() const -> const storage::Credentials&;
-    auto Notary(const std::string& id) const -> const storage::Notary&;
+    auto Notary(const UnallocatedCString& id) const -> const storage::Notary&;
     auto Nyms() const -> const storage::Nyms&;
     auto Seeds() const -> const storage::Seeds&;
     auto Servers() const -> const storage::Servers&;
@@ -64,7 +64,8 @@ public:
     auto mutable_Accounts() -> Editor<storage::Accounts>;
     auto mutable_Contacts() -> Editor<storage::Contacts>;
     auto mutable_Credentials() -> Editor<storage::Credentials>;
-    auto mutable_Notary(const std::string& id) -> Editor<storage::Notary>;
+    auto mutable_Notary(const UnallocatedCString& id)
+        -> Editor<storage::Notary>;
     auto mutable_Nyms() -> Editor<storage::Nyms>;
     auto mutable_Seeds() -> Editor<storage::Seeds>;
     auto mutable_Servers() -> Editor<storage::Servers>;
@@ -83,14 +84,14 @@ private:
     friend api::imp::Storage;
     friend storage::Root;
 
-    std::string account_root_{Node::BLANK_HASH};
-    std::string contact_root_{Node::BLANK_HASH};
-    std::string credential_root_{Node::BLANK_HASH};
-    std::string notary_root_{Node::BLANK_HASH};
-    std::string nym_root_{Node::BLANK_HASH};
-    std::string seed_root_{Node::BLANK_HASH};
-    std::string server_root_{Node::BLANK_HASH};
-    std::string unit_root_{Node::BLANK_HASH};
+    UnallocatedCString account_root_{Node::BLANK_HASH};
+    UnallocatedCString contact_root_{Node::BLANK_HASH};
+    UnallocatedCString credential_root_{Node::BLANK_HASH};
+    UnallocatedCString notary_root_{Node::BLANK_HASH};
+    UnallocatedCString nym_root_{Node::BLANK_HASH};
+    UnallocatedCString seed_root_{Node::BLANK_HASH};
+    UnallocatedCString server_root_{Node::BLANK_HASH};
+    UnallocatedCString unit_root_{Node::BLANK_HASH};
 
     mutable std::mutex account_lock_;
     mutable std::unique_ptr<storage::Accounts> account_;
@@ -115,35 +116,35 @@ private:
     auto get_child(
         std::mutex& mutex,
         std::unique_ptr<T>& pointer,
-        const std::string& hash,
+        const UnallocatedCString& hash,
         Args&&... params) const -> T*;
     template <typename T, typename... Args>
     auto get_editor(
         std::mutex& mutex,
         std::unique_ptr<T>& pointer,
-        std::string& hash,
+        UnallocatedCString& hash,
         Args&&... params) const -> Editor<T>;
     auto accounts() const -> storage::Accounts*;
     auto contacts() const -> storage::Contacts*;
     auto credentials() const -> storage::Credentials*;
-    auto notary(const std::string& id) const -> storage::Notary*;
+    auto notary(const UnallocatedCString& id) const -> storage::Notary*;
     auto nyms() const -> storage::Nyms*;
     auto seeds() const -> storage::Seeds*;
     auto servers() const -> storage::Servers*;
     auto units() const -> storage::Units*;
 
-    void init(const std::string& hash) final;
+    void init(const UnallocatedCString& hash) final;
     auto save(const Lock& lock) const -> bool final;
     template <typename T>
     void save_child(
         T*,
         const Lock& lock,
         std::mutex& hashLock,
-        std::string& hash) const;
+        UnallocatedCString& hash) const;
     auto serialize() const -> proto::StorageItems;
-    auto update_root(const std::string& hash) -> bool;
+    auto update_root(const UnallocatedCString& hash) -> bool;
 
-    Tree(const Driver& storage, const std::string& key);
+    Tree(const Driver& storage, const UnallocatedCString& key);
     Tree() = delete;
     Tree(const Tree&);
     Tree(Tree&&) = delete;

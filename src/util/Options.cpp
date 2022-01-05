@@ -14,19 +14,17 @@
 #include <cctype>
 #include <cstring>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 #include "internal/blockchain/Params.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/api/session/Notary.hpp"
 #include "opentxs/blockchain/Blockchain.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 
 class QObject;
@@ -36,7 +34,7 @@ namespace po = boost::program_options;
 namespace opentxs
 {
 struct Options::Imp::Parser {
-    using Multistring = std::vector<std::string>;
+    using Multistring = UnallocatedVector<UnallocatedCString>;
 
     static constexpr auto blockchain_disable_{"disable_blockchain"};
     static constexpr auto blockchain_ipv4_bind_{"blockchain_bind_ipv4"};
@@ -109,7 +107,7 @@ struct Options::Imp::Parser {
                 "Default key size for blinded mints");
             out.add_options()(
                 home_,
-                po::value<std::string>(),
+                po::value<UnallocatedCString>(),
                 "Path to opentxs data directory");
             out.add_options()(
                 ipv4_connection_mode_,
@@ -123,7 +121,7 @@ struct Options::Imp::Parser {
                 "automatic, 1 = ipv6 enabled");
             out.add_options()(
                 log_endpoint_,
-                po::value<std::string>(),
+                po::value<UnallocatedCString>(),
                 "ZeroMQ endpoint to which to copy log data");
             out.add_options()(
                 log_level_,
@@ -132,7 +130,7 @@ struct Options::Imp::Parser {
                 "are more verbose. Default value is 0");
             out.add_options()(
                 notary_bind_ip_,
-                po::value<std::string>(),
+                po::value<UnallocatedCString>(),
                 "Local IP address for the notary to listen on");
             out.add_options()(
                 notary_bind_port_,
@@ -140,11 +138,11 @@ struct Options::Imp::Parser {
                 "Local TCP port for the notary to listen on");
             out.add_options()(
                 notary_name_,
-                po::value<std::string>(),
+                po::value<UnallocatedCString>(),
                 "(only when creating a new notary contract) notary name");
             out.add_options()(
                 notary_terms_,
-                po::value<std::string>(),
+                po::value<UnallocatedCString>(),
                 "(only when creating a new notary contract) notary terms and "
                 "conditions");
             out.add_options()(
@@ -171,12 +169,12 @@ struct Options::Imp::Parser {
                 "address to advertise in contract");
             out.add_options()(
                 notary_public_port_,
-                po::value<std::string>(),
+                po::value<UnallocatedCString>(),
                 "(only when creating a new notary contract) public listening "
                 "port");
             out.add_options()(
                 storage_plugin_,
-                po::value<std::string>(),
+                po::value<UnallocatedCString>(),
                 "primary opentxs storage plugin");
 
             return out;
@@ -184,7 +182,7 @@ struct Options::Imp::Parser {
 
         return out;
     }
-    auto Help() const noexcept -> std::string
+    auto Help() const noexcept -> UnallocatedCString
     {
         auto out = std::stringstream{};
         out << Args();
@@ -258,12 +256,12 @@ Options::Imp::Imp(const Imp& rhs) noexcept
 {
 }
 
-auto Options::Imp::convert(const std::string& value) const noexcept(false)
-    -> blockchain::Type
+auto Options::Imp::convert(const UnallocatedCString& value) const
+    noexcept(false) -> blockchain::Type
 {
     static const auto& chains = blockchain::DefinedChains();
     static const auto names = [] {
-        auto out = std::map<std::string, blockchain::Type>{};
+        auto out = UnallocatedMap<UnallocatedCString, blockchain::Type>{};
 
         for (const auto& chain : chains) {
             const auto& data = blockchain::params::Data::Chains().at(chain);
@@ -289,10 +287,10 @@ auto Options::Imp::convert(const std::string& value) const noexcept(false)
     throw std::out_of_range{"not a blockchain"};
 }
 
-auto Options::Imp::get(const std::optional<std::string>& data) noexcept -> const
-    char*
+auto Options::Imp::get(const std::optional<UnallocatedCString>& data) noexcept
+    -> const char*
 {
-    static const auto null = std::string{};
+    static const auto null = UnallocatedCString{};
 
     if (const auto& v = data; v.has_value()) {
 
@@ -303,7 +301,7 @@ auto Options::Imp::get(const std::optional<std::string>& data) noexcept -> const
     }
 }
 
-auto Options::Imp::help() const noexcept -> const std::string&
+auto Options::Imp::help() const noexcept -> const UnallocatedCString&
 {
     static const auto text = [&] {
         auto parser = Parser{};
@@ -377,9 +375,10 @@ auto Options::Imp::import_value(const char* key, const char* value) noexcept
     }
 }
 
-auto Options::Imp::lower(const std::string& in) noexcept -> std::string
+auto Options::Imp::lower(const UnallocatedCString& in) noexcept
+    -> UnallocatedCString
 {
-    auto out = std::string{};
+    auto out = UnallocatedCString{};
     std::transform(in.begin(), in.end(), std::back_inserter(out), [](auto c) {
         return std::tolower(c);
     });
@@ -472,7 +471,7 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::home_) {
             try {
-                home_ = value.as<std::string>();
+                home_ = value.as<UnallocatedCString>();
             } catch (...) {
             }
         } else if (name == Parser::ipv4_connection_mode_) {
@@ -489,7 +488,7 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::log_endpoint_) {
             try {
-                log_endpoint_ = value.as<std::string>();
+                log_endpoint_ = value.as<UnallocatedCString>();
             } catch (...) {
             }
         } else if (name == Parser::log_level_) {
@@ -499,7 +498,7 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::notary_bind_ip_) {
             try {
-                notary_bind_ip_ = value.as<std::string>();
+                notary_bind_ip_ = value.as<UnallocatedCString>();
             } catch (...) {
             }
         } else if (name == Parser::notary_bind_port_) {
@@ -509,12 +508,12 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::notary_name_) {
             try {
-                notary_name_ = value.as<std::string>();
+                notary_name_ = value.as<UnallocatedCString>();
             } catch (...) {
             }
         } else if (name == Parser::notary_terms_) {
             try {
-                notary_terms_ = value.as<std::string>();
+                notary_terms_ = value.as<UnallocatedCString>();
             } catch (...) {
             }
         } else if (name == Parser::notary_public_eep_) {
@@ -564,7 +563,7 @@ auto Options::Imp::parse(int argc, char** argv) noexcept(false) -> void
             }
         } else if (name == Parser::storage_plugin_) {
             try {
-                storage_primary_plugin_ = value.as<std::string>();
+                storage_primary_plugin_ = value.as<UnallocatedCString>();
             } catch (...) {
             }
         }
@@ -793,13 +792,13 @@ auto Options::AddNotaryPublicOnion(const char* value) noexcept -> Options&
 }
 
 auto Options::BlockchainBindIpv4() const noexcept
-    -> const std::set<std::string>&
+    -> const UnallocatedSet<UnallocatedCString>&
 {
     return imp_->blockchain_ipv4_bind_;
 }
 
 auto Options::BlockchainBindIpv6() const noexcept
-    -> const std::set<std::string>&
+    -> const UnallocatedSet<UnallocatedCString>&
 {
     return imp_->blockchain_ipv6_bind_;
 }
@@ -828,12 +827,13 @@ auto Options::DisableBlockchain(blockchain::Type chain) noexcept -> Options&
     return *this;
 }
 
-auto Options::DisabledBlockchains() const noexcept -> std::set<blockchain::Type>
+auto Options::DisabledBlockchains() const noexcept
+    -> UnallocatedSet<blockchain::Type>
 {
     return imp_->blockchain_disabled_chains_;
 }
 
-auto Options::HelpText() const noexcept -> const std::string&
+auto Options::HelpText() const noexcept -> const UnallocatedCString&
 {
     return imp_->help();
 }
@@ -886,22 +886,26 @@ auto Options::NotaryName() const noexcept -> const char*
     return Imp::get(imp_->notary_name_);
 }
 
-auto Options::NotaryPublicEEP() const noexcept -> const std::set<std::string>&
+auto Options::NotaryPublicEEP() const noexcept
+    -> const UnallocatedSet<UnallocatedCString>&
 {
     return imp_->notary_public_eep_;
 }
 
-auto Options::NotaryPublicIPv4() const noexcept -> const std::set<std::string>&
+auto Options::NotaryPublicIPv4() const noexcept
+    -> const UnallocatedSet<UnallocatedCString>&
 {
     return imp_->notary_public_ipv4_;
 }
 
-auto Options::NotaryPublicIPv6() const noexcept -> const std::set<std::string>&
+auto Options::NotaryPublicIPv6() const noexcept
+    -> const UnallocatedSet<UnallocatedCString>&
 {
     return imp_->notary_public_ipv6_;
 }
 
-auto Options::NotaryPublicOnion() const noexcept -> const std::set<std::string>&
+auto Options::NotaryPublicOnion() const noexcept
+    -> const UnallocatedSet<UnallocatedCString>&
 {
     return imp_->notary_public_onion_;
 }
@@ -938,7 +942,7 @@ auto Options::QtRootObject() const noexcept -> QObject*
 }
 
 auto Options::RemoteBlockchainSyncServers() const noexcept
-    -> const std::set<std::string>&
+    -> const UnallocatedSet<UnallocatedCString>&
 {
     return imp_->blockchain_sync_servers_;
 }

@@ -11,7 +11,6 @@
 #include <cstring>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <utility>
 
 #include "internal/api/crypto/Symmetric.hpp"
@@ -39,6 +38,7 @@
 #include "opentxs/crypto/library/AsymmetricProvider.hpp"
 #include "opentxs/identity/Authority.hpp"
 #include "opentxs/identity/credential/Key.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/AsymmetricKey.pb.h"
@@ -606,7 +606,7 @@ auto Asymmetric::NewSignature(
     return output;
 }
 
-auto Asymmetric::Path() const noexcept -> const std::string
+auto Asymmetric::Path() const noexcept -> const UnallocatedCString
 {
     LogError()(OT_PRETTY_CLASS())("Incorrect key type.").Flush();
 

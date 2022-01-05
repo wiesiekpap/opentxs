@@ -44,7 +44,7 @@ ContactListItem::ContactListItem(
 {
 }
 
-auto ContactListItem::calculate_section() const noexcept -> std::string
+auto ContactListItem::calculate_section() const noexcept -> UnallocatedCString
 {
     auto lock = Lock{lock_};
 
@@ -52,26 +52,26 @@ auto ContactListItem::calculate_section() const noexcept -> std::string
 }
 
 auto ContactListItem::calculate_section(const Lock& lock) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     if (row_id_ == parent_.ID()) { return {"ME"}; }
 
     return translate_section(lock);
 }
 
-auto ContactListItem::ContactID() const noexcept -> std::string
+auto ContactListItem::ContactID() const noexcept -> UnallocatedCString
 {
     return row_id_->str();
 }
 
-auto ContactListItem::DisplayName() const noexcept -> std::string
+auto ContactListItem::DisplayName() const noexcept -> UnallocatedCString
 {
     auto lock = Lock{lock_};
 
     return key_.second;
 }
 
-auto ContactListItem::ImageURI() const noexcept -> std::string
+auto ContactListItem::ImageURI() const noexcept -> UnallocatedCString
 {
     // TODO
 
@@ -104,7 +104,7 @@ auto ContactListItem::reindex(
     return output;
 }
 
-auto ContactListItem::Section() const noexcept -> std::string
+auto ContactListItem::Section() const noexcept -> UnallocatedCString
 {
     auto lock = Lock{lock_};
 
@@ -112,12 +112,12 @@ auto ContactListItem::Section() const noexcept -> std::string
 }
 
 auto ContactListItem::translate_section(const Lock&) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     if (key_.second.empty()) { return {" "}; }
 
     std::locale locale;
-    std::string output{" "};
+    UnallocatedCString output{" "};
     output[0] = std::toupper(key_.second[0], locale);
 
     return output;

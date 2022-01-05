@@ -5,9 +5,7 @@
 
 #pragma once
 
-#include <map>
 #include <ostream>
-#include <vector>
 
 #include "network/zeromq/curve/Server.hpp"
 #include "network/zeromq/socket/Receiver.hpp"
@@ -15,6 +13,7 @@
 #include "opentxs/Types.hpp"
 #include "opentxs/network/zeromq/socket/Pull.hpp"
 #include "opentxs/network/zeromq/socket/Socket.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

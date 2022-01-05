@@ -10,8 +10,6 @@
 #include <algorithm>
 #include <chrono>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/api/session/Types.hpp"
@@ -28,6 +26,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentWorkflow.pb.h"
@@ -73,7 +72,7 @@ auto BalanceItem(
             ui::implementation::extract_custom<OTData>(custom, 5),
             tx.NetBalanceChange(nymID),
             tx.Memo(),
-            ui::implementation::extract_custom<std::string>(custom, 4));
+            ui::implementation::extract_custom<UnallocatedCString>(custom, 4));
     }
 #endif  // OT_BLOCKCHAIN
 
@@ -116,7 +115,7 @@ BalanceItem::BalanceItem(
     CustomData& custom,
     const identifier::Nym& nymID,
     const Identifier& accountID,
-    const std::string& text) noexcept
+    const UnallocatedCString& text) noexcept
     : BalanceItemRow(parent, api, rowID, true)
     , nym_id_(nymID)
     , workflow_(recover_workflow(custom).id())
@@ -128,13 +127,13 @@ BalanceItem::BalanceItem(
 {
 }
 
-auto BalanceItem::DisplayAmount() const noexcept -> std::string
+auto BalanceItem::DisplayAmount() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
     const auto& amount = effective_amount();
     const auto& definition =
         display::GetDefinition(parent_.Contract().UnitOfAccount());
-    std::string output = definition.Format(amount);
+    UnallocatedCString output = definition.Format(amount);
 
     if (0 < output.size()) { return output; }
 
@@ -144,9 +143,10 @@ auto BalanceItem::DisplayAmount() const noexcept -> std::string
 
 auto BalanceItem::extract_contacts(
     const api::session::Client& api,
-    const proto::PaymentWorkflow& workflow) noexcept -> std::vector<std::string>
+    const proto::PaymentWorkflow& workflow) noexcept
+    -> UnallocatedVector<UnallocatedCString>
 {
-    std::vector<std::string> output{};
+    UnallocatedVector<UnallocatedCString> output{};
 
     for (const auto& party : workflow.party()) {
         const auto contactID =
@@ -192,11 +192,11 @@ auto BalanceItem::extract_type(const proto::PaymentWorkflow& workflow) noexcept
 }
 
 auto BalanceItem::get_contact_name(const identifier::Nym& nymID) const noexcept
-    -> std::string
+    -> UnallocatedCString
 {
     if (nymID.empty()) { return {}; }
 
-    std::string output{nymID.str()};
+    UnallocatedCString output{nymID.str()};
     const auto contactID = api_.Contacts().ContactID(nymID);
 
     if (false == contactID->empty()) {
@@ -234,7 +234,7 @@ auto BalanceItem::reindex(
     }
 }
 
-auto BalanceItem::Text() const noexcept -> std::string
+auto BalanceItem::Text() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 

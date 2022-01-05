@@ -7,14 +7,13 @@
 
 #include <irrxml/irrXML.hpp>
 #include <cstdint>
-#include <map>
 #include <memory>
-#include <string>
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "internal/otx/common/Contract.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -79,7 +78,8 @@ public:
     ~AccountList();
 
 private:
-    using MapOfWeakAccounts = std::map<std::string, std::weak_ptr<Account>>;
+    using MapOfWeakAccounts =
+        UnallocatedMap<UnallocatedCString, std::weak_ptr<Account>>;
 
     const api::Session& api_;
     Account::AccountType acctType_;

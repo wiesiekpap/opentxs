@@ -7,11 +7,10 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <vector>
-
 #include "opentxs/blockchain/Types.hpp"
 #include "opentxs/network/p2p/Base.hpp"
 #include "opentxs/network/p2p/Types.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

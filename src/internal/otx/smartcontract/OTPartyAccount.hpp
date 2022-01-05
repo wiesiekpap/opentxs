@@ -6,13 +6,12 @@
 #pragma once
 
 #include <cstdint>
-#include <map>
-#include <string>
 
 #include "internal/api/session/Wallet.hpp"
 #include "internal/otx/common/Account.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -137,17 +136,17 @@ public:
 
     OTPartyAccount(
         const api::session::Wallet& wallet,
-        const std::string& dataFolder);
+        const UnallocatedCString& dataFolder);
     OTPartyAccount(
         const api::session::Wallet& wallet,
-        const std::string& dataFolder,
-        const std::string& str_account_name,
+        const UnallocatedCString& dataFolder,
+        const UnallocatedCString& str_account_name,
         const String& strAgentName,
         Account& theAccount,
         std::int64_t lClosingTransNo);
     OTPartyAccount(
         const api::session::Wallet& wallet,
-        const std::string& dataFolder,
+        const UnallocatedCString& dataFolder,
         const String& strName,
         const String& strAgentName,
         const String& strAcctID,
@@ -158,7 +157,7 @@ public:
 
 private:
     const api::session::Wallet& wallet_;
-    const std::string data_folder_{""};
+    const UnallocatedCString data_folder_{""};
     OTParty* m_pForParty;  // When being added to a party, this pointer will be
                            // set.
     // NOTE: each party needs to have a list of partyaccounts, AND each account

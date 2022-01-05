@@ -9,7 +9,6 @@
 #include <iosfwd>
 #include <memory>
 #include <optional>
-#include <vector>
 
 #include "Proto.hpp"
 #include "internal/otx/blind/Purse.hpp"
@@ -28,6 +27,7 @@
 #include "opentxs/otx/blind/Token.hpp"
 #include "opentxs/otx/blind/Types.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Numbers.hpp"
 #include "opentxs/util/Time.hpp"
 

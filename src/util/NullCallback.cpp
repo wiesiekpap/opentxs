@@ -30,7 +30,7 @@ namespace opentxs::implementation
 auto NullCallback::runOne(
     const char*,
     opentxs::Secret& output,
-    const std::string& key) const -> void
+    const UnallocatedCString& key) const -> void
 {
     output.AssignText(DefaultPassword());
 }
@@ -38,7 +38,7 @@ auto NullCallback::runOne(
 auto NullCallback::runTwo(
     const char* display,
     opentxs::Secret& output,
-    const std::string& key) const -> void
+    const UnallocatedCString& key) const -> void
 {
     runOne(display, output, key);
 }

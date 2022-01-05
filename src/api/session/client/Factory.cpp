@@ -81,7 +81,7 @@ auto Factory::BitcoinBlock(
     const opentxs::blockchain::block::Header& previous,
     const Transaction_p generationTransaction,
     const std::uint32_t nBits,
-    const std::vector<Transaction_p>& extraTransactions,
+    const UnallocatedVector<Transaction_p>& extraTransactions,
     const std::int32_t version,
     const AbortFunction abort) const noexcept
     -> std::shared_ptr<const opentxs::blockchain::block::bitcoin::Block>
@@ -99,8 +99,8 @@ auto Factory::BitcoinBlock(
 auto Factory::BitcoinGenerationTransaction(
     const opentxs::blockchain::Type chain,
     const opentxs::blockchain::block::Height height,
-    std::vector<OutputBuilder>&& scripts,
-    const std::string& coinbase,
+    UnallocatedVector<OutputBuilder>&& scripts,
+    const UnallocatedCString& coinbase,
     const std::int32_t version) const noexcept -> Transaction_p
 {
     static const auto outpoint = opentxs::blockchain::block::Outpoint{};
@@ -121,7 +121,7 @@ auto Factory::BitcoinGenerationTransaction(
         return output;
     }();
     const auto cs = opentxs::blockchain::bitcoin::CompactSize{cb.size()};
-    auto inputs = std::vector<std::unique_ptr<
+    auto inputs = UnallocatedVector<std::unique_ptr<
         opentxs::blockchain::block::bitcoin::internal::Input>>{};
     inputs.emplace_back(factory::BitcoinTransactionInput(
         api_,
@@ -132,7 +132,7 @@ auto Factory::BitcoinGenerationTransaction(
         ReadView{reinterpret_cast<const char*>(&sequence), sizeof(sequence)},
         true,
         {}));
-    auto outputs = std::vector<std::unique_ptr<
+    auto outputs = UnallocatedVector<std::unique_ptr<
         opentxs::blockchain::block::bitcoin::internal::Output>>{};
     auto index{-1};
     using Position = opentxs::blockchain::block::bitcoin::Script::Position;
@@ -262,8 +262,10 @@ auto Factory::BlockHeaderForUnitTests(
 }
 #endif  // OT_BLOCKCHAIN
 
-auto Factory::PeerObject(const Nym_p& senderNym, const std::string& message)
-    const -> std::unique_ptr<opentxs::PeerObject>
+auto Factory::PeerObject(
+    const Nym_p& senderNym,
+    const UnallocatedCString& message) const
+    -> std::unique_ptr<opentxs::PeerObject>
 {
     return std::unique_ptr<opentxs::PeerObject>{
         opentxs::factory::PeerObject(client_, senderNym, message)};
@@ -271,7 +273,7 @@ auto Factory::PeerObject(const Nym_p& senderNym, const std::string& message)
 
 auto Factory::PeerObject(
     const Nym_p& senderNym,
-    const std::string& payment,
+    const UnallocatedCString& payment,
     const bool isPayment) const -> std::unique_ptr<opentxs::PeerObject>
 {
     return std::unique_ptr<opentxs::PeerObject>{

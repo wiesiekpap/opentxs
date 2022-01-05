@@ -4,12 +4,11 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include <gtest/gtest.h>
-#include <string>
 
 #include "opentxs/network/zeromq/message/Frame.hpp"
 #include "opentxs/network/zeromq/message/FrameIterator.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
-#include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace ot = opentxs;
 
@@ -22,12 +21,12 @@ TEST(FrameIterator, constructors)
     auto frameIterator{multipartMessage.begin()};
     ASSERT_EQ(multipartMessage.begin(), frameIterator);
 
-    multipartMessage.AddFrame(std::string{"msg1"});
-    multipartMessage.AddFrame(std::string{"msg2"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg2"});
 
     auto frameIterator3(++frameIterator);
     auto& message = *frameIterator3;
-    auto messageString = std::string{message.Bytes()};
+    auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg2", messageString.c_str());
 }
 
@@ -38,13 +37,13 @@ TEST(FrameIterator, assignment_operator)
     auto frameIterator{multipartMessage.begin()};
     ASSERT_EQ(multipartMessage.begin(), frameIterator);
 
-    multipartMessage.AddFrame(std::string{"msg1"});
-    multipartMessage.AddFrame(std::string{"msg2"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg2"});
 
     auto frameIterator2{++frameIterator};
     auto& frameIterator3 = frameIterator2;
     auto& message = *frameIterator3;
-    auto messageString = std::string{message.Bytes()};
+    auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg2", messageString.c_str());
 }
 
@@ -52,11 +51,11 @@ TEST(FrameIterator, operator_asterisk)
 {
     auto multipartMessage = ot::network::zeromq::Message{};
 
-    multipartMessage.AddFrame(std::string{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
 
     auto frameIterator{multipartMessage.begin()};
     auto& message = *frameIterator;
-    auto messageString = std::string{message.Bytes()};
+    auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg1", messageString.c_str());
 }
 
@@ -64,11 +63,11 @@ TEST(FrameIterator, operator_asterisk_const)
 {
     auto multipartMessage = ot::network::zeromq::Message{};
 
-    multipartMessage.AddFrame(std::string{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
 
     const auto frameIterator = multipartMessage.begin();
     auto& message = *frameIterator;
-    auto messageString = std::string{message.Bytes()};
+    auto messageString = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg1", messageString.c_str());
 }
 
@@ -78,7 +77,7 @@ TEST(FrameIterator, operator_equal)
 
     EXPECT_TRUE(message.begin() == message.end());
 
-    message.AddFrame(std::string{"msg1"});
+    message.AddFrame(ot::UnallocatedCString{"msg1"});
 
     EXPECT_FALSE(message.begin() == message.end());
 
@@ -95,7 +94,7 @@ TEST(FrameIterator, operator_notEqual)
 
     EXPECT_FALSE(message.begin() != message.end());
 
-    message.AddFrame(std::string{"msg1"});
+    message.AddFrame(ot::UnallocatedCString{"msg1"});
 
     EXPECT_TRUE(message.begin() != message.end());
 
@@ -110,14 +109,14 @@ TEST(FrameIterator, operator_pre_increment)
 {
     auto multipartMessage = ot::network::zeromq::Message{};
 
-    multipartMessage.AddFrame(std::string{"msg1"});
-    multipartMessage.AddFrame(std::string{"msg2"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg2"});
 
     auto frameIterator{multipartMessage.begin()};
     auto& frameIterator2 = ++frameIterator;
 
     auto& message = *frameIterator2;
-    auto stringMessage = std::string{message.Bytes()};
+    auto stringMessage = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg2", stringMessage.c_str());
 
     auto& message2 = *frameIterator;
@@ -129,14 +128,14 @@ TEST(FrameIterator, operator_post_increment)
 {
     auto multipartMessage = ot::network::zeromq::Message{};
 
-    multipartMessage.AddFrame(std::string{"msg1"});
-    multipartMessage.AddFrame(std::string{"msg2"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg1"});
+    multipartMessage.AddFrame(ot::UnallocatedCString{"msg2"});
 
     auto frameIterator{multipartMessage.begin()};
     auto frameIterator2 = frameIterator++;
 
     auto& message = *frameIterator2;
-    auto stringMessage = std::string{message.Bytes()};
+    auto stringMessage = ot::UnallocatedCString{message.Bytes()};
     ASSERT_STREQ("msg1", stringMessage.c_str());
 
     auto& message2 = *frameIterator;

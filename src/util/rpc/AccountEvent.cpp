@@ -26,31 +26,31 @@ struct AccountEvent::Imp {
     static constexpr auto default_version_ = VersionNumber{2};
 
     const VersionNumber version_;
-    const std::string account_;
+    const UnallocatedCString account_;
     const AccountEventType type_;
-    const std::string contact_;
-    const std::string workflow_;
-    const std::string amount_formatted_;
-    const std::string pending_formatted_;
+    const UnallocatedCString contact_;
+    const UnallocatedCString workflow_;
+    const UnallocatedCString amount_formatted_;
+    const UnallocatedCString pending_formatted_;
     const Amount amount_;
     const Amount pending_;
     const opentxs::Time time_;
-    const std::string memo_;
-    const std::string uuid_;
+    const UnallocatedCString memo_;
+    const UnallocatedCString uuid_;
     const int state_;
 
     Imp(const VersionNumber version,
-        const std::string& account,
+        const UnallocatedCString& account,
         AccountEventType type,
-        const std::string& contact,
-        const std::string& workflow,
-        const std::string& amountF,
-        const std::string& pendingF,
+        const UnallocatedCString& contact,
+        const UnallocatedCString& workflow,
+        const UnallocatedCString& amountF,
+        const UnallocatedCString& pendingF,
         Amount amount,
         Amount pending,
         opentxs::Time time,
-        const std::string& memo,
-        const std::string& uuid,
+        const UnallocatedCString& memo,
+        const UnallocatedCString& uuid,
         int state) noexcept(false)
         : version_(version)
         , account_(account)
@@ -108,17 +108,17 @@ private:
 };
 
 AccountEvent::AccountEvent(
-    const std::string& account,
+    const UnallocatedCString& account,
     AccountEventType type,
-    const std::string& contact,
-    const std::string& workflow,
-    const std::string& amountS,
-    const std::string& pendingS,
+    const UnallocatedCString& contact,
+    const UnallocatedCString& workflow,
+    const UnallocatedCString& amountS,
+    const UnallocatedCString& pendingS,
     Amount amount,
     Amount pending,
     opentxs::Time time,
-    const std::string& memo,
-    const std::string& uuid,
+    const UnallocatedCString& memo,
+    const UnallocatedCString& uuid,
     int state) noexcept(false)
     : imp_(std::make_unique<Imp>(
                Imp::default_version_,
@@ -171,7 +171,7 @@ AccountEvent::AccountEvent(AccountEvent&& rhs) noexcept
     assert(nullptr != imp_);
 }
 
-auto AccountEvent::AccountID() const noexcept -> const std::string&
+auto AccountEvent::AccountID() const noexcept -> const UnallocatedCString&
 {
     return imp_->account_;
 }
@@ -181,17 +181,18 @@ auto AccountEvent::ConfirmedAmount() const noexcept -> Amount
     return imp_->amount_;
 }
 
-auto AccountEvent::ConfirmedAmount_str() const noexcept -> const std::string&
+auto AccountEvent::ConfirmedAmount_str() const noexcept
+    -> const UnallocatedCString&
 {
     return imp_->amount_formatted_;
 }
 
-auto AccountEvent::ContactID() const noexcept -> const std::string&
+auto AccountEvent::ContactID() const noexcept -> const UnallocatedCString&
 {
     return imp_->contact_;
 }
 
-auto AccountEvent::Memo() const noexcept -> const std::string&
+auto AccountEvent::Memo() const noexcept -> const UnallocatedCString&
 {
     return imp_->memo_;
 }
@@ -201,7 +202,8 @@ auto AccountEvent::PendingAmount() const noexcept -> Amount
     return imp_->pending_;
 }
 
-auto AccountEvent::PendingAmount_str() const noexcept -> const std::string&
+auto AccountEvent::PendingAmount_str() const noexcept
+    -> const UnallocatedCString&
 {
     return imp_->pending_formatted_;
 }
@@ -235,12 +237,12 @@ auto AccountEvent::Type() const noexcept -> AccountEventType
     return imp_->type_;
 }
 
-auto AccountEvent::UUID() const noexcept -> const std::string&
+auto AccountEvent::UUID() const noexcept -> const UnallocatedCString&
 {
     return imp_->uuid_;
 }
 
-auto AccountEvent::WorkflowID() const noexcept -> const std::string&
+auto AccountEvent::WorkflowID() const noexcept -> const UnallocatedCString&
 {
     return imp_->workflow_;
 }

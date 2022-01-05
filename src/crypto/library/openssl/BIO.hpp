@@ -11,9 +11,9 @@ extern "C" {
 }
 
 #include <cstddef>
-#include <vector>
 
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs::crypto::openssl
 {
@@ -32,7 +32,7 @@ private:
         const std::size_t amount,
         std::size_t& read,
         std::size_t& total,
-        std::vector<std::byte>& output);
+        UnallocatedVector<std::byte>& output);
 
 public:
     BIO(::BIO* pBIO);
@@ -44,7 +44,7 @@ public:
     void release();
     void setFreeOnly();
 
-    auto ToBytes() -> std::vector<std::byte>;
+    auto ToBytes() -> UnallocatedVector<std::byte>;
     auto ToString() -> OTString;
 };
 }  // namespace opentxs::crypto::openssl

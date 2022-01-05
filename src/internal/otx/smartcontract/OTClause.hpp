@@ -5,9 +5,8 @@
 
 #pragma once
 
-#include <string>
-
 #include "opentxs/core/String.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {
@@ -34,7 +33,7 @@ public:
 
     auto GetCode() const -> const char*;
 
-    void SetCode(const std::string& str_code);
+    void SetCode(const UnallocatedCString& str_code);
 
     auto Compare(const OTClause& rhs) const -> bool;
 

@@ -7,9 +7,8 @@
 
 #include "opentxs/Version.hpp"  // IWYU pragma: associated
 
-#include <string>
-
 #include "opentxs/core/ui/List.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
 
 namespace opentxs
@@ -28,13 +27,13 @@ namespace ui
 class OPENTXS_EXPORT Contact : virtual public List
 {
 public:
-    virtual auto ContactID() const noexcept -> std::string = 0;
-    virtual auto DisplayName() const noexcept -> std::string = 0;
+    virtual auto ContactID() const noexcept -> UnallocatedCString = 0;
+    virtual auto DisplayName() const noexcept -> UnallocatedCString = 0;
     virtual auto First() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactSection> = 0;
     virtual auto Next() const noexcept
         -> opentxs::SharedPimpl<opentxs::ui::ContactSection> = 0;
-    virtual auto PaymentCode() const noexcept -> std::string = 0;
+    virtual auto PaymentCode() const noexcept -> UnallocatedCString = 0;
 
     ~Contact() override = default;
 

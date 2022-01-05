@@ -9,7 +9,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 #include "core/ui/accountactivity/BalanceItem.hpp"
 #include "core/ui/base/Widget.hpp"
@@ -22,6 +21,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "serialization/protobuf/PaymentEvent.pb.h"
@@ -81,7 +81,7 @@ auto ChequeBalanceItem::effective_amount() const noexcept -> opentxs::Amount
     return amount * sign;
 }
 
-auto ChequeBalanceItem::Memo() const noexcept -> std::string
+auto ChequeBalanceItem::Memo() const noexcept -> UnallocatedCString
 {
     sLock lock(shared_lock_);
 
@@ -116,8 +116,8 @@ auto ChequeBalanceItem::startup(
     OT_ASSERT(cheque_)
 
     lock.unlock();
-    auto name = std::string{};
-    auto text = std::string{};
+    auto name = UnallocatedCString{};
+    auto text = UnallocatedCString{};
     auto number = std::to_string(cheque_->GetTransactionNum());
     auto otherNymID = identifier::Nym::Factory();
 
@@ -205,7 +205,7 @@ auto ChequeBalanceItem::startup(
     return output;
 }
 
-auto ChequeBalanceItem::UUID() const noexcept -> std::string
+auto ChequeBalanceItem::UUID() const noexcept -> UnallocatedCString
 {
     if (cheque_) {
 

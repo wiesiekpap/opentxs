@@ -7,12 +7,8 @@
 #include <chrono>
 #include <cstdint>
 #include <iosfwd>
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "Basic.hpp"
 #include "internal/otx/common/Account.hpp"
@@ -45,6 +41,7 @@
 #include "opentxs/identity/wot/claim/SectionType.hpp"
 #include "opentxs/otx/client/PaymentWorkflowState.hpp"
 #include "opentxs/otx/client/PaymentWorkflowType.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/SharedPimpl.hpp"
@@ -115,24 +112,25 @@ protected:
     const ot::api::Context& ot_;
 
     static ot::OTUnitID unit_definition_id_;
-    static std::string issuer_account_id_;
+    static ot::UnallocatedCString issuer_account_id_;
     static proto::ServerContract server_contract_;
     static proto::ServerContract server2_contract_;
     static proto::ServerContract server3_contract_;
-    static std::string server_id_;
-    static std::string server2_id_;
-    static std::string server3_id_;
-    static std::string nym1_id_;
-    static std::string nym2_account_id_;
-    static std::string nym2_id_;
-    static std::string nym3_account1_id_;
-    static std::string nym3_id_;
-    static std::string nym3_account2_id_;
-    static std::string seed_id_;
-    static std::string seed2_id_;
-    static std::map<std::string, int> widget_update_counters_;
-    static std::string workflow_id_;
-    static std::string claim_id_;
+    static ot::UnallocatedCString server_id_;
+    static ot::UnallocatedCString server2_id_;
+    static ot::UnallocatedCString server3_id_;
+    static ot::UnallocatedCString nym1_id_;
+    static ot::UnallocatedCString nym2_account_id_;
+    static ot::UnallocatedCString nym2_id_;
+    static ot::UnallocatedCString nym3_account1_id_;
+    static ot::UnallocatedCString nym3_id_;
+    static ot::UnallocatedCString nym3_account2_id_;
+    static ot::UnallocatedCString seed_id_;
+    static ot::UnallocatedCString seed2_id_;
+    static ot::UnallocatedMap<ot::UnallocatedCString, int>
+        widget_update_counters_;
+    static ot::UnallocatedCString workflow_id_;
+    static ot::UnallocatedCString claim_id_;
 
     static std::size_t get_index(const std::int32_t instance);
     static const api::Session& get_session(const std::int32_t instance);
@@ -265,24 +263,24 @@ protected:
 
 OTUnitID Test_Rpc::unit_definition_id_{
     ot::identifier::UnitDefinition::Factory()};
-std::string Test_Rpc::issuer_account_id_{};
+UnallocatedCString Test_Rpc::issuer_account_id_{};
 proto::ServerContract Test_Rpc::server_contract_;
 proto::ServerContract Test_Rpc::server2_contract_;
 proto::ServerContract Test_Rpc::server3_contract_;
-std::string Test_Rpc::server_id_{};
-std::string Test_Rpc::server2_id_{};
-std::string Test_Rpc::server3_id_{};
-std::string Test_Rpc::nym1_id_{};
-std::string Test_Rpc::nym2_account_id_{};
-std::string Test_Rpc::nym2_id_{};
-std::string Test_Rpc::nym3_account1_id_{};
-std::string Test_Rpc::nym3_id_{};
-std::string Test_Rpc::nym3_account2_id_{};
-std::string Test_Rpc::seed_id_{};
-std::string Test_Rpc::seed2_id_{};
-std::map<std::string, int> Test_Rpc::widget_update_counters_{};
-std::string Test_Rpc::workflow_id_{};
-std::string Test_Rpc::claim_id_{};
+UnallocatedCString Test_Rpc::server_id_{};
+UnallocatedCString Test_Rpc::server2_id_{};
+UnallocatedCString Test_Rpc::server3_id_{};
+UnallocatedCString Test_Rpc::nym1_id_{};
+UnallocatedCString Test_Rpc::nym2_account_id_{};
+UnallocatedCString Test_Rpc::nym2_id_{};
+UnallocatedCString Test_Rpc::nym3_account1_id_{};
+UnallocatedCString Test_Rpc::nym3_id_{};
+UnallocatedCString Test_Rpc::nym3_account2_id_{};
+UnallocatedCString Test_Rpc::seed_id_{};
+UnallocatedCString Test_Rpc::seed2_id_{};
+UnallocatedMap<ot::UnallocatedCString, int> Test_Rpc::widget_update_counters_{};
+UnallocatedCString Test_Rpc::workflow_id_{};
+UnallocatedCString Test_Rpc::claim_id_{};
 
 std::size_t Test_Rpc::get_index(const std::int32_t instance)
 {
@@ -1405,7 +1403,7 @@ TEST_F(Test_Rpc, Rename_Accounts)
     auto command = init(proto::RPCCOMMAND_RENAMEACCOUNT);
     command.set_session(0);
     ot_.ClientSession(0);
-    const std::vector<std::string> accounts{
+    const ot::UnallocatedVector<ot::UnallocatedCString> accounts{
         issuer_account_id_,
         nym2_account_id_,
         nym3_account1_id_,

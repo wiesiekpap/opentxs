@@ -11,7 +11,6 @@
 #include <chrono>
 #include <cstdint>
 #include <ctime>
-#include <map>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -36,7 +35,6 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/contract/ServerContract.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
-#include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/ServerConnection.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
@@ -55,6 +53,7 @@
 #include "opentxs/otx/Request.hpp"
 #include "opentxs/otx/ServerRequestType.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/WorkType.hpp"
@@ -183,10 +182,10 @@ auto ServerConnection::disable_push(const identifier::Nym& nymID) -> void
     registered_for_push_[nymID] = true;
 }
 
-auto ServerConnection::endpoint() const -> std::string
+auto ServerConnection::endpoint() const -> UnallocatedCString
 {
     std::uint32_t port{0};
-    std::string hostname{""};
+    UnallocatedCString hostname{""};
     core::AddressType type{};
     const auto have =
         remote_contract_->ConnectInfo(hostname, port, type, address_type_);
@@ -207,8 +206,8 @@ auto ServerConnection::endpoint() const -> std::string
 
 auto ServerConnection::form_endpoint(
     core::AddressType type,
-    std::string hostname,
-    std::uint32_t port) const -> std::string
+    UnallocatedCString hostname,
+    std::uint32_t port) const -> UnallocatedCString
 {
     auto output = std::stringstream{};
 
@@ -508,7 +507,7 @@ auto ServerConnection::Send(
         const auto serialized = [&] {
             const auto armored = [&] {
                 auto out = Armored::Factory();
-                out->Set(std::string{payload.Bytes()}.c_str());
+                out->Set(UnallocatedCString{payload.Bytes()}.c_str());
 
                 return out;
             }();

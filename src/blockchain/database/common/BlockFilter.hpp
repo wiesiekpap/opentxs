@@ -7,7 +7,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 #include "internal/blockchain/crypto/Crypto.hpp"
 #include "internal/blockchain/database/common/Common.hpp"
@@ -16,6 +15,7 @@
 #include "opentxs/api/session/Client.hpp"
 #include "opentxs/blockchain/FilterType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "util/LMDB.hpp"
 
 namespace opentxs
@@ -68,13 +68,14 @@ public:
         const AllocateOutput header) const noexcept -> bool;
     auto StoreFilterHeaders(
         const filter::Type type,
-        const std::vector<FilterHeader>& headers) const noexcept -> bool;
-    auto StoreFilters(const filter::Type type, std::vector<FilterData>& filters)
-        const noexcept -> bool;
+        const UnallocatedVector<FilterHeader>& headers) const noexcept -> bool;
     auto StoreFilters(
         const filter::Type type,
-        const std::vector<FilterHeader>& headers,
-        const std::vector<FilterData>& filters) const noexcept -> bool;
+        UnallocatedVector<FilterData>& filters) const noexcept -> bool;
+    auto StoreFilters(
+        const filter::Type type,
+        const UnallocatedVector<FilterHeader>& headers,
+        const UnallocatedVector<FilterData>& filters) const noexcept -> bool;
 
     BlockFilter(
         const api::Session& api,

@@ -32,7 +32,7 @@ auto Factory::BailmentReply(
     const identifier::Nym& initiator,
     const Identifier& request,
     const identifier::Notary& server,
-    const std::string& terms,
+    const UnallocatedCString& terms,
     const opentxs::PasswordPrompt& reason) noexcept
     -> std::shared_ptr<contract::peer::reply::Bailment>
 {
@@ -115,7 +115,7 @@ Bailment::Bailment(
     const identifier::Nym& initiator,
     const Identifier& request,
     const identifier::Notary& server,
-    const std::string& terms)
+    const UnallocatedCString& terms)
     : Reply(
           api,
           nym,

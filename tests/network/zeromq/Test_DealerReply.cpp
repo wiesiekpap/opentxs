@@ -6,7 +6,6 @@
 #include <gtest/gtest.h>
 #include <chrono>
 #include <ctime>
-#include <string>
 #include <string_view>
 #include <thread>
 #include <utility>
@@ -26,6 +25,7 @@
 #include "opentxs/network/zeromq/socket/Socket.hpp"
 #include "opentxs/network/zeromq/socket/SocketType.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "opentxs/util/Time.hpp"
 
@@ -39,13 +39,14 @@ class Test_DealerReply : public ::testing::Test
 public:
     const zmq::Context& context_;
 
-    const std::string testMessage_{"zeromq test message"};
-    const std::string testMessage2_{"zeromq test message 2"};
-    const std::string testMessage3_{"zeromq test message 3"};
+    const ot::UnallocatedCString testMessage_{"zeromq test message"};
+    const ot::UnallocatedCString testMessage2_{"zeromq test message 2"};
+    const ot::UnallocatedCString testMessage3_{"zeromq test message 3"};
 
-    const std::string endpoint_{"inproc://opentxs/test/dealer_reply_test"};
+    const ot::UnallocatedCString endpoint_{
+        "inproc://opentxs/test/dealer_reply_test"};
 
-    void dealerSocketThread(const std::string& msg);
+    void dealerSocketThread(const ot::UnallocatedCString& msg);
 
     Test_DealerReply()
         : context_(ot::Context().ZMQ())
@@ -53,12 +54,13 @@ public:
     }
 };
 
-void Test_DealerReply::dealerSocketThread(const std::string& msg)
+void Test_DealerReply::dealerSocketThread(const ot::UnallocatedCString& msg)
 {
     bool replyProcessed{false};
     auto listenCallback = zmq::ListenCallback::Factory(
         [this, &replyProcessed](zmq::Message&& input) -> void {
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage2_ || inputString == testMessage3_;
             EXPECT_TRUE(match);
@@ -105,7 +107,8 @@ TEST_F(Test_DealerReply, Dealer_Reply)
             EXPECT_EQ(input.Header().size(), 0);
             EXPECT_EQ(1, input.Body().size());
 
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -120,7 +123,8 @@ TEST_F(Test_DealerReply, Dealer_Reply)
             EXPECT_EQ(1, reply.size());
             EXPECT_EQ(reply.Header().size(), 0);
             EXPECT_EQ(1, reply.Body().size());
-            EXPECT_EQ(inputString, std::string{reply.Body_at(0).Bytes()});
+            EXPECT_EQ(
+                inputString, ot::UnallocatedCString{reply.Body_at(0).Bytes()});
 
             replyReturned = true;
 
@@ -149,7 +153,8 @@ TEST_F(Test_DealerReply, Dealer_Reply)
             EXPECT_EQ(input.Header().size(), 0);
             EXPECT_EQ(1, input.Body().size());
 
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
 
             EXPECT_EQ(testMessage_, inputString);
 
@@ -177,8 +182,8 @@ TEST_F(Test_DealerReply, Dealer_Reply)
     ASSERT_TRUE(2 == message.size());
     ASSERT_TRUE(0 == message.Header().size());
     ASSERT_TRUE(1 == message.Body().size());
-    ASSERT_EQ(testMessage_, std::string{message.Body_at(0).Bytes()});
-    ASSERT_EQ(testMessage_, std::string{message.at(1).Bytes()});
+    ASSERT_EQ(testMessage_, ot::UnallocatedCString{message.Body_at(0).Bytes()});
+    ASSERT_EQ(testMessage_, ot::UnallocatedCString{message.at(1).Bytes()});
 
     auto sent = dealerSocket->Send(std::move(message));
 
@@ -203,7 +208,8 @@ TEST_F(Test_DealerReply, Dealer_2_Reply_1)
 {
     auto replyCallback = zmq::ReplyCallback::Factory(
         [this](zmq::Message&& input) -> ot::network::zeromq::Message {
-            const auto inputString = std::string{input.Body().begin()->Bytes()};
+            const auto inputString =
+                ot::UnallocatedCString{input.Body().begin()->Bytes()};
             bool match =
                 inputString == testMessage2_ || inputString == testMessage3_;
             EXPECT_TRUE(match);
@@ -288,7 +294,7 @@ TEST_F(Test_DealerReply, Dealer_Reply_Multipart)
             ASSERT_EQ(input.Header().size(), 0);
             ASSERT_EQ(4, input.Body().size());
 
-            const auto header = std::string{input.at(1).Bytes()};
+            const auto header = ot::UnallocatedCString{input.at(1).Bytes()};
 
             ASSERT_EQ(testMessage_, header);
 

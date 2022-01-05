@@ -17,7 +17,6 @@ extern "C" {
 #include <limits>
 #include <regex>
 #include <stdexcept>
-#include <vector>
 
 #include "crypto/library/openssl/BIO.hpp"
 #include "crypto/library/openssl/OpenSSL.hpp"
@@ -38,6 +37,7 @@ extern "C" {
 #include "opentxs/otx/blind/Mint.hpp"
 #include "opentxs/otx/blind/Token.hpp"
 #include "opentxs/otx/blind/TokenState.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/blind/lucre/Lucre.hpp"
@@ -456,7 +456,7 @@ auto Lucre::GetSpendable(String& output, const PasswordPrompt& reason) const
     return decrypted;
 }
 
-auto Lucre::ID(const PasswordPrompt& reason) const -> std::string
+auto Lucre::ID(const PasswordPrompt& reason) const -> UnallocatedCString
 {
     auto spendable = String::Factory();
 
@@ -466,7 +466,7 @@ auto Lucre::ID(const PasswordPrompt& reason) const -> std::string
         return {};
     }
 
-    std::string output;
+    UnallocatedCString output;
     std::regex reg("id=([A-Z0-9]*)");
     std::cmatch match{};
 

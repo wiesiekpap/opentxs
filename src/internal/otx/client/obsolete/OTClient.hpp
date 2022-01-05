@@ -7,15 +7,14 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 #include <tuple>
-#include <vector>
 
 #include "internal/otx/Types.hpp"
 #include "opentxs/Types.hpp"
 #include "opentxs/Version.hpp"
 #include "opentxs/core/Amount.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
+#include "opentxs/util/Container.hpp"
 
 namespace opentxs
 {

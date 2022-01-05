@@ -11,7 +11,6 @@
 #include <chrono>
 #include <cstdlib>
 #include <memory>
-#include <string>
 #include <string_view>
 #include <utility>
 
@@ -33,6 +32,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/util/Bytes.hpp"
+#include "opentxs/util/Container.hpp"
 #include "opentxs/util/Log.hpp"
 #include "opentxs/util/Pimpl.hpp"
 #include "otx/common/OTStorage.hpp"
@@ -235,7 +235,7 @@ auto Mint::LoadMint(const char* szAppend) -> bool  // todo: server should
         return false;
     }
 
-    std::string strFileContents(OTDB::QueryPlainString(
+    UnallocatedCString strFileContents(OTDB::QueryPlainString(
         api_,
         api_.DataFolder(),
         szFolder1name,
@@ -511,7 +511,7 @@ void Mint::UpdateContents(const PasswordPrompt& reason)
                 TagPtr tagPrivateInfo(
                     new Tag("mintPrivateInfo", it.second->Get()));
                 tagPrivateInfo->add_attribute("denomination", [&] {
-                    auto amount = std::string{};
+                    auto amount = UnallocatedCString{};
                     it.first.Serialize(writer(amount));
                     return amount;
                 }());
@@ -521,7 +521,7 @@ void Mint::UpdateContents(const PasswordPrompt& reason)
         for (auto& it : m_mapPublic) {
             TagPtr tagPublicInfo(new Tag("mintPublicInfo", it.second->Get()));
             tagPublicInfo->add_attribute("denomination", [&] {
-                auto amount = std::string{};
+                auto amount = UnallocatedCString{};
                 it.first.Serialize(writer(amount));
                 return amount;
             }());
@@ -529,7 +529,7 @@ void Mint::UpdateContents(const PasswordPrompt& reason)
         }
     }
 
-    std::string str_result;
+    UnallocatedCString str_result;
     tag.output(str_result);
 
     m_xmlUnsigned->Concatenate("%s", str_result.c_str());
