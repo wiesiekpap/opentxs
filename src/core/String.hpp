@@ -53,11 +53,9 @@ public:
     auto ToUlong() const -> std::uint64_t override;
     void WriteToFile(std::ostream& ofs) const override;
 
-    void Concatenate(const char* arg, ...) override;
     void Concatenate(const opentxs::String& data) override;
     void ConvertToUpperCase() override;
     auto DecodeIfArmored(bool escapedIsAllowed = true) -> bool override;
-    void Format(const char* fmt, ...) override;
     /** For a straight-across, exact-size copy of bytes. Source not expected to
      * be null-terminated. */
     auto MemSet(const char* mem, std::uint32_t size) -> bool override;

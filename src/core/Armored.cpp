@@ -381,7 +381,6 @@ auto Armored::LoadFromString(
         bIsEOF = !(theStr.sgets(buffer1, nBufSize2));  // 2048
 
         UnallocatedCString line = buffer1;
-        const char* pBuf = line.c_str();
 
         // It's not a blank line.
         if (line.length() < 2) {
@@ -445,7 +444,11 @@ auto Armored::LoadFromString(
         }
 
         // Here we save the line to member variables, if appropriate
-        if (bContentMode) { Concatenate("%s\n", pBuf); }
+
+        if (bContentMode) {
+            line.append("\n");
+            Concatenate(String::Factory(line));
+        }
     } while (!bIsEOF && (bContentMode || !bHaveEnteredContentMode));
 
     // reset the string position back to 0
@@ -567,30 +570,33 @@ auto Armored::WriteArmoredString(
                                         // enter the right string.
     bool bEscaped) const -> bool
 {
-    const char* szEscape = "- ";
+    static std::string escape = "- ";
+    static std::string _OT_BEGIN_ARMORED {OT_BEGIN_ARMORED};
+    static std::string _OT_END_ARMORED {OT_END_ARMORED};
 
-    auto strTemp = String::Factory();
-    strTemp->Format(
-        "%s%s %s-----\n"  // "%s-----BEGIN OT ARMORED %s-----\n"
-        "Version: Open Transactions %s\n"
-        "Comment: "
-        "http://opentransactions.org\n\n"  // todo
-        // hardcoding.
-        "%s\n"
-        "%s%s %s-----\n\n",  // "%s-----END OT ARMORED %s-----\n"
-        bEscaped ? szEscape : "",
-        OT_BEGIN_ARMORED,
+    // "%s-----BEGIN OT ARMORED %s-----\n"
+    // "%s-----END OT ARMORED %s-----\n"
+    UnallocatedVector<char> tmp;
+    static std::string fmt =
+"%s%s %s-----\nVersion: Open Transactions %s\nComment: http://opentransactions.org\n\n%s\n%s%s %s-----\n\n";
+    // 20 for version
+    tmp.resize(fmt.length() + 1 + escape.length() +
+               _OT_BEGIN_ARMORED.length() + str_type.length() + 20 + GetLength() +
+                   escape.length() + _OT_END_ARMORED.length() + str_type.length());
+    auto size = std::snprintf(&tmp[0], tmp.capacity(), fmt.c_str(),
+        bEscaped ? escape.c_str() : "",
+        _OT_BEGIN_ARMORED.c_str(),
         str_type.c_str(),  // "%s%s %s-----\n"
         VersionString(),   // "Version: Open Transactions %s\n"
         /* No variable */  // "Comment:
         // http://github.com/FellowTraveler/Open-Transactions/wiki\n\n",
         Get(),  //  "%s"     <==== CONTENTS OF THIS OBJECT BEING
                 // WRITTEN...
-        bEscaped ? szEscape : "",
-        OT_END_ARMORED,
+        bEscaped ? escape.c_str() : "",
+        _OT_END_ARMORED.c_str(),
         str_type.c_str());  // "%s%s %s-----\n"
 
-    strOutput.Concatenate("%s", strTemp->Get());
+    strOutput.Concatenate(String::Factory(&tmp[0], size));
 
     return true;
 }

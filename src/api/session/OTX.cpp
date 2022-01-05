@@ -1761,13 +1761,14 @@ auto OTX::refresh_accounts() const -> bool
         for (const auto& nymID : api_.Wallet().LocalNyms()) {
             SHUTDOWN_OTX()
             auto logStr = String::Factory(": Nym ");
-            logStr->Concatenate("%s", nymID->str().c_str());
+            logStr->Concatenate(String::Factory(nymID->str()));
             const bool registered =
                 api_.InternalClient().OTAPI().IsNym_RegisteredAtServer(
                     nymID, serverID);
 
             if (registered) {
-                logStr->Concatenate(" %s ", "is");
+                static auto is = String::Factory(UnallocatedCString {" is "});
+                logStr->Concatenate(is);
                 try {
                     auto& queue = get_operations({nymID, serverID});
                     queue.StartTask<otx::client::DownloadNymboxTask>({});
@@ -1776,10 +1777,12 @@ auto OTX::refresh_accounts() const -> bool
                     return false;
                 }
             } else {
-                logStr->Concatenate(" %s ", "is not");
+                static auto is_not = String::Factory(UnallocatedCString {" is not "});
+                logStr->Concatenate(is_not);
             }
 
-            logStr->Concatenate("%s", " registered here.");
+            static auto registered_here = String::Factory(UnallocatedCString {" registered here."});
+            logStr->Concatenate(registered_here);
             LogDetail()(OT_PRETTY_CLASS())(logStr).Flush();
         }
     }

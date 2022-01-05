@@ -38,6 +38,7 @@
 #include "opentxs/core/display/Scale.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "internal/api/Legacy.hpp"
 #include "opentxs/crypto/SignatureRole.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/identity/wot/claim/Types.hpp"
@@ -165,8 +166,8 @@ auto Unit::AddAccountRecord(
     const auto strAcctID = String::Factory(theAcctID);
 
     const auto strInstrumentDefinitionID = String::Factory(id(lock));
-    auto strAcctRecordFile = String::Factory();
-    strAcctRecordFile->Format("%s.a", strInstrumentDefinitionID->Get());
+    auto record_file =
+        api::Legacy::GetFilenameA(strInstrumentDefinitionID->Get());
 
     OTDB::Storable* pStorable = nullptr;
     std::unique_ptr<OTDB::Storable> theAngel;
@@ -176,7 +177,7 @@ auto Unit::AddAccountRecord(
             api_,
             dataFolder,
             api_.Internal().Legacy().Contract(),
-            strAcctRecordFile->Get(),
+            record_file,
             "",
             ""))  // the file already exists; let's
                   // try to load it up.
@@ -185,7 +186,7 @@ auto Unit::AddAccountRecord(
             OTDB::STORED_OBJ_STRING_MAP,
             dataFolder,
             api_.Internal().Legacy().Contract(),
-            strAcctRecordFile->Get(),
+            record_file,
             "",
             "");
     else  // the account records file (for this instrument definition) doesn't
@@ -260,7 +261,7 @@ auto Unit::AddAccountRecord(
             *pMap,
             dataFolder,
             api_.Internal().Legacy().Contract(),
-            strAcctRecordFile->Get(),
+            record_file,
             "",
             "")) {
         LogError()(OT_PRETTY_CLASS())(
@@ -290,7 +291,7 @@ auto Unit::contract(const Lock& lock) const -> SerializedType
 
 auto Unit::DisplayStatistics(String& strContents) const -> bool
 {
-    UnallocatedCString type = "error";
+    const char* type = "error";
 
     switch (Type()) {
         case contract::UnitType::Currency:
@@ -302,19 +303,19 @@ auto Unit::DisplayStatistics(String& strContents) const -> bool
 
             break;
         case contract::UnitType::Basket:
-            type = "basket currency";
+            type = "basket currency"; //length 15 if it changes adjust it in buf
 
             break;
         default:
             break;
     }
 
-    strContents.Concatenate(
-        " Asset Type:  %s\n"
-        " InstrumentDefinitionID: %s\n"
-        "\n",
-        type.c_str(),
-        id_->str().c_str());
+    static std::string fmt {" Asset Type:  %s\n InstrumentDefinitionID: %s\n\n"};
+    UnallocatedVector<char> buf;
+    buf.reserve(fmt.length() + 1 + 15 + id_->size());
+    auto size = std::snprintf(&buf[0], buf.capacity(), fmt.c_str(), type, reinterpret_cast<const char*>(id_->data()));
+    strContents.Concatenate(String::Factory(&buf[0], size));
+
     return true;
 }
 
@@ -327,8 +328,8 @@ auto Unit::EraseAccountRecord(
     const auto strAcctID = String::Factory(theAcctID);
 
     const auto strInstrumentDefinitionID = String::Factory(id(lock));
-    auto strAcctRecordFile = String::Factory();
-    strAcctRecordFile->Format("%s.a", strInstrumentDefinitionID->Get());
+    std::string strAcctRecordFile =
+        api::Legacy::GetFilenameA(strInstrumentDefinitionID->Get());
 
     OTDB::Storable* pStorable = nullptr;
     std::unique_ptr<OTDB::Storable> theAngel;
@@ -338,7 +339,7 @@ auto Unit::EraseAccountRecord(
             api_,
             dataFolder,
             api_.Internal().Legacy().Contract(),
-            strAcctRecordFile->Get(),
+            strAcctRecordFile,
             "",
             ""))  // the file already exists; let's
                   // try to load it up.
@@ -347,7 +348,7 @@ auto Unit::EraseAccountRecord(
             OTDB::STORED_OBJ_STRING_MAP,
             dataFolder,
             api_.Internal().Legacy().Contract(),
-            strAcctRecordFile->Get(),
+            strAcctRecordFile,
             "",
             "");
     else  // the account records file (for this instrument definition) doesn't
@@ -392,7 +393,7 @@ auto Unit::EraseAccountRecord(
             *pMap,
             dataFolder,
             api_.Internal().Legacy().Contract(),
-            strAcctRecordFile->Get(),
+            strAcctRecordFile,
             "",
             "")) {
         LogError()(OT_PRETTY_CLASS())(
@@ -630,15 +631,14 @@ auto Unit::VisitAccountRecords(
 {
     Lock lock(lock_);
     const auto strInstrumentDefinitionID = String::Factory(id(lock));
-    auto strAcctRecordFile = String::Factory();
-    strAcctRecordFile->Format("%s.a", strInstrumentDefinitionID->Get());
-
+    auto record_file =
+        api::Legacy::GetFilenameA(strInstrumentDefinitionID->Get());
     std::unique_ptr<OTDB::Storable> pStorable(OTDB::QueryObject(
         api_,
         OTDB::STORED_OBJ_STRING_MAP,
         dataFolder,
         api_.Internal().Legacy().Contract(),
-        strAcctRecordFile->Get(),
+        record_file,
         "",
         ""));
 

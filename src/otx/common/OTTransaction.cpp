@@ -45,6 +45,7 @@
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
+#include "internal/api/Legacy.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
 #include "opentxs/otx/consensus/TransactionStatement.hpp"
@@ -1719,34 +1720,32 @@ auto OTTransaction::VerifyBalanceReceipt(
                strReceiptID = String::Factory(NYM_ID);
 
     // Load the last TRANSACTION STATEMENT as well...
-    auto strFilename = String::Factory();
-    strFilename->Format("%s.success", strReceiptID->Get());
     const char* szFolder1name = api_.Internal().Legacy().Receipt();
     const char* szFolder2name = strNotaryID->Get();
-    const char* szFilename = strFilename->Get();
+    auto filename = api::Legacy::GetFilenameSuccess(strReceiptID->Get());
 
     if (!OTDB::Exists(
             api_,
             api_.DataFolder(),
             szFolder1name,
             szFolder2name,
-            szFilename,
+            filename,
             "")) {
         LogDetail()(OT_PRETTY_CLASS())("Receipt file doesn't exist in ")(
-            szFilename)
+            filename)
             .Flush();
 
         return false;
     }
 
     const UnallocatedCString strFileContents(OTDB::QueryPlainString(
-        api_, api_.DataFolder(), szFolder1name, szFolder2name, szFilename, ""));
+        api_, api_.DataFolder(), szFolder1name, szFolder2name, filename, ""));
 
     if (strFileContents.length() < 2) {
         LogError()(OT_PRETTY_CLASS())("Error reading "
                                       "transaction statement: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
 
         return false;
@@ -1760,7 +1759,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         LogError()(OT_PRETTY_CLASS())("Unable to load "
                                       "transaction statement: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
 
         return false;
@@ -1768,7 +1767,7 @@ auto OTTransaction::VerifyBalanceReceipt(
         LogError()(OT_PRETTY_CLASS())("Unable to verify "
                                       "signature on transaction statement: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
 
         return false;
@@ -1783,7 +1782,7 @@ auto OTTransaction::VerifyBalanceReceipt(
             "Was expecting an "
             "OTTransaction to be stored in the transaction statement "
             "at: ")(szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
 
         return false;
@@ -3030,16 +3029,30 @@ auto OTTransaction::DeleteBoxReceipt(Ledger& theLedger) -> bool
     //
     auto strOutput = String::Factory();
 
-    if (m_strRawFile->Exists())
-        strOutput->Format(
-            "%s\n\n%s\n",
-            strFinal->Get(),
-            "MARKED_FOR_DELETION");  // todo hardcoded.
-    else
-        strOutput->Format(
-            "%s\n\n%s\n",
-            "(Transaction was already empty -- strange.)",
-            "MARKED_FOR_DELETION");  // todo hardcoded.
+    auto concatenation_lambda = [](const UnallocatedCString& line1, const UnallocatedCString& line2) -> UnallocatedCString {
+      UnallocatedCString tmp;
+      tmp.reserve(line1.length() + line2.length() + 4);
+      tmp.append(line1);
+      tmp.append("\n\n");
+      tmp.append(line2);
+      tmp.append("\n");
+
+      return tmp;
+    };
+
+    static std::string marked_for_deletion{"MARKED_FOR_DELETION"};
+    if (m_strRawFile->Exists()) {
+        strOutput->Set(
+            concatenation_lambda(strFinal->Get(), marked_for_deletion).c_str()
+        );
+    } else {
+        static std::string trx_empty{"(Transaction was already empty -- strange.)"};
+        strOutput->Set(
+            concatenation_lambda(
+                           trx_empty,
+                           marked_for_deletion).c_str()
+        );
+    }
 
     bool bDeleted = OTDB::StorePlainString(
         api_,
@@ -4370,7 +4383,7 @@ void OTTransaction::UpdateContents(const PasswordPrompt& reason)
 
     UnallocatedCString str_result;
     tag.output(str_result);
-    m_xmlUnsigned->Concatenate("%s", str_result.c_str());
+    m_xmlUnsigned->Concatenate(String::Factory(str_result));
 }
 
 /*

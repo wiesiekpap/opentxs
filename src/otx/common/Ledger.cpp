@@ -50,6 +50,7 @@
 
 namespace opentxs
 {
+
 char const* const __TypeStringsLedger[] = {
     "nymbox",  // the nymbox is per user account (versus per asset account) and
                // is used to receive new transaction numbers (and messages.)
@@ -714,8 +715,10 @@ auto Ledger::make_filename(const ledgerType theType) -> std::
     three = ledgerID->Get();
 
     if (false == m_strFilename->Exists()) {
-        m_strFilename->Format(
-            "%s%s%s", two.c_str(), api::Legacy::PathSeparator(), three.c_str());
+        m_strFilename->Set(
+            api::Legacy::Concatenate(
+                two.c_str(), api::Legacy::PathSeparator(), three.c_str()).c_str()
+            );
     }
 
     if (2 > one.size()) { return output; }
@@ -848,56 +851,56 @@ auto Ledger::generate_ledger(
         case ledgerType::nymbox:  // stored by NymID ONLY.
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().Nymbox());
-            m_strFilename->Format(
-                "%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),
-                strID->Get());
+            m_strFilename->Set(api::Legacy::Concatenate(
+                                   strNotaryID->Get(),
+                                   api::Legacy::PathSeparator(),
+                                   strID->Get()).c_str()
+                );
             break;
         case ledgerType::inbox:  // stored by AcctID ONLY.
             m_strFoldername = String::Factory(api_.Internal().Legacy().Inbox());
-            m_strFilename->Format(
-                "%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),
-                strID->Get());
+            m_strFilename->Set(api::Legacy::Concatenate(
+                                   strNotaryID->Get(),
+                                   api::Legacy::PathSeparator(),
+                                   strID->Get()).c_str()
+                );
             break;
         case ledgerType::outbox:  // stored by AcctID ONLY.
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().Outbox());
-            m_strFilename->Format(
-                "%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),
-                strID->Get());
+            m_strFilename->Set(api::Legacy::Concatenate(
+                                   strNotaryID->Get(),
+                                   api::Legacy::PathSeparator(),
+                                   strID->Get()).c_str()
+                );
             break;
         case ledgerType::paymentInbox:  // stored by NymID ONLY.
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().PaymentInbox());
-            m_strFilename->Format(
-                "%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),
-                strID->Get());
+            m_strFilename->Set(api::Legacy::Concatenate(
+                                   strNotaryID->Get(),
+                                   api::Legacy::PathSeparator(),
+                                   strID->Get()).c_str()
+                );
             break;
         case ledgerType::recordBox:  // stored by Acct ID *and* Nym ID
                                      // (depending on the box.)
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().RecordBox());
-            m_strFilename->Format(
-                "%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),
-                strID->Get());
+            m_strFilename->Set(api::Legacy::Concatenate(
+                                   strNotaryID->Get(),
+                                   api::Legacy::PathSeparator(),
+                                   strID->Get()).c_str()
+                );
             break;
         case ledgerType::expiredBox:  // stored by Nym ID only.
             m_strFoldername =
                 String::Factory(api_.Internal().Legacy().ExpiredBox());
-            m_strFilename->Format(
-                "%s%s%s",
-                strNotaryID->Get(),
-                api::Legacy::PathSeparator(),
-                strID->Get());
+            m_strFilename->Set(api::Legacy::Concatenate(
+                                   strNotaryID->Get(),
+                                   api::Legacy::PathSeparator(),
+                                   strID->Get()).c_str()
+                );
             break;
         case ledgerType::message:
             LogTrace()(OT_PRETTY_CLASS())("Generating message ledger...")
@@ -1794,7 +1797,7 @@ void Ledger::UpdateContents(const PasswordPrompt& reason)  // Before
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    m_xmlUnsigned->Concatenate("%s", str_result.c_str());
+    m_xmlUnsigned->Concatenate(String::Factory(str_result));
 }
 
 // LoadContract will call this function at the right time.

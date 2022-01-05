@@ -18,3 +18,5 @@ add_opentx_low_level_test(
 add_opentx_low_level_test(
   unittests-opentxs-context-password-callback Test_PasswordCallback.cpp
 )
+
+add_opentx_test(unittests-opentxs-utils-standard-file-names Test_Legacy.cpp)

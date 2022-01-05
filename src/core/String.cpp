@@ -23,7 +23,6 @@ extern "C" {
 #include "internal/otx/common/NymFile.hpp"
 #include "internal/otx/common/crypto/Signature.hpp"
 #include "internal/util/LogMacros.hpp"
-#include "internal/util/String.hpp"
 #include "opentxs/core/Armored.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/util/Container.hpp"
@@ -404,25 +403,6 @@ auto String::Compare(const opentxs::String& strCompare) const -> bool
 }
 
 // append a string at the end of the current buffer.
-void String::Concatenate(const char* fmt, ...)
-{
-    va_list vl;
-    va_start(vl, fmt);
-
-    UnallocatedCString str_output;
-
-    const bool bSuccess = opentxs::vformat(fmt, &vl, str_output);
-
-    va_end(vl);
-
-    if (bSuccess) {
-        const String strConcat(str_output);
-
-        Concatenate(strConcat);
-    }
-}
-
-// append a string at the end of the current buffer.
 void String::Concatenate(const opentxs::String& strBuf)
 {
     UnallocatedCString str_output;
@@ -558,20 +538,6 @@ auto String::empty(void) const -> bool
 }
 
 auto String::Exists(void) const -> bool { return !empty(); }
-
-void String::Format(const char* fmt, ...)
-{
-    va_list vl;
-    va_start(vl, fmt);
-
-    UnallocatedCString str_output;
-
-    const bool bSuccess = opentxs::vformat(fmt, &vl, str_output);
-
-    va_end(vl);
-
-    if (bSuccess) Set(str_output.c_str());
-}
 
 auto String::Get() const -> const char*
 {

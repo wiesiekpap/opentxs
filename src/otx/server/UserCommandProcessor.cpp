@@ -2835,7 +2835,7 @@ auto UserCommandProcessor::ProcessUserCommand(
     const Message& msgIn,
     Message& msgOut) -> bool
 {
-    const UnallocatedCString command(msgIn.m_strCommand->Get());
+    UnallocatedCString command(msgIn.m_strCommand->Get());
     const auto type = Message::Type(command);
     ReplyMessage reply(
         *this,
@@ -3006,8 +3006,8 @@ auto UserCommandProcessor::ProcessUserCommand(
                 .Flush();
 
             reply.SetAccount(msgIn.m_strAcctID);
+            command.append("Response");
             auto response = String::Factory(command);
-            response->Concatenate("Response");
             reply.OverrideType(response);
 
             return false;

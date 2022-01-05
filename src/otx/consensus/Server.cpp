@@ -75,6 +75,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "internal/api/Legacy.hpp"
 #include "opentxs/crypto/Envelope.hpp"
 #include "opentxs/crypto/key/Asymmetric.hpp"
 #include "opentxs/identity/Nym.hpp"
@@ -3003,13 +3004,7 @@ void Server::process_accept_cron_receipt_reply(
                     if ((lAmountSold != 0) && (lScale != 0)) {
                         const Amount lSalePrice =
                             (lCurrencyPaid / (lAmountSold / lScale));
-
-                        auto strSalePrice = String::Factory();
-                        auto price = UnallocatedCString{};
-                        lSalePrice.Serialize(writer(price));
-                        strSalePrice->Format("%s", price.c_str());
-
-                        pTradeData->price = strSalePrice->Get();
+                        lSalePrice.Serialize(writer(pTradeData->price));
                     }
                 }
 
@@ -3774,8 +3769,7 @@ auto Server::process_get_market_list_response(
     const Lock& lock,
     const Message& reply) -> bool
 {
-    auto marketDatafile = String::Factory();
-    marketDatafile->Format("%s", "market_data.bin");
+    auto data_file = api::Legacy::GetFilenameBin("market_data");
 
     auto pStorage = OTDB::GetDefaultStorage();
     OT_ASSERT(nullptr != pStorage);
@@ -3793,12 +3787,12 @@ auto Server::process_get_market_list_response(
             api_.DataFolder(),
             api_.Internal().Legacy().Market(),  // "markets"
             reply.m_strNotaryID->Get(),         // "markets/<notaryID>"
-            marketDatafile->Get(),
+            data_file,
             "");  // "markets/<notaryID>/market_data.bin"
         if (!success)
             LogError()(OT_PRETTY_CLASS())(
                 "Error erasing market list from market "
-                "folder: ")(marketDatafile)(".")
+                "folder: ")(data_file)(".")
                 .Flush();
 
         return true;
@@ -3849,11 +3843,11 @@ auto Server::process_get_market_list_response(
         api_.DataFolder(),
         api_.Internal().Legacy().Market(),  // "markets"
         reply.m_strNotaryID->Get(),         // "markets/<notaryID>"
-        marketDatafile->Get(),
+        data_file,
         "");  // "markets/<notaryID>/market_data.bin"
     if (!success) {
         LogError()(OT_PRETTY_CLASS())("Error storing market list to market "
-                                      "folder: ")(marketDatafile)(".")
+                                      "folder: ")(data_file)(".")
             .Flush();
     }
 
@@ -3866,8 +3860,7 @@ auto Server::process_get_market_offers_response(
 {
     const String& marketID = reply.m_strNymID2;  // market ID stored here.
 
-    auto offerDatafile = String::Factory();
-    offerDatafile->Format("%s.bin", marketID.Get());
+    auto data_file = api::Legacy::GetFilenameBin(marketID.Get());
 
     auto pStorage = OTDB::GetDefaultStorage();
     OT_ASSERT(nullptr != pStorage);
@@ -3887,12 +3880,11 @@ auto Server::process_get_market_offers_response(
             reply.m_strNotaryID->Get(),         // "markets/<notaryID>",
             "offers",                           // "markets/<notaryID>/offers"
                                                 // todo stop hardcoding.
-            offerDatafile
-                ->Get());  // "markets/<notaryID>/offers/<marketID>.bin"
+            data_file);  // "markets/<notaryID>/offers/<marketID>.bin"
         if (!success) {
             LogError()(OT_PRETTY_CLASS())(
                 "Error erasing offers list from market "
-                "folder: ")(offerDatafile)(".")
+                "folder: ")(data_file)(".")
                 .Flush();
         }
 
@@ -3943,10 +3935,10 @@ auto Server::process_get_market_offers_response(
         reply.m_strNotaryID->Get(),         // "markets/<notaryID>",
         "offers",                           // "markets/<notaryID>/offers"
                                             // todo stop hardcoding.
-        offerDatafile->Get());  // "markets/<notaryID>/offers/<marketID>.bin"
+        data_file);  // "markets/<notaryID>/offers/<marketID>.bin"
     if (!success) {
         LogError()(OT_PRETTY_CLASS())("Error storing ")(
-            offerDatafile)(" to market folder.")
+            data_file)(" to market folder.")
             .Flush();
     }
 
@@ -3958,9 +3950,7 @@ auto Server::process_get_market_recent_trades_response(
     const Message& reply) -> bool
 {
     const String& marketID = reply.m_strNymID2;  // market ID stored here.
-
-    auto tradeDatafile = String::Factory();
-    tradeDatafile->Format("%s.bin", marketID.Get());
+    auto data_file = api::Legacy::GetFilenameBin(marketID.Get());
 
     auto pStorage = OTDB::GetDefaultStorage();
     OT_ASSERT(nullptr != pStorage);
@@ -3984,12 +3974,12 @@ auto Server::process_get_market_recent_trades_response(
                                                 // "markets/<notaryID>/recent"
                                                 // // todo stop
                                                 // hardcoding.
-            tradeDatafile->Get(),
+            data_file,
             "");  // "markets/<notaryID>/recent/<marketID>.bin"
         if (!success) {
             LogError()(OT_PRETTY_CLASS())(
                 "Error erasing recent trades list from market "
-                "folder: ")(tradeDatafile)(".")
+                "folder: ")(data_file)(".")
                 .Flush();
         }
 
@@ -4041,10 +4031,10 @@ auto Server::process_get_market_recent_trades_response(
         reply.m_strNotaryID->Get(),         // "markets/<notaryID>"
         "recent",                           // "markets/<notaryID>/recent"
                                             // todo stop hardcoding.
-        tradeDatafile->Get());  // "markets/<notaryID>/recent/<marketID>.bin"
+        data_file);  // "markets/<notaryID>/recent/<marketID>.bin"
     if (!success) {
         LogError()(OT_PRETTY_CLASS())("Error storing ")(
-            tradeDatafile)(" to market folder.")
+            data_file)(" to market folder.")
             .Flush();
     }
 
@@ -4080,8 +4070,7 @@ auto Server::process_get_nym_market_offers_response(
     const Lock& lock,
     const Message& reply) -> bool
 {
-    auto offerDatafile = String::Factory();
-    offerDatafile->Format("%s.bin", reply.m_strNymID->Get());
+    auto data_file = api::Legacy::GetFilenameBin(reply.m_strNymID->Get());
 
     auto pStorage = OTDB::GetDefaultStorage();
     OT_ASSERT(nullptr != pStorage);
@@ -4102,10 +4091,10 @@ auto Server::process_get_nym_market_offers_response(
             reply.m_strNotaryID->Get(),      // "nyms/<notaryID>",
             "offers",                        // "nyms/<notaryID>/offers"
                                              // todo stop hardcoding.
-            offerDatafile->Get());  // "nyms/<notaryID>/offers/<NymID>.bin"
+            data_file);  // "nyms/<notaryID>/offers/<NymID>.bin"
         if (!success) {
             LogError()(OT_PRETTY_CLASS())("Error erasing offers list from nyms "
-                                          "folder: ")(offerDatafile)(".")
+                                          "folder: ")(data_file)(".")
                 .Flush();
         }
 
@@ -4155,10 +4144,9 @@ auto Server::process_get_nym_market_offers_response(
         api_.Internal().Legacy().Nym(),  // "nyms"
         reply.m_strNotaryID->Get(),      // "nyms/<notaryID>",
         "offers",                        // "nyms/<notaryID>/offers",
-        offerDatafile->Get());           // "nyms/<notaryID>/offers/<NymID>.bin"
+        data_file);           // "nyms/<notaryID>/offers/<NymID>.bin"
     if (!success) {
-        LogError()(OT_PRETTY_CLASS())("Error storing ")(
-            offerDatafile)(" to nyms folder.")
+        LogError()(OT_PRETTY_CLASS())("Error storing ")(data_file)(" to nyms folder.")
             .Flush();
     }
 
@@ -4542,13 +4530,7 @@ auto Server::process_process_box_response(
 
     auto serialized = String::Factory();
     replyTransaction->SaveContractRaw(serialized);
-    auto filename = String::Factory();
-
-    if (replyTransaction->GetSuccess()) {
-        filename->Format("%s.success", receiptID->Get());
-    } else {
-        filename->Format("%s.fail", receiptID->Get());
-    }
+    auto filename = replyTransaction->GetSuccess() ? api::Legacy::GetFilenameSuccess(receiptID->Get()) : api::Legacy::GetFilenameFail(receiptID->Get());
 
     auto encoded = String::Factory();
     auto armored = Armored::Factory(serialized);
@@ -4566,11 +4548,11 @@ auto Server::process_process_box_response(
             api_.DataFolder(),
             api_.Internal().Legacy().Receipt(),
             notaryID->Get(),
-            filename->Get(),
+            filename,
             "");
     } else {
         // This should never happen...
-        filename->Format("%s.error", receiptID->Get());
+        filename = api::Legacy::GetFilenameError(receiptID->Get());
         LogError()(OT_PRETTY_CLASS())(
             "Error saving transaction "
             "receipt: ")(notaryID)(api::Legacy::PathSeparator())(filename)(".")
@@ -4581,7 +4563,7 @@ auto Server::process_process_box_response(
             api_.DataFolder(),
             api_.Internal().Legacy().Receipt(),
             notaryID->Get(),
-            filename->Get(),
+            filename,
             "");
     }
 
@@ -5133,32 +5115,25 @@ void Server::process_response_transaction(
         return;
     }
 
-    auto filename = String::Factory();
-
     if (pItem) {
-        if (response.GetSuccess()) {
-            filename->Format("%s.success", receiptID->Get());
-        } else {
-            filename->Format("%s.fail", receiptID->Get());
-        }
-
+        auto filename = response.GetSuccess() ? api::Legacy::GetFilenameSuccess(receiptID->Get()) : api::Legacy::GetFilenameFail(receiptID->Get());
         OTDB::StorePlainString(
             api_,
             encoded->Get(),
             api_.DataFolder(),
             api_.Internal().Legacy().Receipt(),
             server_id_->str(),
-            filename->Get(),
+            filename,
             "");
     } else {
-        filename->Format("%s.error", receiptID->Get());
+        auto filename = api::Legacy::GetFilenameError(receiptID->Get());
         OTDB::StorePlainString(
             api_,
             encoded->Get(),
             api_.DataFolder(),
             api_.Internal().Legacy().Receipt(),
             server_id_->str(),
-            filename->Get(),
+            filename,
             "");
     }
 }

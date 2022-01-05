@@ -61,6 +61,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "internal/api/Legacy.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/network/zeromq/Context.hpp"
 #include "opentxs/network/zeromq/message/Message.hpp"
@@ -1499,10 +1500,12 @@ void Notary::NotarizeWithdrawal(
                     Item::acknowledgement);  // the transaction agreement was
                                              // successful.
                 auto strChequeMemo = String::Factory();
-                strChequeMemo->Format(
-                    "%s%s",
-                    strItemNote->Get(),
-                    theVoucherRequest->GetMemo().Get());
+                UnallocatedCString tmp;
+                auto &ref = theVoucherRequest->GetMemo();
+                tmp.reserve(strItemNote->GetLength() + ref.GetLength());
+                tmp.append(strItemNote->Get());
+                tmp.append(ref.Get());
+                strChequeMemo->Set(tmp.c_str());
 
                 // 10 minutes ==    600 Seconds
                 // 1 hour    ==     3600 Seconds
@@ -6931,9 +6934,10 @@ auto Notary::NotarizeProcessNymbox(
             context.AcceptIssuedNumbers(newNumbers);  // TODO: capture
                                                       // return
             bOutSuccess = true;  // the processNymbox was successful.
-            strPath->Format(const_cast<char*>("%s.success"), strNymID->Get());
+            strPath->Set(
+                api::Legacy::GetFilenameSuccess(strNymID->Get()).c_str());
         } else {
-            strPath->Format(const_cast<char*>("%s.fail"), strNymID->Get());
+            strPath->Set(api::Legacy::GetFilenameFail(strNymID->Get()).c_str());
         }
 
         const char* szFoldername = server_.API().Internal().Legacy().Receipt();
@@ -8335,9 +8339,9 @@ send_message:
         for (const auto& number : closedCron) { context.CloseCronItem(number); }
 
         bOutSuccess = true;  // the processInbox was successful.
-        strPath->Format(const_cast<char*>("%s.success"), strAcctID->Get());
+        strPath->Set(api::Legacy::GetFilenameSuccess(strAcctID->Get()).c_str());
     } else
-        strPath->Format(const_cast<char*>("%s.fail"), strAcctID->Get());
+        strPath->Set(api::Legacy::GetFilenameFail(strAcctID->Get()).c_str());
 
     const char* szFoldername = server_.API().Internal().Legacy().Receipt();
 

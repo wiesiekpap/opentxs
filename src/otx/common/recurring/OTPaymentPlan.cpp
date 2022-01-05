@@ -376,7 +376,7 @@ void OTPaymentPlan::UpdateContents(const PasswordPrompt& reason)
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    m_xmlUnsigned->Concatenate("%s", str_result.c_str());
+    m_xmlUnsigned->Concatenate(String::Factory(str_result));
 }
 
 // *** Set Initial Payment ***  / Make sure to call SetAgreement() first.

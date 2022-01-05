@@ -2197,7 +2197,7 @@ void OTScriptable::CalculateContractID(Identifier& newID) const
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    xmlUnsigned->Concatenate("%s", str_result.c_str());
+    xmlUnsigned->Concatenate(String::Factory(str_result));
 
     newID.CalculateDigest(xmlUnsigned->Bytes());
 }
@@ -2288,7 +2288,7 @@ void OTScriptable::UpdateContents(
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    m_xmlUnsigned->Concatenate("%s", str_result.c_str());
+    m_xmlUnsigned->Concatenate(String::Factory(str_result));
 }
 
 // return -1 if error, 0 if nothing, and 1 if the node was processed.

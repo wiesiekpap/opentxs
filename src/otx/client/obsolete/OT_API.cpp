@@ -60,6 +60,7 @@
 #include "opentxs/core/identifier/Notary.hpp"
 #include "opentxs/core/identifier/Nym.hpp"
 #include "opentxs/core/identifier/UnitDefinition.hpp"
+#include "internal/api/Legacy.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
@@ -94,25 +95,23 @@ auto VerifyBalanceReceipt(
 
     OT_ASSERT(false != bool(tranOut));
 
-    auto strFilename = String::Factory();
-    strFilename->Format("%s.success", accountID.str().c_str());
+    auto filename = api::Legacy::GetFilenameSuccess(
+        accountID.str().c_str()); // receipts/NOTARY_ID/accountID.success
     const char* szFolder1name = api.Internal().Legacy().Receipt();  // receipts
     const auto sNotaryID{NOTARY_ID.str()};
     const char* szFolder2name = sNotaryID.c_str();  // receipts/NOTARY_ID
-    const char* szFilename =
-        strFilename->Get();  // receipts/NOTARY_ID/accountID.success
 
     if (!OTDB::Exists(
             api,
             context.LegacyDataFolder(),
             szFolder1name,
             szFolder2name,
-            szFilename,
+            filename,
             "")) {
         LogDetail()(__func__)("Receipt file doesn't exist: ")(
             context.LegacyDataFolder())(api::Legacy::PathSeparator())(
             szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(szFilename)
+            szFolder2name)(api::Legacy::PathSeparator())(filename)
             .Flush();
         return false;
     }
@@ -122,14 +121,14 @@ auto VerifyBalanceReceipt(
         context.LegacyDataFolder(),
         szFolder1name,
         szFolder2name,
-        szFilename,
+        filename,
         ""));  // <=== LOADING FROM
                // DATA STORE.
 
     if (strFileContents.length() < 2) {
         LogError()(__func__)("Error reading file: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return false;
     }
@@ -140,7 +139,7 @@ auto VerifyBalanceReceipt(
         LogError()(__func__)(
             "Unable to load balance "
             "statement: ")(szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return false;
     }
@@ -187,7 +186,7 @@ auto VerifyBalanceReceipt(
         LogError()(__func__)("Unable to verify "
                              "SERVER_NYM signature on balance statement: ")(
             szFolder1name)(api::Legacy::PathSeparator())(
-            szFolder2name)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFolder2name)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return false;
     }
@@ -4355,31 +4354,38 @@ auto OT_API::issueMarketOffer(
     }
 
     lMinimumIncrement *= lMarketScale;  // minimum increment is PER SCALE.
-    auto strOfferType = String::Factory("market order");
 
-    if (lPriceLimit > 0) { strOfferType = String::Factory("limit order"); }
+    std::string offer_type = lPriceLimit > 0 ? "limit order" : "market order";
 
     const auto unittype =
         api_.Wallet().CurrencyTypeBasedOnUnitType(currencyContractID);
     const auto& displaydefinition = display::GetDefinition(unittype);
     if (0 != cStopSign) {
         const auto price = displaydefinition.Format(lActivationPrice);
+        offer_type.clear();
         if (lPriceLimit > 0) {
-            strOfferType->Format(
-                "stop limit order, at threshhold: %c%s",
-                cStopSign,
-                price.c_str());
+            static std::string msg {"stop limit order, at threshhold: "};
+            offer_type.reserve(msg.length() + price.length());
+            offer_type.append(msg);
+            offer_type.append(&cStopSign); // 1
+            offer_type.append(price);
         } else {
-            strOfferType->Format(
-                "stop order, at threshhold: %c%s", cStopSign, price.c_str());
+            static std::string msg {"stop order, at threshhold: "};
+            offer_type.reserve(msg.length() + price.length());
+            offer_type.append(msg);
+            offer_type.append(&cStopSign); // 1
+            offer_type.append(price);
         }
     }
 
-    auto strPrice = String::Factory();
+    std::string price_limit;
 
     if (lPriceLimit > 0) {
+        static std::string msg {"Price: "};
         auto limit = displaydefinition.Format(lPriceLimit);
-        strPrice->Format("Price: %s\n", limit.c_str());
+        price_limit.reserve(msg.length() + limit.length());
+        price_limit.append(msg);
+        price_limit.append(limit);
     }
 
     auto offer{api_.Factory().InternalSession().Offer(
@@ -4470,8 +4476,8 @@ auto OT_API::issueMarketOffer(
     trade->AddClosingTransactionNo(currencyClosingNumber->Value());
     LogError()(OT_PRETTY_CLASS())("Placing market offer ")(
         openingNumber->Value())(", type: ")(
-        bBuyingOrSelling ? "selling" : "buying")(", ")(strOfferType)(", ")(
-        strPrice)(".")(" Assets for sale/purchase: ")(
+        bBuyingOrSelling ? "selling" : "buying")(", ")(offer_type)(", ")(
+        price_limit)(".")(" Assets for sale/purchase: ")(
         lTotalAssetsOnOffer, unittype)(". In minimum increments of: ")(
         lMinimumIncrement, unittype)(". At market of scale: ")(
         lMarketScale)(". Valid From: ")(VALID_FROM)(". To: ")(VALID_TO)

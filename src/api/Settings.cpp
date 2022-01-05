@@ -511,7 +511,7 @@ auto Settings::Set_long(
     }
 
     auto strValue = String::Factory();
-    strValue->Format("%" PRId64, lValue);
+    strValue->Set(std::to_string(lValue).c_str());
 
     const char* const szComment =
         (strComment.Exists() && !strComment.Compare("")) ? strComment.Get()

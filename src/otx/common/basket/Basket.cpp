@@ -351,7 +351,7 @@ void Basket::GenerateContents(StringXML& xmlUnsigned, bool bHideAccountID) const
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    xmlUnsigned.Concatenate("%s", str_result.c_str());
+    xmlUnsigned.Concatenate(String::Factory(str_result));
 }
 
 // Most contracts calculate their ID by hashing the Raw File (signatures and

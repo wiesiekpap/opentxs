@@ -2008,7 +2008,7 @@ void Item::UpdateContents(const PasswordPrompt& reason)  // Before transmission
     UnallocatedCString str_result;
     tag.output(str_result);
 
-    m_xmlUnsigned->Concatenate("%s", str_result.c_str());
+    m_xmlUnsigned->Concatenate(String::Factory(str_result));
 }
 
 Item::~Item() { Release_Item(); }

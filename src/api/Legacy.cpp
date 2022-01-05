@@ -50,6 +50,105 @@ auto Legacy::SuggestFolder(const UnallocatedCString& app) noexcept
 
     return path.string();
 }
+
+auto Legacy::Concatenate(const UnallocatedCString& notary_id, const UnallocatedCString& path_separator, const UnallocatedCString& unit_id, const char* append) -> UnallocatedCString {
+    UnallocatedCString app(append);
+
+    UnallocatedCString tmp;
+    tmp.reserve(notary_id.length() + path_separator.length() + unit_id.length() + app.length());
+
+    tmp.append(notary_id);
+    tmp.append(path_separator);
+    tmp.append(unit_id);
+    tmp.append(app);
+
+    return tmp;
+}
+
+auto Legacy::Concatenate(const UnallocatedCString& unit_id, const char* append) -> UnallocatedCString {
+    UnallocatedCString app(append);
+    UnallocatedCString tmp;
+    tmp.reserve(unit_id.length() + app.length());
+
+    tmp.append(unit_id);
+    tmp.append(app);
+
+    return tmp;
+}
+
+
+auto Legacy::internal_concatenate(
+        const UnallocatedCString& name,
+        const UnallocatedCString& ext) -> UnallocatedCString
+{
+    if (name.empty()) {
+        throw std::runtime_error("filname is empty");
+    }
+    if (name[0] == '-') {
+        throw std::runtime_error("negative number is not supported");
+    }
+    UnallocatedCString tmp;
+    tmp.reserve(name.length() + ext.length());
+    tmp.append(name);
+    tmp.append(ext);
+
+    return tmp;
+}
+
+auto Legacy::GetFilenameBin(const char* filename) -> UnallocatedCString
+{
+    static UnallocatedCString ext{".bin"};
+    return internal_concatenate(filename, ext);
+}
+
+auto Legacy::GetFilenameA(const char* filename) -> UnallocatedCString
+{
+    static UnallocatedCString ext{".a"};
+    return internal_concatenate(filename, ext);
+}
+
+auto Legacy::GetFilenameR(const char* foldername) -> UnallocatedCString
+{
+    static UnallocatedCString ext{".r"};
+    return internal_concatenate(foldername, ext);
+}
+
+auto Legacy::GetFilenameRct(TransactionNumber number) -> UnallocatedCString
+{
+    static UnallocatedCString ext{".rct"};
+    return internal_concatenate(std::to_string(number), ext);
+}
+
+auto Legacy::GetFilenameCrn(TransactionNumber number) -> UnallocatedCString
+{
+    static UnallocatedCString ext{".crn"};
+    return internal_concatenate(std::to_string(number), ext);
+}
+
+auto Legacy::GetFilenameSuccess(const char* filename) -> UnallocatedCString
+{
+    static UnallocatedCString ext{".success"};
+    return internal_concatenate(filename, ext);
+}
+
+auto Legacy::GetFilenameFail(const char* filename) -> UnallocatedCString
+{
+    static UnallocatedCString ext{".fail"};
+    return internal_concatenate(filename, ext);
+}
+
+auto Legacy::GetFilenameError(const char* filename) -> UnallocatedCString
+{
+    static UnallocatedCString ext{".error"};
+    return Legacy::internal_concatenate(filename, ext);
+}
+
+auto Legacy::GetFilenameLst(const UnallocatedCString& filename) -> UnallocatedCString
+{
+    static UnallocatedCString ext{".lst"};
+    return Legacy::internal_concatenate(filename, ext);
+}
+
 }  // namespace opentxs::api
 
 namespace opentxs::api::imp

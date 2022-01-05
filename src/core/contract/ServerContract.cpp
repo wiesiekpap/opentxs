@@ -380,14 +380,14 @@ auto Server::Serialize(proto::ServerContract& serialized, bool includeNym) const
 
 auto Server::Statistics(String& strContents) const -> bool
 {
-    const auto strID = String::Factory(id_);
+    auto alias = nym_->Alias();
 
-    strContents.Concatenate(
-        " Notary Provider: %s\n"
-        " NotaryID: %s\n"
-        "\n",
-        nym_->Alias().c_str(),
-        strID->Get());
+    static std::string fmt {" Notary Provider:  %s\n NotaryID: %s\n\n"};
+    UnallocatedVector<char> buf;
+    buf.reserve(fmt.length() + 1 + alias.length() + id_->size());
+    auto size = std::snprintf(&buf[0], buf.capacity(), fmt.c_str(), alias.c_str(), reinterpret_cast<const char*>(id_->data()));
+
+    strContents.Concatenate(String::Factory(&buf[0], size));
 
     return true;
 }

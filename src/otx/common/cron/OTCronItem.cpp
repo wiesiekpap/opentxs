@@ -32,6 +32,7 @@
 #include "opentxs/core/String.hpp"
 #include "opentxs/core/identifier/Generic.hpp"
 #include "opentxs/core/identifier/Notary.hpp"
+#include "internal/api/Legacy.hpp"
 #include "opentxs/identity/Nym.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
 #include "opentxs/otx/consensus/Server.hpp"
@@ -115,22 +116,19 @@ auto OTCronItem::LoadCronReceipt(
     const api::Session& api,
     const TransactionNumber& lTransactionNum) -> std::unique_ptr<OTCronItem>
 {
-    auto strFilename = String::Factory();
-    strFilename->Format("%" PRId64 ".crn", lTransactionNum);
+    auto filename = api::Legacy::GetFilenameCrn(lTransactionNum);
 
     const char* szFoldername = api.Internal().Legacy().Cron();
-    const char* szFilename = strFilename->Get();
-
     if (!OTDB::Exists(
-            api, api.DataFolder(), szFoldername, szFilename, "", "")) {
+            api, api.DataFolder(), szFoldername, filename, "", "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("File does not exist: ")(
-            szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFoldername)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return nullptr;
     }
 
     auto strFileContents = String::Factory(OTDB::QueryPlainString(
-        api, api.DataFolder(), szFoldername, szFilename, "", ""));  // <===
+        api, api.DataFolder(), szFoldername, filename, "", ""));  // <===
                                                                     // LOADING
                                                                     // FROM
                                                                     // DATA
@@ -138,7 +136,7 @@ auto OTCronItem::LoadCronReceipt(
 
     if (strFileContents->GetLength() < 2) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("Error reading file: ")(
-            szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFoldername)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return nullptr;
     } else
@@ -158,23 +156,21 @@ auto OTCronItem::LoadActiveCronReceipt(
     const identifier::Notary& notaryID)
     -> std::unique_ptr<OTCronItem>  // Client-side only.
 {
-    auto strFilename = String::Factory(),
-         strNotaryID = String::Factory(notaryID);
-    strFilename->Format("%" PRId64 ".crn", lTransactionNum);
+    auto strNotaryID = String::Factory(notaryID);
+    auto filename = api::Legacy::GetFilenameCrn(lTransactionNum);
 
     const char* szFoldername = api.Internal().Legacy().Cron();
-    const char* szFilename = strFilename->Get();
 
     if (!OTDB::Exists(
             api,
             api.DataFolder(),
             szFoldername,
             strNotaryID->Get(),
-            szFilename,
+            filename,
             "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("File does not exist: ")(
             szFoldername)(api::Legacy::PathSeparator())(
-            strNotaryID)(api::Legacy::PathSeparator())(szFilename)(".")
+            strNotaryID)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return nullptr;
     }
@@ -184,14 +180,14 @@ auto OTCronItem::LoadActiveCronReceipt(
         api.DataFolder(),
         szFoldername,
         strNotaryID->Get(),
-        szFilename,
+        filename,
         ""));  // <=== LOADING FROM
                // DATA STORE.
 
     if (strFileContents->GetLength() < 2) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("Error reading file: ")(
             szFoldername)(api::Legacy::PathSeparator())(
-            strNotaryID)(api::Legacy::PathSeparator())(szFilename)(".")
+            strNotaryID)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return nullptr;
     } else
@@ -219,16 +215,15 @@ auto OTCronItem::GetActiveCronTransNums(
 
     // We need to load up the local list of active (recurring) transactions.
     //
-    auto strListFilename = String::Factory(nymID),
-         strNotaryID = String::Factory(notaryID);
-    strListFilename->Concatenate(".lst");  // nymID.lst
+    auto strNotaryID = String::Factory(notaryID);
+    auto filename = api::Legacy::GetFilenameLst(nymID.str());
 
     if (OTDB::Exists(
             api,
             dataFolder,
             szFoldername,
             strNotaryID->Get(),
-            strListFilename->Get(),
+            filename,
             "")) {
         // Load up existing list, if it exists.
         //
@@ -237,7 +232,7 @@ auto OTCronItem::GetActiveCronTransNums(
             dataFolder,
             szFoldername,
             strNotaryID->Get(),
-            strListFilename->Get(),
+            filename,
             ""));
 
         if (strNumlist->Exists()) {
@@ -268,27 +263,24 @@ auto OTCronItem::EraseActiveCronReceipt(
     const identifier::Nym& nymID,
     const identifier::Notary& notaryID) -> bool
 {
-    auto strFilename = String::Factory(),
-         strNotaryID = String::Factory(notaryID);
-    strFilename->Format("%" PRId64 ".crn", lTransactionNum);
+    auto strNotaryID = String::Factory(notaryID);
+    auto filename = api::Legacy::GetFilenameCrn(lTransactionNum);
 
     const char* szFoldername = api.Internal().Legacy().Cron();
-    const char* szFilename = strFilename->Get();
 
     // Before we remove the cron item receipt itself, first we need to load up
     // the local list of active (recurring) transactions, and remove the number
     // from that list. Otherwise the GUI will continue thinking the transaction
     // is active in cron.
     //
-    auto strListFilename = String::Factory(nymID);
-    strListFilename->Concatenate(".lst");  // nymID.lst
+    auto list_filename = api::Legacy::GetFilenameLst(nymID.str());
 
     if (OTDB::Exists(
             api,
             dataFolder,
             szFoldername,
             strNotaryID->Get(),
-            strListFilename->Get(),
+            list_filename,
             "")) {
         // Load up existing list, to remove the transaction num from it.
         //
@@ -299,7 +291,7 @@ auto OTCronItem::EraseActiveCronReceipt(
             dataFolder,
             szFoldername,
             strNotaryID->Get(),
-            strListFilename->Get(),
+            list_filename,
             ""));
 
         if (strNumlist->Exists()) {
@@ -326,13 +318,13 @@ auto OTCronItem::EraseActiveCronReceipt(
                     dataFolder,
                     szFoldername,
                     strNotaryID->Get(),
-                    strListFilename->Get(),
+                    list_filename,
                     "")) {
                 LogConsole()(OT_PRETTY_STATIC(OTCronItem))(
                     "FYI, failure erasing recurring IDs file: ")(
                     szFoldername)(api::Legacy::PathSeparator())(
                     strNotaryID)(api::Legacy::PathSeparator())(
-                    strListFilename)(".")
+                    list_filename)(".")
                     .Flush();
             }
         } else {
@@ -349,7 +341,7 @@ auto OTCronItem::EraseActiveCronReceipt(
                     "armored string): ")(
                     szFoldername)(api::Legacy::PathSeparator())(
                     strNotaryID)(api::Legacy::PathSeparator())(
-                    strListFilename)(".")
+                    list_filename)(".")
                     .Flush();
                 return false;
             } else {
@@ -359,7 +351,7 @@ auto OTCronItem::EraseActiveCronReceipt(
                     dataFolder,
                     szFoldername,
                     strNotaryID->Get(),
-                    strListFilename->Get(),
+                    list_filename,
                     "");
 
                 if (!bSaved) {
@@ -367,7 +359,7 @@ auto OTCronItem::EraseActiveCronReceipt(
                         "Error re-saving recurring IDs: ")(
                         szFoldername)(api::Legacy::PathSeparator())(
                         strNotaryID)(api::Legacy::PathSeparator())(
-                        strListFilename)(".")
+                        list_filename)(".")
                         .Flush();
                     return false;
                 }
@@ -383,11 +375,11 @@ auto OTCronItem::EraseActiveCronReceipt(
             dataFolder,
             szFoldername,
             strNotaryID->Get(),
-            szFilename,
+            filename,
             "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("File does not exist: ")(
             szFoldername)(api::Legacy::PathSeparator())(
-            strNotaryID)(api::Legacy::PathSeparator())(szFilename)(".")
+            strNotaryID)(api::Legacy::PathSeparator())(filename.c_str())(".")
             .Flush();
         return false;
     }
@@ -397,11 +389,11 @@ auto OTCronItem::EraseActiveCronReceipt(
             dataFolder,
             szFoldername,
             strNotaryID->Get(),
-            szFilename,
+            filename,
             "")) {
         LogError()(OT_PRETTY_STATIC(OTCronItem))("Error erasing file: ")(
             szFoldername)(api::Legacy::PathSeparator())(
-            strNotaryID)(api::Legacy::PathSeparator())(szFilename)(".")
+            strNotaryID)(api::Legacy::PathSeparator())(filename.c_str())(".")
             .Flush();
         return false;
     }
@@ -415,24 +407,23 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
 {
     const std::int64_t lOpeningNum = GetOpeningNumber(theNymID);
 
-    auto strFilename = String::Factory(),
-         strNotaryID = String::Factory(GetNotaryID());
-    strFilename->Format("%" PRId64 ".crn", lOpeningNum);
+    auto strNotaryID = String::Factory(GetNotaryID());
+    auto filename =
+        api::Legacy::GetFilenameCrn(lOpeningNum); // cron/TRANSACTION_NUM.crn
 
     const char* szFoldername = api_.Internal().Legacy().Cron();  // cron
-    const char* szFilename = strFilename->Get();  // cron/TRANSACTION_NUM.crn
 
     if (OTDB::Exists(
             api_,
             api_.DataFolder(),
             szFoldername,
             strNotaryID->Get(),
-            szFilename,
+            filename,
             "")) {
         LogVerbose()(OT_PRETTY_CLASS())(
             "Cron Record already exists for transaction ")(GetTransactionNum())(
             " ")(szFoldername)(api::Legacy::PathSeparator())(
-            strNotaryID)(api::Legacy::PathSeparator())(szFilename)(", ")(
+            strNotaryID)(api::Legacy::PathSeparator())(filename)(", ")(
             "overwriting. ")
             .Flush();
         // NOTE: We could just return here. But what if the record we have is
@@ -442,8 +433,7 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
     } else  // It wasn't there already, so we need to save the number in our
             // local list of trans nums.
     {
-        auto strListFilename = String::Factory(theNymID);
-        strListFilename->Concatenate(".lst");  // nymID.lst
+        auto list_filename = api::Legacy::GetFilenameLst(theNymID.str());
         NumList numlist;
 
         if (OTDB::Exists(
@@ -451,7 +441,7 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
                 api_.DataFolder(),
                 szFoldername,
                 strNotaryID->Get(),
-                strListFilename->Get(),
+                list_filename,
                 "")) {
             // Load up existing list, to add the new transaction num to it.
             //
@@ -460,7 +450,7 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
                 api_.DataFolder(),
                 szFoldername,
                 strNotaryID->Get(),
-                strListFilename->Get(),
+                list_filename,
                 ""));
 
             if (strNumlist->Exists()) {
@@ -492,7 +482,7 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
                     "Error saving recurring IDs (failed writing armored "
                     "string): ")(szFoldername)(api::Legacy::PathSeparator())(
                     strNotaryID)(api::Legacy::PathSeparator())(
-                    strListFilename)(".")
+                    list_filename)(".")
                     .Flush();
                 return false;
             }
@@ -503,14 +493,14 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
                 api_.DataFolder(),
                 szFoldername,
                 strNotaryID->Get(),
-                strListFilename->Get(),
+                list_filename,
                 "");
 
             if (!bSaved) {
                 LogError()(OT_PRETTY_CLASS())("Error saving recurring IDs: ")(
                     szFoldername)(api::Legacy::PathSeparator())(
                     strNotaryID)(api::Legacy::PathSeparator())(
-                    strListFilename)(".")
+                    list_filename)(".")
                     .Flush();
                 return false;
             }
@@ -525,7 +515,7 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
         LogError()(OT_PRETTY_CLASS())(
             "Error saving file (failed writing armored string): ")(
             szFoldername)(api::Legacy::PathSeparator())(
-            strNotaryID)(api::Legacy::PathSeparator())(szFilename)("")
+            strNotaryID)(api::Legacy::PathSeparator())(filename)("")
             .Flush();
         return false;
     }
@@ -536,13 +526,13 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
         api_.DataFolder(),
         szFoldername,
         strNotaryID->Get(),
-        szFilename,
+        filename,
         "");
 
     if (!bSaved) {
         LogError()(OT_PRETTY_CLASS())("Error saving file: ")(
             szFoldername)(api::Legacy::PathSeparator())(
-            strNotaryID)(api::Legacy::PathSeparator())(szFilename)(".")
+            strNotaryID)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return false;
     }
@@ -564,18 +554,16 @@ auto OTCronItem::SaveActiveCronReceipt(const identifier::Nym& theNymID)
 
 auto OTCronItem::SaveCronReceipt() -> bool
 {
-    auto strFilename = String::Factory();
-    strFilename->Format("%" PRId64 ".crn", GetTransactionNum());
-
+    auto filename = api::Legacy::GetFilenameCrn(
+        GetTransactionNum()); // cron/TRANSACTION_NUM.crn
     const char* szFoldername = api_.Internal().Legacy().Cron();  // cron
-    const char* szFilename = strFilename->Get();  // cron/TRANSACTION_NUM.crn
 
     if (OTDB::Exists(
-            api_, api_.DataFolder(), szFoldername, szFilename, "", "")) {
+            api_, api_.DataFolder(), szFoldername, filename, "", "")) {
         LogError()(OT_PRETTY_CLASS())(
             "Cron Record already exists for transaction ")(GetTransactionNum())(
             " ")(szFoldername)(api::Legacy::PathSeparator())(
-            szFilename)(", yet inexplicably attempted to record it again.")
+            filename)(", yet inexplicably attempted to record it again.")
             .Flush();
         return false;
     }
@@ -587,7 +575,7 @@ auto OTCronItem::SaveCronReceipt() -> bool
         ascTemp->WriteArmoredString(strFinal, m_strContractType->Get())) {
         LogError()(OT_PRETTY_CLASS())(
             "Error saving file (failed writing armored string): ")(
-            szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFoldername)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return false;
     }
@@ -597,13 +585,13 @@ auto OTCronItem::SaveCronReceipt() -> bool
         strFinal->Get(),
         api_.DataFolder(),
         szFoldername,
-        szFilename,
+        filename,
         "",
         "");
 
     if (!bSaved) {
         LogError()(OT_PRETTY_CLASS())("Error saving file: ")(
-            szFoldername)(api::Legacy::PathSeparator())(szFilename)(".")
+            szFoldername)(api::Legacy::PathSeparator())(filename)(".")
             .Flush();
         return false;
     }

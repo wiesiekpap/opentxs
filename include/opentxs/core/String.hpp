@@ -16,18 +16,6 @@
 #include "opentxs/util/Container.hpp"
 #include "opentxs/util/Pimpl.hpp"
 
-#ifdef __GNUC__
-#define ATTR_PRINTF(a, b) __attribute__((format(printf, a, b)))
-#else
-#define ATTR_PRINTF(a, b)
-#endif
-
-#ifdef _MSC_VER
-#define PRI_SIZE "Iu"
-#else
-#define PRI_SIZE "zu"
-#endif
-
 namespace opentxs
 {
 class Armored;
@@ -103,11 +91,9 @@ public:
     virtual auto ToUlong() const -> std::uint64_t = 0;
     virtual void WriteToFile(std::ostream& ofs) const = 0;
 
-    virtual void Concatenate(const char* arg, ...) ATTR_PRINTF(2, 3) = 0;
     virtual void Concatenate(const String& data) = 0;
     virtual void ConvertToUpperCase() = 0;
     virtual auto DecodeIfArmored(bool escapedIsAllowed = true) -> bool = 0;
-    virtual void Format(const char* fmt, ...) ATTR_PRINTF(2, 3) = 0;
     /** For a straight-across, exact-size copy of bytes. Source not expected to
      * be null-terminated. */
     virtual auto MemSet(const char* mem, std::uint32_t size) -> bool = 0;
