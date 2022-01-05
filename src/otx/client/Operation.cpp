@@ -122,7 +122,8 @@
 
 #define CREATE_MESSAGE(a, ...)                                                 \
     [[maybe_unused]] auto [nextNumber, pMessage] =                             \
-        context.InitializeServerCommand(MessageType::a, __VA_ARGS__);          \
+        context.InternalServer().InitializeServerCommand(                      \
+            MessageType::a, __VA_ARGS__);                                      \
                                                                                \
     if (false == bool(pMessage)) {                                             \
         LogError()(OT_PRETTY_CLASS())("Failed to construct ")(#a).Flush();     \
@@ -156,8 +157,8 @@
         return {};                                                             \
     }                                                                          \
                                                                                \
-    numbers_.insert(                                                           \
-        context.NextTransactionNumber(MessageType::notarizeTransaction));      \
+    numbers_.insert(context.InternalServer().NextTransactionNumber(            \
+        MessageType::notarizeTransaction));                                    \
     auto& managedNumber = *numbers_.rbegin();                                  \
     LogVerbose()(OT_PRETTY_CLASS())("Allocating transaction number ")(         \
         managedNumber->Value())                                                \
@@ -1154,8 +1155,9 @@ auto Operation::construct_send_message() -> std::shared_ptr<Message>
 
     auto& output = *pOutput;
     const TransactionNumber number{output.m_strRequestNum->ToLong()};
-    [[maybe_unused]] auto [notUsed, pOutmail] = context.InitializeServerCommand(
-        MessageType::outmail, target_nym_id_, number, false, false);
+    [[maybe_unused]] auto [notUsed, pOutmail] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::outmail, target_nym_id_, number, false, false);
 
     if (false == bool(pOutmail)) {
         LogError()(OT_PRETTY_CLASS())("Failed to construct outmail").Flush();
@@ -1599,7 +1601,7 @@ auto Operation::download_box_receipt(
     PREPARE_CONTEXT();
 
     [[maybe_unused]] auto [requestNumber, message] =
-        context.InitializeServerCommand(
+        context.InternalServer().InitializeServerCommand(
             MessageType::getBoxReceipt, -1, false, false);
 
     if (false == bool(message)) {

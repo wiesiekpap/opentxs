@@ -25,6 +25,7 @@
 #include "internal/otx/common/cron/OTCron.hpp"
 #include "internal/otx/common/cron/OTCronItem.hpp"
 #include "internal/otx/common/util/Common.hpp"
+#include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "opentxs/Types.hpp"
@@ -920,10 +921,10 @@ auto OTAgreement::SetProposal(
     // Since we'll be needing 2 transaction numbers to do this, let's grab
     // 'em...
     auto strNotaryID = String::Factory(GetNotaryID());
-    const auto openingNumber =
-        context.NextTransactionNumber(MessageType::notarizeTransaction);
-    const auto closingNumber =
-        context.NextTransactionNumber(MessageType::notarizeTransaction);
+    const auto openingNumber = context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction);
+    const auto closingNumber = context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction);
 
     if (0 == openingNumber->Value()) {
         LogError()(OT_PRETTY_CLASS())(
@@ -1087,10 +1088,10 @@ auto OTAgreement::Confirm(
     // agreement...
     //
     auto strNotaryIDstrTemp = String::Factory(GetNotaryID());
-    const auto openingNumber =
-        context.NextTransactionNumber(MessageType::notarizeTransaction);
-    const auto closingNumber =
-        context.NextTransactionNumber(MessageType::notarizeTransaction);
+    const auto openingNumber = context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction);
+    const auto closingNumber = context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction);
 
     if (0 == openingNumber->Value()) {
         LogError()(OT_PRETTY_CLASS())(

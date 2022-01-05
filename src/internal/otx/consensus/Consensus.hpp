@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "internal/otx/Types.hpp"
 #include "internal/util/Editor.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/Client.hpp"
@@ -83,10 +84,35 @@ class Server : virtual public opentxs::otx::context::Server,
                virtual public otx::context::internal::Base
 {
 public:
+    virtual auto HaveSufficientNumbers(const MessageType reason) const
+        -> bool = 0;
+    virtual auto InitializeServerCommand(
+        const MessageType type,
+        const Armored& payload,
+        const Identifier& accountID,
+        const RequestNumber provided,
+        const bool withAcknowledgments = true,
+        const bool withNymboxHash = true)
+        -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
+    virtual auto InitializeServerCommand(
+        const MessageType type,
+        const identifier::Nym& recipientNymID,
+        const RequestNumber provided,
+        const bool withAcknowledgments = true,
+        const bool withNymboxHash = false)
+        -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
+    virtual auto InitializeServerCommand(
+        const MessageType type,
+        const RequestNumber provided,
+        const bool withAcknowledgments = true,
+        const bool withNymboxHash = false)
+        -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
     auto InternalServer() const noexcept -> const internal::Server& final
     {
         return *this;
     }
+    virtual auto NextTransactionNumber(const MessageType reason)
+        -> OTManagedNumber = 0;
 
     auto InternalServer() noexcept -> internal::Server& final { return *this; }
     virtual auto mutable_Purse(

@@ -18,6 +18,7 @@
 #include "internal/otx/common/recurring/OTAgreement.hpp"
 #include "internal/otx/common/util/Common.hpp"
 #include "internal/otx/common/util/Tag.hpp"
+#include "internal/otx/consensus/Consensus.hpp"
 #include "internal/otx/smartcontract/OTParty.hpp"
 #include "internal/otx/smartcontract/OTPartyAccount.hpp"
 #include "internal/otx/smartcontract/OTSmartContract.hpp"
@@ -926,8 +927,8 @@ auto OTAgent::ReserveClosingTransNum(
         }
 
         // Need a closing number...
-        const auto number =
-            context.NextTransactionNumber(MessageType::notarizeTransaction);
+        const auto number = context.InternalServer().NextTransactionNumber(
+            MessageType::notarizeTransaction);
 
         if (0 == number->Value()) {
             LogError()(OT_PRETTY_CLASS())("Error: Strangely, "
@@ -989,8 +990,8 @@ auto OTAgent::ReserveOpeningTransNum(otx::context::Server& context) -> bool
         }
 
         // Need opening number...
-        const auto number =
-            context.NextTransactionNumber(MessageType::notarizeTransaction);
+        const auto number = context.InternalServer().NextTransactionNumber(
+            MessageType::notarizeTransaction);
 
         if (0 == number->Value()) {
             LogError()(OT_PRETTY_CLASS())("Error: Strangely, "
