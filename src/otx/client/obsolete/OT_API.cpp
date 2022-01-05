@@ -1899,8 +1899,8 @@ auto OT_API::WriteCheque(
     // already have a transaction number I can use to write it with. (Otherwise
     // I'd have to ask the server to send me one first.)
     auto strNotaryID = String::Factory(NOTARY_ID);
-    const auto number =
-        context.get().NextTransactionNumber(MessageType::notarizeTransaction);
+    const auto number = context.get().InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction);
 
     if (false == number->Valid()) {
         LogError()(OT_PRETTY_CLASS())(
@@ -2494,11 +2494,13 @@ auto OT_API::issueBasket(
     transactionNum = 0;
     status = SendResult::Error;
     reply.reset();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::issueBasket,
-        api_.Factory().Armored(api_.Factory().InternalSession().Data(basket)),
-        api_.Factory().Identifier(),
-        requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::issueBasket,
+            api_.Factory().Armored(
+                api_.Factory().InternalSession().Data(basket)),
+            api_.Factory().Identifier(),
+            requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -2678,8 +2680,8 @@ auto OT_API::AddBasketExchangeItem(
     // By this point, I know that everything checks out. Signature and
     // Account ID. account is good, and no need to clean it up.
     const auto strNotaryID = String::Factory(NOTARY_ID);
-    const auto number =
-        context.get().NextTransactionNumber(MessageType::notarizeTransaction);
+    const auto number = context.get().InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction);
 
     if (false == number->Valid()) {
         LogError()(OT_PRETTY_CLASS())("Failed getting next "
@@ -2898,8 +2900,8 @@ auto OT_API::exchangeBasket(
     }
 
     std::set<OTManagedNumber> managed{};
-    managed.emplace(
-        context.NextTransactionNumber(MessageType::notarizeTransaction));
+    managed.emplace(context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction));
     auto& managedNumber = *managed.rbegin();
 
     if (false == managedNumber->Valid()) {
@@ -2931,8 +2933,8 @@ auto OT_API::exchangeBasket(
 
     if (false == bool(item)) { return output; }
 
-    managed.insert(
-        context.NextTransactionNumber(MessageType::notarizeTransaction));
+    managed.insert(context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction));
     auto& closingNumber = *managed.rbegin();
 
     if (false == closingNumber->Valid()) {
@@ -2976,11 +2978,12 @@ auto OT_API::exchangeBasket(
     ledger->AddTransaction(ptransaction);
     ledger->SignContract(nym, reason);
     ledger->SaveContract();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::notarizeTransaction,
-        Armored::Factory(String::Factory(*ledger)),
-        accountID,
-        requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::notarizeTransaction,
+            Armored::Factory(String::Factory(*ledger)),
+            accountID,
+            requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -3155,8 +3158,8 @@ auto OT_API::payDividend(
     }
 
     std::set<OTManagedNumber> managed{};
-    managed.insert(
-        context.NextTransactionNumber(MessageType::notarizeTransaction));
+    managed.insert(context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction));
     auto& managedNumber = *managed.rbegin();
 
     if (false == managedNumber->Valid()) {
@@ -3302,11 +3305,12 @@ auto OT_API::payDividend(
     ledger->AddTransaction(ptransaction);
     ledger->SignContract(nym, reason);
     ledger->SaveContract();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::notarizeTransaction,
-        Armored::Factory(String::Factory(*ledger)),
-        DIVIDEND_FROM_accountID,
-        requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::notarizeTransaction,
+            Armored::Factory(String::Factory(*ledger)),
+            DIVIDEND_FROM_accountID,
+            requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -3364,9 +3368,10 @@ auto OT_API::withdrawVoucher(
     contractID->GetString(strContractID);
 
     const auto withdrawalNumber =
-        context.NextTransactionNumber(MessageType::notarizeTransaction);
-    const auto voucherNumber =
-        context.NextTransactionNumber(MessageType::notarizeTransaction);
+        context.InternalServer().NextTransactionNumber(
+            MessageType::notarizeTransaction);
+    const auto voucherNumber = context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction);
 
     if ((!withdrawalNumber->Valid()) || (!voucherNumber->Valid())) {
         LogError()(OT_PRETTY_CLASS())(
@@ -3470,11 +3475,12 @@ auto OT_API::withdrawVoucher(
     ledger->AddTransaction(ptransaction);
     ledger->SignContract(nym, reason);
     ledger->SaveContract();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::notarizeTransaction,
-        Armored::Factory(String::Factory(*ledger)),
-        accountID,
-        requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::notarizeTransaction,
+            Armored::Factory(String::Factory(*ledger)),
+            accountID,
+            requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -3619,11 +3625,12 @@ auto OT_API::depositPaymentPlan(
     std::shared_ptr<OTTransaction> ptransaction{transaction.release()};
     ledger->AddTransaction(ptransaction);
     ledger->SignContract(nym, reason);
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::notarizeTransaction,
-        Armored::Factory(String::Factory(*ledger)),
-        accountID,
-        requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::notarizeTransaction,
+            Armored::Factory(String::Factory(*ledger)),
+            accountID,
+            requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -3669,11 +3676,12 @@ auto OT_API::triggerClause(
     // script.
     if (pStrParam.Exists()) { payload->SetString(pStrParam); }
 
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::triggerClause,
-        payload,
-        api_.Factory().Identifier(),
-        requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::triggerClause,
+            payload,
+            api_.Factory().Identifier(),
+            requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -3993,11 +4001,12 @@ auto OT_API::activateSmartContract(
     ledger->SignContract(nym, reason);
     ledger->SaveContract();
 
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::notarizeTransaction,
-        Armored::Factory(String::Factory(*ledger)),
-        accountID,
-        requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::notarizeTransaction,
+            Armored::Factory(String::Factory(*ledger)),
+            accountID,
+            requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -4088,8 +4097,8 @@ auto OT_API::cancelCronItem(
     }
 
     std::set<OTManagedNumber> managed{};
-    managed.insert(
-        context.NextTransactionNumber(MessageType::notarizeTransaction));
+    managed.insert(context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction));
     auto& managedNumber = *managed.rbegin();
 
     if (false == managedNumber->Valid()) {
@@ -4146,11 +4155,12 @@ auto OT_API::cancelCronItem(
     ledger->SignContract(nym, reason);
     ledger->SaveContract();
 
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::notarizeTransaction,
-        Armored::Factory(String::Factory(*ledger)),
-        ASSET_ACCOUNT_ID,
-        requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::notarizeTransaction,
+            Armored::Factory(String::Factory(*ledger)),
+            ASSET_ACCOUNT_ID,
+            requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -4253,8 +4263,8 @@ auto OT_API::issueMarketOffer(
     }
 
     std::set<OTManagedNumber> managed{};
-    managed.insert(
-        context.NextTransactionNumber(MessageType::notarizeTransaction));
+    managed.insert(context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction));
     auto& openingNumber = *managed.rbegin();
 
     if (false == openingNumber->Valid()) {
@@ -4270,8 +4280,8 @@ auto OT_API::issueMarketOffer(
         openingNumber->Value())(".")
         .Flush();
     transactionNum = openingNumber->Value();
-    managed.insert(
-        context.NextTransactionNumber(MessageType::notarizeTransaction));
+    managed.insert(context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction));
     auto& assetClosingNumber = *managed.rbegin();
 
     if (false == openingNumber->Valid()) {
@@ -4286,8 +4296,8 @@ auto OT_API::issueMarketOffer(
     LogVerbose()(OT_PRETTY_CLASS())("Allocated transaction number ")(
         assetClosingNumber->Value())(".")
         .Flush();
-    managed.insert(
-        context.NextTransactionNumber(MessageType::notarizeTransaction));
+    managed.insert(context.InternalServer().NextTransactionNumber(
+        MessageType::notarizeTransaction));
     auto& currencyClosingNumber = *managed.rbegin();
 
     if (false == currencyClosingNumber->Valid()) {
@@ -4503,11 +4513,12 @@ auto OT_API::issueMarketOffer(
     ledger->AddTransaction(ptransaction);
     ledger->SignContract(nym, reason);
     ledger->SaveContract();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::notarizeTransaction,
-        Armored::Factory(String::Factory(*ledger)),
-        ASSET_ACCOUNT_ID,
-        requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::notarizeTransaction,
+            Armored::Factory(String::Factory(*ledger)),
+            ASSET_ACCOUNT_ID,
+            requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -4551,7 +4562,8 @@ auto OT_API::getMarketList(otx::context::Server& context) const -> CommandResult
     status = SendResult::Error;
     reply.reset();
     auto [newRequestNumber, message] =
-        context.InitializeServerCommand(MessageType::getMarketList, requestNum);
+        context.InternalServer().InitializeServerCommand(
+            MessageType::getMarketList, requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -4591,8 +4603,9 @@ auto OT_API::getMarketOffers(
     transactionNum = 0;
     status = SendResult::Error;
     reply.reset();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::getMarketOffers, requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::getMarketOffers, requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -4639,8 +4652,9 @@ auto OT_API::getMarketRecentTrades(
     transactionNum = 0;
     status = SendResult::Error;
     reply.reset();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::getMarketRecentTrades, requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::getMarketRecentTrades, requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -4681,8 +4695,9 @@ auto OT_API::getNymMarketOffers(otx::context::Server& context) const
     transactionNum = 0;
     status = SendResult::Error;
     reply.reset();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::getNymMarketOffers, requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::getNymMarketOffers, requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -4725,8 +4740,9 @@ auto OT_API::queryInstrumentDefinitions(
     transactionNum = 0;
     status = SendResult::Error;
     reply.reset();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::queryInstrumentDefinitions, requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::queryInstrumentDefinitions, requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -4769,8 +4785,9 @@ auto OT_API::deleteAssetAccount(
         if (false == bool(account)) { return output; }
     }
 
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::unregisterAccount, requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::unregisterAccount, requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -4807,8 +4824,9 @@ auto OT_API::usageCredits(
     transactionNum = 0;
     status = SendResult::Error;
     reply.reset();
-    auto [newRequestNumber, message] = context.InitializeServerCommand(
-        MessageType::usageCredits, NYM_ID_CHECK, requestNum);
+    auto [newRequestNumber, message] =
+        context.InternalServer().InitializeServerCommand(
+            MessageType::usageCredits, NYM_ID_CHECK, requestNum);
     requestNum = newRequestNumber;
 
     if (false == bool(message)) { return output; }
@@ -5391,8 +5409,8 @@ auto OT_API::get_or_create_process_inbox(
     auto processInbox = response.GetTransaction(transactionType::processInbox);
 
     if (nullptr == processInbox) {
-        const auto number =
-            context.NextTransactionNumber(MessageType::processInbox);
+        const auto number = context.InternalServer().NextTransactionNumber(
+            MessageType::processInbox);
 
         if (false == number->Valid()) {
             LogError()(OT_PRETTY_CLASS())("Nym ")(

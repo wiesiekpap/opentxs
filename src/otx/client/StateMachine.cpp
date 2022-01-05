@@ -32,6 +32,7 @@
 #include "internal/otx/client/obsolete/OT_API.hpp"
 #include "internal/otx/common/Cheque.hpp"
 #include "internal/otx/common/Message.hpp"
+#include "internal/otx/consensus/Consensus.hpp"
 #include "internal/util/Editor.hpp"
 #include "internal/util/LogMacros.hpp"
 #include "internal/util/UniqueQueue.hpp"
@@ -1149,8 +1150,8 @@ auto StateMachine::write_and_send_cheque(
 
     OT_ASSERT(context);
 
-    if (false ==
-        context->HaveSufficientNumbers(MessageType::notarizeTransaction)) {
+    if (false == context->InternalServer().HaveSufficientNumbers(
+                     MessageType::notarizeTransaction)) {
         return TaskDone::retry;
     }
 

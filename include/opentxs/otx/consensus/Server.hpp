@@ -10,7 +10,6 @@
 #include <future>
 #include <tuple>
 
-#include "internal/otx/Types.hpp"
 #include "opentxs/otx/Types.hpp"
 #include "opentxs/otx/consensus/Base.hpp"
 #include "opentxs/otx/consensus/ManagedNumber.hpp"
@@ -78,11 +77,7 @@ class OTTransaction;
 class PasswordPrompt;
 }  // namespace opentxs
 
-namespace opentxs
-{
-namespace otx
-{
-namespace context
+namespace opentxs::otx::context
 {
 class OPENTXS_EXPORT Server : virtual public Base
 {
@@ -101,8 +96,6 @@ public:
         Message& command,
         const PasswordPrompt& reason) const -> bool = 0;
     virtual auto HaveAdminPassword() const -> bool = 0;
-    virtual auto HaveSufficientNumbers(const MessageType reason) const
-        -> bool = 0;
     virtual auto Highest() const -> TransactionNumber = 0;
     OPENTXS_NO_EXPORT virtual auto InternalServer() const noexcept
         -> const internal::Server& = 0;
@@ -138,31 +131,8 @@ public:
     virtual auto AddTentativeNumber(const TransactionNumber& number)
         -> bool = 0;
     virtual auto Connection() -> network::ServerConnection& = 0;
-    virtual auto InitializeServerCommand(
-        const MessageType type,
-        const Armored& payload,
-        const Identifier& accountID,
-        const RequestNumber provided,
-        const bool withAcknowledgments = true,
-        const bool withNymboxHash = true)
-        -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
-    virtual auto InitializeServerCommand(
-        const MessageType type,
-        const identifier::Nym& recipientNymID,
-        const RequestNumber provided,
-        const bool withAcknowledgments = true,
-        const bool withNymboxHash = false)
-        -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
-    virtual auto InitializeServerCommand(
-        const MessageType type,
-        const RequestNumber provided,
-        const bool withAcknowledgments = true,
-        const bool withNymboxHash = false)
-        -> std::pair<RequestNumber, std::unique_ptr<Message>> = 0;
     OPENTXS_NO_EXPORT virtual auto InternalServer() noexcept
         -> internal::Server& = 0;
-    virtual auto NextTransactionNumber(const MessageType reason)
-        -> OTManagedNumber = 0;
     virtual auto PingNotary(const PasswordPrompt& reason)
         -> NetworkReplyMessage = 0;
     virtual auto ProcessNotification(
@@ -227,6 +197,4 @@ private:
     auto operator=(const Server&) -> Server& = delete;
     auto operator=(Server&&) -> Server& = delete;
 };
-}  // namespace context
-}  // namespace otx
-}  // namespace opentxs
+}  // namespace opentxs::otx::context
