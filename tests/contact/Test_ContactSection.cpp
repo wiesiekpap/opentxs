@@ -198,7 +198,7 @@ TEST_F(Test_ContactSection, operator_plus)
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
-            ot::identity::wot::claim::ClaimType::SSL,
+            ot::identity::wot::claim::ClaimType::Ssl,
             ot::UnallocatedCString("activeContactItemValue4"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
@@ -222,7 +222,7 @@ TEST_F(Test_ContactSection, operator_plus)
         3);
     // Verify the second group has one item.
     ASSERT_EQ(
-        section6.Group(ot::identity::wot::claim::ClaimType::SSL)->Size(), 1);
+        section6.Group(ot::identity::wot::claim::ClaimType::Ssl)->Size(), 1);
 }
 
 TEST_F(Test_ContactSection, operator_plus_different_versions)
@@ -312,7 +312,7 @@ TEST_F(Test_ContactSection, AddItem)
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
-            ot::identity::wot::claim::ClaimType::SSL,
+            ot::identity::wot::claim::ClaimType::Ssl,
             ot::UnallocatedCString("activeContactItemValue3"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
@@ -323,7 +323,7 @@ TEST_F(Test_ContactSection, AddItem)
     ASSERT_EQ(section6.Size(), 2);
     // Verify there is one in the second group.
     ASSERT_EQ(
-        section6.Group(ot::identity::wot::claim::ClaimType::SSL)->Size(), 1);
+        section6.Group(ot::identity::wot::claim::ClaimType::Ssl)->Size(), 1);
 }
 
 TEST_F(Test_ContactSection, AddItem_different_versions)
@@ -336,7 +336,7 @@ TEST_F(Test_ContactSection, AddItem_different_versions)
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Scope,
-            ot::identity::wot::claim::ClaimType::BOT,
+            ot::identity::wot::claim::ClaimType::Bot,
             ot::UnallocatedCString("scopeContactItemValue"),
             {ot::identity::wot::claim::Attribute::Local},
             NULL_START,
@@ -353,7 +353,7 @@ TEST_F(Test_ContactSection, AddItem_different_versions)
     const auto& section2 = section1.AddItem(scopeContactItem);
     ASSERT_EQ(section2.Size(), 1);
     ASSERT_EQ(
-        section2.Group(ot::identity::wot::claim::ClaimType::BOT)->Size(), 1);
+        section2.Group(ot::identity::wot::claim::ClaimType::Bot)->Size(), 1);
     ASSERT_TRUE(section2.Claim(scopeContactItem->ID())->isPrimary());
     ASSERT_TRUE(section2.Claim(scopeContactItem->ID())->isActive());
     // Verify the section version has been updated to the minimum version to
@@ -425,7 +425,7 @@ TEST_F(Test_ContactSection, Claim_found)
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
-            ot::identity::wot::claim::ClaimType::SSL,
+            ot::identity::wot::claim::ClaimType::Ssl,
             ot::UnallocatedCString("activeContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
@@ -489,7 +489,7 @@ TEST_F(Test_ContactSection, HaveClaim_true)
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
-            ot::identity::wot::claim::ClaimType::SSL,
+            ot::identity::wot::claim::ClaimType::Ssl,
             ot::UnallocatedCString("activeContactItemValue2"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
@@ -549,7 +549,7 @@ TEST_F(Test_ContactSection, Delete)
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
-            ot::identity::wot::claim::ClaimType::SSL,
+            ot::identity::wot::claim::ClaimType::Ssl,
             ot::UnallocatedCString("activeContactItemValue3"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,
@@ -559,14 +559,14 @@ TEST_F(Test_ContactSection, Delete)
     // Verify the section has two groups.
     ASSERT_EQ(section5.Size(), 2);
     ASSERT_EQ(
-        section5.Group(ot::identity::wot::claim::ClaimType::SSL)->Size(), 1);
+        section5.Group(ot::identity::wot::claim::ClaimType::Ssl)->Size(), 1);
     ASSERT_TRUE(section5.HaveClaim(contactItem3->ID()));
 
     const auto& section6 = section5.Delete(contactItem3->ID());
     // Verify the item was deleted and the group was removed.
     ASSERT_EQ(section6.Size(), 1);
     ASSERT_FALSE(section6.HaveClaim(contactItem3->ID()));
-    ASSERT_FALSE(section6.Group(ot::identity::wot::claim::ClaimType::SSL));
+    ASSERT_FALSE(section6.Group(ot::identity::wot::claim::ClaimType::Ssl));
 }
 
 TEST_F(Test_ContactSection, SerializeTo)
@@ -654,7 +654,7 @@ TEST_F(Test_ContactSection, Size)
             CONTACT_CONTACT_DATA_VERSION,
             CONTACT_CONTACT_DATA_VERSION,
             ot::identity::wot::claim::SectionType::Identifier,
-            ot::identity::wot::claim::ClaimType::SSL,
+            ot::identity::wot::claim::ClaimType::Ssl,
             ot::UnallocatedCString("activeContactItemValue3"),
             {ot::identity::wot::claim::Attribute::Active},
             NULL_START,

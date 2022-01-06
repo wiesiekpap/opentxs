@@ -346,7 +346,7 @@ TEST_F(Regtest_fixture_sync, make_contracts)
         alex_.nym_id_->str(),
         "My Dollars",
         "Example only",
-        ot::core::UnitType::USD,
+        ot::core::UnitType::Usd,
         ot::unsigned_amount(0, 1, 100),
         reason));
 

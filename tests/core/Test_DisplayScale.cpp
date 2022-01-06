@@ -20,7 +20,7 @@ namespace ottest
 TEST(DisplayScale, usd)
 {
     const auto usd =
-        opentxs::display::GetDefinition(opentxs::core::UnitType::USD);
+        opentxs::display::GetDefinition(opentxs::core::UnitType::Usd);
 
     const auto scales = usd.GetScales();
     auto it = scales.begin();
@@ -138,7 +138,7 @@ TEST(DisplayScale, usd)
 TEST(DisplayScale, btc)
 {
     const auto btc =
-        opentxs::display::GetDefinition(opentxs::core::UnitType::BTC);
+        opentxs::display::GetDefinition(opentxs::core::UnitType::Btc);
 
     const auto scales = btc.GetScales();
     auto it = scales.begin();
@@ -221,7 +221,7 @@ TEST(DisplayScale, btc)
 TEST(DisplayScale, pkt)
 {
     const auto pkt =
-        opentxs::display::GetDefinition(opentxs::core::UnitType::PKT);
+        opentxs::display::GetDefinition(opentxs::core::UnitType::Pkt);
 
     const auto scales = pkt.GetScales();
     auto it = scales.begin();

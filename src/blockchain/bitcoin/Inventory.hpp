@@ -46,7 +46,7 @@ public:
     auto Serialize(AllocateOutput out) const noexcept -> bool;
 
     Inventory(const Type type, const Hash& hash) noexcept;
-    Inventory(const void* payload, const std::size_t size) noexcept;
+    Inventory(const void* payload, const std::size_t size) noexcept(false);
     Inventory(const Inventory&) noexcept;
     Inventory(Inventory&&) noexcept;
 
